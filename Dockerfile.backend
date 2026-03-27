@@ -9,13 +9,16 @@ RUN apk add --no-cache bash curl unzip && \
     ln -s /root/.bun/bin/bun /usr/local/bin/bun && \
     ln -s /root/.bun/bin/bunx /usr/local/bin/bunx
 
-# Copy package files for all workspaces
+# Copy package files for all workspaces (Bun needs the full workspace graph to match the lockfile)
 COPY package.json bun.lock ./
 COPY packages/shared-schema/package.json ./packages/shared-schema/
 COPY packages/crypto/package.json ./packages/crypto/
 COPY packages/db/package.json ./packages/db/
 COPY packages/aurora-sync/package.json ./packages/aurora-sync/
 COPY packages/backend/package.json ./packages/backend/
+COPY packages/web/package.json ./packages/web/
+COPY packages/board-controller/package.json ./packages/board-controller/
+COPY packages/moonboard-ocr/package.json ./packages/moonboard-ocr/
 
 # Copy source code for all shared packages and backend
 COPY packages/shared-schema/src ./packages/shared-schema/src
@@ -24,8 +27,8 @@ COPY packages/db/src ./packages/db/src
 COPY packages/aurora-sync/src ./packages/aurora-sync/src
 COPY packages/backend/src ./packages/backend/src
 
-# Install production dependencies (tsx is now a production dep for running TypeScript)
-RUN bun install --production --frozen-lockfile
+# Install dependencies (--production is incompatible with --frozen-lockfile in Bun)
+RUN bun install --frozen-lockfile
 
 # Expose port
 EXPOSE 8080
