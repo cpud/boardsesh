@@ -1,7 +1,6 @@
 import { eq, gte, sql, like, notLike, inArray, or, and, SQL } from 'drizzle-orm';
 import { ParsedBoardRouteParameters, SearchRequestPagination } from '@/app/lib/types';
 import { UNIFIED_TABLES } from '@/lib/db/queries/util/table-select';
-import { SizeEdges } from '@/app/lib/__generated__/product-sizes-data';
 import { SUPPORTED_BOARDS } from '@/app/lib/board-data';
 import { KILTER_HOMEWALL_LAYOUT_ID, KILTER_HOMEWALL_PRODUCT_ID } from '@/app/lib/board-constants';
 import { boardseshTicks } from '@/app/lib/db/schema';
@@ -11,13 +10,11 @@ import { boardseshTicks } from '@/app/lib/db/schema';
  * Uses unified tables (board_climbs, board_climb_stats, etc.) with board_type filtering
  * @param params The route parameters (includes board_name for filtering)
  * @param searchParams The search parameters
- * @param sizeEdges Pre-fetched edge values from product_sizes table
  * @param userId Optional NextAuth user ID to include user-specific ascent and attempt data
  */
 export const createClimbFilters = (
   params: ParsedBoardRouteParameters,
   searchParams: SearchRequestPagination,
-  sizeEdges: SizeEdges,
   userId?: string,
 ) => {
   const tables = UNIFIED_TABLES;
@@ -83,14 +80,11 @@ export const createClimbFilters = (
     eq(tables.climbs.framesCount, 1),
   ];
 
-  // Size-specific conditions using pre-fetched static edge values
-  // This eliminates the need for a JOIN on product_sizes in the main query
-  // MoonBoard climbs have NULL edge values (single fixed size), so skip edge filtering
+  // Size filter: check if this climb fits on the selected board size.
+  // Uses denormalized compatible_size_ids array (pre-computed from edge comparison).
+  // MoonBoard has a single fixed size, so skip.
   const sizeConditions: SQL[] = params.board_name === 'moonboard' ? [] : [
-    sql`${tables.climbs.edgeLeft} > ${sizeEdges.edgeLeft}`,
-    sql`${tables.climbs.edgeRight} < ${sizeEdges.edgeRight}`,
-    sql`${tables.climbs.edgeBottom} > ${sizeEdges.edgeBottom}`,
-    sql`${tables.climbs.edgeTop} < ${sizeEdges.edgeTop}`,
+    sql`${params.size_id} = ANY(${tables.climbs.compatibleSizeIds})`,
   ];
 
   // Conditions for climb stats
@@ -171,21 +165,11 @@ export const createClimbFilters = (
   }
 
   // Set membership filter: exclude climbs that use holds from sets the user doesn't own.
-  // Uses double-NOT-EXISTS: "no hold of this climb lacks a placement in the selected sets."
-  // MoonBoard has no board_placements data, so skip (same pattern as edge filtering).
+  // Uses denormalized required_set_ids array (pre-computed from climb_holds -> placements).
+  // The <@ operator checks that all required sets are in the user's selected sets.
+  // MoonBoard has no set data, so skip.
   const setIdsConditions: SQL[] = params.board_name === 'moonboard' || params.set_ids.length === 0 ? [] : [
-    sql`NOT EXISTS (
-      SELECT 1 FROM ${tables.climbHolds} bch_set
-      WHERE bch_set.climb_uuid = ${tables.climbs.uuid}
-        AND bch_set.board_type = ${params.board_name}
-        AND NOT EXISTS (
-          SELECT 1 FROM ${tables.placements} bp_set
-          WHERE bp_set.board_type = ${params.board_name}
-            AND bp_set.layout_id = ${params.layout_id}
-            AND bp_set.id = bch_set.hold_id
-            AND bp_set.set_id IN (${sql.join(params.set_ids.map(id => sql`${id}`), sql`, `)})
-        )
-    )`,
+    sql`${tables.climbs.requiredSetIds} <@ ARRAY[${sql.join(params.set_ids.map(id => sql`${id}`), sql`, `)}]::int[]`,
   ];
 
   // Personal progress filter conditions (only apply if userId is provided)

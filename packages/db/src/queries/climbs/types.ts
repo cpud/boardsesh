@@ -12,17 +12,6 @@ export interface BoardRouteParams {
 }
 
 /**
- * Pre-fetched edge values from product_sizes table.
- * Used to filter climbs by size without joining product_sizes.
- */
-export interface SizeEdges {
-  edgeLeft: number;
-  edgeRight: number;
-  edgeBottom: number;
-  edgeTop: number;
-}
-
-/**
  * Search parameters for the climb search query.
  * Shared between web and backend packages.
  */
