@@ -41,6 +41,7 @@ export default function BoardImportPrompt({ boardType }: BoardImportPromptProps)
   const [loadingCredential, setLoadingCredential] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
   const [formValues, setFormValues] = useState({ username: '', password: '' });
 
   // Import state
@@ -114,6 +115,29 @@ export default function BoardImportPrompt({ boardType }: BoardImportPromptProps)
       showMessage(error instanceof Error ? error.message : 'Failed to link account', 'error');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleRemove = async () => {
+    setIsRemoving(true);
+    try {
+      const response = await fetch('/api/internal/aurora-credentials', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ boardType }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to remove credentials');
+      }
+
+      showMessage('Account unlinked successfully', 'success');
+      await fetchCredential();
+    } catch (error) {
+      showMessage(error instanceof Error ? error.message : 'Failed to unlink account', 'error');
+    } finally {
+      setIsRemoving(false);
     }
   };
 
@@ -268,9 +292,9 @@ export default function BoardImportPrompt({ boardType }: BoardImportPromptProps)
         credential={credential}
         unsyncedCounts={{ ascents: 0, climbs: 0 }}
         onAdd={handleAddClick}
-        onRemove={() => {}}
+        onRemove={handleRemove}
         onImportJson={handleImportClick}
-        isRemoving={false}
+        isRemoving={isRemoving}
         isImporting={isImporting}
       />
 
