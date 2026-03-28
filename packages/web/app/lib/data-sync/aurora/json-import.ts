@@ -127,13 +127,14 @@ export function normalizeTimestamp(ts: string): string {
 }
 
 export function generateJsonImportAuroraId(
+  userId: string,
   climbUuid: string,
   angle: number,
   climbedAt: string,
   type: 'ascents' | 'bids',
 ): string {
   const hash = createHash('sha256')
-    .update(`${climbUuid}:${angle}:${climbedAt}:${type}`)
+    .update(`${userId}:${climbUuid}:${angle}:${climbedAt}:${type}`)
     .digest('hex')
     .slice(0, 32);
   return `json-import-${hash}`;
@@ -324,7 +325,7 @@ export async function importJsonExportData(
         createdAt: ascent.created_at ? normalizeTimestamp(ascent.created_at) : now,
         updatedAt: now,
         auroraType: 'ascents' as const,
-        auroraId: generateJsonImportAuroraId(climbUuid, ascent.angle, climbedAt, 'ascents'),
+        auroraId: generateJsonImportAuroraId(userId, climbUuid, ascent.angle, climbedAt, 'ascents'),
         auroraSyncedAt: now,
       });
     }
@@ -366,7 +367,7 @@ export async function importJsonExportData(
         createdAt: attempt.created_at ? normalizeTimestamp(attempt.created_at) : now,
         updatedAt: now,
         auroraType: 'bids' as const,
-        auroraId: generateJsonImportAuroraId(climbUuid, attempt.angle, climbedAt, 'bids'),
+        auroraId: generateJsonImportAuroraId(userId, climbUuid, attempt.angle, climbedAt, 'bids'),
         auroraSyncedAt: now,
       });
     }
