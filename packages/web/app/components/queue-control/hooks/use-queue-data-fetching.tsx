@@ -1,11 +1,12 @@
 import { useCallback, useRef, useEffect, useMemo } from 'react';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { PAGE_LIMIT } from '../../board-page/constants';
 import { ClimbQueue } from '../types';
 import { ParsedBoardRouteParameters, SearchRequestPagination, SearchClimbsResult } from '@/app/lib/types';
 import { useOptionalBoardProvider } from '../../board-provider/board-provider-context';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import { SEARCH_CLIMBS, type ClimbSearchResponse } from '@/app/lib/graphql/operations/climb-search';
+import { SEARCH_CLIMBS, SEARCH_CLIMBS_COUNT, type ClimbSearchResponse, type ClimbSearchCountResponse } from '@/app/lib/graphql/operations/climb-search';
+import { hasActiveFilters } from '../../search-drawer/search-summary-utils';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 
 interface UseQueueDataFetchingProps {
@@ -127,7 +128,48 @@ export const useQueueDataFetching = ({
     refetchOnWindowFocus: false,
   });
 
-  const totalSearchResultCount = data?.pages[0]?.totalCount ?? null;
+  // Lazy count query — separate from the main search for performance.
+  // 24hr cache when no filters active (count rarely changes), 5min when filtered.
+  const filtersActive = hasActiveFilters(searchParams);
+  const countInput = useMemo(() => ({
+    boardName: parsedParams.board_name,
+    layoutId: parsedParams.layout_id,
+    sizeId: parsedParams.size_id,
+    setIds: parsedParams.set_ids.join(','),
+    angle: parsedParams.angle,
+    gradeAccuracy: searchParams.gradeAccuracy ? String(searchParams.gradeAccuracy) : undefined,
+    minGrade: searchParams.minGrade || undefined,
+    maxGrade: searchParams.maxGrade || undefined,
+    minAscents: searchParams.minAscents || undefined,
+    name: searchParams.name || undefined,
+    setter: searchParams.settername && searchParams.settername.length > 0 ? searchParams.settername : undefined,
+    onlyTallClimbs: searchParams.onlyTallClimbs || undefined,
+    holdsFilter: searchParams.holdsFilter && Object.keys(searchParams.holdsFilter).length > 0
+      ? Object.fromEntries(
+          Object.entries(searchParams.holdsFilter).map(([key, value]) => [
+            key.replace('hold_', ''),
+            value.state
+          ])
+        )
+      : undefined,
+    hideAttempted: searchParams.hideAttempted || undefined,
+    hideCompleted: searchParams.hideCompleted || undefined,
+    showOnlyAttempted: searchParams.showOnlyAttempted || undefined,
+    showOnlyCompleted: searchParams.showOnlyCompleted || undefined,
+  }), [searchParams, parsedParams]);
+
+  const { data: countData } = useQuery({
+    queryKey: ['climbSearchCount', ...queryKey.slice(1)],
+    queryFn: async () => {
+      const client = createGraphQLHttpClient(wsAuthToken);
+      const result = await client.request<ClimbSearchCountResponse>(SEARCH_CLIMBS_COUNT, { input: countInput });
+      return result.searchClimbs.totalCount;
+    },
+    staleTime: filtersActive ? 5 * 60 * 1000 : 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  const totalSearchResultCount = countData ?? null;
   const hasMoreResults = hasNextPage ?? false;
 
   const climbSearchResults = useMemo(
