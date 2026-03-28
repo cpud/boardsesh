@@ -16,8 +16,14 @@ export async function streamImport(
   });
 
   if (!response.ok) {
-    const errorBody = await response.json();
-    throw new Error(errorBody.error || 'Import failed');
+    let message = 'Import failed';
+    try {
+      const errorBody = await response.json();
+      message = errorBody.error || message;
+    } catch {
+      // Response body isn't valid JSON (e.g. HTML error page)
+    }
+    throw new Error(message);
   }
 
   if (!response.body) {
@@ -38,15 +44,23 @@ export async function streamImport(
 
     for (const line of lines) {
       if (line.trim()) {
-        const event: ImportProgressEvent = JSON.parse(line);
-        onEvent(event);
+        try {
+          const event: ImportProgressEvent = JSON.parse(line);
+          onEvent(event);
+        } catch {
+          console.warn('Failed to parse import stream line:', line);
+        }
       }
     }
   }
 
   // Process any remaining data in buffer
   if (buffer.trim()) {
-    const event: ImportProgressEvent = JSON.parse(buffer);
-    onEvent(event);
+    try {
+      const event: ImportProgressEvent = JSON.parse(buffer);
+      onEvent(event);
+    } catch {
+      console.warn('Failed to parse import stream buffer:', buffer);
+    }
   }
 }

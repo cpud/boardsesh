@@ -50,20 +50,20 @@ interface ImportPreview {
   username: string;
 }
 
-type ImportPhase = 'preview' | 'importing' | 'complete' | 'error';
+export type ImportPhase = 'preview' | 'importing' | 'complete' | 'error';
 
-type ImportStep = 'resolving' | 'dedup' | 'ascents' | 'attempts' | 'circuits' | 'sessions';
+export type ImportStep = 'resolving' | 'dedup' | 'ascents' | 'attempts' | 'circuits' | 'sessions';
 
-interface ImportProgress {
+export interface ImportProgress {
   step: ImportStep;
   message?: string;
   current?: number;
   total?: number;
 }
 
-const STEP_ORDER: ImportStep[] = ['resolving', 'dedup', 'ascents', 'attempts', 'circuits', 'sessions'];
+export const STEP_ORDER: ImportStep[] = ['resolving', 'dedup', 'ascents', 'attempts', 'circuits', 'sessions'];
 
-const STEP_LABELS: Record<ImportStep, string> = {
+export const STEP_LABELS: Record<ImportStep, string> = {
   resolving: 'Resolving climb names',
   dedup: 'Checking for duplicates',
   ascents: 'Importing ascents',
@@ -232,7 +232,7 @@ function BoardCredentialCard({
   );
 }
 
-function ImportProgressSteps({ progress }: { progress: ImportProgress | null }) {
+export function ImportProgressSteps({ progress }: { progress: ImportProgress | null }) {
   const currentStepIndex = progress ? STEP_ORDER.indexOf(progress.step) : -1;
 
   return (
