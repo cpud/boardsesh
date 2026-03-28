@@ -78,7 +78,9 @@ jobs:
           docker run -d \
             --name backend-pr-${PR_NUM} \
             --network ${NETWORK} \
-            -e DATABASE_URL=postgresql://postgres:preview@devdb:5432/main \
+            -e DATABASE_URL=postgresql://postgres:preview@db.localtest.me:5432/main \
+            -e NEON_PROXY_HOST=neon-proxy \
+            -e NEON_PROXY_PORT=4444 \
             -e REDIS_URL=redis://redis:6379 \
             -e PORT=8080 \
             -e BOARDSESH_URL=https://${PR_NUM}.preview.boardsesh.com \
