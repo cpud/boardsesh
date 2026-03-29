@@ -143,18 +143,18 @@ function deterministicUuid(key: string): string {
   ].join('-');
 }
 
-/** Generate a URL-safe slug from a name */
-function slugify(name: string, suffix?: string): string {
-  let slug = name
+/** Generate a URL-safe slug from a name, using the board's deterministic UUID
+ *  as a suffix to guarantee uniqueness across all seeded boards. */
+function slugify(name: string, uuid: string): string {
+  const base = name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 80);
 
-  if (suffix) {
-    slug = `${slug}-${suffix}`;
-  }
-  return slug || 'board';
+  // Use last 8 chars of the deterministic UUID (no hyphens) as suffix
+  const suffix = uuid.replace(/-/g, '').slice(-8);
+  return `${base || 'board'}-${suffix}`;
 }
 
 /**
@@ -251,9 +251,10 @@ function buildKilterRecords(): BoardRecord[] {
       const locationName = locationParts.length > 0 ? locationParts.join(', ') : null;
 
       const sourceKey = `kilter:${gym.gym_uuid}:${wall.wall_uuid}`;
+      const boardUuid = deterministicUuid(sourceKey);
       records.push({
-        uuid: deterministicUuid(sourceKey),
-        slug: slugify(`${gymName}-kilter`, wall.wall_uuid.slice(0, 6)),
+        uuid: boardUuid,
+        slug: slugify(`${gymName}-kilter`, boardUuid),
         boardType: 'kilter',
         layoutId,
         sizeId,
@@ -284,10 +285,11 @@ function buildTensionRecords(): BoardRecord[] {
 
     const gymName = gym.name || `Tension Gym ${gym.id}`;
     const sourceKey = `tension:${gym.id}`;
+    const boardUuid = deterministicUuid(sourceKey);
 
     records.push({
-      uuid: deterministicUuid(sourceKey),
-      slug: slugify(`${gymName}-tension`, String(gym.id)),
+      uuid: boardUuid,
+      slug: slugify(`${gymName}-tension`, boardUuid),
       boardType: 'tension',
       layoutId: config.layoutId,
       sizeId: config.sizeId,
@@ -318,10 +320,11 @@ function buildMoonboardRecords(): BoardRecord[] {
     const gymName = gym.Name || 'MoonBoard Gym';
     // Use name + coords as source key since moonboard has no numeric IDs
     const sourceKey = `moonboard:${gymName}:${gym.Latitude}:${gym.Longitude}`;
+    const boardUuid = deterministicUuid(sourceKey);
 
     records.push({
-      uuid: deterministicUuid(sourceKey),
-      slug: slugify(`${gymName}-moonboard`, createHash('md5').update(sourceKey).digest('hex').slice(0, 6)),
+      uuid: boardUuid,
+      slug: slugify(`${gymName}-moonboard`, boardUuid),
       boardType: 'moonboard',
       layoutId: config.layoutId,
       sizeId: config.sizeId,
