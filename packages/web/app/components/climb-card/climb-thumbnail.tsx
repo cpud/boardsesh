@@ -14,9 +14,10 @@ type ClimbThumbnailProps = {
   maxHeight?: string;
 };
 
-const placeholderStyle = (boardDetails: BoardDetails): React.CSSProperties => ({
+const placeholderStyle = (boardDetails: BoardDetails, maxHeight?: string): React.CSSProperties => ({
   width: '100%',
   aspectRatio: `${boardDetails.boardWidth}/${boardDetails.boardHeight}`,
+  maxHeight: maxHeight ?? '10vh',
   background: 'var(--neutral-200)',
   borderRadius: 4,
 });
@@ -44,7 +45,7 @@ const ClimbThumbnail = ({ boardDetails, currentClimb, enableNavigation = false, 
   }, []);
 
   if (!isVisible) {
-    return <div ref={containerRef} style={placeholderStyle(boardDetails)} />;
+    return <div ref={containerRef} style={placeholderStyle(boardDetails, maxHeight)} />;
   }
 
   if (enableNavigation && currentClimb) {

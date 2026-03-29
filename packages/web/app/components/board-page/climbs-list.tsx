@@ -147,11 +147,11 @@ const ClimbsList = ({
 
   const climbHandlersMap = useMemo(() => {
     const map = new Map<string, () => void>();
-    visibleClimbs.forEach(climb => {
+    climbs.forEach(climb => {
       map.set(climb.uuid, () => handleClimbDoubleClick(climb));
     });
     return map;
-  }, [visibleClimbs, handleClimbDoubleClick]);
+  }, [climbs, handleClimbDoubleClick]);
 
   const resolveBoardDetails = useCallback(
     (climb: Climb): BoardDetails => {
