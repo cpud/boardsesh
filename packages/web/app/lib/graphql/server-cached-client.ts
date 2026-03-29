@@ -1,9 +1,14 @@
 import 'server-only';
+import { createHash } from 'crypto';
 import { unstable_cache } from 'next/cache';
 import { GraphQLClient, RequestDocument, Variables } from 'graphql-request';
 import { sortObjectKeys } from '@/app/lib/cache-utils';
 import { getGraphQLHttpUrl } from './client';
 import type { GroupedNotificationConnection } from '@boardsesh/shared-schema';
+
+function hashToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex').slice(0, 16);
+}
 
 /**
  * Cache durations for climb search queries (in seconds)
@@ -143,8 +148,8 @@ export async function cachedSearchClimbs<T = unknown>(
       showOnlyAttempted: input.showOnlyAttempted,
       showOnlyCompleted: input.showOnlyCompleted,
     })),
-    // Include auth token in cache key so per-user progress filters get their own cache entry
-    ...(authToken ? [authToken] : []),
+    // Hash auth token for per-user cache keying without exposing the raw token in logs
+    ...(authToken ? [`user:${hashToken(authToken)}`] : []),
   ];
 
   const cachedFn = unstable_cache(

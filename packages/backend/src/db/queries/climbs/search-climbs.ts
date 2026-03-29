@@ -98,33 +98,26 @@ export const searchClimbs = async (
       eq(tables.difficultyGrades.boardType, params.board_name),
     );
 
-    const baseQuery = userId && userTicksSubquery
-      ? db
-          .select(selectFields)
-          .from(tables.climbs)
-          .leftJoin(tables.climbStats, and(...filters.getClimbStatsJoinConditions()))
-          .leftJoin(tables.difficultyGrades, difficultyGradesJoinCondition)
-          .leftJoin(userTicksSubquery, eq(userTicksSubquery.climbUuid, tables.climbs.uuid))
-          .where(and(...whereConditions))
-          .orderBy(
-            sortOrder === 'asc' ? sql`${sortColumn} ASC NULLS FIRST` : sql`${sortColumn} DESC NULLS LAST`,
-            desc(tables.climbs.uuid),
-          )
-          .limit(pageSize + 1)
-          .offset(page * pageSize)
-      : db
-          .select(selectFields)
-          .from(tables.climbs)
-          .leftJoin(tables.climbStats, and(...filters.getClimbStatsJoinConditions()))
-          .leftJoin(tables.difficultyGrades, difficultyGradesJoinCondition)
-          .where(and(...whereConditions))
-          .orderBy(
-            sortOrder === 'asc' ? sql`${sortColumn} ASC NULLS FIRST` : sql`${sortColumn} DESC NULLS LAST`,
-            desc(tables.climbs.uuid),
-          )
-          // Fetch one extra row to detect if there are more results (hasMore)
-          .limit(pageSize + 1)
-          .offset(page * pageSize);
+    const orderByClause = sortOrder === 'asc'
+      ? sql`${sortColumn} ASC NULLS FIRST`
+      : sql`${sortColumn} DESC NULLS LAST`;
+
+    // Build base query with common joins, then conditionally add user ticks join.
+    // Drizzle's type system requires separate branches since each leftJoin changes the type.
+    const coreQuery = db
+      .select(selectFields)
+      .from(tables.climbs)
+      .leftJoin(tables.climbStats, and(...filters.getClimbStatsJoinConditions()))
+      .leftJoin(tables.difficultyGrades, difficultyGradesJoinCondition);
+
+    const baseQuery = (userId && userTicksSubquery
+      ? coreQuery.leftJoin(userTicksSubquery, eq(userTicksSubquery.climbUuid, tables.climbs.uuid))
+      : coreQuery
+    )
+      .where(and(...whereConditions))
+      .orderBy(orderByClause, desc(tables.climbs.uuid))
+      .limit(pageSize + 1)
+      .offset(page * pageSize);
 
     const results = await baseQuery;
 
