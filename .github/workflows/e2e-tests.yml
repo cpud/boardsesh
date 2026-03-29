@@ -26,7 +26,7 @@ jobs:
 
     services:
       postgres:
-        image: ghcr.io/marcodejongh/boardsesh-dev-db:latest
+        image: ghcr.io/boardsesh/boardsesh-dev-db:latest
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
@@ -45,7 +45,7 @@ jobs:
           POSTGRES_DB: main
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Point db.localtest.me to neon-proxy service
       run: |

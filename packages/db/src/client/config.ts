@@ -43,13 +43,10 @@ export function configureNeonForEnvironment(): void {
   const connectionStringUrl = new URL(connectionString);
   const isLocalDb = connectionStringUrl.hostname === 'db.localtest.me';
 
-  // Only apply local Neon proxy settings for the local Docker database
+  // Apply Neon proxy settings for local Docker database
   if (isLocalDb) {
-    neonConfig.fetchEndpoint = (host) => {
-      const [protocol, port] = host === 'db.localtest.me' ? ['http', 4444] : ['https', 443];
-      return `${protocol}://${host}:${port}/sql`;
-    };
+    neonConfig.fetchEndpoint = () => `http://${connectionStringUrl.hostname}:4444/sql`;
     neonConfig.useSecureWebSocket = false;
-    neonConfig.wsProxy = (host) => (host === 'db.localtest.me' ? `${host}:4444/v2` : `${host}/v2`);
+    neonConfig.wsProxy = () => `${connectionStringUrl.hostname}:4444/v2`;
   }
 }

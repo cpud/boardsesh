@@ -1,0 +1,161 @@
+name: Branch Deploy
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to deploy'
+        required: true
+        type: string
+
+concurrency:
+  group: branch-deploy-${{ github.event.pull_request.number || github.event.inputs.pr_number }}
+  cancel-in-progress: true
+
+env:
+  PR_NUMBER: ${{ github.event.pull_request.number || github.event.inputs.pr_number }}
+
+jobs:
+  build-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build and push web image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Dockerfile.web
+          push: true
+          tags: ghcr.io/boardsesh/boardsesh-web:pr-${{ env.PR_NUMBER }}
+          build-args: |
+            NEXT_PUBLIC_WS_URL=wss://${{ env.PR_NUMBER }}.ws.preview.boardsesh.com/graphql
+            BASE_URL=https://${{ env.PR_NUMBER }}.preview.boardsesh.com
+          cache-from: |
+            type=gha,scope=web-pr-${{ env.PR_NUMBER }}
+            type=gha,scope=web-main
+          cache-to: type=gha,mode=max,scope=web-pr-${{ env.PR_NUMBER }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Dockerfile.backend
+          push: true
+          tags: ghcr.io/boardsesh/boardsesh-daemon:pr-${{ env.PR_NUMBER }}
+          cache-from: |
+            type=gha,scope=backend-pr-${{ env.PR_NUMBER }}
+            type=gha,scope=backend-main
+          cache-to: type=gha,mode=max,scope=backend-pr-${{ env.PR_NUMBER }}
+
+  deploy:
+    needs: build-images
+    runs-on: [self-hosted, homelab, ephemeral]
+    steps:
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Deploy preview containers
+        env:
+          PR_NUM: ${{ env.PR_NUMBER }}
+          NETWORK: branch-deploys
+          DATABASE_URL: ${{ secrets.BRANCH_DEPLOY_DATABASE_URL }}
+        run: |
+          # Stop/remove old containers
+          docker stop web-pr-${PR_NUM} backend-pr-${PR_NUM} 2>/dev/null || true
+          docker rm web-pr-${PR_NUM} backend-pr-${PR_NUM} 2>/dev/null || true
+
+          # Pull new images
+          docker pull ghcr.io/boardsesh/boardsesh-web:pr-${PR_NUM}
+          docker pull ghcr.io/boardsesh/boardsesh-daemon:pr-${PR_NUM}
+
+          # Start backend
+          docker run -d \
+            --name backend-pr-${PR_NUM} \
+            --network ${NETWORK} \
+            -e "DATABASE_URL=${DATABASE_URL}" \
+            -e REDIS_URL=redis://redis:6379 \
+            -e PORT=8080 \
+            -e BOARDSESH_URL=https://${PR_NUM}.preview.boardsesh.com \
+            -e NEXTAUTH_SECRET=branch-deploy-secret-${PR_NUM} \
+            -e NODE_ENV=production \
+            --label "traefik.enable=true" \
+            --label "traefik.http.routers.backend-pr-${PR_NUM}.rule=Host(\`${PR_NUM}.ws.preview.boardsesh.com\`)" \
+            --label "traefik.http.services.backend-pr-${PR_NUM}.loadbalancer.server.port=8080" \
+            --memory=256m \
+            --restart unless-stopped \
+            ghcr.io/boardsesh/boardsesh-daemon:pr-${PR_NUM}
+
+          # Start web
+          docker run -d \
+            --name web-pr-${PR_NUM} \
+            --network ${NETWORK} \
+            -e "DATABASE_URL=${DATABASE_URL}" \
+            -e NEXTAUTH_SECRET=branch-deploy-secret-${PR_NUM} \
+            -e NEXTAUTH_URL=https://${PR_NUM}.preview.boardsesh.com \
+            -e IRON_SESSION_PASSWORD='{"1":"branch-deploy-session-must-be-32-chars!!"}' \
+            -e VERCEL_ENV=preview \
+            -e NODE_ENV=production \
+            --label "traefik.enable=true" \
+            --label "traefik.http.routers.web-pr-${PR_NUM}.rule=Host(\`${PR_NUM}.preview.boardsesh.com\`)" \
+            --label "traefik.http.services.web-pr-${PR_NUM}.loadbalancer.server.port=3000" \
+            --memory=512m \
+            --restart unless-stopped \
+            ghcr.io/boardsesh/boardsesh-web:pr-${PR_NUM}
+
+      - name: Wait for containers to be healthy
+        env:
+          PR_NUM: ${{ env.PR_NUMBER }}
+        run: |
+          echo "Waiting for containers to start..."
+          sleep 10
+          docker ps --filter "name=web-pr-${PR_NUM}" --filter "name=backend-pr-${PR_NUM}" --format "table {{.Names}}\t{{.Status}}"
+
+  comment:
+    needs: deploy
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Find existing comment
+        uses: peter-evans/find-comment@v4
+        id: fc
+        with:
+          issue-number: ${{ env.PR_NUMBER }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- branch-deploy -->'
+
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v5
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ env.PR_NUMBER }}
+          edit-mode: replace
+          body: |
+            <!-- branch-deploy -->
+            ## 🔄 Branch Deploy Preview
+
+            | Service | URL |
+            |---------|-----|
+            | Web | https://${{ env.PR_NUMBER }}.preview.boardsesh.com |
+            | Backend | https://${{ env.PR_NUMBER }}.ws.preview.boardsesh.com |
+            | Health | https://${{ env.PR_NUMBER }}.ws.preview.boardsesh.com/health |
+
+            **Commit:** ${{ github.sha }}
+            **Updated:** ${{ github.event.pull_request.updated_at || 'manual trigger' }}
