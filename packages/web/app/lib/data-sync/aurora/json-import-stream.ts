@@ -92,36 +92,36 @@ async function sendChunk(
 
     for (const line of lines) {
       if (line.trim()) {
+        let event: ImportProgressEvent;
         try {
-          const event: ImportProgressEvent = JSON.parse(line);
-          if (event.type === 'complete') {
-            result = event.results;
-          } else if (event.type === 'error') {
-            throw new Error(event.error);
-          }
-          // Forward progress events but not complete/error (we aggregate those)
-          if (event.type === 'progress') {
-            onEvent(event);
-          }
-        } catch (e) {
-          if (e instanceof Error && e.message !== 'Import failed') throw e;
+          event = JSON.parse(line);
+        } catch {
           console.warn('Failed to parse import stream line:', line);
+          continue;
+        }
+        if (event.type === 'complete') {
+          result = event.results;
+        } else if (event.type === 'error') {
+          throw new Error(event.error);
+        } else if (event.type === 'progress') {
+          onEvent(event);
         }
       }
     }
   }
 
   if (buffer.trim()) {
+    let event: ImportProgressEvent;
     try {
-      const event: ImportProgressEvent = JSON.parse(buffer);
-      if (event.type === 'complete') {
-        result = event.results;
-      } else if (event.type === 'error') {
-        throw new Error(event.error);
-      }
-    } catch (e) {
-      if (e instanceof Error && e.message !== 'Import failed') throw e;
+      event = JSON.parse(buffer);
+    } catch {
       console.warn('Failed to parse import stream buffer:', buffer);
+      return result;
+    }
+    if (event.type === 'complete') {
+      result = event.results;
+    } else if (event.type === 'error') {
+      throw new Error(event.error);
     }
   }
 

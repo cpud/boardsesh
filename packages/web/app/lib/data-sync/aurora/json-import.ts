@@ -509,18 +509,18 @@ export async function importJsonExportData(
     }
 
     // Step 7: Build inferred sessions for imported ticks (skipped during chunked imports
-    // until the final chunk to avoid rebuilding sessions on every batch)
+    // until the final chunk to avoid rebuilding sessions on every batch).
+    // Always run on the final chunk — earlier chunks may have imported ticks even if
+    // this chunk only contains circuits.
     if (!options?.skipSessionBuild) {
       onProgress?.({ type: 'progress', step: 'sessions', message: 'Building sessions...' });
-      if (result.ascents.imported > 0 || result.attempts.imported > 0) {
-        try {
-          const assigned = await buildInferredSessionsForUser(userId);
-          if (assigned > 0) {
-            console.log(`Built inferred sessions: assigned ${assigned} ticks for user ${userId}`);
-          }
-        } catch (error) {
-          console.error('Error building inferred sessions after JSON import:', error);
+      try {
+        const assigned = await buildInferredSessionsForUser(userId);
+        if (assigned > 0) {
+          console.log(`Built inferred sessions: assigned ${assigned} ticks for user ${userId}`);
         }
+      } catch (error) {
+        console.error('Error building inferred sessions after JSON import:', error);
       }
     }
 
