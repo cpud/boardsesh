@@ -82,9 +82,9 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
       if (queryString) {
         url = `${url}?${queryString}`;
       }
-      router.push(url);
+      window.history.pushState(null, '', url);
     },
-    [boardDetails, angle, router, searchParams],
+    [boardDetails, angle, searchParams],
   );
 
   const handleNext = useCallback(() => {
