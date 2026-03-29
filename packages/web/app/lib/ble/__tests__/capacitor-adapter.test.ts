@@ -12,9 +12,9 @@ const mockBlePlugin = {
 };
 
 // Store original window.Capacitor so we can clean up
-const originalCapacitor = (globalThis.window as Record<string, unknown>)?.Capacitor;
+const originalCapacitor = window.Capacitor;
 
-Object.defineProperty(globalThis.window ?? globalThis, 'Capacitor', {
+Object.defineProperty(window, 'Capacitor', {
   value: {
     isNativePlatform: () => true,
     getPlatform: () => 'ios',
@@ -28,9 +28,9 @@ Object.defineProperty(globalThis.window ?? globalThis, 'Capacitor', {
 
 afterAll(() => {
   if (originalCapacitor === undefined) {
-    delete (globalThis.window as Record<string, unknown>).Capacitor;
+    delete (window as Window & { Capacitor?: unknown }).Capacitor;
   } else {
-    (globalThis.window as Record<string, unknown>).Capacitor = originalCapacitor;
+    window.Capacitor = originalCapacitor;
   }
 });
 
