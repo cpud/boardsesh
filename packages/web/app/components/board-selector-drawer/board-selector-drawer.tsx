@@ -22,6 +22,7 @@ import { constructClimbListWithSlugs, constructBoardSlugListUrl } from '@/app/li
 import { loadSavedBoards, saveBoardConfig, StoredBoardConfig } from '@/app/lib/saved-boards-db';
 import { setLastUsedBoard } from '@/app/lib/last-used-board-db';
 import { useMyBoards } from '@/app/hooks/use-my-boards';
+import NearbyBoardsSection from './nearby-boards-section';
 
 interface BoardSelectorDrawerProps {
   open: boolean;
@@ -295,6 +296,12 @@ export default function BoardSelectorDrawer({
             ))}
           </BoardScrollSection>
         )}
+
+        {/* Found Nearby (GPS-based) */}
+        <NearbyBoardsSection
+          open={open}
+          onBoardSelect={handleServerBoardSelect}
+        />
 
         {/* Recently Used (local configs) */}
         {hasSavedConfigs && (
