@@ -58,7 +58,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 },
+      );
+    }
 
     // Validate input
     const validationResult = setPasswordSchema.safeParse(body);
@@ -96,7 +104,9 @@ export async function POST(request: NextRequest) {
           passwordHash,
         });
 
-        // Mark email as verified if not already (OAuth providers verify email)
+        // OAuth providers verify the email before allowing sign-in, so if this
+        // user authenticated via OAuth and is now adding a password, their email
+        // is already verified. Set emailVerified only if currently null.
         await tx
           .update(schema.users)
           .set({ emailVerified: new Date(), updatedAt: new Date() })

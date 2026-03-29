@@ -143,6 +143,7 @@ export default function SetPasswordSection({
           <TextField
             label="Password"
             type="password"
+            autoComplete="new-password"
             placeholder="Password (min 8 characters)"
             variant="outlined"
             size="small"
@@ -168,6 +169,7 @@ export default function SetPasswordSection({
           <TextField
             label="Confirm Password"
             type="password"
+            autoComplete="new-password"
             placeholder="Confirm password"
             variant="outlined"
             size="small"

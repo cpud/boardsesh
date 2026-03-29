@@ -196,6 +196,22 @@ describe('POST /api/internal/set-password', () => {
     expect(response.status).toBe(500);
   });
 
+  it('returns 400 when request body is malformed JSON', async () => {
+    mockGetServerSession.mockResolvedValue({ user: { id: 'user-1' } });
+
+    const request = new NextRequest('http://localhost/api/internal/set-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: 'not valid json{{{',
+    });
+
+    const response = await POST(request);
+    expect(response.status).toBe(400);
+
+    const data = await response.json();
+    expect(data.error).toBe('Invalid request body');
+  });
+
   it('returns 400 when password exceeds max length', async () => {
     mockGetServerSession.mockResolvedValue({ user: { id: 'user-1' } });
 

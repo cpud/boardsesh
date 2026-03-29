@@ -240,6 +240,45 @@ describe('SetPasswordSection', () => {
       });
     });
 
+    it('disables submit button while saving', async () => {
+      let resolveFetch: (value: unknown) => void;
+      mockFetch.mockReturnValue(
+        new Promise((resolve) => {
+          resolveFetch = resolve;
+        }),
+      );
+
+      render(
+        <SetPasswordSection
+          hasPassword={false}
+          userEmail="user@example.com"
+          linkedProviders={[]}
+          onPasswordSet={vi.fn()}
+        />,
+      );
+
+      fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'testpass123' } });
+      fireEvent.change(screen.getByLabelText('Confirm Password'), { target: { value: 'testpass123' } });
+      fireEvent.click(screen.getByText('Set Password'));
+
+      // Button should be disabled while the request is in-flight
+      await waitFor(() => {
+        const button = screen.getByRole('button', { name: /Set Password/i });
+        expect(button.hasAttribute('disabled')).toBe(true);
+      });
+
+      // Resolve the fetch to clean up
+      resolveFetch!({
+        ok: true,
+        json: () => Promise.resolve({ message: 'Password set successfully.' }),
+      });
+
+      await waitFor(() => {
+        const button = screen.getByRole('button', { name: /Set Password/i });
+        expect(button.hasAttribute('disabled')).toBe(false);
+      });
+    });
+
     it('does not show provider alert when no providers linked', () => {
       render(
         <SetPasswordSection
