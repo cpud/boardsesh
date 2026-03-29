@@ -10,6 +10,7 @@ import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 
 interface UseQueueDataFetchingProps {
   searchParams: SearchRequestPagination;
+  countSearchParams: SearchRequestPagination;
   queue: ClimbQueue;
   parsedParams: ParsedBoardRouteParameters;
   hasDoneFirstFetch: boolean;
@@ -18,6 +19,7 @@ interface UseQueueDataFetchingProps {
 
 export const useQueueDataFetching = ({
   searchParams,
+  countSearchParams,
   queue,
   parsedParams,
   hasDoneFirstFetch,
@@ -120,17 +122,51 @@ export const useQueueDataFetching = ({
     refetchOnWindowFocus: false,
   });
 
-  // Lazy count query — same filters as search, fetched separately.
-  // Deferred until search results arrive so the two requests don't compete.
-  // 24hr staleTime since counts don't change frequently enough to matter.
+  // Count query uses instant (un-debounced) params so the count updates
+  // immediately as the user tweaks filters, without waiting for the search debounce.
+  const countInput = useMemo(() => ({
+    boardName: parsedParams.board_name,
+    layoutId: parsedParams.layout_id,
+    sizeId: parsedParams.size_id,
+    setIds: parsedParams.set_ids.join(','),
+    angle: parsedParams.angle,
+    gradeAccuracy: countSearchParams.gradeAccuracy ? String(countSearchParams.gradeAccuracy) : undefined,
+    minGrade: countSearchParams.minGrade || undefined,
+    maxGrade: countSearchParams.maxGrade || undefined,
+    minAscents: countSearchParams.minAscents || undefined,
+    sortBy: countSearchParams.sortBy || 'ascents',
+    sortOrder: countSearchParams.sortOrder || 'desc',
+    name: countSearchParams.name || undefined,
+    setter: countSearchParams.settername && countSearchParams.settername.length > 0 ? countSearchParams.settername : undefined,
+    onlyTallClimbs: countSearchParams.onlyTallClimbs || undefined,
+    holdsFilter: countSearchParams.holdsFilter && Object.keys(countSearchParams.holdsFilter).length > 0
+      ? Object.fromEntries(
+          Object.entries(countSearchParams.holdsFilter).map(([key, value]) => [
+            key.replace('hold_', ''),
+            value.state
+          ])
+        )
+      : undefined,
+    hideAttempted: countSearchParams.hideAttempted || undefined,
+    hideCompleted: countSearchParams.hideCompleted || undefined,
+    showOnlyAttempted: countSearchParams.showOnlyAttempted || undefined,
+    showOnlyCompleted: countSearchParams.showOnlyCompleted || undefined,
+  }), [countSearchParams, parsedParams]);
+
+  const countQueryKey = useMemo(() => {
+    const { page: _, ...paramsWithoutPage } = countSearchParams;
+    return ['climbSearchCount', parsedParams.board_name, parsedParams.layout_id,
+      parsedParams.size_id, parsedParams.set_ids.join(','), parsedParams.angle,
+      JSON.stringify(paramsWithoutPage)] as const;
+  }, [countSearchParams, parsedParams]);
+
   const { data: countData } = useQuery({
-    queryKey: ['climbSearchCount', ...queryKey.slice(1)],
+    queryKey: countQueryKey,
     queryFn: async () => {
       const client = createGraphQLHttpClient(wsAuthToken);
-      const result = await client.request<ClimbSearchCountResponse>(SEARCH_CLIMBS_COUNT, { input: baseInput });
+      const result = await client.request<ClimbSearchCountResponse>(SEARCH_CLIMBS_COUNT, { input: countInput });
       return result.searchClimbs.totalCount;
     },
-    enabled: !!data,
     staleTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
