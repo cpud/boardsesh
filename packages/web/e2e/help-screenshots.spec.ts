@@ -174,7 +174,8 @@ test.describe('Help Page Screenshots - Authenticated', () => {
     await page.locator('[data-testid="queue-control-bar"]').getByLabel('Party Mode').click();
     await page.locator('[data-swipeable-drawer="true"]:visible').first().waitFor({ timeout: 10000 });
 
-    // Start a party session
+    // Switch to Start Session tab and start a party session
+    await page.getByRole('tab', { name: 'Start Session' }).click();
     await page.getByRole('button', { name: 'Start Party Mode' }).click();
 
     // Wait for session to be active - WebSocket connection needs time to establish

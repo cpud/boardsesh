@@ -132,8 +132,8 @@ const helpSections = [
               <Typography variant="body2" component="span" fontWeight={600}>To start a session:</Typography>
             </Typography>
             <ol>
-              <li>Tap the group icon in the queue bar at the bottom</li>
-              <li>Sign in if not already logged in</li>
+              <li>Tap the lightbulb icon in the queue bar at the bottom</li>
+              <li>Go to the &quot;Start Session&quot; tab and sign in if not already logged in</li>
               <li>Click &quot;Start Party Mode&quot; to create a new session</li>
               <li>Share the session with friends using QR code or link</li>
             </ol>
@@ -371,7 +371,7 @@ const helpSections = [
               <Typography variant="body2" component="span" fontWeight={600}>To connect:</Typography>
             </Typography>
             <ol>
-              <li>Tap the group icon in the queue bar, then go to the &quot;Connect to Board&quot; tab</li>
+              <li>Tap the lightbulb icon in the queue bar</li>
               <li>Select your board from the device list</li>
               <li>Once connected, LEDs automatically show the current climb</li>
             </ol>
