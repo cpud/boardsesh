@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import MuiButton from '@mui/material/Button';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { track } from '@vercel/analytics';
@@ -43,23 +43,26 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
     : !!displayClimb?.mirrored;
 
   // Sync queue state with URL on browser back/forward navigation.
-  // pushState doesn't trigger Next.js navigation, so we need to manually
-  // update the current climb when the user presses back/forward.
+  // Uses refs to avoid re-subscribing the listener on every queue change.
+  const queueRef = useRef(queue);
+  queueRef.current = queue;
+  const setCurrentClimbRef = useRef(setCurrentClimbQueueItem);
+  setCurrentClimbRef.current = setCurrentClimbQueueItem;
+
   useEffect(() => {
     const handlePopState = () => {
       const pathSegments = window.location.pathname.split('/');
-      // The climb UUID is the last segment in /board/layout/size/sets/angle/play/[climb_uuid]
       const lastSegment = pathSegments[pathSegments.length - 1];
       if (!lastSegment) return;
       const uuid = extractUuidFromSlug(lastSegment);
-      const item = queue.find(i => i.climb.uuid === uuid);
+      const item = queueRef.current.find(i => i.climb.uuid === uuid);
       if (item) {
-        setCurrentClimbQueueItem(item);
+        setCurrentClimbRef.current(item);
       }
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [queue, setCurrentClimbQueueItem]);
+  }, []);
 
   const getBackToListUrl = useCallback(() => {
     const { board_name, layout_name, size_name, size_description, set_names } = boardDetails;
