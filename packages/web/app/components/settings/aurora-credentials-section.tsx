@@ -36,18 +36,12 @@ import type { AuroraCredentialStatus } from '@/app/api/internal/aurora-credentia
 import type { UnsyncedCounts } from '@/app/api/internal/aurora-credentials/unsynced/route';
 import type { ImportResult } from '@/app/lib/data-sync/aurora/json-import';
 import { streamImport } from '@/app/lib/data-sync/aurora/json-import-stream';
+import { parseAuroraExport, type AuroraExportPreview, type StrippedExportData } from '@/app/lib/data-sync/aurora/parse-aurora-export';
 import styles from './aurora-credentials-section.module.css';
 
 interface BoardUnsyncedCounts {
   ascents: number;
   climbs: number;
-}
-
-export interface ImportPreview {
-  ascents: number;
-  attempts: number;
-  circuits: number;
-  username: string;
 }
 
 export type ImportPhase = 'preview' | 'importing' | 'complete' | 'error';
@@ -293,8 +287,8 @@ export default function AuroraCredentialsSection() {
   // Import state
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importingBoard, setImportingBoard] = useState<'kilter' | 'tension' | null>(null);
-  const [importPreview, setImportPreview] = useState<ImportPreview | null>(null);
-  const [importRawData, setImportRawData] = useState<unknown>(null);
+  const [importPreview, setAuroraExportPreview] = useState<AuroraExportPreview | null>(null);
+  const [importRawData, setImportRawData] = useState<StrippedExportData | null>(null);
   const [importPhase, setImportPhase] = useState<ImportPhase | null>(null);
   const [importProgress, setImportProgress] = useState<ImportProgress | null>(null);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
@@ -400,7 +394,7 @@ export default function AuroraCredentialsSection() {
   const resetImportState = () => {
     setImportPhase(null);
     setImportProgress(null);
-    setImportPreview(null);
+    setAuroraExportPreview(null);
     setImportRawData(null);
     setImportingBoard(null);
     setImportResult(null);
@@ -416,10 +410,10 @@ export default function AuroraCredentialsSection() {
     const file = event.target.files?.[0];
     if (!file || !importingBoard) return;
 
-    // Guard against very large files (10MB limit)
-    const maxSizeBytes = 10 * 1024 * 1024;
+    // Guard against very large files (200MB limit - exports can be large due to climb data)
+    const maxSizeBytes = 200 * 1024 * 1024;
     if (file.size > maxSizeBytes) {
-      showMessage('File is too large (max 10MB). Please check you selected the correct file.', 'error');
+      showMessage('File is too large (max 200MB). Please check you selected the correct file.', 'error');
       setImportingBoard(null);
       event.target.value = '';
       return;
@@ -429,41 +423,20 @@ export default function AuroraCredentialsSection() {
     reader.onload = (e) => {
       try {
         const json = JSON.parse(e.target?.result as string);
+        const parsed = parseAuroraExport(json, importingBoard);
 
-        // Quick validation
-        if (!json.user?.username) {
-          showMessage('Invalid file: missing user data. Please select an Aurora JSON export file.', 'error');
-          setImportingBoard(null);
-          return;
+        if (parsed.boardWarning) {
+          showMessage(parsed.boardWarning, 'warning');
         }
 
-        // Board type validation: check if the export contains climbs with layout info
-        // that doesn't match the selected board type
-        if (Array.isArray(json.climbs) && json.climbs.length > 0) {
-          const layout = json.climbs[0]?.layout?.toLowerCase() ?? '';
-          const selectedBrd = importingBoard;
-          const layoutMatchesBoard =
-            (selectedBrd === 'kilter' && layout.includes('kilter')) ||
-            (selectedBrd === 'tension' && layout.includes('tension'));
-
-          if (!layoutMatchesBoard && layout) {
-            showMessage(
-              `Warning: This export appears to be from "${json.climbs[0].layout}" but you're importing to ${selectedBrd.charAt(0).toUpperCase() + selectedBrd.slice(1)}. Climbs may not match.`,
-              'warning',
-            );
-          }
-        }
-
-        setImportRawData(json);
-        setImportPreview({
-          ascents: Array.isArray(json.ascents) ? json.ascents.length : 0,
-          attempts: Array.isArray(json.attempts) ? json.attempts.length : 0,
-          circuits: Array.isArray(json.circuits) ? json.circuits.length : 0,
-          username: json.user.username,
-        });
+        setImportRawData(parsed.data);
+        setAuroraExportPreview(parsed.preview);
         setImportPhase('preview');
-      } catch {
-        showMessage('Failed to parse JSON file. Please check the file format.', 'error');
+      } catch (err) {
+        showMessage(
+          err instanceof Error ? err.message : 'Failed to parse JSON file. Please check the file format.',
+          'error',
+        );
         setImportingBoard(null);
       }
     };
@@ -482,7 +455,7 @@ export default function AuroraCredentialsSection() {
 
     setImportPhase('importing');
     setImportProgress(null);
-    setImportPreview(null);
+    setAuroraExportPreview(null);
     receivedCompleteRef.current = false;
 
     try {

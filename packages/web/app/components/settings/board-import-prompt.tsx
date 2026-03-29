@@ -24,8 +24,8 @@ import {
   ImportProgressSteps,
   type ImportPhase,
   type ImportProgress,
-  type ImportPreview,
 } from './aurora-credentials-section';
+import { parseAuroraExport, type AuroraExportPreview, type StrippedExportData } from '@/app/lib/data-sync/aurora/parse-aurora-export';
 import styles from './aurora-credentials-section.module.css';
 
 interface BoardImportPromptProps {
@@ -46,8 +46,8 @@ export default function BoardImportPrompt({ boardType }: BoardImportPromptProps)
 
   // Import state
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [importPreview, setImportPreview] = useState<ImportPreview | null>(null);
-  const [importRawData, setImportRawData] = useState<Record<string, unknown> | null>(null);
+  const [importPreview, setImportPreview] = useState<AuroraExportPreview | null>(null);
+  const [importRawData, setImportRawData] = useState<StrippedExportData | null>(null);
   const [importPhase, setImportPhase] = useState<ImportPhase | null>(null);
   const [importProgress, setImportProgress] = useState<ImportProgress | null>(null);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
@@ -158,9 +158,9 @@ export default function BoardImportPrompt({ boardType }: BoardImportPromptProps)
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const maxSizeBytes = 10 * 1024 * 1024;
+    const maxSizeBytes = 200 * 1024 * 1024;
     if (file.size > maxSizeBytes) {
-      showMessage('File is too large (max 10MB). Please check you selected the correct file.', 'error');
+      showMessage('File is too large (max 200MB). Please check you selected the correct file.', 'error');
       event.target.value = '';
       return;
     }
@@ -169,36 +169,20 @@ export default function BoardImportPrompt({ boardType }: BoardImportPromptProps)
     reader.onload = (e) => {
       try {
         const json = JSON.parse(e.target?.result as string);
+        const parsed = parseAuroraExport(json, boardType);
 
-        if (!json.user?.username) {
-          showMessage('Invalid file: missing user data. Please select an Aurora JSON export file.', 'error');
-          return;
+        if (parsed.boardWarning) {
+          showMessage(parsed.boardWarning, 'warning');
         }
 
-        if (Array.isArray(json.climbs) && json.climbs.length > 0) {
-          const layout = json.climbs[0]?.layout?.toLowerCase() ?? '';
-          const layoutMatchesBoard =
-            (boardType === 'kilter' && layout.includes('kilter')) ||
-            (boardType === 'tension' && layout.includes('tension'));
-
-          if (!layoutMatchesBoard && layout) {
-            showMessage(
-              `Warning: This export appears to be from "${json.climbs[0].layout}" but you're importing to ${boardName}. Climbs may not match.`,
-              'warning',
-            );
-          }
-        }
-
-        setImportRawData(json);
-        setImportPreview({
-          ascents: Array.isArray(json.ascents) ? json.ascents.length : 0,
-          attempts: Array.isArray(json.attempts) ? json.attempts.length : 0,
-          circuits: Array.isArray(json.circuits) ? json.circuits.length : 0,
-          username: json.user.username,
-        });
+        setImportRawData(parsed.data);
+        setImportPreview(parsed.preview);
         setImportPhase('preview');
-      } catch {
-        showMessage('Failed to parse JSON file. Please check the file format.', 'error');
+      } catch (err) {
+        showMessage(
+          err instanceof Error ? err.message : 'Failed to parse JSON file. Please check the file format.',
+          'error',
+        );
       }
     };
     reader.onerror = () => {
