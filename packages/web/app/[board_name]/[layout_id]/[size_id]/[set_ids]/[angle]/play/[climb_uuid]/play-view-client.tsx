@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import MuiButton from '@mui/material/Button';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { track } from '@vercel/analytics';
@@ -9,7 +9,7 @@ import { useQueueContext } from '@/app/components/graphql-queue';
 import SwipeBoardCarousel from '@/app/components/board-renderer/swipe-board-carousel';
 import ClimbTitle from '@/app/components/climb-card/climb-title';
 import { AscentStatus } from '@/app/components/climb-card/ascent-status';
-import { constructClimbListWithSlugs, constructPlayUrlWithSlugs } from '@/app/lib/url-utils';
+import { constructClimbListWithSlugs, constructPlayUrlWithSlugs, extractUuidFromSlug } from '@/app/lib/url-utils';
 import { themeTokens } from '@/app/theme/theme-config';
 import { EmptyState } from '@/app/components/ui/empty-state';
 import PlayViewBetaSlider from '@/app/components/play-view/play-view-beta-slider';
@@ -26,6 +26,7 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
   const router = useRouter();
   const searchParams = useSearchParams();
   const {
+    queue,
     currentClimb,
     setCurrentClimbQueueItem,
     getNextClimbQueueItem,
@@ -40,6 +41,25 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
   const isMirrored = currentClimb?.uuid === displayClimb?.uuid
     ? !!currentClimb?.mirrored
     : !!displayClimb?.mirrored;
+
+  // Sync queue state with URL on browser back/forward navigation.
+  // pushState doesn't trigger Next.js navigation, so we need to manually
+  // update the current climb when the user presses back/forward.
+  useEffect(() => {
+    const handlePopState = () => {
+      const pathSegments = window.location.pathname.split('/');
+      // The climb UUID is the last segment in /board/layout/size/sets/angle/play/[climb_uuid]
+      const lastSegment = pathSegments[pathSegments.length - 1];
+      if (!lastSegment) return;
+      const uuid = extractUuidFromSlug(lastSegment);
+      const item = queue.find(i => i.climb.uuid === uuid);
+      if (item) {
+        setCurrentClimbQueueItem(item);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [queue, setCurrentClimbQueueItem]);
 
   const getBackToListUrl = useCallback(() => {
     const { board_name, layout_name, size_name, size_description, set_names } = boardDetails;
