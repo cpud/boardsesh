@@ -121,6 +121,7 @@ export const useQueueDataFetching = ({
   });
 
   // Lazy count query — same filters as search, fetched separately.
+  // Deferred until search results arrive so the two requests don't compete.
   // 24hr staleTime since counts don't change frequently enough to matter.
   const { data: countData } = useQuery({
     queryKey: ['climbSearchCount', ...queryKey.slice(1)],
@@ -129,6 +130,7 @@ export const useQueueDataFetching = ({
       const result = await client.request<ClimbSearchCountResponse>(SEARCH_CLIMBS_COUNT, { input: baseInput });
       return result.searchClimbs.totalCount;
     },
+    enabled: !!data,
     staleTime: 24 * 60 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
