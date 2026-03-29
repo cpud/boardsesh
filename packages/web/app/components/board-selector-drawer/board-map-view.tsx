@@ -44,16 +44,61 @@ function MapContent({
   const markersRef = useRef<LeafletLayerGroup | null>(null);
   const leafletRef = useRef<typeof import('leaflet') | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  // Keep a stable reference to onBoardSelect for use in marker popups
   const onBoardSelectRef = useRef(onBoardSelect);
   onBoardSelectRef.current = onBoardSelect;
+  // Keep latest boards in a ref so the map init callback can access them
+  const boardsRef = useRef(boards);
+  boardsRef.current = boards;
+
+  const updateMarkers = useCallback((boardList: UserBoard[]) => {
+    const L = leafletRef.current;
+    const markerLayer = markersRef.current;
+    if (!L || !markerLayer) return;
+
+    markerLayer.clearLayers();
+
+    for (const board of boardList) {
+      if (board.latitude == null || board.longitude == null) continue;
+
+      const color = BOARD_TYPE_COLORS[board.boardType] || '#666';
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="width:12px;height:12px;background:${color};border:2px solid #fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`,
+        iconSize: [12, 12],
+        iconAnchor: [6, 6],
+      });
+
+      const typeLabel = BOARD_TYPE_LABELS[board.boardType] || board.boardType;
+      const distanceStr = board.distanceMeters != null ? ` · ${formatDistance(board.distanceMeters)}` : '';
+
+      const marker = L.marker([board.latitude, board.longitude], { icon });
+
+      const popupContent = document.createElement('div');
+      popupContent.style.minWidth = '160px';
+
+      const info = document.createElement('div');
+      info.innerHTML = `
+        <div style="font-weight:600;font-size:13px;margin-bottom:4px;">${board.name}</div>
+        <div style="font-size:12px;color:#666;margin-bottom:8px;">${typeLabel} · ${board.angle}°${distanceStr}</div>
+      `;
+      popupContent.appendChild(info);
+
+      const selectBtn = document.createElement('button');
+      selectBtn.textContent = 'Select Board';
+      selectBtn.style.cssText = 'width:100%;padding:6px 12px;background:#8C4A52;color:#fff;border:none;border-radius:4px;font-size:13px;font-weight:500;cursor:pointer;';
+      selectBtn.addEventListener('click', () => onBoardSelectRef.current(board));
+      popupContent.appendChild(selectBtn);
+
+      marker.bindPopup(popupContent);
+      marker.addTo(markerLayer);
+    }
+  }, []);
 
   // Initialize the map once
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Guard against React strict mode double-mount: if the container
-    // already has a Leaflet map, remove it first.
+    // Guard against React strict mode double-mount
     if (mapRef.current) {
       mapRef.current.remove();
       mapRef.current = null;
@@ -101,6 +146,9 @@ function MapContent({
       leafletRef.current = L;
       markersRef.current = L.layerGroup().addTo(map);
       mapRef.current = map;
+
+      // Add any boards that arrived before the map finished initializing
+      updateMarkers(boardsRef.current);
     });
 
     return () => {
@@ -116,48 +164,8 @@ function MapContent({
 
   // Update board markers whenever boards change
   useEffect(() => {
-    const L = leafletRef.current;
-    const markerLayer = markersRef.current;
-    if (!L || !markerLayer) return;
-
-    markerLayer.clearLayers();
-
-    for (const board of boards) {
-      if (board.latitude == null || board.longitude == null) continue;
-
-      const color = BOARD_TYPE_COLORS[board.boardType] || '#666';
-      const icon = L.divIcon({
-        className: '',
-        html: `<div style="width:12px;height:12px;background:${color};border:2px solid #fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`,
-        iconSize: [12, 12],
-        iconAnchor: [6, 6],
-      });
-
-      const typeLabel = BOARD_TYPE_LABELS[board.boardType] || board.boardType;
-      const distanceStr = board.distanceMeters != null ? ` · ${formatDistance(board.distanceMeters)}` : '';
-
-      const marker = L.marker([board.latitude, board.longitude], { icon });
-
-      const popupContent = document.createElement('div');
-      popupContent.style.minWidth = '160px';
-
-      const info = document.createElement('div');
-      info.innerHTML = `
-        <div style="font-weight:600;font-size:13px;margin-bottom:4px;">${board.name}</div>
-        <div style="font-size:12px;color:#666;margin-bottom:8px;">${typeLabel} · ${board.angle}°${distanceStr}</div>
-      `;
-      popupContent.appendChild(info);
-
-      const selectBtn = document.createElement('button');
-      selectBtn.textContent = 'Select Board';
-      selectBtn.style.cssText = 'width:100%;padding:6px 12px;background:#8C4A52;color:#fff;border:none;border-radius:4px;font-size:13px;font-weight:500;cursor:pointer;';
-      selectBtn.addEventListener('click', () => onBoardSelectRef.current(board));
-      popupContent.appendChild(selectBtn);
-
-      marker.bindPopup(popupContent);
-      marker.addTo(markerLayer);
-    }
-  }, [boards]);
+    updateMarkers(boards);
+  }, [boards, updateMarkers]);
 
   // Fly to user location when it becomes available
   useEffect(() => {

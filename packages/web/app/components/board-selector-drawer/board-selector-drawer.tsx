@@ -303,12 +303,6 @@ export default function BoardSelectorDrawer({
           </BoardScrollSection>
         )}
 
-        {/* Found Nearby (GPS-based) */}
-        <NearbyBoardsSection
-          open={open}
-          onBoardSelect={handleServerBoardSelect}
-        />
-
         {/* Recently Used (local configs) */}
         {hasSavedConfigs && (
           <BoardScrollSection title="Recently Used">
@@ -325,6 +319,12 @@ export default function BoardSelectorDrawer({
             ))}
           </BoardScrollSection>
         )}
+
+        {/* Found Nearby (GPS-based) */}
+        <NearbyBoardsSection
+          open={open}
+          onBoardSelect={handleServerBoardSelect}
+        />
 
         {/* Empty state */}
         {isEmpty && (
