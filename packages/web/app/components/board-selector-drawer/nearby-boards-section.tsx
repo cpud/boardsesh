@@ -20,7 +20,7 @@ export default function NearbyBoardsSection({
   open,
   onBoardSelect,
 }: NearbyBoardsSectionProps) {
-  const { boards, isLoading, permissionState, requestPermission } = useNearbyBoards({
+  const { boards, isLoading, permissionState, requestPermission, error } = useNearbyBoards({
     enabled: open,
     radiusKm: 5,
     limit: 10,
@@ -55,7 +55,7 @@ export default function NearbyBoardsSection({
             sx={{ fontSize: 32, color: themeTokens.neutral[400] }}
           />
           <Typography variant="body2" color="text.secondary">
-            Enable location to find boards nearby
+            {error || 'Enable location to find boards nearby'}
           </Typography>
           <Button
             variant="outlined"
@@ -63,7 +63,7 @@ export default function NearbyBoardsSection({
             onClick={requestPermission}
             startIcon={<LocationOnOutlined />}
           >
-            Enable Location
+            {error ? 'Try Again' : 'Enable Location'}
           </Button>
         </Box>
       </BoardScrollSection>
