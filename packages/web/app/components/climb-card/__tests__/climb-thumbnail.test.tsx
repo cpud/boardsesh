@@ -1,7 +1,29 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import type { BoardDetails, Climb } from '@/app/lib/types';
+
+// Mock IntersectionObserver so the lazy-load gate immediately fires
+beforeEach(() => {
+  vi.stubGlobal(
+    'IntersectionObserver',
+    class {
+      private cb: IntersectionObserverCallback;
+      constructor(cb: IntersectionObserverCallback) {
+        this.cb = cb;
+      }
+      observe() {
+        // Trigger immediately with isIntersecting: true
+        this.cb(
+          [{ isIntersecting: true } as IntersectionObserverEntry],
+          this as unknown as IntersectionObserver,
+        );
+      }
+      disconnect() {}
+      unobserve() {}
+    },
+  );
+});
 
 let mockPathname = '/b/moonrise-gym/40/list';
 
