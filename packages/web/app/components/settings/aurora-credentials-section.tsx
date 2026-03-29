@@ -43,7 +43,7 @@ interface BoardUnsyncedCounts {
   climbs: number;
 }
 
-interface ImportPreview {
+export interface ImportPreview {
   ascents: number;
   attempts: number;
   circuits: number;
@@ -72,7 +72,7 @@ export const STEP_LABELS: Record<ImportStep, string> = {
   sessions: 'Building sessions',
 };
 
-interface BoardCredentialCardProps {
+export interface BoardCredentialCardProps {
   boardType: 'kilter' | 'tension';
   credential: AuroraCredentialStatus | null;
   unsyncedCounts: BoardUnsyncedCounts;
@@ -83,7 +83,7 @@ interface BoardCredentialCardProps {
   isImporting: boolean;
 }
 
-function BoardCredentialCard({
+export function BoardCredentialCard({
   boardType,
   credential,
   unsyncedCounts,
