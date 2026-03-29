@@ -18,7 +18,6 @@ export function useWakeLock(enabled: boolean) {
   const [isSupported, setIsSupported] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
-  const usingCapacitorRef = useRef(false);
 
   // Check if wake lock is supported (web or native)
   useEffect(() => {
@@ -26,7 +25,6 @@ export function useWakeLock(enabled: boolean) {
       const plugin = window.Capacitor?.Plugins?.KeepAwake;
       if (plugin) {
         plugin.isSupported().then(({ isSupported: supported }) => {
-          usingCapacitorRef.current = supported;
           setIsSupported(supported);
         }).catch(() => setIsSupported(false));
         return;
@@ -37,7 +35,7 @@ export function useWakeLock(enabled: boolean) {
 
   // Request wake lock (native or web)
   const requestWakeLock = useCallback(async () => {
-    if (usingCapacitorRef.current) {
+    if (isNativeApp()) {
       try {
         const plugin = window.Capacitor?.Plugins?.KeepAwake;
         if (plugin) {
@@ -75,7 +73,7 @@ export function useWakeLock(enabled: boolean) {
 
   // Release wake lock (native or web)
   const releaseWakeLock = useCallback(async () => {
-    if (usingCapacitorRef.current) {
+    if (isNativeApp()) {
       try {
         const plugin = window.Capacitor?.Plugins?.KeepAwake;
         if (plugin) {
