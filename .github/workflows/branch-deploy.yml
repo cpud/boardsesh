@@ -64,7 +64,8 @@ jobs:
           cache-to: type=gha,mode=max,scope=backend-pr-${{ env.PR_NUMBER }}
 
   deploy:
-    needs: build-images
+    needs: [build-images, create-deployment]
+    if: always() && needs.build-images.result == 'success' && (needs.create-deployment.result == 'success' || needs.create-deployment.result == 'skipped')
     runs-on: [self-hosted, homelab, ephemeral]
     steps:
       - name: Log in to GHCR
@@ -130,6 +131,7 @@ jobs:
   # Note: deployment tracking only runs for pull_request events.
   # Manual workflow_dispatch deploys skip deployment creation since there's no PR to attach to.
   create-deployment:
+    needs: build-images
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
