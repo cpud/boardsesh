@@ -2,6 +2,7 @@ name: Android Release Build
 
 on:
   push:
+    branches: [main]
     paths:
       - 'mobile/**'
       - '.github/workflows/android-release.yml'
@@ -49,15 +50,6 @@ jobs:
         working-directory: mobile
         run: bunx cap sync android
 
-      - name: Verify sync output
-        run: |
-          echo "=== Checking capacitor-cordova-android-plugins ==="
-          ls -la mobile/android/capacitor-cordova-android-plugins/ || echo "MISSING!"
-          echo "=== Checking assets ==="
-          ls -la mobile/android/app/src/main/assets/ || echo "MISSING!"
-          echo "=== Checking capacitor.settings.gradle ==="
-          cat mobile/android/capacitor.settings.gradle
-
       - name: Set version code
         working-directory: mobile/android
         run: |
@@ -66,18 +58,7 @@ jobs:
 
       - name: Build debug APK
         working-directory: mobile/android
-        shell: bash
-        run: |
-          set -o pipefail
-          ./gradlew assembleDebug --stacktrace --info 2>&1 | tee build-output.log
-
-      - name: Upload build log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-log-${{ github.run_number }}
-          path: mobile/android/build-output.log
-          retention-days: 7
+        run: ./gradlew assembleDebug --stacktrace
 
       - name: Decode keystore
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
