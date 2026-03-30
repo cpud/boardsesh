@@ -27,7 +27,7 @@ import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
 import WarningAmberOutlined from '@mui/icons-material/WarningAmberOutlined';
 import AccessTimeOutlined from '@mui/icons-material/AccessTimeOutlined';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
-import AddOutlined from '@mui/icons-material/AddOutlined';
+import VpnKeyOutlined from '@mui/icons-material/VpnKeyOutlined';
 import SyncOutlined from '@mui/icons-material/SyncOutlined';
 import WarningOutlined from '@mui/icons-material/WarningOutlined';
 import FileUploadOutlined from '@mui/icons-material/FileUploadOutlined';
@@ -140,8 +140,8 @@ export function BoardCredentialCard({
           )}
           <div className={styles.buttonRow}>
             {!isKilter && (
-              <Button variant="contained" startIcon={<AddOutlined />} onClick={onAdd}>
-                Link Account
+              <Button variant="contained" startIcon={<VpnKeyOutlined />} onClick={onAdd}>
+                Link
               </Button>
             )}
             <Button
@@ -150,7 +150,7 @@ export function BoardCredentialCard({
               onClick={onImportJson}
               disabled={isImporting}
             >
-              Import JSON
+              Import
             </Button>
           </div>
         </CardContent>
@@ -206,7 +206,7 @@ export function BoardCredentialCard({
               startIcon={isRemoving ? <CircularProgress size={16} /> : <DeleteOutlined />}
               disabled={isRemoving}
             >
-              Unlink Account
+              Unlink
             </Button>
           </ConfirmPopover>
           <Button
@@ -215,7 +215,7 @@ export function BoardCredentialCard({
             onClick={onImportJson}
             disabled={isImporting}
           >
-            Import JSON
+            Import
           </Button>
         </div>
       </CardContent>
