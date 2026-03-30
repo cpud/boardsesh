@@ -284,7 +284,7 @@ function formatDisplayName(
 }
 
 const REDIS_CACHE_KEY = 'boardsesh:popular-board-configs';
-const REDIS_CACHE_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
+const REDIS_CACHE_TTL_SECONDS = 365 * 24 * 60 * 60; // 1 year
 const REDIS_LOCK_KEY = 'boardsesh:popular-board-configs:lock';
 const REDIS_LOCK_TTL_SECONDS = 120; // 2 min lock to prevent duplicate queries across nodes
 
@@ -408,33 +408,35 @@ async function getPopularConfigs(): Promise<CachedPopularConfig[]> {
 }
 
 /**
- * Warm up the popular configs cache on server startup.
- * Uses a Redis lock so only one node across the cluster runs the expensive query.
+ * Refresh the popular configs cache on server startup.
+ * Always re-runs the query on deploy (data may have changed via Aurora sync).
+ * Uses a Redis lock so only one node across the cluster runs the expensive query;
+ * other nodes wait briefly then read the freshly populated cache.
  */
 export async function warmPopularConfigsCache(): Promise<void> {
-  // Check if already cached in Redis
   if (redisClientManager.isRedisConnected()) {
     try {
       const { publisher } = redisClientManager.getClients();
-      const cached = await publisher.get(REDIS_CACHE_KEY);
-      if (cached) {
-        memoryCache = JSON.parse(cached) as CachedPopularConfig[];
-        console.log(`[PopularConfigs] Loaded ${memoryCache.length} configs from Redis cache`);
-        return;
-      }
 
-      // Acquire lock so only one node runs the query
+      // Try to acquire lock — only the winning node runs the query
       const lockAcquired = await publisher.set(REDIS_LOCK_KEY, '1', 'EX', REDIS_LOCK_TTL_SECONDS, 'NX');
       if (!lockAcquired) {
-        console.log('[PopularConfigs] Another node is populating the cache, skipping');
+        console.log('[PopularConfigs] Another node is refreshing the cache, waiting...');
+        // Wait for the other node to finish, then load from Redis
+        await new Promise((r) => setTimeout(r, 5000));
+        const cached = await publisher.get(REDIS_CACHE_KEY);
+        if (cached) {
+          memoryCache = JSON.parse(cached) as CachedPopularConfig[];
+          console.log(`[PopularConfigs] Loaded ${memoryCache.length} configs from Redis (refreshed by another node)`);
+        }
         return;
       }
     } catch (err) {
-      console.error('[PopularConfigs] Redis lock check failed:', err);
+      console.error('[PopularConfigs] Redis lock failed:', err);
     }
   }
 
-  console.log('[PopularConfigs] Warming cache...');
+  console.log('[PopularConfigs] Refreshing cache...');
   try {
     const configs = await getPopularConfigs();
     console.log(`[PopularConfigs] Cache warmed with ${configs.length} configs`);
