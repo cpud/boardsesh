@@ -33,7 +33,13 @@ async function main() {
       ORDER BY climb_count DESC, psls.board_type, bl.name
     `);
 
-    console.table(rows as unknown as Array<Record<string, unknown>>);
+    // db.execute() returns QueryResult with .rows for neon-serverless, or an array for postgres-js
+    const rowsArray = Array.isArray(rows)
+      ? (rows as Array<Record<string, unknown>>)
+      : (rows as unknown as { rows: Array<Record<string, unknown>> }).rows;
+
+    console.log(`Found ${rowsArray.length} board configurations:\n`);
+    console.table(rowsArray);
   } finally {
     await close();
   }
