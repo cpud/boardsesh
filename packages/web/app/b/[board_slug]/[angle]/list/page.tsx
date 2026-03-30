@@ -51,7 +51,12 @@ export default async function BoardSlugListPage(props: BoardSlugListPageProps) {
     (!searchParamsObject.holdsFilter || Object.keys(searchParamsObject.holdsFilter).length === 0) &&
     !hasProgressFilters;
 
-  const boardDetails = getBoardDetailsForBoard(parsedParams);
+  let boardDetails;
+  try {
+    boardDetails = getBoardDetailsForBoard(parsedParams);
+  } catch {
+    return notFound();
+  }
 
   // Resolve userId for personal progress filters
   let userId: string | undefined;
