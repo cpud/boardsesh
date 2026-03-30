@@ -103,6 +103,7 @@ export default function BoardScrollCard({
         const shortLayout = (popularConfig.layoutName || '')
           .replace(/\bBoard\b\s*/gi, '')
           .replace(/\bHomewall\b/gi, 'HW')
+          .replace(/\bOriginal\b/gi, 'OG')
           .trim();
         cardName = `${shortLayout} ${popularConfig.sizeName || ''}`.trim();
         cardMeta = `${BOARD_TYPE_LABELS[boardName] || boardName} \u00B7 ${popularConfig.climbCount.toLocaleString()} routes`;
