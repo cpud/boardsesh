@@ -414,4 +414,71 @@ describe('usePopularBoardConfigs', () => {
       input: { limit: 10, offset: 0 },
     });
   });
+
+  // --- initialData (SSR) tests ---
+
+  it('skips initial fetch when initialData is provided', async () => {
+    const ssrData = [makeConfig('kilter', 500), makeConfig('tension', 300)];
+
+    renderHook(() => usePopularBoardConfigs({ initialData: ssrData }));
+
+    // Wait a tick to ensure no async fetch fires
+    await new Promise((r) => setTimeout(r, 50));
+
+    expect(mockRequest).not.toHaveBeenCalled();
+  });
+
+  it('starts with isLoading=false and configs populated from initialData', () => {
+    const ssrData = [makeConfig('kilter', 500), makeConfig('tension', 300)];
+
+    const { result } = renderHook(() => usePopularBoardConfigs({ initialData: ssrData }));
+
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.configs).toHaveLength(2);
+    expect(result.current.configs[0].boardType).toBe('kilter');
+    expect(result.current.configs[1].boardType).toBe('tension');
+    expect(result.current.hasMore).toBe(true);
+    expect(result.current.error).toBeNull();
+  });
+
+  it('loadMore uses correct offset from initialData length', async () => {
+    const ssrData = [makeConfig('kilter', 500), makeConfig('tension', 300), makeConfig('moonboard', 200)];
+    const page2 = [makeConfig('decoy', 100)];
+    mockRequest.mockResolvedValueOnce(makeResponse(page2, false));
+
+    const { result } = renderHook(() => usePopularBoardConfigs({ limit: 3, initialData: ssrData }));
+
+    act(() => {
+      result.current.loadMore();
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoadingMore).toBe(false);
+    });
+
+    // Offset should be 3 (initialData.length)
+    expect(mockRequest).toHaveBeenCalledTimes(1);
+    expect(mockRequest).toHaveBeenCalledWith('GET_POPULAR_BOARD_CONFIGS_QUERY', {
+      input: { limit: 3, offset: 3 },
+    });
+
+    // Should append to initial data
+    expect(result.current.configs).toHaveLength(4);
+    expect(result.current.configs[3].boardType).toBe('decoy');
+    expect(result.current.hasMore).toBe(false);
+  });
+
+  it('treats empty initialData array as no initial data and fetches', async () => {
+    mockRequest.mockResolvedValueOnce(makeResponse([makeConfig('kilter', 500)], false));
+
+    const { result } = renderHook(() => usePopularBoardConfigs({ initialData: [] }));
+
+    // Empty array should trigger a fetch (hasInitialData is false)
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(mockRequest).toHaveBeenCalledTimes(1);
+    expect(result.current.configs).toHaveLength(1);
+  });
 });
