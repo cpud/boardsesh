@@ -140,7 +140,7 @@ export default function HomePageContent({ boardConfigs, isAuthenticatedSSR }: Ho
             variant="body1"
             sx={{ color: 'var(--neutral-500)', maxWidth: 320 }}
           >
-            Track your sends, light up holds, and climb with friends — all in one session.
+            Track your sends across Kilter, Tension, and MoonBoard.
           </Typography>
           <Button
             variant="contained"
