@@ -237,7 +237,7 @@ async function getPopularConfigs(): Promise<CachedPopularConfig[]> {
     return popularConfigCache.data;
   }
 
-  const rows = await db.execute(sql`
+  const result = await db.execute(sql`
     SELECT
       psls.board_type,
       psls.layout_id,
@@ -265,7 +265,12 @@ async function getPopularConfigs(): Promise<CachedPopularConfig[]> {
     ORDER BY climb_count DESC, psls.board_type, bl.name
   `);
 
-  const configs: CachedPopularConfig[] = (rows as unknown as Array<Record<string, unknown>>).map((row) => ({
+  // db.execute() returns QueryResult with .rows for neon-serverless, or an array directly for postgres-js
+  const rows = Array.isArray(result)
+    ? (result as Array<Record<string, unknown>>)
+    : (result as unknown as { rows: Array<Record<string, unknown>> }).rows;
+
+  const configs: CachedPopularConfig[] = rows.map((row) => ({
     boardType: row.board_type as string,
     layoutId: Number(row.layout_id),
     layoutName: (row.layout_name as string) ?? null,
