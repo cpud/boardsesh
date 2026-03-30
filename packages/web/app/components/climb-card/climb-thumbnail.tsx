@@ -121,7 +121,7 @@ const RustRenderedBoard = React.memo(function RustRenderedBoard({
   mirrored: boolean;
   maxHeight?: string;
 }) {
-  const overlayUrl = buildOverlayUrl(boardDetails, frames, mirrored);
+  const overlayUrl = buildOverlayUrl(boardDetails, frames, true);
   const backgroundUrls = useMemo(
     () => Object.keys(boardDetails.images_to_holds).map((img) => getImageUrl(img, boardDetails.board_name)),
     [boardDetails.images_to_holds, boardDetails.board_name],
@@ -133,7 +133,8 @@ const RustRenderedBoard = React.memo(function RustRenderedBoard({
     maxHeight: maxHeight ?? '10vh',
     width: 'auto',
     height: '100%',
-  }), [boardDetails.boardWidth, boardDetails.boardHeight, maxHeight]);
+    transform: mirrored ? 'scaleX(-1)' : undefined,
+  }), [boardDetails.boardWidth, boardDetails.boardHeight, maxHeight, mirrored]);
 
   return (
     <div style={containerStyle}>

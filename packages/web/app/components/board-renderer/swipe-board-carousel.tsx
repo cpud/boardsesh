@@ -170,14 +170,20 @@ const RustRenderedSwipeBoard = React.memo(function RustRenderedSwipeBoard({
   frames: string;
   mirrored: boolean;
 }) {
-  const overlayUrl = buildOverlayUrl(boardDetails, frames, mirrored);
+  const overlayUrl = buildOverlayUrl(boardDetails, frames);
   const backgroundUrls = useMemo(
     () => Object.keys(boardDetails.images_to_holds).map((img) => getImageUrl(img, boardDetails.board_name)),
     [boardDetails.images_to_holds, boardDetails.board_name],
   );
 
+  const containerStyle = useMemo<React.CSSProperties>(() => mirrored
+    ? { ...swipeContainerStyle, transform: 'scaleX(-1)' }
+    : swipeContainerStyle,
+    [mirrored],
+  );
+
   return (
-    <div style={swipeContainerStyle}>
+    <div style={containerStyle}>
       {backgroundUrls.map((url) => (
         // eslint-disable-next-line @next/next/no-img-element
         <img key={url} src={url} alt="" style={swipeLayerStyle} />

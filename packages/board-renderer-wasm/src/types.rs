@@ -8,6 +8,7 @@ pub struct RenderConfig {
     pub output_width: u32,
     pub frames: String,
     pub mirrored: bool,
+    pub thumbnail: bool,
     pub holds: Vec<HoldData>,
     pub hold_state_map: HashMap<u32, HoldStateInfo>,
 }

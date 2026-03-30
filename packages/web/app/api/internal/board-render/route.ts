@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import { HOLD_STATE_MAP } from '@/app/components/board-renderer/types';
 import type { BoardName } from '@/app/lib/types';
@@ -12,15 +13,25 @@ export const runtime = 'nodejs';
 let renderOverlay: ((configJson: string) => Uint8Array) | null = null;
 let wasmInitPromise: Promise<void> | null = null;
 
+function findWasmPath(): string {
+  const wasmFile = 'node_modules/@boardsesh/board-renderer-wasm/pkg/board_renderer_wasm_bg.wasm';
+  // Try from cwd (packages/web in dev, project root in prod)
+  const fromCwd = join(process.cwd(), wasmFile);
+  if (existsSync(fromCwd)) return fromCwd;
+  // Try from monorepo root (two levels up from packages/web)
+  const fromRoot = join(process.cwd(), '..', '..', wasmFile);
+  if (existsSync(fromRoot)) return fromRoot;
+  // Fallback: resolve relative to this file's directory (traverse up to monorepo root)
+  const fromFile = join(process.cwd(), '../../', wasmFile);
+  return fromFile;
+}
+
 async function ensureWasmInitialized() {
   if (renderOverlay) return;
   if (!wasmInitPromise) {
     wasmInitPromise = (async () => {
       const wasmModule = await import('@boardsesh/board-renderer-wasm');
-      const wasmPath = join(
-        process.cwd(),
-        'node_modules/@boardsesh/board-renderer-wasm/pkg/board_renderer_wasm_bg.wasm',
-      );
+      const wasmPath = findWasmPath();
       const wasmBytes = await readFile(wasmPath);
       wasmModule.initSync({ module: wasmBytes });
       renderOverlay = wasmModule.render_overlay;
@@ -31,8 +42,9 @@ async function ensureWasmInitialized() {
 
 const VALID_BOARD_NAMES = new Set(['kilter', 'tension', 'moonboard']);
 
-// Fixed output width for all consumers -- maximizes cache hit rate
-const OUTPUT_WIDTH = 300;
+// Thumbnail: 300px wide (sharp on 2x retina at ~150css-px)
+// Full: native board resolution for crisp rendering in climb drawer/card cover
+const THUMBNAIL_WIDTH = 300;
 
 export async function GET(request: NextRequest) {
   try {
@@ -43,7 +55,8 @@ export async function GET(request: NextRequest) {
     const sizeId = searchParams.get('size_id');
     const setIds = searchParams.get('set_ids');
     const frames = searchParams.get('frames');
-    const mirrored = searchParams.get('mirrored') === '1';
+    const thumbnail = searchParams.get('thumbnail') === '1';
+    // Mirroring is handled client-side via CSS scaleX(-1) to maximize cache hit rate
 
     if (!boardName || !layoutId || !sizeId || !setIds || !frames) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
@@ -75,9 +88,10 @@ export async function GET(request: NextRequest) {
       board_name: boardName,
       board_width: boardDetails.boardWidth,
       board_height: boardDetails.boardHeight,
-      output_width: OUTPUT_WIDTH,
+      output_width: thumbnail ? THUMBNAIL_WIDTH : boardDetails.boardWidth,
       frames,
-      mirrored,
+      mirrored: false,
+      thumbnail,
       holds: boardDetails.holdsData.map((h) => ({
         id: h.id,
         mirroredHoldId: h.mirroredHoldId,

@@ -146,7 +146,7 @@ const RustRenderedAscentThumbnail = React.memo(function RustRenderedAscentThumbn
   frames: string;
   mirrored: boolean;
 }) {
-  const overlayUrl = buildOverlayUrl(boardDetails, frames, mirrored);
+  const overlayUrl = buildOverlayUrl(boardDetails, frames, true);
   const backgroundUrls = useMemo(
     () => Object.keys(boardDetails.images_to_holds).map((img) => getImageUrl(img, boardDetails.board_name)),
     [boardDetails.images_to_holds, boardDetails.board_name],
@@ -157,7 +157,8 @@ const RustRenderedAscentThumbnail = React.memo(function RustRenderedAscentThumbn
     aspectRatio: `${boardDetails.boardWidth} / ${boardDetails.boardHeight}`,
     width: '100%',
     height: '100%',
-  }), [boardDetails.boardWidth, boardDetails.boardHeight]);
+    transform: mirrored ? 'scaleX(-1)' : undefined,
+  }), [boardDetails.boardWidth, boardDetails.boardHeight, mirrored]);
 
   return (
     <div style={containerStyle}>

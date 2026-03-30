@@ -58,7 +58,7 @@ const RustRenderedCover = React.memo(function RustRenderedCover({
   frames: string;
   mirrored: boolean;
 }) {
-  const overlayUrl = buildOverlayUrl(boardDetails, frames, mirrored);
+  const overlayUrl = buildOverlayUrl(boardDetails, frames);
   const backgroundUrls = useMemo(
     () => Object.keys(boardDetails.images_to_holds).map((img) => getImageUrl(img, boardDetails.board_name)),
     [boardDetails.images_to_holds, boardDetails.board_name],
@@ -68,7 +68,8 @@ const RustRenderedCover = React.memo(function RustRenderedCover({
     position: 'relative',
     aspectRatio: `${boardDetails.boardWidth} / ${boardDetails.boardHeight}`,
     width: '100%',
-  }), [boardDetails.boardWidth, boardDetails.boardHeight]);
+    transform: mirrored ? 'scaleX(-1)' : undefined,
+  }), [boardDetails.boardWidth, boardDetails.boardHeight, mirrored]);
 
   return (
     <div style={containerStyle}>

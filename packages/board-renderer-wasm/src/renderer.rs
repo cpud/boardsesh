@@ -34,9 +34,10 @@ pub fn render_overlay(config: &RenderConfig) -> Result<(Vec<u8>, u32, u32), Stri
         .map(|h| (h.id, h))
         .collect();
 
-    // Stroke width scales proportionally with the output
-    // Original SVG uses strokeWidth=8 for thumbnails on a ~1080px wide viewBox
-    let base_stroke_width = 8.0 * scale_x;
+    // Match SVG renderer exactly:
+    // - Thumbnail: strokeWidth=8, fillOpacity=0.3, fill=color
+    // - Full size: strokeWidth=6, no fill
+    let stroke_width = if config.thumbnail { 8.0 } else { 6.0 } * scale_x;
 
     for parsed in &parsed_holds {
         let hold = match holds_by_id.get(&parsed.hold_id) {
@@ -65,27 +66,25 @@ pub fn render_overlay(config: &RenderConfig) -> Result<(Vec<u8>, u32, u32), Stri
 
         let color = parsed.color;
 
-        // Draw filled circle (0.3 opacity)
-        draw_circle(
-            &mut pixmap,
-            cx,
-            cy,
-            r,
-            Some(SkiaColor::from_rgba8(color.r, color.g, color.b, 77)), // 0.3 * 255 ≈ 77
-            None,
-            0.0,
-        );
+        // Thumbnail: filled circle with 0.3 opacity + stroke
+        // Full size: stroke only, no fill
+        if config.thumbnail {
+            draw_circle(
+                &mut pixmap,
+                cx, cy, r,
+                Some(SkiaColor::from_rgba8(color.r, color.g, color.b, 77)), // 0.3 * 255 ≈ 77
+                None,
+                0.0,
+            );
+        }
 
-        // Draw stroked circle (full opacity)
         draw_circle(
             &mut pixmap,
-            cx,
-            cy,
-            r,
+            cx, cy, r,
             None,
             Some((
                 SkiaColor::from_rgba8(color.r, color.g, color.b, 255),
-                base_stroke_width,
+                stroke_width,
             )),
             0.0,
         );
@@ -159,6 +158,7 @@ mod tests {
             output_width: 300,
             frames: "p1r42p2r43p3r44".into(),
             mirrored: false,
+            thumbnail: false,
             holds: vec![
                 HoldData { id: 1, mirrored_hold_id: None, cx: 200.0, cy: 300.0, r: 20.0 },
                 HoldData { id: 2, mirrored_hold_id: None, cx: 500.0, cy: 600.0, r: 20.0 },
