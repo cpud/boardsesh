@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import { SEARCH_BOARDS, type SearchBoardsQueryResponse } from '@/app/lib/graphql/operations';
@@ -23,20 +23,29 @@ interface DiscoverBoardsResult {
  * If location is enabled and available, nearby boards appear first (sorted by distance).
  * Remaining slots are filled with popular boards (sorted by totalAscents).
  * Deduplication ensures no board appears twice.
+ *
+ * Re-fetches when the auth token changes (e.g. user logs in) so that
+ * board results can reflect authenticated context (isFollowedByMe, etc.).
  */
 export function useDiscoverBoards({
   limit = 20,
   enableLocation = true,
 }: UseDiscoverBoardsOptions = {}): DiscoverBoardsResult {
-  const { token } = useWsAuthToken();
+  const { token, isAuthenticated } = useWsAuthToken();
   const [boards, setBoards] = useState<UserBoard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasLocation, setHasLocation] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const fetchedRef = useRef(false);
 
-  const fetchBoards = useCallback(async (coords: { latitude: number; longitude: number } | null) => {
-    const client = createGraphQLHttpClient(token ?? undefined);
+  // Cache geolocation so we don't re-prompt on token changes
+  const coordsRef = useRef<{ latitude: number; longitude: number } | null>(null);
+  const geoResolvedRef = useRef(false);
+
+  const fetchBoards = useCallback(async (
+    coords: { latitude: number; longitude: number } | null,
+    authToken: string | null,
+  ) => {
+    const client = createGraphQLHttpClient(authToken ?? undefined);
     const nearbyUuids = new Set<string>();
     let nearbyBoards: UserBoard[] = [];
 
@@ -82,42 +91,56 @@ export function useDiscoverBoards({
         setError('Failed to load boards');
       }
     }
-  }, [token, limit]);
+  }, [limit]);
 
   useEffect(() => {
-    if (fetchedRef.current) return;
-    fetchedRef.current = true;
+    let cancelled = false;
 
     const doFetch = async () => {
-      setIsLoading(true);
+      // Only show loading skeleton on initial load, not on auth-triggered refetches
+      if (boards.length === 0) {
+        setIsLoading(true);
+      }
       setError(null);
 
-      // Try to get geolocation if enabled
-      let coords: { latitude: number; longitude: number } | null = null;
-      if (enableLocation && typeof navigator !== 'undefined' && navigator.geolocation) {
-        try {
-          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, {
-              timeout: 5000,
-              maximumAge: 300000, // Cache for 5 minutes
-              enableHighAccuracy: false,
+      // Resolve geolocation once, then cache for subsequent fetches
+      if (!geoResolvedRef.current) {
+        geoResolvedRef.current = true;
+        if (enableLocation && typeof navigator !== 'undefined' && navigator.geolocation) {
+          try {
+            const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+              navigator.geolocation.getCurrentPosition(resolve, reject, {
+                timeout: 5000,
+                maximumAge: 300000, // Cache for 5 minutes
+                enableHighAccuracy: false,
+              });
             });
-          });
-          coords = {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          };
-        } catch {
-          // Location denied or unavailable, proceed without
+            coordsRef.current = {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            };
+          } catch {
+            // Location denied or unavailable, proceed without
+          }
         }
       }
 
-      await fetchBoards(coords);
-      setIsLoading(false);
+      if (!cancelled) {
+        await fetchBoards(coordsRef.current, token);
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
     };
 
     doFetch();
-  }, [enableLocation, fetchBoards]);
+
+    return () => {
+      cancelled = true;
+    };
+    // Re-run when auth state changes so boards reflect authenticated context
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, isAuthenticated, enableLocation, fetchBoards]);
 
   return { boards, isLoading, hasLocation, error };
 }

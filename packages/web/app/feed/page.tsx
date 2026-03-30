@@ -1,6 +1,6 @@
 import React from 'react';
 import { getServerAuthToken } from '../lib/auth/server-auth';
-import HomePageContent from './feed-page-content';
+import FeedPageContent from './feed-page-content';
 import { cachedSessionGroupedFeed, serverMyBoards } from '../lib/graphql/server-cached-client';
 import type { SessionFeedResult } from '@boardsesh/shared-schema';
 
@@ -44,7 +44,7 @@ export default async function FeedPage({ searchParams }: FeedProps) {
   }
 
   return (
-    <HomePageContent
+    <FeedPageContent
       initialTab={tab}
       initialBoardUuid={boardUuid}
       initialFeedResult={initialFeedResult}
