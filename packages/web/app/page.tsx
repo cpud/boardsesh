@@ -8,7 +8,7 @@ import HomePageContent from './home-page-content';
 export const metadata: Metadata = {
   title: 'Boardsesh - Train smarter on your climbing board',
   description:
-    'Track sessions, control LEDs, and climb with friends on Kilter, Tension, and MoonBoard. One app for every board.',
+    'Track your sends across Kilter, Tension, and MoonBoard. One app for every board.',
   openGraph: {
     title: 'Boardsesh - Train smarter on your climbing board',
     description:

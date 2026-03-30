@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: '%s | Boardsesh',
   },
   description:
-    'Track sessions, control LEDs, and climb with friends on Kilter, Tension, and MoonBoard. One app for every board.',
+    'Track your sends across Kilter, Tension, and MoonBoard. One app for every board.',
   openGraph: {
     type: 'website',
     siteName: 'Boardsesh',
