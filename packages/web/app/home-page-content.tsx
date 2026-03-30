@@ -150,13 +150,16 @@ export default function HomePageContent({ boardConfigs, isAuthenticatedSSR }: Ho
             startIcon={<PlayArrowRounded />}
             onClick={() => {
               if (activeSession) {
+                let url: string;
                 if (activeSession.boardPath.startsWith('/b/')) {
                   const segments = activeSession.boardPath.split('/');
-                  router.push(constructBoardSlugListUrl(segments[2], activeSession.parsedParams.angle));
+                  url = constructBoardSlugListUrl(segments[2], activeSession.parsedParams.angle);
                 } else {
                   // Legacy/custom path — navigate directly
-                  router.push(activeSession.boardPath);
+                  url = activeSession.boardPath;
                 }
+                const separator = url.includes('?') ? '&' : '?';
+                router.push(`${url}${separator}session=${activeSession.sessionId}`);
               } else {
                 setSeshDrawerOpen(true);
               }
