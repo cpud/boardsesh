@@ -56,7 +56,7 @@ export function useDiscoverBoards({
           input: {
             latitude: coords.latitude,
             longitude: coords.longitude,
-            radiusKm: 100,
+            radiusKm: 1,
             limit,
           },
         });

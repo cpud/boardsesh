@@ -1,8 +1,15 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { getServerAuthToken } from '../lib/auth/server-auth';
 import FeedPageContent from './feed-page-content';
 import { cachedSessionGroupedFeed, serverMyBoards } from '../lib/graphql/server-cached-client';
 import type { SessionFeedResult } from '@boardsesh/shared-schema';
+
+export const metadata: Metadata = {
+  title: 'Activity Feed',
+  description: 'View climbing activity from people you follow.',
+  robots: { index: false, follow: true },
+};
 
 type FeedTab = 'sessions' | 'proposals' | 'comments';
 const VALID_TABS: FeedTab[] = ['sessions', 'proposals', 'comments'];
