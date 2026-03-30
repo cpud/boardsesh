@@ -100,7 +100,8 @@ export default function BoardScrollCard({
         }
       } else if (popularConfig) {
         const boardName = popularConfig.boardType as BoardName;
-        cardName = `${popularConfig.layoutName || ''} ${popularConfig.sizeName || ''}`.trim();
+        const shortLayout = (popularConfig.layoutName || '').replace(/\bBoard\b\s*/gi, '').trim();
+        cardName = `${shortLayout} ${popularConfig.sizeName || ''}`.trim();
         cardMeta = `${BOARD_TYPE_LABELS[boardName] || boardName} \u00B7 ${popularConfig.climbCount.toLocaleString()} climbs`;
 
         if (boardName === 'moonboard') {
