@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -16,14 +17,22 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { themeTokens } from '@/app/theme/theme-config';
 import { usePersistentSession } from '@/app/components/persistent-session';
-import StartSeshDrawer from '@/app/components/session-creation/start-sesh-drawer';
-import UnifiedSearchDrawer from '@/app/components/search-drawer/unified-search-drawer';
 import BoardScrollSection from '@/app/components/board-scroll/board-scroll-section';
 import BoardScrollCard from '@/app/components/board-scroll/board-scroll-card';
 import { useDiscoverBoards } from '@/app/hooks/use-discover-boards';
 import { constructBoardSlugListUrl } from '@/app/lib/url-utils';
 import type { BoardConfigData } from '@/app/lib/server-board-configs';
 import type { UserBoard } from '@boardsesh/shared-schema';
+
+const StartSeshDrawer = dynamic(
+  () => import('@/app/components/session-creation/start-sesh-drawer'),
+  { ssr: false },
+);
+
+const UnifiedSearchDrawer = dynamic(
+  () => import('@/app/components/search-drawer/unified-search-drawer'),
+  { ssr: false },
+);
 
 interface HomePageContentProps {
   boardConfigs: BoardConfigData;
@@ -95,6 +104,16 @@ export default function HomePageContent({ boardConfigs, isAuthenticatedSSR }: Ho
   const { activeSession } = usePersistentSession();
   const [seshDrawerOpen, setSeshDrawerOpen] = useState(false);
   const [findClimbersOpen, setFindClimbersOpen] = useState(false);
+  const [seshDrawerMounted, setSeshDrawerMounted] = useState(false);
+  const [findClimbersMounted, setFindClimbersMounted] = useState(false);
+
+  useEffect(() => {
+    if (seshDrawerOpen) setSeshDrawerMounted(true);
+  }, [seshDrawerOpen]);
+
+  useEffect(() => {
+    if (findClimbersOpen) setFindClimbersMounted(true);
+  }, [findClimbersOpen]);
 
   const isAuthenticated = status === 'authenticated' ? true : (status === 'loading' ? (isAuthenticatedSSR ?? false) : false);
 
@@ -252,17 +271,21 @@ export default function HomePageContent({ boardConfigs, isAuthenticatedSSR }: Ho
         )}
       </Box>
 
-      <StartSeshDrawer
-        open={seshDrawerOpen}
-        onClose={() => setSeshDrawerOpen(false)}
-        boardConfigs={boardConfigs}
-      />
+      {seshDrawerMounted && (
+        <StartSeshDrawer
+          open={seshDrawerOpen}
+          onClose={() => setSeshDrawerOpen(false)}
+          boardConfigs={boardConfigs}
+        />
+      )}
 
-      <UnifiedSearchDrawer
-        open={findClimbersOpen}
-        onClose={() => setFindClimbersOpen(false)}
-        defaultCategory="users"
-      />
+      {findClimbersMounted && (
+        <UnifiedSearchDrawer
+          open={findClimbersOpen}
+          onClose={() => setFindClimbersOpen(false)}
+          defaultCategory="users"
+        />
+      )}
     </Box>
   );
 }
