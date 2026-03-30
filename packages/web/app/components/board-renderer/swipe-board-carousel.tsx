@@ -9,7 +9,7 @@ import {
   ENTER_ANIMATION_DURATION,
 } from '@/app/hooks/use-card-swipe-navigation';
 import type { BoardDetails } from '@/app/lib/types';
-import { convertLitUpHoldsStringToMap } from './util';
+import { convertLitUpHoldsStringToMap, getImageUrl, buildOverlayUrl, isRustRendererEnabled } from './util';
 import styles from './swipe-board-carousel.module.css';
 
 interface ClimbBoardData {
@@ -95,13 +95,27 @@ const SwipeBoardCarousel: React.FC<SwipeBoardCarouselProps> = ({
   const transition = getSwipeTransition();
 
   const currentLitUpHoldsMap = useMemo(
-    () => convertLitUpHoldsStringToMap(currentClimb.frames, boardDetails.board_name)[0],
+    () => isRustRendererEnabled ? undefined : convertLitUpHoldsStringToMap(currentClimb.frames, boardDetails.board_name)[0],
     [currentClimb.frames, boardDetails.board_name],
   );
   const peekLitUpHoldsMap = useMemo(
-    () => peekClimb ? convertLitUpHoldsStringToMap(peekClimb.frames, boardDetails.board_name)[0] : undefined,
+    () => isRustRendererEnabled || !peekClimb ? undefined : convertLitUpHoldsStringToMap(peekClimb.frames, boardDetails.board_name)[0],
     [peekClimb?.frames, boardDetails.board_name],
   );
+
+  const renderBoard = (climb: ClimbBoardData, litUpHoldsMap: ReturnType<typeof convertLitUpHoldsStringToMap>[0] | undefined) => {
+    if (isRustRendererEnabled) {
+      return <RustRenderedSwipeBoard boardDetails={boardDetails} frames={climb.frames} mirrored={!!climb.mirrored} />;
+    }
+    return (
+      <BoardRenderer
+        boardDetails={boardDetails}
+        litUpHoldsMap={litUpHoldsMap}
+        mirrored={!!climb.mirrored}
+        fillHeight
+      />
+    );
+  };
 
   return (
     <div
@@ -116,12 +130,7 @@ const SwipeBoardCarousel: React.FC<SwipeBoardCarouselProps> = ({
           transition,
         }}
       >
-        <BoardRenderer
-          boardDetails={boardDetails}
-          litUpHoldsMap={currentLitUpHoldsMap}
-          mirrored={!!currentClimb.mirrored}
-          fillHeight
-        />
+        {renderBoard(currentClimb, currentLitUpHoldsMap)}
       </div>
       {showPeek && peekClimb && (
         <div
@@ -131,16 +140,52 @@ const SwipeBoardCarousel: React.FC<SwipeBoardCarouselProps> = ({
             transition,
           }}
         >
-          <BoardRenderer
-            boardDetails={boardDetails}
-            litUpHoldsMap={peekLitUpHoldsMap}
-            mirrored={!!peekClimb.mirrored}
-            fillHeight
-          />
+          {renderBoard(peekClimb, peekLitUpHoldsMap)}
         </div>
       )}
     </div>
   );
 };
+
+const swipeLayerStyle: React.CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  width: '100%',
+  height: '100%',
+  objectFit: 'contain',
+};
+
+const swipeContainerStyle: React.CSSProperties = {
+  position: 'relative',
+  width: '100%',
+  height: '100%',
+};
+
+const RustRenderedSwipeBoard = React.memo(function RustRenderedSwipeBoard({
+  boardDetails,
+  frames,
+  mirrored,
+}: {
+  boardDetails: BoardDetails;
+  frames: string;
+  mirrored: boolean;
+}) {
+  const overlayUrl = buildOverlayUrl(boardDetails, frames, mirrored);
+  const backgroundUrls = useMemo(
+    () => Object.keys(boardDetails.images_to_holds).map((img) => getImageUrl(img, boardDetails.board_name)),
+    [boardDetails.images_to_holds, boardDetails.board_name],
+  );
+
+  return (
+    <div style={swipeContainerStyle}>
+      {backgroundUrls.map((url) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img key={url} src={url} alt="" style={swipeLayerStyle} />
+      ))}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={overlayUrl} alt="" style={swipeLayerStyle} />
+    </div>
+  );
+});
 
 export default SwipeBoardCarousel;

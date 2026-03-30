@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { BoardDetails, BoardName } from '@/app/lib/types';
 import BoardRenderer from '@/app/components/board-renderer/board-renderer';
-import { convertLitUpHoldsStringToMap } from '@/app/components/board-renderer/util';
+import { convertLitUpHoldsStringToMap, getImageUrl, buildOverlayUrl, isRustRendererEnabled } from '@/app/components/board-renderer/util';
 import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import { getDefaultBoardConfig } from '@/app/lib/default-board-configs';
 import { constructClimbViewUrlWithSlugs, constructClimbViewUrl } from '@/app/lib/url-utils';
@@ -50,8 +50,9 @@ const AscentThumbnail: React.FC<AscentThumbnailProps> = ({
     }
   }, [boardType, layoutId]);
 
-  // Memoize lit up holds map
+  // Memoize lit up holds map (only needed for legacy SVG renderer)
   const litUpHoldsMap = useMemo(() => {
+    if (isRustRendererEnabled) return undefined;
     if (!frames || !boardType) return undefined;
     const framesData = convertLitUpHoldsStringToMap(frames, boardType as BoardName);
     return framesData[0];
@@ -98,9 +99,23 @@ const AscentThumbnail: React.FC<AscentThumbnailProps> = ({
   }, [boardType, layoutId, angle, climbUuid, climbName]);
 
   // If we can't render the thumbnail, don't show anything
-  if (!boardDetails || !litUpHoldsMap || !climbViewPath) {
+  if (!boardDetails || !climbViewPath) {
     return null;
   }
+  if (!isRustRendererEnabled && !litUpHoldsMap) {
+    return null;
+  }
+
+  const thumbnailContent = isRustRendererEnabled && frames ? (
+    <RustRenderedAscentThumbnail boardDetails={boardDetails} frames={frames} mirrored={isMirror} />
+  ) : (
+    <BoardRenderer
+      boardDetails={boardDetails}
+      litUpHoldsMap={litUpHoldsMap}
+      mirrored={isMirror}
+      thumbnail
+    />
+  );
 
   return (
     <Link
@@ -109,15 +124,51 @@ const AscentThumbnail: React.FC<AscentThumbnailProps> = ({
       title={`View ${climbName}`}
     >
       <div className={styles.thumbnailContainer}>
-        <BoardRenderer
-          boardDetails={boardDetails}
-          litUpHoldsMap={litUpHoldsMap}
-          mirrored={isMirror}
-          thumbnail
-        />
+        {thumbnailContent}
       </div>
     </Link>
   );
 };
+
+const ascentLayerStyle: React.CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  width: '100%',
+  height: '100%',
+};
+
+const RustRenderedAscentThumbnail = React.memo(function RustRenderedAscentThumbnail({
+  boardDetails,
+  frames,
+  mirrored,
+}: {
+  boardDetails: BoardDetails;
+  frames: string;
+  mirrored: boolean;
+}) {
+  const overlayUrl = buildOverlayUrl(boardDetails, frames, mirrored);
+  const backgroundUrls = useMemo(
+    () => Object.keys(boardDetails.images_to_holds).map((img) => getImageUrl(img, boardDetails.board_name)),
+    [boardDetails.images_to_holds, boardDetails.board_name],
+  );
+
+  const containerStyle = useMemo<React.CSSProperties>(() => ({
+    position: 'relative',
+    aspectRatio: `${boardDetails.boardWidth} / ${boardDetails.boardHeight}`,
+    width: '100%',
+    height: '100%',
+  }), [boardDetails.boardWidth, boardDetails.boardHeight]);
+
+  return (
+    <div style={containerStyle}>
+      {backgroundUrls.map((url) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img key={url} src={url} alt="" style={ascentLayerStyle} loading="lazy" />
+      ))}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={overlayUrl} alt="" style={ascentLayerStyle} loading="lazy" />
+    </div>
+  );
+});
 
 export default AscentThumbnail;
