@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef } from 'react';
 import BoardRenderer from './board-renderer';
+import BoardImageLayers from './board-image-layers';
 import {
   useCardSwipeNavigation,
   EXIT_DURATION,
@@ -9,7 +10,7 @@ import {
   ENTER_ANIMATION_DURATION,
 } from '@/app/hooks/use-card-swipe-navigation';
 import type { BoardDetails } from '@/app/lib/types';
-import { convertLitUpHoldsStringToMap, getImageUrl, buildOverlayUrl, isRustRendererEnabled } from './util';
+import { convertLitUpHoldsStringToMap, isRustRendererEnabled } from './util';
 import styles from './swipe-board-carousel.module.css';
 
 interface ClimbBoardData {
@@ -105,7 +106,15 @@ const SwipeBoardCarousel: React.FC<SwipeBoardCarouselProps> = ({
 
   const renderBoard = (climb: ClimbBoardData, litUpHoldsMap: ReturnType<typeof convertLitUpHoldsStringToMap>[0] | undefined) => {
     if (isRustRendererEnabled) {
-      return <RustRenderedSwipeBoard boardDetails={boardDetails} frames={climb.frames} mirrored={!!climb.mirrored} />;
+      return (
+        <BoardImageLayers
+          boardDetails={boardDetails}
+          frames={climb.frames}
+          mirrored={!!climb.mirrored}
+          contain
+          style={{ width: '100%', height: '100%' }}
+        />
+      );
     }
     return (
       <BoardRenderer
@@ -146,52 +155,5 @@ const SwipeBoardCarousel: React.FC<SwipeBoardCarouselProps> = ({
     </div>
   );
 };
-
-const swipeLayerStyle: React.CSSProperties = {
-  position: 'absolute',
-  inset: 0,
-  width: '100%',
-  height: '100%',
-  objectFit: 'contain',
-};
-
-const swipeContainerStyle: React.CSSProperties = {
-  position: 'relative',
-  width: '100%',
-  height: '100%',
-};
-
-const RustRenderedSwipeBoard = React.memo(function RustRenderedSwipeBoard({
-  boardDetails,
-  frames,
-  mirrored,
-}: {
-  boardDetails: BoardDetails;
-  frames: string;
-  mirrored: boolean;
-}) {
-  const overlayUrl = buildOverlayUrl(boardDetails, frames);
-  const backgroundUrls = useMemo(
-    () => Object.keys(boardDetails.images_to_holds).map((img) => getImageUrl(img, boardDetails.board_name)),
-    [boardDetails.images_to_holds, boardDetails.board_name],
-  );
-
-  const containerStyle = useMemo<React.CSSProperties>(() => mirrored
-    ? { ...swipeContainerStyle, transform: 'scaleX(-1)' }
-    : swipeContainerStyle,
-    [mirrored],
-  );
-
-  return (
-    <div style={containerStyle}>
-      {backgroundUrls.map((url) => (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img key={url} src={url} alt="" style={swipeLayerStyle} />
-      ))}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={overlayUrl} alt="" style={swipeLayerStyle} />
-    </div>
-  );
-});
 
 export default SwipeBoardCarousel;

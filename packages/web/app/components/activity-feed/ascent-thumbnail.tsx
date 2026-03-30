@@ -4,7 +4,8 @@ import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { BoardDetails, BoardName } from '@/app/lib/types';
 import BoardRenderer from '@/app/components/board-renderer/board-renderer';
-import { convertLitUpHoldsStringToMap, getImageUrl, buildOverlayUrl, isRustRendererEnabled } from '@/app/components/board-renderer/util';
+import BoardImageLayers from '@/app/components/board-renderer/board-image-layers';
+import { convertLitUpHoldsStringToMap, isRustRendererEnabled } from '@/app/components/board-renderer/util';
 import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import { getDefaultBoardConfig } from '@/app/lib/default-board-configs';
 import { constructClimbViewUrlWithSlugs, constructClimbViewUrl } from '@/app/lib/url-utils';
@@ -107,7 +108,18 @@ const AscentThumbnail: React.FC<AscentThumbnailProps> = ({
   }
 
   const thumbnailContent = isRustRendererEnabled && frames ? (
-    <RustRenderedAscentThumbnail boardDetails={boardDetails} frames={frames} mirrored={isMirror} />
+    <BoardImageLayers
+      boardDetails={boardDetails}
+      frames={frames}
+      mirrored={isMirror}
+      thumbnail
+      lazy
+      style={{
+        aspectRatio: `${boardDetails.boardWidth} / ${boardDetails.boardHeight}`,
+        width: '100%',
+        height: '100%',
+      }}
+    />
   ) : (
     <BoardRenderer
       boardDetails={boardDetails}
@@ -129,47 +141,5 @@ const AscentThumbnail: React.FC<AscentThumbnailProps> = ({
     </Link>
   );
 };
-
-const ascentLayerStyle: React.CSSProperties = {
-  position: 'absolute',
-  inset: 0,
-  width: '100%',
-  height: '100%',
-};
-
-const RustRenderedAscentThumbnail = React.memo(function RustRenderedAscentThumbnail({
-  boardDetails,
-  frames,
-  mirrored,
-}: {
-  boardDetails: BoardDetails;
-  frames: string;
-  mirrored: boolean;
-}) {
-  const overlayUrl = buildOverlayUrl(boardDetails, frames, true);
-  const backgroundUrls = useMemo(
-    () => Object.keys(boardDetails.images_to_holds).map((img) => getImageUrl(img, boardDetails.board_name)),
-    [boardDetails.images_to_holds, boardDetails.board_name],
-  );
-
-  const containerStyle = useMemo<React.CSSProperties>(() => ({
-    position: 'relative',
-    aspectRatio: `${boardDetails.boardWidth} / ${boardDetails.boardHeight}`,
-    width: '100%',
-    height: '100%',
-    transform: mirrored ? 'scaleX(-1)' : undefined,
-  }), [boardDetails.boardWidth, boardDetails.boardHeight, mirrored]);
-
-  return (
-    <div style={containerStyle}>
-      {backgroundUrls.map((url) => (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img key={url} src={url} alt="" style={ascentLayerStyle} loading="lazy" />
-      ))}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={overlayUrl} alt="" style={ascentLayerStyle} loading="lazy" />
-    </div>
-  );
-});
 
 export default AscentThumbnail;

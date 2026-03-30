@@ -21,9 +21,8 @@ function findWasmPath(): string {
   // Try from monorepo root (two levels up from packages/web)
   const fromRoot = join(process.cwd(), '..', '..', wasmFile);
   if (existsSync(fromRoot)) return fromRoot;
-  // Fallback: resolve relative to this file's directory (traverse up to monorepo root)
-  const fromFile = join(process.cwd(), '../../', wasmFile);
-  return fromFile;
+  // Exhausted search paths -- return cwd path so readFile gives a clear error
+  return fromCwd;
 }
 
 async function ensureWasmInitialized() {
@@ -104,7 +103,10 @@ export async function GET(request: NextRequest) {
 
     // Initialize WASM if needed and render
     await ensureWasmInitialized();
-    const pngBytes = renderOverlay!(JSON.stringify(config));
+    if (!renderOverlay) {
+      return NextResponse.json({ error: 'WASM renderer failed to initialize' }, { status: 500 });
+    }
+    const pngBytes = renderOverlay(JSON.stringify(config));
 
     return new NextResponse(Buffer.from(pngBytes), {
       headers: {
