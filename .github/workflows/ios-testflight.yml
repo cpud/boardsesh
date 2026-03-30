@@ -93,8 +93,6 @@ jobs:
             -configuration Release \
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
-            DEVELOPMENT_TEAM=9L3HKPZBH3 \
-            CODE_SIGN_IDENTITY="iPhone Distribution" \
             CURRENT_PROJECT_VERSION=${{ github.run_number }}
 
       - name: Export archive
