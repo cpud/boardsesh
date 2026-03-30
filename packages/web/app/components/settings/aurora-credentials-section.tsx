@@ -27,7 +27,7 @@ import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
 import WarningAmberOutlined from '@mui/icons-material/WarningAmberOutlined';
 import AccessTimeOutlined from '@mui/icons-material/AccessTimeOutlined';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
-import VpnKeyOutlined from '@mui/icons-material/VpnKeyOutlined';
+import LinkOutlined from '@mui/icons-material/LinkOutlined';
 import SyncOutlined from '@mui/icons-material/SyncOutlined';
 import WarningOutlined from '@mui/icons-material/WarningOutlined';
 import FileUploadOutlined from '@mui/icons-material/FileUploadOutlined';
@@ -140,7 +140,7 @@ export function BoardCredentialCard({
           )}
           <div className={styles.buttonRow}>
             {!isKilter && (
-              <Button variant="contained" startIcon={<VpnKeyOutlined />} onClick={onAdd}>
+              <Button variant="contained" startIcon={<LinkOutlined />} onClick={onAdd}>
                 Link
               </Button>
             )}
