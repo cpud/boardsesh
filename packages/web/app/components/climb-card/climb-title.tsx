@@ -5,9 +5,9 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import ClimbIcons from './climb-icons';
 import { themeTokens } from '@/app/theme/theme-config';
-import { getSoftVGradeColor, formatVGrade } from '@/app/lib/grade-colors';
 import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
 import { formatSends, formatQuality } from '@/app/lib/format-climb-stats';
+import { useGradeFormat } from '@/app/hooks/use-grade-format';
 
 export type ClimbTitleData = {
   name?: string;
@@ -179,14 +179,15 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
   isNoMatch = false,
 }) => {
   const isDark = useIsDarkMode();
+  const { formatGrade, getGradeColor } = useGradeFormat();
 
   const resolvedSubtitleSx = ellipsis ? subtitleEllipsisSx : subtitleSx;
 
   // Derived values — safe to compute even when climb is null (used after the guard below)
   const displayDifficulty = climb?.communityGrade || climb?.difficulty;
-  const vGrade = formatVGrade(displayDifficulty);
+  const formattedGrade = formatGrade(displayDifficulty);
   const nameFontSize = titleFontSize ?? themeTokens.typography.fontSize.sm;
-  const gradeColor = vGrade ? getSoftVGradeColor(vGrade, isDark) : undefined;
+  const gradeColor = formattedGrade ? getGradeColor(displayDifficulty, isDark) : undefined;
 
   // ALL useMemo hooks must be called unconditionally (before any early return)
   const nameSx = useMemo(() => ({
@@ -246,9 +247,9 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
     </Typography>
   );
 
-  const largeGradeElement = vGrade && (
+  const largeGradeElement = formattedGrade && (
     <Typography variant="body2" component="span" sx={largeGradeSx}>
-      {vGrade}
+      {formattedGrade}
     </Typography>
   );
 
@@ -303,7 +304,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
         <Box sx={rightRightColumnSx}>
           {rightAddon}
           {largeGradeElement}
-          {!vGrade && displayDifficulty && (
+          {!formattedGrade && displayDifficulty && (
             <Typography variant="body2" component="span" color="text.secondary" sx={fallbackGradeSx}>
               {displayDifficulty}
             </Typography>
@@ -330,7 +331,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
 
     return (
       <Box sx={centered ? horizontalCenteredSx : horizontalDefaultSx} className={className}>
-        {/* Colorized V grade - absolutely positioned left when centered */}
+        {/* Colorized grade - absolutely positioned left when centered */}
         {largeGradeElement && (
           <Box sx={centered ? absoluteLeftSx : undefined}>
             {largeGradeElement}

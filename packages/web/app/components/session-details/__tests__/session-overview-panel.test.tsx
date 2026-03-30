@@ -18,8 +18,14 @@ vi.mock('@/app/components/charts/session-grade-bars', () => ({
   ],
 }));
 
-vi.mock('@/app/lib/grade-colors', () => ({
-  formatVGrade: (g: string | null | undefined) => g ?? null,
+vi.mock('@/app/hooks/use-grade-format', () => ({
+  useGradeFormat: () => ({
+    gradeFormat: 'v-grade',
+    formatGrade: (g: string | null | undefined) => g ?? null,
+    getGradeColor: vi.fn(),
+    loaded: true,
+    setGradeFormat: vi.fn(),
+  }),
 }));
 
 import SessionOverviewPanel from '../session-overview-panel';

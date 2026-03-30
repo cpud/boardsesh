@@ -22,7 +22,8 @@ import OutcomeDoughnut from '@/app/components/charts/outcome-doughnut';
 import VoteButton from '@/app/components/social/vote-button';
 import FeedCommentButton from '@/app/components/social/feed-comment-button';
 import { themeTokens } from '@/app/theme/theme-config';
-import { getGradeColor, getGradeTextColor, formatVGrade } from '@/app/lib/grade-colors';
+import { getGradeColor, getGradeTextColor } from '@/app/lib/grade-colors';
+import { useGradeFormat } from '@/app/hooks/use-grade-format';
 
 interface SessionFeedCardProps {
   session: SessionFeedItem;
@@ -64,6 +65,8 @@ function formatRelativeTime(isoString: string): string {
 }
 
 export default function SessionFeedCard({ session }: SessionFeedCardProps) {
+  const { formatGrade } = useGradeFormat();
+
   const {
     sessionId,
     sessionName,
@@ -230,7 +233,7 @@ export default function SessionFeedCard({ session }: SessionFeedCardProps) {
             )}
             {hardestGrade && (
               <Chip
-                label={formatVGrade(hardestGrade) ?? hardestGrade}
+                label={formatGrade(hardestGrade) ?? hardestGrade}
                 size="small"
                 sx={{
                   borderRadius: themeTokens.borderRadius.full,

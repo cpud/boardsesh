@@ -1,4 +1,4 @@
-import { V_GRADE_COLORS } from '@/app/lib/grade-colors';
+import { V_GRADE_COLORS, type GradeDisplayFormat } from '@/app/lib/grade-colors';
 import { SUPPORTED_BOARDS, BOULDER_GRADES } from '@/app/lib/board-data';
 
 export interface UserProfile {
@@ -42,6 +42,42 @@ export const BOARD_TYPES = SUPPORTED_BOARDS;
 export const difficultyMapping: Record<number, string> = Object.fromEntries(
   BOULDER_GRADES.map((g) => [g.difficulty_id, g.v_grade]),
 );
+
+// Font grade mapping: difficulty_id → uppercase Font grade (e.g., 16 → "6A")
+const fontGradeDifficultyMapping: Record<number, string> = Object.fromEntries(
+  BOULDER_GRADES.map((g) => [g.difficulty_id, g.font_grade.toUpperCase()]),
+);
+
+// Get difficulty mapping based on format preference
+export const getDifficultyMapping = (format: GradeDisplayFormat): Record<number, string> => {
+  return format === 'font' ? fontGradeDifficultyMapping : difficultyMapping;
+};
+
+// Build reverse mapping from grade string to numeric difficulty for sorting
+const buildGradeOrder = (mapping: Record<number, string>): Map<string, number> => {
+  const order = new Map<string, number>();
+  for (const [numStr, grade] of Object.entries(mapping)) {
+    const num = parseInt(numStr, 10);
+    // For grades that map to the same string (e.g., V0 from 10, 11, 12), keep the lowest number
+    if (!order.has(grade) || num < (order.get(grade) ?? Infinity)) {
+      order.set(grade, num);
+    }
+  }
+  return order;
+};
+
+const vGradeOrder = buildGradeOrder(difficultyMapping);
+const fontGradeOrderMap = buildGradeOrder(fontGradeDifficultyMapping);
+
+// Sort grades by their numeric difficulty value
+export const sortGrades = (grades: string[], format: GradeDisplayFormat): string[] => {
+  const gradeOrder = format === 'font' ? fontGradeOrderMap : vGradeOrder;
+  return [...grades].sort((a, b) => {
+    const orderA = gradeOrder.get(a) ?? 999;
+    const orderB = gradeOrder.get(b) ?? 999;
+    return orderA - orderB;
+  });
+};
 
 // Layout name mapping: boardType-layoutId -> display name
 const layoutNames: Record<string, string> = {
