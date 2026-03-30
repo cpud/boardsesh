@@ -25,6 +25,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useQueueContext } from '../graphql-queue';
 import { useBluetoothContext } from '../board-bluetooth-control/bluetooth-context';
+import '../board-bluetooth-control/send-climb-to-board-button.css';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { TabPanel } from '@/app/components/ui/tab-panel';
 import { themeTokens } from '@/app/theme/theme-config';
@@ -184,6 +185,7 @@ export const ShareBoardButton = () => {
     endSession,
     sessionGoal,
   } = useQueueContext();
+  const { isConnected: isBoardConnected } = useBluetoothContext();
   const { status: authStatus } = useSession();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -196,7 +198,7 @@ export const ShareBoardButton = () => {
   const [joinSessionId, setJoinSessionId] = useState('');
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [activeNoSessionTab, setActiveNoSessionTab] = useState('led');
-  const [activeSessionTab, setActiveSessionTab] = useState('session');
+  const [activeSessionTab, setActiveSessionTab] = useState('led');
 
   const isLoggedIn = authStatus === 'authenticated';
 
@@ -484,15 +486,21 @@ export const ShareBoardButton = () => {
     <>
       <Badge badgeContent={connectionCount} max={100} color="primary" invisible={connectionCount === 0}>
         <IconButton
-          aria-label="Party Mode"
+          aria-label="Connect to"
           onClick={showDrawer}
           color={isSessionActive ? 'primary' : 'default'}
         >
-          {isConnecting ? <CircularProgress size={16} /> : <LightbulbOutlined />}
+          {isConnecting ? (
+            <CircularProgress size={16} />
+          ) : isBoardConnected ? (
+            <Lightbulb className="connect-button-glow" />
+          ) : (
+            <LightbulbOutlined />
+          )}
         </IconButton>
       </Badge>
       <SwipeableDrawer
-        title={isControllerMode ? 'Controller Mode' : 'Party Mode'}
+        title={isControllerMode ? 'Controller Mode' : 'Connect to'}
         placement="bottom"
         onClose={handleClose}
         open={isDrawerOpen}
@@ -579,16 +587,16 @@ export const ShareBoardButton = () => {
               {isConnected && (
                 <>
                   <Tabs value={activeSessionTab} onChange={(_, v) => setActiveSessionTab(v)}>
-                    <Tab label="Session" value="session" />
                     <Tab label="Connect to Board" value="led" />
+                    <Tab label="Session" value="session" />
                   </Tabs>
+                  <TabPanel value={activeSessionTab} index="led">
+                    {ledTabContent}
+                  </TabPanel>
                   <TabPanel value={activeSessionTab} index="session">
                     <Box sx={{ display: 'flex', gap: 2, flexDirection: 'column' }}>
                       {sessionInfoContent}
                     </Box>
-                  </TabPanel>
-                  <TabPanel value={activeSessionTab} index="led">
-                    {ledTabContent}
                   </TabPanel>
                 </>
               )}
