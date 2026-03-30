@@ -438,7 +438,8 @@ describe('usePopularBoardConfigs', () => {
     expect(result.current.configs).toHaveLength(2);
     expect(result.current.configs[0].boardType).toBe('kilter');
     expect(result.current.configs[1].boardType).toBe('tension');
-    expect(result.current.hasMore).toBe(true);
+    // 2 items < default limit of 12, so hasMore is false (server returned everything)
+    expect(result.current.hasMore).toBe(false);
     expect(result.current.error).toBeNull();
   });
 

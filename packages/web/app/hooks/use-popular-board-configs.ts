@@ -32,12 +32,14 @@ export function usePopularBoardConfigs({
   initialData,
 }: UsePopularBoardConfigsOptions = {}): PopularBoardConfigsResult {
   const hasInitialData = initialData !== undefined && initialData.length > 0;
+  // If initialData has fewer items than the limit, the server returned everything — no more pages
+  const initialHasMore = hasInitialData && initialData.length >= limit;
   const [configs, setConfigs] = useState<PopularBoardConfig[]>(hasInitialData ? initialData : []);
   const [isLoading, setIsLoading] = useState(!hasInitialData);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(hasInitialData);
+  const [hasMore, setHasMore] = useState(initialHasMore);
   const [error, setError] = useState<string | null>(null);
-  const hasMoreRef = useRef(hasInitialData);
+  const hasMoreRef = useRef(initialHasMore);
   const offsetRef = useRef(hasInitialData ? initialData.length : 0);
   const isFetchingRef = useRef(false);
   const loadMoreFailCountRef = useRef(0);
