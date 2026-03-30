@@ -112,7 +112,7 @@ export default function HomePageContent({ boardConfigs, isAuthenticatedSSR }: Ho
           flex: 1,
           px: 2,
           py: 2,
-          pt: 'calc(var(--global-header-height) + 16px)',
+          pt: 2,
           display: 'flex',
           flexDirection: 'column',
           gap: 3,
