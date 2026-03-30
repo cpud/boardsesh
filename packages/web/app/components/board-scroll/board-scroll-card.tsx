@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
 import { BoardDetails, BoardName } from '@/app/lib/types';
 import { getBoardDetails } from '@/app/lib/__generated__/product-sizes-data';
@@ -8,7 +8,7 @@ import { getMoonBoardDetails } from '@/app/lib/moonboard-config';
 import BoardRenderer from '../board-renderer/board-renderer';
 import { BoardConfigData } from '@/app/lib/server-board-configs';
 import { StoredBoardConfig } from '@/app/lib/saved-boards-db';
-import type { UserBoard } from '@boardsesh/shared-schema';
+import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
 import styles from './board-scroll.module.css';
 
 const BOARD_TYPE_LABELS: Record<string, string> = {
@@ -24,6 +24,7 @@ const BOARD_TYPE_LABELS: Record<string, string> = {
 interface BoardScrollCardProps {
   userBoard?: UserBoard;
   storedConfig?: StoredBoardConfig;
+  popularConfig?: PopularBoardConfig;
   boardConfigs?: BoardConfigData;
   selected?: boolean;
   disabled?: boolean;
@@ -35,6 +36,7 @@ interface BoardScrollCardProps {
 export default function BoardScrollCard({
   userBoard,
   storedConfig,
+  popularConfig,
   boardConfigs,
   selected,
   disabled,
@@ -96,13 +98,31 @@ export default function BoardScrollCard({
             set_ids: storedConfig.setIds,
           });
         }
+      } else if (popularConfig) {
+        const boardName = popularConfig.boardType as BoardName;
+        cardName = popularConfig.displayName;
+        cardMeta = `${BOARD_TYPE_LABELS[boardName] || boardName} \u00B7 ${popularConfig.climbCount.toLocaleString()} routes`;
+
+        if (boardName === 'moonboard') {
+          details = getMoonBoardDetails({
+            layout_id: popularConfig.layoutId,
+            set_ids: popularConfig.setIds,
+          }) as BoardDetails;
+        } else {
+          details = getBoardDetails({
+            board_name: boardName,
+            layout_id: popularConfig.layoutId,
+            size_id: popularConfig.sizeId,
+            set_ids: popularConfig.setIds,
+          });
+        }
       }
     } catch {
       // Fall back to icon if board details unavailable
     }
 
     return { boardDetails: details, name: cardName, meta: cardMeta };
-  }, [userBoard, storedConfig, boardConfigs]);
+  }, [userBoard, storedConfig, popularConfig, boardConfigs]);
 
   const isSmall = size === 'small';
   const iconSize = isSmall ? 24 : 32;
@@ -110,12 +130,32 @@ export default function BoardScrollCard({
   const handleClick = disabled ? undefined : onClick;
   const displayMeta = disabled && disabledText ? disabledText : meta;
 
+  // Defer SVG rendering until card is near the viewport
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ''}`} onClick={handleClick}>
+    <div ref={cardRef} className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ''}`} onClick={handleClick}>
       <div
         className={`${styles.cardSquare} ${selected ? styles.cardSquareSelected : ''} ${disabled ? styles.cardSquareDisabled : ''}`}
       >
-        {boardDetails ? (
+        {boardDetails && isVisible ? (
           <BoardRenderer
             litUpHoldsMap={{}}
             mirrored={false}

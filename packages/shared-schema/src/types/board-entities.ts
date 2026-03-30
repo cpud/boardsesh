@@ -116,3 +116,28 @@ export type SearchBoardsInput = {
   limit?: number;
   offset?: number;
 };
+
+export type PopularBoardConfig = {
+  boardType: string;
+  layoutId: number;
+  layoutName?: string | null;
+  sizeId: number;
+  sizeName?: string | null;
+  sizeDescription?: string | null;
+  setIds: number[];
+  setNames: string[];
+  climbCount: number;
+  displayName: string;
+};
+
+export type PopularBoardConfigConnection = {
+  configs: PopularBoardConfig[];
+  totalCount: number;
+  hasMore: boolean;
+};
+
+export type PopularBoardConfigsInput = {
+  boardType?: string;
+  limit?: number;
+  offset?: number;
+};

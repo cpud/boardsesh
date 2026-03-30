@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import type { ActiveSessionInfo } from '@/app/components/persistent-session/types';
 
@@ -23,6 +23,19 @@ vi.mock('@/app/components/persistent-session', () => ({
 
 vi.mock('@/app/hooks/use-discover-boards', () => ({
   useDiscoverBoards: () => ({ boards: [], isLoading: false }),
+}));
+
+const mockUsePopularBoardConfigs = vi.fn().mockReturnValue({
+  configs: [],
+  isLoading: false,
+  isLoadingMore: false,
+  hasMore: false,
+  error: null,
+  loadMore: vi.fn(),
+});
+
+vi.mock('@/app/hooks/use-popular-board-configs', () => ({
+  usePopularBoardConfigs: (...args: unknown[]) => mockUsePopularBoardConfigs(...args),
 }));
 
 vi.mock('@/app/components/session-creation/start-sesh-drawer', () => ({
@@ -72,6 +85,14 @@ describe('HomePageContent', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockActiveSession = null;
+    mockUsePopularBoardConfigs.mockReturnValue({
+      configs: [],
+      isLoading: false,
+      isLoadingMore: false,
+      hasMore: false,
+      error: null,
+      loadMore: vi.fn(),
+    });
   });
 
   describe('hero button without active session', () => {
@@ -80,10 +101,13 @@ describe('HomePageContent', () => {
       expect(screen.getByRole('button', { name: /start climbing/i })).toBeTruthy();
     });
 
-    it('opens the session creation drawer on click', () => {
+    it('opens the session creation drawer on click', async () => {
       render(<HomePageContent {...defaultProps} />);
       fireEvent.click(screen.getByRole('button', { name: /start climbing/i }));
-      expect(screen.getByTestId('start-sesh-drawer')).toBeTruthy();
+      // Drawer mounts asynchronously via useEffect after state change
+      await waitFor(() => {
+        expect(screen.getByTestId('start-sesh-drawer')).toBeTruthy();
+      });
       expect(mockPush).not.toHaveBeenCalled();
     });
   });
@@ -108,7 +132,7 @@ describe('HomePageContent', () => {
       });
       render(<HomePageContent {...defaultProps} />);
       fireEvent.click(screen.getByRole('button', { name: /continue climbing/i }));
-      expect(mockPush).toHaveBeenCalledWith('/b/kilter-original-12x12/40/list');
+      expect(mockPush).toHaveBeenCalledWith('/b/kilter-original-12x12/40/list?session=session-123');
     });
 
     it('extracts slug correctly regardless of trailing path segments', () => {
@@ -124,7 +148,7 @@ describe('HomePageContent', () => {
       });
       render(<HomePageContent {...defaultProps} />);
       fireEvent.click(screen.getByRole('button', { name: /continue climbing/i }));
-      expect(mockPush).toHaveBeenCalledWith('/b/tension-tb2-original/25/list');
+      expect(mockPush).toHaveBeenCalledWith('/b/tension-tb2-original/25/list?session=session-123');
     });
 
     it('navigates directly to boardPath for legacy/custom paths', () => {
@@ -133,7 +157,7 @@ describe('HomePageContent', () => {
       });
       render(<HomePageContent {...defaultProps} />);
       fireEvent.click(screen.getByRole('button', { name: /continue climbing/i }));
-      expect(mockPush).toHaveBeenCalledWith('/kilter/1/10/1,2/40');
+      expect(mockPush).toHaveBeenCalledWith('/kilter/1/10/1,2/40?session=session-123');
     });
 
     it('does not open the session creation drawer when active session exists', () => {
@@ -157,7 +181,7 @@ describe('HomePageContent', () => {
       render(<HomePageContent {...defaultProps} />);
       fireEvent.click(screen.getByRole('button', { name: /continue climbing/i }));
       // Should use parsedParams.angle (45), not the 40 from boardPath
-      expect(mockPush).toHaveBeenCalledWith('/b/my-board/45/list');
+      expect(mockPush).toHaveBeenCalledWith('/b/my-board/45/list?session=session-123');
     });
 
     it('handles negative angles correctly', () => {
@@ -173,7 +197,42 @@ describe('HomePageContent', () => {
       });
       render(<HomePageContent {...defaultProps} />);
       fireEvent.click(screen.getByRole('button', { name: /continue climbing/i }));
-      expect(mockPush).toHaveBeenCalledWith('/b/tension-board/-20/list');
+      expect(mockPush).toHaveBeenCalledWith('/b/tension-board/-20/list?session=session-123');
+    });
+  });
+
+  describe('SSR popular configs', () => {
+    it('passes initialData to usePopularBoardConfigs when initialPopularConfigs is provided', () => {
+      const initialConfigs = [
+        {
+          boardType: 'kilter',
+          layoutId: 8,
+          layoutName: 'Original',
+          sizeId: 25,
+          sizeName: '12x12',
+          sizeDescription: 'Full size',
+          setIds: [26, 27],
+          setNames: ['Set A', 'Set B'],
+          climbCount: 500,
+          displayName: 'OG 12x12',
+        },
+      ];
+
+      render(<HomePageContent {...defaultProps} initialPopularConfigs={initialConfigs} />);
+
+      expect(mockUsePopularBoardConfigs).toHaveBeenCalledWith({
+        limit: 12,
+        initialData: initialConfigs,
+      });
+    });
+
+    it('does not pass initialData when initialPopularConfigs is not provided', () => {
+      render(<HomePageContent {...defaultProps} />);
+
+      expect(mockUsePopularBoardConfigs).toHaveBeenCalledWith({
+        limit: 12,
+        initialData: undefined,
+      });
     });
   });
 });
