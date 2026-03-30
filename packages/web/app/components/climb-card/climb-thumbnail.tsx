@@ -1,10 +1,11 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { BoardDetails, Climb } from '@/app/lib/types';
 import BoardRenderer from '../board-renderer/board-renderer';
 import { getContextAwareClimbViewUrl } from '@/app/lib/url-utils';
+import { convertLitUpHoldsStringToMap } from '@/app/components/board-renderer/util';
 
 type ClimbThumbnailProps = {
   currentClimb: Climb | null;
@@ -24,6 +25,10 @@ const placeholderStyle = (boardDetails: BoardDetails, maxHeight?: string): React
 
 const ClimbThumbnail = ({ boardDetails, currentClimb, enableNavigation = false, onNavigate, maxHeight }: ClimbThumbnailProps) => {
   const pathname = usePathname();
+  const litUpHoldsMap = useMemo(
+    () => currentClimb ? convertLitUpHoldsStringToMap(currentClimb.frames, boardDetails.board_name)[0] : undefined,
+    [currentClimb, boardDetails.board_name],
+  );
   const containerRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -61,7 +66,7 @@ const ClimbThumbnail = ({ boardDetails, currentClimb, enableNavigation = false, 
       <div ref={containerRef}>
         <Link href={climbViewUrl} prefetch={false} onClick={() => onNavigate?.()} data-testid="climb-thumbnail-link">
           <BoardRenderer
-            litUpHoldsMap={currentClimb?.litUpHoldsMap}
+            litUpHoldsMap={litUpHoldsMap}
             mirrored={!!currentClimb?.mirrored}
             boardDetails={boardDetails}
             thumbnail
@@ -75,7 +80,7 @@ const ClimbThumbnail = ({ boardDetails, currentClimb, enableNavigation = false, 
   return (
     <div ref={containerRef}>
       <BoardRenderer
-        litUpHoldsMap={currentClimb?.litUpHoldsMap}
+        litUpHoldsMap={litUpHoldsMap}
         mirrored={!!currentClimb?.mirrored}
         boardDetails={boardDetails}
         thumbnail

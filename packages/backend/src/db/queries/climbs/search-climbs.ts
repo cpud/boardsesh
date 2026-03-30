@@ -5,7 +5,6 @@ import { createClimbFilters, type ClimbSearchParams, type ParsedBoardRouteParame
 import { getSizeEdges } from '../util/product-sizes-data';
 import type { Climb, ClimbSearchResult } from '@boardsesh/shared-schema';
 import { boardClimbStats, boardseshTicks } from '@boardsesh/db/schema';
-import { convertLitUpHoldsStringToMap } from '../util/hold-state';
 
 export const searchClimbs = async (
   params: ParsedBoardRouteParameters,
@@ -140,8 +139,6 @@ export const searchClimbs = async (
       stars: Math.round((Number(result.quality_average) || 0) * 5),
       difficulty_error: result.difficulty_error?.toString() || '0',
       benchmark_difficulty: result.benchmark_difficulty && result.benchmark_difficulty > 0 ? result.benchmark_difficulty.toString() : null,
-      // TODO: Multiframe support should remove the hardcoded [0]
-      litUpHoldsMap: convertLitUpHoldsStringToMap(result.frames || '', params.board_name)[0],
       // Add user-specific fields if they exist
       userAscents: userId ? Number((result as Record<string, unknown>)?.userAscents || 0) : undefined,
       userAttempts: userId ? Number((result as Record<string, unknown>)?.userAttempts || 0) : undefined,

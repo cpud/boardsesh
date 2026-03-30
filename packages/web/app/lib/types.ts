@@ -15,7 +15,6 @@ export type Climb = {
   quality_average: string;
   stars: number;
   difficulty_error: string;
-  litUpHoldsMap: LitUpHoldsMap;
   mirrored?: boolean;
   benchmark_difficulty: string | null; // Benchmark difficulty, can be null
   userAscents?: number;

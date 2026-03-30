@@ -74,7 +74,6 @@ const climb = {
   quality_average: '3',
   stars: 0,
   difficulty_error: '0',
-  litUpHoldsMap: {},
   benchmark_difficulty: null,
 } as Climb;
 

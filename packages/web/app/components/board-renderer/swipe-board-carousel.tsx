@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import BoardRenderer from './board-renderer';
 import {
   useCardSwipeNavigation,
@@ -9,11 +9,11 @@ import {
   ENTER_ANIMATION_DURATION,
 } from '@/app/hooks/use-card-swipe-navigation';
 import type { BoardDetails } from '@/app/lib/types';
-import type { LitUpHoldsMap } from './types';
+import { convertLitUpHoldsStringToMap } from './util';
 import styles from './swipe-board-carousel.module.css';
 
 interface ClimbBoardData {
-  litUpHoldsMap: LitUpHoldsMap;
+  frames: string;
   mirrored?: boolean;
 }
 
@@ -94,6 +94,15 @@ const SwipeBoardCarousel: React.FC<SwipeBoardCarouselProps> = ({
 
   const transition = getSwipeTransition();
 
+  const currentLitUpHoldsMap = useMemo(
+    () => convertLitUpHoldsStringToMap(currentClimb.frames, boardDetails.board_name)[0],
+    [currentClimb.frames, boardDetails.board_name],
+  );
+  const peekLitUpHoldsMap = useMemo(
+    () => peekClimb ? convertLitUpHoldsStringToMap(peekClimb.frames, boardDetails.board_name)[0] : undefined,
+    [peekClimb, boardDetails.board_name],
+  );
+
   return (
     <div
       className={`${styles.carouselContainer} ${className ?? ''}`}
@@ -109,7 +118,7 @@ const SwipeBoardCarousel: React.FC<SwipeBoardCarouselProps> = ({
       >
         <BoardRenderer
           boardDetails={boardDetails}
-          litUpHoldsMap={currentClimb.litUpHoldsMap}
+          litUpHoldsMap={currentLitUpHoldsMap}
           mirrored={!!currentClimb.mirrored}
           fillHeight
         />
@@ -124,7 +133,7 @@ const SwipeBoardCarousel: React.FC<SwipeBoardCarouselProps> = ({
         >
           <BoardRenderer
             boardDetails={boardDetails}
-            litUpHoldsMap={peekClimb.litUpHoldsMap}
+            litUpHoldsMap={peekLitUpHoldsMap}
             mirrored={!!peekClimb.mirrored}
             fillHeight
           />
