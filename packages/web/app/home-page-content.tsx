@@ -108,6 +108,7 @@ export default function HomePageContent({ boardConfigs, isAuthenticatedSSR }: Ho
 
   const handleConfigClick = useCallback((config: PopularBoardConfig) => {
     const setIds = config.setIds.join(',');
+    // Default angle 40 is the most common starting angle across all board types
     router.push(`/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/40/list`);
   }, [router]);
 

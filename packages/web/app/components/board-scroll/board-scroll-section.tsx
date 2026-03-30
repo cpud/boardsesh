@@ -31,7 +31,7 @@ export default function BoardScrollSection({
   onLoadMoreRef.current = onLoadMore;
 
   useEffect(() => {
-    if (!hasMore || !onLoadMore || !sentinelRef.current || !scrollRef.current) return;
+    if (!hasMore || !onLoadMoreRef.current || !sentinelRef.current || !scrollRef.current) return;
 
     const observer = new IntersectionObserver(
       (entries) => {

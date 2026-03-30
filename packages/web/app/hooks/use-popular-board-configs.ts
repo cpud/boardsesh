@@ -16,6 +16,7 @@ interface PopularBoardConfigsResult {
   isLoading: boolean;
   isLoadingMore: boolean;
   hasMore: boolean;
+  error: string | null;
   loadMore: () => void;
 }
 
@@ -31,6 +32,7 @@ export function usePopularBoardConfigs({
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const hasMoreRef = useRef(false);
   const offsetRef = useRef(0);
   const isFetchingRef = useRef(false);
@@ -60,6 +62,9 @@ export function usePopularBoardConfigs({
       offsetRef.current = offset + newConfigs.length;
     } catch (err) {
       console.error('Failed to fetch popular board configs:', err);
+      if (isInitial) {
+        setError('Failed to load board configurations');
+      }
     } finally {
       if (isInitial) {
         setIsLoading(false);
@@ -81,5 +86,5 @@ export function usePopularBoardConfigs({
     }
   }, [fetchPage]);
 
-  return { configs, isLoading, isLoadingMore, hasMore, loadMore };
+  return { configs, isLoading, isLoadingMore, hasMore, error, loadMore };
 }
