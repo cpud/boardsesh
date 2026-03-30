@@ -20,9 +20,10 @@ import UnifiedSearchDrawer from '@/app/components/search-drawer/unified-search-d
 import BoardScrollSection from '@/app/components/board-scroll/board-scroll-section';
 import BoardScrollCard from '@/app/components/board-scroll/board-scroll-card';
 import { useDiscoverBoards } from '@/app/hooks/use-discover-boards';
+import { usePopularBoardConfigs } from '@/app/hooks/use-popular-board-configs';
 import { constructBoardSlugListUrl } from '@/app/lib/url-utils';
 import type { BoardConfigData } from '@/app/lib/server-board-configs';
-import type { UserBoard } from '@boardsesh/shared-schema';
+import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
 
 interface HomePageContentProps {
   boardConfigs: BoardConfigData;
@@ -97,11 +98,17 @@ export default function HomePageContent({ boardConfigs, isAuthenticatedSSR }: Ho
   const isAuthenticated = status === 'authenticated' ? true : (status === 'loading' ? (isAuthenticatedSSR ?? false) : false);
 
   const { boards: discoverBoards, isLoading: isBoardsLoading } = useDiscoverBoards({ limit: 20 });
+  const { configs: popularConfigs, isLoading: isConfigsLoading, isLoadingMore, hasMore, loadMore } = usePopularBoardConfigs({ limit: 12 });
 
   const handleBoardClick = useCallback((board: UserBoard) => {
     if (board.slug) {
       router.push(constructBoardSlugListUrl(board.slug, board.angle));
     }
+  }, [router]);
+
+  const handleConfigClick = useCallback((config: PopularBoardConfig) => {
+    const setIds = config.setIds.join(',');
+    router.push(`/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/40/list`);
   }, [router]);
 
   return (
@@ -163,13 +170,26 @@ export default function HomePageContent({ boardConfigs, isAuthenticatedSSR }: Ho
         </Box>
 
         {/* Board Discovery - horizontal scroll */}
-        {(isBoardsLoading || discoverBoards.length > 0) && (
-          <BoardScrollSection title="Boards near you" loading={isBoardsLoading}>
+        {(isBoardsLoading || isConfigsLoading || discoverBoards.length > 0 || popularConfigs.length > 0) && (
+          <BoardScrollSection
+            title="Boards near you"
+            loading={isBoardsLoading || isConfigsLoading}
+            onLoadMore={loadMore}
+            hasMore={hasMore}
+            isLoadingMore={isLoadingMore}
+          >
             {discoverBoards.map((board) => (
               <BoardScrollCard
                 key={board.uuid}
                 userBoard={board}
                 onClick={() => handleBoardClick(board)}
+              />
+            ))}
+            {popularConfigs.map((config) => (
+              <BoardScrollCard
+                key={`${config.boardType}-${config.layoutId}-${config.sizeId}`}
+                popularConfig={config}
+                onClick={() => handleConfigClick(config)}
               />
             ))}
           </BoardScrollSection>

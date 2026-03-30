@@ -1,0 +1,85 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
+import {
+  GET_POPULAR_BOARD_CONFIGS,
+  type GetPopularBoardConfigsQueryResponse,
+} from '@/app/lib/graphql/operations';
+import type { PopularBoardConfig } from '@boardsesh/shared-schema';
+
+interface UsePopularBoardConfigsOptions {
+  /** Number of configs per page */
+  limit?: number;
+}
+
+interface PopularBoardConfigsResult {
+  configs: PopularBoardConfig[];
+  isLoading: boolean;
+  isLoadingMore: boolean;
+  hasMore: boolean;
+  loadMore: () => void;
+}
+
+/**
+ * Fetches popular board configurations with pagination support.
+ * These are catalog configurations (board type + layout + size + sets)
+ * ranked by climb count, for users who can't find a nearby board.
+ */
+export function usePopularBoardConfigs({
+  limit = 12,
+}: UsePopularBoardConfigsOptions = {}): PopularBoardConfigsResult {
+  const [configs, setConfigs] = useState<PopularBoardConfig[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const hasMoreRef = useRef(false);
+  const offsetRef = useRef(0);
+  const isFetchingRef = useRef(false);
+
+  const fetchPage = useCallback(async (offset: number, isInitial: boolean) => {
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+
+    if (isInitial) {
+      setIsLoading(true);
+    } else {
+      setIsLoadingMore(true);
+    }
+
+    try {
+      const client = createGraphQLHttpClient();
+      const result = await client.request<GetPopularBoardConfigsQueryResponse>(
+        GET_POPULAR_BOARD_CONFIGS,
+        { input: { limit, offset } },
+      );
+
+      const { configs: newConfigs, hasMore: more } = result.popularBoardConfigs;
+
+      setConfigs((prev) => isInitial ? newConfigs : [...prev, ...newConfigs]);
+      setHasMore(more);
+      hasMoreRef.current = more;
+      offsetRef.current = offset + newConfigs.length;
+    } catch (err) {
+      console.error('Failed to fetch popular board configs:', err);
+    } finally {
+      if (isInitial) {
+        setIsLoading(false);
+      } else {
+        setIsLoadingMore(false);
+      }
+      isFetchingRef.current = false;
+    }
+  }, [limit]);
+
+  useEffect(() => {
+    offsetRef.current = 0;
+    fetchPage(0, true);
+  }, [fetchPage]);
+
+  const loadMore = useCallback(() => {
+    if (hasMoreRef.current && !isFetchingRef.current) {
+      fetchPage(offsetRef.current, false);
+    }
+  }, [fetchPage]);
+
+  return { configs, isLoading, isLoadingMore, hasMore, loadMore };
+}

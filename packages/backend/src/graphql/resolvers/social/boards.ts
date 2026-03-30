@@ -11,6 +11,7 @@ import {
   MyBoardsInputSchema,
   FollowBoardInputSchema,
   SearchBoardsInputSchema,
+  PopularBoardConfigsInputSchema,
   UUIDSchema,
 } from '../../../validation/schemas';
 import { generateUniqueGymSlug } from './gyms';
@@ -209,6 +210,75 @@ async function enrichBoard(
     gymUuid: gymInfo?.uuid ?? null,
     gymName: gymInfo?.name ?? null,
   };
+}
+
+// ============================================
+// Popular Board Config Cache
+// ============================================
+
+export interface CachedPopularConfig {
+  boardType: string;
+  layoutId: number;
+  layoutName: string | null;
+  sizeId: number;
+  sizeName: string | null;
+  sizeDescription: string | null;
+  setIds: number[];
+  setNames: string[];
+  climbCount: number;
+}
+
+let popularConfigCache: { data: CachedPopularConfig[]; timestamp: number } | null = null;
+const POPULAR_CONFIG_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+async function getPopularConfigs(): Promise<CachedPopularConfig[]> {
+  const now = Date.now();
+  if (popularConfigCache && (now - popularConfigCache.timestamp) < POPULAR_CONFIG_CACHE_TTL_MS) {
+    return popularConfigCache.data;
+  }
+
+  const rows = await db.execute(sql`
+    SELECT
+      psls.board_type,
+      psls.layout_id,
+      bl.name AS layout_name,
+      psls.product_size_id AS size_id,
+      bps.name AS size_name,
+      bps.description AS size_description,
+      array_agg(DISTINCT psls.set_id ORDER BY psls.set_id) AS set_ids,
+      array_agg(DISTINCT bs.name ORDER BY bs.name) AS set_names,
+      COALESCE(cc.climb_count, 0) AS climb_count
+    FROM board_product_sizes_layouts_sets psls
+    JOIN board_layouts bl ON bl.board_type = psls.board_type AND bl.id = psls.layout_id
+    JOIN board_product_sizes bps ON bps.board_type = psls.board_type AND bps.id = psls.product_size_id
+    JOIN board_sets bs ON bs.board_type = psls.board_type AND bs.id = psls.set_id
+    LEFT JOIN (
+      SELECT board_type, layout_id, COUNT(*) AS climb_count
+      FROM board_climbs
+      WHERE is_listed = true AND is_draft = false
+      GROUP BY board_type, layout_id
+    ) cc ON cc.board_type = psls.board_type AND cc.layout_id = psls.layout_id
+    WHERE psls.is_listed = true
+      AND bl.is_listed = true
+      AND bps.is_listed = true
+    GROUP BY psls.board_type, psls.layout_id, bl.name, psls.product_size_id, bps.name, bps.description, cc.climb_count
+    ORDER BY climb_count DESC, psls.board_type, bl.name
+  `);
+
+  const configs: CachedPopularConfig[] = (rows as unknown as Array<Record<string, unknown>>).map((row) => ({
+    boardType: row.board_type as string,
+    layoutId: Number(row.layout_id),
+    layoutName: (row.layout_name as string) ?? null,
+    sizeId: Number(row.size_id),
+    sizeName: (row.size_name as string) ?? null,
+    sizeDescription: (row.size_description as string) ?? null,
+    setIds: (row.set_ids as number[]).map(Number),
+    setNames: row.set_names as string[],
+    climbCount: Number(row.climb_count),
+  }));
+
+  popularConfigCache = { data: configs, timestamp: now };
+  return configs;
 }
 
 // ============================================
@@ -452,6 +522,34 @@ export const socialBoardQueries = {
       boards: enrichedBoards,
       totalCount,
       hasMore: offset + boards.length < totalCount,
+    };
+  },
+
+  /**
+   * Get popular board configurations ranked by climb count
+   */
+  popularBoardConfigs: async (
+    _: unknown,
+    { input }: { input?: unknown },
+    _ctx: ConnectionContext,
+  ) => {
+    const validatedInput = validateInput(PopularBoardConfigsInputSchema, input || {}, 'input');
+    const { boardType, limit, offset } = validatedInput;
+
+    const allConfigs = await getPopularConfigs();
+
+    // Apply optional board type filter
+    const filtered = boardType
+      ? allConfigs.filter((c) => c.boardType === boardType)
+      : allConfigs;
+
+    const totalCount = filtered.length;
+    const paginated = filtered.slice(offset, offset + limit);
+
+    return {
+      configs: paginated,
+      totalCount,
+      hasMore: offset + paginated.length < totalCount,
     };
   },
 

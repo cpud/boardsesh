@@ -345,6 +345,11 @@ export const queriesTypeDefs = /* GraphQL */ `
     searchBoards(input: SearchBoardsInput!): UserBoardConnection!
 
     """
+    Get popular board configurations ranked by climb count.
+    """
+    popularBoardConfigs(input: PopularBoardConfigsInput): PopularBoardConfigConnection!
+
+    """
     Get leaderboard for a board.
     """
     boardLeaderboard(input: BoardLeaderboardInput!): BoardLeaderboard!

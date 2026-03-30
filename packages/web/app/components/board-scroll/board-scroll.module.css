@@ -197,6 +197,16 @@
   }
 }
 
+/* Load more sentinel (infinite scroll) */
+.loadMoreSentinel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  flex-shrink: 0;
+  padding: 0 8px;
+}
+
 /* Desktop */
 @media (min-width: 768px) {
   .cardScroll {
