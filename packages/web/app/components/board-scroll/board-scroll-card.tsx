@@ -113,10 +113,15 @@ export default function BoardScrollCard({
         // Include set names for configs where they're distinctive (e.g., Mainline, Auxiliary)
         const GENERIC_SETS = new Set(['bolt ons', 'screw ons', 'foot set', 'plastic', 'wood']);
         const distinctiveSets = popularConfig.setNames
-          .filter((s) => !GENERIC_SETS.has(s.toLowerCase()))
-          .map((s) => s.replace(/\bKickboard\b/gi, 'KB'))
-          .join(' + ');
-        const setLabel = distinctiveSets ? ` ${distinctiveSets}` : '';
+          .filter((s) => !GENERIC_SETS.has(s.toLowerCase()));
+        const hasMainline = distinctiveSets.some((s) => /mainline/i.test(s) && !/kickboard/i.test(s));
+        const hasAux = distinctiveSets.some((s) => /auxiliary/i.test(s) && !/kickboard/i.test(s));
+        let setLabel = '';
+        if (hasMainline && hasAux) {
+          setLabel = ' Full Ride';
+        } else if (distinctiveSets.length > 0) {
+          setLabel = ` ${distinctiveSets.map((s) => s.replace(/\bKickboard\b/gi, 'KB')).join(' + ')}`;
+        }
         cardName = `${shortLayout} ${popularConfig.sizeName || ''}${setLabel}`.trim();
         cardMeta = `${BOARD_TYPE_LABELS[boardName] || boardName} \u00B7 ${popularConfig.climbCount.toLocaleString()} routes`;
 
