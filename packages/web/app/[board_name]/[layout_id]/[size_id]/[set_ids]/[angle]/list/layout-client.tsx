@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PropsWithChildren } from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -11,6 +11,7 @@ import { DeleteOutlined } from '@mui/icons-material';
 import { track } from '@vercel/analytics';
 import { BoardDetails } from '@/app/lib/types';
 
+import { getImageUrl } from '@/app/components/board-renderer/util';
 import AccordionSearchForm from '@/app/components/search-drawer/accordion-search-form';
 import SearchResultsFooter from '@/app/components/search-drawer/search-results-footer';
 import QueueList from '@/app/components/queue-control/queue-list';
@@ -97,6 +98,43 @@ const TabsWrapper: React.FC<{ boardDetails: BoardDetails }> = ({ boardDetails })
 };
 
 const ListLayoutClient: React.FC<PropsWithChildren<ListLayoutClientProps>> = ({ boardDetails, children }) => {
+  // Prefetch full-size board images so climb detail view loads instantly
+  useEffect(() => {
+    const links: HTMLLinkElement[] = [];
+
+    // Prefetch Kilter/Tension board images
+    Object.keys(boardDetails.images_to_holds).forEach((imageUrl) => {
+      const fullUrl = getImageUrl(imageUrl, boardDetails.board_name);
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.href = fullUrl;
+      link.as = 'image';
+      document.head.appendChild(link);
+      links.push(link);
+    });
+
+    // Prefetch MoonBoard images (background + hold sets)
+    if (boardDetails.layoutFolder) {
+      const bgLink = document.createElement('link');
+      bgLink.rel = 'prefetch';
+      bgLink.href = '/images/moonboard/moonboard-bg.avif';
+      bgLink.as = 'image';
+      document.head.appendChild(bgLink);
+      links.push(bgLink);
+
+      boardDetails.holdSetImages?.forEach((imageFile) => {
+        const link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.href = `/images/moonboard/${boardDetails.layoutFolder}/${imageFile.replace(/\.png$/, '.avif')}`;
+        link.as = 'image';
+        document.head.appendChild(link);
+        links.push(link);
+      });
+    }
+
+    return () => links.forEach((link) => link.remove());
+  }, [boardDetails]);
+
   return (
     <Box className={styles.listLayout}>
       <Box component="main" className={styles.mainContent}>{children}</Box>
