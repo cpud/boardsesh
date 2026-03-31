@@ -177,6 +177,10 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
           details.set_names,
           angle,
         ));
+      } else {
+        // Numeric URL fallback — will be redirected server-side
+        const setIds = config.setIds.join(',');
+        router.push(`/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`);
       }
     }
   }, [router]);

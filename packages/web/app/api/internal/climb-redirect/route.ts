@@ -102,7 +102,8 @@ export async function GET(request: NextRequest) {
       } else {
         url = `/${boardType}/${climb.layoutId}/${psls.productSizeId}/${setIdArray.join(',')}/${angle}/view/${climbUuid}`;
       }
-    } catch {
+    } catch (slugError) {
+      console.warn('[climb-redirect] Failed to resolve slug URL, falling back to numeric:', slugError);
       url = `/${boardType}/${climb.layoutId}/${psls.productSizeId}/${setIdArray.join(',')}/${angle}/view/${climbUuid}`;
     }
 

@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useQueueContext } from '../graphql-queue';
 import { useParams, usePathname, useSearchParams } from 'next/navigation';
-import { parseBoardRouteParams, constructPlayUrlWithSlugs, getContextAwareClimbViewUrl } from '@/app/lib/url-utils';
+import { parseBoardRouteParams, constructPlayUrlWithSlugs, getContextAwareClimbViewUrl, isNumericId } from '@/app/lib/url-utils';
 import { BoardRouteParametersWithUuid, BoardDetails } from '@/app/lib/types';
 import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import FastForwardOutlined from '@mui/icons-material/FastForwardOutlined';
@@ -23,17 +23,28 @@ const NextButton = (props: IconButtonProps) => (
 
 export default function NextClimbButton({ navigate = false, boardDetails }: NextClimbButtonProps) {
   const { setCurrentClimbQueueItem, getNextClimbQueueItem, viewOnlyMode } = useQueueContext();
+  const rawParams = useParams<BoardRouteParametersWithUuid>();
   const { board_name, layout_id, size_id, set_ids, angle } =
-    parseBoardRouteParams(useParams<BoardRouteParametersWithUuid>());
+    parseBoardRouteParams(rawParams);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isPlayPage = pathname.includes('/play/');
 
   const nextClimb = getNextClimbQueueItem();
 
-  const resolvedDetails = boardDetails ?? getBoardDetailsForBoard({
-    board_name, layout_id, size_id, set_ids,
-  });
+  // Prefer the passed boardDetails; only resolve from static data if params are numeric (not slugs)
+  let resolvedDetails: BoardDetails;
+  if (boardDetails) {
+    resolvedDetails = boardDetails;
+  } else if (isNumericId(rawParams.layout_id)) {
+    try {
+      resolvedDetails = getBoardDetailsForBoard({ board_name, layout_id, size_id, set_ids });
+    } catch {
+      resolvedDetails = { board_name, layout_id, size_id, set_ids } as BoardDetails;
+    }
+  } else {
+    resolvedDetails = { board_name, layout_id, size_id, set_ids } as BoardDetails;
+  }
 
   const buildClimbUrl = () => {
     if (!nextClimb) return '';
@@ -52,7 +63,7 @@ export default function NextClimbButton({ navigate = false, boardDetails }: Next
           nextClimb.climb.name,
         );
       } else {
-        climbUrl = `/${board_name}/${layout_id}/${size_id}/${set_ids}/${angle}/play/${nextClimb.climb.uuid}`;
+        climbUrl = `/${rawParams.board_name}/${rawParams.layout_id}/${rawParams.size_id}/${rawParams.set_ids}/${rawParams.angle}/play/${nextClimb.climb.uuid}`;
       }
 
       const queryString = searchParams.toString();

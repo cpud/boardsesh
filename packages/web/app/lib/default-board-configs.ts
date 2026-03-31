@@ -67,25 +67,30 @@ export function getDefaultClimbViewPath(
   const config = getDefaultBoardConfig(boardName, layoutId);
   if (!config) return null;
 
-  const details = getBoardDetailsForBoard({
-    board_name: boardName,
-    layout_id: layoutId,
-    size_id: config.sizeId,
-    set_ids: config.setIds,
-  });
+  try {
+    const details = getBoardDetailsForBoard({
+      board_name: boardName,
+      layout_id: layoutId,
+      size_id: config.sizeId,
+      set_ids: config.setIds,
+    });
 
-  if (details.layout_name && details.size_name && details.set_names) {
-    return constructClimbViewUrlWithSlugs(
-      boardName,
-      details.layout_name,
-      details.size_name,
-      details.size_description,
-      details.set_names,
-      angle,
-      climbUuid,
-      climbName,
-    );
+    if (details.layout_name && details.size_name && details.set_names) {
+      return constructClimbViewUrlWithSlugs(
+        boardName,
+        details.layout_name,
+        details.size_name,
+        details.size_description,
+        details.set_names,
+        angle,
+        climbUuid,
+        climbName,
+      );
+    }
+  } catch {
+    // Static data lookup failed — fall through to numeric URL
   }
 
-  return null;
+  // Numeric URL fallback — will be redirected server-side
+  return `/${boardName}/${layoutId}/${config.sizeId}/${config.setIds.join(',')}/${angle}/view/${climbUuid}`;
 }

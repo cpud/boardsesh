@@ -657,8 +657,9 @@ export const getContextAwareClimbViewUrl = (
         climbName,
       );
     }
-  } catch {
-    // Fall through to numeric fallback
+  } catch (e) {
+    // Static data lookup failed for this board config — fall through to numeric URL
+    console.warn('[getContextAwareClimbViewUrl] Failed to resolve slug URL:', e);
   }
 
   return constructClimbViewUrl(
