@@ -9,7 +9,9 @@ const adapter = process.env.FLAGS ? vercelAdapter() : undefined;
 
 async function identify() {
   const session = await getServerSession(authOptions);
-  return session?.user ? { user: { id: session.user.id, email: session.user.email } } : {};
+  const entities = session?.user ? { user: { id: session.user.id, email: session.user.email } } : {};
+  console.log('[flags] identify() →', JSON.stringify(entities));
+  return entities;
 }
 
 export const rustSvgRendering = flag({
@@ -23,7 +25,9 @@ export const rustSvgRendering = flag({
     { value: false, label: 'Disabled' },
   ],
   decide() {
-    return false;
+    // Return undefined to defer to the Vercel adapter's dashboard rules.
+    // Falls through to defaultValue (false) when no adapter is active.
+    return undefined as unknown as boolean;
   },
 });
 
@@ -37,5 +41,7 @@ export type FeatureFlags = {
 
 export async function evaluateAllFlags(): Promise<FeatureFlags> {
   const values = await evaluate(allFlags);
-  return combine(allFlags, values) as FeatureFlags;
+  const result = combine(allFlags, values) as FeatureFlags;
+  console.log('[flags] evaluateAllFlags() →', JSON.stringify(result));
+  return result;
 }
