@@ -100,7 +100,7 @@ describe('board-render API route', () => {
     const response = await GET(makeRequest(validParams));
     expect(response.status).toBe(200);
     expect(response.headers.get('Content-Type')).toBe('image/webp');
-    expect(response.headers.get('Cache-Control')).toBe('public, max-age=31536000, immutable');
+    expect(response.headers.get('Cache-Control')).toBe('public, s-maxage=31536000, max-age=31536000, immutable');
   });
 
   it('returns 400 when board_name is missing', async () => {
