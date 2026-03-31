@@ -64,8 +64,21 @@ export function createGraphQLClient(
 
   let hasConnectedOnce = false;
 
+  // Wrap WebSocket to prevent native error events from leaking as unhandled
+  // promise rejections. graphql-ws uses promises internally for connection
+  // management, and on some code paths (retry, dispose) the native WebSocket
+  // error Event can escape as an unhandled rejection. The noop listener
+  // ensures the event is always "handled" at the source.
+  class SafeWebSocket extends WebSocket {
+    constructor(url: string | URL, protocols?: string | string[]) {
+      super(url, protocols);
+      this.addEventListener('error', () => {});
+    }
+  }
+
   const client = createClient({
     url,
+    webSocketImpl: SafeWebSocket,
     retryAttempts: 10, // More attempts with exponential backoff
     shouldRetry: () => true,
     // Exponential backoff: 1s, 2s, 4s, 8s, 16s, 30s, 30s, ...
