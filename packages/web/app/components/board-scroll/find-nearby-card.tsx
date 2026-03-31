@@ -2,6 +2,7 @@
 
 import React, { useMemo } from 'react';
 import LocationOnOutlined from '@mui/icons-material/LocationOnOutlined';
+import LocationOffOutlined from '@mui/icons-material/LocationOffOutlined';
 import CircularProgress from '@mui/material/CircularProgress';
 import { getBoardDetails } from '@/app/lib/__generated__/product-sizes-data';
 import BoardRenderer from '../board-renderer/board-renderer';
@@ -10,10 +11,11 @@ import styles from './board-scroll.module.css';
 interface FindNearbyCardProps {
   onClick: () => void;
   loading?: boolean;
+  error?: boolean;
   size?: 'default' | 'small';
 }
 
-export default function FindNearbyCard({ onClick, loading = false, size = 'default' }: FindNearbyCardProps) {
+export default function FindNearbyCard({ onClick, loading = false, error = false, size = 'default' }: FindNearbyCardProps) {
   const isSmall = size === 'small';
   const iconSize = isSmall ? 28 : 36;
 
@@ -28,8 +30,21 @@ export default function FindNearbyCard({ onClick, loading = false, size = 'defau
     [],
   );
 
+  let icon: React.ReactNode;
+  let label: string;
+  if (error) {
+    icon = <LocationOffOutlined sx={{ fontSize: iconSize, color: 'var(--semantic-error)' }} />;
+    label = 'Location unavailable';
+  } else if (loading) {
+    icon = <CircularProgress size={iconSize} sx={{ color: 'var(--color-primary)' }} />;
+    label = 'Finding boards…';
+  } else {
+    icon = <LocationOnOutlined sx={{ fontSize: iconSize, color: 'var(--color-primary)' }} />;
+    label = 'Find nearby';
+  }
+
   return (
-    <div className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ''}`} onClick={onClick}>
+    <div className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ''}`} onClick={error ? undefined : onClick}>
       <div className={styles.cardSquare}>
         <div className={styles.findNearbyBoard}>
           <BoardRenderer
@@ -41,14 +56,10 @@ export default function FindNearbyCard({ onClick, loading = false, size = 'defau
           />
         </div>
         <div className={styles.findNearbyOverlay}>
-          {loading ? (
-            <CircularProgress size={iconSize} sx={{ color: 'var(--color-primary)' }} />
-          ) : (
-            <LocationOnOutlined sx={{ fontSize: iconSize, color: 'var(--color-primary)' }} />
-          )}
+          {icon}
         </div>
       </div>
-      <div className={styles.cardName}>Find nearby</div>
+      <div className={`${styles.cardName} ${error ? styles.cardNameError : ''}`}>{label}</div>
     </div>
   );
 }

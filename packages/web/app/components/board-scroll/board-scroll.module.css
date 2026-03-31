@@ -122,6 +122,10 @@
   z-index: 1;
 }
 
+.cardNameError {
+  color: var(--semantic-error);
+}
+
 .findNearbyBoard {
   filter: grayscale(100%);
   opacity: 0.35;

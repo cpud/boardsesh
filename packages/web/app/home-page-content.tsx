@@ -121,7 +121,7 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
   const isAuthenticated = status === 'authenticated';
 
   const [locationEnabled, setLocationEnabled] = useState(false);
-  const { boards: discoverBoards, isLoading: isBoardsLoading } = useDiscoverBoards({ limit: 20, enableLocation: locationEnabled });
+  const { boards: discoverBoards, isLoading: isBoardsLoading, hasLocation } = useDiscoverBoards({ limit: 20, enableLocation: locationEnabled });
   const { configs: popularConfigs, isLoading: isConfigsLoading, isLoadingMore, hasMore, loadMore } = usePopularBoardConfigs({ limit: 12, initialData: initialPopularConfigs });
 
   const handleBoardClick = useCallback((board: UserBoard) => {
@@ -218,12 +218,14 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
             hasMore={hasMore}
             isLoadingMore={isLoadingMore}
           >
-            {!locationEnabled && (
+            {!hasLocation && (
               <FindNearbyCard
                 onClick={() => setLocationEnabled(true)}
+                loading={locationEnabled && isBoardsLoading}
+                error={locationEnabled && !isBoardsLoading && !hasLocation}
               />
             )}
-            {discoverBoards.map((board) => (
+            {locationEnabled && discoverBoards.map((board) => (
               <BoardScrollCard
                 key={board.uuid}
                 userBoard={board}
