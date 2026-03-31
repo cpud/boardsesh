@@ -103,7 +103,7 @@ export interface ClimbSearchInputVariables {
     hideCompleted?: boolean;
     showOnlyAttempted?: boolean;
     showOnlyCompleted?: boolean;
-    showDrafts?: boolean;
+    onlyDrafts?: boolean;
   };
 }
 

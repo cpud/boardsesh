@@ -168,6 +168,7 @@ const AccordionSearchForm: React.FC<AccordionSearchFormProps> = ({
                   <MenuItem value="difficulty">Difficulty</MenuItem>
                   <MenuItem value="name">Name</MenuItem>
                   <MenuItem value="quality">Quality</MenuItem>
+                  <MenuItem value="creation">Creation</MenuItem>
                 </MuiSelect>
                 <MuiSelect
                   value={uiSearchParams.sortOrder}
@@ -283,8 +284,11 @@ const AccordionSearchForm: React.FC<AccordionSearchFormProps> = ({
                 <MuiSwitch
                   size="small"
                   color="primary"
-                  checked={uiSearchParams.showDrafts}
-                  onChange={(_, checked) => updateFilters({ showDrafts: checked })}
+                  checked={uiSearchParams.onlyDrafts}
+                  onChange={(_, checked) => updateFilters({
+                    onlyDrafts: checked,
+                    ...(checked ? { sortBy: 'creation', sortOrder: 'desc' } : {}),
+                  })}
                 />
               </div>
               <div className={styles.switchRow}>

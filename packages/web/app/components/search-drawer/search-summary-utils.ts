@@ -77,7 +77,7 @@ export function getUserPanelSummary(params: SearchRequestPagination): string[] {
   if (params.showOnlyCompleted) onlyFilters.push('completed');
 
   const parts: string[] = [];
-  if (params.showDrafts) {
+  if (params.onlyDrafts) {
     parts.push('Drafts');
   }
   if (hideFilters.length > 0) {

@@ -84,7 +84,7 @@ export type SearchRequest = {
   minAscents: number;
   minGrade: number;
   minRating: number;
-  sortBy: 'ascents' | 'difficulty' | 'name' | 'quality' | 'popular';
+  sortBy: 'ascents' | 'difficulty' | 'name' | 'quality' | 'popular' | 'creation';
   sortOrder: 'asc' | 'desc';
   name: string;
   onlyClassics: boolean;
@@ -96,7 +96,7 @@ export type SearchRequest = {
   hideCompleted: boolean;
   showOnlyAttempted: boolean;
   showOnlyCompleted: boolean;
-  showDrafts: boolean;
+  onlyDrafts: boolean;
   [key: `hold_${number}`]: HoldFilterValue; // Allow dynamic hold keys directly in the search params
 };
 

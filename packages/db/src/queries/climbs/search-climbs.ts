@@ -32,11 +32,13 @@ export const searchClimbs = async (
   const filters = createClimbFilters(params, searchParams, sizeEdges, userId);
 
   // Define sort columns
+  const defaultSort = searchParams.onlyDrafts ? 'creation' : 'ascents';
   const allowedSortColumns: Record<string, ReturnType<typeof sql>> = {
     ascents: sql`${boardClimbStats.ascensionistCount}`,
     difficulty: sql`ROUND(${boardClimbStats.displayDifficulty}::numeric, 0)`,
     name: sql`${boardClimbs.name}`,
     quality: sql`${boardClimbStats.qualityAverage}`,
+    creation: sql`${boardClimbs.createdAt}`,
     popular: sql`(
       SELECT COALESCE(SUM(cs.ascensionist_count), 0)
       FROM ${boardClimbStats} cs
@@ -44,7 +46,7 @@ export const searchClimbs = async (
     )`,
   };
 
-  const sortColumn = allowedSortColumns[searchParams.sortBy || 'ascents'] || sql`${boardClimbStats.ascensionistCount}`;
+  const sortColumn = allowedSortColumns[searchParams.sortBy || defaultSort] || sql`${boardClimbStats.ascensionistCount}`;
 
   const whereConditions = [
     ...filters.getClimbWhereConditions(),
@@ -103,11 +105,6 @@ export const searchClimbs = async (
     ? sql`${sortColumn} ASC NULLS FIRST`
     : sql`${sortColumn} DESC NULLS LAST`;
 
-  // When showDrafts is active, surface draft climbs first
-  const draftsFirstClause = searchParams.showDrafts
-    ? sql`CASE WHEN ${boardClimbs.isDraft} = true THEN 0 ELSE 1 END`
-    : undefined;
-
   const coreQuery = db
     .select(selectFields)
     .from(boardClimbs)
@@ -119,7 +116,7 @@ export const searchClimbs = async (
     : coreQuery
   )
     .where(and(...whereConditions))
-    .orderBy(...(draftsFirstClause ? [draftsFirstClause, orderByClause, desc(boardClimbs.uuid)] : [orderByClause, desc(boardClimbs.uuid)]))
+    .orderBy(orderByClause, desc(boardClimbs.uuid))
     .limit(pageSize + 1)
     .offset(page * pageSize);
 

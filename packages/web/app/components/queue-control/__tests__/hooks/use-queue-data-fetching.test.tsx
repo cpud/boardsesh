@@ -101,7 +101,7 @@ const mockSearchParams: SearchRequestPagination = {
   hideCompleted: false,
   showOnlyAttempted: false,
   showOnlyCompleted: false,
-  showDrafts: false
+  onlyDrafts: false
 };
 
 const mockParsedParams: ParsedBoardRouteParameters = {

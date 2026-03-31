@@ -45,52 +45,37 @@ export const createClimbFilters = (
     .filter(([, value]) => ['STARTING', 'HAND', 'FOOT', 'FINISH'].includes(value as string))
     .map(([key, state]) => ({ holdId: Number(key), state: state as string }));
 
-  // When showDrafts is enabled, relax isDraft and isListed filters to include
-  // the user's own drafts. Draft climbs can be owned via userId (locally created
-  // or JSON-imported) or via setterId (Aurora-synced).
-  const isShowDrafts = searchParams.showDrafts && userId;
+  // When onlyDrafts is enabled, show ONLY the user's own draft climbs.
+  // Draft climbs can be owned via userId (locally created or JSON-imported)
+  // or via setterId (Aurora-synced).
+  const isOnlyDrafts = searchParams.onlyDrafts && userId;
 
-  const isDraftCondition: SQL = isShowDrafts
+  const userOwnershipCondition = userId
     ? or(
-        eq(boardClimbs.isDraft, false),
-        and(
-          eq(boardClimbs.isDraft, true),
-          or(
-            eq(boardClimbs.userId, userId),
-            sql`${boardClimbs.setterId} = (
-              SELECT ubm.board_user_id FROM user_board_mappings ubm
-              WHERE ubm.user_id = ${userId}
-              AND ubm.board_type = ${params.board_name}
-              LIMIT 1
-            )`,
-          ),
-        ),
+        eq(boardClimbs.userId, userId),
+        sql`${boardClimbs.setterId} = (
+          SELECT ubm.board_user_id FROM user_board_mappings ubm
+          WHERE ubm.user_id = ${userId}
+          AND ubm.board_type = ${params.board_name}
+          LIMIT 1
+        )`,
       )!
+    : sql`false`;
+
+  const isDraftCondition: SQL = isOnlyDrafts
+    ? and(eq(boardClimbs.isDraft, true), userOwnershipCondition)!
     : eq(boardClimbs.isDraft, false);
 
-  const isListedCondition: SQL = isShowDrafts
-    ? or(
-        eq(boardClimbs.isListed, true),
-        and(
-          eq(boardClimbs.isListed, false),
-          or(
-            eq(boardClimbs.userId, userId),
-            sql`${boardClimbs.setterId} = (
-              SELECT ubm.board_user_id FROM user_board_mappings ubm
-              WHERE ubm.user_id = ${userId}
-              AND ubm.board_type = ${params.board_name}
-              LIMIT 1
-            )`,
-          ),
-        ),
-      )!
+  // When showing only drafts, skip the isListed filter (drafts are never listed)
+  const isListedCondition: SQL | null = isOnlyDrafts
+    ? null
     : eq(boardClimbs.isListed, true);
 
   // Base conditions for filtering climbs
   const baseConditions: SQL[] = [
     eq(boardClimbs.boardType, params.board_name),
     eq(boardClimbs.layoutId, params.layout_id),
-    isListedCondition,
+    ...(isListedCondition ? [isListedCondition] : []),
     isDraftCondition,
     eq(boardClimbs.framesCount, 1),
   ];

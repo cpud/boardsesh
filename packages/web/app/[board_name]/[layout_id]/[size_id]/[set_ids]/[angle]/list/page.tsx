@@ -70,7 +70,7 @@ export default async function DynamicResultsPage(props: {
     searchParamsObject.hideCompleted ||
     searchParamsObject.showOnlyAttempted ||
     searchParamsObject.showOnlyCompleted ||
-    searchParamsObject.showDrafts
+    searchParamsObject.onlyDrafts
   );
 
   // Check if this is a default search (no custom filters applied)

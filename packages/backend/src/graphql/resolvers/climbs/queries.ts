@@ -63,15 +63,15 @@ export const climbQueries = {
       hideCompleted: input.hideCompleted,
       showOnlyAttempted: input.showOnlyAttempted,
       showOnlyCompleted: input.showOnlyCompleted,
-      showDrafts: input.showDrafts,
+      onlyDrafts: input.onlyDrafts,
     };
 
     if (DEBUG) {
-      console.log('[searchClimbs] showDrafts:', input.showDrafts, 'userId:', ctx.isAuthenticated ? ctx.userId : 'not authenticated');
+      console.log('[searchClimbs] onlyDrafts:', input.onlyDrafts, 'userId:', ctx.isAuthenticated ? ctx.userId : 'not authenticated');
     }
 
     // Drafts require authentication — return empty results if not signed in
-    if (input.showDrafts && !ctx.isAuthenticated) {
+    if (input.onlyDrafts && !ctx.isAuthenticated) {
       return {
         params,
         searchParams,
