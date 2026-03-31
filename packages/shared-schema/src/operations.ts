@@ -6,7 +6,6 @@ const CLIMB_FIELDS = `
   uuid
   setter_username
   name
-  description
   frames
   angle
   ascensionist_count

@@ -75,7 +75,7 @@ export const searchClimbs = async (
     is_draft: boardClimbs.isDraft,
     angle: boardClimbStats.angle,
     ascensionist_count: boardClimbStats.ascensionistCount,
-    difficulty_id: sql<number>`ROUND(${boardClimbStats.displayDifficulty}::numeric, 0)`,
+    difficulty_id: sql<number | null>`ROUND(${boardClimbStats.displayDifficulty}::numeric, 0)`,
     quality_average: sql<number>`ROUND(${boardClimbStats.qualityAverage}::numeric, 2)`,
     difficulty_error: sql<number>`ROUND(${boardClimbStats.difficultyAverage}::numeric - ${boardClimbStats.displayDifficulty}::numeric, 2)`,
     benchmark_difficulty: boardClimbStats.benchmarkDifficulty,
@@ -85,79 +85,36 @@ export const searchClimbs = async (
     ? sql`${sortColumn} ASC NULLS FIRST`
     : sql`${sortColumn} DESC NULLS LAST`;
 
-  // For the default ascents sort, drive from board_climb_stats to leverage the
-  // covering index (board_type, angle, ascensionist_count DESC NULLS LAST).
-  // PostgreSQL reads the index in sorted order and stops after 21 qualifying rows,
-  // avoiding a full sort of all matching climbs.
-  const useStatsDriven = sortBy === 'ascents' && sortOrder === 'desc';
+  // Always use board_climbs as the driving table with LEFT JOIN to board_climb_stats.
+  // This ensures climbs without stats rows are not silently dropped from results.
+  // The board_climb_stats_ascents_covering_idx helps the JOIN, and the planner
+  // can use it for the ORDER BY when sorting by ascents.
+  const coreQuery = db
+    .select(selectFields)
+    .from(boardClimbs)
+    .leftJoin(boardClimbStats, and(...filters.getClimbStatsJoinConditions()));
 
-  type SelectResult = {
-    uuid: string;
-    setter_username: string | null;
-    name: string | null;
-    frames: string | null;
-    is_draft: boolean | null;
-    angle: number | null;
-    ascensionist_count: string | null;
-    difficulty_id: number;
-    quality_average: number;
-    difficulty_error: number;
-    benchmark_difficulty: number | null;
-  };
+  // Only add popular counts join when sorting by popular
+  const queryWithJoins = popularCountsSubquery
+    ? coreQuery.leftJoin(popularCountsSubquery, eq(popularCountsSubquery.climbUuid, boardClimbs.uuid))
+    : coreQuery;
 
-  let results: SelectResult[];
-
-  if (useStatsDriven) {
-    // Stats-driven: FROM board_climb_stats INNER JOIN board_climbs
-    // The climb filter conditions move to the JOIN predicate so the index scan
-    // on board_climb_stats drives the query in sorted order.
-    const climbJoinConditions = [
-      eq(boardClimbs.uuid, boardClimbStats.climbUuid),
-      ...filters.getClimbWhereConditions(),
-      ...filters.getSizeConditions(),
-    ];
-
-    const statsWhereConditions = [
-      eq(boardClimbStats.boardType, params.board_name),
-      eq(boardClimbStats.angle, params.angle),
-      ...filters.getClimbStatsConditions(),
-    ];
-
-    results = await db
-      .select(selectFields)
-      .from(boardClimbStats)
-      .innerJoin(boardClimbs, and(...climbJoinConditions))
-      .where(and(...statsWhereConditions))
-      .orderBy(sql`${boardClimbStats.ascensionistCount} DESC NULLS LAST`, desc(boardClimbs.uuid))
-      .limit(pageSize + 1)
-      .offset(page * pageSize);
-  } else {
-    // Standard path: FROM board_climbs LEFT JOIN board_climb_stats
-    const coreQuery = db
-      .select(selectFields)
-      .from(boardClimbs)
-      .leftJoin(boardClimbStats, and(...filters.getClimbStatsJoinConditions()));
-
-    // Only add popular counts join when sorting by popular
-    const queryWithJoins = popularCountsSubquery
-      ? coreQuery.leftJoin(popularCountsSubquery, eq(popularCountsSubquery.climbUuid, boardClimbs.uuid))
-      : coreQuery;
-
-    results = await queryWithJoins
-      .where(and(...whereConditions))
-      .orderBy(orderByClause, desc(boardClimbs.uuid))
-      .limit(pageSize + 1)
-      .offset(page * pageSize);
-  }
+  const results = await queryWithJoins
+    .where(and(...whereConditions))
+    .orderBy(orderByClause, desc(boardClimbs.uuid))
+    .limit(pageSize + 1)
+    .offset(page * pageSize);
 
   const hasMore = results.length > pageSize;
   const trimmedResults = hasMore ? results.slice(0, pageSize) : results;
 
+  // description is intentionally excluded from search results — it's unbounded text
+  // that inflates I/O and transfer. Any feature needing it should fetch it separately
+  // via the single-climb detail query (getClimbByUuid).
   const climbs: ClimbRow[] = trimmedResults.map((result) => ({
     uuid: result.uuid,
     setter_username: result.setter_username || '',
     name: result.name || '',
-    description: '',
     frames: result.frames || '',
     angle: Number(params.angle),
     ascensionist_count: Number(result.ascensionist_count || 0),
