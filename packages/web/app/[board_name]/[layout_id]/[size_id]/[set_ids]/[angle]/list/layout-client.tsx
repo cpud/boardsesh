@@ -97,6 +97,19 @@ const TabsWrapper: React.FC<{ boardDetails: BoardDetails }> = ({ boardDetails })
   );
 };
 
+// Preload thumbnail background images so they stay in the browser's memory
+// cache while the virtualizer mounts/unmounts list items on scroll.
+const hiddenStyle: React.CSSProperties = { position: 'absolute', width: 0, height: 0 };
+const ThumbnailPreload: React.FC<{ boardDetails: BoardDetails }> = React.memo(({ boardDetails }) => (
+  <>
+    {Object.keys(boardDetails.images_to_holds).map((img) => (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img key={img} src={getImageUrl(img, boardDetails.board_name, true)} alt="" aria-hidden style={hiddenStyle} />
+    ))}
+  </>
+));
+ThumbnailPreload.displayName = 'ThumbnailPreload';
+
 const ListLayoutClient: React.FC<PropsWithChildren<ListLayoutClientProps>> = ({ boardDetails, children }) => {
   // Prefetch full-size board images when the browser is idle so climb detail view loads instantly
   useEffect(() => {
@@ -143,6 +156,7 @@ const ListLayoutClient: React.FC<PropsWithChildren<ListLayoutClientProps>> = ({ 
 
   return (
     <Box className={styles.listLayout}>
+      <ThumbnailPreload boardDetails={boardDetails} />
       <Box component="main" className={styles.mainContent}>{children}</Box>
       <Box component="aside" className={styles.sider} sx={{ width: 400, padding: '0 8px 20px 8px' }}>
         <TabsWrapper boardDetails={boardDetails} />
