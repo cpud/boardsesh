@@ -4,8 +4,9 @@ import { usePathname } from 'next/navigation';
 
 import { BoardDetails, Climb } from '@/app/lib/types';
 import BoardRenderer from '@/app/components/board-renderer/board-renderer';
-import BoardImageLayers from '../board-renderer/board-image-layers';
+import BoardCanvasRenderer from '../board-renderer/board-canvas-renderer';
 import { useFeatureFlag } from '@/app/components/providers/feature-flags-provider';
+import { isWorkerRenderingSupported } from '@/app/lib/board-render-worker/worker-manager';
 import { convertLitUpHoldsStringToMap } from '@/app/components/board-renderer/util';
 import { getContextAwareClimbViewUrl } from '@/app/lib/url-utils';
 
@@ -20,13 +21,14 @@ type ClimbThumbnailProps = {
 const ClimbThumbnail = ({ boardDetails, currentClimb, enableNavigation = false, onNavigate, maxHeight }: ClimbThumbnailProps) => {
   const pathname = usePathname();
   const isRustRendererEnabled = useFeatureFlag('rust-svg-rendering');
+  const useCanvasRenderer = isRustRendererEnabled && isWorkerRenderingSupported();
   const litUpHoldsMap = useMemo(
-    () => currentClimb && !isRustRendererEnabled ? convertLitUpHoldsStringToMap(currentClimb.frames, boardDetails.board_name)[0] : undefined,
-    [currentClimb?.frames, boardDetails.board_name, isRustRendererEnabled],
+    () => currentClimb && !useCanvasRenderer ? convertLitUpHoldsStringToMap(currentClimb.frames, boardDetails.board_name)[0] : undefined,
+    [currentClimb?.frames, boardDetails.board_name, useCanvasRenderer],
   );
 
-  const renderContent = isRustRendererEnabled && currentClimb ? (
-    <BoardImageLayers
+  const renderContent = useCanvasRenderer && currentClimb ? (
+    <BoardCanvasRenderer
       boardDetails={boardDetails}
       frames={currentClimb.frames}
       mirrored={!!currentClimb.mirrored}

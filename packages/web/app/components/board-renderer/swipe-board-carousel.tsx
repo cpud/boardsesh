@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef } from 'react';
 import BoardRenderer from './board-renderer';
-import BoardImageLayers from './board-image-layers';
+import BoardCanvasRenderer from './board-canvas-renderer';
 import {
   useCardSwipeNavigation,
   EXIT_DURATION,
@@ -11,6 +11,7 @@ import {
 } from '@/app/hooks/use-card-swipe-navigation';
 import type { BoardDetails } from '@/app/lib/types';
 import { useFeatureFlag } from '@/app/components/providers/feature-flags-provider';
+import { isWorkerRenderingSupported } from '@/app/lib/board-render-worker/worker-manager';
 import { convertLitUpHoldsStringToMap } from './util';
 import styles from './swipe-board-carousel.module.css';
 
@@ -96,20 +97,21 @@ const SwipeBoardCarousel: React.FC<SwipeBoardCarouselProps> = ({
 
   const transition = getSwipeTransition();
   const isRustRendererEnabled = useFeatureFlag('rust-svg-rendering');
+  const useCanvasRenderer = isRustRendererEnabled && isWorkerRenderingSupported();
 
   const currentLitUpHoldsMap = useMemo(
-    () => isRustRendererEnabled ? undefined : convertLitUpHoldsStringToMap(currentClimb.frames, boardDetails.board_name)[0],
-    [currentClimb.frames, boardDetails.board_name, isRustRendererEnabled],
+    () => useCanvasRenderer ? undefined : convertLitUpHoldsStringToMap(currentClimb.frames, boardDetails.board_name)[0],
+    [currentClimb.frames, boardDetails.board_name, useCanvasRenderer],
   );
   const peekLitUpHoldsMap = useMemo(
-    () => isRustRendererEnabled || !peekClimb ? undefined : convertLitUpHoldsStringToMap(peekClimb.frames, boardDetails.board_name)[0],
-    [peekClimb, boardDetails.board_name, isRustRendererEnabled],
+    () => useCanvasRenderer || !peekClimb ? undefined : convertLitUpHoldsStringToMap(peekClimb.frames, boardDetails.board_name)[0],
+    [peekClimb, boardDetails.board_name, useCanvasRenderer],
   );
 
   const renderBoard = (climb: ClimbBoardData, litUpHoldsMap: ReturnType<typeof convertLitUpHoldsStringToMap>[0] | undefined) => {
-    if (isRustRendererEnabled) {
+    if (useCanvasRenderer) {
       return (
-        <BoardImageLayers
+        <BoardCanvasRenderer
           boardDetails={boardDetails}
           frames={climb.frames}
           mirrored={!!climb.mirrored}

@@ -2,9 +2,10 @@
 import React, { useMemo } from 'react';
 import type { Climb, BoardDetails } from '@/app/lib/types';
 import BoardRenderer from '@/app/components/board-renderer/board-renderer';
-import BoardImageLayers from '@/app/components/board-renderer/board-image-layers';
+import BoardCanvasRenderer from '@/app/components/board-renderer/board-canvas-renderer';
 import { useDoubleTap } from '@/app/lib/hooks/use-double-tap';
 import { useFeatureFlag } from '@/app/components/providers/feature-flags-provider';
+import { isWorkerRenderingSupported } from '@/app/lib/board-render-worker/worker-manager';
 import { convertLitUpHoldsStringToMap } from '@/app/components/board-renderer/util';
 
 type ClimbCardCoverProps = {
@@ -17,13 +18,15 @@ type ClimbCardCoverProps = {
 const ClimbCardCover = ({ climb, boardDetails, onClick, onDoubleClick }: ClimbCardCoverProps) => {
   const { ref, onDoubleClick: handleDoubleClick } = useDoubleTap(onDoubleClick);
   const isRustRendererEnabled = useFeatureFlag('rust-svg-rendering');
+  const useCanvasRenderer = isRustRendererEnabled && isWorkerRenderingSupported();
+
   const litUpHoldsMap = useMemo(
-    () => climb && !isRustRendererEnabled ? convertLitUpHoldsStringToMap(climb.frames, boardDetails.board_name)[0] : undefined,
-    [climb?.frames, boardDetails.board_name, isRustRendererEnabled],
+    () => climb && !useCanvasRenderer ? convertLitUpHoldsStringToMap(climb.frames, boardDetails.board_name)[0] : undefined,
+    [climb?.frames, boardDetails.board_name, useCanvasRenderer],
   );
 
-  const renderContent = isRustRendererEnabled && climb ? (
-    <BoardImageLayers
+  const renderContent = useCanvasRenderer && climb ? (
+    <BoardCanvasRenderer
       boardDetails={boardDetails}
       frames={climb.frames}
       mirrored={!!climb.mirrored}
