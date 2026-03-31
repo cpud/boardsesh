@@ -22,11 +22,6 @@ export const rustSvgRendering = flag({
     { value: true, label: 'Enabled' },
     { value: false, label: 'Disabled' },
   ],
-  decide() {
-    // HOTFIX: always return false — adapter is returning true incorrectly.
-    // TODO: investigate and restore adapter-based evaluation.
-    return false;
-  },
 });
 
 // Add new flags above this line, then add them to allFlags below.
