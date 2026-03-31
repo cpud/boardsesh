@@ -14,6 +14,13 @@ js-sys = "0.3"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "render_bench"
+harness = false
+
 [profile.release]
 opt-level = 3       # Optimize for speed (rendering perf > binary size)
 lto = true

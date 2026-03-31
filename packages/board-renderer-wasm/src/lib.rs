@@ -1,6 +1,6 @@
 mod frames_parser;
-mod renderer;
-mod types;
+pub mod renderer;
+pub mod types;
 
 use wasm_bindgen::prelude::*;
 
