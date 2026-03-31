@@ -36,6 +36,8 @@ export type ClimbsListProps = {
   onLoadMore: () => void;
   header?: React.ReactNode;
   headerInline?: React.ReactNode;
+  /** Angle selector to render on the right side of the first header row */
+  angleSelector?: React.ReactNode;
   hideEndMessage?: boolean;
   renderItemExtra?: (climb: Climb) => React.ReactNode;
   showBottomSpacer?: boolean;
@@ -66,6 +68,7 @@ const ClimbsList = ({
   onLoadMore,
   header,
   headerInline,
+  angleSelector,
   hideEndMessage,
   renderItemExtra,
   showBottomSpacer,
@@ -215,28 +218,40 @@ const ClimbsList = ({
     }
   }, [lastItem?.index, climbs.length, hasMore, isFetching, handleLoadMore]);
 
-  // Memoize sx prop objects
-  const headerBoxSx = useMemo(() => ({
+  // Memoize sx prop objects to prevent recreation on every render
+  const headerContainerSx = useMemo(() => ({
     display: 'flex',
     alignItems: 'center',
-    position: 'relative' as const,
-    padding: `0px 60px ${themeTokens.spacing[1]}px ${themeTokens.spacing[1]}px`,
+    gap: `${themeTokens.spacing[2]}px`,
+    padding: `${themeTokens.spacing[2]}px ${themeTokens.spacing[3]}px`,
+    minHeight: 40,
+  }), []);
+
+  const searchPillsContainerSx = useMemo(() => ({
+    flex: 1,
     minWidth: 0,
+    overflow: 'hidden',
+  }), []);
+
+  const rightControlsSx = useMemo(() => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: `${themeTokens.spacing[2]}px`,
+    flexShrink: 0,
   }), []);
 
   const viewModeToggleBoxSx = useMemo(() => ({
-    position: 'absolute' as const,
-    right: `${themeTokens.spacing[1]}px`,
-    top: '50%',
-    transform: 'translateY(-50%)',
     display: 'flex',
     gap: '2px',
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    borderRadius: `${themeTokens.borderRadius.sm}px`,
-    padding: '2px',
+    flexShrink: 0,
   }), []);
 
   const iconButtonSx = useMemo(() => ({ padding: '4px' }), []);
+
+  const viewModeButtonSx = useCallback((isActive: boolean) => ({
+    padding: '4px',
+    opacity: isActive ? 1 : 0.4,
+  }), []);
 
   const gridContainerSx = useMemo(() => ({
     display: 'flex',
@@ -262,27 +277,33 @@ const ClimbsList = ({
   return (
     <Box>
       {header}
-      <Box sx={headerBoxSx}>
-        {headerInline}
-        <Box sx={viewModeToggleBoxSx}>
-          <IconButton
-            onClick={() => handleViewModeChange('list')}
-            aria-label="List view"
-            color={viewMode === 'list' ? 'primary' : 'default'}
-            size="small"
-            sx={iconButtonSx}
-          >
-            <FormatListBulletedOutlined fontSize="small" />
-          </IconButton>
-          <IconButton
-            onClick={() => handleViewModeChange('grid')}
-            aria-label="Grid view"
-            color={viewMode === 'grid' ? 'primary' : 'default'}
-            size="small"
-            sx={iconButtonSx}
-          >
-            <AppsOutlined fontSize="small" />
-          </IconButton>
+      {/* Header: Search pills (left, scrollable) | View toggle + Angle selector (right) */}
+      <Box sx={headerContainerSx}>
+        {/* Left: Search pills (scrollable) */}
+        <Box sx={searchPillsContainerSx}>
+          {headerInline}
+        </Box>
+        {/* Right: View toggle + Angle selector */}
+        <Box sx={rightControlsSx}>
+          <Box sx={viewModeToggleBoxSx}>
+            <IconButton
+              onClick={() => handleViewModeChange('list')}
+              aria-label="List view"
+              size="small"
+              sx={viewModeButtonSx(viewMode === 'list')}
+            >
+              <FormatListBulletedOutlined fontSize="small" />
+            </IconButton>
+            <IconButton
+              onClick={() => handleViewModeChange('grid')}
+              aria-label="Grid view"
+              size="small"
+              sx={viewModeButtonSx(viewMode === 'grid')}
+            >
+              <AppsOutlined fontSize="small" />
+            </IconButton>
+          </Box>
+          {angleSelector}
         </Box>
       </Box>
 
