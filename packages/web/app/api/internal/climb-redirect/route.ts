@@ -23,11 +23,12 @@ export async function GET(request: NextRequest) {
   try {
     const db = getDb();
 
-    // Look up the climb to get layoutId and angle
+    // Look up the climb to get layoutId, angle, and name
     const [climb] = await db
       .select({
         layoutId: schema.boardClimbs.layoutId,
         angle: schema.boardClimbs.angle,
+        name: schema.boardClimbs.name,
       })
       .from(schema.boardClimbs)
       .where(
@@ -81,7 +82,7 @@ export async function GET(request: NextRequest) {
 
     const numericFallback = `/${boardType}/${climb.layoutId}/${psls.productSizeId}/${setIdArray.join(',')}/${angle}/view/${climbUuid}`;
     let url = tryConstructSlugViewUrl(
-      boardType, climb.layoutId, psls.productSizeId, setIdArray, angle, climbUuid,
+      boardType, climb.layoutId, psls.productSizeId, setIdArray, angle, climbUuid, climb.name ?? undefined,
     ) ?? numericFallback;
 
     if (proposalUuid) {

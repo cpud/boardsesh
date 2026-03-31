@@ -7,7 +7,7 @@ import { useQueueContext } from '../graphql-queue';
 import { useParams } from 'next/navigation';
 import { parseBoardRouteParams, constructPlayUrlWithSlugs, getContextAwareClimbViewUrl, isNumericId } from '@/app/lib/url-utils';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { BoardRouteParametersWithUuid, BoardDetails } from '@/app/lib/types';
+import { BoardRouteParametersWithUuid, BoardDetails, BoardRouteIdentity } from '@/app/lib/types';
 import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import { track } from '@vercel/analytics';
 import FastRewindOutlined from '@mui/icons-material/FastRewindOutlined';
@@ -35,7 +35,7 @@ export default function PreviousClimbButton({ navigate = false, boardDetails }: 
   const previousClimb = getPreviousClimbQueueItem();
 
   // Prefer the passed boardDetails; only resolve from static data if params are numeric (not slugs)
-  let resolvedDetails: BoardDetails;
+  let resolvedDetails: BoardRouteIdentity;
   if (boardDetails) {
     resolvedDetails = boardDetails;
   } else if (isNumericId(rawParams.layout_id)) {
@@ -43,10 +43,10 @@ export default function PreviousClimbButton({ navigate = false, boardDetails }: 
       resolvedDetails = getBoardDetailsForBoard({ board_name, layout_id, size_id, set_ids });
     } catch (error) {
       console.warn('[PreviousClimbButton] Failed to resolve board details from static data:', error);
-      resolvedDetails = { board_name, layout_id, size_id, set_ids } as BoardDetails;
+      resolvedDetails = { board_name, layout_id, size_id, set_ids };
     }
   } else {
-    resolvedDetails = { board_name, layout_id, size_id, set_ids } as BoardDetails;
+    resolvedDetails = { board_name, layout_id, size_id, set_ids };
   }
 
   const buildClimbUrl = () => {

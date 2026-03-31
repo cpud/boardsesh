@@ -6,6 +6,7 @@ import {
   SearchRequestPagination,
   ClimbUuid,
   BoardDetails,
+  BoardRouteIdentity,
   BoardName,
 } from '@/app/lib/types';
 import { BOARD_NAME_PREFIX_REGEX } from '@/app/lib/board-constants';
@@ -664,7 +665,7 @@ const getBoardSlugRouteContext = (pathname: string): { slug: string; angle: numb
  */
 export const getContextAwareClimbViewUrl = (
   pathname: string,
-  boardDetails: BoardDetails,
+  boardDetails: BoardRouteIdentity,
   angle: number,
   climbUuid: string,
   climbName?: string,
