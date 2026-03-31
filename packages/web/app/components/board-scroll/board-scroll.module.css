@@ -136,6 +136,11 @@
   color: var(--semantic-error);
 }
 
+.findNearbyIconMuted {
+  font-size: 36px;
+  color: var(--neutral-400);
+}
+
 .findNearbyBoard {
   filter: grayscale(100%);
   opacity: 0.35;
@@ -208,7 +213,8 @@
 }
 
 .cardScrollSmall .findNearbyIconPrimary,
-.cardScrollSmall .findNearbyIconError {
+.cardScrollSmall .findNearbyIconError,
+.cardScrollSmall .findNearbyIconMuted {
   font-size: 28px;
 }
 

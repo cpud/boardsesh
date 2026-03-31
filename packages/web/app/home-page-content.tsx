@@ -19,7 +19,25 @@ import { themeTokens } from '@/app/theme/theme-config';
 import { usePersistentSession } from '@/app/components/persistent-session';
 import BoardScrollSection from '@/app/components/board-scroll/board-scroll-section';
 import BoardScrollCard from '@/app/components/board-scroll/board-scroll-card';
-import FindNearbyCard from '@/app/components/board-scroll/find-nearby-card';
+import FindNearbyCard, { type FindNearbyStatus } from '@/app/components/board-scroll/find-nearby-card';
+
+function deriveFindNearbyStatus({
+  locationEnabled,
+  isLoading,
+  error,
+  hasLocation,
+}: {
+  locationEnabled: boolean;
+  isLoading: boolean;
+  error: string | null;
+  hasLocation: boolean;
+}): FindNearbyStatus {
+  if (!locationEnabled) return 'idle';
+  if (isLoading) return 'loading';
+  if (error) return 'error';
+  if (!hasLocation) return 'geo-denied';
+  return 'no-results';
+}
 import { useDiscoverBoards } from '@/app/hooks/use-discover-boards';
 import { usePopularBoardConfigs } from '@/app/hooks/use-popular-board-configs';
 import { constructBoardSlugListUrl } from '@/app/lib/url-utils';
@@ -121,7 +139,7 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
   const isAuthenticated = status === 'authenticated';
 
   const [locationEnabled, setLocationEnabled] = useState(false);
-  const { boards: discoverBoards, isLoading: isBoardsLoading, hasLocation } = useDiscoverBoards({ limit: 20, enableLocation: locationEnabled });
+  const { boards: discoverBoards, isLoading: isBoardsLoading, hasLocation, error: discoverError } = useDiscoverBoards({ limit: 20, enableLocation: locationEnabled });
   const { configs: popularConfigs, isLoading: isConfigsLoading, isLoadingMore, hasMore, loadMore } = usePopularBoardConfigs({ limit: 12, initialData: initialPopularConfigs });
 
   const handleBoardClick = useCallback((board: UserBoard) => {
@@ -218,14 +236,18 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
             hasMore={hasMore}
             isLoadingMore={isLoadingMore}
           >
-            {!hasLocation && (
+            {discoverBoards.length === 0 && (
               <FindNearbyCard
                 onClick={() => setLocationEnabled(true)}
-                loading={locationEnabled && isBoardsLoading}
-                error={locationEnabled && !isBoardsLoading && !hasLocation}
+                status={deriveFindNearbyStatus({
+                  locationEnabled,
+                  isLoading: isBoardsLoading,
+                  error: discoverError,
+                  hasLocation,
+                })}
               />
             )}
-            {locationEnabled && discoverBoards.map((board) => (
+            {discoverBoards.map((board) => (
               <BoardScrollCard
                 key={board.uuid}
                 userBoard={board}

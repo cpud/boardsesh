@@ -49,15 +49,15 @@ describe('FindNearbyCard', () => {
 
   it('renders loading state with "Finding boards…" text and spinner', () => {
     const onClick = vi.fn();
-    const { getByText, container } = render(<FindNearbyCard onClick={onClick} loading />);
+    const { getByText, container } = render(<FindNearbyCard onClick={onClick} status="loading" />);
 
     expect(getByText('Finding boards…')).toBeDefined();
     expect(container.querySelector('[role="progressbar"]')).toBeDefined();
   });
 
-  it('renders error state with "Location unavailable" text and error icon', () => {
+  it('renders geo-denied state with "Location unavailable" and location-off icon', () => {
     const onClick = vi.fn();
-    const { getByText, container } = render(<FindNearbyCard onClick={onClick} error />);
+    const { getByText, container } = render(<FindNearbyCard onClick={onClick} status="geo-denied" />);
 
     const label = getByText('Location unavailable');
     expect(label).toBeDefined();
@@ -65,32 +65,62 @@ describe('FindNearbyCard', () => {
     expect(container.querySelector('[data-testid="LocationOffOutlinedIcon"]')).toBeDefined();
   });
 
-  it('error state applies disabled styling to card square', () => {
+  it('renders error state with "Failed to load nearby boards" and error icon', () => {
     const onClick = vi.fn();
-    const { getByText } = render(<FindNearbyCard onClick={onClick} error />);
+    const { getByText, container } = render(<FindNearbyCard onClick={onClick} status="error" />);
 
-    const label = getByText('Location unavailable');
-    const cardRoot = label.parentElement!;
-    const cardSquare = cardRoot.querySelector('.cardSquareDisabled');
-    expect(cardSquare).not.toBeNull();
+    const label = getByText('Failed to load nearby boards');
+    expect(label).toBeDefined();
+    expect(label.className).toContain('cardNameError');
+    expect(container.querySelector('[data-testid="ErrorOutlineOutlinedIcon"]')).toBeDefined();
+  });
+
+  it('renders no-results state with "No nearby boards found" and search-off icon', () => {
+    const onClick = vi.fn();
+    const { getByText, container } = render(<FindNearbyCard onClick={onClick} status="no-results" />);
+
+    const label = getByText('No nearby boards found');
+    expect(label).toBeDefined();
+    expect(label.className).toContain('cardNameDisabled');
+    expect(container.querySelector('[data-testid="SearchOffOutlinedIcon"]')).toBeDefined();
+  });
+
+  it('applies disabled styling to card square for all error/no-results states', () => {
+    const onClick = vi.fn();
+
+    for (const status of ['geo-denied', 'error', 'no-results'] as const) {
+      const { container, unmount } = render(<FindNearbyCard onClick={onClick} status={status} />);
+      expect(container.querySelector('.cardSquareDisabled')).not.toBeNull();
+      unmount();
+    }
+  });
+
+  it('does not apply disabled styling in idle and loading states', () => {
+    const onClick = vi.fn();
+
+    for (const status of ['idle', 'loading'] as const) {
+      const { container, unmount } = render(<FindNearbyCard onClick={onClick} status={status} />);
+      expect(container.querySelector('.cardSquareDisabled')).toBeNull();
+      unmount();
+    }
   });
 
   it('calls onClick in idle state', () => {
     const onClick = vi.fn();
     const { getByText } = render(<FindNearbyCard onClick={onClick} />);
 
-    const label = getByText('Find nearby');
-    label.parentElement!.click();
-
+    getByText('Find nearby').parentElement!.click();
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
-  it('does not call onClick in error state', () => {
+  it('does not call onClick in geo-denied, error, or no-results states', () => {
     const onClick = vi.fn();
-    const { getByText } = render(<FindNearbyCard onClick={onClick} error />);
 
-    const label = getByText('Location unavailable');
-    label.parentElement!.click();
+    for (const status of ['geo-denied', 'error', 'no-results'] as const) {
+      const { getByText, unmount } = render(<FindNearbyCard onClick={onClick} status={status} />);
+      getByText(getByText(/.+/).textContent!).parentElement!.click();
+      unmount();
+    }
 
     expect(onClick).not.toHaveBeenCalled();
   });
@@ -106,8 +136,7 @@ describe('FindNearbyCard', () => {
     const onClick = vi.fn();
     const { getByText } = render(<FindNearbyCard onClick={onClick} size="small" />);
 
-    const label = getByText('Find nearby');
-    const cardRoot = label.parentElement!;
+    const cardRoot = getByText('Find nearby').parentElement!;
     expect(cardRoot.className).toContain('cardScrollSmall');
   });
 });

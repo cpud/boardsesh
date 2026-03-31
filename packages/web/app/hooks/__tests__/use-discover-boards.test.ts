@@ -297,4 +297,46 @@ describe('useDiscoverBoards', () => {
     expect(result.current.isLoading).toBe(true);
     expect(result.current.boards).toEqual([]);
   });
+
+  it('shows loading state during API call after geo resolves', async () => {
+    geoSuccess(40.7, -74.0);
+
+    // Make the API call hang so we can observe loading during the request
+    let resolveRequest: (value: unknown) => void;
+    mockRequest.mockReturnValueOnce(new Promise((resolve) => { resolveRequest = resolve; }));
+
+    const { result } = renderHook(() => useDiscoverBoards({ enableLocation: true }));
+
+    // After geo resolves but before API returns, should still be loading
+    await waitFor(() => {
+      expect(mockRequest).toHaveBeenCalledTimes(1);
+    });
+    expect(result.current.isLoading).toBe(true);
+
+    // Now resolve the API call
+    resolveRequest!(makeSearchResponse([makeBoard('n1', 10)]));
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+    expect(result.current.boards).toHaveLength(1);
+  });
+
+  it('sets hasLocation=true with empty boards when geo succeeds but no nearby boards found', async () => {
+    geoSuccess(40.7, -74.0);
+
+    // API returns empty results
+    mockRequest.mockResolvedValueOnce(makeSearchResponse([]));
+
+    const { result } = renderHook(() => useDiscoverBoards({ enableLocation: true }));
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    // hasLocation should be true (we got coords), but boards empty
+    expect(result.current.hasLocation).toBe(true);
+    expect(result.current.boards).toEqual([]);
+    expect(result.current.error).toBeNull();
+  });
 });

@@ -3,19 +3,22 @@
 import React, { useMemo } from 'react';
 import LocationOnOutlined from '@mui/icons-material/LocationOnOutlined';
 import LocationOffOutlined from '@mui/icons-material/LocationOffOutlined';
+import SearchOffOutlined from '@mui/icons-material/SearchOffOutlined';
+import ErrorOutlineOutlined from '@mui/icons-material/ErrorOutlineOutlined';
 import CircularProgress from '@mui/material/CircularProgress';
 import { getBoardDetails } from '@/app/lib/__generated__/product-sizes-data';
 import BoardRenderer from '../board-renderer/board-renderer';
 import styles from './board-scroll.module.css';
 
+export type FindNearbyStatus = 'idle' | 'loading' | 'geo-denied' | 'error' | 'no-results';
+
 interface FindNearbyCardProps {
   onClick: () => void;
-  loading?: boolean;
-  error?: boolean;
+  status?: FindNearbyStatus;
   size?: 'default' | 'small';
 }
 
-export default function FindNearbyCard({ onClick, loading = false, error = false, size = 'default' }: FindNearbyCardProps) {
+export default function FindNearbyCard({ onClick, status = 'idle', size = 'default' }: FindNearbyCardProps) {
   const isSmall = size === 'small';
   const iconSize = isSmall ? 28 : 36;
 
@@ -30,22 +33,36 @@ export default function FindNearbyCard({ onClick, loading = false, error = false
     [],
   );
 
+  const isError = status === 'geo-denied' || status === 'error' || status === 'no-results';
+
   let icon: React.ReactNode;
   let label: string;
-  if (error) {
-    icon = <LocationOffOutlined className={styles.findNearbyIconError} />;
-    label = 'Location unavailable';
-  } else if (loading) {
-    icon = <CircularProgress size={iconSize} className={styles.findNearbyIconPrimary} />;
-    label = 'Finding boards…';
-  } else {
-    icon = <LocationOnOutlined className={styles.findNearbyIconPrimary} />;
-    label = 'Find nearby';
+  switch (status) {
+    case 'loading':
+      icon = <CircularProgress size={iconSize} className={styles.findNearbyIconPrimary} />;
+      label = 'Finding boards…';
+      break;
+    case 'geo-denied':
+      icon = <LocationOffOutlined className={styles.findNearbyIconError} />;
+      label = 'Location unavailable';
+      break;
+    case 'error':
+      icon = <ErrorOutlineOutlined className={styles.findNearbyIconError} />;
+      label = 'Failed to load nearby boards';
+      break;
+    case 'no-results':
+      icon = <SearchOffOutlined className={styles.findNearbyIconMuted} />;
+      label = 'No nearby boards found';
+      break;
+    default:
+      icon = <LocationOnOutlined className={styles.findNearbyIconPrimary} />;
+      label = 'Find nearby';
+      break;
   }
 
   return (
-    <div className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ''}`} onClick={error ? undefined : onClick}>
-      <div className={`${styles.cardSquare} ${error ? styles.cardSquareDisabled : ''}`}>
+    <div className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ''}`} onClick={isError ? undefined : onClick}>
+      <div className={`${styles.cardSquare} ${isError ? styles.cardSquareDisabled : ''}`}>
         <div className={styles.findNearbyBoard}>
           <BoardRenderer
             mirrored={false}
@@ -58,7 +75,7 @@ export default function FindNearbyCard({ onClick, loading = false, error = false
           {icon}
         </div>
       </div>
-      <div className={`${styles.cardName} ${error ? styles.cardNameError : ''}`}>{label}</div>
+      <div className={`${styles.cardName} ${status === 'geo-denied' || status === 'error' ? styles.cardNameError : ''} ${status === 'no-results' ? styles.cardNameDisabled : ''}`}>{label}</div>
     </div>
   );
 }
