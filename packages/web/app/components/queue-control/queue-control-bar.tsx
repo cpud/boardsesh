@@ -17,6 +17,7 @@ import { usePathname, useParams, useSearchParams, useRouter } from 'next/navigat
 import Link from 'next/link';
 import { constructPlayUrlWithSlugs, getContextAwareClimbViewUrl } from '@/app/lib/url-utils';
 import { BoardRouteParameters, BoardDetails, Angle } from '@/app/lib/types';
+import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import PreviousClimbButton from './previous-climb-button';
 import QueueList, { QueueListHandle } from './queue-list';
 import { TickButton } from '../logbook/tick-button';
@@ -125,20 +126,41 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
     let climbUrl: string | null = null;
 
     if (isPlayPage) {
-      climbUrl = boardDetails?.layout_name && boardDetails?.size_name && boardDetails?.set_names
-        ? constructPlayUrlWithSlugs(
-            boardDetails.board_name,
-            boardDetails.layout_name,
-            boardDetails.size_name,
-            boardDetails.size_description,
-            boardDetails.set_names,
+      if (boardDetails?.layout_name && boardDetails?.size_name && boardDetails?.set_names) {
+        climbUrl = constructPlayUrlWithSlugs(
+          boardDetails.board_name,
+          boardDetails.layout_name,
+          boardDetails.size_name,
+          boardDetails.size_description,
+          boardDetails.set_names,
+          angle,
+          climb.uuid,
+          climb.name,
+        );
+      } else if (params.board_name) {
+        const resolvedDetails = getBoardDetailsForBoard({
+          board_name: params.board_name,
+          layout_id: Number(params.layout_id),
+          size_id: Number(params.size_id),
+          set_ids: decodeURIComponent(params.set_ids).split(',').map(Number),
+        });
+        if (resolvedDetails.layout_name && resolvedDetails.size_name && resolvedDetails.set_names) {
+          climbUrl = constructPlayUrlWithSlugs(
+            resolvedDetails.board_name,
+            resolvedDetails.layout_name,
+            resolvedDetails.size_name,
+            resolvedDetails.size_description,
+            resolvedDetails.set_names,
             angle,
             climb.uuid,
             climb.name,
-          )
-        : params.board_name
-          ? `/${params.board_name}/${params.layout_id}/${params.size_id}/${params.set_ids}/${params.angle}/play/${climb.uuid}`
-          : null;
+          );
+        } else {
+          climbUrl = `/${params.board_name}/${params.layout_id}/${params.size_id}/${params.set_ids}/${params.angle}/play/${climb.uuid}`;
+        }
+      } else {
+        climbUrl = null;
+      }
     } else {
       climbUrl = getContextAwareClimbViewUrl(
         pathname,
@@ -236,7 +258,26 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
         currentClimb.name,
       );
     } else if (params.board_name) {
-      baseUrl = `/${params.board_name}/${params.layout_id}/${params.size_id}/${params.set_ids}/${params.angle}/play/${currentClimb.uuid}`;
+      const resolvedDetails = getBoardDetailsForBoard({
+        board_name: params.board_name,
+        layout_id: Number(params.layout_id),
+        size_id: Number(params.size_id),
+        set_ids: decodeURIComponent(params.set_ids).split(',').map(Number),
+      });
+      if (resolvedDetails.layout_name && resolvedDetails.size_name && resolvedDetails.set_names) {
+        baseUrl = constructPlayUrlWithSlugs(
+          resolvedDetails.board_name,
+          resolvedDetails.layout_name,
+          resolvedDetails.size_name,
+          resolvedDetails.size_description,
+          resolvedDetails.set_names,
+          angle,
+          currentClimb.uuid,
+          currentClimb.name,
+        );
+      } else {
+        baseUrl = `/${params.board_name}/${params.layout_id}/${params.size_id}/${params.set_ids}/${params.angle}/play/${currentClimb.uuid}`;
+      }
     } else {
       return null;
     }

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/app/lib/db/db';
 import * as schema from '@/app/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
+import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
+import { constructClimbViewUrlWithSlugs } from '@/app/lib/url-utils';
+import type { BoardName } from '@/app/lib/types';
 
 /**
  * GET /api/internal/climb-redirect?boardType=...&climbUuid=...&proposalUuid=...
@@ -74,12 +77,34 @@ export async function GET(request: NextRequest) {
         ),
       );
 
-    const setIds = setRows
+    const setIdArray = setRows
       .map((r) => r.setId)
-      .filter((id): id is number => id != null)
-      .join(',');
+      .filter((id): id is number => id != null);
 
-    let url = `/${boardType}/${climb.layoutId}/${psls.productSizeId}/${setIds}/${angle}/view/${climbUuid}`;
+    let url: string;
+    try {
+      const details = getBoardDetailsForBoard({
+        board_name: boardType as BoardName,
+        layout_id: climb.layoutId,
+        size_id: psls.productSizeId,
+        set_ids: setIdArray,
+      });
+      if (details.layout_name && details.size_name && details.set_names) {
+        url = constructClimbViewUrlWithSlugs(
+          boardType,
+          details.layout_name,
+          details.size_name,
+          details.size_description,
+          details.set_names,
+          angle,
+          climbUuid,
+        );
+      } else {
+        url = `/${boardType}/${climb.layoutId}/${psls.productSizeId}/${setIdArray.join(',')}/${angle}/view/${climbUuid}`;
+      }
+    } catch {
+      url = `/${boardType}/${climb.layoutId}/${psls.productSizeId}/${setIdArray.join(',')}/${angle}/view/${climbUuid}`;
+    }
 
     if (proposalUuid) {
       url += `?proposalUuid=${encodeURIComponent(proposalUuid)}`;

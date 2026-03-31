@@ -22,9 +22,11 @@ import BoardScrollCard from '@/app/components/board-scroll/board-scroll-card';
 import FindNearbyCard, { type FindNearbyStatus } from '@/app/components/board-scroll/find-nearby-card';
 import { useDiscoverBoards } from '@/app/hooks/use-discover-boards';
 import { usePopularBoardConfigs } from '@/app/hooks/use-popular-board-configs';
-import { constructBoardSlugListUrl } from '@/app/lib/url-utils';
+import { constructBoardSlugListUrl, constructClimbListWithSlugs } from '@/app/lib/url-utils';
 import { getDefaultAngleForBoard } from '@/app/lib/board-config-for-playlist';
+import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import type { BoardConfigData } from '@/app/lib/server-board-configs';
+import type { BoardName } from '@/app/lib/types';
 import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
 
 function deriveFindNearbyStatus({
@@ -149,9 +151,34 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
   }, [router]);
 
   const handleConfigClick = useCallback((config: PopularBoardConfig) => {
-    const setIds = config.setIds.join(',');
     const angle = getDefaultAngleForBoard(config.boardType);
-    router.push(`/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`);
+    if (config.layoutName && config.sizeName && config.setNames.length > 0) {
+      router.push(constructClimbListWithSlugs(
+        config.boardType,
+        config.layoutName,
+        config.sizeName,
+        config.sizeDescription ?? undefined,
+        config.setNames,
+        angle,
+      ));
+    } else {
+      const details = getBoardDetailsForBoard({
+        board_name: config.boardType as BoardName,
+        layout_id: config.layoutId,
+        size_id: config.sizeId,
+        set_ids: config.setIds,
+      });
+      if (details.layout_name && details.size_name && details.set_names) {
+        router.push(constructClimbListWithSlugs(
+          details.board_name,
+          details.layout_name,
+          details.size_name,
+          details.size_description,
+          details.set_names,
+          angle,
+        ));
+      }
+    }
   }, [router]);
 
   return (

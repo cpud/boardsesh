@@ -25,7 +25,18 @@ export async function generateMetadata(props: { params: Promise<BoardRouteParame
     const climbGrade = currentClimb.difficulty || 'Unknown Grade';
     const setter = currentClimb.setter_username || 'Unknown Setter';
     const description = `${climbName} - ${climbGrade} by ${setter}. Quality: ${currentClimb.quality_average || 0}/5. Ascents: ${currentClimb.ascensionist_count || 0}`;
-    const climbUrl = constructClimbViewUrl(parsedParams, parsedParams.climb_uuid, climbName);
+    const climbUrl = boardDetails.layout_name && boardDetails.size_name && boardDetails.set_names
+      ? constructClimbViewUrlWithSlugs(
+          boardDetails.board_name,
+          boardDetails.layout_name,
+          boardDetails.size_name,
+          boardDetails.size_description,
+          boardDetails.set_names,
+          parsedParams.angle,
+          parsedParams.climb_uuid,
+          climbName,
+        )
+      : constructClimbViewUrl(parsedParams, parsedParams.climb_uuid, climbName);
 
     const ogImageUrl = new URL('/api/og/climb', 'https://boardsesh.com');
     ogImageUrl.searchParams.set('board_name', parsedParams.board_name);

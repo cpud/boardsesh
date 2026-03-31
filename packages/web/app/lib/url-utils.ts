@@ -9,6 +9,7 @@ import {
   BoardName,
 } from '@/app/lib/types';
 import { BOARD_NAME_PREFIX_REGEX } from '@/app/lib/board-constants';
+import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import { PAGE_LIMIT } from '../components/board-page/constants';
 
 export function parseBoardRouteParams<T extends BoardRouteParameters>(
@@ -634,6 +635,30 @@ export const getContextAwareClimbViewUrl = (
       climbUuid,
       climbName,
     );
+  }
+
+  // Try resolving names from static data
+  try {
+    const resolvedDetails = getBoardDetailsForBoard({
+      board_name: boardDetails.board_name,
+      layout_id: boardDetails.layout_id,
+      size_id: boardDetails.size_id,
+      set_ids: boardDetails.set_ids,
+    });
+    if (resolvedDetails.layout_name && resolvedDetails.size_name && resolvedDetails.set_names) {
+      return constructClimbViewUrlWithSlugs(
+        resolvedDetails.board_name,
+        resolvedDetails.layout_name,
+        resolvedDetails.size_name,
+        resolvedDetails.size_description,
+        resolvedDetails.set_names,
+        angle,
+        climbUuid,
+        climbName,
+      );
+    }
+  } catch {
+    // Fall through to numeric fallback
   }
 
   return constructClimbViewUrl(

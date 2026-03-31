@@ -6,6 +6,7 @@ import { useQueueContext } from '../graphql-queue';
 import { useParams, usePathname, useSearchParams } from 'next/navigation';
 import { parseBoardRouteParams, constructPlayUrlWithSlugs, getContextAwareClimbViewUrl } from '@/app/lib/url-utils';
 import { BoardRouteParametersWithUuid, BoardDetails } from '@/app/lib/types';
+import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import FastForwardOutlined from '@mui/icons-material/FastForwardOutlined';
 import { track } from '@vercel/analytics';
 import IconButton from '@mui/material/IconButton';
@@ -30,39 +31,42 @@ export default function NextClimbButton({ navigate = false, boardDetails }: Next
 
   const nextClimb = getNextClimbQueueItem();
 
+  const resolvedDetails = boardDetails ?? getBoardDetailsForBoard({
+    board_name, layout_id, size_id, set_ids,
+  });
+
   const buildClimbUrl = () => {
     if (!nextClimb) return '';
     let climbUrl = '';
 
     if (isPlayPage) {
-      climbUrl =
-        boardDetails?.layout_name && boardDetails?.size_name && boardDetails?.set_names
-          ? constructPlayUrlWithSlugs(
-              boardDetails.board_name,
-              boardDetails.layout_name,
-              boardDetails.size_name,
-              boardDetails.size_description,
-              boardDetails.set_names,
-              angle,
-              nextClimb.climb.uuid,
-              nextClimb.climb.name,
-            )
-          : `/${board_name}/${layout_id}/${size_id}/${set_ids}/${angle}/play/${nextClimb.climb.uuid}`;
+      if (resolvedDetails.layout_name && resolvedDetails.size_name && resolvedDetails.set_names) {
+        climbUrl = constructPlayUrlWithSlugs(
+          resolvedDetails.board_name,
+          resolvedDetails.layout_name,
+          resolvedDetails.size_name,
+          resolvedDetails.size_description,
+          resolvedDetails.set_names,
+          angle,
+          nextClimb.climb.uuid,
+          nextClimb.climb.name,
+        );
+      } else {
+        climbUrl = `/${board_name}/${layout_id}/${size_id}/${set_ids}/${angle}/play/${nextClimb.climb.uuid}`;
+      }
 
       const queryString = searchParams.toString();
       if (queryString) {
         climbUrl = `${climbUrl}?${queryString}`;
       }
-    } else if (boardDetails) {
+    } else {
       climbUrl = getContextAwareClimbViewUrl(
         pathname,
-        boardDetails,
+        resolvedDetails,
         angle,
         nextClimb.climb.uuid,
         nextClimb.climb.name,
       );
-    } else {
-      climbUrl = `/${board_name}/${layout_id}/${size_id}/${set_ids}/${angle}/view/${nextClimb.climb.uuid}`;
     }
 
     return climbUrl;
