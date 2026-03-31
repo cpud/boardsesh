@@ -31,7 +31,8 @@ function getMoonBoardHoldSetImages(layoutKey: MoonBoardLayoutKey, setIds: number
 
 interface CreatePageProps {
   params: Promise<{ board_slug: string; angle: string }>;
-  searchParams: Promise<{ forkFrames?: string; forkName?: string; editClimbUuid?: string }>;
+  searchParams: Promise<{ forkFrames?: string; forkName?: string; forkDescription?: string; editClimbUuid?: string }>;
+
 }
 
 export default async function BoardSlugCreatePage(props: CreatePageProps) {
@@ -99,6 +100,7 @@ export default async function BoardSlugCreatePage(props: CreatePageProps) {
       boardDetails={boardDetails}
       forkFrames={searchParams.forkFrames}
       forkName={searchParams.forkName}
+      forkDescription={searchParams.forkDescription}
       editClimb={editClimb}
       editClimbError={editClimbError}
     />

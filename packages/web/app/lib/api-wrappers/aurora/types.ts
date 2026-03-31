@@ -92,6 +92,7 @@ export interface SaveAttemptOptions {
   climbed_at: string;
 }
 export interface SaveClimbOptions {
+  uuid?: string; // When set, updates an existing climb instead of creating a new one
   layout_id: number;
   user_id: string; // NextAuth user ID (UUID)
   name: string;

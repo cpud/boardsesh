@@ -96,6 +96,7 @@ interface CreateClimbFormProps {
   boardDetails?: BoardDetails;
   forkFrames?: string;
   forkName?: string;
+  forkDescription?: string;
   // Pre-loaded climb to edit (Aurora only, for now). When present the form
   // seeds its hold map, name, description, and saved-row tracker from this
   // climb on mount so the user can pick up a draft or recent publish via URL.
@@ -116,6 +117,7 @@ export default function CreateClimbForm({
   boardDetails,
   forkFrames,
   forkName,
+  forkDescription,
   editClimb,
   editClimbError,
   layoutFolder,
@@ -297,9 +299,11 @@ export default function CreateClimbForm({
   const [moonBoardDuplicateMatch, setMoonBoardDuplicateMatch] = useState<MoonBoardClimbDuplicateMatch | null>(null);
   const [isCheckingMoonBoardDuplicate, setIsCheckingMoonBoardDuplicate] = useState(false);
 
-  // Common state
-  const [climbName, setClimbName] = useState(forkName ? `${forkName} fork` : '');
-  const [description, setDescription] = useState('');
+  // Common state — in edit mode use the original name, not "{name} fork"
+  const [climbName, setClimbName] = useState(
+    isEditMode ? (forkName || '') : (forkName ? `${forkName} fork` : ''),
+  );
+  const [description, setDescription] = useState(forkDescription || '');
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [showDraftsDrawer, setShowDraftsDrawer] = useState(false);
   const zoomResetKey = boardType === 'moonboard' ? `moonboard-${selectedAngle}` : `aurora-${angle}`;

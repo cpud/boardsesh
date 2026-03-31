@@ -4,6 +4,7 @@ import React from 'react';
 import MuiButton from '@mui/material/Button';
 import { ActionTooltip } from '../action-tooltip';
 import CallSplitOutlined from '@mui/icons-material/CallSplitOutlined';
+import EditOutlined from '@mui/icons-material/EditOutlined';
 import Link from 'next/link';
 import { track } from '@vercel/analytics';
 import { ClimbActionProps, ClimbActionResult } from '../types';
@@ -30,6 +31,8 @@ export function ForkAction({
   const isMoonboard = boardDetails.board_name === 'moonboard';
   const canFork = !isMoonboard && !!(boardDetails.layout_name && boardDetails.size_name && boardDetails.set_names);
 
+  const isEdit = !!climb.is_draft;
+
   const url = canFork
     ? constructCreateClimbUrl(
         boardDetails.board_name,
@@ -38,20 +41,25 @@ export function ForkAction({
         boardDetails.size_description,
         boardDetails.set_names!,
         angle,
-        { frames: climb.frames, name: climb.name },
+        isEdit
+          ? { frames: climb.frames, name: climb.name, description: climb.description, editUuid: climb.uuid }
+          : { frames: climb.frames, name: climb.name },
       )
     : null;
 
   const handleClick = () => {
-    track('Climb Forked', {
+    track(isEdit ? 'Draft Edited' : 'Climb Forked', {
       boardLayout: boardDetails.layout_name || '',
       originalClimb: climb.uuid,
     });
     onComplete?.();
   };
 
-  const label = 'Fork';
-  const icon = <CallSplitOutlined sx={{ fontSize: iconSize }} />;
+  const label = isEdit ? 'Edit' : 'Fork';
+  const tooltip = isEdit ? 'Edit this draft' : 'Fork this climb';
+  const icon = isEdit
+    ? <EditOutlined sx={{ fontSize: iconSize }} />
+    : <CallSplitOutlined sx={{ fontSize: iconSize }} />;
 
   // Link-based actions need custom elements since they wrap with Next.js Link
   return buildActionResult({
@@ -66,7 +74,7 @@ export function ForkAction({
     className,
     available: canFork,
     iconElementOverride: url ? (
-      <ActionTooltip title="Fork this climb">
+      <ActionTooltip title={tooltip}>
         <Link href={url} prefetch={false} onClick={handleClick} className={className} style={linkResetStyle}>
           {icon}
         </Link>

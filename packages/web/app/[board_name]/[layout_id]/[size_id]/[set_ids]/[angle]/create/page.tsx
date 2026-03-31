@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 interface CreateClimbPageProps {
   params: Promise<BoardRouteParameters>;
-  searchParams: Promise<{ forkFrames?: string; forkName?: string }>;
+  searchParams: Promise<{ forkFrames?: string; forkName?: string; forkDescription?: string; editUuid?: string }>;
 }
 
 // Helper to get MoonBoard layout info from layout ID
@@ -69,6 +69,8 @@ export default async function CreateClimbPage(props: CreateClimbPageProps) {
       boardDetails={boardDetails}
       forkFrames={searchParams.forkFrames}
       forkName={searchParams.forkName}
+      forkDescription={searchParams.forkDescription}
+      editUuid={searchParams.editUuid}
     />
   );
 }

@@ -117,6 +117,7 @@ export type ClimbSearchResult = {
 };
 
 export type SaveClimbInput = {
+  uuid?: string | null;
   boardType: string;
   layoutId: number;
   name: string;
