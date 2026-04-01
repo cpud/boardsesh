@@ -49,12 +49,19 @@ export default function AuroraMigrationContent() {
                 </Typography>
 
                 <Typography variant="body1" component="p">
-                  Today the Kilter board app suddenly disappeared, as Aurora randomly
-                  shut down its Kilter backend. In response Kilter rushed out their own
-                  app which was still in beta, but the outcome of these two entities
-                  fighting is that the customer gets left holding the bag, and everyone
-                  likely has lost their data (including playlists, logbooks and draft
-                  climbs).
+                  On March 25, the{' '}
+                  <MuiLink
+                    href="https://www.climbing.com/news/why-the-kilter-board-app-suddenly-disappeared/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Kilter board app suddenly disappeared
+                  </MuiLink>
+                  , as Aurora randomly shut down its Kilter backend. In response Kilter
+                  rushed out their own app which was still in beta, but the outcome of
+                  these two entities fighting is that the customer gets left holding the
+                  bag, and everyone likely has lost their data (including playlists,
+                  logbooks and draft climbs).
                 </Typography>
 
                 <Typography variant="body1" component="p">
