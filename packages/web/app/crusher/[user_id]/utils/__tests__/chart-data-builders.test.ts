@@ -28,6 +28,7 @@ vi.mock('@/app/theme/theme-config', () => ({
 import {
   filterLogbookByTimeframe,
   buildAggregatedStackedBars,
+  buildAggregatedFlashRedpointBars,
   buildWeeklyBars,
   buildFlashRedpointBars,
   buildStatisticsSummary,
@@ -500,6 +501,76 @@ describe('buildFlashRedpointBars', () => {
     expect(keys).toContain('6a');
     expect(keys).toContain('7a');
     expect(keys).toContain('8a');
+  });
+});
+
+// ── buildAggregatedFlashRedpointBars ─────────────────────────────────────────
+
+describe('buildAggregatedFlashRedpointBars', () => {
+  it('returns null when no boards have ticks', () => {
+    expect(buildAggregatedFlashRedpointBars({}, 'all')).toBeNull();
+  });
+
+  it('returns null when all entries have null difficulty', () => {
+    const ticks: Record<string, LogbookEntry[]> = {
+      kilter: [makeEntry({ difficulty: null })],
+    };
+    expect(buildAggregatedFlashRedpointBars(ticks, 'all')).toBeNull();
+  });
+
+  it('combines flash/redpoint counts from multiple boards', () => {
+    const ticks: Record<string, LogbookEntry[]> = {
+      kilter: [
+        makeEntry({ difficulty: 22, tries: 1 }), // flash 7a
+        makeEntry({ difficulty: 22, tries: 3 }), // redpoint 7a (3 tries)
+      ],
+      tension: [
+        makeEntry({ difficulty: 22, tries: 1 }), // flash 7a
+      ],
+    };
+    const result = buildAggregatedFlashRedpointBars(ticks, 'all');
+    expect(result).not.toBeNull();
+    expect(result).toHaveLength(1); // single grade: 7a
+
+    const bar = result![0];
+    const flash = bar.values.find((v) => v.label === 'Flash');
+    const redpoint = bar.values.find((v) => v.label === 'Redpoint');
+    expect(flash?.value).toBe(2); // 1 kilter + 1 tension
+    expect(redpoint?.value).toBe(3); // 3 tries from kilter
+  });
+
+  it('filters by lastWeek timeframe', () => {
+    const recentDate = dayjs().subtract(3, 'day').toISOString();
+    const oldDate = dayjs().subtract(2, 'month').toISOString();
+    const ticks: Record<string, LogbookEntry[]> = {
+      kilter: [
+        makeEntry({ climbed_at: recentDate, difficulty: 22, tries: 1 }),
+        makeEntry({ climbed_at: oldDate, difficulty: 16, tries: 1 }),
+      ],
+    };
+    const result = buildAggregatedFlashRedpointBars(ticks, 'lastWeek');
+    expect(result).not.toBeNull();
+    expect(result).toHaveLength(1);
+    expect(result![0].label).toBe('7a'); // only recent entry
+  });
+
+  it('returns null when timeframe filters out all entries', () => {
+    const oldDate = dayjs().subtract(2, 'year').toISOString();
+    const ticks: Record<string, LogbookEntry[]> = {
+      kilter: [makeEntry({ climbed_at: oldDate, difficulty: 22, tries: 1 })],
+    };
+    expect(buildAggregatedFlashRedpointBars(ticks, 'lastMonth')).toBeNull();
+  });
+
+  it('returns grades in correct order across boards', () => {
+    const ticks: Record<string, LogbookEntry[]> = {
+      kilter: [makeEntry({ difficulty: 28, tries: 1 })],  // 8a
+      tension: [makeEntry({ difficulty: 16, tries: 1 })], // 6a
+    };
+    const result = buildAggregatedFlashRedpointBars(ticks, 'all');
+    expect(result).not.toBeNull();
+    const labels = result!.map((b) => b.label);
+    expect(labels).toEqual(['6a', '8a']);
   });
 });
 
