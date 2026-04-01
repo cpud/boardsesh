@@ -119,9 +119,10 @@ async function renderBoard(request: RenderRequest): Promise<ImageBitmap> {
     const view = new DataView(rawBytes.buffer, rawBytes.byteOffset, rawBytes.byteLength);
     const overlayWidth = view.getUint32(0, true);
     const overlayHeight = view.getUint32(4, true);
-    // Copy into a fresh Uint8ClampedArray (ImageData requires an owned ArrayBuffer)
+    // .slice() creates an owned copy of the pixel data, detached from WASM memory.
+    // This is critical — WASM memory can grow/relocate, invalidating views into it.
     const rgbaSlice = rawBytes.slice(8);
-    const rgbaData = new Uint8ClampedArray(rgbaSlice.buffer);
+    const rgbaData = new Uint8ClampedArray(rgbaSlice.buffer, rgbaSlice.byteOffset, rgbaSlice.byteLength);
 
     // Draw overlay on top of backgrounds
     const overlayImageData = new ImageData(rgbaData, overlayWidth, overlayHeight);

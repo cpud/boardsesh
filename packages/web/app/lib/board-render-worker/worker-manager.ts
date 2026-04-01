@@ -26,12 +26,12 @@ function cacheKey(boardDetails: BoardDetails, frames: string, mirrored: boolean,
 }
 
 function cachePut(key: string, bitmap: ImageBitmap): void {
-  // Evict oldest entry if at capacity
+  // Evict oldest entry if at capacity.
+  // Don't call .close() on evicted bitmaps — components may still hold references
+  // to them (e.g. drawn on a canvas that hasn't re-rendered). Let GC reclaim them.
   if (bitmapCache.size >= CACHE_MAX) {
     const firstKey = bitmapCache.keys().next().value;
     if (firstKey !== undefined) {
-      const evicted = bitmapCache.get(firstKey);
-      evicted?.close();
       bitmapCache.delete(firstKey);
     }
   }
@@ -76,10 +76,11 @@ function getWorkerPool(): Worker[] {
         }
       };
       w.onerror = (event) => {
-        // Reject all pending requests on worker error
-        for (const [id, pending] of pendingRequests) {
-          pending.reject(new Error(`Worker error: ${event.message}`));
+        // Collect pending IDs first, then reject and clean up
+        const toReject = Array.from(pendingRequests.entries());
+        for (const [id, pending] of toReject) {
           pendingRequests.delete(id);
+          pending.reject(new Error(`Worker error: ${event.message}`));
         }
       };
       return w;
