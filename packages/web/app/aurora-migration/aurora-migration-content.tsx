@@ -215,15 +215,17 @@ export default function AuroraMigrationContent() {
                     <Typography variant="h6" sx={{ mb: 1 }}>
                       Your Boardsesh profile
                     </Typography>
-                    {isAuthenticated && session?.user?.id ? (
-                      <UserSmartCard userId={session.user.id} refreshKey={importRefreshKey} />
-                    ) : (
+                    {!isAuthenticated && (
                       <Typography variant="body2" color="text.secondary">
                         Sign in first to see your profile.
                       </Typography>
                     )}
                   </div>
                 </div>
+
+                {isAuthenticated && session?.user?.id && (
+                  <UserSmartCard userId={session.user.id} refreshKey={importRefreshKey} />
+                )}
               </Stack>
             </CardContent>
           </MuiCard>
