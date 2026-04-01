@@ -154,7 +154,7 @@ describe('ClimbTitle', () => {
 
     it('renders quality stars in subtitle', () => {
       render(<ClimbTitle climb={makeClimb({ quality_average: '4.2' })} gradePosition="right" />);
-      expect(screen.getByText('4.2★')).toBeTruthy();
+      expect(screen.getByText(/4\.2★/)).toBeTruthy();
     });
 
     it('renders setter name in subtitle when showSetterInfo is true', () => {
@@ -163,20 +163,20 @@ describe('ClimbTitle', () => {
       expect(screen.getByText(/DanielBolts/)).toBeTruthy();
     });
 
-    it('renders subtitle as "stars · setter_name" format', () => {
+    it('renders subtitle as "ascents · stars · setter_name" format', () => {
       render(<ClimbTitle climb={makeClimb({ quality_average: '3.5', setter_username: 'alice' })} gradePosition="right" showSetterInfo />);
-      expect(screen.getByText('3.5★ · alice')).toBeTruthy();
+      expect(screen.getByText('10 ascents · 3.5★ · alice')).toBeTruthy();
     });
 
-    it('renders only stars when showSetterInfo is false', () => {
+    it('renders only ascents and stars when showSetterInfo is false', () => {
       render(<ClimbTitle climb={makeClimb({ quality_average: '3.5' })} gradePosition="right" />);
-      expect(screen.getByText('3.5★')).toBeTruthy();
+      expect(screen.getByText('10 ascents · 3.5★')).toBeTruthy();
       expect(screen.queryByText(/setter_joe/)).toBeNull();
     });
 
-    it('renders only stars when setter_username is missing', () => {
+    it('renders only ascents and stars when setter_username is missing', () => {
       render(<ClimbTitle climb={makeClimb({ setter_username: undefined })} gradePosition="right" showSetterInfo />);
-      expect(screen.getByText('3.5★')).toBeTruthy();
+      expect(screen.getByText('10 ascents · 3.5★')).toBeTruthy();
     });
 
     it('does not render angle even when showAngle is true', () => {
@@ -189,13 +189,18 @@ describe('ClimbTitle', () => {
       expect(screen.getByText(/72 ascents/)).toBeTruthy();
     });
 
-    it('renders "project" when no grade quality', () => {
+    it('renders only ascent count when no grade quality', () => {
       render(<ClimbTitle climb={makeClimb({ quality_average: '0' })} gradePosition="right" />);
-      expect(screen.getByText('project')).toBeTruthy();
+      expect(screen.getByText('10 ascents')).toBeTruthy();
     });
 
-    it('renders "project" when difficulty is null', () => {
+    it('renders only ascent count when difficulty is null', () => {
       render(<ClimbTitle climb={makeClimb({ difficulty: null, quality_average: null })} gradePosition="right" />);
+      expect(screen.getByText('10 ascents')).toBeTruthy();
+    });
+
+    it('renders "project" when no grade and no ascents', () => {
+      render(<ClimbTitle climb={makeClimb({ quality_average: '0', ascensionist_count: undefined })} gradePosition="right" />);
       expect(screen.getByText('project')).toBeTruthy();
     });
 
