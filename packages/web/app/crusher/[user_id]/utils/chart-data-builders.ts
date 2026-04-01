@@ -55,6 +55,31 @@ export function filterLogbookByTimeframe(
   }
 }
 
+// ── Shared timeframe filter ─────────────────────────────────────────
+
+function filterByAggregatedTimeframe(
+  entries: LogbookEntry[],
+  timeframe: AggregatedTimeframeType,
+): LogbookEntry[] {
+  if (timeframe === 'all') return entries;
+  const now = dayjs();
+  return entries.filter((entry) => {
+    const climbedAt = dayjs(entry.climbed_at);
+    switch (timeframe) {
+      case 'today':
+        return climbedAt.isSame(now, 'day');
+      case 'lastWeek':
+        return climbedAt.isAfter(now.subtract(1, 'week'));
+      case 'lastMonth':
+        return climbedAt.isAfter(now.subtract(1, 'month'));
+      case 'lastYear':
+        return climbedAt.isAfter(now.subtract(1, 'year'));
+      default:
+        return true;
+    }
+  });
+}
+
 // ── Aggregated stacked bars (grade x layout, for stats summary) ─────
 
 export interface LayoutLegendEntry {
@@ -66,32 +91,13 @@ export function buildAggregatedStackedBars(
   allBoardsTicks: Record<string, LogbookEntry[]>,
   aggregatedTimeframe: AggregatedTimeframeType,
 ): { bars: CssBarChartBar[]; legendEntries: LayoutLegendEntry[] } | null {
-  const now = dayjs();
-
-  const filterByTimeframe = (entry: LogbookEntry) => {
-    const climbedAt = dayjs(entry.climbed_at);
-    switch (aggregatedTimeframe) {
-      case 'today':
-        return climbedAt.isSame(now, 'day');
-      case 'lastWeek':
-        return climbedAt.isAfter(now.subtract(1, 'week'));
-      case 'lastMonth':
-        return climbedAt.isAfter(now.subtract(1, 'month'));
-      case 'lastYear':
-        return climbedAt.isAfter(now.subtract(1, 'year'));
-      case 'all':
-      default:
-        return true;
-    }
-  };
-
   const layoutGradeClimbs: Record<string, Record<string, Set<string>>> = {};
   const allGrades = new Set<string>();
   const allLayouts = new Set<string>();
 
   BOARD_TYPES.forEach((boardType) => {
     const ticks = allBoardsTicks[boardType] || [];
-    const filteredTicks = ticks.filter(filterByTimeframe);
+    const filteredTicks = filterByAggregatedTimeframe(ticks, aggregatedTimeframe);
 
     filteredTicks.forEach((entry) => {
       if (entry.difficulty === null || entry.status === 'attempt' || !entry.climbUuid) return;
@@ -263,27 +269,8 @@ export function buildAggregatedFlashRedpointBars(
   allBoardsTicks: Record<string, LogbookEntry[]>,
   aggregatedTimeframe: AggregatedTimeframeType,
 ): GroupedBar[] | null {
-  const now = dayjs();
-
-  const filterByTimeframe = (entry: LogbookEntry) => {
-    const climbedAt = dayjs(entry.climbed_at);
-    switch (aggregatedTimeframe) {
-      case 'today':
-        return climbedAt.isSame(now, 'day');
-      case 'lastWeek':
-        return climbedAt.isAfter(now.subtract(1, 'week'));
-      case 'lastMonth':
-        return climbedAt.isAfter(now.subtract(1, 'month'));
-      case 'lastYear':
-        return climbedAt.isAfter(now.subtract(1, 'year'));
-      case 'all':
-      default:
-        return true;
-    }
-  };
-
   const allEntries = BOARD_TYPES.flatMap((boardType) =>
-    (allBoardsTicks[boardType] || []).filter(filterByTimeframe),
+    filterByAggregatedTimeframe(allBoardsTicks[boardType] || [], aggregatedTimeframe),
   );
 
   return buildFlashRedpointBars(allEntries);
