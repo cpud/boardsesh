@@ -68,36 +68,45 @@ export const searchClimbs = async (
   const sortOrder = searchParams.sortOrder === 'asc' ? 'asc' : 'desc';
   const isDraftsQuery = !!searchParams.onlyDrafts;
 
-  // For the default hot path (ascents DESC), use a stats-driven query that reads
-  // the covering index in sorted order and stops after pageSize+1 qualifying rows.
-  // This avoids scanning all 15K+ matching climbs just to sort and take 21.
+  // For the default hot path (ascents DESC with stats filters active), drive from
+  // board_climb_stats so PostgreSQL reads the covering index in sorted order and
+  // stops after pageSize+1 qualifying rows — avoids scanning all 15K+ matching
+  // climbs just to sort and take 21.
   //
-  // Climbs without stats (0 ascents) sort last in DESC order so they never appear
-  // on early pages. When the stats-driven query returns fewer rows than needed,
-  // a supplementary query fetches no-stats climbs to fill remaining slots.
-  const useStatsDriven = sortBy === 'ascents' && sortOrder === 'desc' && !isDraftsQuery;
+  // Only safe when stats filters are active (e.g., minAscents >= 1) because the
+  // INNER JOIN excludes climbs without stats rows. When stats filters are active,
+  // those climbs would be excluded by the WHERE clause anyway (NULL fails >= 1),
+  // making LEFT JOIN and INNER JOIN equivalent.
+  // When no stats filters are active, fall through to the LEFT JOIN path.
+  const hasStatsFilters = filters.getClimbStatsConditions().length > 0;
+  const useStatsDriven = sortBy === 'ascents' && sortOrder === 'desc'
+    && !isDraftsQuery && hasStatsFilters;
 
   if (useStatsDriven) {
-    return statsDrivenSearch(db, params, searchParams, filters, sizeEdges, page, pageSize, userId);
+    return statsDrivenSearch(db, params, filters, page, pageSize);
   }
 
   return standardSearch(db, params, searchParams, filters, sortBy, sortOrder, isDraftsQuery, page, pageSize);
 };
 
 /**
- * Stats-driven search: FROM board_climb_stats with covering index.
- * PostgreSQL reads the index in ascensionist_count DESC order and stops early.
- * Supplementary query fetches no-stats climbs when we run out of stats-having climbs.
+ * Stats-driven search: FROM board_climb_stats INNER JOIN board_climbs.
+ * PostgreSQL reads the stats covering index in ascensionist_count DESC order
+ * and stops after pageSize+1 qualifying rows.
+ *
+ * Only used when stats filters are active (checked by caller), so the INNER JOIN
+ * is equivalent to LEFT JOIN — climbs without stats would be excluded by stats
+ * filters (e.g., minAscents >= 1) in the WHERE clause anyway.
+ *
+ * All climb filters (including personal progress like hideCompleted) are in
+ * the WHERE clause — not the JOIN ON — so they apply correctly to the result set.
  */
 async function statsDrivenSearch(
   db: DbInstance,
   params: BoardRouteParams,
-  searchParams: ClimbSearchParams,
   filters: ReturnType<typeof createClimbFilters>,
-  sizeEdges: SizeEdges,
   page: number,
   pageSize: number,
-  userId?: string,
 ): Promise<ClimbSearchResult> {
   const selectFields = {
     uuid: boardClimbs.uuid,
@@ -113,94 +122,27 @@ async function statsDrivenSearch(
     benchmark_difficulty: boardClimbStats.benchmarkDifficulty,
   };
 
-  // Move climb filters to the JOIN predicate so the covering index scan on
-  // board_climb_stats drives the query in sorted order.
-  const climbJoinConditions = [
-    eq(boardClimbs.uuid, boardClimbStats.climbUuid),
-    ...filters.getClimbWhereConditions(),
-    ...filters.getSizeConditions(),
-  ];
-
-  const statsWhereConditions = [
-    eq(boardClimbStats.boardType, params.board_name),
-    eq(boardClimbStats.angle, params.angle),
-    ...filters.getClimbStatsConditions(),
-  ];
-
   const results: RawSelectResult[] = await db
     .select(selectFields)
     .from(boardClimbStats)
-    .innerJoin(boardClimbs, and(...climbJoinConditions))
-    .where(and(...statsWhereConditions))
+    .innerJoin(boardClimbs, eq(boardClimbs.uuid, boardClimbStats.climbUuid))
+    .where(and(
+      // Stats-table scope
+      eq(boardClimbStats.boardType, params.board_name),
+      eq(boardClimbStats.angle, params.angle),
+      // All climb conditions (base filters, name, setter, holds, personal progress)
+      ...filters.getClimbWhereConditions(),
+      // Size edge bounds
+      ...filters.getSizeConditions(),
+      // Stats conditions (minAscents, grade range, quality, accuracy)
+      ...filters.getClimbStatsConditions(),
+    ))
     .orderBy(sql`${boardClimbStats.ascensionistCount} DESC NULLS LAST`, desc(boardClimbs.uuid))
     .limit(pageSize + 1)
     .offset(page * pageSize) as unknown as RawSelectResult[];
 
-  // If the stats-driven query filled the page, no-stats climbs aren't needed yet
-  if (results.length > pageSize) {
-    const climbs = results.slice(0, pageSize).map((r) => mapResultToClimbRow(r, params.angle));
-    return { climbs, hasMore: true };
-  }
-
-  // Stats-driven query didn't fill the page — supplement with no-stats climbs.
-  // Skip supplementary query when stats filters are active (minAscents, grade range,
-  // quality, accuracy) — climbs without stats can't satisfy those filters by definition,
-  // so including them would leak unfiltered results.
-  const hasStatsFilters = filters.getClimbStatsConditions().length > 0;
-
-  if (hasStatsFilters) {
-    const climbs = results.map((r) => mapResultToClimbRow(r, params.angle));
-    return { climbs, hasMore: false };
-  }
-
-  // No stats filters active — safe to include no-stats climbs (they have 0 ascents
-  // and sort after all stats-having climbs in DESC order).
-  // We need the total stats count to calculate how many no-stats climbs were
-  // already shown on previous pages (for correct OFFSET).
-  const remaining = pageSize + 1 - results.length;
-
-  const [statsCountResult] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(boardClimbStats)
-    .innerJoin(boardClimbs, and(...climbJoinConditions))
-    .where(and(...statsWhereConditions));
-
-  const totalStatsCount = Number(statsCountResult?.count ?? 0);
-  const noStatsOffset = Math.max(0, page * pageSize - totalStatsCount);
-
-  const noStatsResults = remaining > 0 ? await db
-    .select({
-      uuid: boardClimbs.uuid,
-      setter_username: boardClimbs.setterUsername,
-      name: boardClimbs.name,
-      frames: boardClimbs.frames,
-      is_draft: boardClimbs.isDraft,
-      angle: sql<null>`NULL`.as('angle'),
-      ascensionist_count: sql<null>`NULL`.as('ascensionist_count'),
-      difficulty_id: sql<null>`NULL`.as('difficulty_id'),
-      quality_average: sql<null>`NULL`.as('quality_average'),
-      difficulty_error: sql<null>`NULL`.as('difficulty_error'),
-      benchmark_difficulty: sql<null>`NULL`.as('benchmark_difficulty'),
-    })
-    .from(boardClimbs)
-    .where(and(
-      ...filters.getClimbWhereConditions(),
-      ...filters.getSizeConditions(),
-      sql`NOT EXISTS (
-        SELECT 1 FROM ${boardClimbStats}
-        WHERE ${boardClimbStats.boardType} = ${params.board_name}
-        AND ${boardClimbStats.climbUuid} = ${boardClimbs.uuid}
-        AND ${boardClimbStats.angle} = ${params.angle}
-      )`,
-    ))
-    .orderBy(desc(boardClimbs.uuid))
-    .limit(remaining)
-    .offset(noStatsOffset) as unknown as RawSelectResult[] : [];
-
-  const combined: RawSelectResult[] = [...results, ...noStatsResults];
-  const hasMore = combined.length > pageSize;
-  const trimmed = hasMore ? combined.slice(0, pageSize) : combined;
-
+  const hasMore = results.length > pageSize;
+  const trimmed = hasMore ? results.slice(0, pageSize) : results;
   const climbs = trimmed.map((r) => mapResultToClimbRow(r, params.angle));
   return { climbs, hasMore };
 }
