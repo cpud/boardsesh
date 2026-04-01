@@ -143,7 +143,18 @@ async function statsDrivenSearch(
   }
 
   // Stats-driven query didn't fill the page — supplement with no-stats climbs.
-  // These have 0 ascents and sort after all stats-having climbs.
+  // Skip supplementary query when stats filters are active (minAscents, grade range,
+  // quality, accuracy) — climbs without stats can't satisfy those filters by definition,
+  // so including them would leak unfiltered results.
+  const hasStatsFilters = filters.getClimbStatsConditions().length > 0;
+
+  if (hasStatsFilters) {
+    const climbs = results.map((r) => mapResultToClimbRow(r, params.angle));
+    return { climbs, hasMore: false };
+  }
+
+  // No stats filters active — safe to include no-stats climbs (they have 0 ascents
+  // and sort after all stats-having climbs in DESC order).
   // We need the total stats count to calculate how many no-stats climbs were
   // already shown on previous pages (for correct OFFSET).
   const remaining = pageSize + 1 - results.length;
@@ -190,8 +201,6 @@ async function statsDrivenSearch(
   const hasMore = combined.length > pageSize;
   const trimmed = hasMore ? combined.slice(0, pageSize) : combined;
 
-  // description is intentionally excluded — it's unbounded text that inflates I/O.
-  // Features needing it should fetch separately via the climb detail query.
   const climbs = trimmed.map((r) => mapResultToClimbRow(r, params.angle));
   return { climbs, hasMore };
 }
