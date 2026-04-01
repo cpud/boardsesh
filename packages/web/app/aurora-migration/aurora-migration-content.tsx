@@ -49,20 +49,30 @@ export default function AuroraMigrationContent() {
                 </Typography>
 
                 <Typography variant="body1" component="p">
-                  On March 25, the{' '}
-                  <MuiLink
-                    href="https://www.climbing.com/news/why-the-kilter-board-app-suddenly-disappeared/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Kilter board app suddenly disappeared
-                  </MuiLink>
-                  , as Aurora randomly shut down its Kilter backend. In response Kilter
-                  rushed out their own app which was still in beta, but the outcome of
-                  these two entities fighting is that the customer gets left holding the
-                  bag, and everyone likely has lost their data (including playlists,
-                  logbooks and draft climbs).
+                  On March 25, the Kilter board app suddenly disappeared, as Aurora
+                  randomly shut down its Kilter backend. In response Kilter rushed out
+                  their own app which was still in beta, but the outcome of these two
+                  entities fighting is that the customer gets left holding the bag, and
+                  everyone likely has lost their data (including playlists, logbooks and
+                  draft climbs).
                 </Typography>
+
+                <MuiLink
+                  href="https://www.climbing.com/news/why-the-kilter-board-app-suddenly-disappeared/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  underline="none"
+                  className={styles.articleCard}
+                >
+                  <Box className={styles.articleBody}>
+                    <Typography variant="subtitle2" color="text.primary">
+                      Why the Kilter Board App Suddenly Disappeared
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      climbing.com
+                    </Typography>
+                  </Box>
+                </MuiLink>
 
                 <Typography variant="body1" component="p">
                   This single-vendor risk first became obvious 2 years ago, when you
