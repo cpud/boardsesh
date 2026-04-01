@@ -108,6 +108,10 @@ type ClimbListItemProps = {
   disableThumbnailNavigation?: boolean;
   /** Handler for thumbnail clicks. When set, stops propagation so the row onClick doesn't also fire. */
   onThumbnailClick?: () => void;
+  /** When provided, the item delegates opening the actions drawer to the parent instead of rendering its own. */
+  onOpenActions?: (climb: Climb) => void;
+  /** When provided, the item delegates opening the playlist selector to the parent instead of rendering its own. */
+  onOpenPlaylistSelector?: (climb: Climb) => void;
 };
 
 const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(({
@@ -126,9 +130,14 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(({
   contentOpacity,
   disableThumbnailNavigation,
   onThumbnailClick,
+  onOpenActions,
+  onOpenPlaylistSelector,
 }) => {
   const pathname = usePathname();
   const isDark = useIsDarkMode();
+  // When parent provides both drawer callbacks, skip local drawers entirely.
+  // Both must be present to ensure the parent handles all drawer interactions.
+  const hasParentDrawers = Boolean(onOpenActions && onOpenPlaylistSelector);
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [isPlaylistSelectorOpen, setIsPlaylistSelectorOpen] = useState(false);
   const [rightSwipeOffset, setRightSwipeOffset] = useState(0);
@@ -144,9 +153,13 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(({
   }, [climb, addToQueue]);
 
   const handleDefaultSwipeRightLong = useCallback(() => {
-    setIsActionsOpen(false);
-    setIsPlaylistSelectorOpen(true);
-  }, []);
+    if (onOpenPlaylistSelector) {
+      onOpenPlaylistSelector(climb);
+    } else {
+      setIsActionsOpen(false);
+      setIsPlaylistSelectorOpen(true);
+    }
+  }, [onOpenPlaylistSelector, climb]);
 
   const handleDefaultSwipeRight = useCallback(() => {
     toggleFavorite();
@@ -386,8 +399,12 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(({
               size="small"
               onClick={(e) => {
                 e.stopPropagation();
-                setIsPlaylistSelectorOpen(false);
-                setIsActionsOpen(true);
+                if (onOpenActions) {
+                  onOpenActions(climb);
+                } else {
+                  setIsPlaylistSelectorOpen(false);
+                  setIsActionsOpen(true);
+                }
               }}
               style={iconButtonStyle}
             >
@@ -397,8 +414,8 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(({
         </div>
       </div>
 
-      {/* Default actions drawers - only rendered when no menuSlot override */}
-      {menuSlot === undefined && (
+      {/* Default actions drawers - only rendered when no menuSlot override and no parent drawer callbacks */}
+      {menuSlot === undefined && !hasParentDrawers && (
         <>
           <SwipeableDrawer
             title={<DrawerClimbHeader climb={climb} boardDetails={boardDetails} />}
@@ -460,7 +477,9 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(({
     && prev.backgroundColor === next.backgroundColor
     && prev.contentOpacity === next.contentOpacity
     && prev.disableThumbnailNavigation === next.disableThumbnailNavigation
-    && prev.onThumbnailClick === next.onThumbnailClick;
+    && prev.onThumbnailClick === next.onThumbnailClick
+    && prev.onOpenActions === next.onOpenActions
+    && prev.onOpenPlaylistSelector === next.onOpenPlaylistSelector;
 });
 
 ClimbListItem.displayName = 'ClimbListItem';

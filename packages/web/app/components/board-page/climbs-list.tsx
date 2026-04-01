@@ -5,10 +5,15 @@ import Box from '@mui/material/Box';
 import AppsOutlined from '@mui/icons-material/AppsOutlined';
 import FormatListBulletedOutlined from '@mui/icons-material/FormatListBulletedOutlined';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
+import { usePathname } from 'next/navigation';
 import { track } from '@vercel/analytics';
 import { Climb, BoardDetails } from '@/app/lib/types';
 import ClimbCard from '../climb-card/climb-card';
 import ClimbListItem from '../climb-card/climb-list-item';
+import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
+import DrawerClimbHeader from '../climb-card/drawer-climb-header';
+import { ClimbActions } from '../climb-actions';
+import PlaylistSelectionContent from '../climb-actions/playlist-selection-content';
 import { ClimbCardSkeleton, ClimbListItemSkeleton } from './board-page-skeleton';
 import { themeTokens } from '@/app/theme/theme-config';
 import { getPreference, setPreference } from '@/app/lib/user-preferences-db';
@@ -16,6 +21,7 @@ import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
 import { useFeatureFlag } from '@/app/components/providers/feature-flags-provider';
 import { trackListBatchRender } from '@/app/lib/rendering-metrics';
 import { classifyClimbListChange } from './climb-list-utils';
+import { getExcludedClimbActions } from '@/app/lib/climb-action-utils';
 
 type ViewMode = 'grid' | 'list';
 
@@ -24,6 +30,19 @@ const VIEW_MODE_PREFERENCE_KEY = 'climbListViewMode';
 // Estimated height of a ClimbListItem row (px). Used by the virtualizer
 // for initial layout; measured heights replace it after mount.
 const ESTIMATED_LIST_ITEM_HEIGHT = 76;
+
+// Static drawer style objects (hoisted to avoid per-render allocation)
+const sharedDrawerStyles = {
+  wrapper: { height: 'auto', width: '100%' },
+  body: { padding: `${themeTokens.spacing[2]}px 0` },
+  header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
+} as const;
+
+const sharedPlaylistDrawerStyles = {
+  wrapper: { height: 'auto', maxHeight: '70vh', width: '100%' },
+  body: { padding: 0 },
+  header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
+} as const;
 
 export type ClimbsListProps = {
   boardDetails: BoardDetails;
@@ -201,6 +220,43 @@ const ClimbsList = ({
     [boardDetails, boardDetailsMap],
   );
 
+  // --- Shared drawer state (one pair of drawers for all list items) ---
+  const pathname = usePathname();
+  const [activeDrawerClimb, setActiveDrawerClimb] = useState<Climb | null>(null);
+  const [drawerMode, setDrawerMode] = useState<'actions' | 'playlist' | null>(null);
+
+  const handleOpenActions = useCallback((climb: Climb) => {
+    setActiveDrawerClimb(climb);
+    setDrawerMode('actions');
+  }, []);
+
+  const handleOpenPlaylistSelector = useCallback((climb: Climb) => {
+    setActiveDrawerClimb(climb);
+    setDrawerMode('playlist');
+  }, []);
+
+  const handleCloseDrawer = useCallback(() => {
+    setDrawerMode(null);
+  }, []);
+
+  const handleSwitchToPlaylist = useCallback(() => {
+    setDrawerMode('playlist');
+  }, []);
+
+  const handleDrawerTransitionEnd = useCallback((open: boolean) => {
+    if (!open) setActiveDrawerClimb(null);
+  }, []);
+
+  const excludeActions = useMemo(
+    () => getExcludedClimbActions(boardDetails.board_name, 'list'),
+    [boardDetails.board_name],
+  );
+
+  const activeDrawerBoardDetails = useMemo(
+    () => activeDrawerClimb ? resolveBoardDetails(activeDrawerClimb) : boardDetails,
+    [activeDrawerClimb, resolveBoardDetails, boardDetails],
+  );
+
   // --- Window virtualizer for list mode (disabled when Rust renderer is active) ---
   const virtualizer = useWindowVirtualizer({
     count: useVirtualization ? climbs.length : 0,
@@ -366,6 +422,8 @@ const ClimbsList = ({
                       onThumbnailClick={climbHandlersMap.get(climb.uuid)}
                       disableThumbnailNavigation
                       unsupported={unsupportedClimbs?.has(climb.uuid)}
+                      onOpenActions={handleOpenActions}
+                      onOpenPlaylistSelector={handleOpenPlaylistSelector}
                     />
                   </div>
                   {renderItemExtra?.(climb)}
@@ -391,6 +449,8 @@ const ClimbsList = ({
                     onThumbnailClick={climbHandlersMap.get(climb.uuid)}
                     disableThumbnailNavigation
                     unsupported={unsupportedClimbs?.has(climb.uuid)}
+                    onOpenActions={handleOpenActions}
+                    onOpenPlaylistSelector={handleOpenPlaylistSelector}
                   />
                 </div>
                 {renderItemExtra?.(climb)}
@@ -421,6 +481,49 @@ const ClimbsList = ({
       {showBottomSpacer && (
         <Box sx={{ height: themeTokens.layout.bottomNavSpacer }} aria-hidden />
       )}
+
+      {/* Shared drawers for all list items (actions + playlist selector) */}
+      <SwipeableDrawer
+        title={activeDrawerClimb ? <DrawerClimbHeader climb={activeDrawerClimb} boardDetails={activeDrawerBoardDetails} /> : undefined}
+        placement="bottom"
+        open={drawerMode === 'actions'}
+        onClose={handleCloseDrawer}
+        onTransitionEnd={handleDrawerTransitionEnd}
+        styles={sharedDrawerStyles}
+        keepMounted={false}
+      >
+        {activeDrawerClimb && (
+          <ClimbActions
+            climb={activeDrawerClimb}
+            boardDetails={activeDrawerBoardDetails}
+            angle={activeDrawerClimb.angle}
+            currentPathname={pathname}
+            viewMode="list"
+            exclude={excludeActions}
+            onOpenPlaylistSelector={handleSwitchToPlaylist}
+            onActionComplete={handleCloseDrawer}
+          />
+        )}
+      </SwipeableDrawer>
+
+      <SwipeableDrawer
+        title={activeDrawerClimb ? <DrawerClimbHeader climb={activeDrawerClimb} boardDetails={activeDrawerBoardDetails} /> : undefined}
+        placement="bottom"
+        open={drawerMode === 'playlist'}
+        onClose={handleCloseDrawer}
+        onTransitionEnd={handleDrawerTransitionEnd}
+        styles={sharedPlaylistDrawerStyles}
+        keepMounted={false}
+      >
+        {activeDrawerClimb && (
+          <PlaylistSelectionContent
+            climbUuid={activeDrawerClimb.uuid}
+            boardDetails={activeDrawerBoardDetails}
+            angle={activeDrawerClimb.angle}
+            onDone={handleCloseDrawer}
+          />
+        )}
+      </SwipeableDrawer>
     </Box>
   );
 };
