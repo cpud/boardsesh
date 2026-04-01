@@ -144,6 +144,17 @@ describe('CssBarChart', () => {
       expect(labelArr[labelArr.length - 1].style.visibility).not.toBe('hidden');
     });
 
+    it('shows only the first label when maxLabels=1', () => {
+      const bars = makeBars(10);
+      const { container } = render(<CssBarChart bars={bars} maxLabels={1} />);
+      const labels = container.querySelectorAll('[aria-hidden="true"] span');
+      const visible = Array.from(labels).filter(
+        (el) => (el as HTMLElement).style.visibility !== 'hidden',
+      );
+      expect(visible).toHaveLength(1);
+      expect(visible[0].textContent).toBe('L0');
+    });
+
     it('shows close to maxLabels even when bars.length is slightly above', () => {
       // 13 bars, maxLabels=12 — old algorithm showed only 7
       const bars = makeBars(13);

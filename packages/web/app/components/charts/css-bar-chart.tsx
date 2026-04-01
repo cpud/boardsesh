@@ -54,6 +54,7 @@ export const CssBarChart = React.memo(function CssBarChart({
   const visibleLabelIndices = useMemo(() => {
     if (!maxLabels || bars.length <= maxLabels) return null;
     const count = Math.min(maxLabels, bars.length);
+    if (count <= 1) return new Set([0]);
     const step = (bars.length - 1) / (count - 1);
     const indices = new Set<number>();
     for (let k = 0; k < count; k++) {
