@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { CLIMB_SESSION_COOKIE } from '@/app/lib/climb-session-cookie';
 
@@ -6,8 +6,9 @@ vi.mock('@/app/lib/board-data', () => ({
   SUPPORTED_BOARDS: ['kilter', 'tension'],
 }));
 
+const mockPrecomputeAllFlags = vi.fn().mockResolvedValue('__test_code__');
 vi.mock('@/app/flags', () => ({
-  precomputeAllFlags: vi.fn().mockResolvedValue('__test_code__'),
+  precomputeAllFlags: mockPrecomputeAllFlags,
 }));
 
 const { getListPageCacheTTL, hasUserSpecificFilters } = await import('@/app/lib/list-page-cache');
@@ -260,5 +261,77 @@ describe('middleware session redirect', () => {
     const response = await middleware(makeRequest('/kilter/original/12x12-square/screw_bolt/40/list?session=abc-123'));
     expect(response.status).toBe(307);
     expect(response.headers.has('Vercel-CDN-Cache-Control')).toBe(false);
+  });
+});
+
+// --- Visitor ID tests ---
+
+describe('middleware visitor ID (bs_vid)', () => {
+  beforeEach(() => {
+    mockPrecomputeAllFlags.mockResolvedValue('__test_code__');
+  });
+
+  it('sets bs_vid cookie when not present', async () => {
+    const response = await middleware(makeRequest('/some/page'));
+    const setCookie = response.headers.get('set-cookie');
+    expect(setCookie).toContain('bs_vid=');
+  });
+
+  it('does not overwrite existing bs_vid cookie', async () => {
+    const req = makeRequest('/some/page');
+    req.cookies.set('bs_vid', 'existing-id');
+    const response = await middleware(req);
+    const setCookie = response.headers.get('set-cookie');
+    expect(setCookie).toBeNull();
+  });
+
+  it('sets bs_vid with httpOnly, lax, and 1-year maxAge', async () => {
+    const response = await middleware(makeRequest('/some/page'));
+    const setCookie = response.headers.get('set-cookie')!;
+    expect(setCookie).toContain('HttpOnly');
+    expect(setCookie.toLowerCase()).toContain('samesite=lax');
+    expect(setCookie).toContain('Max-Age=31536000');
+  });
+});
+
+// --- Feature flag precompute tests ---
+
+describe('middleware flag precompute on list pages', () => {
+  beforeEach(() => {
+    mockPrecomputeAllFlags.mockResolvedValue('__test_code__');
+  });
+
+  it('rewrites URL with _flags param on cacheable list pages', async () => {
+    const response = await middleware(makeRequest(LEGACY_LIST));
+    expect(response.headers.get('x-middleware-rewrite')).toContain('_flags=__test_code__');
+  });
+
+  it('sets CDN cache headers on cacheable list pages', async () => {
+    const response = await middleware(makeRequest(LEGACY_LIST));
+    expect(response.headers.get('Vercel-CDN-Cache-Control')).toBe(`s-maxage=${TTL_24H}, stale-while-revalidate=${TTL_24H * 7}`);
+    expect(response.headers.get('CDN-Cache-Control')).toBe(`s-maxage=${TTL_24H}, stale-while-revalidate=${TTL_24H * 7}`);
+  });
+
+  it('bypasses CDN cache when vercel-flag-overrides cookie is present', async () => {
+    mockPrecomputeAllFlags.mockClear();
+    const req = makeRequest(LEGACY_LIST);
+    req.cookies.set('vercel-flag-overrides', 'some-override');
+    const response = await middleware(req);
+    expect(response.headers.has('x-middleware-rewrite')).toBe(false);
+    expect(mockPrecomputeAllFlags).not.toHaveBeenCalled();
+  });
+
+  it('falls back gracefully when precomputeAllFlags throws', async () => {
+    mockPrecomputeAllFlags.mockRejectedValueOnce(new Error('FLAGS_SECRET missing'));
+    const response = await middleware(makeRequest(LEGACY_LIST));
+    // Should still set CDN cache headers (just without variant rewrite)
+    expect(response.headers.get('Vercel-CDN-Cache-Control')).toBe(`s-maxage=${TTL_24H}, stale-while-revalidate=${TTL_24H * 7}`);
+    expect(response.headers.has('x-middleware-rewrite')).toBe(false);
+  });
+
+  it('does not call precomputeAllFlags for non-list pages', async () => {
+    mockPrecomputeAllFlags.mockClear();
+    await middleware(makeRequest('/some/page'));
+    expect(mockPrecomputeAllFlags).not.toHaveBeenCalled();
   });
 });

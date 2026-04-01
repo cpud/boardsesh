@@ -58,8 +58,12 @@ export async function middleware(request: NextRequest) {
 
   // Generate visitor ID early so it's available for flag evaluation.
   // On first visit the cookie won't be on the request yet, so we generate
-  // it here and inject it into the request cookies so precomputeAllFlags()
-  // can read it immediately (no second-request delay).
+  // it here and inject it into the request's Cookie header. The Flags SDK
+  // reads cookies via next/headers cookies() which resolves from the same
+  // request context, so modifying the header here makes the ID visible to
+  // precomputeAllFlags(). On the off chance the injection doesn't propagate,
+  // the flag adapter falls back gracefully (no visitor ID = default values)
+  // and the response cookie ensures all subsequent requests carry the ID.
   const hasVisitorId = request.cookies.has('bs_vid');
   let visitorId: string | undefined;
   if (!hasVisitorId) {
@@ -89,10 +93,11 @@ export async function middleware(request: NextRequest) {
         const url = request.nextUrl.clone();
         url.searchParams.set('_flags', code);
         response = NextResponse.rewrite(url);
-      } catch {
+      } catch (error) {
         // Flag evaluation failed — fall through without variant rewrite.
         // The page still renders correctly (layout.tsx evaluates flags
         // independently), we just lose CDN cache differentiation by flags.
+        console.warn('Feature flag precompute failed, skipping CDN variant rewrite:', error);
         response = NextResponse.next();
       }
 

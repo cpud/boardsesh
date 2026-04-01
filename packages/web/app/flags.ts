@@ -1,7 +1,12 @@
 import { flag, evaluate, combine, precompute } from 'flags/next';
 import { vercelAdapter } from '@flags-sdk/vercel';
 import { decode } from 'next-auth/jwt';
-import type { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
+
+// Minimal cookie reader interface — avoids importing fragile internal
+// Next.js types. Matches what the Flags SDK passes to identify().
+interface CookieReader {
+  get(name: string): { value: string } | undefined;
+}
 
 // Only use the Vercel adapter when the FLAGS env var is available (set automatically
 // on Vercel). Locally, flags fall through to their decide() functions.
@@ -11,7 +16,7 @@ const adapter = process.env.FLAGS ? vercelAdapter() : undefined;
 // directly from cookies. Works in both Edge middleware (precompute) and
 // Node server components (evaluateAllFlags) because the Flags SDK passes
 // { headers, cookies } to identify in both contexts.
-async function identify({ cookies }: { cookies: ReadonlyRequestCookies }) {
+async function identify({ cookies }: { cookies: CookieReader }) {
   const visitorId = cookies.get('bs_vid')?.value;
 
   const sessionToken =
