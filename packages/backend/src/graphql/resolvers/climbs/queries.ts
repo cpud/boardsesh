@@ -83,13 +83,17 @@ export const climbQueries = {
       };
     }
 
+    const userId = ctx.isAuthenticated ? ctx.userId : undefined;
+
     // Return context for field resolvers - queries are executed lazily per field
     // Personal progress filters now use boardsesh_ticks table with NextAuth user ID
     return {
       params,
       searchParams,
       sizeEdges,
-      userId: ctx.isAuthenticated ? ctx.userId : undefined,
+      userId,
+      // Results are cacheable in Redis when there are no user-specific filters
+      _isCacheable: !userId,
     };
   },
 
