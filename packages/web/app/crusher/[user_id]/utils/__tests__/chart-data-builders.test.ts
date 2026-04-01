@@ -148,8 +148,11 @@ describe('buildWeeklyBars', () => {
     const result = buildWeeklyBars(logbook);
     expect(result).not.toBeNull();
 
-    const w2 = result!.find((b) => b.key === `W${dayjs(week1Date).isoWeek()}`);
-    const w3 = result!.find((b) => b.key === `W${dayjs(week2Date).isoWeek()}`);
+    // Keys now include ISO year: "2024-W2", "2024-W3"
+    const w2Key = `${dayjs(week1Date).isoWeekYear()}-W${dayjs(week1Date).isoWeek()}`;
+    const w3Key = `${dayjs(week2Date).isoWeekYear()}-W${dayjs(week2Date).isoWeek()}`;
+    const w2 = result!.find((b) => b.key === w2Key);
+    const w3 = result!.find((b) => b.key === w3Key);
 
     expect(w2).toBeDefined();
     expect(w3).toBeDefined();
@@ -178,35 +181,60 @@ describe('buildWeeklyBars', () => {
     ];
     const result = buildWeeklyBars(logbook);
     expect(result).not.toBeNull();
-    const w3 = result!.find((b) => b.key === `W${dayjs('2024-01-15T12:00:00Z').isoWeek()}`);
+    const d = dayjs('2024-01-15T12:00:00Z');
+    const w3 = result!.find((b) => b.key === `${d.isoWeekYear()}-W${d.isoWeek()}`);
     const totalValue = w3!.segments.reduce((sum, s) => sum + s.value, 0);
     expect(totalValue).toBe(1); // null entry not counted
   });
 
-  it('caps output at MAX_WEEKS=26 (keeps most recent weeks)', () => {
-    // Create 30 entries each in a distinct week, all within a single calendar year
-    // to avoid ISO week number collisions across year boundaries.
-    // Anchor to the middle of the year so subtracting 30 weeks stays within 2024.
+  it('caps output at DEFAULT_MAX_WEEKS=52 (keeps most recent weeks)', () => {
+    // Create 60 entries each in a distinct week to exceed the 52-week cap
     const entries: LogbookEntry[] = [];
-    for (let w = 0; w < 30; w++) {
+    for (let w = 0; w < 60; w++) {
       entries.push(
         makeEntry({
-          // Anchor on 2024-07-01 (W27) so subtracting 29 weeks lands in W52 of 2023 at most.
-          // Use a Monday so each subtraction lands on a different ISO week.
           climbed_at: dayjs('2024-07-01').subtract(w, 'week').toISOString(),
           difficulty: 22,
         }),
       );
     }
-    // Sort most-recent first to match the expected logbook ordering
     entries.sort((a, b) => (a.climbed_at > b.climbed_at ? -1 : 1));
 
     const result = buildWeeklyBars(entries);
     expect(result).not.toBeNull();
-    // The implementation builds all week-label slots between the oldest and newest
-    // entry, then slices to the most recent DEFAULT_MAX_WEEKS=52. With 30 distinct
-    // input weeks (under the cap), all 30 bars appear in the output.
-    expect(result!.length).toBe(30);
+    // 60 weeks of data gets capped to the most recent 52
+    expect(result!.length).toBe(52);
+  });
+
+  it('does not collide week numbers across year boundaries', () => {
+    // 2024-12-23 = ISO W52 of 2024, 2024-12-30 = ISO W1 of 2025
+    // Adjacent weeks that cross the year boundary should be separate bars
+    const logbook = [
+      makeEntry({ climbed_at: '2025-01-06T12:00:00Z', difficulty: 22 }), // 2025-W2: 7a
+      makeEntry({ climbed_at: '2024-12-30T12:00:00Z', difficulty: 16 }), // 2025-W1: 6a
+      makeEntry({ climbed_at: '2024-12-23T12:00:00Z', difficulty: 22 }), // 2024-W52: 7a
+    ];
+
+    const result = buildWeeklyBars(logbook);
+    expect(result).not.toBeNull();
+
+    const allKeys = result!.map((b) => b.key);
+    expect(allKeys).toContain('2024-W52');
+    expect(allKeys).toContain('2025-W1');
+    expect(allKeys).toContain('2025-W2');
+
+    const w52_2024 = result!.find((b) => b.key === '2024-W52')!;
+    const w1_2025 = result!.find((b) => b.key === '2025-W1')!;
+
+    // Check they have different data
+    const w52_7a = w52_2024.segments.find((s) => s.label === '7a');
+    const w1_6a = w1_2025.segments.find((s) => s.label === '6a');
+    expect(w52_7a?.value).toBe(1);
+    expect(w1_6a?.value).toBe(1);
+
+    // Labels should include year since data spans years
+    expect(w52_2024.label).toContain("'24");
+    expect(w1_2025.label).toContain("'25");
   });
 
   it('returns bars with the correct structure', () => {

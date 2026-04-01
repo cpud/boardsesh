@@ -172,44 +172,54 @@ export function buildWeeklyBars(
   if (entries.length === 0) return null;
 
   const DEFAULT_MAX_WEEKS = 52;
-  const allWeeks: string[] = [];
+  const allWeekKeys: string[] = [];
   const first = dayjs(entries[entries.length - 1]?.climbed_at).startOf('isoWeek');
   const last = dayjs(entries[0]?.climbed_at).endOf('isoWeek');
   let current = first;
   while (current.isBefore(last) || current.isSame(last)) {
-    allWeeks.push(`W${current.isoWeek()}`);
+    // Include ISO year in the key to avoid collisions across year boundaries
+    allWeekKeys.push(`${current.isoWeekYear()}-W${current.isoWeek()}`);
     current = current.add(1, 'week');
   }
   // Cap at default max to keep the chart readable when no date range is set
-  const weeks = allWeeks.length > DEFAULT_MAX_WEEKS ? allWeeks.slice(-DEFAULT_MAX_WEEKS) : allWeeks;
+  const weekKeys = allWeekKeys.length > DEFAULT_MAX_WEEKS ? allWeekKeys.slice(-DEFAULT_MAX_WEEKS) : allWeekKeys;
 
   const weeklyData: Record<string, Record<string, number>> = {};
   entries.forEach((entry) => {
     if (entry.difficulty === null) return;
-    const week = `W${dayjs(entry.climbed_at).isoWeek()}`;
+    const d = dayjs(entry.climbed_at);
+    const weekKey = `${d.isoWeekYear()}-W${d.isoWeek()}`;
     const difficulty = difficultyMapping[entry.difficulty];
     if (difficulty) {
-      if (!weeklyData[week]) weeklyData[week] = {};
-      weeklyData[week][difficulty] = (weeklyData[week][difficulty] || 0) + 1;
+      if (!weeklyData[weekKey]) weeklyData[weekKey] = {};
+      weeklyData[weekKey][difficulty] = (weeklyData[weekKey][difficulty] || 0) + 1;
     }
   });
 
   // Find which grades actually appear
   const activeGrades = GRADE_ORDER.filter((grade) =>
-    weeks.some((week) => (weeklyData[week]?.[grade] || 0) > 0),
+    weekKeys.some((wk) => (weeklyData[wk]?.[grade] || 0) > 0),
   );
 
   if (activeGrades.length === 0) return null;
 
-  return weeks.map((week) => ({
-    key: week,
-    label: week,
-    segments: activeGrades.map((grade) => ({
-      value: weeklyData[week]?.[grade] || 0,
-      color: getGradeChartColor(grade),
-      label: grade,
-    })),
-  }));
+  // Build display labels: show "W3" normally, but "W52 '24" at year boundaries
+  const spansYears = weekKeys.length > 1 &&
+    weekKeys[0].split('-')[0] !== weekKeys[weekKeys.length - 1].split('-')[0];
+
+  return weekKeys.map((wk) => {
+    const [year, weekPart] = wk.split('-');
+    const displayLabel = spansYears ? `${weekPart} '${year.slice(2)}` : weekPart;
+    return {
+      key: wk,
+      label: displayLabel,
+      segments: activeGrades.map((grade) => ({
+        value: weeklyData[wk]?.[grade] || 0,
+        color: getGradeChartColor(grade),
+        label: grade,
+      })),
+    };
+  });
 }
 
 // ── Flash vs Redpoint grouped bars ──────────────────────────────────
