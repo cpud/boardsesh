@@ -3,10 +3,11 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { SUPPORTED_BOARDS } from './app/lib/board-data';
 import { getListPageCacheTTL } from './app/lib/list-page-cache';
+import { precomputeAllFlags } from './app/flags';
 
 const SPECIAL_ROUTES = ['angles', 'grades']; // routes that don't need board validation
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Block PHP requests
@@ -39,20 +40,53 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // Ensure every visitor has a stable anonymous ID for percentage-based
+  // feature flag rollouts. Set early so flag evaluation can read it.
+  const hasVisitorId = request.cookies.has('bs_vid');
+  let response: NextResponse | undefined;
+
   // Use Vercel-CDN-Cache-Control because Next.js overwrites Cache-Control
   // for dynamic pages (pages that use searchParams) with "private, no-store".
   // Vercel-CDN-Cache-Control is the highest-priority header for Vercel's CDN
   // and is not touched by Next.js rendering.
   const cacheTTL = getListPageCacheTTL(pathname, request.nextUrl.searchParams);
   if (cacheTTL !== null) {
-    const cdnCacheValue = `s-maxage=${cacheTTL}, stale-while-revalidate=${cacheTTL * 7}`;
-    const response = NextResponse.next();
-    response.headers.set('Vercel-CDN-Cache-Control', cdnCacheValue);
-    response.headers.set('CDN-Cache-Control', cdnCacheValue);
-    return response;
+    // Flag overrides via Vercel Toolbar must bypass CDN cache so the
+    // developer sees their overridden values immediately.
+    if (request.cookies.has('vercel-flag-overrides')) {
+      response = NextResponse.next();
+    } else {
+      // Evaluate flags at the edge and encode the combination into a signed
+      // code. Rewrite the URL to include the code as a query param so the CDN
+      // caches different responses per flag combination. When a flag changes,
+      // the code changes → cache miss → fresh render with correct values.
+      const code = await precomputeAllFlags();
+      const url = request.nextUrl.clone();
+      url.searchParams.set('_flags', code);
+      response = NextResponse.rewrite(url);
+
+      const cdnCacheValue = `s-maxage=${cacheTTL}, stale-while-revalidate=${cacheTTL * 7}`;
+      response.headers.set('Vercel-CDN-Cache-Control', cdnCacheValue);
+      response.headers.set('CDN-Cache-Control', cdnCacheValue);
+    }
   }
 
-  return NextResponse.next();
+  if (!response) {
+    response = NextResponse.next();
+  }
+
+  // Set anonymous visitor ID cookie on first visit
+  if (!hasVisitorId) {
+    response.cookies.set('bs_vid', crypto.randomUUID(), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 365 * 24 * 60 * 60, // 1 year
+      path: '/',
+    });
+  }
+
+  return response;
 }
 
 export const config = {

@@ -1,15 +1,39 @@
-import { flag, evaluate, combine } from 'flags/next';
+import { flag, evaluate, combine, precompute } from 'flags/next';
 import { vercelAdapter } from '@flags-sdk/vercel';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/lib/auth/auth-options';
+import { decode } from 'next-auth/jwt';
+import type { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
 
 // Only use the Vercel adapter when the FLAGS env var is available (set automatically
 // on Vercel). Locally, flags fall through to their decide() functions.
 const adapter = process.env.FLAGS ? vercelAdapter() : undefined;
 
-async function identify() {
-  const session = await getServerSession(authOptions);
-  return session?.user ? { user: { id: session.user.id, email: session.user.email } } : {};
+// Edge-compatible identify: reads visitor ID and decodes the NextAuth JWT
+// directly from cookies. Works in both Edge middleware (precompute) and
+// Node server components (evaluateAllFlags) because the Flags SDK passes
+// { headers, cookies } to identify in both contexts.
+async function identify({ cookies }: { cookies: ReadonlyRequestCookies }) {
+  const visitorId = cookies.get('bs_vid')?.value;
+
+  const sessionToken =
+    cookies.get('__Secure-next-auth.session-token')?.value ??
+    cookies.get('next-auth.session-token')?.value;
+
+  let user: { id: string; email: string } | undefined;
+  if (sessionToken) {
+    try {
+      const decoded = await decode({ token: sessionToken, secret: process.env.NEXTAUTH_SECRET! });
+      if (decoded?.sub && typeof decoded?.email === 'string') {
+        user = { id: decoded.sub, email: decoded.email };
+      }
+    } catch {
+      // Invalid or expired token — treat as anonymous
+    }
+  }
+
+  return {
+    ...(visitorId ? { visitorId } : {}),
+    ...(user ? { user } : {}),
+  };
 }
 
 export const rustSvgRendering = flag({
@@ -53,4 +77,13 @@ export type FeatureFlags = {
 export async function evaluateAllFlags(): Promise<FeatureFlags> {
   const values = await evaluate(allFlags);
   return combine(allFlags, values) as FeatureFlags;
+}
+
+/**
+ * Evaluate all flags and return a signed code string.
+ * Call this in middleware, then pass the code via URL rewrite so the CDN
+ * caches different responses per flag combination.
+ */
+export async function precomputeAllFlags(): Promise<string> {
+  return precompute(allFlags);
 }
