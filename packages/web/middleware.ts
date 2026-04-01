@@ -43,7 +43,9 @@ export function middleware(request: NextRequest) {
   // for dynamic pages (pages that use searchParams) with "private, no-store".
   // Vercel-CDN-Cache-Control is the highest-priority header for Vercel's CDN
   // and is not touched by Next.js rendering.
-  const cacheTTL = getListPageCacheTTL(pathname, request.nextUrl.searchParams);
+  const hasSession = request.cookies.has('__Secure-next-auth.session-token') ||
+    request.cookies.has('next-auth.session-token');
+  const cacheTTL = getListPageCacheTTL(pathname, request.nextUrl.searchParams, hasSession);
   if (cacheTTL !== null) {
     const cdnCacheValue = `s-maxage=${cacheTTL}, stale-while-revalidate=${cacheTTL * 7}`;
     const response = NextResponse.next();
