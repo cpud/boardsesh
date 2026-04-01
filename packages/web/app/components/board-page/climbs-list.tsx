@@ -239,6 +239,10 @@ const ClimbsList = ({
     setDrawerMode(null);
   }, []);
 
+  const handleSwitchToPlaylist = useCallback(() => {
+    setDrawerMode('playlist');
+  }, []);
+
   const handleDrawerTransitionEnd = useCallback((open: boolean) => {
     if (!open) setActiveDrawerClimb(null);
   }, []);
@@ -496,9 +500,7 @@ const ClimbsList = ({
             currentPathname={pathname}
             viewMode="list"
             exclude={excludeActions}
-            onOpenPlaylistSelector={() => {
-              setDrawerMode('playlist');
-            }}
+            onOpenPlaylistSelector={handleSwitchToPlaylist}
             onActionComplete={handleCloseDrawer}
           />
         )}

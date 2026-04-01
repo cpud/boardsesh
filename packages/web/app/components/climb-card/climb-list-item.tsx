@@ -135,8 +135,9 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(({
 }) => {
   const pathname = usePathname();
   const isDark = useIsDarkMode();
-  // When parent provides drawer callbacks, skip local drawer state entirely
-  const hasParentDrawers = Boolean(onOpenActions || onOpenPlaylistSelector);
+  // When parent provides both drawer callbacks, skip local drawers entirely.
+  // Both must be present to ensure the parent handles all drawer interactions.
+  const hasParentDrawers = Boolean(onOpenActions && onOpenPlaylistSelector);
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [isPlaylistSelectorOpen, setIsPlaylistSelectorOpen] = useState(false);
   const [rightSwipeOffset, setRightSwipeOffset] = useState(0);

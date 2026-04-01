@@ -33,6 +33,19 @@ import styles from '@/app/components/library/playlist-view.module.css';
 
 type ViewMode = 'grid' | 'list';
 
+// Static drawer style objects (hoisted to avoid per-render allocation)
+const sharedDrawerStyles = {
+  wrapper: { height: 'auto', width: '100%' },
+  body: { padding: `${themeTokens.spacing[2]}px 0` },
+  header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
+} as const;
+
+const sharedPlaylistDrawerStyles = {
+  wrapper: { height: 'auto', maxHeight: '70vh', width: '100%' },
+  body: { padding: 0 },
+  header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
+} as const;
+
 type LikedClimbsListProps = {
   boardDetails: BoardDetails;
   angle: number;
@@ -196,6 +209,10 @@ export default function LikedClimbsList({
     setDrawerMode(null);
   }, []);
 
+  const handleSwitchToPlaylist = useCallback(() => {
+    setDrawerMode('playlist');
+  }, []);
+
   const handleDrawerTransitionEnd = useCallback((open: boolean) => {
     if (!open) setActiveDrawerClimb(null);
   }, []);
@@ -309,11 +326,7 @@ export default function LikedClimbsList({
         open={drawerMode === 'actions'}
         onClose={handleCloseDrawer}
         onTransitionEnd={handleDrawerTransitionEnd}
-        styles={{
-          wrapper: { height: 'auto', width: '100%' },
-          body: { padding: `${themeTokens.spacing[2]}px 0` },
-          header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
-        }}
+        styles={sharedDrawerStyles}
         keepMounted={false}
       >
         {activeDrawerClimb && (
@@ -324,9 +337,7 @@ export default function LikedClimbsList({
             currentPathname={pathname}
             viewMode="list"
             exclude={excludeActions}
-            onOpenPlaylistSelector={() => {
-              setDrawerMode('playlist');
-            }}
+            onOpenPlaylistSelector={handleSwitchToPlaylist}
             onActionComplete={handleCloseDrawer}
           />
         )}
@@ -338,11 +349,7 @@ export default function LikedClimbsList({
         open={drawerMode === 'playlist'}
         onClose={handleCloseDrawer}
         onTransitionEnd={handleDrawerTransitionEnd}
-        styles={{
-          wrapper: { height: 'auto', maxHeight: '70vh', width: '100%' },
-          body: { padding: 0 },
-          header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
-        }}
+        styles={sharedPlaylistDrawerStyles}
         keepMounted={false}
       >
         {activeDrawerClimb && (
