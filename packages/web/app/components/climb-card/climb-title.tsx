@@ -8,6 +8,20 @@ import { themeTokens } from '@/app/theme/theme-config';
 import { getSoftVGradeColor, formatVGrade } from '@/app/lib/grade-colors';
 import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
 
+/** Format ascent count: <1000 as-is, 1000–9999 with 1 decimal + k, ≥10000 rounded + k */
+function formatAscents(count: number): string {
+  if (count < 1000) return `${count}`;
+  if (count < 10000) return `${(count / 1000).toFixed(1)}k`;
+  return `${Math.round(count / 1000)}k`;
+}
+
+/** Round quality_average to 1 decimal place */
+function formatQuality(quality: string): string {
+  const n = parseFloat(quality);
+  if (Number.isNaN(n)) return quality;
+  return n.toFixed(1);
+}
+
 export type ClimbTitleData = {
   name?: string;
   difficulty?: string | null;
@@ -101,7 +115,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = ({
 
   const renderDifficultyText = () => {
     if (hasGrade) {
-      const baseText = `${displayDifficulty} ${climb.quality_average}★`;
+      const baseText = `${displayDifficulty} ${formatQuality(climb.quality_average!)}★`;
       return showAngle ? `${baseText} @ ${climb.angle}°` : baseText;
     }
     const projectText = showAngle ? `project @ ${climb.angle}°` : 'project';
@@ -167,7 +181,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = ({
 
   const setterText = climb.is_draft
     ? `Draft by ${climb.setter_username}`
-    : `By ${climb.setter_username}${climb.ascensionist_count ? ` - ${climb.ascensionist_count} ascent${climb.ascensionist_count === 1 ? '' : 's'}` : ''}`;
+    : `By ${climb.setter_username}${climb.ascensionist_count ? ` - ${formatAscents(climb.ascensionist_count)} ascent${climb.ascensionist_count === 1 ? '' : 's'}` : ''}`;
 
   const setterElement = showSetterInfo && climb.setter_username && (
     <Typography
@@ -191,10 +205,10 @@ const ClimbTitle: React.FC<ClimbTitleProps> = ({
       subtitleParts.push('Draft');
     }
     if (!climb.is_draft && climb.ascensionist_count) {
-      subtitleParts.push(`${climb.ascensionist_count} ascent${climb.ascensionist_count === 1 ? '' : 's'}`);
+      subtitleParts.push(`${formatAscents(climb.ascensionist_count)} ascent${climb.ascensionist_count === 1 ? '' : 's'}`);
     }
     if (hasGrade) {
-      subtitleParts.push(`${climb.quality_average}\u2605`);
+      subtitleParts.push(`${formatQuality(climb.quality_average!)}\u2605`);
     }
     if (showSetterInfo && climb.setter_username) {
       subtitleParts.push(climb.setter_username);
@@ -256,13 +270,13 @@ const ClimbTitle: React.FC<ClimbTitleProps> = ({
       secondLineContent.push('Draft');
     }
     if (hasGrade) {
-      secondLineContent.push(`${displayDifficulty} ${climb.quality_average}★`);
+      secondLineContent.push(`${displayDifficulty} ${formatQuality(climb.quality_average!)}★`);
     }
     if (showSetterInfo && climb.setter_username) {
       secondLineContent.push(`${climb.setter_username}`);
     }
     if (!climb.is_draft && climb.ascensionist_count) {
-      secondLineContent.push(`${climb.ascensionist_count} ascent${climb.ascensionist_count === 1 ? '' : 's'}`);
+      secondLineContent.push(`${formatAscents(climb.ascensionist_count)} ascent${climb.ascensionist_count === 1 ? '' : 's'}`);
     }
 
     return (
