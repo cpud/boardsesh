@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import IconButton from '@mui/material/IconButton';
 import { usePathname } from 'next/navigation';
-import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
+import dynamic from 'next/dynamic';
 import MoreHorizOutlined from '@mui/icons-material/MoreHorizOutlined';
 import FavoriteBorderOutlined from '@mui/icons-material/FavoriteBorderOutlined';
 import Favorite from '@mui/icons-material/Favorite';
@@ -24,6 +24,8 @@ import { getGradeTintColor } from '@/app/lib/grade-colors';
 import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
 import { getExcludedClimbActions } from '@/app/lib/climb-action-utils';
 import styles from './climb-list-item.module.css';
+
+const SwipeableDrawer = dynamic(() => import('../swipeable-drawer/swipeable-drawer'), { ssr: false });
 
 // Keep swipe visuals aligned with gesture max distance
 const MAX_GESTURE_SWIPE = 180;

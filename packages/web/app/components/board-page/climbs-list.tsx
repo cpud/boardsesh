@@ -7,10 +7,10 @@ import FormatListBulletedOutlined from '@mui/icons-material/FormatListBulletedOu
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { usePathname } from 'next/navigation';
 import { track } from '@vercel/analytics';
+import dynamic from 'next/dynamic';
 import { Climb, BoardDetails } from '@/app/lib/types';
 import ClimbCard from '../climb-card/climb-card';
 import ClimbListItem from '../climb-card/climb-list-item';
-import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
 import DrawerClimbHeader from '../climb-card/drawer-climb-header';
 import { ClimbActions } from '../climb-actions';
 import PlaylistSelectionContent from '../climb-actions/playlist-selection-content';
@@ -22,6 +22,8 @@ import { useFeatureFlag } from '@/app/components/providers/feature-flags-provide
 import { trackListBatchRender } from '@/app/lib/rendering-metrics';
 import { classifyClimbListChange } from './climb-list-utils';
 import { getExcludedClimbActions } from '@/app/lib/climb-action-utils';
+
+const SwipeableDrawer = dynamic(() => import('../swipeable-drawer/swipeable-drawer'), { ssr: false });
 
 type ViewMode = 'grid' | 'list';
 
@@ -93,9 +95,8 @@ const ClimbsList = ({
   renderItemExtra,
   showBottomSpacer,
 }: ClimbsListProps) => {
-  const isRustRendererEnabled = useFeatureFlag('rust-svg-rendering');
   const isWasmRendererEnabled = useFeatureFlag('wasm-rendering');
-  const useRustRenderer = !!isRustRendererEnabled || !!isWasmRendererEnabled;
+  const useWasmRenderer = !!isWasmRendererEnabled;
 
   // Progressive rendering for grid mode only (list mode uses the virtualizer).
   // Show first batch immediately, rest after a frame. Only batch when the list
@@ -144,7 +145,9 @@ const ClimbsList = ({
   );
 
   const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const useVirtualization = viewMode === 'list' && !useRustRenderer;
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+  const useVirtualization = viewMode === 'list' && !useWasmRenderer;
 
   // Track batch render timing after DOM commit
   useEffect(() => {
@@ -155,12 +158,12 @@ const ClimbsList = ({
     batchStartRef.current = null;
     trackListBatchRender(performance.now() - batch.time, {
       viewMode,
-      renderer: useRustRenderer ? 'rust-wasm' : 'svg',
+      renderer: useWasmRenderer ? 'wasm' : 'svg',
       batchSize: climbs.length - batch.prevLength,
       totalItems: climbs.length,
       isInitial: batch.isInitial,
     });
-  }, [climbs.length, visibleCount, viewMode, useRustRenderer]);
+  }, [climbs.length, visibleCount, viewMode, useWasmRenderer]);
 
   const onClimbSelectRef = useRef(onClimbSelect);
   onClimbSelectRef.current = onClimbSelect;
@@ -421,6 +424,7 @@ const ClimbsList = ({
                       onSelect={climbHandlersMap.get(climb.uuid)}
                       onThumbnailClick={climbHandlersMap.get(climb.uuid)}
                       disableThumbnailNavigation
+                      disableSwipe={!hydrated}
                       unsupported={unsupportedClimbs?.has(climb.uuid)}
                       onOpenActions={handleOpenActions}
                       onOpenPlaylistSelector={handleOpenPlaylistSelector}
@@ -433,7 +437,7 @@ const ClimbsList = ({
           )}
         </div>
       ) : (
-        /* List mode — non-virtualized (Rust renderer: items are cheap <img> tags) */
+        /* List mode — non-virtualized (WASM renderer: items are cheap <img> tags) */
         <div>
           {isFetching && climbs.length === 0 ? (
             <ClimbsListSkeleton aspectRatio={boardDetails.boardWidth / boardDetails.boardHeight} viewMode="list" />
@@ -448,6 +452,7 @@ const ClimbsList = ({
                     onSelect={climbHandlersMap.get(climb.uuid)}
                     onThumbnailClick={climbHandlersMap.get(climb.uuid)}
                     disableThumbnailNavigation
+                    disableSwipe={!hydrated}
                     unsupported={unsupportedClimbs?.has(climb.uuid)}
                     onOpenActions={handleOpenActions}
                     onOpenPlaylistSelector={handleOpenPlaylistSelector}
