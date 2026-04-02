@@ -480,6 +480,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
               <IconButton
                 className={styles.menuButton}
                 size="small"
+                aria-label="More actions"
                 onClick={(e) => {
                   e.stopPropagation();
                   if (onOpenActions) {
