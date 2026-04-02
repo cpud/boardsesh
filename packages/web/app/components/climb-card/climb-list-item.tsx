@@ -561,6 +561,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       prev.backgroundColor === next.backgroundColor &&
       prev.contentOpacity === next.contentOpacity &&
       prev.disableThumbnailNavigation === next.disableThumbnailNavigation &&
+      prev.preferImageLayers === next.preferImageLayers &&
       prev.onThumbnailClick === next.onThumbnailClick &&
       prev.onOpenActions === next.onOpenActions &&
       prev.onOpenPlaylistSelector === next.onOpenPlaylistSelector
