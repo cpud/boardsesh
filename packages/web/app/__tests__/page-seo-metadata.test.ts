@@ -5,6 +5,7 @@ vi.mock('server-only', () => ({}));
 const aboutPage = await import('../about/page');
 const feedPage = await import('../feed/page');
 const loginPage = await import('../auth/login/page');
+const playlistsPage = await import('../playlists/page');
 const settingsPage = await import('../settings/page');
 
 function getOpenGraphImageUrl(image: string | URL | { url: string | URL } | undefined) {
@@ -43,6 +44,15 @@ describe('page metadata exports', () => {
     expect(feedPage.metadata.robots).toEqual({ index: false, follow: true });
     expect(settingsPage.metadata.robots).toEqual({ index: false, follow: true });
     expect(loginPage.metadata.robots).toEqual({ index: false, follow: true });
+  });
+
+  it('keeps the public playlists directory indexable because it exposes discoverable content', () => {
+    expect(playlistsPage.metadata.title).toBe('Discover Climbing Playlists | Boardsesh');
+    expect(playlistsPage.metadata.description).toBe(
+      'Discover public climbing playlists and manage your own after signing in.',
+    );
+    expect(playlistsPage.metadata.robots).toBeUndefined();
+    expect(playlistsPage.metadata.alternates?.canonical).toBe('/playlists');
   });
 
   it('sets canonical URLs on noindex pages so the route intent stays explicit', () => {

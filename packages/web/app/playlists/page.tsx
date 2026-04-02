@@ -6,8 +6,8 @@ import styles from '@/app/components/library/library.module.css';
 import { createPageMetadata } from '@/app/lib/seo/metadata';
 
 export const metadata = createPageMetadata({
-  title: 'Playlists',
-  description: 'View and manage your climb playlists',
+  title: 'Discover Climbing Playlists',
+  description: 'Discover public climbing playlists and manage your own after signing in.',
   path: '/playlists',
 });
 
