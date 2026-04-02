@@ -16,5 +16,12 @@ export function isBoardRoutePath(pathname: string | null | undefined): boolean {
 
 export function isBoardListPath(pathname: string | null | undefined): boolean {
   if (!pathname || !isBoardRoutePath(pathname)) return false;
-  return getPathSegments(pathname).includes('list');
+
+  const segments = getPathSegments(pathname);
+
+  if (segments[0] === 'b') {
+    return segments.length === 4 && segments[3] === 'list';
+  }
+
+  return segments.length === 6 && segments[5] === 'list';
 }
