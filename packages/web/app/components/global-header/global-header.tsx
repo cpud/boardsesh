@@ -43,9 +43,13 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
 
   const hasActiveSession = !!activeSession;
 
-  // Hide header completely on certain pages
+  // On hidden-header pages, show only the avatar in a transparent bar
   if (HIDDEN_HEADER_PAGES.includes(pathname)) {
-    return null;
+    return (
+      <header className={styles.headerTransparent}>
+        <UserDrawer boardConfigs={boardConfigs} />
+      </header>
+    );
   }
 
   // Check if current page wants a simple title header

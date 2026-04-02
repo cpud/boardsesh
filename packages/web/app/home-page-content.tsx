@@ -187,7 +187,7 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
           flex: 1,
           px: 2,
           py: 2,
-          pt: 2,
+          pt: 'var(--global-header-height)',
           display: 'flex',
           flexDirection: 'column',
           gap: 3,
