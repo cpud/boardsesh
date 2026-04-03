@@ -7,21 +7,26 @@ final class NetworkStatus {
     static let shared = NetworkStatus()
 
     private let monitor = NWPathMonitor()
-    private let queue = DispatchQueue(label: "com.boardsesh.network-monitor")
-    private(set) var isOnline = true
+    private let monitorQueue = DispatchQueue(label: "com.boardsesh.network-monitor")
+    private let stateQueue = DispatchQueue(label: "com.boardsesh.network-state")
+    private var isOnline = true
 
     private init() {
         monitor.pathUpdateHandler = { [weak self] path in
-            self?.isOnline = path.status == .satisfied
+            self?.stateQueue.async {
+                self?.isOnline = path.status == .satisfied
+            }
         }
-        monitor.start(queue: queue)
+        monitor.start(queue: monitorQueue)
+    }
+
+    func currentlyOnline() -> Bool {
+        stateQueue.sync { isOnline }
     }
 }
 
 class BoardseshViewController: CAPBridgeViewController {
-    private var attemptedCacheFallback = false
-    private var mainFrameLoadHadError = false
-    private var lastFailedURL: URL?
+    private let fallbackState = IOSOfflineFallbackStateMachine()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,23 +39,18 @@ class BoardseshViewController: CAPBridgeViewController {
     }
 
     override func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-        mainFrameLoadHadError = false
+        fallbackState.onPageStarted()
         super.webView(webView, didStartProvisionalNavigation: navigation)
     }
 
     override func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        if !mainFrameLoadHadError {
-            attemptedCacheFallback = false
-            lastFailedURL = nil
-        }
-
+        fallbackState.onPageFinished()
         super.webView(webView, didFinish: navigation)
     }
 
     override func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        mainFrameLoadHadError = true
+        fallbackState.onMainFrameError(webView.url)
         if shouldTriggerOfflineFallback(error: error) {
-            lastFailedURL = webView.url ?? lastFailedURL
             tryCacheThenFallback(webView)
         }
 
@@ -58,9 +58,8 @@ class BoardseshViewController: CAPBridgeViewController {
     }
 
     override func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        mainFrameLoadHadError = true
+        fallbackState.onMainFrameError(webView.url)
         if shouldTriggerOfflineFallback(error: error) {
-            lastFailedURL = webView.url ?? lastFailedURL
             tryCacheThenFallback(webView)
         }
 
@@ -68,51 +67,27 @@ class BoardseshViewController: CAPBridgeViewController {
     }
 
     private func shouldTriggerOfflineFallback(error: Error) -> Bool {
-        guard !NetworkStatus.shared.isOnline else {
+        guard !NetworkStatus.shared.currentlyOnline() else {
             return false
         }
 
-        let nsError = error as NSError
-        guard nsError.domain == NSURLErrorDomain,
-              let code = URLError.Code(rawValue: nsError.code)
-        else {
-            return false
-        }
-
-        switch code {
-        case .notConnectedToInternet,
-             .networkConnectionLost,
-             .timedOut,
-             .cannotFindHost,
-             .cannotConnectToHost,
-             .dnsLookupFailed,
-             .internationalRoamingOff,
-             .callIsActive,
-             .dataNotAllowed:
-            return true
-        default:
-            return false
-        }
+        return OfflineFallbackSupport.isRetryableNetworkError(error)
     }
 
     private func tryCacheThenFallback(_ webView: WKWebView) {
-        let targetURL = lastFailedURL ?? webView.url ?? URL(string: "https://boardsesh.com")
+        let targetURL = fallbackState.retryURL(currentURL: webView.url)
 
-        if !attemptedCacheFallback {
-            attemptedCacheFallback = true
-
-            if let targetURL {
-                let request = URLRequest(
-                    url: targetURL,
-                    cachePolicy: .returnCacheDataElseLoad,
-                    timeoutInterval: 30
-                )
-                webView.load(request)
-            }
+        if fallbackState.shouldAttemptCacheFallback() {
+            let request = URLRequest(
+                url: targetURL,
+                cachePolicy: .returnCacheDataElseLoad,
+                timeoutInterval: 30
+            )
+            webView.load(request)
             return
         }
 
-        let safeURL = htmlEscaped(targetURL?.absoluteString ?? "https://boardsesh.com")
+        let safeURL = htmlEscaped(targetURL.absoluteString)
         let errorHtml = """
         <!DOCTYPE html>
         <html>

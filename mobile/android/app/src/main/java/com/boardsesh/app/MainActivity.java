@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.webkit.WebResourceError;
@@ -19,6 +20,7 @@ import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.BridgeWebViewClient;
 
 public class MainActivity extends BridgeActivity {
+    private static final String DEFAULT_RETRY_URL = "https://boardsesh.com";
     private final OfflineFallbackStateMachine fallbackState = new OfflineFallbackStateMachine();
 
     @Override
@@ -58,16 +60,12 @@ public class MainActivity extends BridgeActivity {
 
     private void tryCacheThenFallback(WebView view) {
         String lastFailedUrl = fallbackState.getLastFailedUrl();
-        String targetUrl = lastFailedUrl != null ? lastFailedUrl : view.getUrl();
-        String safeHref = TextUtils.htmlEncode(targetUrl != null ? targetUrl : "https://boardsesh.com");
+        String targetUrl = sanitizeRetryUrl(lastFailedUrl != null ? lastFailedUrl : view.getUrl());
+        String safeHref = TextUtils.htmlEncode(targetUrl);
 
         if (fallbackState.shouldAttemptCacheFallback()) {
             view.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-            if (targetUrl != null && !targetUrl.isEmpty()) {
-                view.loadUrl(targetUrl);
-            } else {
-                view.reload();
-            }
+            view.loadUrl(targetUrl);
             return;
         }
 
@@ -87,6 +85,25 @@ public class MainActivity extends BridgeActivity {
             + "</main></body></html>";
 
         view.loadDataWithBaseURL(null, errorHtml, "text/html", "UTF-8", null);
+    }
+
+    private String sanitizeRetryUrl(String candidateUrl) {
+        if (candidateUrl == null || candidateUrl.isEmpty()) {
+            return DEFAULT_RETRY_URL;
+        }
+
+        Uri parsed = Uri.parse(candidateUrl);
+        String scheme = parsed.getScheme();
+        if (scheme == null) {
+            return DEFAULT_RETRY_URL;
+        }
+
+        String normalizedScheme = scheme.toLowerCase();
+        if (!"http".equals(normalizedScheme) && !"https".equals(normalizedScheme)) {
+            return DEFAULT_RETRY_URL;
+        }
+
+        return candidateUrl;
     }
 
     private final class OfflineAwareBridgeWebViewClient extends BridgeWebViewClient {
