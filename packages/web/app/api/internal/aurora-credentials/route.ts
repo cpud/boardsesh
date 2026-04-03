@@ -8,7 +8,6 @@ import { authOptions } from "@/app/lib/auth/auth-options";
 import { encrypt, decrypt } from "@boardsesh/crypto";
 import AuroraClimbingClient from "@/app/lib/api-wrappers/aurora-rest-client/aurora-rest-client";
 import { AuroraBoardName } from "@/app/lib/api-wrappers/aurora/types";
-import { syncUserData } from "@/app/lib/data-sync/aurora/user-sync";
 
 const saveCredentialsSchema = z.object({
   boardType: z.enum(["kilter", "tension"]),
@@ -205,34 +204,6 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Trigger sync in background
-    let finalSyncStatus = "active";
-    let finalSyncError: string | null = null;
-
-    try {
-      // Sync user data from Aurora to boardsesh_ticks
-      await syncUserData(boardType as AuroraBoardName, loginResponse.token, loginResponse.user_id);
-    } catch (syncError) {
-      console.error("Sync error (non-blocking):", syncError);
-      finalSyncStatus = "error";
-      finalSyncError = syncError instanceof Error ? syncError.message : "Sync failed";
-
-      // Update sync status to reflect error
-      await db
-        .update(schema.auroraCredentials)
-        .set({
-          syncStatus: "error",
-          syncError: finalSyncError,
-          updatedAt: new Date(),
-        })
-        .where(
-          and(
-            eq(schema.auroraCredentials.userId, session.user.id),
-            eq(schema.auroraCredentials.boardType, boardType)
-          )
-        );
-    }
-
     return NextResponse.json({
       success: true,
       credential: {
@@ -240,8 +211,8 @@ export async function POST(request: NextRequest) {
         auroraUsername: username,
         auroraUserId: loginResponse.user_id,
         lastSyncAt: now.toISOString(),
-        syncStatus: finalSyncStatus,
-        syncError: finalSyncError,
+        syncStatus: "active",
+        syncError: null,
         createdAt: now.toISOString(),
       },
     });
