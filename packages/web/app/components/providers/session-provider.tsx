@@ -20,6 +20,7 @@ export default function SessionProviderWrapper({ children }: SessionProviderWrap
       return;
     }
 
+    let cancelled = false;
     let listenerHandle: { remove: () => Promise<void> } | null = null;
 
     appPlugin.addListener('appUrlOpen', async ({ url }) => {
@@ -29,11 +30,15 @@ export default function SessionProviderWrapper({ children }: SessionProviderWrap
 
       const parsed = new URL(url);
       const transferToken = parsed.searchParams.get('transferToken');
+      const error = parsed.searchParams.get('error');
       const nextPath = parsed.searchParams.get('next') ?? '/';
 
+      // Close the external browser regardless of outcome
       await window.Capacitor?.Plugins?.Browser?.close?.();
 
-      if (!transferToken) {
+      if (error || !transferToken) {
+        // Redirect to login with context about the failure
+        window.location.assign('/auth/login');
         return;
       }
 
@@ -44,18 +49,25 @@ export default function SessionProviderWrapper({ children }: SessionProviderWrap
         redirect: false,
       });
 
-      if (result?.url) {
-        window.location.assign(result.url);
-      } else {
-        window.location.assign(safeCallbackUrl);
+      if (result?.error) {
+        window.location.assign('/auth/login');
+        return;
       }
+
+      window.location.assign(result?.url ?? safeCallbackUrl);
     }).then((handle) => {
-      listenerHandle = handle;
-    }).catch((error) => {
-      console.error('[Native OAuth] Failed to register appUrlOpen listener:', error);
+      if (cancelled) {
+        // Component unmounted before the listener was registered — clean up
+        void handle.remove();
+      } else {
+        listenerHandle = handle;
+      }
+    }).catch((err) => {
+      console.error('[Native OAuth] Failed to register appUrlOpen listener:', err);
     });
 
     return () => {
+      cancelled = true;
       void listenerHandle?.remove();
     };
   }, []);

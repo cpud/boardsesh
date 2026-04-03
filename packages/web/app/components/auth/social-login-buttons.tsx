@@ -86,25 +86,26 @@ export default function SocialLoginButtons({
       });
   }, []);
 
-  const handleSocialSignIn = async (provider: string) => {
+  const handleSocialSignIn = (provider: string) => {
     if (isCapacitorApp) {
       const browser = window.Capacitor?.Plugins?.Browser;
-      if (!browser) {
-        return;
-      }
+      if (!browser) return;
 
+      // Build the URL chain: after OAuth completes, NextAuth redirects to
+      // /api/auth/native/callback which issues a transfer token and redirects
+      // to the app's deep link scheme.
       const nextPath = callbackUrl.startsWith('/') ? callbackUrl : '/';
       const nativeCallbackUrl =
         `${window.location.origin}/api/auth/native/callback?next=${encodeURIComponent(nextPath)}`;
 
-      const result = await signIn(provider, {
-        callbackUrl: nativeCallbackUrl,
-        redirect: false,
-      });
+      // Open /auth/native-start in the external browser so the entire OAuth
+      // flow (CSRF token, state cookies, provider redirect, callback) happens
+      // in a single browser context. Calling signIn() from the WebView would
+      // set cookies here that the external browser never sees, breaking the flow.
+      const startUrl =
+        `${window.location.origin}/auth/native-start?provider=${encodeURIComponent(provider)}&callbackUrl=${encodeURIComponent(nativeCallbackUrl)}`;
 
-      if (result?.url) {
-        await browser.open({ url: result.url });
-      }
+      browser.open({ url: startUrl });
       return;
     }
 
