@@ -1,10 +1,10 @@
-import { isCapacitor, isCapacitorWebView, waitForCapacitor } from './capacitor-utils';
+import { isCapacitor, isCapacitorWebView, waitForCapacitor, CAPACITOR_BRIDGE_TIMEOUT_MS } from './capacitor-utils';
 import type { BluetoothAdapter } from './types';
 
 export async function createBluetoothAdapter(): Promise<BluetoothAdapter> {
   // If we detect a WebView but the Capacitor bridge isn't ready yet, wait briefly
   if (!isCapacitor() && isCapacitorWebView()) {
-    await waitForCapacitor(3000);
+    await waitForCapacitor(CAPACITOR_BRIDGE_TIMEOUT_MS);
   }
 
   if (isCapacitor()) {

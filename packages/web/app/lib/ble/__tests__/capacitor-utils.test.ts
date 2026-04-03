@@ -92,7 +92,7 @@ describe('waitForCapacitor', () => {
   afterEach(() => {
     vi.useRealTimers();
     if (originalCapacitor === undefined) {
-      delete (window as Record<string, unknown>).Capacitor;
+      delete (window as unknown as Record<string, unknown>).Capacitor;
     } else {
       window.Capacitor = originalCapacitor;
     }
@@ -110,7 +110,7 @@ describe('waitForCapacitor', () => {
   });
 
   it('resolves true when Capacitor appears during polling', async () => {
-    delete (window as Record<string, unknown>).Capacitor;
+    delete (window as unknown as Record<string, unknown>).Capacitor;
     const { waitForCapacitor } = await loadUtils();
 
     const promise = waitForCapacitor(2000, 100);
@@ -129,7 +129,7 @@ describe('waitForCapacitor', () => {
   });
 
   it('resolves false after timeout if Capacitor never appears', async () => {
-    delete (window as Record<string, unknown>).Capacitor;
+    delete (window as unknown as Record<string, unknown>).Capacitor;
     const { waitForCapacitor } = await loadUtils();
 
     const promise = waitForCapacitor(500, 100);
@@ -145,7 +145,7 @@ describe('isCapacitor', () => {
 
   afterEach(() => {
     if (originalCapacitor === undefined) {
-      delete (window as Record<string, unknown>).Capacitor;
+      delete (window as unknown as Record<string, unknown>).Capacitor;
     } else {
       window.Capacitor = originalCapacitor;
     }
@@ -162,7 +162,7 @@ describe('isCapacitor', () => {
   });
 
   it('returns false when window.Capacitor is undefined', async () => {
-    delete (window as Record<string, unknown>).Capacitor;
+    delete (window as unknown as Record<string, unknown>).Capacitor;
     const { isCapacitor } = await loadUtils();
     expect(isCapacitor()).toBe(false);
   });

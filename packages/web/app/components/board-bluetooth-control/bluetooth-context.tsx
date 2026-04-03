@@ -5,7 +5,7 @@ import { track } from '@vercel/analytics';
 import { useBoardBluetooth } from './use-board-bluetooth';
 import { useQueueContext } from '../graphql-queue';
 import type { BoardDetails } from '@/app/lib/types';
-import { isCapacitor, isCapacitorWebView, waitForCapacitor } from '@/app/lib/ble/capacitor-utils';
+import { isCapacitor, isCapacitorWebView, waitForCapacitor, CAPACITOR_BRIDGE_TIMEOUT_MS } from '@/app/lib/ble/capacitor-utils';
 
 interface BluetoothContextValue {
   isConnected: boolean;
@@ -46,7 +46,7 @@ export function BluetoothProvider({
       // UA looks like a native WebView — bridge may not be injected yet.
       // Poll for window.Capacitor; only confirm support once the bridge appears.
       let cancelled = false;
-      waitForCapacitor(2000).then((found) => {
+      waitForCapacitor(CAPACITOR_BRIDGE_TIMEOUT_MS).then((found) => {
         if (!cancelled && found) {
           setIsBluetoothSupported(true);
         }

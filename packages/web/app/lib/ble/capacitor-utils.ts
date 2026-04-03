@@ -19,12 +19,15 @@ export const isCapacitorWebView = (): boolean => {
   return isAndroidWebView || isIOSWebView;
 };
 
+/** Max time (ms) to wait for the Capacitor bridge to appear in a WebView. */
+export const CAPACITOR_BRIDGE_TIMEOUT_MS = 3000;
+
 /**
  * Wait for window.Capacitor to become available, with a timeout.
  * Resolves true if Capacitor appeared, false if timed out.
  */
 export const waitForCapacitor = (
-  timeoutMs = 2000,
+  timeoutMs = CAPACITOR_BRIDGE_TIMEOUT_MS,
   intervalMs = 100,
 ): Promise<boolean> =>
   new Promise((resolve) => {
