@@ -5,12 +5,12 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import androidx.annotation.NonNull;
 
@@ -19,8 +19,9 @@ import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.BridgeWebViewClient;
 
 public class MainActivity extends BridgeActivity {
-    private boolean attemptedCacheFallback = false;
-    private String lastFailedUrl = null;
+    private volatile boolean attemptedCacheFallback = false;
+    private volatile String lastFailedUrl = null;
+    private volatile boolean mainFrameLoadHadError = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,6 +60,7 @@ public class MainActivity extends BridgeActivity {
 
     private void tryCacheThenFallback(WebView view) {
         String targetUrl = lastFailedUrl != null ? lastFailedUrl : view.getUrl();
+        String safeHref = TextUtils.htmlEncode(targetUrl != null ? targetUrl : "https://boardsesh.com");
 
         if (!attemptedCacheFallback) {
             attemptedCacheFallback = true;
@@ -81,7 +83,7 @@ public class MainActivity extends BridgeActivity {
             + "</head><body><main><h1>You appear to be offline</h1>"
             + "<p>We couldn't load Boardsesh from the network and no cached version was available yet."
             + " Check your connection and try again.</p>"
-            + "<p><a href='" + (targetUrl != null ? targetUrl : "https://boardsesh.com") + "'"
+            + "<p><a href='" + safeHref + "'"
             + " style='display:inline-block;margin-top:8px;padding:10px 14px;border-radius:10px;"
             + "background:#fff;color:#0A0A0A;text-decoration:none;font-weight:600;'>Try again</a></p>"
             + "</main></body></html>";
@@ -95,29 +97,27 @@ public class MainActivity extends BridgeActivity {
         }
 
         @Override
+        public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
+            mainFrameLoadHadError = false;
+            super.onPageStarted(view, url, favicon);
+        }
+
+        @Override
         public void onPageFinished(WebView view, String url) {
-            attemptedCacheFallback = false;
-            lastFailedUrl = null;
+            if (!mainFrameLoadHadError) {
+                attemptedCacheFallback = false;
+                lastFailedUrl = null;
+            }
             view.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
             super.onPageFinished(view, url);
         }
 
         private boolean shouldTriggerOfflineFallback(WebResourceRequest request, int errorCode) {
-            if (!request.isForMainFrame() || !isOffline()) {
-                return false;
-            }
-
-            if (errorCode == WebViewClient.ERROR_HOST_LOOKUP
-                || errorCode == WebViewClient.ERROR_CONNECT
-                || errorCode == WebViewClient.ERROR_TIMEOUT
-                || errorCode == WebViewClient.ERROR_IO
-                || errorCode == WebViewClient.ERROR_PROXY_AUTHENTICATION
-                || errorCode == WebViewClient.ERROR_UNSUPPORTED_SCHEME
-                || errorCode == WebViewClient.ERROR_UNKNOWN) {
-                return true;
-            }
-
-            return false;
+            return OfflineFallbackPolicy.shouldTriggerOfflineFallback(
+                request.isForMainFrame(),
+                isOffline(),
+                errorCode
+            );
         }
 
         @Override
@@ -127,6 +127,9 @@ public class MainActivity extends BridgeActivity {
             @NonNull WebResourceError error
         ) {
             super.onReceivedError(view, request, error);
+            if (request.isForMainFrame()) {
+                mainFrameLoadHadError = true;
+            }
 
             if (!shouldTriggerOfflineFallback(request, error.getErrorCode())) {
                 return;
@@ -143,6 +146,9 @@ public class MainActivity extends BridgeActivity {
             @NonNull WebResourceResponse errorResponse
         ) {
             super.onReceivedHttpError(view, request, errorResponse);
+            if (request.isForMainFrame()) {
+                mainFrameLoadHadError = true;
+            }
 
             if (!request.isForMainFrame() || !isOffline()) {
                 return;
