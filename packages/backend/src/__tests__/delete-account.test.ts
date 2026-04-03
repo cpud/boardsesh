@@ -17,10 +17,6 @@ import type { ConnectionContext } from '@boardsesh/shared-schema';
 const { mockDb, txCalls } = vi.hoisted(() => {
   const txCalls: Array<{ method: string; args: unknown[] }> = [];
 
-  const createChainable = () => ({
-    where: vi.fn().mockResolvedValue(undefined),
-  });
-
   const mockDb = {
     select: vi.fn().mockReturnValue({
       from: vi.fn().mockReturnValue({
