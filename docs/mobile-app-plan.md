@@ -1256,8 +1256,7 @@ Push notifications (Milestone 4) ship as a v1.1 update post-launch.
 - `boardsesh://board/{boardName}/{layoutId}/{sizeId}/{setIds}/{angle}` — Open board config
 
 **Universal Links (iOS) / App Links (Android):**
-- `https://boardsesh.com/party/*` → opens app if installed (party session links only)
-- `https://boardsesh.com/invite/*` → opens app if installed (invite links only)
+- `https://boardsesh.com/join/*` → opens app if installed (session invite links only)
 - **Do NOT register the entire `boardsesh.com` domain** — this would hijack all links and prevent users from using the website in their browser
 - Requires `apple-app-site-association` file on `boardsesh.com` (iOS)
 - Requires `assetlinks.json` on `boardsesh.com` (Android)
