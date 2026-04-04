@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 
 const NATIVE_OAUTH_TRANSFER_TTL_SECONDS = 120;
+const CLOCK_SKEW_TOLERANCE_SECONDS = 5;
 
 type NativeOAuthTransferPayload = {
   userId: string;
@@ -70,11 +71,17 @@ export const verifyNativeOAuthTransferToken = (
     .update(encodedPayload)
     .digest('base64url');
 
-  if (signature.length !== expectedSignature.length) {
+  const sigBuffer = Buffer.from(signature);
+  const expectedSigBuffer = Buffer.from(expectedSignature);
+
+  if (sigBuffer.length !== expectedSigBuffer.length) {
+    // Rehash to consume constant time before returning, avoiding a timing
+    // side-channel that leaks whether the token was malformed vs wrong.
+    crypto.timingSafeEqual(expectedSigBuffer, expectedSigBuffer);
     return null;
   }
 
-  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
+  if (!crypto.timingSafeEqual(sigBuffer, expectedSigBuffer)) {
     return null;
   }
 
@@ -92,7 +99,7 @@ export const verifyNativeOAuthTransferToken = (
     !payload?.exp ||
     !payload?.iat ||
     payload.exp < now ||
-    payload.iat > now
+    payload.iat > now + CLOCK_SKEW_TOLERANCE_SECONDS
   ) {
     return null;
   }
