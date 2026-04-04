@@ -13,8 +13,9 @@ interface UseMutationGuardParams {
 
 /**
  * Determines view-only mode and provides a guard function that blocks
- * mutations when the session is not ready (e.g. still connecting or
- * temporarily disconnected). Shows a debounced toast when blocked.
+ * mutations when the session has never connected. Once connected,
+ * mutations are allowed even when offline (applied locally).
+ * Shows a debounced toast when blocked.
  */
 export function useMutationGuard({
   sessionId,
@@ -26,16 +27,21 @@ export function useMutationGuard({
 }: UseMutationGuardParams) {
   const { showMessage } = useSnackbar();
 
-  // View-only while still connecting; once connected everyone can modify the queue
-  // If no session is active, not view-only (local mode)
+  // View-only only before first connection. Once connected, user can always
+  // modify the queue locally (offline changes are reconciled on reconnect).
   const viewOnlyMode = useMemo(() => {
     if (!sessionId) return false;
     if (!backendUrl) return false;
-    if (!hasConnected) return true;
-    return connectionState !== 'connected';
-  }, [sessionId, backendUrl, hasConnected, connectionState]);
+    return !hasConnected;
+  }, [sessionId, backendUrl, hasConnected]);
 
-  const canMutate = !viewOnlyMode && (sessionId ? isSessionReady : true);
+  // True when we were connected but are now disconnected
+  const isOffline = useMemo(() => {
+    return !!sessionId && hasConnected && connectionState !== 'connected';
+  }, [sessionId, hasConnected, connectionState]);
+
+  // Allow mutations when: not view-only AND (session ready OR offline with prior connection OR solo mode)
+  const canMutate = !viewOnlyMode && (sessionId ? (isSessionReady || isOffline) : true);
 
   // Ref to debounce the "blocked" toast so rapid taps don't spam
   const lastBlockedToastRef = useRef(0);
@@ -50,5 +56,5 @@ export function useMutationGuard({
     return true;
   }, [sessionId, canMutate, showMessage]);
 
-  return { viewOnlyMode, canMutate, guardMutation };
+  return { viewOnlyMode, canMutate, guardMutation, isOffline };
 }

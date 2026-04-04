@@ -25,6 +25,7 @@ export const PersistentSessionProvider: React.FC<{ children: React.ReactNode }> 
   const { username, avatarUrl } = usePartyProfile();
 
   // Shared refs used across hooks
+  const offlineBufferRef = useRef<LocalClimbQueueItem[]>([]);
   const wsAuthTokenRef = useRef(wsAuthToken);
   const usernameRef = useRef(username);
   const avatarUrlRef = useRef(avatarUrl);
@@ -57,7 +58,7 @@ export const PersistentSessionProvider: React.FC<{ children: React.ReactNode }> 
   const noopSetSession = useCallback(() => {}, []);
 
   const refs: SharedRefs = {
-    wsAuthTokenRef, usernameRef, avatarUrlRef,
+    offlineBufferRef, wsAuthTokenRef, usernameRef, avatarUrlRef,
     sessionRef, activeSessionRef,
     queueRef, currentClimbQueueItemRef,
     mountedRef, isConnectingRef, isReconnectingRef,
@@ -140,6 +141,7 @@ export const PersistentSessionProvider: React.FC<{ children: React.ReactNode }> 
       setCurrentClimb: mutations.setCurrentClimb,
       mirrorCurrentClimb: mutations.mirrorCurrentClimb,
       setQueue: mutations.setQueue,
+      offlineBufferRef,
       subscribeToQueueEvents: subscriptions.subscribeToQueueEvents,
       subscribeToSessionEvents: subscriptions.subscribeToSessionEvents,
       triggerResync: subscriptions.triggerResync,

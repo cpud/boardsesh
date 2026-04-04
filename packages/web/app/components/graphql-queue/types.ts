@@ -19,6 +19,7 @@ export interface GraphQLQueueContextType extends QueueContextType {
   sessionGoal: string | null;
   connectionState: ConnectionState;
   canMutate: boolean;
+  isOffline: boolean;
 }
 
 export type GraphQLQueueContextProps = {

@@ -89,6 +89,9 @@ export interface PersistentSessionContextType {
   subscribeToQueueEvents: (callback: (event: SubscriptionQueueEvent) => void) => () => void;
   subscribeToSessionEvents: (callback: (event: SessionEvent) => void) => () => void;
 
+  // Ref for offline queue buffer (used by QueueContext to populate, read by event processor during FullSync)
+  offlineBufferRef: MutableRefObject<LocalClimbQueueItem[]>;
+
   // Trigger a resync with the server (useful when corrupted data is detected)
   triggerResync: () => void;
 
@@ -143,6 +146,7 @@ export function toClimbQueueItemInput(item: LocalClimbQueueItem) {
 
 // Shared refs type used across hooks
 export interface SharedRefs {
+  offlineBufferRef: MutableRefObject<LocalClimbQueueItem[]>;
   wsAuthTokenRef: MutableRefObject<string | null>;
   usernameRef: MutableRefObject<string | undefined>;
   avatarUrlRef: MutableRefObject<string | undefined>;

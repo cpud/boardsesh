@@ -240,6 +240,7 @@ function usePersistentSessionQueueAdapter(): {
       setClimbSearchParams: noopSetClimbSearchParams,
       setCountSearchParams: noopSetClimbSearchParams,
       mirrorClimb,
+      isOffline: false,
       fetchMoreClimbs: noop,
       getNextClimbQueueItem,
       getPreviousClimbQueueItem,
