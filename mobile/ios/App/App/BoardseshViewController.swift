@@ -27,28 +27,15 @@ final class NetworkStatus {
 
 class BoardseshViewController: CAPBridgeViewController {
     private let fallbackState = IOSOfflineFallbackStateMachine()
-    private let refreshControl = UIRefreshControl()
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        guard let scrollView = webView?.scrollView else { return }
-
-        // Enable bounce for pull-to-refresh gesture support
-        scrollView.bounces = true
-        scrollView.alwaysBounceVertical = true
-
-        // Native pull-to-refresh so users can recover from client-side errors
-        refreshControl.tintColor = UIColor(red: 140/255, green: 74/255, blue: 82/255, alpha: 1)
-        scrollView.refreshControl = refreshControl
-        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
+        // Disable rubber-band bounce so the page cannot overscroll
+        webView?.scrollView.bounces = false
 
         // Start monitor eagerly so offline decisions have recent connectivity state.
         _ = NetworkStatus.shared
-    }
-
-    @objc private func handleRefresh() {
-        webView?.reload()
     }
 
     override func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
@@ -58,13 +45,11 @@ class BoardseshViewController: CAPBridgeViewController {
 
     override func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         fallbackState.onPageFinished()
-        refreshControl.endRefreshing()
         super.webView(webView, didFinish: navigation)
     }
 
     override func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         fallbackState.onMainFrameError(webView.url)
-        refreshControl.endRefreshing()
         if shouldTriggerOfflineFallback(error: error) {
             tryCacheThenFallback(webView)
         }
@@ -74,7 +59,6 @@ class BoardseshViewController: CAPBridgeViewController {
 
     override func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         fallbackState.onMainFrameError(webView.url)
-        refreshControl.endRefreshing()
         if shouldTriggerOfflineFallback(error: error) {
             tryCacheThenFallback(webView)
         }
