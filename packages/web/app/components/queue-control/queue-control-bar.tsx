@@ -8,6 +8,7 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
 import SyncOutlined from '@mui/icons-material/SyncOutlined';
+import CloudOffOutlined from '@mui/icons-material/CloudOffOutlined';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import OpenInFullOutlined from '@mui/icons-material/OpenInFullOutlined';
 import { track } from '@vercel/analytics';
@@ -105,6 +106,8 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
     sessionId,
     endSession,
     disconnect,
+    isDisconnected,
+    users,
   } = useQueueContext();
 
   const { showMessage } = useSnackbar();
@@ -114,7 +117,9 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
   const isDark = mode === 'dark';
   const gradeTintColor = useMemo(() => getGradeTintColor(currentClimb?.difficulty, 'default', isDark), [currentClimb?.difficulty, isDark]);
 
-  const isReconnecting = !!sessionId && (connectionState === 'reconnecting' || connectionState === 'stale' || connectionState === 'error');
+  // Show reconnecting UI only when online but WebSocket is down.
+  // When truly offline (browser has no network), show normal controls with an offline indicator instead.
+  const isReconnecting = !!sessionId && !isDisconnected && (connectionState === 'reconnecting' || connectionState === 'stale' || connectionState === 'error');
 
   const nextClimb = getNextClimbQueueItem();
   const previousClimb = getPreviousClimbQueueItem();
@@ -409,6 +414,31 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
 
   return (
     <div id="onboarding-queue-bar" className={`queue-bar-shadow ${styles.queueBar}`} data-testid="queue-control-bar">
+      {/* Offline indicator */}
+      {isDisconnected && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            px: 2,
+            py: 0.5,
+            backgroundColor: 'var(--semantic-surface-secondary, #f5f5f5)',
+            typography: 'caption',
+            color: 'text.secondary',
+          }}
+        >
+          <CloudOffOutlined sx={{ fontSize: 'body2.fontSize' }} />
+          <span>
+            Disconnected
+            {sessionId
+              ? users && users.length > 1
+                ? ' — climbs you add will sync, but other changes may be lost'
+                : ' — your changes will sync when you reconnect'
+              : ''}
+          </span>
+        </Box>
+      )}
       {/* Main Control Bar */}
       <MuiCard variant="outlined" className={styles.card} sx={{ border: 'none', backgroundColor: 'transparent' }}>
         <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
