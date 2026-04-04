@@ -429,7 +429,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
           onClick={() => setDismissedDisconnect(true)}
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setDismissedDisconnect(true); }}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setDismissedDisconnect(true); } }}
         >
           <CloudOffOutlined sx={{ fontSize: 'body2.fontSize', flexShrink: 0 }} />
           <span className={styles.offlineBannerText}>
