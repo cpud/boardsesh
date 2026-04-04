@@ -61,6 +61,19 @@ describe('native OAuth transfer token', () => {
     expect(verifyNativeOAuthTransferToken(tamperedToken)).toBeNull();
   });
 
+  it('rejects tokens with iat in the future', () => {
+    // Issue a token, then rewind time so iat is in the future
+    const token = issueNativeOAuthTransferToken({
+      userId: 'user_123',
+      nextPath: '/feed',
+    });
+
+    // Rewind time by 30 seconds — iat is now 30s in the future
+    vi.setSystemTime(new Date('2026-04-03T11:59:30Z'));
+
+    expect(verifyNativeOAuthTransferToken(token)).toBeNull();
+  });
+
   it('returns null when NEXTAUTH_SECRET is missing during verification', () => {
     const token = issueNativeOAuthTransferToken({
       userId: 'user_123',

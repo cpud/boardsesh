@@ -86,7 +86,14 @@ export const verifyNativeOAuthTransferToken = (
   }
 
   const now = Math.floor(Date.now() / 1000);
-  if (!payload?.userId || !payload?.nextPath || !payload?.exp || payload.exp < now) {
+  if (
+    !payload?.userId ||
+    !payload?.nextPath ||
+    !payload?.exp ||
+    !payload?.iat ||
+    payload.exp < now ||
+    payload.iat > now
+  ) {
     return null;
   }
 

@@ -120,6 +120,30 @@ describe('SessionProviderWrapper native OAuth deep link', () => {
     expect(capturedListener).not.toBeNull();
   });
 
+  it('handles malformed deep link URL gracefully', async () => {
+    setupCapacitorMock();
+
+    render(
+      <SessionProviderWrapper>
+        <div>child</div>
+      </SessionProviderWrapper>,
+    );
+
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+
+    await act(async () => {
+      capturedListener?.({
+        url: 'com.boardsesh.app://auth/callback%%%malformed',
+      });
+    });
+
+    expect(mockClose).toHaveBeenCalled();
+    expect(mockSignIn).not.toHaveBeenCalled();
+    expect(mockLocationAssign).toHaveBeenCalledWith('/auth/login');
+  });
+
   it('ignores non-auth deep links', async () => {
     setupCapacitorMock();
     render(

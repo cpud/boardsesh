@@ -32,7 +32,15 @@ export default function SessionProviderWrapper({ children }: SessionProviderWrap
         return;
       }
 
-      const parsed = new URL(url);
+      let parsed: URL;
+      try {
+        parsed = new URL(url);
+      } catch {
+        await window.Capacitor?.Plugins?.Browser?.close?.();
+        window.location.assign('/auth/login');
+        return;
+      }
+
       const transferToken = parsed.searchParams.get('transferToken');
       const error = parsed.searchParams.get('error');
       const nextPath = parsed.searchParams.get('next') ?? '/';
