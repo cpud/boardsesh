@@ -126,8 +126,11 @@ export const GraphQLQueueProvider = ({ parsedParams, boardDetails, children, bas
     isOffline,
     isPersistentSessionActive,
     hasConnected,
+    users,
+    lastReceivedSequence: state.lastReceivedSequence,
     persistentSession,
     currentQueue: state.queue,
+    currentClimbQueueItem: state.currentClimbQueueItem,
   });
 
   // --- Queue storage sync ---

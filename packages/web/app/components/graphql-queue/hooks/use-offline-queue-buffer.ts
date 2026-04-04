@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState } from 'react';
+import { useRef, useCallback, useState, useMemo } from 'react';
 import type { ClimbQueueItem } from '../../queue-control/types';
 
 const BUFFER_CAP = 100;
@@ -31,5 +31,10 @@ export function useOfflineQueueBuffer() {
 
   const hasPendingAdditions = count > 0;
 
-  return { bufferAddition, getBufferedAdditions, clearBuffer, hasPendingAdditions };
+  // Memoize to provide a stable reference — prevents unnecessary recomputations
+  // in downstream useMemo/useEffect dependency arrays
+  return useMemo(
+    () => ({ bufferAddition, getBufferedAdditions, clearBuffer, hasPendingAdditions }),
+    [bufferAddition, getBufferedAdditions, clearBuffer, hasPendingAdditions],
+  );
 }

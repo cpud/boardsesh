@@ -35,7 +35,9 @@ export function useMutationGuard({
     return !hasConnected;
   }, [sessionId, backendUrl, hasConnected]);
 
-  // True when we were connected but are now disconnected
+  // True when we were connected but the WebSocket is now disconnected.
+  // Note: this means "WebSocket down after having connected", not "browser has no network".
+  // This covers both true offline and server-down scenarios identically.
   const isOffline = useMemo(() => {
     return !!sessionId && hasConnected && connectionState !== 'connected';
   }, [sessionId, hasConnected, connectionState]);
