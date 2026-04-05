@@ -493,8 +493,12 @@ final class SessionWebSocketManager {
 
         let receivedSeq = sequenceFromEvent(event)
         if QueueMessageParser.hasSequenceGap(lastKnown: lastSequence, received: receivedSeq) {
-            // Gap detected; the server will send a FullSync on reconnect. For now
-            // we still process this message but note the gap.
+            // Gap detected — cancel the current task so listenForMessages' failure
+            // path calls handleDisconnect(), which schedules a reconnect and will
+            // receive a FullSync restoring consistent state.
+            print("[SessionWS] Sequence gap: expected \(lastSequence + 1), got \(receivedSeq) — reconnecting")
+            webSocketTask?.cancel(with: .goingAway, reason: nil)
+            return
         }
         lastSequence = receivedSeq
 

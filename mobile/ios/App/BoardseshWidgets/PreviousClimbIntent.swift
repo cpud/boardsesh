@@ -35,6 +35,10 @@ struct PreviousClimbIntent: LiveActivityIntent {
         )
 
         for activity in Activity<ClimbSessionAttributes>.activities {
+            // ActivityKit's update() is non-throwing, but only update active
+            // activities — calling update on ended/dismissed activities is a no-op
+            // but logs warnings in the system.
+            guard activity.activityState == .active else { continue }
             let content = ActivityContent(state: newState, staleDate: nil)
             await activity.update(content)
         }

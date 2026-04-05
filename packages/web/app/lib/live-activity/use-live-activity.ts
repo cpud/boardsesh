@@ -70,6 +70,9 @@ export function useLiveActivity({
         sizeId: stableBoardDetails.size_id,
         setIds: Array.isArray(stableBoardDetails.set_ids) ? stableBoardDetails.set_ids.join(',') : String(stableBoardDetails.set_ids),
       }).then(() => {
+        // Guard: if cleanup ran while the start was in-flight, don't send a
+        // stale update to a session that has already ended.
+        if (!isActiveRef.current) return;
         // Send an initial update immediately after start so the widget
         // doesn't stay on "Loading...". Skip in party mode — WebSocket handles updates.
         if (isSessionActive && sessionId) return;
