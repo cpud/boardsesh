@@ -203,6 +203,12 @@ final class SessionWebSocketManager {
     private(set) var wsUrl: String?
     private(set) var authToken: String?
 
+    // MARK: - Thread Safety
+
+    /// Serial queue protecting all mutable state (isConnected, queueItems,
+    /// currentIndex, pendingMutations, reconnectAttempt, webSocketTask, etc.).
+    private let stateQueue = DispatchQueue(label: "com.boardsesh.SessionWebSocketManager.state")
+
     // MARK: - Connection State
 
     private var urlSession: URLSession
@@ -223,7 +229,13 @@ final class SessionWebSocketManager {
 
     private var queueItems: [SharedQueueItem] = []
     private var currentIndex: Int = 0
-    private var pendingMutationIndex: Int?  // index before optimistic navigation
+    private var pendingMutations: [String: Int] = [:]  // correlationId -> index before optimistic update
+
+    // MARK: - Ping Timeout
+
+    private var lastMessageReceived: Date = Date()
+    private var pingTimeoutTimer: DispatchSourceTimer?
+    private let pingTimeout: TimeInterval = 60
 
     // MARK: - Darwin Notification
 
@@ -238,56 +250,72 @@ final class SessionWebSocketManager {
     // MARK: - Public API
 
     func connect(serverUrl: String, sessionId: String, authToken: String? = nil, wsUrl: String? = nil) {
-        self.serverUrl = serverUrl
-        self.sessionId = sessionId
-        self.authToken = authToken
-        self.wsUrl = wsUrl
-        self.intentionalDisconnect = false
-        self.lastSequence = -1
-        startDarwinObservation()
-        openConnection()
+        stateQueue.async { [weak self] in
+            guard let self = self else { return }
+            self.serverUrl = serverUrl
+            self.sessionId = sessionId
+            self.authToken = authToken
+            self.wsUrl = wsUrl
+            self.intentionalDisconnect = false
+            self.lastSequence = -1
+            self.startDarwinObservation()
+            self.openConnection()
+        }
     }
 
     func disconnect() {
-        intentionalDisconnect = true
-        reconnectWorkItem?.cancel()
-        reconnectWorkItem = nil
-        stopDarwinObservation()
-        sendComplete()
-        webSocketTask?.cancel(with: .goingAway, reason: nil)
-        webSocketTask = nil
-        isConnected = false
+        stateQueue.async { [weak self] in
+            guard let self = self else { return }
+            self.intentionalDisconnect = true
+            self.reconnectWorkItem?.cancel()
+            self.reconnectWorkItem = nil
+            self.pingTimeoutTimer?.cancel()
+            self.pingTimeoutTimer = nil
+            self.stopDarwinObservation()
+            self.sendComplete()
+            self.webSocketTask?.cancel(with: .goingAway, reason: nil)
+            self.webSocketTask = nil
+            self.isConnected = false
+        }
     }
 
     // MARK: - Connection Lifecycle
 
+    /// Must be called from the stateQueue (or enqueues itself onto stateQueue).
+    /// When called from `connect()` we are already on the stateQueue, so we
+    /// use `dispatchPrecondition` to assert and avoid double-dispatching.
+    /// When called from the reconnect work-item on main, we dispatch onto
+    /// stateQueue first.
     private func openConnection() {
-        guard let serverUrl = serverUrl else { return }
+        stateQueue.async { [weak self] in
+            guard let self = self else { return }
+            guard let serverUrl = self.serverUrl else { return }
 
-        let urlString: String
-        if let wsUrl = wsUrl, !wsUrl.isEmpty {
-            // Use the explicit WebSocket URL when provided (handles separate backend port)
-            urlString = wsUrl
-        } else {
-            let wsScheme = serverUrl.hasPrefix("https") ? "wss" : "ws"
-            let host = serverUrl
-                .replacingOccurrences(of: "https://", with: "")
-                .replacingOccurrences(of: "http://", with: "")
-            urlString = "\(wsScheme)://\(host)/graphql"
+            let urlString: String
+            if let wsUrl = self.wsUrl, !wsUrl.isEmpty {
+                // Use the explicit WebSocket URL when provided (handles separate backend port)
+                urlString = wsUrl
+            } else {
+                let wsScheme = serverUrl.hasPrefix("https") ? "wss" : "ws"
+                let host = serverUrl
+                    .replacingOccurrences(of: "https://", with: "")
+                    .replacingOccurrences(of: "http://", with: "")
+                urlString = "\(wsScheme)://\(host)/graphql"
+            }
+
+            guard let url = URL(string: urlString) else {
+                print("[SessionWS] Failed to construct URL from: \(urlString)")
+                return
+            }
+
+            var request = URLRequest(url: url)
+            request.addValue("graphql-transport-ws", forHTTPHeaderField: "Sec-WebSocket-Protocol")
+
+            self.webSocketTask = self.urlSession.webSocketTask(with: request)
+            self.webSocketTask?.resume()
+            self.sendConnectionInit()
+            self.listenForMessages()
         }
-
-        guard let url = URL(string: urlString) else {
-            print("[SessionWS] Failed to construct URL from: \(urlString)")
-            return
-        }
-
-        var request = URLRequest(url: url)
-        request.addValue("graphql-transport-ws", forHTTPHeaderField: "Sec-WebSocket-Protocol")
-
-        webSocketTask = urlSession.webSocketTask(with: request)
-        webSocketTask?.resume()
-        sendConnectionInit()
-        listenForMessages()
     }
 
     // MARK: - graphql-ws Protocol Messages
@@ -392,9 +420,7 @@ final class SessionWebSocketManager {
         sendJSON(["type": GQLMessageType.pong.rawValue])
     }
 
-    private func sendSetCurrentClimb(item: SharedQueueItem) {
-        let correlationId = UUID().uuidString
-
+    private func sendSetCurrentClimb(item: SharedQueueItem, correlationId: String) {
         let query = """
         mutation SetCurrentClimb($item: ClimbQueueItemInput, $correlationId: ID) {
           setCurrentClimb(item: $item, correlationId: $correlationId) {
@@ -463,12 +489,20 @@ final class SessionWebSocketManager {
     }
 
     private func handleMessage(_ text: String) {
+        stateQueue.async { [weak self] in
+            guard let self = self else { return }
+            self.lastMessageReceived = Date()
+        }
         guard let msg = GQLMessage.parse(text) else { return }
 
         switch msg.type {
         case .connectionAck:
-            isConnected = true
-            reconnectAttempt = 0
+            stateQueue.async { [weak self] in
+                guard let self = self else { return }
+                self.isConnected = true
+                self.reconnectAttempt = 0
+            }
+            startPingTimeoutTimer()
             sendSubscription()
 
         case .ping:
@@ -493,17 +527,25 @@ final class SessionWebSocketManager {
         guard let event = QueueMessageParser.parseQueueUpdate(updates) else { return }
 
         let receivedSeq = sequenceFromEvent(event)
-        if QueueMessageParser.hasSequenceGap(lastKnown: lastSequence, received: receivedSeq) {
-            // Gap detected — cancel the current task so listenForMessages' failure
-            // path calls handleDisconnect(), which schedules a reconnect and will
-            // receive a FullSync restoring consistent state.
-            print("[SessionWS] Sequence gap: expected \(lastSequence + 1), got \(receivedSeq) — reconnecting")
-            webSocketTask?.cancel(with: .goingAway, reason: nil)
-            return
-        }
-        lastSequence = receivedSeq
 
-        applyEvent(event)
+        // Sequence gap check and lastSequence update must be atomic
+        stateQueue.async { [weak self] in
+            guard let self = self else { return }
+
+            if QueueMessageParser.hasSequenceGap(lastKnown: self.lastSequence, received: receivedSeq) {
+                // Gap detected — cancel the current task so listenForMessages' failure
+                // path calls handleDisconnect(), which schedules a reconnect and will
+                // receive a FullSync restoring consistent state.
+                print("[SessionWS] Sequence gap: expected \(self.lastSequence + 1), got \(receivedSeq) — reconnecting")
+                self.webSocketTask?.cancel(with: .goingAway, reason: nil)
+                return
+            }
+            self.lastSequence = receivedSeq
+
+            // Apply event inline (already on stateQueue) rather than calling
+            // applyEvent which would double-dispatch
+            self.applyEventOnQueue(event)
+        }
     }
 
     private func sequenceFromEvent(_ event: QueueUpdateEvent) -> Int {
@@ -518,6 +560,14 @@ final class SessionWebSocketManager {
     }
 
     private func applyEvent(_ event: QueueUpdateEvent) {
+        stateQueue.async { [weak self] in
+            guard let self = self else { return }
+            self.applyEventOnQueue(event)
+        }
+    }
+
+    /// Applies a queue update event. MUST be called on `stateQueue`.
+    private func applyEventOnQueue(_ event: QueueUpdateEvent) {
         switch event {
         case .fullSync(let items, let currentItem, _):
             queueItems = items
@@ -583,19 +633,25 @@ final class SessionWebSocketManager {
     // MARK: - Reconnection
 
     private func handleDisconnect() {
-        isConnected = false
-        webSocketTask = nil
+        stateQueue.async { [weak self] in
+            guard let self = self else { return }
 
-        guard !intentionalDisconnect else { return }
+            self.isConnected = false
+            self.webSocketTask = nil
+            self.pingTimeoutTimer?.cancel()
+            self.pingTimeoutTimer = nil
 
-        let delay = reconnectDelay()
-        reconnectAttempt += 1
+            guard !self.intentionalDisconnect else { return }
 
-        let workItem = DispatchWorkItem { [weak self] in
-            self?.openConnection()
+            let delay = self.reconnectDelay()
+            self.reconnectAttempt += 1
+
+            let workItem = DispatchWorkItem { [weak self] in
+                self?.openConnection()
+            }
+            self.reconnectWorkItem = workItem
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
         }
-        reconnectWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
     }
 
     func reconnectDelay() -> TimeInterval {
@@ -644,29 +700,35 @@ final class SessionWebSocketManager {
         // Clear the pending action immediately
         defaults.removeObject(forKey: SharedConstants.pendingActionKey)
 
-        switch action {
-        case "next":
-            let nextIndex = currentIndex + 1
-            guard nextIndex < queueItems.count else { return }
-            let previousIndex = currentIndex
-            currentIndex = nextIndex
-            let item = queueItems[nextIndex]
-            pendingMutationIndex = previousIndex
-            persistAndNotify()
-            sendSetCurrentClimb(item: item)
+        stateQueue.async { [weak self] in
+            guard let self = self else { return }
 
-        case "previous":
-            let prevIndex = currentIndex - 1
-            guard prevIndex >= 0 else { return }
-            let previousIndex = currentIndex
-            currentIndex = prevIndex
-            let item = queueItems[prevIndex]
-            pendingMutationIndex = previousIndex
-            persistAndNotify()
-            sendSetCurrentClimb(item: item)
+            switch action {
+            case "next":
+                let nextIndex = self.currentIndex + 1
+                guard nextIndex < self.queueItems.count else { return }
+                let previousIndex = self.currentIndex
+                self.currentIndex = nextIndex
+                let item = self.queueItems[nextIndex]
+                let correlationId = UUID().uuidString
+                self.pendingMutations[correlationId] = previousIndex
+                self.persistAndNotify()
+                self.sendSetCurrentClimb(item: item, correlationId: correlationId)
 
-        default:
-            break
+            case "previous":
+                let prevIndex = self.currentIndex - 1
+                guard prevIndex >= 0 else { return }
+                let previousIndex = self.currentIndex
+                self.currentIndex = prevIndex
+                let item = self.queueItems[prevIndex]
+                let correlationId = UUID().uuidString
+                self.pendingMutations[correlationId] = previousIndex
+                self.persistAndNotify()
+                self.sendSetCurrentClimb(item: item, correlationId: correlationId)
+
+            default:
+                break
+            }
         }
     }
 
@@ -674,18 +736,46 @@ final class SessionWebSocketManager {
 
     private func handleMutationError(_ msg: GQLMessage) {
         guard let id = msg.id, id.hasPrefix("mutation-") else { return }
+        let correlationId = String(id.dropFirst("mutation-".count))
         // Server rejected the navigation — revert to the index before the optimistic update
-        if let previousIndex = pendingMutationIndex {
-            currentIndex = previousIndex
-            pendingMutationIndex = nil
-            persistAndNotify()
+        stateQueue.async { [weak self] in
+            guard let self = self else { return }
+            if let previousIndex = self.pendingMutations.removeValue(forKey: correlationId) {
+                self.currentIndex = previousIndex
+                self.persistAndNotify()
+            }
         }
     }
 
     private func handleMutationComplete(_ msg: GQLMessage) {
         guard let id = msg.id, id.hasPrefix("mutation-") else { return }
+        let correlationId = String(id.dropFirst("mutation-".count))
         // Mutation succeeded — clear the pending state
-        pendingMutationIndex = nil
+        stateQueue.async { [weak self] in
+            self?.pendingMutations.removeValue(forKey: correlationId)
+        }
+    }
+
+    // MARK: - Ping Timeout
+
+    private func startPingTimeoutTimer() {
+        stateQueue.async { [weak self] in
+            guard let self = self else { return }
+            self.pingTimeoutTimer?.cancel()
+            let timer = DispatchSource.makeTimerSource(queue: self.stateQueue)
+            timer.schedule(deadline: .now() + self.pingTimeout, repeating: self.pingTimeout)
+            timer.setEventHandler { [weak self] in
+                guard let self = self else { return }
+                // Already on stateQueue — safe to read lastMessageReceived and webSocketTask
+                let elapsed = Date().timeIntervalSince(self.lastMessageReceived)
+                if elapsed > self.pingTimeout {
+                    print("[SessionWS] Ping timeout — no message for \(Int(elapsed))s, reconnecting")
+                    self.webSocketTask?.cancel(with: .goingAway, reason: nil)
+                }
+            }
+            timer.resume()
+            self.pingTimeoutTimer = timer
+        }
     }
 
     // MARK: - Transport Helpers

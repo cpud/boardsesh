@@ -57,7 +57,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // End Live Activity when the scene is discarded to avoid stale state
         SessionWebSocketManager.shared.disconnect()
         if #available(iOS 16.1, *) {
-            LiveActivityManager.shared.endAllActivities()
+            Task {
+                await LiveActivityManager.shared.endAllActivities()
+            }
         }
     }
     func sceneDidBecomeActive(_ scene: UIScene) {}

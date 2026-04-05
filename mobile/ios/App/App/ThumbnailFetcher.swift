@@ -75,9 +75,8 @@ actor ThumbnailFetcher {
         }
 
         inFlightTasks[item.climbUuid] = task
-        let result = await task.value
-        inFlightTasks.removeValue(forKey: item.climbUuid)
-        return result
+        defer { inFlightTasks.removeValue(forKey: item.climbUuid) }
+        return await task.value
     }
 
     /// Pre-fetches thumbnails for the current item and its immediate

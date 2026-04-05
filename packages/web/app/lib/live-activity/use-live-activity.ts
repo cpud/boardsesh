@@ -30,6 +30,22 @@ export function useLiveActivity({
   const isActiveRef = useRef(false);
   const [available, setAvailable] = useState<boolean | null>(null);
 
+  // Memoize queue serialization so it only recomputes when the queue array changes,
+  // not on every currentClimbQueueItem navigation.
+  const serializedQueue = useMemo(
+    () =>
+      queue.map((q) => ({
+        uuid: q.uuid,
+        climbUuid: q.climb.uuid,
+        climbName: q.climb.name,
+        difficulty: q.climb.difficulty,
+        angle: q.climb.angle,
+        frames: q.climb.frames,
+        setterUsername: q.climb.setter_username,
+      })),
+    [queue],
+  );
+
   // Stabilize boardDetails by value so reference changes don't restart the session
   const boardKey = boardDetails
     ? `${boardDetails.board_name}:${boardDetails.layout_id}:${boardDetails.size_id}:${Array.isArray(boardDetails.set_ids) ? boardDetails.set_ids.join(',') : boardDetails.set_ids}`
@@ -89,15 +105,7 @@ export function useLiveActivity({
           hasNext: idx < queue.length - 1,
           hasPrevious: idx > 0,
           climbUuid: displayItem.climb.uuid,
-          queue: queue.map((q) => ({
-            uuid: q.uuid,
-            climbUuid: q.climb.uuid,
-            climbName: q.climb.name,
-            difficulty: q.climb.difficulty,
-            angle: q.climb.angle,
-            frames: q.climb.frames,
-            setterUsername: q.climb.setter_username,
-          })),
+          queue: serializedQueue,
         });
       });
     } else if (!shouldBeActive && isActiveRef.current) {
@@ -133,15 +141,7 @@ export function useLiveActivity({
       hasNext: currentIndex < queue.length - 1,
       hasPrevious: currentIndex > 0,
       climbUuid: displayItem.climb.uuid,
-      queue: queue.map((q) => ({
-        uuid: q.uuid,
-        climbUuid: q.climb.uuid,
-        climbName: q.climb.name,
-        difficulty: q.climb.difficulty,
-        angle: q.climb.angle,
-        frames: q.climb.frames,
-        setterUsername: q.climb.setter_username,
-      })),
+      queue: serializedQueue,
     });
-  }, [currentClimbQueueItem, queue, stableBoardDetails, isSessionActive, sessionId]);
+  }, [currentClimbQueueItem, queue, serializedQueue, stableBoardDetails, isSessionActive, sessionId]);
 }

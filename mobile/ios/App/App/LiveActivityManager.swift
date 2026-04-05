@@ -41,14 +41,14 @@ final class LiveActivityManager {
         boardName: String,
         sessionId: String,
         initialState: ClimbSessionAttributes.ContentState
-    ) throws {
+    ) async throws {
         guard isAvailable else {
             logger.warning("Live Activities are not enabled; skipping start")
             return
         }
 
         // Clean up any existing activities first.
-        endAllActivities()
+        await endAllActivities()
 
         let attributes = ClimbSessionAttributes(boardName: boardName, sessionId: sessionId)
         let content = ActivityContent(state: initialState, staleDate: nil)
@@ -97,23 +97,19 @@ final class LiveActivityManager {
 
     /// Ends all Live Activities, including the tracked one and any stale
     /// activities from previous sessions that may still be visible.
-    func endAllActivities() {
+    func endAllActivities() async {
         // End the currently tracked activity.
         if let activity = currentActivity {
             let activityId = activity.id
-            Task {
-                await activity.end(nil, dismissalPolicy: .immediate)
-                logger.info("Ended tracked Live Activity \(activityId, privacy: .public)")
-            }
+            await activity.end(nil, dismissalPolicy: .immediate)
+            logger.info("Ended tracked Live Activity \(activityId, privacy: .public)")
             currentActivity = nil
         }
 
         // Also clean up any stale activities that might linger from crashes
         // or previous sessions.
-        Task {
-            for activity in Activity<ClimbSessionAttributes>.activities {
-                await activity.end(nil, dismissalPolicy: .immediate)
-            }
+        for activity in Activity<ClimbSessionAttributes>.activities {
+            await activity.end(nil, dismissalPolicy: .immediate)
         }
     }
 

@@ -20,7 +20,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // End Live Activity and disconnect WebSocket on app termination
         SessionWebSocketManager.shared.disconnect()
         if #available(iOS 16.1, *) {
-            LiveActivityManager.shared.endAllActivities()
+            Task {
+                await LiveActivityManager.shared.endAllActivities()
+            }
         }
     }
 }

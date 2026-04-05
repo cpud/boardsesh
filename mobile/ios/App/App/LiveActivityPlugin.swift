@@ -68,6 +68,8 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
 
         // For party mode (real session), connect the WebSocket manager
         // so queue updates flow through to the Live Activity.
+        // Set callback BEFORE connect to avoid race where a fast connection
+        // fires events before the callback is installed.
         let wsManager = SessionWebSocketManager.shared
         let activityManager = LiveActivityManager.shared
 
@@ -85,6 +87,7 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
             }
         }
 
+        // Connect after callback is set to ensure no events are missed.
         wsManager.connect(serverUrl: serverUrl, sessionId: sessionId, authToken: authToken, wsUrl: wsUrl)
 
         // Start the Live Activity with an initial "Loading..." state.
@@ -99,17 +102,19 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
             climbUuid: ""
         )
 
-        do {
-            try activityManager.startActivity(
-                boardName: boardName,
-                sessionId: sessionId,
-                initialState: initialState
-            )
-            logger.info("Started session \(sessionId, privacy: .public) with Live Activity")
-            call.resolve()
-        } catch {
-            logger.error("Failed to start Live Activity: \(error.localizedDescription, privacy: .public)")
-            call.reject("Failed to start Live Activity: \(error.localizedDescription)")
+        Task {
+            do {
+                try await activityManager.startActivity(
+                    boardName: boardName,
+                    sessionId: sessionId,
+                    initialState: initialState
+                )
+                self.logger.info("Started session \(sessionId, privacy: .public) with Live Activity")
+                call.resolve()
+            } catch {
+                self.logger.error("Failed to start Live Activity: \(error.localizedDescription, privacy: .public)")
+                call.reject("Failed to start Live Activity: \(error.localizedDescription)")
+            }
         }
     }
 
@@ -121,7 +126,9 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
         wsManager.disconnect()
 
         if #available(iOS 16.1, *) {
-            LiveActivityManager.shared.endAllActivities()
+            Task {
+                await LiveActivityManager.shared.endAllActivities()
+            }
         }
 
         // Clear shared UserDefaults queue state.
