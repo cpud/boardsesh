@@ -219,8 +219,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          DEPLOYMENT_ID=$(printf '{"ref":"%s","environment":"preview-pr-%s","description":"Preview deployment for PR #%s","auto_merge":false,"required_contexts":[]}' \
-            "${{ github.sha }}" "${{ env.PR_NUMBER }}" "${{ env.PR_NUMBER }}" | \
+          DEPLOYMENT_ID=$(jq -n \
+            --arg ref "${{ github.sha }}" \
+            --arg env "preview-pr-${{ env.PR_NUMBER }}" \
+            --arg desc "Preview deployment for PR #${{ env.PR_NUMBER }}" \
+            '{ref: $ref, environment: $env, description: $desc, auto_merge: false, required_contexts: []}' | \
             gh api repos/${{ github.repository }}/deployments \
               --method POST --input - --jq '.id')
           if [ -z "$DEPLOYMENT_ID" ]; then
@@ -240,7 +243,7 @@ jobs:
 
   deployment-status:
     needs: [deploy, create-deployment]
-    if: github.event_name == 'pull_request'
+    if: always() && github.event_name == 'pull_request' && needs.create-deployment.result == 'success' && needs.deploy.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       deployments: write
@@ -258,7 +261,7 @@ jobs:
 
   deployment-failure:
     needs: [deploy, create-deployment]
-    if: github.event_name == 'pull_request' && failure() && needs.create-deployment.result == 'success'
+    if: always() && github.event_name == 'pull_request' && needs.create-deployment.result == 'success' && needs.deploy.result != 'success'
     runs-on: ubuntu-latest
     permissions:
       deployments: write
