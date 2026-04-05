@@ -12,6 +12,8 @@ vi.mock('@/app/components/providers/snackbar-provider', () => ({
 let mockQueueContext: Record<string, unknown> = {};
 vi.mock('@/app/components/graphql-queue', () => ({
   useQueueContext: () => mockQueueContext,
+  useQueueData: () => mockQueueContext,
+  useQueueActions: () => mockQueueContext,
 }));
 
 vi.mock('next/navigation', () => ({
@@ -103,6 +105,16 @@ vi.mock('next-auth/react', () => ({
 
 vi.mock('@/app/components/persistent-session', () => ({
   usePersistentSession: () => ({
+    activeSession: null,
+    localBoardDetails: null,
+    localCurrentClimbQueueItem: null,
+  }),
+  usePersistentSessionState: () => ({
+    activeSession: null,
+    localBoardDetails: null,
+    localCurrentClimbQueueItem: null,
+  }),
+  usePersistentSessionActions: () => ({
     activeSession: null,
     localBoardDetails: null,
     localCurrentClimbQueueItem: null,

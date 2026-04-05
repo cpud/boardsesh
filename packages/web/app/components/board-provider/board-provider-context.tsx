@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useLogbook as useLogbookQuery } from '@/app/hooks/use-logbook';
 import { useSaveTick as useSaveTickMutation, type SaveTickOptions } from '@/app/hooks/use-save-tick';
 import { useSaveClimb as useSaveClimbMutation, type SaveClimbResponse } from '@/app/hooks/use-save-climb';
-import { usePersistentSession } from '@/app/components/persistent-session/persistent-session-context';
+import { usePersistentSessionState } from '@/app/components/persistent-session/persistent-session-context';
 
 // Re-export types for backward compatibility
 export type { SaveTickOptions } from '@/app/hooks/use-save-tick';
@@ -31,7 +31,7 @@ const BoardContext = createContext<BoardContextType | undefined>(undefined);
 
 export function BoardProvider({ boardName, children }: { boardName: BoardName; children: React.ReactNode }) {
   const { status: sessionStatus } = useSession();
-  const { activeSession } = usePersistentSession();
+  const { activeSession } = usePersistentSessionState();
   const [isInitialized, setIsInitialized] = useState(false);
   const [climbUuids, setClimbUuids] = useState<ClimbUuid[]>([]);
 
