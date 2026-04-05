@@ -243,10 +243,6 @@ final class SessionWebSocketManager {
     private var pingTimeoutTimer: DispatchSourceTimer?
     private let pingTimeout: TimeInterval = 60
 
-    // MARK: - Darwin Notification
-
-    private var observingDarwinNotification = false
-
     // MARK: - Init
 
     init(urlSession: URLSession = .shared) {
@@ -255,11 +251,6 @@ final class SessionWebSocketManager {
 
     deinit {
         pingTimeoutTimer?.cancel()
-        if observingDarwinNotification {
-            let center = CFNotificationCenterGetDarwinNotifyCenter()
-            let observer = Unmanaged.passUnretained(self).toOpaque()
-            CFNotificationCenterRemoveObserver(center, observer, nil, nil)
-        }
     }
 
     // MARK: - Public API
@@ -273,7 +264,6 @@ final class SessionWebSocketManager {
             self.wsUrl = wsUrl
             self.intentionalDisconnect = false
             self.lastSequence = -1
-            self.startDarwinObservation()
             self._openConnectionOnQueue()
         }
     }
@@ -286,7 +276,6 @@ final class SessionWebSocketManager {
             self.reconnectWorkItem = nil
             self.pingTimeoutTimer?.cancel()
             self.pingTimeoutTimer = nil
-            self.stopDarwinObservation()
             self.sendComplete()
             self.webSocketTask?.cancel(with: .goingAway, reason: nil)
             self.webSocketTask = nil
@@ -449,7 +438,11 @@ final class SessionWebSocketManager {
             "frames": item.frames,
             "angle": item.angle,
             "difficulty": item.difficulty,
-            "setter_username": item.setterUsername
+            "setter_username": item.setterUsername,
+            "ascensionist_count": 0,
+            "quality_average": "0",
+            "stars": 0.0,
+            "difficulty_error": "0",
         ]
 
         let itemInput: [String: Any] = [
@@ -686,62 +679,20 @@ final class SessionWebSocketManager {
         return min(exponential, maxBackoff)
     }
 
-    // MARK: - Darwin Notification (Queue Navigate)
+    // MARK: - Widget Navigation
 
-    private func startDarwinObservation() {
-        guard !observingDarwinNotification else { return }
-        observingDarwinNotification = true
-
-        let center = CFNotificationCenterGetDarwinNotifyCenter()
-        let name = CFNotificationName(SharedConstants.queueNavigateNotification as CFString)
-        let observer = Unmanaged.passUnretained(self).toOpaque()
-
-        CFNotificationCenterAddObserver(
-            center,
-            observer,
-            { (_, observer, _, _, _) in
-                guard let observer = observer else { return }
-                let manager = Unmanaged<SessionWebSocketManager>.fromOpaque(observer).takeUnretainedValue()
-                manager.handleQueueNavigateNotification()
-            },
-            name.rawValue,
-            nil,
-            .deliverImmediately
-        )
-    }
-
-    private func stopDarwinObservation() {
-        guard observingDarwinNotification else { return }
-        observingDarwinNotification = false
-
-        let center = CFNotificationCenterGetDarwinNotifyCenter()
-        let observer = Unmanaged.passUnretained(self).toOpaque()
-        CFNotificationCenterRemoveObserver(center, observer, nil, nil)
-    }
-
-    private func handleQueueNavigateNotification() {
+    /// Called by LiveActivityPlugin when the widget's Next/Previous intent fires.
+    /// Sends the setCurrentClimb mutation over the native WebSocket.
+    func navigateToItem(_ item: SharedQueueItem, at index: Int, totalItems items: [SharedQueueItem]) {
         stateQueue.async { [weak self] in
             guard let self = self else { return }
-            guard let defaults = SharedConstants.sharedDefaults else { return }
-            guard let action = defaults.string(forKey: SharedConstants.pendingActionKey) else { return }
-            defaults.removeObject(forKey: SharedConstants.pendingActionKey)
 
-            // Read from SharedQueueState (populated by JS updateActivity calls)
-            // rather than the internal queueItems which may be empty if the
-            // native WebSocket hasn't received a FullSync.
-            let (sharedItems, sharedIndex) = SharedQueueState.load(from: defaults)
-
-            // The widget intent already updated SharedQueueState with the new
-            // index, so sharedIndex is the TARGET index after navigation.
-            guard !sharedItems.isEmpty, sharedIndex >= 0, sharedIndex < sharedItems.count else { return }
-
-            let item = sharedItems[sharedIndex]
-            let correlationId = UUID().uuidString
-
-            // Also sync internal state so it stays consistent.
-            self.queueItems = sharedItems
+            // Sync internal state with SharedQueueState.
+            self.queueItems = items
             let previousIndex = self.currentIndex
-            self.currentIndex = sharedIndex
+            self.currentIndex = index
+
+            let correlationId = UUID().uuidString
             self.pendingMutations[correlationId] = previousIndex
 
             self.persistAndNotify()

@@ -57,14 +57,23 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
         guard let action = defaults.string(forKey: SharedConstants.pendingActionKey) else { return }
         defaults.removeObject(forKey: SharedConstants.pendingActionKey)
 
-        // Read the updated index that the widget intent already saved.
-        let (_, currentIndex) = SharedQueueState.load(from: defaults)
+        // Read the updated queue state that the widget intent already saved.
+        let (items, currentIndex) = SharedQueueState.load(from: defaults)
 
-        // Notify the JS side so it can send the mutation to the server.
+        // Send the server mutation via the native WebSocket.
+        // This works even from the lock screen (no web view needed).
+        if !items.isEmpty, currentIndex >= 0, currentIndex < items.count {
+            let item = items[currentIndex]
+            SessionWebSocketManager.shared.navigateToItem(item, at: currentIndex, totalItems: items)
+        }
+
+        // Also notify JS so it can send the mutation when the web view is active.
+        // retainUntilConsumed ensures the event is queued if no listener is
+        // attached yet (e.g. app was on the lock screen).
         notifyListeners("queueNavigate", data: [
             "action": action,
             "currentIndex": currentIndex,
-        ])
+        ], retainUntilConsumed: true)
     }
 
     // MARK: - isAvailable
