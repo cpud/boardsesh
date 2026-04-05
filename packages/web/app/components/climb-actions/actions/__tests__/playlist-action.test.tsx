@@ -17,7 +17,7 @@ vi.mock('../../../providers/snackbar-provider', () => ({
 }));
 
 const mockOpenAuthModal = vi.fn();
-vi.mock('../../../providers/auth-modal-provider', () => ({
+vi.mock('@/app/components/providers/auth-modal-provider', () => ({
   useAuthModal: () => ({ openAuthModal: mockOpenAuthModal }),
 }));
 
