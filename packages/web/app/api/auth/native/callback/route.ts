@@ -17,12 +17,15 @@ const sanitizeNextPath = (nextPath: string | null): string =>
  * An HTML page that triggers the redirect via JavaScript + meta refresh
  * works consistently across iOS and Android.
  */
+const escapeHtmlAttr = (s: string) =>
+  s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
 const deepLinkRedirect = (url: string) =>
   new Response(
     `<!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="refresh" content="0;url=${url}">
+<meta http-equiv="refresh" content="0;url=${escapeHtmlAttr(url)}">
 </head>
 <body>
 <script>window.location.href=${JSON.stringify(url)};</script>
