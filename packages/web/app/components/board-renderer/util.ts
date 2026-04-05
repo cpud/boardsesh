@@ -14,7 +14,12 @@ const USE_SELF_HOSTED_IMAGES = true;
 export const getImageUrl = (imageUrl: string, board: BoardName, thumbnail?: boolean) => {
   // If the URL already starts with /, it's a full path (e.g., MoonBoard images)
   if (imageUrl.startsWith('/')) {
-    return imageUrl.replace(/\.png$/, '.webp');
+    const webpUrl = imageUrl.replace(/\.png$/, '.webp');
+    if (thumbnail) {
+      const lastSlash = webpUrl.lastIndexOf('/');
+      return `${webpUrl.substring(0, lastSlash)}/thumbs${webpUrl.substring(lastSlash)}`;
+    }
+    return webpUrl;
   }
 
   if (USE_SELF_HOSTED_IMAGES) {
