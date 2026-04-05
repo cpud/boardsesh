@@ -53,6 +53,7 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
         let sizeId = call.getInt("sizeId") ?? 0
         let setIds = call.getString("setIds") ?? ""
         let authToken = call.getString("authToken")
+        let wsUrl = call.getString("wsUrl")
 
         // Store board details in shared UserDefaults for App Intents
         // and thumbnail URL construction.
@@ -84,7 +85,7 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
             }
         }
 
-        wsManager.connect(serverUrl: serverUrl, sessionId: sessionId, authToken: authToken)
+        wsManager.connect(serverUrl: serverUrl, sessionId: sessionId, authToken: authToken, wsUrl: wsUrl)
 
         // Start the Live Activity with an initial "Loading..." state.
         let initialState = ClimbSessionAttributes.ContentState(

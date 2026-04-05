@@ -8,6 +8,7 @@ import {
   updateLiveActivity,
   isLiveActivityAvailable,
 } from './live-activity-plugin';
+import { getBackendWsUrl } from '../backend-url';
 import type { ClimbQueueItem } from '@/app/components/queue-control/types';
 import type { BoardDetails } from '../types';
 
@@ -59,6 +60,7 @@ export function useLiveActivity({
       startLiveActivitySession({
         sessionId: sessionId ?? `local-${Date.now()}`,
         serverUrl,
+        wsUrl: getBackendWsUrl() ?? undefined,
         boardName: stableBoardDetails.board_name,
         layoutId: stableBoardDetails.layout_id,
         sizeId: stableBoardDetails.size_id,

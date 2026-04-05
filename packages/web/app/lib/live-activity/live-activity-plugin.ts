@@ -3,6 +3,7 @@ import { isNativeApp, getPlatform } from '../ble/capacitor-utils';
 interface LiveActivityStartOptions {
   sessionId: string;
   serverUrl: string;
+  wsUrl?: string;
   authToken?: string;
   boardName: string;
   layoutId: number;

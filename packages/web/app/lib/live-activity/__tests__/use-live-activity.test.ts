@@ -26,6 +26,10 @@ vi.mock('../live-activity-plugin', () => ({
   updateLiveActivity: (...args: unknown[]) => mockUpdateLiveActivity(...(args as [])),
 }));
 
+vi.mock('../../backend-url', () => ({
+  getBackendWsUrl: () => 'ws://localhost:8080/graphql',
+}));
+
 // Import after mocks are set up
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- dynamic import after mock setup
 const { useLiveActivity } = await import('../use-live-activity');

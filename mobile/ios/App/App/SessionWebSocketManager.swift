@@ -200,6 +200,7 @@ final class SessionWebSocketManager {
 
     private(set) var sessionId: String?
     private(set) var serverUrl: String?
+    private(set) var wsUrl: String?
     private(set) var authToken: String?
 
     // MARK: - Connection State
@@ -234,10 +235,11 @@ final class SessionWebSocketManager {
 
     // MARK: - Public API
 
-    func connect(serverUrl: String, sessionId: String, authToken: String? = nil) {
+    func connect(serverUrl: String, sessionId: String, authToken: String? = nil, wsUrl: String? = nil) {
         self.serverUrl = serverUrl
         self.sessionId = sessionId
         self.authToken = authToken
+        self.wsUrl = wsUrl
         self.intentionalDisconnect = false
         self.lastSequence = -1
         startDarwinObservation()
@@ -260,11 +262,17 @@ final class SessionWebSocketManager {
     private func openConnection() {
         guard let serverUrl = serverUrl else { return }
 
-        let wsScheme = serverUrl.hasPrefix("https") ? "wss" : "ws"
-        let host = serverUrl
-            .replacingOccurrences(of: "https://", with: "")
-            .replacingOccurrences(of: "http://", with: "")
-        let urlString = "\(wsScheme)://\(host)/graphql"
+        let urlString: String
+        if let wsUrl = wsUrl, !wsUrl.isEmpty {
+            // Use the explicit WebSocket URL when provided (handles separate backend port)
+            urlString = wsUrl
+        } else {
+            let wsScheme = serverUrl.hasPrefix("https") ? "wss" : "ws"
+            let host = serverUrl
+                .replacingOccurrences(of: "https://", with: "")
+                .replacingOccurrences(of: "http://", with: "")
+            urlString = "\(wsScheme)://\(host)/graphql"
+        }
 
         guard let url = URL(string: urlString) else {
             print("[SessionWS] Failed to construct URL from: \(urlString)")
