@@ -84,6 +84,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   const [isQueueOpen, setIsQueueOpen] = useState(false);
   const [isPlaylistSelectorOpen, setIsPlaylistSelectorOpen] = useState(false);
   const [isTickDrawerOpen, setIsTickDrawerOpen] = useState(false);
+  const [isBoardZoomed, setIsBoardZoomed] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -271,7 +272,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
       open={isOpen}
       onClose={handleClose}
       keepMounted
-      swipeEnabled={!isActionsOpen && !isQueueOpen && !isPlaylistSelectorOpen}
+      swipeEnabled={!isActionsOpen && !isQueueOpen && !isPlaylistSelectorOpen && !isBoardZoomed}
       showDragHandle={true}
       styles={{
         body: { padding: 0, overflow: 'hidden' },
@@ -312,6 +313,8 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
                     boardContainerClassName={styles.swipeCardContainer}
                     fillContainer
                     onDoubleTap={handleDoubleTap}
+                    onZoomStateChange={setIsBoardZoomed}
+                    showZoomHint
                     overlay={<HeartAnimationOverlay visible={showHeart} onAnimationEnd={dismissHeart} />}
                   />
                 )}
