@@ -31,7 +31,7 @@ private struct ThumbnailView: View {
         if let image = loadThumbnail(climbUuid: climbUuid) {
             Image(uiImage: image)
                 .resizable()
-                .aspectRatio(contentMode: .fill)
+                .aspectRatio(contentMode: .fit)
                 .frame(width: width, height: height)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
         } else {
@@ -125,6 +125,7 @@ struct ClimbSessionLiveActivity: Widget {
                             .background(context.state.hasPrevious ? Color.white.opacity(0.15) : Color.white.opacity(0.05))
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                         }
+                        .buttonStyle(.plain)
                         .disabled(!context.state.hasPrevious)
 
                         Button(intent: NextClimbIntent()) {
@@ -139,6 +140,7 @@ struct ClimbSessionLiveActivity: Widget {
                             .background(context.state.hasNext ? Color.white.opacity(0.15) : Color.white.opacity(0.05))
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                         }
+                        .buttonStyle(.plain)
                         .disabled(!context.state.hasNext)
                     }
                     .padding(.horizontal, 4)
@@ -238,6 +240,7 @@ private struct LockScreenView: View {
                         .background(context.state.hasPrevious ? Color.white.opacity(0.15) : Color.white.opacity(0.05))
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
+                    .buttonStyle(.plain)
                     .disabled(!context.state.hasPrevious)
 
                     Button(intent: NextClimbIntent()) {
@@ -252,6 +255,7 @@ private struct LockScreenView: View {
                         .background(context.state.hasNext ? Color.white.opacity(0.15) : Color.white.opacity(0.05))
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
+                    .buttonStyle(.plain)
                     .disabled(!context.state.hasNext)
                 }
             }

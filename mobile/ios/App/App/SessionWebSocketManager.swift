@@ -243,10 +243,6 @@ final class SessionWebSocketManager {
     private var pingTimeoutTimer: DispatchSourceTimer?
     private let pingTimeout: TimeInterval = 60
 
-    // MARK: - Darwin Notification
-
-    private var observingDarwinNotification = false
-
     // MARK: - Init
 
     init(urlSession: URLSession = .shared) {
@@ -255,11 +251,6 @@ final class SessionWebSocketManager {
 
     deinit {
         pingTimeoutTimer?.cancel()
-        if observingDarwinNotification {
-            let center = CFNotificationCenterGetDarwinNotifyCenter()
-            let observer = Unmanaged.passUnretained(self).toOpaque()
-            CFNotificationCenterRemoveObserver(center, observer, nil, nil)
-        }
     }
 
     // MARK: - Public API
@@ -273,7 +264,6 @@ final class SessionWebSocketManager {
             self.wsUrl = wsUrl
             self.intentionalDisconnect = false
             self.lastSequence = -1
-            self.startDarwinObservation()
             self._openConnectionOnQueue()
         }
     }
@@ -286,7 +276,6 @@ final class SessionWebSocketManager {
             self.reconnectWorkItem = nil
             self.pingTimeoutTimer?.cancel()
             self.pingTimeoutTimer = nil
-            self.stopDarwinObservation()
             self.sendComplete()
             self.webSocketTask?.cancel(with: .goingAway, reason: nil)
             self.webSocketTask = nil
@@ -322,10 +311,7 @@ final class SessionWebSocketManager {
             return
         }
 
-        var request = URLRequest(url: url)
-        request.addValue("graphql-transport-ws", forHTTPHeaderField: "Sec-WebSocket-Protocol")
-
-        let task = self.urlSession.webSocketTask(with: request)
+        let task = self.urlSession.webSocketTask(with: url, protocols: ["graphql-transport-ws"])
         self.webSocketTask = task
         task.resume()
         self.sendConnectionInit()
@@ -422,6 +408,41 @@ final class SessionWebSocketManager {
         sendJSON(message)
     }
 
+    private func sendJoinSession() {
+        guard let sessionId = sessionId else { return }
+
+        // Build boardPath from shared UserDefaults (stored by LiveActivityPlugin.startSession)
+        let defaults = SharedConstants.sharedDefaults
+        let boardName = defaults?.string(forKey: SharedConstants.boardNameKey) ?? ""
+        let layoutId = defaults?.integer(forKey: SharedConstants.layoutIdKey) ?? 0
+        let sizeId = defaults?.integer(forKey: SharedConstants.sizeIdKey) ?? 0
+        let setIds = defaults?.string(forKey: SharedConstants.setIdsKey) ?? ""
+        let boardPath = "/\(boardName)/\(layoutId)/\(sizeId)/\(setIds)/0"
+
+        let query = """
+        mutation JoinSession($sessionId: ID!, $boardPath: String!) {
+          joinSession(sessionId: $sessionId, boardPath: $boardPath) {
+            id
+            clientId
+          }
+        }
+        """
+
+        let joinId = "join-session"
+        let message: [String: Any] = [
+            "type": GQLMessageType.subscribe.rawValue,
+            "id": joinId,
+            "payload": [
+                "query": query,
+                "variables": [
+                    "sessionId": sessionId,
+                    "boardPath": boardPath,
+                ] as [String: Any]
+            ] as [String: Any]
+        ]
+        sendJSON(message)
+    }
+
     private func sendComplete() {
         let message: [String: Any] = [
             "type": GQLMessageType.complete.rawValue,
@@ -452,7 +473,11 @@ final class SessionWebSocketManager {
             "frames": item.frames,
             "angle": item.angle,
             "difficulty": item.difficulty,
-            "setter_username": item.setterUsername
+            "setter_username": item.setterUsername,
+            "ascensionist_count": 0,
+            "quality_average": "0",
+            "stars": 0.0,
+            "difficulty_error": "0",
         ]
 
         let itemInput: [String: Any] = [
@@ -516,6 +541,7 @@ final class SessionWebSocketManager {
                 guard let self = self else { return }
                 self.isConnected = true
                 self.reconnectAttempt = 0
+                self.sendJoinSession()
                 self.sendSubscription()
             }
             startPingTimeoutTimer()
@@ -689,79 +715,43 @@ final class SessionWebSocketManager {
         return min(exponential, maxBackoff)
     }
 
-    // MARK: - Darwin Notification (Queue Navigate)
+    // MARK: - Widget Navigation
 
-    private func startDarwinObservation() {
-        guard !observingDarwinNotification else { return }
-        observingDarwinNotification = true
-
-        let center = CFNotificationCenterGetDarwinNotifyCenter()
-        let name = CFNotificationName(SharedConstants.queueNavigateNotification as CFString)
-        let observer = Unmanaged.passUnretained(self).toOpaque()
-
-        CFNotificationCenterAddObserver(
-            center,
-            observer,
-            { (_, observer, _, _, _) in
-                guard let observer = observer else { return }
-                let manager = Unmanaged<SessionWebSocketManager>.fromOpaque(observer).takeUnretainedValue()
-                manager.handleQueueNavigateNotification()
-            },
-            name.rawValue,
-            nil,
-            .deliverImmediately
-        )
-    }
-
-    private func stopDarwinObservation() {
-        guard observingDarwinNotification else { return }
-        observingDarwinNotification = false
-
-        let center = CFNotificationCenterGetDarwinNotifyCenter()
-        let observer = Unmanaged.passUnretained(self).toOpaque()
-        CFNotificationCenterRemoveObserver(center, observer, nil, nil)
-    }
-
-    private func handleQueueNavigateNotification() {
+    /// Called by LiveActivityPlugin when the widget's Next/Previous intent fires.
+    /// Sends the setCurrentClimb mutation over the native WebSocket.
+    func navigateToItem(_ item: SharedQueueItem, at index: Int, totalItems items: [SharedQueueItem]) {
         stateQueue.async { [weak self] in
             guard let self = self else { return }
-            guard let defaults = SharedConstants.sharedDefaults else { return }
-            guard let action = defaults.string(forKey: SharedConstants.pendingActionKey) else { return }
-            defaults.removeObject(forKey: SharedConstants.pendingActionKey)
 
-            switch action {
-            case "next":
-                let nextIndex = self.currentIndex + 1
-                guard nextIndex < self.queueItems.count else { return }
-                let previousIndex = self.currentIndex
-                self.currentIndex = nextIndex
-                let item = self.queueItems[nextIndex]
-                let correlationId = UUID().uuidString
-                self.pendingMutations[correlationId] = previousIndex
-                self.persistAndNotify()
-                self.sendSetCurrentClimb(item: item, correlationId: correlationId)
+            // Sync internal state with SharedQueueState.
+            self.queueItems = items
+            let previousIndex = self.currentIndex
+            self.currentIndex = index
 
-            case "previous":
-                let prevIndex = self.currentIndex - 1
-                guard prevIndex >= 0 else { return }
-                let previousIndex = self.currentIndex
-                self.currentIndex = prevIndex
-                let item = self.queueItems[prevIndex]
-                let correlationId = UUID().uuidString
-                self.pendingMutations[correlationId] = previousIndex
-                self.persistAndNotify()
-                self.sendSetCurrentClimb(item: item, correlationId: correlationId)
+            let correlationId = UUID().uuidString
+            self.pendingMutations[correlationId] = previousIndex
 
-            default:
-                break
-            }
+            self.persistAndNotify()
+            self.sendSetCurrentClimb(item: item, correlationId: correlationId)
         }
     }
 
     // MARK: - Mutation Response Handling
 
     private func handleMutationError(_ msg: GQLMessage) {
-        guard let id = msg.id, id.hasPrefix("mutation-") else { return }
+        guard let id = msg.id else { return }
+
+        if id == "join-session" {
+            // joinSession failed — the connection can't send mutations without a session.
+            // Reconnect to retry.
+            print("[SessionWS] joinSession failed — reconnecting")
+            stateQueue.async { [weak self] in
+                self?.webSocketTask?.cancel(with: .goingAway, reason: nil)
+            }
+            return
+        }
+
+        guard id.hasPrefix("mutation-") else { return }
         let correlationId = String(id.dropFirst("mutation-".count))
         // Server rejected the navigation — revert to the index before the optimistic update
         stateQueue.async { [weak self] in
@@ -774,7 +764,9 @@ final class SessionWebSocketManager {
     }
 
     private func handleMutationComplete(_ msg: GQLMessage) {
-        guard let id = msg.id, id.hasPrefix("mutation-") else { return }
+        guard let id = msg.id else { return }
+        if id == "join-session" { return } // joinSession completed successfully, nothing to clean up
+        guard id.hasPrefix("mutation-") else { return }
         let correlationId = String(id.dropFirst("mutation-".count))
         // Mutation succeeded — clear the pending state
         stateQueue.async { [weak self] in
@@ -797,6 +789,14 @@ final class SessionWebSocketManager {
                 if elapsed > self.pingTimeout {
                     print("[SessionWS] Ping timeout — no message for \(Int(elapsed))s, reconnecting")
                     self.webSocketTask?.cancel(with: .goingAway, reason: nil)
+                } else {
+                    // Connection is healthy — push the Live Activity stale
+                    // deadline forward so it doesn't show "Session ended".
+                    if #available(iOS 16.1, *) {
+                        Task {
+                            await LiveActivityManager.shared.refreshStaleDate()
+                        }
+                    }
                 }
             }
             timer.resume()
@@ -809,7 +809,10 @@ final class SessionWebSocketManager {
     private func sendJSON(_ dict: [String: Any]) {
         guard let data = try? JSONSerialization.data(withJSONObject: dict),
               let text = String(data: data, encoding: .utf8)
-        else { return }
+        else {
+            print("[SessionWS] sendJSON: failed to serialize message")
+            return
+        }
         stateQueue.async { [weak self] in
             self?.webSocketTask?.send(.string(text)) { error in
                 if let error = error {

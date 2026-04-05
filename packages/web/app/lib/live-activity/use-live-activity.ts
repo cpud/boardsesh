@@ -31,6 +31,14 @@ export function useLiveActivity({
   const generationRef = useRef(0);
   const [available, setAvailable] = useState<boolean | null>(null);
 
+  // Keep refs for values the start callback needs without triggering restarts
+  const sessionIdRef = useRef(sessionId);
+  sessionIdRef.current = sessionId;
+  const queueRef = useRef(queue);
+  queueRef.current = queue;
+  const currentClimbRef = useRef(currentClimbQueueItem);
+  currentClimbRef.current = currentClimbQueueItem;
+
   // Memoize queue serialization so it only recomputes when the queue array changes,
   // not on every currentClimbQueueItem navigation.
   const serializedQueue = useMemo(
@@ -46,6 +54,8 @@ export function useLiveActivity({
       })),
     [queue],
   );
+  const serializedQueueRef = useRef(serializedQueue);
+  serializedQueueRef.current = serializedQueue;
 
   // Stabilize boardDetails by value so reference changes don't restart the session
   const boardKey = boardDetails
@@ -63,27 +73,23 @@ export function useLiveActivity({
     return () => { cancelled = true; };
   }, []);
 
-  // Start/end session — waits until availability is confirmed
+  // Start/end session — only reacts to content presence and board config.
+  // Does NOT restart when the current climb changes or party session toggles.
+  const hasContent = queue.length > 0 || currentClimbQueueItem !== null;
+  const shouldBeActive = hasContent && stableBoardDetails !== null && available === true;
+
   useEffect(() => {
     if (!isNativeApp() || getPlatform() !== 'ios') return;
-    if (available !== true) return;
+    if (!available) return;
 
-    const hasContent = queue.length > 0 || currentClimbQueueItem !== null;
-    const shouldBeActive = hasContent && stableBoardDetails !== null;
-
-    if (shouldBeActive && !isActiveRef.current) {
+    if (shouldBeActive && !isActiveRef.current && stableBoardDetails) {
       const serverUrl = typeof window !== 'undefined' ? window.location.origin : '';
 
-      // Set flag optimistically before the async call to prevent duplicate starts
-      // if React re-renders before the promise resolves.
       isActiveRef.current = true;
-
-      // Track this specific start so the cleanup can detect if a newer
-      // mount has taken ownership of the flag.
       const startGeneration = ++generationRef.current;
 
       startLiveActivitySession({
-        sessionId: sessionId ?? `local-${Date.now()}`,
+        sessionId: sessionIdRef.current ?? `local-${Date.now()}`,
         serverUrl,
         wsUrl: getBackendWsUrl() ?? undefined,
         boardName: stableBoardDetails.board_name,
@@ -91,25 +97,23 @@ export function useLiveActivity({
         sizeId: stableBoardDetails.size_id,
         setIds: Array.isArray(stableBoardDetails.set_ids) ? stableBoardDetails.set_ids.join(',') : String(stableBoardDetails.set_ids),
       }).then(() => {
-        // Guard: if cleanup ran or a newer start replaced us, bail out.
         if (!isActiveRef.current || generationRef.current !== startGeneration) return;
-        // Send an initial update immediately after start so the widget
-        // doesn't stay on "Loading...". Skip in party mode — WebSocket handles updates.
-        if (isSessionActive && sessionId) return;
-        const displayItem = currentClimbQueueItem ?? (queue.length > 0 ? queue[0] : null);
+        // Send an initial update so the widget doesn't stay on "Loading...".
+        const q = queueRef.current;
+        const displayItem = currentClimbRef.current ?? (q.length > 0 ? q[0] : null);
         if (!displayItem) return;
-        const idx = queue.findIndex((q) => q.uuid === displayItem.uuid);
+        const idx = q.findIndex((item) => item.uuid === displayItem.uuid);
         if (idx === -1) return;
         updateLiveActivity({
           climbName: displayItem.climb.name,
           climbDifficulty: displayItem.climb.difficulty,
           angle: displayItem.climb.angle,
           currentIndex: idx,
-          totalClimbs: queue.length,
-          hasNext: idx < queue.length - 1,
+          totalClimbs: q.length,
+          hasNext: idx < q.length - 1,
           hasPrevious: idx > 0,
           climbUuid: displayItem.climb.uuid,
-          queue: serializedQueue,
+          queue: serializedQueueRef.current,
         });
       });
     } else if (!shouldBeActive && isActiveRef.current) {
@@ -123,12 +127,11 @@ export function useLiveActivity({
         isActiveRef.current = false;
       }
     };
-  }, [queue.length, currentClimbQueueItem, stableBoardDetails, isSessionActive, sessionId, available]);
+  }, [shouldBeActive, stableBoardDetails, available]);
 
-  // Update on climb changes (local queue mode only; party mode uses WebSocket updates)
+  // Update Live Activity on climb changes — no session restart needed
   useEffect(() => {
     if (!isActiveRef.current || !stableBoardDetails) return;
-    if (isSessionActive && sessionId) return;
 
     const displayItem = currentClimbQueueItem ?? (queue.length > 0 ? queue[0] : null);
     if (!displayItem) return;
@@ -147,5 +150,5 @@ export function useLiveActivity({
       climbUuid: displayItem.climb.uuid,
       queue: serializedQueue,
     });
-  }, [currentClimbQueueItem, queue, serializedQueue, stableBoardDetails, isSessionActive, sessionId]);
+  }, [currentClimbQueueItem, queue, serializedQueue, stableBoardDetails]);
 }

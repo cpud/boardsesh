@@ -1,6 +1,8 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { useLiveActivity } from './use-live-activity';
+import { isNativeApp, getPlatform } from '../ble/capacitor-utils';
 import type { ClimbQueueItem } from '@/app/components/queue-control/types';
 import type { BoardDetails } from '../types';
 
@@ -10,9 +12,52 @@ interface LiveActivityBridgeProps {
   boardDetails: BoardDetails | null;
   sessionId: string | null;
   isSessionActive: boolean;
+  onSetCurrentClimb?: (item: ClimbQueueItem) => void;
 }
 
-export default function LiveActivityBridge(props: LiveActivityBridgeProps) {
+export default function LiveActivityBridge({
+  onSetCurrentClimb,
+  ...props
+}: LiveActivityBridgeProps) {
   useLiveActivity(props);
+
+  // Listen for widget next/previous button taps and navigate the queue.
+  const queueRef = useRef(props.queue);
+  queueRef.current = props.queue;
+  const onSetCurrentClimbRef = useRef(onSetCurrentClimb);
+  onSetCurrentClimbRef.current = onSetCurrentClimb;
+
+  useEffect(() => {
+    if (!isNativeApp() || getPlatform() !== 'ios') return;
+    const plugin = window.Capacitor?.Plugins?.LiveActivity;
+    if (!plugin?.addListener) return;
+
+    const handle = plugin.addListener('queueNavigate', (data: Record<string, unknown>) => {
+      const currentIndex = data.currentIndex as number;
+      const queue = queueRef.current;
+      const callback = onSetCurrentClimbRef.current;
+      if (!callback || currentIndex < 0 || currentIndex >= queue.length) return;
+      callback(queue[currentIndex]);
+    });
+
+    // addListener may return a Promise or a handle directly depending on Capacitor version.
+    // Use a cleaned-up flag to handle the case where cleanup runs before a Promise resolves.
+    let cleaned = false;
+    const removeRef: { remove?: () => void } = {};
+    const applyHandle = (h: { remove: () => void }) => {
+      if (cleaned) { h.remove(); } else { removeRef.remove = h.remove; }
+    };
+    if (handle && typeof (handle as { remove?: () => void }).remove === 'function') {
+      applyHandle(handle as { remove: () => void });
+    } else if (handle && typeof (handle as Promise<{ remove: () => void }>).then === 'function') {
+      (handle as Promise<{ remove: () => void }>).then(applyHandle);
+    }
+
+    return () => {
+      cleaned = true;
+      removeRef.remove?.();
+    };
+  }, []);
+
   return null;
 }
