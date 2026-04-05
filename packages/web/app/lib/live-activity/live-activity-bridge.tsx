@@ -41,14 +41,20 @@ export default function LiveActivityBridge({
     });
 
     // addListener may return a Promise or a handle directly depending on Capacitor version.
+    // Use a cleaned-up flag to handle the case where cleanup runs before a Promise resolves.
+    let cleaned = false;
     const removeRef: { remove?: () => void } = {};
+    const applyHandle = (h: { remove: () => void }) => {
+      if (cleaned) { h.remove(); } else { removeRef.remove = h.remove; }
+    };
     if (handle && typeof (handle as { remove?: () => void }).remove === 'function') {
-      removeRef.remove = (handle as { remove: () => void }).remove;
+      applyHandle(handle as { remove: () => void });
     } else if (handle && typeof (handle as Promise<{ remove: () => void }>).then === 'function') {
-      (handle as Promise<{ remove: () => void }>).then((h) => { removeRef.remove = h.remove; });
+      (handle as Promise<{ remove: () => void }>).then(applyHandle);
     }
 
     return () => {
+      cleaned = true;
       removeRef.remove?.();
     };
   }, []);

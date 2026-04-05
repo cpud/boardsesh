@@ -739,7 +739,19 @@ final class SessionWebSocketManager {
     // MARK: - Mutation Response Handling
 
     private func handleMutationError(_ msg: GQLMessage) {
-        guard let id = msg.id, id.hasPrefix("mutation-") else { return }
+        guard let id = msg.id else { return }
+
+        if id == "join-session" {
+            // joinSession failed — the connection can't send mutations without a session.
+            // Reconnect to retry.
+            print("[SessionWS] joinSession failed — reconnecting")
+            stateQueue.async { [weak self] in
+                self?.webSocketTask?.cancel(with: .goingAway, reason: nil)
+            }
+            return
+        }
+
+        guard id.hasPrefix("mutation-") else { return }
         let correlationId = String(id.dropFirst("mutation-".count))
         // Server rejected the navigation — revert to the index before the optimistic update
         stateQueue.async { [weak self] in
@@ -752,7 +764,9 @@ final class SessionWebSocketManager {
     }
 
     private func handleMutationComplete(_ msg: GQLMessage) {
-        guard let id = msg.id, id.hasPrefix("mutation-") else { return }
+        guard let id = msg.id else { return }
+        if id == "join-session" { return } // joinSession completed successfully, nothing to clean up
+        guard id.hasPrefix("mutation-") else { return }
         let correlationId = String(id.dropFirst("mutation-".count))
         // Mutation succeeded — clear the pending state
         stateQueue.async { [weak self] in
