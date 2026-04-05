@@ -205,6 +205,10 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     } = useDoubleTapFavorite({ climbUuid: climb.uuid });
     const { ref: doubleTapRef, onDoubleClick: handleDoubleTapClick } = useDoubleTap(handleDoubleTap);
     const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    // Store onThumbnailClick in a ref so the memoized handler always reads the latest
+    // value without requiring onThumbnailClick in the memo comparator.
+    const onThumbnailClickRef = useRef(onThumbnailClick);
+    onThumbnailClickRef.current = onThumbnailClick;
 
     // Clear pending click timeout on unmount to prevent stale callbacks
     useEffect(() => {
@@ -299,6 +303,34 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       leftActionContainerRef.current = node;
     }, [leftActionRef]);
 
+    // Combined ref callback for swipeable content div
+    const contentCombinedRef = useCallback((node: HTMLDivElement | null) => {
+      if (!disableSwipe) {
+        swipeHandlers.ref(node);
+        contentRef(node);
+      }
+    }, [disableSwipe, swipeHandlers, contentRef]);
+
+    // Thumbnail click handler — uses ref to avoid stale closure
+    const handleThumbnailClick = useCallback((e: React.MouseEvent) => {
+      if (!onThumbnailClickRef.current) return;
+      e.stopPropagation();
+      if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
+      clickTimeoutRef.current = setTimeout(() => {
+        clickTimeoutRef.current = null;
+        onThumbnailClickRef.current?.();
+      }, 300);
+    }, []);
+
+    // Thumbnail double-click handler
+    const handleThumbnailDoubleClick = useCallback(() => {
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+        clickTimeoutRef.current = null;
+      }
+      handleDoubleTapClick();
+    }, [handleDoubleTapClick]);
+
     const excludeActions = getExcludedClimbActions(boardDetails.board_name, 'list');
 
     // Memoize style objects to prevent recreation on every render
@@ -352,13 +384,17 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     );
 
     // Default ClimbTitle props when no override is provided
-    const resolvedTitleProps: Partial<ClimbTitleProps> = titleProps ?? {
-      gradePosition: 'right',
-      showSetterInfo: true,
-      titleFontSize: themeTokens.typography.fontSize.xl,
-      rightAddon: <AscentStatus climbUuid={climb.uuid} fontSize={20} />,
-      favorited: isFavorited,
-    };
+    const resolvedTitleProps = useMemo<Partial<ClimbTitleProps>>(
+      () =>
+        titleProps ?? {
+          gradePosition: 'right',
+          showSetterInfo: true,
+          titleFontSize: themeTokens.typography.fontSize.xl,
+          rightAddon: <AscentStatus climbUuid={climb.uuid} fontSize={20} />,
+          favorited: isFavorited,
+        },
+      [titleProps, climb.uuid, isFavorited],
+    );
 
     return (
       <>
@@ -395,12 +431,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
           {/* Content (swipeable when swipe is enabled) */}
           <div
             {...(disableSwipe ? {} : swipeHandlers)}
-            ref={(node: HTMLDivElement | null) => {
-              if (!disableSwipe) {
-                swipeHandlers.ref(node);
-                contentRef(node);
-              }
-            }}
+            ref={contentCombinedRef}
             onClick={onSelect}
             style={swipeableContentStyle}
           >
@@ -408,25 +439,8 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
             <div
               ref={doubleTapRef}
               style={thumbnailStyle}
-              onClick={
-                onThumbnailClick
-                  ? (e) => {
-                      e.stopPropagation();
-                      if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
-                      clickTimeoutRef.current = setTimeout(() => {
-                        clickTimeoutRef.current = null;
-                        onThumbnailClick();
-                      }, 300);
-                    }
-                  : undefined
-              }
-              onDoubleClick={() => {
-                if (clickTimeoutRef.current) {
-                  clearTimeout(clickTimeoutRef.current);
-                  clickTimeoutRef.current = null;
-                }
-                handleDoubleTapClick();
-              }}
+              onClick={onThumbnailClickRef.current ? handleThumbnailClick : undefined}
+              onDoubleClick={handleThumbnailDoubleClick}
             >
               <ClimbThumbnail
                 boardDetails={boardDetails}
