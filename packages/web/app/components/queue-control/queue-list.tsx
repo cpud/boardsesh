@@ -2,12 +2,10 @@
 import React, { useEffect, useState, useCallback, useRef, useImperativeHandle, forwardRef, useMemo } from 'react';
 import Skeleton from '@mui/material/Skeleton';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import MuiDivider from '@mui/material/Divider';
 import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
-import AddOutlined from '@mui/icons-material/AddOutlined';
 import LoginOutlined from '@mui/icons-material/LoginOutlined';
 import { useQueueContext } from '../graphql-queue';
 import { Climb, BoardDetails } from '@/app/lib/types';
@@ -15,8 +13,7 @@ import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/ad
 import { extractClosestEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
 import { reorder } from '@atlaskit/pragmatic-drag-and-drop/reorder';
 import QueueClimbListItem from './queue-climb-list-item';
-import ClimbThumbnail from '../climb-card/climb-thumbnail';
-import ClimbTitle from '../climb-card/climb-title';
+import ClimbListItem from '../climb-card/climb-list-item';
 import { themeTokens } from '@/app/theme/theme-config';
 import { SUGGESTIONS_THRESHOLD } from '../board-page/constants';
 import { useOptionalBoardProvider } from '../board-provider/board-provider-context';
@@ -182,12 +179,9 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(({ boardDetails, o
   // Show only 2 history items above current, so scroll target is at index (length - 2)
   const scrollToHistoryIndex = historyItems.length > 2 ? historyItems.length - 2 : 0;
 
-  // Memoize inline style objects to prevent recreation on every render
-  const suggestedItemStyle = useMemo(
-    () => ({
-      padding: `${themeTokens.spacing[3]}px ${themeTokens.spacing[0]}px`,
-      borderBottom: `1px solid var(--neutral-200)`,
-    }),
+  // Memoize suggested item title props
+  const suggestedTitleProps = useMemo(
+    () => ({ showAngle: true, centered: true } as const),
     [],
   );
 
@@ -304,28 +298,13 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(({ boardDetails, o
           <MuiDivider>Suggested Items</MuiDivider>
           <div className={styles.suggestedColumn}>
             {suggestedClimbs.map((climb: Climb) => (
-              <div
+              <ClimbListItem
                 key={`suggested-${climb.uuid}`}
-                className={styles.suggestedItem}
-                style={suggestedItemStyle}
-              >
-                <div className={styles.suggestedItemRow}>
-                  <div className={styles.suggestedThumbnailCol}>
-                    <ClimbThumbnail
-                      boardDetails={boardDetails}
-                      currentClimb={climb}
-                      enableNavigation={true}
-                      onNavigate={onClimbNavigate}
-                    />
-                  </div>
-                  <div className={styles.suggestedTitleCol}>
-                    <ClimbTitle climb={climb} showAngle centered />
-                  </div>
-                  <div className={styles.suggestedActionCol}>
-                    <IconButton onClick={() => addToQueue(climb)}><AddOutlined /></IconButton>
-                  </div>
-                </div>
-              </div>
+                climb={climb}
+                boardDetails={boardDetails}
+                titleProps={suggestedTitleProps}
+                onNavigate={onClimbNavigate}
+              />
             ))}
           </div>
           {/* Sentinel element for Intersection Observer - only render when needed */}
@@ -342,15 +321,9 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(({ boardDetails, o
                 >
                   {[1, 2, 3].map((i) => (
                     <div key={i} className={styles.loadMoreSkeletonRow}>
-                      <div className={styles.suggestedThumbnailCol}>
-                        <Skeleton variant="rectangular" width="100%" height={60} animation="wave" />
-                      </div>
-                      <div className={styles.suggestedTitleCol}>
-                        <Skeleton variant="text" animation="wave" />
-                      </div>
-                      <div className={styles.suggestedActionCol}>
-                        <Skeleton variant="rectangular" width={32} height={32} animation="wave" />
-                      </div>
+                      <Skeleton variant="rectangular" width={64} height={60} animation="wave" sx={{ flexShrink: 0 }} />
+                      <Skeleton variant="text" animation="wave" sx={{ flex: 1 }} />
+                      <Skeleton variant="rectangular" width={32} height={32} animation="wave" sx={{ flexShrink: 0 }} />
                     </div>
                   ))}
                 </div>

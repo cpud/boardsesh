@@ -86,9 +86,13 @@ type ClimbListItemProps = {
   /** When true, swipe gestures (favorite/queue) are disabled */
   disableSwipe?: boolean;
   onSelect?: () => void;
-  /** Override the left swipe action (revealed on swipe right). Default: favorite/playlist */
+  /**
+   * @deprecated Do not use. Left here to prevent reintroduction. All climb lists should use the
+   * default swipe-right behavior (playlist selector / actions menu) for consistency.
+   */
   swipeLeftAction?: SwipeActionOverride;
-  /** Override the right swipe action (revealed on swipe left). Default: add to queue */
+  /** Override the right swipe action (revealed on swipe left). Default: add to queue.
+   *  Only used by queue items to replace add-to-queue with tick. */
   swipeRightAction?: SwipeActionOverride;
   /** Content rendered between the title and menu button (e.g., avatar) */
   afterTitleSlot?: React.ReactNode;
@@ -110,6 +114,8 @@ type ClimbListItemProps = {
   onOpenActions?: (climb: Climb) => void;
   /** When provided, the item delegates opening the playlist selector to the parent instead of rendering its own. */
   onOpenPlaylistSelector?: (climb: Climb) => void;
+  /** Callback invoked when the user navigates via the thumbnail link (e.g., to close a drawer). Forwarded to ClimbThumbnail. */
+  onNavigate?: () => void;
 };
 
 const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
@@ -132,6 +138,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     onThumbnailClick,
     onOpenActions,
     onOpenPlaylistSelector,
+    onNavigate,
   }) => {
     const pathname = usePathname();
     const isDark = useIsDarkMode();
@@ -145,10 +152,12 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     const queueContext = useOptionalQueueContext();
     const addToQueue = queueContext?.addToQueue;
 
-    const hasSwipeOverrides = Boolean(swipeLeftAction || swipeRightAction);
+    // Per-direction override flags
+    const hasLeftOverride = Boolean(swipeLeftAction);
+    const hasRightOverride = Boolean(swipeRightAction);
 
-    // Default swipe handlers (used when no overrides)
-    // Swipe left (right action): add to queue (short only, no long swipe)
+    // Default swipe handlers
+    // Swipe left (right action): add to queue
     const handleDefaultSwipeLeft = useCallback(() => {
       addToQueue?.(climb);
     }, [climb, addToQueue]);
@@ -173,7 +182,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       }
     }, [onOpenActions, climb]);
 
-    // Override swipe handlers
+    // Resolve per-direction: override or default
     const handleOverrideSwipeLeft = useCallback(() => {
       swipeRightAction?.onAction();
     }, [swipeRightAction]);
@@ -182,17 +191,26 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       swipeLeftAction?.onAction();
     }, [swipeLeftAction]);
 
-    // Use override or default swipe configuration
+    const resolvedSwipeLeft = hasRightOverride ? handleOverrideSwipeLeft : handleDefaultSwipeLeft;
+    const resolvedSwipeRight = hasLeftOverride ? handleOverrideSwipeRight : handleDefaultSwipeRight;
+
+    // Long swipe right only available when left action uses default (playlist → actions)
+    const resolvedSwipeRightLong = hasLeftOverride ? undefined : handleDefaultSwipeRightLong;
+
+    // Use default thresholds when left action is default (needs long-swipe support),
+    // simple thresholds only when both directions are overridden
+    const useSimpleSwipe = hasLeftOverride && hasRightOverride;
+
     const { swipeHandlers, isSwipeComplete, contentRef, leftActionRef, rightActionRef } = useSwipeActions({
-      onSwipeLeft: hasSwipeOverrides ? handleOverrideSwipeLeft : handleDefaultSwipeLeft,
-      onSwipeRight: hasSwipeOverrides ? handleOverrideSwipeRight : handleDefaultSwipeRight,
-      onSwipeRightLong: hasSwipeOverrides ? undefined : handleDefaultSwipeRightLong,
-      onSwipeOffsetChange: hasSwipeOverrides ? undefined : setSwipeOffset,
-      swipeThreshold: hasSwipeOverrides ? SIMPLE_SWIPE_THRESHOLD : SHORT_SWIPE_THRESHOLD,
-      longSwipeRightThreshold: hasSwipeOverrides ? undefined : LONG_SWIPE_THRESHOLD,
-      maxSwipe: hasSwipeOverrides ? SIMPLE_MAX_SWIPE : MAX_GESTURE_SWIPE,
+      onSwipeLeft: resolvedSwipeLeft,
+      onSwipeRight: resolvedSwipeRight,
+      onSwipeRightLong: resolvedSwipeRightLong,
+      onSwipeOffsetChange: useSimpleSwipe ? undefined : setSwipeOffset,
+      swipeThreshold: useSimpleSwipe ? SIMPLE_SWIPE_THRESHOLD : SHORT_SWIPE_THRESHOLD,
+      longSwipeRightThreshold: useSimpleSwipe ? undefined : LONG_SWIPE_THRESHOLD,
+      maxSwipe: useSimpleSwipe ? SIMPLE_MAX_SWIPE : MAX_GESTURE_SWIPE,
       // Cap left swipe (queue action) at the panel width — no long-swipe left exists
-      maxSwipeLeft: hasSwipeOverrides ? undefined : SHORT_ACTION_WIDTH,
+      maxSwipeLeft: useSimpleSwipe ? undefined : SHORT_ACTION_WIDTH,
       disabled: disableSwipe,
     });
 
@@ -368,21 +386,14 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     return (
       <>
         <div style={containerStyle}>
-          {!disableSwipe &&
-            (hasSwipeOverrides ? (
-              <>
-                {/* Simple left action (revealed on swipe right) */}
+          {!disableSwipe && (
+            <>
+              {/* Left action (revealed on swipe right) */}
+              {hasLeftOverride ? (
                 <div ref={leftActionRef} style={simpleLeftActionStyle}>
                   {swipeLeftAction?.icon ?? null}
                 </div>
-                {/* Simple right action (revealed on swipe left) */}
-                <div ref={rightActionRef} style={simpleRightActionStyle}>
-                  {swipeRightAction?.icon ?? null}
-                </div>
-              </>
-            ) : (
-              <>
-                {/* Left action background (playlist/actions - revealed on swipe right) */}
+              ) : (
                 <div ref={leftActionRef} style={defaultLeftActionStyle}>
                   <div style={shortSwipeLayerStyle}>
                     <LocalOfferOutlined style={iconStyle} />
@@ -391,15 +402,22 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
                     <MoreHorizOutlined style={iconStyle} />
                   </div>
                 </div>
+              )}
 
-                {/* Right action background (queue - revealed on swipe left) */}
+              {/* Right action (revealed on swipe left) */}
+              {hasRightOverride ? (
+                <div ref={rightActionRef} style={simpleRightActionStyle}>
+                  {swipeRightAction?.icon ?? null}
+                </div>
+              ) : (
                 <div ref={rightActionRef} style={defaultRightActionStyle}>
                   <div style={rightActionLayerStyle}>
                     <AddOutlined style={iconStyle} />
                   </div>
                 </div>
-              </>
-            ))}
+              )}
+            </>
+          )}
 
           {/* Content (swipeable when swipe is enabled) */}
           <div
@@ -430,6 +448,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
                 currentClimb={climb}
                 enableNavigation={!disableThumbnailNavigation}
                 preferImageLayers={preferImageLayers}
+                onNavigate={onNavigate}
               />
             </div>
 
@@ -532,7 +551,8 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       prev.preferImageLayers === next.preferImageLayers &&
       prev.onThumbnailClick === next.onThumbnailClick &&
       prev.onOpenActions === next.onOpenActions &&
-      prev.onOpenPlaylistSelector === next.onOpenPlaylistSelector
+      prev.onOpenPlaylistSelector === next.onOpenPlaylistSelector &&
+      prev.onNavigate === next.onNavigate
     );
   },
 );
