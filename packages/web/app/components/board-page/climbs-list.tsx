@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 import { track } from '@vercel/analytics';
 import dynamic from 'next/dynamic';
 import { Climb, BoardDetails } from '@/app/lib/types';
+import ErrorBoundary from '../error-boundary';
 import ClimbCard from '../climb-card/climb-card';
 import ClimbListItem from '../climb-card/climb-list-item';
 import DrawerClimbHeader from '../climb-card/drawer-climb-header';
@@ -361,9 +362,10 @@ const ClimbsList = ({
         </Box>
       </Box>
 
+      <ErrorBoundary recoverable>
       {viewMode === 'grid' ? (
         /* Grid (card) mode — not virtualized */
-        <Box sx={gridContainerSx}>
+        <Box sx={gridContainerSx} translate="no">
           {visibleClimbs.map((climb, index) => (
             <Box key={climb.uuid} sx={cardBoxSx}>
               <div {...(index === 0 ? { id: 'onboarding-climb-card' } : {})}>
@@ -385,7 +387,7 @@ const ClimbsList = ({
         </Box>
       ) : (
         /* List mode — non-virtualized */
-        <div>
+        <div translate="no">
           {isFetching && climbs.length === 0 ? (
             <ClimbsListSkeleton aspectRatio={boardDetails.boardWidth / boardDetails.boardHeight} viewMode="list" />
           ) : (
@@ -412,6 +414,7 @@ const ClimbsList = ({
           )}
         </div>
       )}
+      </ErrorBoundary>
 
       {/* Sentinel for infinite scroll (grid mode fallback) */}
       <Box ref={sentinelRef} sx={sentinelBoxSx}>
