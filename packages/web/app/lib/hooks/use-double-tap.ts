@@ -18,7 +18,7 @@ export function useDoubleTap(callback: (() => void) | undefined) {
   const wasMultiTouchRef = useRef(false);
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
-    if (e.touches.length > 1) {
+    if ((e.touches?.length ?? 0) > 1) {
       wasMultiTouchRef.current = true;
     }
   }, []);
@@ -27,8 +27,10 @@ export function useDoubleTap(callback: (() => void) | undefined) {
     (e: TouchEvent) => {
       isTouchDeviceRef.current = true;
 
+      const remainingTouches = e.touches?.length ?? 0;
+
       // If other fingers are still down, this is part of a multi-touch gesture
-      if (e.touches.length > 0) {
+      if (remainingTouches > 0) {
         wasMultiTouchRef.current = true;
         return;
       }
