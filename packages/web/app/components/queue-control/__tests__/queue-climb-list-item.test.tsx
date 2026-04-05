@@ -238,13 +238,13 @@ describe('QueueClimbListItem', () => {
       expect(props.onTickClick).toHaveBeenCalledWith(props.item.climb);
     });
 
-    it('uses default playlist/actions behavior on swipe right', () => {
+    it('uses default playlist behavior on swipe right, no long-swipe in simple mode', () => {
       render(<QueueClimbListItem {...defaultProps()} />);
 
-      // Swipe right uses default behavior (playlist selector / actions menu)
-      // since swipeLeftAction is not overridden
+      // Swipe right uses default behavior (playlist selector)
       expect(capturedSwipeOptions?.onSwipeRight).toBeDefined();
-      expect(capturedSwipeOptions?.onSwipeRightLong).toBeDefined();
+      // Long-swipe is disabled in simple swipe mode (swipeRightAction overridden)
+      expect(capturedSwipeOptions?.onSwipeRightLong).toBeUndefined();
     });
 
     it('disables swipe in edit mode', () => {
