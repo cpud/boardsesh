@@ -51,3 +51,10 @@ jobs:
               --field state="inactive" \
               --field description="PR closed, preview torn down" || true
           done
+
+      - name: Delete preview environment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api "repos/${{ github.repository }}/environments/preview-pr-${{ env.PR_NUMBER }}" \
+            --method DELETE || echo "Environment not found or already deleted"
