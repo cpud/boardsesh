@@ -213,7 +213,8 @@ final class SessionWebSocketManager {
 
     // MARK: - Reconnection
 
-    private(set) var reconnectAttempt: Int = 0
+    // internal(set) so @testable import AppTests can write this in reconnect-delay tests
+    internal(set) var reconnectAttempt: Int = 0
     private var reconnectWorkItem: DispatchWorkItem?
     private let maxBackoff: TimeInterval = 30
     private var intentionalDisconnect = false
