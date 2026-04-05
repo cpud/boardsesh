@@ -32,20 +32,24 @@ export default function LiveActivityBridge({
     const plugin = window.Capacitor?.Plugins?.LiveActivity;
     if (!plugin?.addListener) return;
 
-    let removeHandle: (() => void) | null = null;
-
-    plugin.addListener('queueNavigate', (data: Record<string, unknown>) => {
+    const handle = plugin.addListener('queueNavigate', (data: Record<string, unknown>) => {
       const currentIndex = data.currentIndex as number;
       const queue = queueRef.current;
       const callback = onSetCurrentClimbRef.current;
       if (!callback || currentIndex < 0 || currentIndex >= queue.length) return;
       callback(queue[currentIndex]);
-    }).then((handle) => {
-      removeHandle = handle.remove;
     });
 
+    // addListener may return a Promise or a handle directly depending on Capacitor version.
+    const removeRef: { remove?: () => void } = {};
+    if (handle && typeof (handle as { remove?: () => void }).remove === 'function') {
+      removeRef.remove = (handle as { remove: () => void }).remove;
+    } else if (handle && typeof (handle as Promise<{ remove: () => void }>).then === 'function') {
+      (handle as Promise<{ remove: () => void }>).then((h) => { removeRef.remove = h.remove; });
+    }
+
     return () => {
-      removeHandle?.();
+      removeRef.remove?.();
     };
   }, []);
 
