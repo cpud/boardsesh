@@ -12,13 +12,6 @@ vi.mock('../use-favorite', () => ({
   })),
 }));
 
-vi.mock('@/app/lib/hooks/use-double-tap', () => ({
-  useDoubleTap: (callback: (() => void) | undefined) => ({
-    ref: vi.fn(),
-    onDoubleClick: () => callback?.(),
-  }),
-}));
-
 import { useDoubleTapFavorite } from '../use-double-tap-favorite';
 import { useFavorite } from '../use-favorite';
 
@@ -42,8 +35,7 @@ describe('useDoubleTapFavorite', () => {
 
     expect(result.current).toEqual(
       expect.objectContaining({
-        doubleTapRef: expect.any(Function),
-        onDoubleClick: expect.any(Function),
+        handleDoubleTap: expect.any(Function),
         showHeart: false,
         dismissHeart: expect.any(Function),
         isFavorited: false,
@@ -67,7 +59,7 @@ describe('useDoubleTapFavorite', () => {
     );
 
     act(() => {
-      result.current.onDoubleClick();
+      result.current.handleDoubleTap();
     });
 
     expect(result.current.showAuthModal).toBe(true);
@@ -81,7 +73,7 @@ describe('useDoubleTapFavorite', () => {
     );
 
     act(() => {
-      result.current.onDoubleClick();
+      result.current.handleDoubleTap();
     });
 
     expect(result.current.showHeart).toBe(true);
@@ -101,7 +93,7 @@ describe('useDoubleTapFavorite', () => {
     );
 
     act(() => {
-      result.current.onDoubleClick();
+      result.current.handleDoubleTap();
     });
 
     expect(result.current.showHeart).toBe(true);
@@ -114,7 +106,7 @@ describe('useDoubleTapFavorite', () => {
     );
 
     act(() => {
-      result.current.onDoubleClick();
+      result.current.handleDoubleTap();
     });
     expect(result.current.showHeart).toBe(true);
 

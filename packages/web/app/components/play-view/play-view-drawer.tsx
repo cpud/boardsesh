@@ -115,8 +115,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   } = useQueueContext();
 
   const {
-    doubleTapRef: _doubleTapRef,
-    onDoubleClick: handleBoardDoubleTap,
+    handleDoubleTap,
     showHeart,
     dismissHeart,
     isFavorited,
@@ -315,7 +314,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
                     className={styles.boardSection}
                     boardContainerClassName={styles.swipeCardContainer}
                     fillContainer
-                    onDoubleTap={handleBoardDoubleTap}
+                    onDoubleTap={handleDoubleTap}
                     overlay={<HeartAnimationOverlay visible={showHeart} onAnimationEnd={dismissHeart} />}
                   />
                 )}

@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useCallback, type RefCallback } from 'react';
-import { useDoubleTap } from '@/app/lib/hooks/use-double-tap';
+import { useState, useCallback } from 'react';
 import { useFavorite } from './use-favorite';
 
 interface UseDoubleTapFavoriteOptions {
@@ -9,8 +8,7 @@ interface UseDoubleTapFavoriteOptions {
 }
 
 interface UseDoubleTapFavoriteReturn {
-  doubleTapRef: RefCallback<HTMLElement>;
-  onDoubleClick: () => void;
+  handleDoubleTap: () => void;
   showHeart: boolean;
   dismissHeart: () => void;
   isFavorited: boolean;
@@ -20,9 +18,13 @@ interface UseDoubleTapFavoriteReturn {
 }
 
 /**
- * Composes useDoubleTap + useFavorite to provide double-tap-to-like
- * with heart animation state. Instagram-style: double-tap only adds
- * a like, never removes it.
+ * Manages favorite toggle + heart animation state for double-tap-to-like.
+ * Instagram-style: double-tap only adds a like, never removes it.
+ *
+ * Returns a plain `handleDoubleTap` callback. Callers wire it to their
+ * own double-tap detection (e.g. pass as `onDoubleTap` to SwipeBoardCarousel,
+ * or as `onCoverDoubleClick` to ClimbCard — both already call useDoubleTap
+ * internally).
  */
 export function useDoubleTapFavorite({ climbUuid }: UseDoubleTapFavoriteOptions): UseDoubleTapFavoriteReturn {
   const { isFavorited, toggleFavorite, isAuthenticated } = useFavorite({ climbUuid });
@@ -44,15 +46,12 @@ export function useDoubleTapFavorite({ climbUuid }: UseDoubleTapFavoriteOptions)
     }
   }, [isAuthenticated, isFavorited, toggleFavorite]);
 
-  const { ref: doubleTapRef, onDoubleClick } = useDoubleTap(handleDoubleTap);
-
   const dismissHeart = useCallback(() => {
     setShowHeart(false);
   }, []);
 
   return {
-    doubleTapRef,
-    onDoubleClick,
+    handleDoubleTap,
     showHeart,
     dismissHeart,
     isFavorited,

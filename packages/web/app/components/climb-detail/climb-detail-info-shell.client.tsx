@@ -42,7 +42,7 @@ export default function ClimbDetailInfoShellClient({
   });
 
   const {
-    onDoubleClick: handleDoubleTap,
+    handleDoubleTap,
     showHeart,
     dismissHeart,
     showAuthModal,
