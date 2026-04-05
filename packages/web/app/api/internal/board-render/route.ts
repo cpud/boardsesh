@@ -209,27 +209,37 @@ export async function GET(request: NextRequest) {
       bgMs = performance.now() - bgT0;
 
       if (bgFsPaths.length > 0) {
-        // Load and resize all background images to match overlay dimensions
-        const resizedBuffers = await Promise.all(
+        // Load and resize background images, skipping any that fail
+        const results = await Promise.allSettled(
           bgFsPaths.map((fsPath) =>
             sharp(fsPath).resize(width, height, { fit: 'fill' }).toBuffer(),
           ),
         );
+        const resizedBuffers = results
+          .filter((r): r is PromiseFulfilledResult<Buffer> => r.status === 'fulfilled')
+          .map((r) => r.value);
 
         const [firstBg, ...restBgs] = resizedBuffers;
 
-        // Composite: first background as base → remaining backgrounds → WASM overlay on top
-        webpBuffer = await sharp(firstBg)
-          .composite([
-            ...restBgs.map((buf) => ({ input: buf, blend: 'over' as const })),
-            {
-              input: overlayBuffer,
-              raw: { width, height, channels: 4 as const },
-              blend: 'over' as const,
-            },
-          ])
-          .webp({ quality: 80 })
-          .toBuffer();
+        if (firstBg) {
+          // Composite: first background as base → remaining backgrounds → WASM overlay on top
+          webpBuffer = await sharp(firstBg)
+            .composite([
+              ...restBgs.map((buf) => ({ input: buf, blend: 'over' as const })),
+              {
+                input: overlayBuffer,
+                raw: { width, height, channels: 4 as const },
+                blend: 'over' as const,
+              },
+            ])
+            .webp({ quality: 80 })
+            .toBuffer();
+        } else {
+          // All background loads failed — fall back to overlay-only
+          webpBuffer = await sharp(overlayBuffer, { raw: { width, height, channels: 4 } })
+            .webp({ lossless: true })
+            .toBuffer();
+        }
       } else {
         // No background images found — fall back to overlay-only lossless
         webpBuffer = await sharp(overlayBuffer, { raw: { width, height, channels: 4 } })

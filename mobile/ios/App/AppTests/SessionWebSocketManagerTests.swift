@@ -876,31 +876,34 @@ final class SessionWebSocketManagerTests: XCTestCase {
     func testReconnectDelayIncrementsOnSubsequentCalls() {
         let manager = SessionWebSocketManager(urlSession: .shared)
 
-        let first = manager.reconnectDelay()
+        // reconnectDelay() is a pure function of reconnectAttempt.
+        // In production, handleDisconnect() increments reconnectAttempt after each call.
+        // Simulate that here by checking delay at each attempt level.
+        XCTAssertEqual(manager.reconnectAttempt, 0)
+        let first = manager.reconnectDelay()  // 2^0 = 1
         XCTAssertEqual(first, 1.0, accuracy: 0.01)
 
-        let second = manager.reconnectDelay()
+        manager.reconnectAttempt = 1
+        let second = manager.reconnectDelay()  // 2^1 = 2
         XCTAssertEqual(second, 2.0, accuracy: 0.01)
 
-        let third = manager.reconnectDelay()
+        manager.reconnectAttempt = 2
+        let third = manager.reconnectDelay()  // 2^2 = 4
         XCTAssertEqual(third, 4.0, accuracy: 0.01)
 
-        let fourth = manager.reconnectDelay()
+        manager.reconnectAttempt = 3
+        let fourth = manager.reconnectDelay()  // 2^3 = 8
         XCTAssertEqual(fourth, 8.0, accuracy: 0.01)
     }
 
     func testReconnectDelayCapsAt30Seconds() {
         let manager = SessionWebSocketManager(urlSession: .shared)
 
-        // Call enough times to exceed 30s cap
-        _ = manager.reconnectDelay() // 1
-        _ = manager.reconnectDelay() // 2
-        _ = manager.reconnectDelay() // 4
-        _ = manager.reconnectDelay() // 8
-        _ = manager.reconnectDelay() // 16
-        let sixth = manager.reconnectDelay() // would be 32, capped at 30
+        // Set attempt high enough that 2^n > 30
+        manager.reconnectAttempt = 5  // 2^5 = 32, capped at 30
+        let delay = manager.reconnectDelay()
 
-        XCTAssertEqual(sixth, 30.0, accuracy: 0.01)
+        XCTAssertEqual(delay, 30.0, accuracy: 0.01)
     }
 
     func testSequenceGapTriggeresResync() {

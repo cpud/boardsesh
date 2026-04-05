@@ -213,7 +213,7 @@ final class SessionWebSocketManager {
 
     // MARK: - Reconnection
 
-    private var reconnectAttempt: Int = 0
+    private(set) var reconnectAttempt: Int = 0
     private var reconnectWorkItem: DispatchWorkItem?
     private let maxBackoff: TimeInterval = 30
     private var intentionalDisconnect = false

@@ -140,5 +140,5 @@ export function useLiveActivity({
         setterUsername: q.climb.setter_username,
       })),
     });
-  }, [currentClimbQueueItem?.uuid, queue, stableBoardDetails, isSessionActive, sessionId, currentClimbQueueItem]);
+  }, [currentClimbQueueItem, queue, stableBoardDetails, isSessionActive, sessionId]);
 }
