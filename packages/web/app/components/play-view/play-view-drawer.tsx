@@ -20,7 +20,10 @@ import CheckOutlined from '@mui/icons-material/CheckOutlined';
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useQueueContext } from '../graphql-queue';
-import { useFavorite, ClimbActions } from '../climb-actions';
+import { ClimbActions } from '../climb-actions';
+import { useDoubleTapFavorite } from '../climb-actions/use-double-tap-favorite';
+import HeartAnimationOverlay from '../climb-card/heart-animation-overlay';
+import AuthModal from '../auth/auth-modal';
 import PlaylistSelectionContent from '../climb-actions/playlist-selection-content';
 import DrawerFavoriteButton from '../climb-card/drawer-favorite-button';
 import { ShareBoardButton } from '../board-page/share-button';
@@ -111,7 +114,16 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
     viewOnlyMode,
   } = useQueueContext();
 
-  const { isFavorited, toggleFavorite } = useFavorite({
+  const {
+    doubleTapRef: _doubleTapRef,
+    onDoubleClick: handleBoardDoubleTap,
+    showHeart,
+    dismissHeart,
+    isFavorited,
+    toggleFavorite,
+    showAuthModal,
+    setShowAuthModal,
+  } = useDoubleTapFavorite({
     climbUuid: currentClimb?.uuid ?? '',
   });
 
@@ -255,6 +267,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
 
 
   return (
+    <>
     <SwipeableDrawer
       placement="bottom"
       height="100%"
@@ -302,6 +315,8 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
                     className={styles.boardSection}
                     boardContainerClassName={styles.swipeCardContainer}
                     fillContainer
+                    onDoubleTap={handleBoardDoubleTap}
+                    overlay={<HeartAnimationOverlay visible={showHeart} onAnimationEnd={dismissHeart} />}
                   />
                 )}
 
@@ -576,6 +591,13 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
           </div>
         </SwipeableDrawer>
     </SwipeableDrawer>
+    <AuthModal
+      open={showAuthModal}
+      onClose={() => setShowAuthModal(false)}
+      title="Sign in to like climbs"
+      description="Save your favorite climbs so you can find them later."
+    />
+    </>
   );
 };
 
