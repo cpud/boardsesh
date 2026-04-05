@@ -236,6 +236,7 @@
 				504EC3021FED79650016851F /* Resources */,
 				9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */,
 				LA600001 /* Embed App Extensions */,
+				ATS_DEBUG_ONLY /* [Dev] Allow HTTP in Debug */,
 			);
 			buildRules = (
 			);
@@ -392,6 +393,20 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-App/Pods-App-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		ATS_DEBUG_ONLY /* [Dev] Allow HTTP in Debug */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[Dev] Allow HTTP in Debug";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Allow arbitrary HTTP loads in Debug builds only (e.g. Tailscale dev URLs).\n# Release builds keep the default ATS policy (HTTPS required).\nif [ \"${CONFIGURATION}\" = \"Debug\" ]; then\n  /usr/libexec/PlistBuddy -c \"Delete :NSAppTransportSecurity\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\" 2>/dev/null || true\n  /usr/libexec/PlistBuddy -c \"Add :NSAppTransportSecurity dict\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n  /usr/libexec/PlistBuddy -c \"Add :NSAppTransportSecurity:NSAllowsArbitraryLoads bool true\" \"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n  echo \"[ATS] Debug build: NSAllowsArbitraryLoads enabled\"\nelse\n  echo \"[ATS] Release build: default ATS policy (HTTPS only)\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
