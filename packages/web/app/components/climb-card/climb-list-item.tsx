@@ -123,6 +123,12 @@ const drawerStyles = {
   header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
 } as const;
 
+const playlistDrawerStyles = {
+  wrapper: { height: 'auto', maxHeight: '70vh', width: '100%' },
+  body: { padding: 0 },
+  header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
+} as const;
+
 export type SwipeActionOverride = {
   icon: React.ReactNode;
   color: string;
@@ -333,6 +339,25 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       handleDoubleTapClick();
     }, [handleDoubleTapClick]);
 
+    // Drawer state callbacks — extracted from inline to avoid per-render allocation
+    const handleCloseActions = useCallback(() => setIsActionsOpen(false), []);
+    const handleOpenPlaylistFromActions = useCallback(() => {
+      setIsActionsOpen(false);
+      setIsPlaylistSelectorOpen(true);
+    }, []);
+    const handleClosePlaylist = useCallback(() => setIsPlaylistSelectorOpen(false), []);
+
+    // Menu button click handler — extracted from inline to avoid per-render allocation
+    const handleMenuClick = useCallback((e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (onOpenActions) {
+        onOpenActions(climb);
+      } else {
+        setIsPlaylistSelectorOpen(false);
+        setIsActionsOpen(true);
+      }
+    }, [onOpenActions, climb]);
+
     const excludeActions = getExcludedClimbActions(boardDetails.board_name, 'list');
 
     // Memoize style objects to prevent recreation on every render
@@ -467,15 +492,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
               className={styles.menuButton}
               size="small"
               aria-label="More actions"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onOpenActions) {
-                  onOpenActions(climb);
-                } else {
-                  setIsPlaylistSelectorOpen(false);
-                  setIsActionsOpen(true);
-                }
-              }}
+              onClick={handleMenuClick}
               style={iconButtonStyle}
             >
               <MoreHorizOutlined />
@@ -490,7 +507,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
               title={<DrawerClimbHeader climb={climb} boardDetails={boardDetails} />}
               placement="bottom"
               open={isActionsOpen}
-              onClose={() => setIsActionsOpen(false)}
+              onClose={handleCloseActions}
               styles={drawerStyles}
             >
               <ClimbActions
@@ -500,11 +517,8 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
                 currentPathname={pathname}
                 viewMode="list"
                 exclude={excludeActions}
-                onOpenPlaylistSelector={() => {
-                  setIsActionsOpen(false);
-                  setIsPlaylistSelectorOpen(true);
-                }}
-                onActionComplete={() => setIsActionsOpen(false)}
+                onOpenPlaylistSelector={handleOpenPlaylistFromActions}
+                onActionComplete={handleCloseActions}
               />
             </SwipeableDrawer>
 
@@ -512,18 +526,14 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
               title={<DrawerClimbHeader climb={climb} boardDetails={boardDetails} />}
               placement="bottom"
               open={isPlaylistSelectorOpen}
-              onClose={() => setIsPlaylistSelectorOpen(false)}
-              styles={{
-                wrapper: { height: 'auto', maxHeight: '70vh', width: '100%' },
-                body: { padding: 0 },
-                header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
-              }}
+              onClose={handleClosePlaylist}
+              styles={playlistDrawerStyles}
             >
               <PlaylistSelectionContent
                 climbUuid={climb.uuid}
                 boardDetails={boardDetails}
                 angle={climb.angle}
-                onDone={() => setIsPlaylistSelectorOpen(false)}
+                onDone={handleClosePlaylist}
               />
             </SwipeableDrawer>
           </>
