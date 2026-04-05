@@ -277,11 +277,20 @@ export function buildAggregatedFlashRedpointBars(
   return buildFlashRedpointBars(allEntries);
 }
 
-// ── V-Points cumulative timeline ────────────────────────────────────
+// ── V-Points stacked area timeline ──────────────────────────────────
 
-export interface VPointsDataPoint {
-  weekLabel: string;
-  cumulativePoints: number;
+export interface VPointsLayoutSeries {
+  layoutKey: string;
+  displayName: string;
+  color: string;
+  /** Cumulative v-points per week for this layout */
+  data: number[];
+}
+
+export interface VPointsTimelineData {
+  weekLabels: string[];
+  series: VPointsLayoutSeries[];
+  totalPoints: number;
 }
 
 /**
@@ -293,44 +302,40 @@ function vGradeToPoints(vGrade: string): number {
   return match ? parseInt(match[1], 10) : 0;
 }
 
+const LAYOUT_ORDER = [
+  'kilter-1', 'kilter-8', 'tension-9', 'tension-10', 'tension-11',
+  'moonboard-1', 'moonboard-2', 'moonboard-3', 'moonboard-4', 'moonboard-5',
+];
+
 export function buildVPointsTimeline(
   allBoardsTicks: Record<string, LogbookEntry[]>,
   aggregatedTimeframe: AggregatedTimeframeType,
-): VPointsDataPoint[] | null {
-  // Combine all boards, filter by timeframe, exclude attempts
-  const allEntries = BOARD_TYPES.flatMap((boardType) =>
-    filterByAggregatedTimeframe(allBoardsTicks[boardType] || [], aggregatedTimeframe),
-  ).filter((entry) => entry.difficulty !== null && entry.status !== 'attempt');
+): VPointsTimelineData | null {
+  // Collect entries per layout, filter by timeframe, exclude attempts
+  const entriesByLayout: Record<string, LogbookEntry[]> = {};
 
-  if (allEntries.length === 0) return null;
+  BOARD_TYPES.forEach((boardType) => {
+    const ticks = allBoardsTicks[boardType] || [];
+    const filtered = filterByAggregatedTimeframe(ticks, aggregatedTimeframe)
+      .filter((e) => e.difficulty !== null && e.status !== 'attempt');
 
-  // Sort chronologically (oldest first)
+    for (const entry of filtered) {
+      const layoutKey = getLayoutKey(boardType, entry.layoutId);
+      if (!entriesByLayout[layoutKey]) entriesByLayout[layoutKey] = [];
+      entriesByLayout[layoutKey].push(entry);
+    }
+  });
+
+  const activeLayouts = Object.keys(entriesByLayout);
+  if (activeLayouts.length === 0) return null;
+
+  // Collect all entries to find the overall time range
+  const allEntries = activeLayouts.flatMap((lk) => entriesByLayout[lk]);
   const sorted = [...allEntries].sort(
     (a, b) => new Date(a.climbed_at).getTime() - new Date(b.climbed_at).getTime(),
   );
 
-  // Group by ISO week and sum points per week
-  const weeklyPoints: Record<string, number> = {};
-  const weekKeys: string[] = [];
-
-  for (const entry of sorted) {
-    if (entry.difficulty === null) continue;
-    const grade = difficultyMapping[entry.difficulty];
-    if (!grade) continue;
-
-    const d = dayjs(entry.climbed_at);
-    const weekKey = `${d.isoWeekYear()}-W${d.isoWeek()}`;
-
-    if (!weeklyPoints[weekKey]) {
-      weeklyPoints[weekKey] = 0;
-      weekKeys.push(weekKey);
-    }
-    weeklyPoints[weekKey] += vGradeToPoints(grade);
-  }
-
-  if (weekKeys.length === 0) return null;
-
-  // Fill in missing weeks between first and last
+  // Build full week key range
   const allWeekKeys: string[] = [];
   const first = dayjs(sorted[0].climbed_at).startOf('isoWeek');
   const last = dayjs(sorted[sorted.length - 1].climbed_at).endOf('isoWeek');
@@ -340,29 +345,80 @@ export function buildVPointsTimeline(
     current = current.add(1, 'week');
   }
 
-  // Cap at 104 weeks for readability
-  const cappedKeys = allWeekKeys.length > 104 ? allWeekKeys.slice(-104) : allWeekKeys;
+  if (allWeekKeys.length === 0) return null;
 
-  // Build cumulative timeline — start cumulative sum from points before the capped window
-  let cumulativeBase = 0;
-  if (allWeekKeys.length > 104) {
-    const skippedKeys = allWeekKeys.slice(0, -104);
-    for (const wk of skippedKeys) {
-      cumulativeBase += weeklyPoints[wk] || 0;
+  // Cap at 104 weeks
+  const cappedKeys = allWeekKeys.length > 104 ? allWeekKeys.slice(-104) : allWeekKeys;
+  const skippedKeys = allWeekKeys.length > 104 ? allWeekKeys.slice(0, -104) : [];
+
+  // Per-layout: sum points per week
+  const layoutWeeklyPoints: Record<string, Record<string, number>> = {};
+  for (const layoutKey of activeLayouts) {
+    const weekPoints: Record<string, number> = {};
+    for (const entry of entriesByLayout[layoutKey]) {
+      if (entry.difficulty === null) continue;
+      const grade = difficultyMapping[entry.difficulty];
+      if (!grade) continue;
+      const d = dayjs(entry.climbed_at);
+      const wk = `${d.isoWeekYear()}-W${d.isoWeek()}`;
+      weekPoints[wk] = (weekPoints[wk] || 0) + vGradeToPoints(grade);
     }
+    layoutWeeklyPoints[layoutKey] = weekPoints;
   }
 
+  // Sort layouts in consistent order
+  const sortedLayouts = activeLayouts.sort((a, b) => {
+    const idxA = LAYOUT_ORDER.indexOf(a);
+    const idxB = LAYOUT_ORDER.indexOf(b);
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return a.localeCompare(b);
+  });
+
+  // Week label formatting
   const spansYears =
     cappedKeys.length > 1 &&
     cappedKeys[0].split('-')[0] !== cappedKeys[cappedKeys.length - 1].split('-')[0];
 
-  let cumulative = cumulativeBase;
-  return cappedKeys.map((wk) => {
-    cumulative += weeklyPoints[wk] || 0;
+  const weekLabels = cappedKeys.map((wk) => {
     const [year, weekPart] = wk.split('-');
-    const weekLabel = spansYears ? `${weekPart} '${year.slice(2)}` : weekPart;
-    return { weekLabel, cumulativePoints: cumulative };
+    return spansYears ? `${weekPart} '${year.slice(2)}` : weekPart;
   });
+
+  // Build cumulative series per layout
+  let totalPoints = 0;
+  const series: VPointsLayoutSeries[] = sortedLayouts.map((layoutKey) => {
+    const [boardType, layoutIdStr] = layoutKey.split('-');
+    const layoutId = layoutIdStr === 'unknown' ? null : parseInt(layoutIdStr, 10);
+    const weekPoints = layoutWeeklyPoints[layoutKey];
+
+    // Base from skipped weeks
+    let cumulative = 0;
+    for (const wk of skippedKeys) {
+      cumulative += weekPoints[wk] || 0;
+    }
+
+    const data = cappedKeys.map((wk) => {
+      cumulative += weekPoints[wk] || 0;
+      return cumulative;
+    });
+
+    totalPoints += cumulative;
+
+    return {
+      layoutKey,
+      displayName: getLayoutDisplayName(boardType, layoutId),
+      color: getLayoutColor(boardType, layoutId),
+      data,
+    };
+  });
+
+  // Only keep series that have at least 1 point
+  const nonEmptySeries = series.filter((s) => s.data[s.data.length - 1] > 0);
+  if (nonEmptySeries.length === 0) return null;
+
+  return { weekLabels, series: nonEmptySeries, totalPoints };
 }
 
 // ── Statistics summary (layout percentages) ─────────────────────────

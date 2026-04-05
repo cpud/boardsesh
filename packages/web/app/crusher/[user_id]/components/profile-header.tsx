@@ -19,7 +19,7 @@ import type { CssBarChartBar, BarSegment, GroupedBar } from '@/app/components/ch
 import { EmptyState } from '@/app/components/ui/empty-state';
 import type { UserProfile } from '../utils/profile-constants';
 import { type AggregatedTimeframeType, aggregatedTimeframeOptions } from '../utils/profile-constants';
-import type { LayoutPercentage, LayoutLegendEntry, VPointsDataPoint } from '../utils/chart-data-builders';
+import type { LayoutPercentage, LayoutLegendEntry, VPointsTimelineData } from '../utils/chart-data-builders';
 import VPointsChart from './v-points-chart';
 import styles from '../profile-page.module.css';
 
@@ -38,7 +38,7 @@ interface ProfileHeaderProps {
   loadingAggregated: boolean;
   aggregatedStackedBars: { bars: CssBarChartBar[]; legendEntries: LayoutLegendEntry[] } | null;
   aggregatedFlashRedpointBars: GroupedBar[] | null;
-  vPointsTimeline: VPointsDataPoint[] | null;
+  vPointsTimeline: VPointsTimelineData | null;
 }
 
 export default function ProfileHeader({
