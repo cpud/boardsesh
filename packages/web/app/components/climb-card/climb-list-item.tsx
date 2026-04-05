@@ -357,9 +357,11 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
                 <div style={shortSwipeLayerStyle}>
                   <LocalOfferOutlined style={iconStyle} />
                 </div>
-                <div style={longSwipeLayerStyle}>
-                  <MoreHorizOutlined style={iconStyle} />
-                </div>
+                {!useSimpleSwipe && (
+                  <div style={longSwipeLayerStyle}>
+                    <MoreHorizOutlined style={iconStyle} />
+                  </div>
+                )}
               </div>
 
               {/* Right action (revealed on swipe left) */}
