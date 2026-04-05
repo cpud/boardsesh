@@ -121,9 +121,8 @@ vi.mock('../action-tooltip', () => ({
   ActionTooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('../../auth/auth-modal', () => ({
-  default: ({ open }: { open: boolean }) =>
-    open ? <div data-testid="auth-modal" /> : null,
+vi.mock('../../providers/auth-modal-provider', () => ({
+  useAuthModal: () => ({ openAuthModal: vi.fn() }),
 }));
 
 vi.mock('../../logbook/log-ascent-drawer', () => ({
