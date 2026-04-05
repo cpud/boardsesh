@@ -36,7 +36,7 @@ export default function DrawerFavoriteButton({ climbUuid }: DrawerFavoriteButton
         aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
         disabled={isLoading}
         onClick={handleClick}
-        sx={{ color: isFavorited ? themeTokens.colors.error : 'var(--neutral-400)' }}
+        sx={{ color: isFavorited ? themeTokens.colors.error : themeTokens.neutral[400] }}
       >
         {isFavorited ? <Favorite fontSize="small" /> : <FavoriteBorderOutlined fontSize="small" />}
       </IconButton>
