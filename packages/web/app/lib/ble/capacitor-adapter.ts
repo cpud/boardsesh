@@ -103,6 +103,7 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
     this.disconnectListenerHandle = await ble.addListener('disconnected', (data) => {
       if (data.deviceId === this.deviceId) {
         this.deviceId = null;
+        this.disconnectListenerHandle = null;
         this.disconnectCallback?.();
       }
     });
