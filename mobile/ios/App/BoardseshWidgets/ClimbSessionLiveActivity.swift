@@ -31,7 +31,7 @@ private struct ThumbnailView: View {
         if let image = loadThumbnail(climbUuid: climbUuid) {
             Image(uiImage: image)
                 .resizable()
-                .aspectRatio(contentMode: .fill)
+                .aspectRatio(contentMode: .fit)
                 .frame(width: width, height: height)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
         } else {
