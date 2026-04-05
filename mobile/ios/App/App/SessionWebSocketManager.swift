@@ -726,32 +726,26 @@ final class SessionWebSocketManager {
             guard let action = defaults.string(forKey: SharedConstants.pendingActionKey) else { return }
             defaults.removeObject(forKey: SharedConstants.pendingActionKey)
 
-            switch action {
-            case "next":
-                let nextIndex = self.currentIndex + 1
-                guard nextIndex < self.queueItems.count else { return }
-                let previousIndex = self.currentIndex
-                self.currentIndex = nextIndex
-                let item = self.queueItems[nextIndex]
-                let correlationId = UUID().uuidString
-                self.pendingMutations[correlationId] = previousIndex
-                self.persistAndNotify()
-                self.sendSetCurrentClimb(item: item, correlationId: correlationId)
+            // Read from SharedQueueState (populated by JS updateActivity calls)
+            // rather than the internal queueItems which may be empty if the
+            // native WebSocket hasn't received a FullSync.
+            let (sharedItems, sharedIndex) = SharedQueueState.load(from: defaults)
 
-            case "previous":
-                let prevIndex = self.currentIndex - 1
-                guard prevIndex >= 0 else { return }
-                let previousIndex = self.currentIndex
-                self.currentIndex = prevIndex
-                let item = self.queueItems[prevIndex]
-                let correlationId = UUID().uuidString
-                self.pendingMutations[correlationId] = previousIndex
-                self.persistAndNotify()
-                self.sendSetCurrentClimb(item: item, correlationId: correlationId)
+            // The widget intent already updated SharedQueueState with the new
+            // index, so sharedIndex is the TARGET index after navigation.
+            guard !sharedItems.isEmpty, sharedIndex >= 0, sharedIndex < sharedItems.count else { return }
 
-            default:
-                break
-            }
+            let item = sharedItems[sharedIndex]
+            let correlationId = UUID().uuidString
+
+            // Also sync internal state so it stays consistent.
+            self.queueItems = sharedItems
+            let previousIndex = self.currentIndex
+            self.currentIndex = sharedIndex
+            self.pendingMutations[correlationId] = previousIndex
+
+            self.persistAndNotify()
+            self.sendSetCurrentClimb(item: item, correlationId: correlationId)
         }
     }
 
