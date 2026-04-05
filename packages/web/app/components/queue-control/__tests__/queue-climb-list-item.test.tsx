@@ -83,11 +83,6 @@ vi.mock('../../climb-card/ascent-status', () => ({
   AscentStatus: () => <span data-testid="ascent-status" />,
 }));
 
-vi.mock('@/app/lib/url-utils', () => ({
-  constructClimbInfoUrl: () => 'https://example.com/climb',
-  getContextAwareClimbViewUrl: () => '/kilter/original/12x12/default/40/view/climb-1',
-}));
-
 // Mock drag-and-drop
 vi.mock('@atlaskit/pragmatic-drag-and-drop/element/adapter', () => ({
   draggable: () => () => {},
@@ -174,7 +169,6 @@ const defaultProps = () => ({
   isHistory: false,
   boardDetails: makeBoardDetails(),
   setCurrentClimbQueueItem: vi.fn(),
-  removeFromQueue: vi.fn(),
   onTickClick: vi.fn(),
 });
 
@@ -200,10 +194,6 @@ describe('QueueClimbListItem', () => {
       expect(screen.getByTestId('climb-thumbnail')).toBeTruthy();
     });
 
-    it('renders context menu button', () => {
-      render(<QueueClimbListItem {...defaultProps()} />);
-      expect(screen.getByTestId('MoreVertOutlinedIcon')).toBeTruthy();
-    });
   });
 
   describe('addedBy avatar', () => {
@@ -260,47 +250,6 @@ describe('QueueClimbListItem', () => {
     it('disables swipe in edit mode', () => {
       render(<QueueClimbListItem {...defaultProps()} isEditMode />);
       expect(capturedSwipeOptions?.disabled).toBe(true);
-    });
-  });
-
-  describe('context menu', () => {
-    it('opens menu on click', () => {
-      render(<QueueClimbListItem {...defaultProps()} />);
-
-      const menuButton = screen.getByTestId('MoreVertOutlinedIcon').closest('button')!;
-      fireEvent.click(menuButton);
-
-      expect(screen.getByText('View Climb')).toBeTruthy();
-      expect(screen.getByText('Tick Climb')).toBeTruthy();
-      expect(screen.getByText('Open in App')).toBeTruthy();
-      expect(screen.getByText('Remove from Queue')).toBeTruthy();
-    });
-
-    it('calls removeFromQueue when Remove from Queue is clicked', () => {
-      const props = defaultProps();
-      render(<QueueClimbListItem {...props} />);
-
-      const menuButton = screen.getByTestId('MoreVertOutlinedIcon').closest('button')!;
-      fireEvent.click(menuButton);
-
-      fireEvent.click(screen.getByText('Remove from Queue'));
-      expect(props.removeFromQueue).toHaveBeenCalledWith(props.item);
-    });
-
-    it('calls onTickClick when Tick Climb is clicked', () => {
-      const props = defaultProps();
-      render(<QueueClimbListItem {...props} />);
-
-      const menuButton = screen.getByTestId('MoreVertOutlinedIcon').closest('button')!;
-      fireEvent.click(menuButton);
-
-      fireEvent.click(screen.getByText('Tick Climb'));
-      expect(props.onTickClick).toHaveBeenCalledWith(props.item.climb);
-    });
-
-    it('hides menu button in edit mode', () => {
-      render(<QueueClimbListItem {...defaultProps()} isEditMode />);
-      expect(screen.queryByTestId('MoreVertOutlinedIcon')).toBeNull();
     });
   });
 
