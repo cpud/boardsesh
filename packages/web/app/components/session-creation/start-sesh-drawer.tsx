@@ -38,6 +38,7 @@ export default function StartSeshDrawer({ open, onClose, boardConfigs }: StartSe
   const { showMessage } = useSnackbar();
   const { createSession, isCreating } = useCreateSession();
   const {
+    activateSession,
     setInitialQueueForSession,
     localQueue,
     localCurrentClimbQueueItem,
@@ -153,6 +154,31 @@ export default function StartSeshDrawer({ open, onClose, boardConfigs }: StartSe
       }
 
       setClimbSessionCookie(sessionId);
+
+      // When already on the target board route, router.push to the same URL
+      // won't trigger a re-render, so BoardSessionBridge never picks up the
+      // new cookie. Activate the session directly to avoid this.
+      if (
+        localBoardPath &&
+        localBoardDetails &&
+        getBaseBoardPath(localBoardPath) === getBaseBoardPath(boardPath)
+      ) {
+        const angle = selectedBoard?.angle ?? 0;
+        activateSession({
+          sessionId,
+          sessionName: formData.name,
+          boardPath: localBoardPath,
+          boardDetails: localBoardDetails,
+          parsedParams: {
+            board_name: localBoardDetails.board_name,
+            layout_id: localBoardDetails.layout_id,
+            size_id: localBoardDetails.size_id,
+            set_ids: localBoardDetails.set_ids,
+            angle,
+          },
+        });
+      }
+
       router.push(navigateUrl);
 
       handleClose();
