@@ -144,6 +144,13 @@ providers.push(
     })
 );
 
+// Apple Sign-In posts its callback cross-origin, so the state cookie must use
+// SameSite=None (which requires Secure). This matches what production needs;
+// Apple OAuth already requires HTTPS callback URLs.
+const useSecureCookies =
+  process.env.NEXTAUTH_URL?.startsWith("https://") ??
+  !!process.env.VERCEL_URL;
+
 export const authOptions: NextAuthOptions = {
   adapter: DrizzleAdapter(getDb(), {
     usersTable: schema.users,
@@ -152,6 +159,26 @@ export const authOptions: NextAuthOptions = {
     verificationTokensTable: schema.verificationTokens,
   }),
   providers,
+  cookies: {
+    state: {
+      name: `${useSecureCookies ? "__Secure-" : ""}next-auth.state`,
+      options: {
+        httpOnly: true,
+        sameSite: "none",
+        path: "/",
+        secure: true,
+      },
+    },
+    nonce: {
+      name: `${useSecureCookies ? "__Secure-" : ""}next-auth.nonce`,
+      options: {
+        httpOnly: true,
+        sameSite: "none",
+        path: "/",
+        secure: true,
+      },
+    },
+  },
   session: {
     strategy: "jwt", // Required for credentials provider
   },
