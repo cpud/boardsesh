@@ -39,7 +39,7 @@ export interface SwipeBoardCarouselProps {
   overlay?: React.ReactNode;
 }
 
-const SwipeBoardCarousel: React.FC<SwipeBoardCarouselProps> = ({
+const SwipeBoardCarousel = React.memo<SwipeBoardCarouselProps>(({
   boardDetails,
   currentClimb,
   nextClimb,
@@ -181,6 +181,6 @@ const SwipeBoardCarousel: React.FC<SwipeBoardCarouselProps> = ({
       )}
     </div>
   );
-};
+});
 
 export default SwipeBoardCarousel;
