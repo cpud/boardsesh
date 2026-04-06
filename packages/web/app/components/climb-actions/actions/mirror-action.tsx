@@ -6,7 +6,7 @@ import { ActionTooltip } from '../action-tooltip';
 import SwapHorizOutlined from '@mui/icons-material/SwapHorizOutlined';
 import { track } from '@vercel/analytics';
 import { ClimbActionProps, ClimbActionResult } from '../types';
-import { useOptionalQueueActions, useOptionalQueueData } from '../../graphql-queue';
+import { useOptionalQueueContext } from '../../graphql-queue';
 import { themeTokens } from '@/app/theme/theme-config';
 import { buildActionResult, computeActionDisplay, ActionListElement } from '../action-view-renderer';
 
@@ -20,20 +20,19 @@ export function MirrorAction({
   className,
   onComplete,
 }: ClimbActionProps): ClimbActionResult {
-  const queueActions = useOptionalQueueActions();
-  const queueData = useOptionalQueueData();
+  const queueContext = useOptionalQueueContext();
   const { iconSize, shouldShowLabel } = computeActionDisplay(viewMode, size, showLabel);
 
-  const canMirror = boardDetails.supportsMirroring === true && !!queueActions;
-  const isMirrored = queueData?.currentClimb?.mirrored ?? climb.mirrored ?? false;
+  const canMirror = boardDetails.supportsMirroring === true && !!queueContext;
+  const isMirrored = queueContext?.currentClimb?.mirrored ?? climb.mirrored ?? false;
 
   const handleClick = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
     e?.preventDefault();
 
-    if (!canMirror || !queueActions) return;
+    if (!canMirror || !queueContext) return;
 
-    queueActions.mirrorClimb();
+    queueContext.mirrorClimb();
 
     track('Mirror Climb', {
       boardName: boardDetails.board_name,
@@ -42,7 +41,7 @@ export function MirrorAction({
     });
 
     onComplete?.();
-  }, [canMirror, queueActions, boardDetails.board_name, climb.uuid, isMirrored, onComplete]);
+  }, [canMirror, queueContext, boardDetails.board_name, climb.uuid, isMirrored, onComplete]);
 
   const label = isMirrored ? 'Mirrored' : 'Mirror';
   const iconStyle = isMirrored

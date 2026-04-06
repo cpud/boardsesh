@@ -23,13 +23,6 @@ vi.mock('../../graphql-queue', () => ({
     queue: [],
     mirrorClimb: mockMirrorClimb,
   }),
-  useQueueData: () => ({
-    queue: [],
-  }),
-  useQueueActions: () => ({
-    addToQueue: mockAddToQueue,
-    mirrorClimb: mockMirrorClimb,
-  }),
 }));
 
 const mockShowMessage = vi.fn();
@@ -176,7 +169,7 @@ describe('useClimbActions', () => {
 
     expect(mockAddToQueue).toHaveBeenCalledWith(mockClimb);
     expect(mockTrack).toHaveBeenCalledWith('Add to Queue', expect.objectContaining({
-      boardLayout: 'Original',
+      queueLength: 1,
     }));
     expect(defaultOptions.onActionComplete).toHaveBeenCalledWith('queue');
   });

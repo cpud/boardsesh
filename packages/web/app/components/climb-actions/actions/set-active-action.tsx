@@ -4,7 +4,7 @@ import React, { useCallback } from 'react';
 import PlayCircleOutlineOutlined from '@mui/icons-material/PlayCircleOutlineOutlined';
 import { track } from '@vercel/analytics';
 import { ClimbActionProps, ClimbActionResult } from '../types';
-import { useOptionalQueueActions, useOptionalQueueData } from '../../graphql-queue';
+import { useOptionalQueueContext } from '../../graphql-queue';
 import { themeTokens } from '@/app/theme/theme-config';
 import { buildActionResult, computeActionDisplay, ActionIconElement } from '../action-view-renderer';
 
@@ -18,19 +18,18 @@ export function SetActiveAction({
   className,
   onComplete,
 }: ClimbActionProps): ClimbActionResult {
-  const queueActions = useOptionalQueueActions();
-  const queueData = useOptionalQueueData();
+  const queueContext = useOptionalQueueContext();
   const { iconSize } = computeActionDisplay(viewMode, size, showLabel);
 
-  const isCurrentClimb = queueData?.currentClimb?.uuid === climb.uuid;
+  const isCurrentClimb = queueContext?.currentClimb?.uuid === climb.uuid;
 
   const handleClick = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
     e?.preventDefault();
 
-    if (!queueActions || isCurrentClimb) return;
+    if (!queueContext || isCurrentClimb) return;
 
-    queueActions.setCurrentClimb(climb);
+    queueContext.setCurrentClimb(climb);
 
     track('Set Active Climb', {
       boardLayout: boardDetails.layout_name || '',
@@ -38,7 +37,7 @@ export function SetActiveAction({
     });
 
     onComplete?.();
-  }, [queueActions, isCurrentClimb, climb, boardDetails.layout_name, onComplete]);
+  }, [queueContext, isCurrentClimb, climb, boardDetails.layout_name, onComplete]);
 
   const label = isCurrentClimb ? 'Active' : 'Set Active';
   const iconStyle = isCurrentClimb
@@ -56,7 +55,7 @@ export function SetActiveAction({
     showLabel,
     disabled: disabled || isCurrentClimb,
     className,
-    available: !!queueActions,
+    available: !!queueContext,
     iconElementOverride: (
       <ActionIconElement
         tooltip={isCurrentClimb ? 'Currently active' : 'Set as active climb'}

@@ -9,10 +9,6 @@ vi.mock('@/app/components/persistent-session/persistent-session-context', () => 
   usePersistentSession: () => ({
     activeSession: mockActiveSession,
   }),
-  usePersistentSessionState: () => ({
-    activeSession: mockActiveSession,
-  }),
-  usePersistentSessionActions: () => ({}),
   useIsOnBoardRoute: () => mockIsOnBoardRoute,
 }));
 

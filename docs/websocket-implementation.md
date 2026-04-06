@@ -28,19 +28,14 @@ The party session system uses a GraphQL-over-WebSocket architecture with the fol
 ├─────────────────────────────────────────────────────────────────────────┤
 │  ┌─────────────────────┐    ┌─────────────────────────────────────────┐ │
 │  │ PersistentSession   │◄───┤ GraphQL Client (graphql-ws)             │ │
-│  │ Context (split)     │    │ - Connection management                  │ │
-│  │ ├ ActionsContext     │    │ - Subscription handling                  │ │
-│  │ └ StateContext       │    │ - Reconnection with exponential backoff  │ │
-│  └─────────┬───────────┘    └─────────────────────────────────────────┘ │
-│            │                                                             │
-│  ┌─────────▼───────────┐                                                 │
-│  │ QueueContext (split) │                                                │
-│  │ ├ ActionsContext     │                                                │
-│  │ │  (stable callbacks)│                                                │
-│  │ └ DataContext        │                                                │
-│  │   - Local state      │                                                │
-│  │   - Optimistic update│                                                │
-│  └──────────────────────┘                                                │
+│  │ Context             │    │ - Connection management                  │ │
+│  └─────────┬───────────┘    │ - Subscription handling                  │ │
+│            │                │ - Reconnection with exponential backoff  │ │
+│  ┌─────────▼───────────┐    └─────────────────────────────────────────┘ │
+│  │ QueueContext        │                                                 │
+│  │ - Local state       │                                                 │
+│  │ - Optimistic updates│                                                 │
+│  └─────────────────────┘                                                 │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
                                     │ WebSocket (graphql-ws protocol)
@@ -77,16 +72,6 @@ The party session system uses a GraphQL-over-WebSocket architecture with the fol
 │  └─────────────────────┘    └─────────────────────┘                     │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
-
-### Context Split Pattern
-
-Both `PersistentSessionContext` and `QueueContext` are split into separate **Actions** and **Data** contexts to prevent unnecessary re-renders:
-
-- **ActionsContext** — stable callback functions (`addToQueue`, `setCurrentClimb`, etc.). Uses a `latestRef` pattern so callbacks have empty `[]` dependency arrays and never change identity. Components that only call actions (e.g., list item "add to queue" buttons) subscribe here and avoid re-rendering when queue data changes.
-- **DataContext** — frequently-changing state (`queue`, `currentClimb`, `connectionState`, etc.). Only components that display this data subscribe here.
-- **Combined Context** — merges both via `useMemo(() => ({ ...dataValue, ...actionsValue }))` for backward compatibility. Existing consumers using `useQueueContext()` or `usePersistentSession()` continue working unchanged.
-
-Targeted hooks: `useQueueActions()`, `useQueueData()`, `usePersistentSessionActions()`, `usePersistentSessionState()`.
 
 ## Technology Stack
 
@@ -1483,8 +1468,8 @@ The main app and widget extension share data via App Group (`group.com.boardsesh
 - `packages/web/app/lib/backend-url.ts` - Runtime backend URL resolver (preview deploys, dev overrides)
 - `packages/web/app/components/graphql-queue/graphql-client.ts` - WebSocket client
 - `packages/web/app/components/graphql-queue/use-queue-session.ts` - Session hook
-- `packages/web/app/components/persistent-session/persistent-session-context.tsx` - Root-level session management (split into ActionsContext + StateContext for render performance)
-- `packages/web/app/components/graphql-queue/QueueContext.tsx` - Queue state context (split into ActionsContext + DataContext; actions use `latestRef` pattern for stable callback identity)
+- `packages/web/app/components/persistent-session/persistent-session-context.tsx` - Root-level session management
+- `packages/web/app/components/graphql-queue/QueueContext.tsx` - Queue state context
 
 ### Native iOS
 

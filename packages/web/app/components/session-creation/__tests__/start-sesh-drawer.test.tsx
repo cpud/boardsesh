@@ -16,14 +16,6 @@ vi.mock('@/app/components/persistent-session/persistent-session-context', () => 
     localCurrentClimbQueueItem: mockLocalCurrentClimbQueueItem,
     localBoardPath: mockLocalBoardPath,
   }),
-  usePersistentSessionState: () => ({
-    localQueue: mockLocalQueue,
-    localCurrentClimbQueueItem: mockLocalCurrentClimbQueueItem,
-    localBoardPath: mockLocalBoardPath,
-  }),
-  usePersistentSessionActions: () => ({
-    setInitialQueueForSession: mockSetInitialQueueForSession,
-  }),
 }));
 
 const mockCreateSession = vi.fn();

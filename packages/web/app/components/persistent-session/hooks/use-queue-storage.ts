@@ -49,10 +49,6 @@ export function useQueueStorage({ activeSession, setActiveSession }: UseQueueSto
   // Ref for debounced IndexedDB save timer
   const saveQueueTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Ref for activeSession so callbacks have stable identity
-  const activeSessionRef = useRef(activeSession);
-  activeSessionRef.current = activeSession;
-
   // Clean up old queues from IndexedDB on mount
   useEffect(() => {
     cleanupOldQueues(30).catch((error) => {
@@ -142,7 +138,7 @@ export function useQueueStorage({ activeSession, setActiveSession }: UseQueueSto
       boardDetails: BoardDetails,
     ) => {
       // Don't store local queue if party mode is active
-      if (activeSessionRef.current) return;
+      if (activeSession) return;
 
       setLocalQueue(newQueue);
       setLocalCurrentClimbQueueItem(newCurrentItem);
@@ -151,7 +147,7 @@ export function useQueueStorage({ activeSession, setActiveSession }: UseQueueSto
 
       debouncedSaveToIndexedDB(newQueue, newCurrentItem, boardPath, boardDetails);
     },
-    [debouncedSaveToIndexedDB],
+    [activeSession, debouncedSaveToIndexedDB],
   );
 
   // Storage-only persistence: schedules debounced IndexedDB write without
@@ -164,10 +160,10 @@ export function useQueueStorage({ activeSession, setActiveSession }: UseQueueSto
       boardPath: string,
       boardDetails: BoardDetails,
     ) => {
-      if (activeSessionRef.current) return;
+      if (activeSession) return;
       debouncedSaveToIndexedDB(newQueue, newCurrentItem, boardPath, boardDetails);
     },
-    [debouncedSaveToIndexedDB],
+    [activeSession, debouncedSaveToIndexedDB],
   );
 
   const clearLocalQueue = useCallback(() => {
@@ -185,7 +181,7 @@ export function useQueueStorage({ activeSession, setActiveSession }: UseQueueSto
 
   // Load stored queue from IndexedDB
   const loadStoredQueue = useCallback(async (boardPath: string): Promise<StoredQueueState | null> => {
-    if (activeSessionRef.current) {
+    if (activeSession) {
       if (DEBUG) console.log('[PersistentSession] Skipping queue load - party session active');
       return null;
     }
@@ -206,7 +202,7 @@ export function useQueueStorage({ activeSession, setActiveSession }: UseQueueSto
       setIsLocalQueueLoaded(true);
       return null;
     }
-  }, []);
+  }, [activeSession]);
 
   return {
     localQueue,

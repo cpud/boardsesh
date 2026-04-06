@@ -18,18 +18,6 @@ vi.mock('@/app/components/graphql-queue', () => ({
     setCurrentClimb: mockSetCurrentClimb,
     currentClimb: mockCurrentClimb,
   }),
-  useOptionalQueueActions: () => ({
-    setCurrentClimb: mockSetCurrentClimb,
-  }),
-  useOptionalQueueData: () => ({
-    currentClimb: mockCurrentClimb,
-  }),
-  useQueueData: () => ({
-    currentClimb: mockCurrentClimb,
-  }),
-  useQueueActions: () => ({
-    setCurrentClimb: mockSetCurrentClimb,
-  }),
 }));
 
 vi.mock('@/app/theme/theme-config', () => ({
