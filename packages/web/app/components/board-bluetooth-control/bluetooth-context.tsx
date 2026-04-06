@@ -12,7 +12,7 @@ interface BluetoothContextValue {
   loading: boolean;
   connect: (initialFrames?: string, mirrored?: boolean) => Promise<boolean>;
   disconnect: () => void;
-  sendFramesToBoard: (frames: string, mirrored?: boolean) => Promise<boolean | undefined>;
+  sendFramesToBoard: (frames: string, mirrored?: boolean, signal?: AbortSignal) => Promise<boolean | undefined>;
   isBluetoothSupported: boolean;
   isIOS: boolean;
 }
@@ -29,28 +29,30 @@ function BluetoothAutoSender({
   sendFramesToBoard,
   layoutName,
 }: {
-  sendFramesToBoard: (frames: string, mirrored?: boolean) => Promise<boolean | undefined>;
+  sendFramesToBoard: (frames: string, mirrored?: boolean, signal?: AbortSignal) => Promise<boolean | undefined>;
   layoutName: string;
 }) {
   const { currentClimbQueueItem } = useCurrentClimb();
-  const sendVersionRef = useRef(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!currentClimbQueueItem) return;
 
-    // Increment version to cancel any in-flight stale sends
-    sendVersionRef.current += 1;
-    const version = sendVersionRef.current;
+    // Abort any in-flight BLE write from the previous climb
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     const sendClimb = async () => {
       try {
         const result = await sendFramesToBoard(
           currentClimbQueueItem.climb.frames,
           !!currentClimbQueueItem.climb.mirrored,
+          controller.signal,
         );
 
-        // Skip analytics if a newer send has started (rapid swiping)
-        if (sendVersionRef.current !== version) return;
+        // Skip analytics if this send was aborted (rapid swiping)
+        if (controller.signal.aborted) return;
 
         if (result === true) {
           track('Climb Sent to Board Success', {
@@ -64,7 +66,7 @@ function BluetoothAutoSender({
           });
         }
       } catch (error) {
-        if (sendVersionRef.current !== version) return;
+        if (controller.signal.aborted) return;
         console.error('Error sending climb to board:', error);
         track('Climb Sent to Board Failure', {
           climbUuid: currentClimbQueueItem.climb?.uuid,
@@ -73,6 +75,10 @@ function BluetoothAutoSender({
       }
     };
     sendClimb();
+
+    return () => {
+      controller.abort();
+    };
   }, [currentClimbQueueItem, sendFramesToBoard, layoutName]);
 
   return null;

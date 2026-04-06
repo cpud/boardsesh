@@ -158,7 +158,7 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
     }
   }
 
-  async write(data: Uint8Array): Promise<void> {
+  async write(data: Uint8Array, signal?: AbortSignal): Promise<void> {
     if (!this.deviceId) {
       throw new Error('Not connected');
     }
@@ -173,6 +173,11 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
     const hexChunkSize = chunkSize * 2;
 
     for (let i = 0; i < fullHex.length; i += hexChunkSize) {
+      // Check abort signal before each chunk to stop sending stale climbs
+      if (signal?.aborted) {
+        throw new DOMException('Write aborted', 'AbortError');
+      }
+
       // Add a small delay between chunks when using the minimum MTU
       // to avoid overwhelming the CoreBluetooth write queue
       if (needsPacing && i > 0) {

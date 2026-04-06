@@ -6,6 +6,11 @@ import type { BluetoothAdapter } from './types';
 type AdapterFactory = () => Promise<BluetoothAdapter>;
 let cachedFactory: AdapterFactory | null = null;
 
+/** @internal Reset cached factory — only for tests */
+export function _resetFactoryCache(): void {
+  cachedFactory = null;
+}
+
 export async function createBluetoothAdapter(): Promise<BluetoothAdapter> {
   if (cachedFactory) {
     return cachedFactory();
