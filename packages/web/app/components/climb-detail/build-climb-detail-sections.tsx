@@ -19,8 +19,11 @@ interface BuildClimbDetailSectionsProps {
   betaLinks?: BetaLink[];
   currentClimbDifficulty?: string;
   boardName?: string;
-  /** When false, skips data fetching and returns empty sections. Used to defer
-   *  below-fold work until after the drawer open animation completes. */
+  /** When false, returns empty sections immediately. Used to defer below-fold
+   *  rendering until after the drawer open animation completes.
+   *  Note: only the beta-links network fetch is gated by this flag (via the
+   *  `enabled` option on `useQuery`). `useLogbookSummary` is always called
+   *  unconditionally because it reads from in-memory context — no network cost. */
   enabled?: boolean;
 }
 
