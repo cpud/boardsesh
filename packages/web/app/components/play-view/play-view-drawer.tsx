@@ -280,14 +280,17 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   const isMirrored = !!currentClimb?.mirrored;
 
   // Keep content mounted during the close animation so the slide-out is smooth.
-  // `showContent` stays true while isOpen OR while the exit transition is running.
-  const [showContent, setShowContent] = useState(isOpen);
+  // `isOpen` drives immediate rendering; `keepMountedDuringClose` keeps content
+  // visible until the exit transition completes so the slide-out animates content.
+  const [keepMountedDuringClose, setKeepMountedDuringClose] = useState(false);
+  const showContent = isOpen || keepMountedDuringClose;
+
   useEffect(() => {
-    if (isOpen) setShowContent(true);
+    if (isOpen) setKeepMountedDuringClose(true);
   }, [isOpen]);
 
   const handleTransitionEnd = useCallback((open: boolean) => {
-    if (!open) setShowContent(false);
+    if (!open) setKeepMountedDuringClose(false);
   }, []);
 
   return (

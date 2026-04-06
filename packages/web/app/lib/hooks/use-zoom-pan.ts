@@ -183,6 +183,7 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
       drag: {
         from: () => [translateRef.current.x, translateRef.current.y],
         filterTaps: true,
+        pointer: { capture: false },
       },
       wheel: {
         eventOptions: { passive: false },
