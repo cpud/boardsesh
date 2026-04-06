@@ -288,20 +288,6 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
 
   const isMirrored = !!currentClimb?.mirrored;
 
-  // Keep content mounted during the close animation so the slide-out is smooth.
-  // `isOpen` drives immediate rendering; `keepMountedDuringClose` keeps content
-  // visible until the exit transition completes so the slide-out animates content.
-  const [keepMountedDuringClose, setKeepMountedDuringClose] = useState(false);
-  const showContent = isOpen || keepMountedDuringClose;
-
-  useEffect(() => {
-    if (isOpen) setKeepMountedDuringClose(true);
-  }, [isOpen]);
-
-  const handleTransitionEnd = useCallback((open: boolean) => {
-    if (!open) setKeepMountedDuringClose(false);
-  }, []);
-
   return (
     <>
     <SwipeableDrawer
@@ -310,7 +296,6 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
       fullHeight
       open={isOpen}
       onClose={handleClose}
-      onTransitionEnd={handleTransitionEnd}
       keepMounted
       swipeEnabled={!isActionsOpen && !isQueueOpen && !isPlaylistSelectorOpen}
       showDragHandle={true}
@@ -319,7 +304,6 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
         wrapper: { height: '100%', backgroundColor: 'var(--semantic-background)' },
       }}
     >
-      {showContent ? (<>
       <div className={styles.drawerContent}>
         {currentClimb ? (
           <PlayDrawerContent
@@ -516,7 +500,6 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
             boardDetails={boardDetails}
           />
         )}
-      </>) : null}
 
         {/* Queue list drawer */}
         <SwipeableDrawer
