@@ -46,10 +46,9 @@ import { renderBoard } from '@/app/lib/board-render-worker/worker-manager';
 
 
 /** Window with optional requestIdleCallback (not available in all browsers). */
-interface WindowWithIdleCallback extends Window {
-  requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
-  cancelIdleCallback?: (id: number) => void;
-}
+type WindowWithIdleCallback = Window & {
+  requestIdleCallback?: ((cb: () => void, opts?: { timeout: number }) => number) | undefined;
+};
 
 const QUEUE_DRAWER_STYLES = {
   wrapper: {
@@ -317,7 +316,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
     const w = window as WindowWithIdleCallback;
     if (w.requestIdleCallback) {
       const id = w.requestIdleCallback(setReady, { timeout: 2000 });
-      return () => w.cancelIdleCallback?.(id);
+      return () => window.cancelIdleCallback(id);
     }
     const id = setTimeout(setReady, 100);
     return () => clearTimeout(id);
@@ -360,13 +359,21 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   // Pre-warm WASM board render whenever the current climb changes (even when
   // drawer is closed). The worker runs off-thread so this has zero main-thread
   // cost. When the drawer opens, BoardCanvasRenderer gets an instant cache hit.
+  //
+  // Deps use optional chaining (currentClimb?.frames, currentClimb?.mirrored)
+  // intentionally: we only care about re-running when the climb's visual data
+  // changes, not when the entire currentClimb object reference changes. The
+  // guard `if (currentClimb)` inside the effect body ensures safe access.
+  const currentFrames = currentClimb?.frames;
+  const currentMirrored = currentClimb?.mirrored;
   useEffect(() => {
     if (currentClimb) {
       renderBoard({ boardDetails, frames: currentClimb.frames, mirrored: !!currentClimb.mirrored }).catch((e: unknown) => {
         if (process.env.NODE_ENV === 'development') console.debug('Pre-warm render failed:', e);
       });
     }
-  }, [currentClimb?.frames, currentClimb?.mirrored, boardDetails]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- see comment above
+  }, [currentFrames, currentMirrored, boardDetails]);
 
   return (
     <>

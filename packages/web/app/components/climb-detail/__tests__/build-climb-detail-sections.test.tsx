@@ -34,7 +34,7 @@ vi.mock('@/app/components/charts/climb-analytics', () => ({
 // Test helpers
 // ---------------------------------------------------------------------------
 
-const MOCK_CLIMB: Climb = {
+const MOCK_CLIMB = {
   uuid: 'test-climb-uuid',
   name: 'Test Climb',
   frames: 'p1r12',
@@ -51,8 +51,11 @@ const MOCK_CLIMB: Climb = {
   hsm: 0,
   difficulty: '5',
   quality_average: '3.0',
+  stars: 3,
   stars_average: 3,
   difficulty_average: '5',
+  difficulty_error: '0.00',
+  benchmark_difficulty: null,
   ascensionist_count: 10,
   display_difficulty: 'V5',
   boulder_name: 'Test Climb',
@@ -60,7 +63,7 @@ const MOCK_CLIMB: Climb = {
   repeat_count: 5,
   votes_count: 8,
   draft_difficulty_display: 'V5',
-} as Climb;
+} as unknown as Climb;
 
 function createWrapper() {
   const queryClient = new QueryClient({
