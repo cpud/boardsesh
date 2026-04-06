@@ -6,7 +6,7 @@ import FacebookProvider from "next-auth/providers/facebook";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { getDb } from "@/app/lib/db/db";
 import * as schema from "@/app/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { verifyNativeOAuthTransferToken } from "@/app/lib/auth/native-oauth-transfer";
 
@@ -19,6 +19,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
     })
   );
 }
@@ -30,6 +31,7 @@ if (process.env.APPLE_ID && process.env.APPLE_SECRET) {
       clientId: process.env.APPLE_ID,
       clientSecret: process.env.APPLE_SECRET,
       checks: ["pkce"],
+      allowDangerousEmailAccountLinking: true,
     })
   );
 }
@@ -40,6 +42,7 @@ if (process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET) {
     FacebookProvider({
       clientId: process.env.FACEBOOK_CLIENT_ID,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
     })
   );
 }
@@ -199,7 +202,26 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
       // OAuth providers - allow sign in (emails are pre-verified by provider)
-      if (account?.provider !== "credentials") {
+      // Skip native-oauth (transfer token flow) — email is already verified
+      if (account?.provider !== "credentials" && account?.provider !== "native-oauth") {
+        // Mark email as verified if not already (provider already verified it)
+        if (user.id) {
+          try {
+            const db = getDb();
+            await db
+              .update(schema.users)
+              .set({ emailVerified: new Date() })
+              .where(and(eq(schema.users.id, user.id), isNull(schema.users.emailVerified)));
+          } catch (error) {
+            // Best-effort — don't block sign-in if this fails
+            console.warn("Failed to mark email as verified during OAuth sign-in:", error);
+          }
+        }
+        return true;
+      }
+
+      // Native OAuth transfer tokens — already authenticated, allow through
+      if (account?.provider === "native-oauth") {
         return true;
       }
 
