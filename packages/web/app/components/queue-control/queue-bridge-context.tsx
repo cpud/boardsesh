@@ -217,6 +217,7 @@ function usePersistentSessionQueueAdapter(): {
       getNextClimbQueueItem,
       getPreviousClimbQueueItem,
       setQueue,
+      disconnect: ps.deactivateSession,
       startSession: noopStartSession,
       joinSession: noopJoinSession,
       endSession: ps.deactivateSession,
@@ -233,9 +234,9 @@ function usePersistentSessionQueueAdapter(): {
       getNextClimbQueueItem,
       getPreviousClimbQueueItem,
       setQueue,
+      ps.deactivateSession,
       noopStartSession,
       noopJoinSession,
-      ps.deactivateSession,
     ],
   );
 
@@ -343,6 +344,7 @@ export function QueueBridgeProvider({ children }: { children: React.ReactNode })
       getNextClimbQueueItem: ctx.getNextClimbQueueItem,
       getPreviousClimbQueueItem: ctx.getPreviousClimbQueueItem,
       setQueue: ctx.setQueue,
+      disconnect: ctx.disconnect,
       startSession: ctx.startSession,
       joinSession: ctx.joinSession,
       endSession: ctx.endSession,
