@@ -61,8 +61,8 @@ import {
   QueueBridgeInjector,
   useQueueBridgeBoardInfo,
 } from '../queue-bridge-context';
-import { QueueContext, QueueActionsContext } from '../../graphql-queue/QueueContext';
-import type { GraphQLQueueContextType, GraphQLQueueActionsType } from '../../graphql-queue/QueueContext';
+import { QueueContext, QueueActionsContext, QueueDataContext } from '../../graphql-queue/QueueContext';
+import type { GraphQLQueueContextType, GraphQLQueueActionsType, GraphQLQueueDataType } from '../../graphql-queue/QueueContext';
 import type { BoardDetails, Climb, Angle } from '@/app/lib/types';
 import type { ClimbQueueItem } from '../types';
 
@@ -224,6 +224,67 @@ function useTestQueueContext() {
  */
 function useTestQueueActions() {
   return React.useContext(QueueActionsContext) as GraphQLQueueActionsType | undefined;
+}
+
+/**
+ * Hook to read the QueueDataContext value exposed by QueueBridgeProvider.
+ */
+function useTestQueueData() {
+  return React.useContext(QueueDataContext) as GraphQLQueueDataType | undefined;
+}
+
+/** Extract the actions slice from a combined context (simulates GraphQLQueueProvider's actionsValue) */
+function extractActions(ctx: GraphQLQueueContextType): GraphQLQueueActionsType {
+  return {
+    addToQueue: ctx.addToQueue,
+    removeFromQueue: ctx.removeFromQueue,
+    setCurrentClimb: ctx.setCurrentClimb,
+    setCurrentClimbQueueItem: ctx.setCurrentClimbQueueItem,
+    setClimbSearchParams: ctx.setClimbSearchParams,
+    setCountSearchParams: ctx.setClimbSearchParams,
+    mirrorClimb: ctx.mirrorClimb,
+    fetchMoreClimbs: ctx.fetchMoreClimbs,
+    getNextClimbQueueItem: ctx.getNextClimbQueueItem,
+    getPreviousClimbQueueItem: ctx.getPreviousClimbQueueItem,
+    setQueue: ctx.setQueue,
+    startSession: ctx.startSession,
+    joinSession: ctx.joinSession,
+    endSession: ctx.endSession,
+    dismissSessionSummary: ctx.dismissSessionSummary,
+    disconnect: ctx.disconnect,
+  };
+}
+
+/** Extract the data slice from a combined context (simulates GraphQLQueueProvider's dataValue) */
+function extractData(ctx: GraphQLQueueContextType): GraphQLQueueDataType {
+  return {
+    queue: ctx.queue,
+    currentClimbQueueItem: ctx.currentClimbQueueItem,
+    currentClimb: ctx.currentClimb,
+    climbSearchParams: ctx.climbSearchParams,
+    climbSearchResults: ctx.climbSearchResults,
+    suggestedClimbs: ctx.suggestedClimbs,
+    totalSearchResultCount: ctx.totalSearchResultCount,
+    hasMoreResults: ctx.hasMoreResults,
+    isFetchingClimbs: ctx.isFetchingClimbs,
+    isFetchingNextPage: ctx.isFetchingNextPage,
+    hasDoneFirstFetch: ctx.hasDoneFirstFetch,
+    viewOnlyMode: ctx.viewOnlyMode,
+    connectionState: ctx.connectionState,
+    canMutate: ctx.canMutate,
+    parsedParams: ctx.parsedParams,
+    isSessionActive: ctx.isSessionActive,
+    sessionId: ctx.sessionId,
+    sessionSummary: ctx.sessionSummary,
+    sessionGoal: ctx.sessionGoal,
+    users: ctx.users,
+    clientId: ctx.clientId,
+    isLeader: ctx.isLeader,
+    isBackendMode: ctx.isBackendMode,
+    hasConnected: ctx.hasConnected,
+    connectionError: ctx.connectionError,
+    isDisconnected: ctx.isDisconnected,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -446,14 +507,20 @@ describe('queue-bridge-context', () => {
      * the injector reads from the inner QueueContext (board route level).
      */
     function renderInjector(boardRouteCtx: GraphQLQueueContextType | undefined) {
+      const actions = boardRouteCtx ? extractActions(boardRouteCtx) : undefined;
+      const data = boardRouteCtx ? extractData(boardRouteCtx) : undefined;
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <QueueBridgeProvider>
           {/* Hook (children) reads bridge's QueueContext = effectiveContext */}
           {children}
-          {/* Inner provider simulates GraphQLQueueProvider on board route */}
-          <QueueContext.Provider value={boardRouteCtx}>
-            <QueueBridgeInjector boardDetails={bd} angle={angle} />
-          </QueueContext.Provider>
+          {/* Inner providers simulate GraphQLQueueProvider on board route */}
+          <QueueActionsContext.Provider value={actions}>
+            <QueueDataContext.Provider value={data}>
+              <QueueContext.Provider value={boardRouteCtx}>
+                <QueueBridgeInjector boardDetails={bd} angle={angle} />
+              </QueueContext.Provider>
+            </QueueDataContext.Provider>
+          </QueueActionsContext.Provider>
         </QueueBridgeProvider>
       );
 
@@ -503,14 +570,22 @@ describe('queue-bridge-context', () => {
       // Use a mutable variable so we can change the value without remounting
       let boardRouteCtx: GraphQLQueueContextType | undefined = fakeCtx1;
 
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <QueueBridgeProvider>
-          {children}
-          <QueueContext.Provider value={boardRouteCtx}>
-            <QueueBridgeInjector boardDetails={bd} angle={angle} />
-          </QueueContext.Provider>
-        </QueueBridgeProvider>
-      );
+      const wrapper = ({ children }: { children: React.ReactNode }) => {
+        const actions = boardRouteCtx ? extractActions(boardRouteCtx) : undefined;
+        const data = boardRouteCtx ? extractData(boardRouteCtx) : undefined;
+        return (
+          <QueueBridgeProvider>
+            {children}
+            <QueueActionsContext.Provider value={actions}>
+              <QueueDataContext.Provider value={data}>
+                <QueueContext.Provider value={boardRouteCtx}>
+                  <QueueBridgeInjector boardDetails={bd} angle={angle} />
+                </QueueContext.Provider>
+              </QueueDataContext.Provider>
+            </QueueActionsContext.Provider>
+          </QueueBridgeProvider>
+        );
+      };
 
       const { result, rerender } = renderHook(
         () => ({
@@ -533,13 +608,19 @@ describe('queue-bridge-context', () => {
     it('exposes disconnect via useQueueActions when context is injected', () => {
       const mockDisconnect = vi.fn();
       const fakeCtx = createFakeQueueContext({ disconnect: mockDisconnect });
+      const actions = extractActions(fakeCtx);
+      const data = extractData(fakeCtx);
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <QueueBridgeProvider>
           {children}
-          <QueueContext.Provider value={fakeCtx}>
-            <QueueBridgeInjector boardDetails={bd} angle={angle} />
-          </QueueContext.Provider>
+          <QueueActionsContext.Provider value={actions}>
+            <QueueDataContext.Provider value={data}>
+              <QueueContext.Provider value={fakeCtx}>
+                <QueueBridgeInjector boardDetails={bd} angle={angle} />
+              </QueueContext.Provider>
+            </QueueDataContext.Provider>
+          </QueueActionsContext.Provider>
         </QueueBridgeProvider>
       );
 
@@ -555,14 +636,22 @@ describe('queue-bridge-context', () => {
       // Use a mutable variable so we can change the value without remounting
       let boardRouteCtx: GraphQLQueueContextType | undefined = undefined;
 
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <QueueBridgeProvider>
-          {children}
-          <QueueContext.Provider value={boardRouteCtx}>
-            <QueueBridgeInjector boardDetails={bd} angle={angle} />
-          </QueueContext.Provider>
-        </QueueBridgeProvider>
-      );
+      const wrapper = ({ children }: { children: React.ReactNode }) => {
+        const actions = boardRouteCtx ? extractActions(boardRouteCtx) : undefined;
+        const data = boardRouteCtx ? extractData(boardRouteCtx) : undefined;
+        return (
+          <QueueBridgeProvider>
+            {children}
+            <QueueActionsContext.Provider value={actions}>
+              <QueueDataContext.Provider value={data}>
+                <QueueContext.Provider value={boardRouteCtx}>
+                  <QueueBridgeInjector boardDetails={bd} angle={angle} />
+                </QueueContext.Provider>
+              </QueueDataContext.Provider>
+            </QueueActionsContext.Provider>
+          </QueueBridgeProvider>
+        );
+      };
 
       const { result, rerender } = renderHook(
         () => ({
@@ -584,6 +673,72 @@ describe('queue-bridge-context', () => {
       expect(result.current.boardInfo.hasActiveQueue).toBe(true);
       expect(result.current.boardInfo.boardDetails).toEqual(bd);
       expect(result.current.queueCtx).toBe(fakeCtx);
+    });
+
+    it('keeps QueueActionsContext stable when only data changes (actions identity unchanged)', () => {
+      // Shared stable actions object — simulates GraphQLQueueProvider's latestRef pattern
+      const stableActions: GraphQLQueueActionsType = {
+        addToQueue: vi.fn(),
+        removeFromQueue: vi.fn(),
+        setCurrentClimb: vi.fn(),
+        setCurrentClimbQueueItem: vi.fn(),
+        setClimbSearchParams: vi.fn(),
+        setCountSearchParams: vi.fn(),
+        mirrorClimb: vi.fn(),
+        fetchMoreClimbs: vi.fn(),
+        getNextClimbQueueItem: vi.fn(() => null),
+        getPreviousClimbQueueItem: vi.fn(() => null),
+        setQueue: vi.fn(),
+        startSession: vi.fn(async () => ''),
+        joinSession: vi.fn(async () => {}),
+        endSession: vi.fn(),
+        dismissSessionSummary: vi.fn(),
+        disconnect: vi.fn(),
+      };
+
+      const fakeCtx1 = createFakeQueueContext({ queue: [], ...stableActions });
+      const data1 = extractData(fakeCtx1);
+      const fakeCtx2 = createFakeQueueContext({ queue: [createTestQueueItem()], ...stableActions });
+      const data2 = extractData(fakeCtx2);
+
+      let currentCtx = fakeCtx1;
+      let currentData: GraphQLQueueDataType = data1;
+
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <QueueBridgeProvider>
+          {children}
+          <QueueActionsContext.Provider value={stableActions}>
+            <QueueDataContext.Provider value={currentData}>
+              <QueueContext.Provider value={currentCtx}>
+                <QueueBridgeInjector boardDetails={bd} angle={angle} />
+              </QueueContext.Provider>
+            </QueueDataContext.Provider>
+          </QueueActionsContext.Provider>
+        </QueueBridgeProvider>
+      );
+
+      const { result, rerender } = renderHook(
+        () => ({
+          actions: useTestQueueActions(),
+          data: useTestQueueData(),
+        }),
+        { wrapper },
+      );
+
+      const actionsRef1 = result.current.actions;
+      expect(actionsRef1).toBeDefined();
+
+      // Change only data (queue items changed), keep same actions object
+      currentCtx = fakeCtx2;
+      currentData = data2;
+      rerender();
+
+      const actionsRef2 = result.current.actions;
+      // The actions context value should be the SAME reference since actions identity didn't change
+      expect(actionsRef2).toBe(actionsRef1);
+
+      // But data should have changed
+      expect(result.current.data?.queue).toHaveLength(1);
     });
   });
 });
