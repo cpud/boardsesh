@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import ButtonBase from '@mui/material/ButtonBase';
 import LoginOutlined from '@mui/icons-material/LoginOutlined';
+import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
 import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
 import SessionCreationForm from './session-creation-form';
 import type { SessionCreationFormData } from './session-creation-form';
@@ -40,6 +42,7 @@ export default function StartSeshDrawer({ open, onClose, boardConfigs }: StartSe
     localQueue,
     localCurrentClimbQueueItem,
     localBoardPath,
+    localBoardDetails,
   } = usePersistentSession();
   const { boards, isLoading: isLoadingBoards, error: boardsError } = useMyBoards(open);
 
@@ -49,6 +52,46 @@ export default function StartSeshDrawer({ open, onClose, boardConfigs }: StartSe
   const { openAuthModal } = useAuthModal();
   const [showBoardDrawer, setShowBoardDrawer] = useState(false);
   const [formKey, setFormKey] = useState(0);
+  const [boardSelectorExpanded, setBoardSelectorExpanded] = useState(false);
+  const hasAutoSelectedRef = useRef(false);
+
+  // Reset auto-selection tracking when drawer closes
+  useEffect(() => {
+    if (!open) {
+      hasAutoSelectedRef.current = false;
+    }
+  }, [open]);
+
+  // Auto-select the current board when the drawer opens
+  useEffect(() => {
+    if (!open || boards.length === 0 || hasAutoSelectedRef.current) return;
+
+    let match: (typeof boards)[number] | undefined;
+
+    // Strategy 1: Match by slug from /b/{slug} routes
+    if (localBoardPath) {
+      const basePath = getBaseBoardPath(localBoardPath);
+      match = boards.find((b) => `/b/${b.slug}` === basePath);
+    }
+
+    // Strategy 2: Match by numeric board identity from localBoardDetails
+    // Handles generic routes like /kilter/original/16x12/screw_bolt/40/list
+    if (!match && localBoardDetails) {
+      const sortedLocalSetIds = [...localBoardDetails.set_ids].sort((a, b) => a - b).join(',');
+      match = boards.find(
+        (b) =>
+          b.boardType === localBoardDetails.board_name &&
+          b.layoutId === localBoardDetails.layout_id &&
+          b.sizeId === localBoardDetails.size_id &&
+          b.setIds.split(',').map(Number).sort((a, b) => a - b).join(',') === sortedLocalSetIds,
+      );
+    }
+
+    hasAutoSelectedRef.current = true;
+    if (match) {
+      setSelectedBoard(match);
+    }
+  }, [open, boards, localBoardPath, localBoardDetails]);
 
   const isLoggedIn = status === 'authenticated';
 
@@ -57,6 +100,7 @@ export default function StartSeshDrawer({ open, onClose, boardConfigs }: StartSe
     setSelectedBoard(null);
     setSelectedCustomPath(null);
     setSelectedCustomConfig(null);
+    setBoardSelectorExpanded(false);
     setFormKey((k) => k + 1);
   }, [onClose]);
 
@@ -64,6 +108,7 @@ export default function StartSeshDrawer({ open, onClose, boardConfigs }: StartSe
     setSelectedBoard(board);
     setSelectedCustomPath(null);
     setSelectedCustomConfig(null);
+    setBoardSelectorExpanded(false);
   };
 
   const handleCustomSelect = (url: string, config?: StoredBoardConfig) => {
@@ -71,6 +116,7 @@ export default function StartSeshDrawer({ open, onClose, boardConfigs }: StartSe
     setSelectedCustomConfig(config ?? null);
     setSelectedBoard(null);
     setShowBoardDrawer(false);
+    setBoardSelectorExpanded(false);
   };
 
   const handleSubmit = async (formData: SessionCreationFormData) => {
@@ -118,31 +164,61 @@ export default function StartSeshDrawer({ open, onClose, boardConfigs }: StartSe
     }
   };
 
+  const hasSelection = selectedBoard || selectedCustomConfig;
+  const selectedName = selectedBoard?.name ?? selectedCustomConfig?.name;
+
   const boardSelector = (
     <Box>
-      <BoardScrollSection title="Select a board" loading={isLoadingBoards}>
-        <CreateBoardCard
-          onClick={() => setShowBoardDrawer(true)}
-          label="Custom"
-        />
-        {selectedCustomConfig && (
-          <BoardScrollCard
-            key={`custom-${selectedCustomConfig.name}`}
-            storedConfig={selectedCustomConfig}
-            boardConfigs={boardConfigs}
-            selected
+      {hasSelection && !boardSelectorExpanded ? (
+        <ButtonBase
+          onClick={() => setBoardSelectorExpanded(true)}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+            px: 2,
+            py: 1.5,
+            borderRadius: 2,
+            bgcolor: 'action.hover',
+            textAlign: 'left',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <DashboardOutlined sx={{ fontSize: 20, color: 'text.secondary' }} />
+            <Typography variant="body2" fontWeight={600}>
+              {selectedName}
+            </Typography>
+          </Box>
+          <Typography variant="body2" color="primary" fontWeight={500}>
+            Change
+          </Typography>
+        </ButtonBase>
+      ) : (
+        <BoardScrollSection title="Select a board" loading={isLoadingBoards}>
+          <CreateBoardCard
             onClick={() => setShowBoardDrawer(true)}
+            label="Custom"
           />
-        )}
-        {boards.map((board) => (
-          <BoardScrollCard
-            key={board.uuid}
-            userBoard={board}
-            selected={selectedBoard?.uuid === board.uuid}
-            onClick={() => handleBoardSelect(board)}
-          />
-        ))}
-      </BoardScrollSection>
+          {selectedCustomConfig && (
+            <BoardScrollCard
+              key={`custom-${selectedCustomConfig.name}`}
+              storedConfig={selectedCustomConfig}
+              boardConfigs={boardConfigs}
+              selected
+              onClick={() => setShowBoardDrawer(true)}
+            />
+          )}
+          {boards.map((board) => (
+            <BoardScrollCard
+              key={board.uuid}
+              userBoard={board}
+              selected={selectedBoard?.uuid === board.uuid}
+              onClick={() => handleBoardSelect(board)}
+            />
+          ))}
+        </BoardScrollSection>
+      )}
       {boardsError && (
         <Typography variant="body2" color="error" sx={{ mt: 0.5 }}>
           {boardsError}
