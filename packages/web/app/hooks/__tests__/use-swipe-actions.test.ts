@@ -455,7 +455,7 @@ describe('useSwipeActions', () => {
 
     // Content should be at peek offset
     expect(mockContent.style.transform).toBe('translateX(-76px)');
-    expect(mockContent.style.transition).toBe('transform 150ms ease');
+    expect(mockContent.style.transition).toBe('transform 200ms ease-out');
     // Right action layer should be fully visible
     expect(mockRightAction.style.opacity).toBe('1');
     expect(mockRightAction.style.visibility).toBe('visible');
