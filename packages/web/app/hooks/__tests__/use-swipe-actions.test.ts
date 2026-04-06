@@ -139,7 +139,7 @@ describe('useSwipeActions', () => {
     expect(mockReset).toHaveBeenCalled();
   });
 
-  it('swipeLeftConfirmed becomes true immediately and resets after 600ms', () => {
+  it('swipeLeftConfirmed becomes true immediately and resets after 2800ms', () => {
     const options = createDefaultOptions();
     const { result } = renderHook(() => useSwipeActions(options));
 
@@ -164,13 +164,13 @@ describe('useSwipeActions', () => {
     expect(options.onSwipeLeft).toHaveBeenCalledTimes(1);
     expect(result.current.swipeLeftConfirmed).toBe(true);
 
-    // Still active before 600ms
+    // Still active before 2800ms
     act(() => {
-      vi.advanceTimersByTime(500);
+      vi.advanceTimersByTime(2700);
     });
     expect(result.current.swipeLeftConfirmed).toBe(true);
 
-    // Resets after 600ms
+    // Resets after 2800ms
     act(() => {
       vi.advanceTimersByTime(100);
     });
@@ -462,7 +462,7 @@ describe('useSwipeActions', () => {
 
     // After confirmation timer, content snaps back
     act(() => {
-      vi.advanceTimersByTime(600);
+      vi.advanceTimersByTime(2800);
     });
 
     expect(mockContent.style.transform).toBe('translateX(0px)');
