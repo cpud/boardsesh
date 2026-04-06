@@ -114,7 +114,7 @@ describe('authOptions.callbacks.signIn', () => {
     it('marks email as verified for new user and returns true', async () => {
       const result = await callSignIn({
         user: { id: 'user-1', email: 'user@example.com', name: 'Test' },
-        account: { provider: 'google', type: 'oauth' },
+        account: { provider: 'google', type: 'oauth', providerAccountId: 'g-123' },
       });
 
       expect(result).toBe(true);
@@ -124,8 +124,8 @@ describe('authOptions.callbacks.signIn', () => {
 
     it('skips DB update when user has no id', async () => {
       const result = await callSignIn({
-        user: { email: 'user@example.com', name: 'Test' },
-        account: { provider: 'google', type: 'oauth' },
+        user: { id: '', email: 'user@example.com', name: 'Test', emailVerified: null },
+        account: { provider: 'google', type: 'oauth', providerAccountId: 'g-456' },
       });
 
       expect(result).toBe(true);
@@ -138,7 +138,7 @@ describe('authOptions.callbacks.signIn', () => {
 
       const result = await callSignIn({
         user: { id: 'user-1', email: 'user@example.com' },
-        account: { provider: 'google', type: 'oauth' },
+        account: { provider: 'google', type: 'oauth', providerAccountId: 'g-789' },
       });
 
       expect(result).toBe(true);
@@ -154,7 +154,7 @@ describe('authOptions.callbacks.signIn', () => {
 
       await callSignIn({
         user: { id: 'user-1', email: 'user@example.com' },
-        account: { provider: 'google', type: 'oauth' },
+        account: { provider: 'google', type: 'oauth', providerAccountId: 'g-101' },
       });
 
       expect(isNull).toHaveBeenCalledWith('users.emailVerified');
@@ -165,7 +165,7 @@ describe('authOptions.callbacks.signIn', () => {
     it('marks email as verified and returns true', async () => {
       const result = await callSignIn({
         user: { id: 'user-2', email: 'apple@example.com' },
-        account: { provider: 'apple', type: 'oauth' },
+        account: { provider: 'apple', type: 'oauth', providerAccountId: 'a-123' },
       });
 
       expect(result).toBe(true);
@@ -177,7 +177,7 @@ describe('authOptions.callbacks.signIn', () => {
     it('marks email as verified and returns true', async () => {
       const result = await callSignIn({
         user: { id: 'user-3', email: 'fb@example.com' },
-        account: { provider: 'facebook', type: 'oauth' },
+        account: { provider: 'facebook', type: 'oauth', providerAccountId: 'fb-123' },
       });
 
       expect(result).toBe(true);
@@ -193,7 +193,7 @@ describe('authOptions.callbacks.signIn', () => {
     it('returns true without any DB operations', async () => {
       const result = await callSignIn({
         user: { id: 'user-1', email: 'user@example.com' },
-        account: { provider: 'native-oauth', type: 'credentials' },
+        account: { provider: 'native-oauth', type: 'credentials', providerAccountId: 'no-123' },
       });
 
       expect(result).toBe(true);
@@ -210,7 +210,7 @@ describe('authOptions.callbacks.signIn', () => {
     it('returns false when user has no email', async () => {
       const result = await callSignIn({
         user: { id: 'user-1' },
-        account: { provider: 'credentials', type: 'credentials' },
+        account: { provider: 'credentials', type: 'credentials', providerAccountId: 'cred-123' },
       });
 
       expect(result).toBe(false);
@@ -222,7 +222,7 @@ describe('authOptions.callbacks.signIn', () => {
 
       const result = await callSignIn({
         user: { id: 'user-1', email: 'user@example.com' },
-        account: { provider: 'credentials', type: 'credentials' },
+        account: { provider: 'credentials', type: 'credentials', providerAccountId: 'cred-123' },
       });
 
       expect(result).toBe(true);
@@ -236,7 +236,7 @@ describe('authOptions.callbacks.signIn', () => {
 
       const result = await callSignIn({
         user: { id: 'user-1', email: 'user@example.com' },
-        account: { provider: 'credentials', type: 'credentials' },
+        account: { provider: 'credentials', type: 'credentials', providerAccountId: 'cred-123' },
       });
 
       expect(result).toBe(true);
@@ -250,7 +250,7 @@ describe('authOptions.callbacks.signIn', () => {
 
       const result = await callSignIn({
         user: { id: 'user-1', email: 'user@example.com' },
-        account: { provider: 'credentials', type: 'credentials' },
+        account: { provider: 'credentials', type: 'credentials', providerAccountId: 'cred-123' },
       });
 
       expect(result).toBe('/auth/verify-request?error=EmailNotVerified');
@@ -262,7 +262,7 @@ describe('authOptions.callbacks.signIn', () => {
 
       const result = await callSignIn({
         user: { id: 'user-1', email: 'user@example.com' },
-        account: { provider: 'credentials', type: 'credentials' },
+        account: { provider: 'credentials', type: 'credentials', providerAccountId: 'cred-123' },
       });
 
       // No existingUser[0] — condition is skipped → allow sign in
@@ -277,7 +277,7 @@ describe('authOptions.callbacks.signIn', () => {
 
       const result = await callSignIn({
         user: { id: 'user-1', email: 'user@example.com' },
-        account: { provider: 'credentials', type: 'credentials' },
+        account: { provider: 'credentials', type: 'credentials', providerAccountId: 'cred-123' },
       });
 
       expect(result).toBe(true);
