@@ -134,7 +134,7 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({ currentClimb, boar
         isMirror: isMirrored,
         status,
         attemptCount: values.attempts,
-        quality: logType === 'ascent' ? values.quality : undefined,
+        quality: logType === 'ascent' && values.quality ? values.quality : undefined,
         difficulty: logType === 'ascent' ? values.difficulty : undefined,
         isBenchmark: false,
         comment: values.notes || '',
