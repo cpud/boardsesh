@@ -26,6 +26,50 @@ export interface GraphQLQueueDataType extends QueueDataType {
 // Combined type for backward compatibility
 export type GraphQLQueueContextType = GraphQLQueueActionsType & GraphQLQueueDataType;
 
+// --- Fine-grained context types for targeted subscriptions ---
+
+import type { Climb, SearchRequestPagination } from '@/app/lib/types';
+import type { ClimbQueueItem, ClimbQueue } from '../queue-control/types';
+import type { SessionUser } from '@boardsesh/shared-schema';
+
+export interface CurrentClimbDataType {
+  currentClimbQueueItem: ClimbQueueItem | null;
+  currentClimb: Climb | null;
+}
+
+export interface QueueListDataType {
+  queue: ClimbQueue;
+}
+
+export interface SearchDataType {
+  climbSearchParams: SearchRequestPagination;
+  climbSearchResults: Climb[] | null;
+  suggestedClimbs: Climb[];
+  totalSearchResultCount: number | null;
+  hasMoreResults: boolean;
+  isFetchingClimbs: boolean;
+  isFetchingNextPage: boolean;
+  hasDoneFirstFetch: boolean;
+  parsedParams: ParsedBoardRouteParameters;
+}
+
+export interface SessionDataType {
+  viewOnlyMode: boolean;
+  isSessionActive: boolean;
+  sessionId: string | null;
+  sessionSummary: SessionSummary | null;
+  sessionGoal: string | null;
+  connectionState: ConnectionState;
+  canMutate: boolean;
+  isDisconnected: boolean;
+  users: SessionUser[];
+  clientId: string | null;
+  isLeader: boolean;
+  isBackendMode: boolean;
+  hasConnected: boolean;
+  connectionError: Error | null;
+}
+
 export type GraphQLQueueContextProps = {
   parsedParams: ParsedBoardRouteParameters;
   boardDetails: BoardDetails;

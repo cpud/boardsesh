@@ -18,7 +18,7 @@ import CloseOutlined from '@mui/icons-material/CloseOutlined';
 import HistoryOutlined from '@mui/icons-material/HistoryOutlined';
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
 import { usePathname } from 'next/navigation';
-import { useQueueActions, useQueueData } from '../graphql-queue';
+import { useQueueActions, useCurrentClimb, useQueueList, useSessionData } from '../graphql-queue';
 import { ClimbActions } from '../climb-actions';
 import { useDoubleTapFavorite } from '../climb-actions/use-double-tap-favorite';
 import HeartAnimationOverlay from '../climb-card/heart-animation-overlay';
@@ -80,8 +80,7 @@ interface PlayViewDrawerProps {
   angle: Angle;
 }
 
-
-const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
+const PlayViewDrawerInner: React.FC<PlayViewDrawerProps> = ({
   activeDrawer,
   setActiveDrawer,
   boardDetails,
@@ -92,6 +91,8 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   const [isQueueOpen, setIsQueueOpen] = useState(false);
   const [isPlaylistSelectorOpen, setIsPlaylistSelectorOpen] = useState(false);
   const [isTickDrawerOpen, setIsTickDrawerOpen] = useState(false);
+
+  const hasNestedDrawerOpen = isActionsOpen || isQueueOpen || isPlaylistSelectorOpen || isTickDrawerOpen;
   const [isEditMode, setIsEditMode] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -117,12 +118,9 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
     setQueueScrollEl(node);
   }, []);
 
-  const {
-    currentClimb,
-    currentClimbQueueItem,
-    queue,
-    viewOnlyMode,
-  } = useQueueData();
+  const { currentClimb, currentClimbQueueItem } = useCurrentClimb();
+  const { queue } = useQueueList();
+  const { viewOnlyMode } = useSessionData();
   const {
     mirrorClimb,
     setQueue,
@@ -238,14 +236,6 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
     };
   }, [isOpen, setActiveDrawer]);
 
-  const handleClose = useCallback(() => {
-    if (isActionsOpen || isQueueOpen || isPlaylistSelectorOpen || isTickDrawerOpen) return;
-    setActiveDrawer('none');
-    if (window.location.hash === '#playing') {
-      window.history.back();
-    }
-  }, [setActiveDrawer, isActionsOpen, isQueueOpen, isPlaylistSelectorOpen, isTickDrawerOpen]);
-
   // Compute ascent info for tick FAB badge
   const currentAngle = typeof angle === 'string' ? parseInt(angle, 10) : angle;
   const filteredLogbook = useMemo(() => {
@@ -280,8 +270,6 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   const isMirrored = !!currentClimb?.mirrored;
 
   // Keep content mounted during the close animation so the slide-out is smooth.
-  // `isOpen` drives immediate rendering; `keepMountedDuringClose` keeps content
-  // visible until the exit transition completes so the slide-out animates content.
   const [keepMountedDuringClose, setKeepMountedDuringClose] = useState(false);
   const showContent = isOpen || keepMountedDuringClose;
 
@@ -293,6 +281,14 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
     if (!open) setKeepMountedDuringClose(false);
   }, []);
 
+  const handleClose = useCallback(() => {
+    if (hasNestedDrawerOpen) return;
+    setActiveDrawer('none');
+    if (window.location.hash === '#playing') {
+      window.history.back();
+    }
+  }, [setActiveDrawer, hasNestedDrawerOpen]);
+
   return (
     <>
     <SwipeableDrawer
@@ -303,7 +299,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
       onClose={handleClose}
       onTransitionEnd={handleTransitionEnd}
       keepMounted
-      swipeEnabled={!isActionsOpen && !isQueueOpen && !isPlaylistSelectorOpen}
+      swipeEnabled={!hasNestedDrawerOpen}
       showDragHandle={true}
       styles={{
         body: { padding: 0, overflow: 'hidden' },
@@ -507,7 +503,6 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
             boardDetails={boardDetails}
           />
         )}
-      </>) : null}
 
         {/* Queue list drawer */}
         <SwipeableDrawer
@@ -589,8 +584,8 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
             </Box>
           </div>
           <div className={styles.queueBodyLayout}>
-            <div 
-              ref={queueScrollCallbackRef} 
+            <div
+              ref={queueScrollCallbackRef}
               className={styles.queueScrollContainer}
               style={{ touchAction: 'pan-y' }}
             >
@@ -617,9 +612,34 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
             )}
           </div>
         </SwipeableDrawer>
+      </>) : null}
     </SwipeableDrawer>
     </>
   );
+};
+
+// Gate wrapper: only mounts PlayViewDrawerInner (which subscribes to queue contexts)
+// after the drawer has been opened once. Before first open, nothing is rendered,
+// saving the cost of context subscriptions during initial page load.
+const PlayViewDrawer: React.FC<PlayViewDrawerProps> = (props) => {
+  const isOpen = props.activeDrawer === 'play';
+
+  // Track whether the drawer has ever been opened. Once true, we keep the inner
+  // component mounted so animations work smoothly. The inner component
+  // handles its own SwipeableDrawer and showContent/keepMounted lifecycle.
+  const [hasBeenOpened, setHasBeenOpened] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && !hasBeenOpened) setHasBeenOpened(true);
+  }, [isOpen, hasBeenOpened]);
+
+  // Don't mount the inner component at all until the drawer has been opened once.
+  // This prevents context subscriptions from firing during initial page load.
+  if (!hasBeenOpened) {
+    return null;
+  }
+
+  return <PlayViewDrawerInner {...props} />;
 };
 
 export default PlayViewDrawer;
