@@ -80,11 +80,16 @@ interface PlayViewDrawerProps {
   angle: Angle;
 }
 
-const PlayViewDrawerInner: React.FC<PlayViewDrawerProps> = ({
+interface PlayViewDrawerContentProps extends PlayViewDrawerProps {
+  nestedDrawerOpenRef: React.MutableRefObject<boolean>;
+}
+
+const PlayViewDrawerContent: React.FC<PlayViewDrawerContentProps> = ({
   activeDrawer,
   setActiveDrawer,
   boardDetails,
   angle,
+  nestedDrawerOpenRef,
 }) => {
   const isOpen = activeDrawer === 'play';
   const [isActionsOpen, setIsActionsOpen] = useState(false);
@@ -93,6 +98,7 @@ const PlayViewDrawerInner: React.FC<PlayViewDrawerProps> = ({
   const [isTickDrawerOpen, setIsTickDrawerOpen] = useState(false);
 
   const hasNestedDrawerOpen = isActionsOpen || isQueueOpen || isPlaylistSelectorOpen || isTickDrawerOpen;
+  nestedDrawerOpenRef.current = hasNestedDrawerOpen;
   const [isEditMode, setIsEditMode] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -269,44 +275,8 @@ const PlayViewDrawerInner: React.FC<PlayViewDrawerProps> = ({
 
   const isMirrored = !!currentClimb?.mirrored;
 
-  // Keep content mounted during the close animation so the slide-out is smooth.
-  const [keepMountedDuringClose, setKeepMountedDuringClose] = useState(false);
-  const showContent = isOpen || keepMountedDuringClose;
-
-  useEffect(() => {
-    if (isOpen) setKeepMountedDuringClose(true);
-  }, [isOpen]);
-
-  const handleTransitionEnd = useCallback((open: boolean) => {
-    if (!open) setKeepMountedDuringClose(false);
-  }, []);
-
-  const handleClose = useCallback(() => {
-    if (hasNestedDrawerOpen) return;
-    setActiveDrawer('none');
-    if (window.location.hash === '#playing') {
-      window.history.back();
-    }
-  }, [setActiveDrawer, hasNestedDrawerOpen]);
-
   return (
     <>
-    <SwipeableDrawer
-      placement="bottom"
-      height="100%"
-      fullHeight
-      open={isOpen}
-      onClose={handleClose}
-      onTransitionEnd={handleTransitionEnd}
-      keepMounted
-      swipeEnabled={!hasNestedDrawerOpen}
-      showDragHandle={true}
-      styles={{
-        body: { padding: 0, overflow: 'hidden' },
-        wrapper: { height: '100%', backgroundColor: 'var(--semantic-background)' },
-      }}
-    >
-      {showContent ? (<>
       <div className={styles.drawerContent}>
         {currentClimb ? (
           <PlayDrawerContent
@@ -612,34 +582,60 @@ const PlayViewDrawerInner: React.FC<PlayViewDrawerProps> = ({
             )}
           </div>
         </SwipeableDrawer>
-      </>) : null}
-    </SwipeableDrawer>
     </>
   );
 };
 
-// Gate wrapper: only mounts PlayViewDrawerInner (which subscribes to queue contexts)
-// after the drawer has been opened once. Before first open, nothing is rendered,
-// saving the cost of context subscriptions during initial page load.
+// Outer wrapper: owns the SwipeableDrawer shell (always rendered for animations),
+// but only mounts PlayViewDrawerContent (which subscribes to queue contexts)
+// when the drawer is open or closing. This prevents context re-renders when closed.
 const PlayViewDrawer: React.FC<PlayViewDrawerProps> = (props) => {
-  const isOpen = props.activeDrawer === 'play';
+  const { activeDrawer, setActiveDrawer } = props;
+  const isOpen = activeDrawer === 'play';
 
-  // Track whether the drawer has ever been opened. Once true, we keep the inner
-  // component mounted so animations work smoothly. The inner component
-  // handles its own SwipeableDrawer and showContent/keepMounted lifecycle.
-  const [hasBeenOpened, setHasBeenOpened] = useState(false);
+  const [keepMountedDuringClose, setKeepMountedDuringClose] = useState(false);
+  const showContent = isOpen || keepMountedDuringClose;
+
+  // Ref updated by the inner component to signal whether a nested drawer is open.
+  const nestedDrawerOpenRef = useRef(false);
 
   useEffect(() => {
-    if (isOpen && !hasBeenOpened) setHasBeenOpened(true);
-  }, [isOpen, hasBeenOpened]);
+    if (isOpen) setKeepMountedDuringClose(true);
+  }, [isOpen]);
 
-  // Don't mount the inner component at all until the drawer has been opened once.
-  // This prevents context subscriptions from firing during initial page load.
-  if (!hasBeenOpened) {
-    return null;
-  }
+  const handleTransitionEnd = useCallback((open: boolean) => {
+    if (!open) setKeepMountedDuringClose(false);
+  }, []);
 
-  return <PlayViewDrawerInner {...props} />;
+  const handleClose = useCallback(() => {
+    if (nestedDrawerOpenRef.current) return;
+    setActiveDrawer('none');
+    if (window.location.hash === '#playing') {
+      window.history.back();
+    }
+  }, [setActiveDrawer]);
+
+  return (
+    <SwipeableDrawer
+      placement="bottom"
+      height="100%"
+      fullHeight
+      open={isOpen}
+      onClose={handleClose}
+      onTransitionEnd={handleTransitionEnd}
+      keepMounted
+      swipeEnabled={showContent && !nestedDrawerOpenRef.current}
+      showDragHandle={true}
+      styles={{
+        body: { padding: 0, overflow: 'hidden' },
+        wrapper: { height: '100%', backgroundColor: 'var(--semantic-background)' },
+      }}
+    >
+      {showContent ? (
+        <PlayViewDrawerContent {...props} nestedDrawerOpenRef={nestedDrawerOpenRef} />
+      ) : null}
+    </SwipeableDrawer>
+  );
 };
 
 export default PlayViewDrawer;
