@@ -40,8 +40,18 @@ export function useQueueBridgeBoardInfo() {
 // -------------------------------------------------------------------
 
 interface QueueBridgeSetters {
-  inject: (ctx: GraphQLQueueContextType, bd: BoardDetails, angle: Angle) => void;
-  updateContext: (ctx: GraphQLQueueContextType) => void;
+  inject: (
+    ctx: GraphQLQueueContextType,
+    actions: GraphQLQueueActionsType,
+    data: GraphQLQueueDataType,
+    bd: BoardDetails,
+    angle: Angle,
+  ) => void;
+  updateContext: (
+    ctx: GraphQLQueueContextType,
+    actions: GraphQLQueueActionsType,
+    data: GraphQLQueueDataType,
+  ) => void;
   clear: () => void;
 }
 
@@ -53,6 +63,7 @@ const QueueBridgeSetterContext = createContext<QueueBridgeSetters>({
 
 // -------------------------------------------------------------------
 // usePersistentSessionQueueAdapter — thin adapter over PersistentSession
+// Uses latestRef pattern for stable action callbacks (matches GraphQLQueueProvider).
 // -------------------------------------------------------------------
 
 function usePersistentSessionQueueAdapter(): {
@@ -84,7 +95,6 @@ function usePersistentSessionQueueAdapter(): {
 
   const parsedParams = useMemo(() => {
     if (!boardDetails) {
-      // Fallback — should not be consumed when hasActiveQueue is false
       return { board_name: 'kilter' as const, layout_id: 0, size_id: 0, set_ids: [0], angle: 0 };
     }
     return {
@@ -96,105 +106,115 @@ function usePersistentSessionQueueAdapter(): {
     };
   }, [boardDetails, angle]);
 
+  // --- Ref holding latest values so action callbacks can be stable ---
+  const latestRef = useRef({ queue, currentClimbQueueItem, boardDetails, baseBoardPath, ps });
+  latestRef.current = { queue, currentClimbQueueItem, boardDetails, baseBoardPath, ps };
+
   const getNextClimbQueueItem = useCallback((): ClimbQueueItem | null => {
-    const idx = queue.findIndex(({ uuid }) => uuid === currentClimbQueueItem?.uuid);
-    return idx >= 0 && idx < queue.length - 1 ? queue[idx + 1] : null;
-  }, [queue, currentClimbQueueItem]);
+    const r = latestRef.current;
+    const idx = r.queue.findIndex(({ uuid }) => uuid === r.currentClimbQueueItem?.uuid);
+    return idx >= 0 && idx < r.queue.length - 1 ? r.queue[idx + 1] : null;
+  }, []);
 
   const getPreviousClimbQueueItem = useCallback((): ClimbQueueItem | null => {
-    const idx = queue.findIndex(({ uuid }) => uuid === currentClimbQueueItem?.uuid);
-    return idx > 0 ? queue[idx - 1] : null;
-  }, [queue, currentClimbQueueItem]);
+    const r = latestRef.current;
+    const idx = r.queue.findIndex(({ uuid }) => uuid === r.currentClimbQueueItem?.uuid);
+    return idx > 0 ? r.queue[idx - 1] : null;
+  }, []);
 
   const setCurrentClimbQueueItem = useCallback(
     (item: ClimbQueueItem) => {
-      if (!boardDetails) return;
-      const alreadyInQueue = queue.some(q => q.uuid === item.uuid);
-      // Skip if item is already current and already in the queue — nothing changed
-      if (alreadyInQueue && currentClimbQueueItem?.uuid === item.uuid) return;
-      const newQueue = alreadyInQueue ? queue : [...queue, item];
-      ps.setLocalQueueState(newQueue, item, baseBoardPath, boardDetails);
+      const r = latestRef.current;
+      if (!r.boardDetails) return;
+      const alreadyInQueue = r.queue.some(q => q.uuid === item.uuid);
+      if (alreadyInQueue && r.currentClimbQueueItem?.uuid === item.uuid) return;
+      const newQueue = alreadyInQueue ? r.queue : [...r.queue, item];
+      r.ps.setLocalQueueState(newQueue, item, r.baseBoardPath, r.boardDetails);
     },
-    [queue, currentClimbQueueItem, boardDetails, baseBoardPath, ps],
+    [],
   );
 
   const addToQueue = useCallback(
     (climb: Climb) => {
-      if (!boardDetails) return;
+      const r = latestRef.current;
+      if (!r.boardDetails) return;
       const newItem: ClimbQueueItem = {
         climb,
         addedBy: null,
         uuid: uuidv4(),
         suggested: false,
       };
-      const newQueue = [...queue, newItem];
-      const current = currentClimbQueueItem ?? newItem;
-      ps.setLocalQueueState(newQueue, current, baseBoardPath, boardDetails);
+      const newQueue = [...r.queue, newItem];
+      const current = r.currentClimbQueueItem ?? newItem;
+      r.ps.setLocalQueueState(newQueue, current, r.baseBoardPath, r.boardDetails);
     },
-    [queue, currentClimbQueueItem, boardDetails, baseBoardPath, ps],
+    [],
   );
 
   const removeFromQueue = useCallback(
     (item: ClimbQueueItem) => {
-      if (!boardDetails) return;
-      const newQueue = queue.filter(q => q.uuid !== item.uuid);
-      const newCurrent = currentClimbQueueItem?.uuid === item.uuid
+      const r = latestRef.current;
+      if (!r.boardDetails) return;
+      const newQueue = r.queue.filter(q => q.uuid !== item.uuid);
+      const newCurrent = r.currentClimbQueueItem?.uuid === item.uuid
         ? (newQueue[0] ?? null)
-        : currentClimbQueueItem;
-      ps.setLocalQueueState(newQueue, newCurrent, baseBoardPath, boardDetails);
+        : r.currentClimbQueueItem;
+      r.ps.setLocalQueueState(newQueue, newCurrent, r.baseBoardPath, r.boardDetails);
     },
-    [queue, currentClimbQueueItem, boardDetails, baseBoardPath, ps],
+    [],
   );
 
   const setQueue = useCallback(
     (newQueue: ClimbQueueItem[]) => {
-      if (!boardDetails) return;
+      const r = latestRef.current;
+      if (!r.boardDetails) return;
       const newCurrent = newQueue.length === 0
         ? null
-        : (currentClimbQueueItem && newQueue.some(q => q.uuid === currentClimbQueueItem.uuid)
-            ? currentClimbQueueItem
+        : (r.currentClimbQueueItem && newQueue.some(q => q.uuid === r.currentClimbQueueItem!.uuid)
+            ? r.currentClimbQueueItem
             : newQueue[0]);
-      ps.setLocalQueueState(newQueue, newCurrent, baseBoardPath, boardDetails);
+      r.ps.setLocalQueueState(newQueue, newCurrent, r.baseBoardPath, r.boardDetails);
     },
-    [currentClimbQueueItem, boardDetails, baseBoardPath, ps],
+    [],
   );
 
   const mirrorClimb = useCallback(() => {
-    if (!currentClimbQueueItem?.climb || !boardDetails) return;
-    const mirrored = !currentClimbQueueItem.climb.mirrored;
+    const r = latestRef.current;
+    if (!r.currentClimbQueueItem?.climb || !r.boardDetails) return;
+    const mirrored = !r.currentClimbQueueItem.climb.mirrored;
     const updatedItem: ClimbQueueItem = {
-      ...currentClimbQueueItem,
-      climb: { ...currentClimbQueueItem.climb, mirrored },
+      ...r.currentClimbQueueItem,
+      climb: { ...r.currentClimbQueueItem.climb, mirrored },
     };
-    const newQueue = queue.map(q => (q.uuid === updatedItem.uuid ? updatedItem : q));
-    ps.setLocalQueueState(newQueue, updatedItem, baseBoardPath, boardDetails);
-  }, [currentClimbQueueItem, queue, boardDetails, baseBoardPath, ps]);
+    const newQueue = r.queue.map(q => (q.uuid === updatedItem.uuid ? updatedItem : q));
+    r.ps.setLocalQueueState(newQueue, updatedItem, r.baseBoardPath, r.boardDetails);
+  }, []);
 
   const setCurrentClimb = useCallback(
     (climb: Climb) => {
-      if (!boardDetails) return;
+      const r = latestRef.current;
+      if (!r.boardDetails) return;
       const newItem: ClimbQueueItem = {
         climb,
         addedBy: null,
         uuid: uuidv4(),
         suggested: false,
       };
-      // Insert after current in queue
-      const currentIdx = currentClimbQueueItem
-        ? queue.findIndex(q => q.uuid === currentClimbQueueItem.uuid)
+      const currentIdx = r.currentClimbQueueItem
+        ? r.queue.findIndex(q => q.uuid === r.currentClimbQueueItem!.uuid)
         : -1;
-      const newQueue = [...queue];
+      const newQueue = [...r.queue];
       if (currentIdx >= 0) {
         newQueue.splice(currentIdx + 1, 0, newItem);
       } else {
         newQueue.push(newItem);
       }
-      ps.setLocalQueueState(newQueue, newItem, baseBoardPath, boardDetails);
+      r.ps.setLocalQueueState(newQueue, newItem, r.baseBoardPath, r.boardDetails);
     },
-    [queue, currentClimbQueueItem, boardDetails, baseBoardPath, ps],
+    [],
   );
 
-  // No-op functions for fields not used by the bottom bar — each matches its exact type signature
+  // No-op functions for fields not used by the bottom bar
   const noop = useCallback(() => {}, []);
   const noopStartSession = useCallback(
     async (_options?: { discoverable?: boolean; name?: string; sessionId?: string }) => '',
@@ -203,7 +223,7 @@ function usePersistentSessionQueueAdapter(): {
   const noopJoinSession = useCallback(async (_sessionId: string) => {}, []);
   const noopSetClimbSearchParams = useCallback((_params: SearchRequestPagination) => {}, []);
 
-  // Split into stable actions and volatile data to enable targeted subscriptions
+  // Actions value is now stable — all callbacks use latestRef with empty deps
   const actionsValue: GraphQLQueueActionsType = useMemo(
     () => ({
       addToQueue,
@@ -302,86 +322,43 @@ export function QueueBridgeProvider({ children }: { children: React.ReactNode })
   // Board details and angle from the injector (stable across context updates)
   const [injectedBoardDetails, setInjectedBoardDetails] = useState<BoardDetails | null>(null);
   const [injectedAngle, setInjectedAngle] = useState<Angle>(0);
-  // The queue context value is stored in a ref to avoid cleanup/setup cycles
-  // on every context update. The ref is read synchronously during render.
+
+  // Injected values stored in refs to avoid cleanup/setup cycles.
+  // Separate refs for combined, actions, and data so we can track
+  // actions identity changes independently from data changes.
   const injectedContextRef = useRef<GraphQLQueueContextType | null>(null);
-  // Counter to force re-renders when the injected context ref changes
-  const [contextVersion, setContextVersion] = useState(0);
+  const injectedActionsRef = useRef<GraphQLQueueActionsType | null>(null);
+  const injectedDataRef = useRef<GraphQLQueueDataType | null>(null);
+
+  // Separate version counters: actionsVersion only bumps when the injected
+  // actions object identity changes (rare — GraphQLQueueProvider uses latestRef
+  // pattern). dataVersion bumps on every data change (expected).
+  const [actionsVersion, setActionsVersion] = useState(0);
+  const [dataVersion, setDataVersion] = useState(0);
 
   const adapter = usePersistentSessionQueueAdapter();
 
-  // When a board route is active (isInjected), use the injected context.
-  // Otherwise, fall back to the PersistentSession adapter.
-  //
-  // Why ref + version counter instead of useState? Storing the full context object
-  // in state would trigger React's cleanup/setup cycle on every context update,
-  // causing the bottom bar to briefly unmount and remount (visible flash). By
-  // keeping the value in a ref and bumping a version counter, we get a re-render
-  // that reads the latest ref value without the cleanup/setup cost.
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- contextVersion forces re-read of ref
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- actionsVersion/dataVersion force re-read of refs
   const effectiveContext = useMemo(
     () => (isInjected && injectedContextRef.current) ? injectedContextRef.current : adapter.context,
-    [isInjected, contextVersion, adapter.context],
+    [isInjected, actionsVersion, dataVersion, adapter.context],
   );
 
-  // Derive split contexts from the effective combined context.
-  // When not injected, use the adapter's pre-split values (more stable references).
-  // When injected, extract actions/data from the combined context.
+  // Actions: when injected, use the injected actions ref directly.
+  // This does NOT depend on effectiveContext or dataVersion, so it stays
+  // stable when only data changes (which is the common case).
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- actionsVersion forces re-read of ref
   const effectiveActions: GraphQLQueueActionsType = useMemo(() => {
     if (!isInjected) return adapter.actionsValue;
-    const ctx = effectiveContext;
-    return {
-      addToQueue: ctx.addToQueue,
-      removeFromQueue: ctx.removeFromQueue,
-      setCurrentClimb: ctx.setCurrentClimb,
-      setCurrentClimbQueueItem: ctx.setCurrentClimbQueueItem,
-      setClimbSearchParams: ctx.setClimbSearchParams,
-      setCountSearchParams: ctx.setCountSearchParams,
-      mirrorClimb: ctx.mirrorClimb,
-      fetchMoreClimbs: ctx.fetchMoreClimbs,
-      getNextClimbQueueItem: ctx.getNextClimbQueueItem,
-      getPreviousClimbQueueItem: ctx.getPreviousClimbQueueItem,
-      setQueue: ctx.setQueue,
-      startSession: ctx.startSession,
-      joinSession: ctx.joinSession,
-      endSession: ctx.endSession,
-      dismissSessionSummary: ctx.dismissSessionSummary,
-      disconnect: ctx.disconnect,
-    };
-  }, [isInjected, adapter.actionsValue, effectiveContext]);
+    return injectedActionsRef.current!;
+  }, [isInjected, adapter.actionsValue, actionsVersion]);
 
+  // Data: when injected, use the injected data ref directly.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- dataVersion forces re-read of ref
   const effectiveData: GraphQLQueueDataType = useMemo(() => {
     if (!isInjected) return adapter.dataValue;
-    const ctx = effectiveContext;
-    return {
-      queue: ctx.queue,
-      currentClimbQueueItem: ctx.currentClimbQueueItem,
-      currentClimb: ctx.currentClimb,
-      climbSearchParams: ctx.climbSearchParams,
-      climbSearchResults: ctx.climbSearchResults,
-      suggestedClimbs: ctx.suggestedClimbs,
-      totalSearchResultCount: ctx.totalSearchResultCount,
-      hasMoreResults: ctx.hasMoreResults,
-      isFetchingClimbs: ctx.isFetchingClimbs,
-      isFetchingNextPage: ctx.isFetchingNextPage,
-      hasDoneFirstFetch: ctx.hasDoneFirstFetch,
-      viewOnlyMode: ctx.viewOnlyMode,
-      connectionState: ctx.connectionState,
-      canMutate: ctx.canMutate,
-      parsedParams: ctx.parsedParams,
-      isSessionActive: ctx.isSessionActive,
-      sessionId: ctx.sessionId,
-      sessionSummary: ctx.sessionSummary,
-      sessionGoal: ctx.sessionGoal,
-      users: ctx.users,
-      clientId: ctx.clientId,
-      isLeader: ctx.isLeader,
-      isBackendMode: ctx.isBackendMode,
-      hasConnected: ctx.hasConnected,
-      connectionError: ctx.connectionError,
-      isDisconnected: ctx.isDisconnected,
-    };
-  }, [isInjected, adapter.dataValue, effectiveContext]);
+    return injectedDataRef.current!;
+  }, [isInjected, adapter.dataValue, dataVersion]);
 
   const effectiveBoardDetails = isInjected ? injectedBoardDetails : adapter.boardDetails;
   const effectiveAngle = isInjected ? injectedAngle : adapter.angle;
@@ -398,25 +375,51 @@ export function QueueBridgeProvider({ children }: { children: React.ReactNode })
     [effectiveBoardDetails, effectiveAngle, effectiveHasActiveQueue],
   );
 
-  const inject = useCallback((ctx: GraphQLQueueContextType, bd: BoardDetails, a: Angle) => {
+  const inject = useCallback((
+    ctx: GraphQLQueueContextType,
+    actions: GraphQLQueueActionsType,
+    data: GraphQLQueueDataType,
+    bd: BoardDetails,
+    a: Angle,
+  ) => {
     injectedContextRef.current = ctx;
+    injectedActionsRef.current = actions;
+    injectedDataRef.current = data;
     setInjectedBoardDetails(bd);
     setInjectedAngle(a);
     setIsInjected(true);
-    setContextVersion(v => v + 1);
+    setActionsVersion(v => v + 1);
+    setDataVersion(v => v + 1);
   }, []);
 
-  const updateContext = useCallback((ctx: GraphQLQueueContextType) => {
+  const updateContext = useCallback((
+    ctx: GraphQLQueueContextType,
+    actions: GraphQLQueueActionsType,
+    data: GraphQLQueueDataType,
+  ) => {
+    const actionsChanged = actions !== injectedActionsRef.current;
     injectedContextRef.current = ctx;
-    setContextVersion(v => v + 1);
+    injectedActionsRef.current = actions;
+    injectedDataRef.current = data;
+    // Always bump data version (data changes are expected and frequent)
+    setDataVersion(v => v + 1);
+    // Only bump actions version when the actions object identity actually changed.
+    // GraphQLQueueProvider's actionsValue uses latestRef with empty deps, so this
+    // almost never changes — keeping QueueActionsContext stable for consumers.
+    if (actionsChanged) {
+      setActionsVersion(v => v + 1);
+    }
   }, []);
 
   const clear = useCallback(() => {
     injectedContextRef.current = null;
+    injectedActionsRef.current = null;
+    injectedDataRef.current = null;
     setIsInjected(false);
     setInjectedBoardDetails(null);
     setInjectedAngle(0);
-    setContextVersion(v => v + 1);
+    setActionsVersion(v => v + 1);
+    setDataVersion(v => v + 1);
   }, []);
 
   const setters = useMemo<QueueBridgeSetters>(
@@ -460,16 +463,18 @@ interface QueueBridgeInjectorProps {
 export function QueueBridgeInjector({ boardDetails, angle }: QueueBridgeInjectorProps) {
   const { inject, updateContext, clear } = useContext(QueueBridgeSetterContext);
 
-  // Read the board route's QueueContext (from GraphQLQueueProvider which is a parent)
+  // Read the board route's split contexts from GraphQLQueueProvider
   const queueContext = useContext(QueueContext);
+  const queueActions = useContext(QueueActionsContext);
+  const queueData = useContext(QueueDataContext);
 
   // Track whether we've done the initial injection
   const hasInjectedRef = useRef(false);
 
   // Initial injection: set board details + context on mount
   useLayoutEffect(() => {
-    if (queueContext) {
-      inject(queueContext, boardDetails, angle);
+    if (queueContext && queueActions && queueData) {
+      inject(queueContext, queueActions, queueData, boardDetails, angle);
       hasInjectedRef.current = true;
     }
     // Only clean up on unmount (navigating away from board route)
@@ -481,17 +486,17 @@ export function QueueBridgeInjector({ boardDetails, angle }: QueueBridgeInjector
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boardDetails, angle, inject, clear]);
 
-  // Update the context ref whenever the queue context value changes.
-  // Also handles deferred injection if queueContext was null during the useLayoutEffect.
+  // Update the context ref whenever any of the queue context values change.
+  // Also handles deferred injection if contexts were null during the useLayoutEffect.
   useEffect(() => {
-    if (!queueContext) return;
+    if (!queueContext || !queueActions || !queueData) return;
     if (hasInjectedRef.current) {
-      updateContext(queueContext);
+      updateContext(queueContext, queueActions, queueData);
     } else {
-      inject(queueContext, boardDetails, angle);
+      inject(queueContext, queueActions, queueData, boardDetails, angle);
       hasInjectedRef.current = true;
     }
-  }, [queueContext, updateContext, inject, boardDetails, angle]);
+  }, [queueContext, queueActions, queueData, updateContext, inject, boardDetails, angle]);
 
   return null;
 }
