@@ -24,12 +24,62 @@ export interface QueueMutationsActions {
   setQueue: (queue: LocalClimbQueueItem[], currentClimbQueueItem?: LocalClimbQueueItem | null) => Promise<void>;
 }
 
+/**
+ * Serialize-and-supersede pattern: at most one mutation in-flight at a time.
+ * If a new call arrives while one is in-flight, it supersedes any previously
+ * queued args. When the in-flight mutation completes, the pending one is sent.
+ * The returned promise resolves/rejects when the actual server call finishes
+ * (or immediately if superseded by a later call).
+ */
+interface LatestWinsRefs<TArgs> {
+  inFlight: boolean;
+  pending: TArgs | null;
+}
+
+async function executeWithLatestWins<TArgs>(
+  refs: LatestWinsRefs<TArgs>,
+  args: TArgs,
+  executeFn: (args: TArgs) => Promise<void>,
+  onSupersede?: (superseded: TArgs) => void,
+): Promise<void> {
+  if (refs.inFlight) {
+    if (refs.pending !== null && onSupersede) {
+      onSupersede(refs.pending);
+    }
+    refs.pending = args;
+    return;
+  }
+
+  refs.inFlight = true;
+  try {
+    await executeFn(args);
+  } finally {
+    // Drain: send the latest pending call if one exists
+    while (refs.pending !== null) {
+      const next = refs.pending;
+      refs.pending = null;
+      try {
+        await executeFn(next);
+      } catch (error) {
+        console.error('Failed to send coalesced mutation:', error);
+      }
+    }
+    refs.inFlight = false;
+  }
+}
+
 export function useQueueMutations({ client, session }: UseQueueMutationsArgs): QueueMutationsActions {
   // Use refs so callbacks have stable identity (never recreate)
   const clientRef = useRef(client);
   const sessionRef = useRef(session);
   clientRef.current = client;
   sessionRef.current = session;
+
+  const setCurrentClimbRefs = useRef<LatestWinsRefs<{
+    item: LocalClimbQueueItem | null;
+    shouldAddToQueue?: boolean;
+    correlationId?: string;
+  }>>({ inFlight: false, pending: null });
 
   const addQueueItem = useCallback(
     async (item: LocalClimbQueueItem, position?: number) => {
@@ -56,14 +106,31 @@ export function useQueueMutations({ client, session }: UseQueueMutationsArgs): Q
   const setCurrentClimb = useCallback(
     async (item: LocalClimbQueueItem | null, shouldAddToQueue?: boolean, correlationId?: string) => {
       if (!clientRef.current || !sessionRef.current) throw new Error('Not connected to session');
-      await execute(clientRef.current, {
-        query: SET_CURRENT_CLIMB,
-        variables: {
-          item: item ? toClimbQueueItemInput(item) : null,
-          shouldAddToQueue,
-          correlationId,
+      await executeWithLatestWins(
+        setCurrentClimbRefs.current,
+        { item, shouldAddToQueue, correlationId },
+        async (args) => {
+          if (!clientRef.current || !sessionRef.current) throw new Error('Not connected to session');
+          await execute(clientRef.current, {
+            query: SET_CURRENT_CLIMB,
+            variables: {
+              item: args.item ? toClimbQueueItemInput(args.item) : null,
+              shouldAddToQueue: args.shouldAddToQueue,
+              correlationId: args.correlationId,
+            },
+          });
         },
-      });
+        (superseded) => {
+          // The setCurrentClimb is correctly dropped (only latest matters),
+          // but if it carried shouldAddToQueue, the queue-add must still reach the server.
+          if (superseded.shouldAddToQueue && superseded.item && clientRef.current) {
+            execute(clientRef.current, {
+              query: ADD_QUEUE_ITEM,
+              variables: { item: toClimbQueueItemInput(superseded.item) },
+            }).catch((err: unknown) => console.error('Failed to add superseded queue item:', err));
+          }
+        },
+      );
     },
     [],
   );

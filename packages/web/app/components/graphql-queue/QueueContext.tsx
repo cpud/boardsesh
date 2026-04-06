@@ -298,22 +298,18 @@ export const GraphQLQueueProvider = ({ parsedParams, boardDetails, children, bas
     const mode: QueueOperationMode = !r.isPersistentSessionActive
       ? 'local' : r.isDisconnected ? 'party-offline' : 'party';
     const newItem = createClimbQueueItem(climb, r.clientId, r.currentUserInfo);
-    r.dispatch({ type: 'SET_CURRENT_CLIMB', payload: newItem });
+    const correlationId = r.clientId ? `${r.clientId}-${++r.correlationCounterRef.current}` : undefined;
+    r.dispatch({ type: 'DELTA_UPDATE_CURRENT_CLIMB', payload: { item: newItem, shouldAddToQueue: true, insertAfterCurrent: true, correlationId } });
     if (r.isDisconnected && r.isPersistentSessionActive) {
       r.offlineBuffer.bufferAddition(newItem);
       trackQueueOperation('setCurrentClimb', performance.now() - startTime, mode);
     } else if (r.hasConnected && r.isPersistentSessionActive) {
-      const previousQueue = [...r.state.queue];
-      const previousCurrentClimb = r.state.currentClimbQueueItem;
-      const correlationId = r.clientId ? `${r.clientId}-${++r.correlationCounterRef.current}` : undefined;
       try {
-        // Single mutation: shouldAddToQueue=true tells the server to atomically
-        // add the item to the queue AND set it as current climb in one round trip.
         await r.persistentSession.setCurrentClimb(newItem, true, correlationId);
         trackQueueOperation('setCurrentClimb', performance.now() - startTime, mode);
       } catch (error: unknown) {
-        console.error('Failed to set current climb, rolling back:', error);
-        r.dispatch({ type: 'UPDATE_QUEUE', payload: { queue: previousQueue, currentClimbQueueItem: previousCurrentClimb } });
+        console.error('Failed to set current climb:', error);
+        if (correlationId) r.dispatch({ type: 'CLEANUP_PENDING_UPDATE', payload: { correlationId } });
         trackQueueOperationError('setCurrentClimb', mode);
       }
     } else {
