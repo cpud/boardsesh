@@ -39,9 +39,12 @@ type QueueListProps = {
   selectedItems?: Set<string>;
   onToggleSelect?: (uuid: string) => void;
   scrollContainer?: HTMLElement | null;
+  /** When false, suggested climbs and infinite scroll are not rendered.
+   *  Use this when QueueList is inside a closed keepMounted drawer. */
+  active?: boolean;
 };
 
-const QueueList = forwardRef<QueueListHandle, QueueListProps>(({ boardDetails, onClimbNavigate, isEditMode = false, showHistory = false, selectedItems, onToggleSelect, scrollContainer }, ref) => {
+const QueueList = forwardRef<QueueListHandle, QueueListProps>(({ boardDetails, onClimbNavigate, isEditMode = false, showHistory = false, selectedItems, onToggleSelect, scrollContainer, active = true }, ref) => {
   const currentClimbUuid = useCurrentClimbUuid();
   const { queue, suggestedClimbs } = useQueueList();
   const { hasMoreResults, isFetchingClimbs, isFetchingNextPage } = useSearchData();
@@ -322,7 +325,7 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(({ boardDetails, o
           );
         })}
       </div>
-      {!viewOnlyMode && (
+      {active && !viewOnlyMode && (
         <>
           <div className={styles.suggestedSectionHeader}>
             <Typography variant="overline" color="text.secondary">

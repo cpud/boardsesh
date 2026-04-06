@@ -570,7 +570,6 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
         open={activeDrawer === 'queue'}
         onClose={handleCloseDrawer}
         onTransitionEnd={handleDrawerOpenChange}
-        keepMounted
         styles={{ wrapper: { height: '70%' }, body: { padding: 0 } }}
         extra={
           queue.length > 0 && (
@@ -588,7 +587,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
           )
         }
       >
-        <QueueList ref={queueListRef} boardDetails={boardDetails} onClimbNavigate={handleCloseDrawer} />
+        <QueueList ref={queueListRef} boardDetails={boardDetails} onClimbNavigate={handleCloseDrawer} active={activeDrawer === 'queue'} />
       </SwipeableDrawer>
 
       <PlayViewDrawer
