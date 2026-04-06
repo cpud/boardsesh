@@ -398,7 +398,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
             climb={currentClimb}
             boardType={boardDetails.board_name}
             angle={currentAngle}
-            sectionsEnabled={sectionsEverEnabled}
+            sectionsEnabled={sectionsEverEnabled && isOpen}
             aboveFold={
             <>
               {/* Header: Grade | Name | Angle Selector */}
@@ -433,7 +433,8 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
                   />
                 )}
 
-                {/* Floating Tick FAB - Spotify style */}
+                {/* Floating Tick FAB - only when drawer is open */}
+                {isOpen && (
                 <div className={styles.tickFabContainer}>
                   <button
                     className={`${styles.tickFab} ${hasSuccessfulAscent ? styles.tickFabSuccess : ''}`}
@@ -446,8 +447,12 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
                     )}
                   </button>
                 </div>
+                )}
               </div>
 
+              {/* Action bar - only rendered when drawer is open. When closed, only
+                  the header and board renderer update (for pre-warming). */}
+              {isOpen && (
               <div className={styles.actionBar}>
             <IconButton
               disabled={!canSwipePrevious}
@@ -520,6 +525,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
               <SkipNextOutlined />
             </IconButton>
               </div>
+              )}
             </>
             }
           />

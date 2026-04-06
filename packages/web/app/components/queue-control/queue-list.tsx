@@ -405,15 +405,15 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(({ boardDetails, o
         </SwipeableDrawer>
       )}
 
-      {/* Shared actions drawer — single instance for all list items */}
-      <SwipeableDrawer
-        title={actionsClimb ? <DrawerClimbHeader climb={actionsClimb} boardDetails={boardDetails} /> : undefined}
-        placement="bottom"
-        open={!!actionsClimb}
-        onClose={handleCloseActions}
-        styles={actionsDrawerStyles}
-      >
-        {actionsClimb && (
+      {/* Shared actions drawer — only mount when a climb's actions are open */}
+      {actionsClimb && (
+        <SwipeableDrawer
+          title={<DrawerClimbHeader climb={actionsClimb} boardDetails={boardDetails} />}
+          placement="bottom"
+          open
+          onClose={handleCloseActions}
+          styles={actionsDrawerStyles}
+        >
           <ClimbActions
             climb={actionsClimb}
             boardDetails={boardDetails}
@@ -424,26 +424,26 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(({ boardDetails, o
             onOpenPlaylistSelector={() => handleOpenPlaylistFromActions(actionsClimb)}
             onActionComplete={handleCloseActions}
           />
-        )}
-      </SwipeableDrawer>
+        </SwipeableDrawer>
+      )}
 
-      {/* Shared playlist selector drawer — single instance for all list items */}
-      <SwipeableDrawer
-        title={playlistClimb ? <DrawerClimbHeader climb={playlistClimb} boardDetails={boardDetails} /> : undefined}
-        placement="bottom"
-        open={!!playlistClimb}
-        onClose={handleClosePlaylist}
-        styles={playlistDrawerStyles}
-      >
-        {playlistClimb && (
+      {/* Shared playlist selector drawer — only mount when a climb's playlist is open */}
+      {playlistClimb && (
+        <SwipeableDrawer
+          title={<DrawerClimbHeader climb={playlistClimb} boardDetails={boardDetails} />}
+          placement="bottom"
+          open
+          onClose={handleClosePlaylist}
+          styles={playlistDrawerStyles}
+        >
           <PlaylistSelectionContent
             climbUuid={playlistClimb.uuid}
             boardDetails={boardDetails}
             angle={playlistClimb.angle}
             onDone={handleClosePlaylist}
           />
-        )}
-      </SwipeableDrawer>
+        </SwipeableDrawer>
+      )}
 
     </>
   );
@@ -464,4 +464,4 @@ const playlistDrawerStyles = {
 
 QueueList.displayName = 'QueueList';
 
-export default QueueList;
+export default React.memo(QueueList);
