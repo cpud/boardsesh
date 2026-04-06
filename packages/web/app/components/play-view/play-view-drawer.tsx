@@ -279,7 +279,6 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
         wrapper: { height: '100%', backgroundColor: 'var(--semantic-background)' },
       }}
     >
-      {isOpen ? (
       <>
       <div className={styles.drawerContent}>
         {currentClimb ? (
@@ -478,7 +477,6 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
           />
         )}
       </>
-      ) : null}
 
         {/* Queue list drawer */}
         <SwipeableDrawer
