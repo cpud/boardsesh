@@ -1,5 +1,5 @@
 'use client';
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { BoardName, ClimbUuid } from '@/app/lib/types';
 import { SaveClimbOptions } from '@/app/lib/api-wrappers/aurora/types';
 import { useSession } from 'next-auth/react';
@@ -53,17 +53,25 @@ export function BoardProvider({ boardName, children }: { boardName: BoardName; c
   }, []);
 
   // Wrapper to maintain backward-compatible API
+  // Refs for stable callback identity — mutation objects change reference every render
+  const saveTickMutateRef = useRef(saveTickMutation.mutateAsync);
+  saveTickMutateRef.current = saveTickMutation.mutateAsync;
+  const saveClimbMutateRef = useRef(saveClimbMutation.mutateAsync);
+  saveClimbMutateRef.current = saveClimbMutation.mutateAsync;
+  const activeSessionIdRef = useRef(activeSession?.sessionId);
+  activeSessionIdRef.current = activeSession?.sessionId;
+
   const saveTick = useCallback(async (options: SaveTickOptions): Promise<void> => {
-    const sessionId = options.sessionId ?? activeSession?.sessionId;
-    await saveTickMutation.mutateAsync({
+    const sessionId = options.sessionId ?? activeSessionIdRef.current;
+    await saveTickMutateRef.current({
       ...options,
       sessionId,
     });
-  }, [saveTickMutation, activeSession?.sessionId]);
+  }, []);
 
   const saveClimb = useCallback(async (options: Omit<SaveClimbOptions, 'setter_id' | 'user_id'>): Promise<SaveClimbResponse> => {
-    return saveClimbMutation.mutateAsync(options);
-  }, [saveClimbMutation]);
+    return saveClimbMutateRef.current(options);
+  }, []);
 
   const isAuthenticated = sessionStatus === 'authenticated';
   const isLoading = sessionStatus === 'loading';

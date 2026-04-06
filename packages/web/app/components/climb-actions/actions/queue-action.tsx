@@ -5,7 +5,7 @@ import AddCircleOutlined from '@mui/icons-material/AddCircleOutlined';
 import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
 import { track } from '@vercel/analytics';
 import { ClimbActionProps, ClimbActionResult } from '../types';
-import { useOptionalQueueActions, useOptionalQueueData } from '../../graphql-queue';
+import { useOptionalQueueActions } from '../../graphql-queue';
 import { themeTokens } from '@/app/theme/theme-config';
 import { buildActionResult, computeActionDisplay, ActionIconElement, ActionButtonElement } from '../action-view-renderer';
 
@@ -20,7 +20,6 @@ export function QueueAction({
   onComplete,
 }: ClimbActionProps): ClimbActionResult {
   const queueActions = useOptionalQueueActions();
-  const queueData = useOptionalQueueData();
   const [recentlyAdded, setRecentlyAdded] = useState(false);
   const { iconSize, shouldShowLabel } = computeActionDisplay(viewMode, size, showLabel);
 
@@ -34,7 +33,6 @@ export function QueueAction({
 
     track('Add to Queue', {
       boardLayout: boardDetails.layout_name || '',
-      queueLength: (queueData?.queue?.length ?? 0) + 1,
     });
 
     setRecentlyAdded(true);
@@ -43,7 +41,7 @@ export function QueueAction({
     }, 5000);
 
     onComplete?.();
-  }, [queueActions, queueData?.queue?.length, recentlyAdded, climb, boardDetails.layout_name, onComplete]);
+  }, [queueActions, recentlyAdded, climb, boardDetails.layout_name, onComplete]);
 
   const label = recentlyAdded ? 'Added' : 'Add to Queue';
   const shortLabel = recentlyAdded ? 'Added' : 'Queue';
