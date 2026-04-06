@@ -188,14 +188,14 @@ function makeBoardDetails(): BoardDetails {
     size_id: 1,
     set_ids: '1',
     images_to_holds: {},
-    holdsData: {},
+    holdsData: [],
     edge_left: 0,
     edge_right: 0,
     edge_bottom: 0,
     edge_top: 0,
     boardHeight: 100,
     boardWidth: 100,
-  } as BoardDetails;
+  } as unknown as BoardDetails;
 }
 
 // --- Tests ---
