@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import { execute, Client } from '../../graphql-queue/graphql-client';
 import {
   ADD_QUEUE_ITEM,
@@ -25,38 +25,32 @@ export interface QueueMutationsActions {
 }
 
 export function useQueueMutations({ client, session }: UseQueueMutationsArgs): QueueMutationsActions {
-  // Use refs so callbacks have stable identity (never recreate)
-  const clientRef = useRef(client);
-  const sessionRef = useRef(session);
-  clientRef.current = client;
-  sessionRef.current = session;
-
   const addQueueItem = useCallback(
     async (item: LocalClimbQueueItem, position?: number) => {
-      if (!clientRef.current || !sessionRef.current) throw new Error('Not connected to session');
-      await execute(clientRef.current, {
+      if (!client || !session) throw new Error('Not connected to session');
+      await execute(client, {
         query: ADD_QUEUE_ITEM,
         variables: { item: toClimbQueueItemInput(item), position },
       });
     },
-    [],
+    [client, session],
   );
 
   const removeQueueItem = useCallback(
     async (uuid: string) => {
-      if (!clientRef.current || !sessionRef.current) throw new Error('Not connected to session');
-      await execute(clientRef.current, {
+      if (!client || !session) throw new Error('Not connected to session');
+      await execute(client, {
         query: REMOVE_QUEUE_ITEM,
         variables: { uuid },
       });
     },
-    [],
+    [client, session],
   );
 
   const setCurrentClimb = useCallback(
     async (item: LocalClimbQueueItem | null, shouldAddToQueue?: boolean, correlationId?: string) => {
-      if (!clientRef.current || !sessionRef.current) throw new Error('Not connected to session');
-      await execute(clientRef.current, {
+      if (!client || !session) throw new Error('Not connected to session');
+      await execute(client, {
         query: SET_CURRENT_CLIMB,
         variables: {
           item: item ? toClimbQueueItemInput(item) : null,
@@ -65,24 +59,24 @@ export function useQueueMutations({ client, session }: UseQueueMutationsArgs): Q
         },
       });
     },
-    [],
+    [client, session],
   );
 
   const mirrorCurrentClimb = useCallback(
     async (mirrored: boolean) => {
-      if (!clientRef.current || !sessionRef.current) throw new Error('Not connected to session');
-      await execute(clientRef.current, {
+      if (!client || !session) throw new Error('Not connected to session');
+      await execute(client, {
         query: MIRROR_CURRENT_CLIMB,
         variables: { mirrored },
       });
     },
-    [],
+    [client, session],
   );
 
   const setQueue = useCallback(
     async (newQueue: LocalClimbQueueItem[], newCurrentClimbQueueItem?: LocalClimbQueueItem | null) => {
-      if (!clientRef.current || !sessionRef.current) throw new Error('Not connected to session');
-      await execute(clientRef.current, {
+      if (!client || !session) throw new Error('Not connected to session');
+      await execute(client, {
         query: SET_QUEUE,
         variables: {
           queue: newQueue.map(toClimbQueueItemInput),
@@ -90,7 +84,7 @@ export function useQueueMutations({ client, session }: UseQueueMutationsArgs): Q
         },
       });
     },
-    [],
+    [client, session],
   );
 
   return {
