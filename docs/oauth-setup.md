@@ -70,7 +70,7 @@ Boardsesh uses NextAuth.js v4 for authentication with the following components:
 
 - **Conditional Providers**: OAuth buttons only appear when provider credentials are configured
 - **Email Verification**: New email/password accounts require email verification
-- **Account Linking**: OAuth users can add passwords; password users cannot add OAuth (security)
+- **Account Linking**: Accounts are automatically linked by email — signing in with OAuth using an email that already has a password account links both methods to the same user
 - **JWT Sessions**: Stateless authentication with 5-minute refresh interval
 - **Rate Limiting**: In-memory rate limiting on auth endpoints (best-effort in serverless)
 
@@ -464,14 +464,11 @@ curl http://localhost:3000/api/auth/providers-config
 
 ### "OAuthAccountNotLinked" Error
 
-**Cause**: User already has an account with different auth method
+**Cause**: User already has an account with a different auth method and auto-linking failed
 
 **Example**: User registered with email/password, then tried Google sign-in with same email
 
-**Solution**:
-- Users must sign in with their original method
-- Account linking from OAuth to password is supported
-- Account linking from password to OAuth is blocked (security)
+**Note**: This error should not normally occur. OAuth providers (Google, Apple, Facebook) verify emails, so accounts are automatically linked when the email matches an existing user. If you see this error, check that `allowDangerousEmailAccountLinking: true` is set on the OAuth provider in `auth-options.ts`.
 
 ### Social Buttons Not Appearing
 

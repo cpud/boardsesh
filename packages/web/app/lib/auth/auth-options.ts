@@ -212,8 +212,9 @@ export const authOptions: NextAuthOptions = {
               .update(schema.users)
               .set({ emailVerified: new Date() })
               .where(and(eq(schema.users.id, user.id), isNull(schema.users.emailVerified)));
-          } catch {
+          } catch (error) {
             // Best-effort — don't block sign-in if this fails
+            console.warn("Failed to mark email as verified during OAuth sign-in:", error);
           }
         }
         return true;
