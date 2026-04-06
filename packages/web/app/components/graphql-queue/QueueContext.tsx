@@ -506,17 +506,18 @@ export const GraphQLQueueProvider = ({ parsedParams, boardDetails, children, bas
 
   const queueListValue: QueueListDataType = useMemo(() => ({
     queue: state.queue,
-  }), [state.queue]);
+    suggestedClimbs,
+  }), [state.queue, suggestedClimbs]);
 
   const searchValue: SearchDataType = useMemo(() => ({
     climbSearchParams: state.climbSearchParams,
-    climbSearchResults, suggestedClimbs, totalSearchResultCount, hasMoreResults,
+    climbSearchResults, totalSearchResultCount, hasMoreResults,
     isFetchingClimbs, isFetchingNextPage,
     hasDoneFirstFetch: state.hasDoneFirstFetch,
     parsedParams,
   }), [
     state.climbSearchParams, state.hasDoneFirstFetch,
-    climbSearchResults, suggestedClimbs, totalSearchResultCount, hasMoreResults,
+    climbSearchResults, totalSearchResultCount, hasMoreResults,
     isFetchingClimbs, isFetchingNextPage, parsedParams,
   ]);
 

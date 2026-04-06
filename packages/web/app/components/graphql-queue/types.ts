@@ -39,12 +39,15 @@ export interface CurrentClimbDataType {
 
 export interface QueueListDataType {
   queue: ClimbQueue;
+  // suggestedClimbs lives here (not SearchContext) because it depends on queue
+  // state — filtering search results against the queue. If it were in SearchContext,
+  // every queue change would trigger re-renders in search-only consumers.
+  suggestedClimbs: Climb[];
 }
 
 export interface SearchDataType {
   climbSearchParams: SearchRequestPagination;
   climbSearchResults: Climb[] | null;
-  suggestedClimbs: Climb[];
   totalSearchResultCount: number | null;
   hasMoreResults: boolean;
   isFetchingClimbs: boolean;

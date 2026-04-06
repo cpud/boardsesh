@@ -38,8 +38,8 @@ type QueueListProps = {
 
 const QueueList = forwardRef<QueueListHandle, QueueListProps>(({ boardDetails, onClimbNavigate, isEditMode = false, showHistory = false, selectedItems, onToggleSelect, scrollContainer }, ref) => {
   const { currentClimbQueueItem } = useCurrentClimb();
-  const { queue } = useQueueList();
-  const { suggestedClimbs, hasMoreResults, isFetchingClimbs, isFetchingNextPage } = useSearchData();
+  const { queue, suggestedClimbs } = useQueueList();
+  const { hasMoreResults, isFetchingClimbs, isFetchingNextPage } = useSearchData();
   const { viewOnlyMode } = useSessionData();
   const {
     fetchMoreClimbs,

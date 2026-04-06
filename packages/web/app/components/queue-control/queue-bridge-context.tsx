@@ -444,12 +444,12 @@ export function QueueBridgeProvider({ children }: { children: React.ReactNode })
 
   const effectiveQueueList: QueueListDataType = useMemo(() => ({
     queue: effectiveData.queue,
-  }), [effectiveData.queue]);
+    suggestedClimbs: effectiveData.suggestedClimbs,
+  }), [effectiveData.queue, effectiveData.suggestedClimbs]);
 
   const effectiveSearch: SearchDataType = useMemo(() => ({
     climbSearchParams: effectiveData.climbSearchParams,
     climbSearchResults: effectiveData.climbSearchResults,
-    suggestedClimbs: effectiveData.suggestedClimbs,
     totalSearchResultCount: effectiveData.totalSearchResultCount,
     hasMoreResults: effectiveData.hasMoreResults,
     isFetchingClimbs: effectiveData.isFetchingClimbs,
@@ -458,7 +458,7 @@ export function QueueBridgeProvider({ children }: { children: React.ReactNode })
     parsedParams: effectiveData.parsedParams,
   }), [
     effectiveData.climbSearchParams, effectiveData.climbSearchResults,
-    effectiveData.suggestedClimbs, effectiveData.totalSearchResultCount,
+    effectiveData.totalSearchResultCount,
     effectiveData.hasMoreResults, effectiveData.isFetchingClimbs,
     effectiveData.isFetchingNextPage, effectiveData.hasDoneFirstFetch,
     effectiveData.parsedParams,
