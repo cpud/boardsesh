@@ -259,30 +259,45 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
   }, [userStyles?.wrapper, height, width, fullHeightProp]);
 
   // SwipeableDrawer onClose handler.
-  // Normalizes the Paper's inline transform before the Slide exit transition
-  // fires. During swipe, MUI sets `translate(0, Xpx)` but Slide animates to
-  // `translateY(Xpx)`. These different function formats can't be interpolated
-  // by CSS transitions, causing the Paper to jump instead of animate.
+  // When triggered by a swipe fling, the Paper is at an intermediate position
+  // with inline styles from MUI's setPosition (translate(0, Xpx) format, no
+  // transition). We animate it to off-screen ourselves using the SAME format,
+  // then call onClose after the animation completes. This avoids the Slide
+  // transition entirely for swipe-closes — Slide's format (translateY) can't
+  // reliably interpolate with SwipeableDrawer's format in the same macrotask.
+  const closeAnimRef = useRef<number>(0);
   const handleSwipeableClose = useCallback(() => {
     const paper = lastPaperRef.current;
-    if (paper) {
-      const t = paper.style.transform;
-      if (t) {
-        const m = t.match(/translate\(\s*0(?:px)?\s*,\s*(.+?)\s*\)/);
-        if (m) {
-          paper.style.transform = `translateY(${m[1]})`;
-          paper.style.webkitTransform = `translateY(${m[1]})`;
-        } else {
-          const mh = t.match(/translate\(\s*(.+?)\s*,\s*0(?:px)?\s*\)/);
-          if (mh) {
-            paper.style.transform = `translateX(${mh[1]})`;
-            paper.style.webkitTransform = `translateX(${mh[1]})`;
-          }
-        }
-      }
+    if (paper?.style.transform) {
+      // Paper has inline transform from swipe — animate it off-screen ourselves.
+      // We use the same translate() format MUI's setPosition uses so the browser
+      // can interpolate between the current swipe position and the target.
+      const isHorizontal = placement === 'left' || placement === 'right';
+      const maxTranslate = isHorizontal ? paper.offsetWidth : paper.offsetHeight;
+      const sign = placement === 'right' || placement === 'bottom' ? 1 : -1;
+      const target = isHorizontal
+        ? `translate(${sign * maxTranslate}px, 0)`
+        : `translate(0, ${sign * maxTranslate}px)`;
+
+      // Force reflow so the browser commits the current swipe position as the
+      // transition start value. Without this, setting transition + transform in
+      // the same microtask can cause browsers to skip the animation.
+      void paper.offsetHeight;
+
+      paper.style.transition = 'transform 200ms cubic-bezier(0.4, 0, 0.2, 1)';
+      paper.style.webkitTransition = '-webkit-transform 200ms cubic-bezier(0.4, 0, 0.2, 1)';
+      paper.style.transform = target;
+      paper.style.webkitTransform = target;
+
+      // Call onClose after animation so React state update doesn't interfere
+      clearTimeout(closeAnimRef.current);
+      closeAnimRef.current = window.setTimeout(() => {
+        onClose?.();
+      }, 210);
+      return;
     }
     onClose?.();
-  }, [onClose]);
+  }, [onClose, placement]);
 
   // Callback that controls whether swipe gestures are recognized.
   // Also prevents a parent drawer from capturing swipes that originate
