@@ -388,15 +388,6 @@ export default function BoardSelectorDrawer({
             </FormControl>
 
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                variant="contained"
-                size="large"
-                fullWidth
-                onClick={handleStartClimbing}
-                disabled={!isFormComplete}
-              >
-                Quick session
-              </Button>
               {showCreateBoard && (
                 <Button
                   variant="outlined"
@@ -408,6 +399,15 @@ export default function BoardSelectorDrawer({
                   Create board
                 </Button>
               )}
+              <Button
+                variant="contained"
+                size="large"
+                fullWidth
+                onClick={handleStartClimbing}
+                disabled={!isFormComplete}
+              >
+                Quick session
+              </Button>
             </Box>
           </Box>
         ) : (
