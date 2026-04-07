@@ -1,6 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
+
+vi.mock('../map-location-picker', () => ({
+  default: ({
+    onChange,
+  }: {
+    latitude: number | null;
+    longitude: number | null;
+    onChange: (lat: number, lng: number) => void;
+  }) => (
+    <div data-testid="map-location-picker">
+      <button
+        type="button"
+        data-testid="map-select-location"
+        onClick={() => onChange(51.5074, -0.1278)}
+      >
+        Select Location
+      </button>
+    </div>
+  ),
+}));
+
 import BoardForm from '../board-form';
 
 const defaultValues = {
@@ -159,6 +180,42 @@ describe('BoardForm', () => {
     );
 
     expect(screen.getByLabelText('URL Slug')).toBeDefined();
+  });
+
+  it('renders map location picker', () => {
+    render(
+      <BoardForm
+        title="Edit Board"
+        submitLabel="Save"
+        initialValues={defaultValues}
+        onSubmit={mockOnSubmit}
+      />,
+    );
+
+    expect(screen.getByTestId('map-location-picker')).toBeDefined();
+  });
+
+  it('submits form with updated location from map picker', async () => {
+    render(
+      <BoardForm
+        title="Edit Board"
+        submitLabel="Save"
+        initialValues={defaultValues}
+        onSubmit={mockOnSubmit}
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId('map-select-location'));
+    fireEvent.submit(screen.getByText('Save').closest('form')!);
+
+    await waitFor(() => {
+      expect(mockOnSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          latitude: 51.5074,
+          longitude: -0.1278,
+        }),
+      );
+    });
   });
 
   it('disables submit button when name is empty', () => {

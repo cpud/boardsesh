@@ -168,6 +168,10 @@ export default function MapLocationPicker({ latitude, longitude, onChange }: Map
           `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encoded}`,
           { headers: { 'Accept-Language': 'en' } },
         );
+        if (!res.ok) {
+          console.error('Nominatim search failed:', res.status, res.statusText);
+          return;
+        }
         const results: NominatimResult[] = await res.json();
         if (results.length > 0) {
           const lat = Math.round(parseFloat(results[0].lat) * 1000000) / 1000000;
@@ -176,6 +180,8 @@ export default function MapLocationPicker({ latitude, longitude, onChange }: Map
           mapRef.current?.flyTo([lat, lng], 16);
           onChangeRef.current(lat, lng);
         }
+      } catch (error) {
+        console.error('Address search failed:', error);
       } finally {
         setIsSearching(false);
       }
