@@ -94,26 +94,34 @@ export default function BoardDiscoveryScroll({
       hasMore={hasMore}
       isLoadingMore={isLoadingMore}
     >
+      {/* Find Nearby + Custom stacked vertically as half-height cards */}
       {discoverBoards.length === 0 && (
-        <FindNearbyCard
-          onClick={handleFindNearbyClick}
-          status={deriveFindNearbyStatus({
-            locationEnabled,
-            isLoading: isBoardsLoading,
-            error: discoverError,
-            hasLocation,
-          })}
-        />
+        <div className={styles.stackedCards}>
+          <FindNearbyCard
+            onClick={handleFindNearbyClick}
+            status={deriveFindNearbyStatus({
+              locationEnabled,
+              isLoading: isBoardsLoading,
+              error: discoverError,
+              hasLocation,
+            })}
+          />
+          <CustomBoardCard onClick={onCustomClick} />
+        </div>
       )}
-      {discoverBoards.map((board) => (
-        <BoardScrollCard
-          key={board.uuid}
-          userBoard={board}
-          selected={selectedBoardUuid === board.uuid}
-          onClick={() => onBoardClick(board)}
-        />
-      ))}
-      <CustomBoardCard onClick={onCustomClick} />
+      {discoverBoards.length > 0 && (
+        <>
+          {discoverBoards.map((board) => (
+            <BoardScrollCard
+              key={board.uuid}
+              userBoard={board}
+              selected={selectedBoardUuid === board.uuid}
+              onClick={() => onBoardClick(board)}
+            />
+          ))}
+          <CustomBoardCard onClick={onCustomClick} />
+        </>
+      )}
       {/* My boards - animate in between Custom and Popular */}
       {myBoards.map((board) => (
         <div

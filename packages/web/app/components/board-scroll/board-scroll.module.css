@@ -161,6 +161,52 @@
   opacity: 0.35;
 }
 
+/* Stacked cards - Find Nearby + Custom stacked vertically */
+.stackedCards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  width: 120px;
+}
+
+.stackedCards .cardScroll {
+  width: 100%;
+}
+
+.stackedCards .cardSquare {
+  aspect-ratio: auto;
+  height: calc((182px - 8px) / 2 - 14px);
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+
+.stackedCards .cardName {
+  font-size: 11px;
+}
+
+.stackedCards .findNearbyIconPrimary,
+.stackedCards .findNearbyIconError,
+.stackedCards .findNearbyIconMuted {
+  font-size: 22px;
+}
+
+.stackedCards .createLabel {
+  font-size: 10px;
+}
+
+/* Desktop stacked */
+@media (min-width: 768px) {
+  .stackedCards {
+    width: 140px;
+  }
+
+  .stackedCards .cardSquare {
+    height: calc((208px - 8px) / 2 - 14px);
+  }
+}
+
 /* Custom Board Card - 2x2 grid of board thumbnails */
 .customBoardGrid {
   display: grid;
