@@ -4,7 +4,7 @@ import React, { useState, useCallback } from 'react';
 import Button from '@mui/material/Button';
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import PlayCircleOutlineOutlined from '@mui/icons-material/PlayCircleOutlineOutlined';
-import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
+import StopCircleOutlined from '@mui/icons-material/StopCircleOutlined';
 import UnifiedSearchDrawer from '@/app/components/search-drawer/unified-search-drawer';
 import { useSearchDrawerBridge } from '@/app/components/search-drawer/search-drawer-bridge-context';
 import { DEFAULT_CLIMB_SEARCH_SUMMARY } from '@/app/components/search-drawer/search-summary-utils';
@@ -126,7 +126,7 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
         <Button
           variant="contained"
           size="small"
-          startIcon={hasActiveSession ? <SettingsOutlined /> : <PlayCircleOutlineOutlined />}
+          startIcon={hasActiveSession ? <StopCircleOutlined /> : <PlayCircleOutlineOutlined />}
           onClick={handleSeshClick}
           sx={hasActiveSession ? {
             backgroundColor: themeTokens.colors.success,

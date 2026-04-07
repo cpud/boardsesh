@@ -7,7 +7,11 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import StopCircleOutlined from '@mui/icons-material/StopCircleOutlined';
+import ContentCopyOutlined from '@mui/icons-material/ContentCopyOutlined';
 import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import TextField from '@mui/material/TextField';
+import { QRCodeSVG } from 'qrcode.react';
 import { useQuery } from '@tanstack/react-query';
 import SwipeableDrawer from '@/app/components/swipeable-drawer/swipeable-drawer';
 import AngleSelector from '@/app/components/board-page/angle-selector';
@@ -22,8 +26,19 @@ import {
   type GetSessionDetailQueryResponse,
 } from '@/app/lib/graphql/operations/activity-feed';
 import { clearClimbSessionCookie } from '@/app/lib/climb-session-cookie';
+import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import type { SessionDetail } from '@boardsesh/shared-schema';
+import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
 import SessionDetailContent from '@/app/session/[sessionId]/session-detail-content';
+
+const getShareUrl = (sessionId: string | null) => {
+  try {
+    if (!sessionId) return '';
+    return `${window.location.origin}/join/${sessionId}`;
+  } catch {
+    return '';
+  }
+};
 
 interface SeshSettingsDrawerProps {
   open: boolean;
@@ -38,8 +53,17 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
   const router = useRouter();
   const pathname = usePathname();
   const sessionId = activeSession?.sessionId ?? null;
+  const shareUrl = getShareUrl(sessionId);
+  const { showMessage } = useSnackbar();
   const [isStopped, setIsStopped] = useState(false);
   const lastSessionRef = useRef<SessionDetail | null>(null);
+
+  const copyToClipboard = useCallback(() => {
+    navigator.clipboard
+      .writeText(shareUrl)
+      .then(() => showMessage('Share URL copied!', 'success'))
+      .catch(() => showMessage('Failed to copy URL.', 'error'));
+  }, [shareUrl, showMessage]);
 
   const handleAngleChange = useCallback((newAngle: number) => {
     if (!boardDetails || angle === undefined) return;
@@ -235,6 +259,38 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
             session={displaySession}
             embedded
             fallbackBoardDetails={boardDetails}
+            afterParticipants={
+              !isStopped && shareUrl ? (
+                <CollapsibleSection
+                  sections={[{
+                    key: 'invite',
+                    label: 'Invite',
+                    title: 'Invite others to join',
+                    defaultSummary: 'Share link or QR code',
+                    getSummary: () => [],
+                    content: (
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Box sx={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+                          <TextField
+                            value={shareUrl}
+                            slotProps={{ input: { readOnly: true } }}
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                          />
+                          <IconButton onClick={copyToClipboard}>
+                            <ContentCopyOutlined />
+                          </IconButton>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                          <QRCodeSVG value={shareUrl} size={160} />
+                        </Box>
+                      </Box>
+                    ),
+                  }]}
+                />
+              ) : undefined
+            }
           />
         )}
 
