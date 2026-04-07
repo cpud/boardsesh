@@ -46,6 +46,18 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
 
   const hasActiveSession = !!activeSession;
 
+  // Unmount drawer trees after close animation finishes to avoid rendering
+  // MUI Modal/Portal/FocusTrap infrastructure on every parent re-render.
+  const handleSearchTransitionEnd = useCallback((open: boolean) => {
+    if (!open) setSearchRendered(false);
+  }, []);
+  const handleStartSeshTransitionEnd = useCallback((open: boolean) => {
+    if (!open) setStartSeshRendered(false);
+  }, []);
+  const handleSeshSettingsTransitionEnd = useCallback((open: boolean) => {
+    if (!open) setSeshSettingsRendered(false);
+  }, []);
+
   // On hidden-header pages, show only the avatar in a transparent bar
   if (HIDDEN_HEADER_PAGES.includes(pathname)) {
     return (
@@ -80,18 +92,6 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
       setStartSeshOpen(true);
     }
   };
-
-  // Unmount drawer trees after close animation finishes to avoid rendering
-  // MUI Modal/Portal/FocusTrap infrastructure on every parent re-render.
-  const handleSearchTransitionEnd = useCallback((open: boolean) => {
-    if (!open) setSearchRendered(false);
-  }, []);
-  const handleStartSeshTransitionEnd = useCallback((open: boolean) => {
-    if (!open) setStartSeshRendered(false);
-  }, []);
-  const handleSeshSettingsTransitionEnd = useCallback((open: boolean) => {
-    if (!open) setSeshSettingsRendered(false);
-  }, []);
 
   const pillText = useClimbSearchBridge ? (searchPillSummary ?? defaultSearchPillText) : defaultSearchPillText;
 
