@@ -97,7 +97,7 @@ export default function MyBoardsDrawer({ open, onClose }: MyBoardsDrawerProps) {
         placement="bottom"
         open={editingBoard !== null}
         onClose={handleEditCancel}
-        height="85dvh"
+        height="100%"
       >
         {editingBoard && (
           <div className={styles.editFormContainer}>
