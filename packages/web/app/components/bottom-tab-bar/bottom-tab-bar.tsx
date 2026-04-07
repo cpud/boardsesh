@@ -19,8 +19,8 @@ import NotificationsOutlined from '@mui/icons-material/NotificationsOutlined';
 import Badge from '@mui/material/Badge';
 import { usePathname, useRouter } from 'next/navigation';
 import { track } from '@vercel/analytics';
-import { BoardDetails } from '@/app/lib/types';
-import { constructClimbListWithSlugs, generateLayoutSlug, generateSizeSlug, generateSetSlug, searchParamsToUrlParams, getContextAwarePlaylistUrl, getPlaylistsBasePath } from '@/app/lib/url-utils';
+import { BoardDetails, BoardName } from '@/app/lib/types';
+import { constructClimbListWithSlugs, constructBoardSlugListUrl, tryConstructSlugListUrl, generateLayoutSlug, generateSizeSlug, generateSetSlug, searchParamsToUrlParams, getContextAwarePlaylistUrl, getPlaylistsBasePath } from '@/app/lib/url-utils';
 import { themeTokens } from '@/app/theme/theme-config';
 import { useColorMode } from '@/app/hooks/use-color-mode';
 import { PlaylistsContext } from '../climb-actions/playlists-batch-context';
@@ -28,9 +28,12 @@ import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 import { usePersistentSessionState } from '../persistent-session';
 import { getLastUsedBoard } from '@/app/lib/last-used-board-db';
 import { getRecentSearches } from '@/app/components/search-drawer/recent-searches-storage';
+import BoardDiscoveryScroll from '../board-scroll/board-discovery-scroll';
 import BoardSelectorDrawer from '../board-selector-drawer/board-selector-drawer';
 import { BoardConfigData } from '@/app/lib/server-board-configs';
+import { getDefaultAngleForBoard } from '@/app/lib/board-config-for-playlist';
 import { useUnreadNotificationCount } from '@/app/hooks/use-unread-notification-count';
+import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
 import { useClimbActionsData } from '@/app/hooks/use-climb-actions-data';
 import type { StoredBoardConfig } from '@/app/lib/saved-boards-db';
 import { isValidHexColor } from '@/app/lib/color-utils';
@@ -97,6 +100,8 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
   const { openAuthModal } = useAuthModal();
   const [isBoardSelectorOpen, setIsBoardSelectorOpen] = useState(false);
   const [isBoardSelectorRendered, setIsBoardSelectorRendered] = useState(false);
+  const [isCustomBoardOpen, setIsCustomBoardOpen] = useState(false);
+  const [isCustomBoardRendered, setIsCustomBoardRendered] = useState(false);
   const [pendingCreateAction, setPendingCreateAction] = useState<PendingCreateAction>(null);
   const [selectedBoardContext, setSelectedBoardContext] = useState<SelectedBoardContext | null>(null);
   const [playlistFormValues, setPlaylistFormValues] = useState(INITIAL_PLAYLIST_FORM);
@@ -109,6 +114,9 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
   }, []);
   const handleCreatePlaylistTransitionEnd = useCallback((open: boolean) => {
     if (!open) setIsCreatePlaylistRendered(false);
+  }, []);
+  const handleCustomBoardTransitionEnd = useCallback((open: boolean) => {
+    if (!open) setIsCustomBoardRendered(false);
   }, []);
   const handleBoardSelectorTransitionEnd = useCallback((open: boolean) => {
     if (!open) setIsBoardSelectorRendered(false);
@@ -236,9 +244,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
 
     // Open board selector drawer if no board context
     if (!url) {
-      if (boardConfigs) {
-        setIsBoardSelectorRendered(true); setIsBoardSelectorOpen(true);
-      }
+      setIsBoardSelectorRendered(true); setIsBoardSelectorOpen(true);
       track('Bottom Tab Bar', { tab: 'climbs', action: 'open_selector' });
       return;
     }
@@ -401,6 +407,44 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
 
     router.push(url);
   }, [pendingCreateAction, router, showMessage]);
+
+  const handleDiscoveryBoardClick = useCallback((board: UserBoard) => {
+    if (board.slug) {
+      const url = constructBoardSlugListUrl(board.slug, board.angle);
+      const config: StoredBoardConfig = {
+        name: board.name,
+        board: board.boardType as BoardName,
+        layoutId: board.layoutId,
+        sizeId: board.sizeId,
+        setIds: board.setIds.split(',').map(Number),
+        angle: board.angle,
+        createdAt: board.createdAt,
+      };
+      handleBoardSelected(url, config);
+    }
+    setIsBoardSelectorOpen(false);
+  }, [handleBoardSelected]);
+
+  const handleDiscoveryConfigClick = useCallback((config: PopularBoardConfig) => {
+    const angle = getDefaultAngleForBoard(config.boardType);
+    let url: string;
+    if (config.layoutName && config.sizeName && config.setNames.length > 0) {
+      url = constructClimbListWithSlugs(
+        config.boardType,
+        config.layoutName,
+        config.sizeName,
+        config.sizeDescription ?? undefined,
+        config.setNames,
+        angle,
+      );
+    } else {
+      const setIds = config.setIds.join(',');
+      url = tryConstructSlugListUrl(config.boardType, config.layoutId, config.sizeId, config.setIds, angle)
+        ?? `/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`;
+    }
+    handleBoardSelected(url);
+    setIsBoardSelectorOpen(false);
+  }, [handleBoardSelected]);
 
   const validatePlaylistForm = useCallback((): boolean => {
     const errors: Record<string, string> = {};
@@ -653,16 +697,44 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
       )}
 
       {/* Board Selector Drawer */}
-      {boardConfigs && isBoardSelectorRendered && (
-        <BoardSelectorDrawer
+      {isBoardSelectorRendered && (
+        <SwipeableDrawer
+          title="Pick a board"
+          placement="bottom"
           open={isBoardSelectorOpen}
           onClose={() => {
             setIsBoardSelectorOpen(false);
             setPendingCreateAction(null);
           }}
           onTransitionEnd={handleBoardSelectorTransitionEnd}
-          onBoardSelected={handleBoardSelected}
+        >
+          <BoardDiscoveryScroll
+            onBoardClick={handleDiscoveryBoardClick}
+            onConfigClick={handleDiscoveryConfigClick}
+            onCustomClick={() => {
+              setIsBoardSelectorOpen(false);
+              setIsCustomBoardRendered(true);
+              setIsCustomBoardOpen(true);
+            }}
+          />
+        </SwipeableDrawer>
+      )}
+
+      {/* Custom Board Selector Drawer */}
+      {boardConfigs && isCustomBoardRendered && (
+        <BoardSelectorDrawer
+          open={isCustomBoardOpen}
+          onClose={() => setIsCustomBoardOpen(false)}
+          onTransitionEnd={handleCustomBoardTransitionEnd}
           boardConfigs={boardConfigs}
+          placement="bottom"
+          onBoardSelected={(url) => {
+            handleBoardSelected(url);
+            setIsCustomBoardOpen(false);
+          }}
+          hideNearby
+          showCreateBoard
+          startWithForm
         />
       )}
 

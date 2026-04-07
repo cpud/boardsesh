@@ -8,7 +8,7 @@
   font-size: 16px;
   font-weight: 600;
   color: var(--neutral-900);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .scrollContainer {
@@ -17,7 +17,7 @@
   gap: 12px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  scroll-snap-type: x mandatory;
+  scroll-snap-type: x proximity;
 }
 
 .scrollContainer::-webkit-scrollbar {
@@ -36,10 +36,21 @@
   aspect-ratio: 1;
   border-radius: 8px;
   overflow: hidden;
-  margin-bottom: 8px;
+  margin-bottom: 2px;
   box-shadow: var(--shadow-xs);
   background: var(--neutral-100);
   position: relative;
+}
+
+/* Press feedback overlay */
+.cardScroll:active .cardSquare::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .cardSquareSelected {
@@ -63,6 +74,9 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.15;
+  padding: 0;
+  margin: 0;
 }
 
 .cardNameSelected {
@@ -73,7 +87,9 @@
 .cardMeta {
   font-size: 12px;
   color: var(--neutral-500);
-  margin-top: 2px;
+  margin: 0;
+  padding: 0;
+  line-height: 1.15;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -159,6 +175,112 @@
 .findNearbyBoard {
   filter: grayscale(100%);
   opacity: 0.35;
+}
+
+/* Stacked cards - Find Nearby + Custom stacked vertically */
+.stackedCards {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  width: 100px;
+  /* Match the height of a normal card: square image + 8px margin + ~18px name + ~16px meta */
+  height: calc(182px + 8px + 18px + 16px);
+}
+
+.stackedCards .cardScroll {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+.stackedCards .cardSquare {
+  aspect-ratio: auto;
+  height: calc(100% - 18px);
+  border-radius: 6px;
+  margin-bottom: 2px;
+}
+
+.stackedCards .cardName {
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.stackedCards .cardMeta {
+  display: none;
+}
+
+.stackedCards .findNearbyIconPrimary,
+.stackedCards .findNearbyIconError,
+.stackedCards .findNearbyIconMuted {
+  font-size: 20px;
+}
+
+.stackedCards .createLabel {
+  font-size: 10px;
+}
+
+/* Desktop stacked */
+@media (min-width: 768px) {
+  .stackedCards {
+    width: 120px;
+    height: calc(208px + 8px + 18px + 16px);
+  }
+}
+
+/* Custom Board Card - 2x2 grid of board thumbnails */
+.customBoardGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  width: 100%;
+  height: 100%;
+  filter: grayscale(100%);
+  opacity: 0.35;
+}
+
+.customBoardGridCell {
+  overflow: hidden;
+  position: relative;
+}
+
+/* Board thumbnail standalone (for collapsed selector) */
+.boardThumbnailInline {
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
+  background: var(--neutral-100);
+  flex-shrink: 0;
+  aspect-ratio: 1;
+}
+
+/* My Boards card fade-in within scroll */
+.myBoardCardFadeIn {
+  opacity: 0;
+  width: 0;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: opacity 400ms ease, width 400ms ease;
+}
+
+.myBoardCardFadeInVisible {
+  opacity: 1;
+  width: 182px;
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .myBoardCardFadeInVisible {
+    width: 182px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 768px) {
+  .myBoardCardFadeInVisible {
+    width: 208px;
+  }
 }
 
 /* Skeleton */

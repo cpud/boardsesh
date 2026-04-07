@@ -1,8 +1,6 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
-import Box from '@mui/material/Box';
-import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import React, { useCallback } from 'react';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { useEntityMutation } from '@/app/hooks/use-entity-mutation';
 import {
@@ -16,7 +14,6 @@ import type { UserBoard } from '@boardsesh/shared-schema';
 import type { BoardName } from '@/app/lib/types';
 import { ANGLES } from '@/app/lib/board-data';
 import BoardForm from './board-form';
-import GymSelector from '@/app/components/gym-entity/gym-selector';
 
 interface CreateBoardFormProps {
   boardType: string;
@@ -37,10 +34,8 @@ export default function CreateBoardForm({
   onSuccess,
   onCancel,
 }: CreateBoardFormProps) {
-  const { isAuthenticated } = useWsAuthToken();
   const { showMessage } = useSnackbar();
   const router = useRouter();
-  const [selectedGymUuid, setSelectedGymUuid] = useState<string | null>(null);
 
   const availableAngles = ANGLES[boardType as BoardName] ?? [];
 
@@ -74,7 +69,6 @@ export default function CreateBoardForm({
           isUnlisted: values.isUnlisted,
           hideLocation: values.hideLocation,
           isOwned: values.isOwned,
-          gymUuid: selectedGymUuid || undefined,
           angle: values.angle,
           isAngleAdjustable: values.isAngleAdjustable,
         },
@@ -82,11 +76,7 @@ export default function CreateBoardForm({
 
       if (data) {
         const board = data.createBoard;
-        let message = `Board "${board.name}" created!`;
-        if (board.gymName && !selectedGymUuid) {
-          message += ` A gym "${board.gymName}" was auto-created.`;
-        }
-        showMessage(message, 'success');
+        showMessage(`Board "${board.name}" created!`, 'success');
 
         if (onSuccess) {
           onSuccess(board);
@@ -95,37 +85,27 @@ export default function CreateBoardForm({
         }
       }
     },
-    [execute, boardType, layoutId, sizeId, setIds, defaultAngle, selectedGymUuid, showMessage, router, onSuccess],
+    [execute, boardType, layoutId, sizeId, setIds, defaultAngle, showMessage, router, onSuccess],
   );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <BoardForm
-        title="Create Board"
-        submitLabel="Create Board"
-        initialValues={{
-          name: '',
-          description: '',
-          locationName: '',
-          isPublic: true,
-          isUnlisted: false,
-          hideLocation: false,
-          isOwned: true,
-        }}
-        namePlaceholder="e.g., Home Board, Gym Name"
-        locationPlaceholder="e.g., City, Gym Name"
-        availableAngles={availableAngles}
-        onSubmit={handleSubmit}
-        onCancel={onCancel}
-      />
-      {isAuthenticated && (
-        <Box sx={{ px: 0 }}>
-          <GymSelector
-            selectedGymUuid={selectedGymUuid}
-            onSelect={setSelectedGymUuid}
-          />
-        </Box>
-      )}
-    </Box>
+    <BoardForm
+      title=""
+      submitLabel="Create Board"
+      initialValues={{
+        name: '',
+        description: '',
+        locationName: '',
+        isPublic: true,
+        isUnlisted: false,
+        hideLocation: false,
+        isOwned: true,
+      }}
+      namePlaceholder="e.g., Home Board, Gym Name"
+      locationPlaceholder="e.g., City, Gym Name"
+      availableAngles={availableAngles}
+      onSubmit={handleSubmit}
+      onCancel={onCancel}
+    />
   );
 }
