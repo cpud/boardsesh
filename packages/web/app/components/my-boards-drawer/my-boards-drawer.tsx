@@ -6,10 +6,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import ChevronRightOutlined from '@mui/icons-material/ChevronRightOutlined';
 import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
-import { useSession } from 'next-auth/react';
 import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
 import BoardDetail from '../board-entity/board-detail';
-import EditBoardForm from '../board-entity/edit-board-form';
 import { useMyBoards } from '@/app/hooks/use-my-boards';
 import type { UserBoard } from '@boardsesh/shared-schema';
 import styles from './my-boards-drawer.module.css';
@@ -20,21 +18,11 @@ interface MyBoardsDrawerProps {
 }
 
 export default function MyBoardsDrawer({ open, onClose }: MyBoardsDrawerProps) {
-  const { data: session } = useSession();
-  const currentUserId = session?.user?.id ?? null;
   const { boards, isLoading, error } = useMyBoards(open);
-  const [editingBoard, setEditingBoard] = useState<UserBoard | null>(null);
-  const [viewingBoardUuid, setViewingBoardUuid] = useState<string | null>(null);
+  const [selectedBoardUuid, setSelectedBoardUuid] = useState<string | null>(null);
 
-  const handleEditSuccess = useCallback(
-    (_updatedBoard: UserBoard) => {
-      setEditingBoard(null);
-    },
-    [],
-  );
-
-  const handleEditCancel = useCallback(() => {
-    setEditingBoard(null);
+  const handleBoardDeleted = useCallback(() => {
+    setSelectedBoardUuid(null);
   }, []);
 
   const formatBoardMeta = (board: UserBoard) => {
@@ -78,13 +66,7 @@ export default function MyBoardsDrawer({ open, onClose }: MyBoardsDrawerProps) {
                 type="button"
                 key={board.uuid}
                 className={styles.boardItem}
-                onClick={() => {
-                  if (currentUserId && board.ownerId === currentUserId) {
-                    setEditingBoard(board);
-                  } else {
-                    setViewingBoardUuid(board.uuid);
-                  }
-                }}
+                onClick={() => setSelectedBoardUuid(board.uuid)}
                 data-testid={`board-item-${board.uuid}`}
               >
                 <div className={styles.boardItemIcon}>
@@ -103,29 +85,12 @@ export default function MyBoardsDrawer({ open, onClose }: MyBoardsDrawerProps) {
         )}
       </SwipeableDrawer>
 
-      <SwipeableDrawer
-        title="Edit Board"
-        placement="bottom"
-        open={editingBoard !== null}
-        onClose={handleEditCancel}
-        height="100%"
-      >
-        {editingBoard && (
-          <div className={styles.editFormContainer}>
-            <EditBoardForm
-              board={editingBoard}
-              onSuccess={handleEditSuccess}
-              onCancel={handleEditCancel}
-            />
-          </div>
-        )}
-      </SwipeableDrawer>
-
-      {viewingBoardUuid && (
+      {selectedBoardUuid && (
         <BoardDetail
-          boardUuid={viewingBoardUuid}
+          boardUuid={selectedBoardUuid}
           open
-          onClose={() => setViewingBoardUuid(null)}
+          onClose={() => setSelectedBoardUuid(null)}
+          onDeleted={handleBoardDeleted}
         />
       )}
     </>
