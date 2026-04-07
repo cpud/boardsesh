@@ -5,17 +5,14 @@ import CircularProgress from '@mui/material/CircularProgress';
 import LightbulbOutlined from '@mui/icons-material/LightbulbOutlined';
 import Lightbulb from '@mui/icons-material/Lightbulb';
 import IconButton from '@mui/material/IconButton';
-import Badge from '@mui/material/Badge';
 import { useCurrentClimb, useSessionData } from '../graphql-queue';
 import { useBluetoothContext } from '../board-bluetooth-control/bluetooth-context';
 import './share-button.css';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
-import { deduplicateBy } from '@/app/utils/deduplicate';
 
 export const ShareBoardButton = () => {
   const { showMessage } = useSnackbar();
   const {
-    users,
     hasConnected,
     isSessionActive,
     sessionId,
@@ -30,13 +27,7 @@ export const ShareBoardButton = () => {
   } = useBluetoothContext();
   const { currentClimbQueueItem } = useCurrentClimb();
 
-  const uniqueUsers = React.useMemo(
-    () => deduplicateBy(users ?? [], (u) => u.id),
-    [users],
-  );
-
   const isConnecting = !!(sessionId && !hasConnected);
-  const connectionCount = uniqueUsers.length;
 
   const handleLightbulbClick = async () => {
     if (isBoardConnected) {
@@ -62,20 +53,18 @@ export const ShareBoardButton = () => {
   };
 
   return (
-    <Badge badgeContent={connectionCount} max={100} color="primary" invisible={connectionCount === 0}>
-      <IconButton
-        aria-label={isBoardConnected ? 'Disconnect from board' : 'Connect to board'}
-        onClick={handleLightbulbClick}
-        color={isSessionActive ? 'primary' : 'default'}
-      >
-        {isConnecting || btLoading ? (
-          <CircularProgress size={16} />
-        ) : isBoardConnected ? (
-          <Lightbulb className="connect-button-glow" />
-        ) : (
-          <LightbulbOutlined />
-        )}
-      </IconButton>
-    </Badge>
+    <IconButton
+      aria-label={isBoardConnected ? 'Disconnect from board' : 'Connect to board'}
+      onClick={handleLightbulbClick}
+      color={isSessionActive ? 'primary' : 'default'}
+    >
+      {isConnecting || btLoading ? (
+        <CircularProgress size={16} />
+      ) : isBoardConnected ? (
+        <Lightbulb className="connect-button-glow" />
+      ) : (
+        <LightbulbOutlined />
+      )}
+    </IconButton>
   );
 };
