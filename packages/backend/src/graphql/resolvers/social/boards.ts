@@ -215,6 +215,152 @@ async function enrichBoard(
   };
 }
 
+/**
+ * Batch-enrich multiple boards with computed fields using 6 total queries
+ * instead of 6 per board. Used by list endpoints to avoid N+1.
+ */
+async function enrichBoards(
+  boards: Array<{ board: typeof dbSchema.userBoards.$inferSelect; distanceMeters?: number | null }>,
+  authenticatedUserId?: string,
+) {
+  if (boards.length === 0) return [];
+
+  const boardIds = boards.map((b) => b.board.id);
+  const boardUuids = boards.map((b) => b.board.uuid);
+  const ownerIds = [...new Set(boards.map((b) => b.board.ownerId))];
+  const gymIds = [...new Set(boards.map((b) => b.board.gymId).filter((id): id is number => id != null))];
+
+  const [ownerRows, tickRows, followerRows, commentRows, followRows, gymRows] = await Promise.all([
+    // Batch owner profiles
+    db
+      .select({
+        userId: dbSchema.users.id,
+        name: dbSchema.users.name,
+        image: dbSchema.users.image,
+        displayName: dbSchema.userProfiles.displayName,
+        avatarUrl: dbSchema.userProfiles.avatarUrl,
+      })
+      .from(dbSchema.users)
+      .leftJoin(dbSchema.userProfiles, eq(dbSchema.users.id, dbSchema.userProfiles.userId))
+      .where(inArray(dbSchema.users.id, ownerIds)),
+
+    // Batch tick stats per board
+    db
+      .select({
+        boardId: dbSchema.boardseshTicks.boardId,
+        totalAscents: count(),
+        uniqueClimbers: sql<number>`COUNT(DISTINCT ${dbSchema.boardseshTicks.userId})`,
+      })
+      .from(dbSchema.boardseshTicks)
+      .where(
+        and(
+          inArray(dbSchema.boardseshTicks.boardId, boardIds),
+          or(
+            eq(dbSchema.boardseshTicks.status, 'flash'),
+            eq(dbSchema.boardseshTicks.status, 'send'),
+          ),
+        ),
+      )
+      .groupBy(dbSchema.boardseshTicks.boardId),
+
+    // Batch follower counts per board
+    db
+      .select({
+        boardUuid: dbSchema.boardFollows.boardUuid,
+        count: count(),
+      })
+      .from(dbSchema.boardFollows)
+      .where(inArray(dbSchema.boardFollows.boardUuid, boardUuids))
+      .groupBy(dbSchema.boardFollows.boardUuid),
+
+    // Batch comment counts per board
+    db
+      .select({
+        entityId: dbSchema.comments.entityId,
+        count: count(),
+      })
+      .from(dbSchema.comments)
+      .where(
+        and(
+          eq(dbSchema.comments.entityType, 'board'),
+          inArray(dbSchema.comments.entityId, boardUuids),
+          isNull(dbSchema.comments.deletedAt),
+        ),
+      )
+      .groupBy(dbSchema.comments.entityId),
+
+    // Batch follow status for authenticated user
+    authenticatedUserId
+      ? db
+          .select({ boardUuid: dbSchema.boardFollows.boardUuid })
+          .from(dbSchema.boardFollows)
+          .where(
+            and(
+              eq(dbSchema.boardFollows.userId, authenticatedUserId),
+              inArray(dbSchema.boardFollows.boardUuid, boardUuids),
+            ),
+          )
+      : Promise.resolve([]),
+
+    // Batch gym info
+    gymIds.length > 0
+      ? db
+          .select({ id: dbSchema.gyms.id, uuid: dbSchema.gyms.uuid, name: dbSchema.gyms.name })
+          .from(dbSchema.gyms)
+          .where(and(inArray(dbSchema.gyms.id, gymIds), isNull(dbSchema.gyms.deletedAt)))
+      : Promise.resolve([]),
+  ]);
+
+  // Index results for O(1) lookups
+  const ownerMap = new Map(ownerRows.map((r) => [r.userId, r]));
+  const tickMap = new Map(tickRows.map((r) => [r.boardId, r]));
+  const followerMap = new Map(followerRows.map((r) => [r.boardUuid, Number(r.count)]));
+  const commentMap = new Map(commentRows.map((r) => [r.entityId, Number(r.count)]));
+  const followedSet = new Set(followRows.map((r) => r.boardUuid));
+  const gymMap = new Map(gymRows.map((r) => [r.id, r]));
+
+  return boards.map(({ board, distanceMeters }) => {
+    const owner = ownerMap.get(board.ownerId);
+    const ticks = tickMap.get(board.id);
+    const gym = board.gymId ? gymMap.get(board.gymId) : undefined;
+
+    return {
+      uuid: board.uuid,
+      slug: board.slug,
+      ownerId: board.ownerId,
+      ownerDisplayName: owner?.displayName || owner?.name || undefined,
+      ownerAvatarUrl: owner?.avatarUrl || owner?.image || undefined,
+      boardType: board.boardType,
+      layoutId: Number(board.layoutId),
+      sizeId: Number(board.sizeId),
+      setIds: board.setIds,
+      name: board.name,
+      description: board.description,
+      locationName: board.locationName,
+      latitude: board.latitude,
+      longitude: board.longitude,
+      isPublic: board.isPublic,
+      isOwned: board.isOwned,
+      angle: Number(board.angle),
+      isAngleAdjustable: board.isAngleAdjustable,
+      createdAt: board.createdAt.toISOString(),
+      layoutName: null,
+      sizeName: null,
+      sizeDescription: null,
+      setNames: null,
+      totalAscents: Number(ticks?.totalAscents || 0),
+      uniqueClimbers: Number(ticks?.uniqueClimbers || 0),
+      followerCount: followerMap.get(board.uuid) || 0,
+      commentCount: commentMap.get(board.uuid) || 0,
+      isFollowedByMe: followedSet.has(board.uuid),
+      gymId: board.gymId ?? null,
+      gymUuid: gym?.uuid ?? null,
+      gymName: gym?.name ?? null,
+      distanceMeters: distanceMeters ?? null,
+    };
+  });
+}
+
 // ============================================
 // Popular Board Config Cache (Redis-backed)
 // ============================================
@@ -533,8 +679,9 @@ export const socialBoardQueries = {
       .limit(limit)
       .offset(offset);
 
-    const enrichedBoards = await Promise.all(
-      boards.map((b) => enrichBoard(b, userId)),
+    const enrichedBoards = await enrichBoards(
+      boards.map((b) => ({ board: b })),
+      userId,
     );
 
     return {
@@ -552,6 +699,7 @@ export const socialBoardQueries = {
     { input }: { input: unknown },
     ctx: ConnectionContext,
   ) => {
+    await applyRateLimit(ctx, 20);
     const validatedInput = validateInput(SearchBoardsInputSchema, input, 'input');
     const { query, boardType, latitude, longitude, radiusKm } = validatedInput;
     const limit = validatedInput.limit ?? 20;
@@ -610,10 +758,9 @@ export const socialBoardQueries = {
         .limit(limit)
         .offset(offset);
 
-      const enrichedBoards = await Promise.all(
-        boards.map(({ board, distanceMeters: dist }) =>
-          enrichBoard(board, ctx.isAuthenticated ? ctx.userId : undefined, dist),
-        ),
+      const enrichedBoards = await enrichBoards(
+        boards.map(({ board, distanceMeters: dist }) => ({ board, distanceMeters: dist })),
+        ctx.isAuthenticated ? ctx.userId : undefined,
       );
 
       return {
@@ -661,8 +808,9 @@ export const socialBoardQueries = {
       .limit(limit)
       .offset(offset);
 
-    const enrichedBoards = await Promise.all(
-      boards.map((b) => enrichBoard(b, ctx.isAuthenticated ? ctx.userId : undefined)),
+    const enrichedBoards = await enrichBoards(
+      boards.map((b) => ({ board: b })),
+      ctx.isAuthenticated ? ctx.userId : undefined,
     );
 
     return {

@@ -106,15 +106,9 @@ function MapContent({
       leafletRef.current = null;
     }
 
-    import('leaflet').then((L) => {
+    // @ts-expect-error — CSS dynamic import handled by Next.js bundler
+    Promise.all([import('leaflet'), import('leaflet/dist/leaflet.css')]).then(([L]) => {
       if (!containerRef.current) return;
-
-      delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-      });
 
       const center: [number, number] = userLocation
         ? [userLocation.latitude, userLocation.longitude]
@@ -175,10 +169,7 @@ function MapContent({
   }, [userLocation]);
 
   return (
-    <>
-      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-      <div ref={containerRef} style={{ width: '100%', height: '100%', borderRadius: 8 }} />
-    </>
+    <div ref={containerRef} style={{ width: '100%', height: '100%', borderRadius: 8 }} />
   );
 }
 
@@ -187,7 +178,7 @@ export default function BoardMapView({ onBoardSelect }: BoardMapViewProps) {
   const { boards, isLoading, permissionState, requestPermission } = useNearbyBoards({
     enabled: true,
     radiusKm: 50,
-    limit: 100,
+    limit: 50,
   });
 
   // Show enable button when permission is unknown (null — iOS Safari doesn't
