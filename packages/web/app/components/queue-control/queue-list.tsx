@@ -219,6 +219,14 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(({ boardDetails, o
     return { flatRows: rows, scrollTargetFlatIndex: scrollTargetIdx };
   }, [queue, currentClimbUuid, showHistory, suggestedClimbs, active, viewOnlyMode, hasMoreResults, isFetchingClimbs, isFetchingNextPage]);
 
+  const loadMoreSkeletonStyle = useMemo(
+    () => ({
+      gap: `${themeTokens.spacing[2]}px`,
+      padding: `${themeTokens.spacing[2]}px`,
+    }),
+    [],
+  );
+
   // Unified virtualizer for the entire list
   const virtualizer = useVirtualizer({
     count: flatRows.length,
@@ -269,14 +277,6 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(({ boardDetails, o
       }
     },
   }), [scrollTargetFlatIndex]);
-
-  const loadMoreSkeletonStyle = useMemo(
-    () => ({
-      gap: `${themeTokens.spacing[2]}px`,
-      padding: `${themeTokens.spacing[2]}px`,
-    }),
-    [],
-  );
 
   return (
     <>
