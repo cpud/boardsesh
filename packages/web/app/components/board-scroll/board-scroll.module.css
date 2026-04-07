@@ -63,7 +63,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.1;
+  line-height: 1;
   padding: 0;
   margin: 0;
 }
@@ -78,7 +78,7 @@
   color: var(--neutral-500);
   margin: 0;
   padding: 0;
-  line-height: 1.1;
+  line-height: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
