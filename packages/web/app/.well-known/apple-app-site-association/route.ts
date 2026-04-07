@@ -4,7 +4,13 @@ const APPLE_APP_SITE_ASSOCIATION = {
     details: [
       {
         appID: '9L3HKPZBH3.com.boardsesh.app',
-        paths: ['/join/*'],
+        paths: [
+          'NOT /api/*',
+          'NOT /_next/*',
+          'NOT /monitoring',
+          'NOT /.well-known/*',
+          '/*',
+        ],
       },
     ],
   },
