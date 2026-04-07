@@ -12,6 +12,8 @@ import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
+import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
+import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
 import { useRouter } from 'next/navigation';
 import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
 import BoardScrollSection from '../board-scroll/board-scroll-section';
@@ -621,28 +623,126 @@ export default function BoardSelectorDrawer({
           onClose={() => setShowCreateBoardForm(false)}
           height="85dvh"
         >
-          <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={32} /></Box>}>
-            <CreateBoardForm
-              boardType={selectedBoard}
-              layoutId={selectedLayout}
-              sizeId={selectedSize}
-              setIds={selectedSets.join(',')}
-              defaultAngle={selectedAngle}
-              onSuccess={(board: UserBoard) => {
-                setShowCreateBoardForm(false);
-                setShowNewBoardForm(false);
-                const url = constructBoardSlugListUrl(board.slug, board.angle);
-                if (onBoardSelected) {
-                  onBoardSelected(url);
-                  onClose();
-                } else {
-                  router.push(url);
-                  onClose();
-                }
-              }}
-              onCancel={() => setShowCreateBoardForm(false)}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <CollapsibleSection
+              sections={[{
+                key: 'config',
+                label: 'Board config',
+                title: 'Board config',
+                defaultSummary: 'Select a board',
+                getSummary: () => {
+                  const parts: string[] = [];
+                  if (selectedBoard) parts.push(selectedBoard.charAt(0).toUpperCase() + selectedBoard.slice(1));
+                  const layout = layouts.find((l) => l.id === selectedLayout);
+                  if (layout) parts.push(layout.name);
+                  const size = sizes.find((s) => s.id === selectedSize);
+                  if (size) parts.push(`${size.name} ${size.description ?? ''}`.trim());
+                  parts.push(`${selectedAngle}\u00B0`);
+                  return parts;
+                },
+                content: (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Board</InputLabel>
+                      <MuiSelect
+                        value={selectedBoard || ''}
+                        label="Board"
+                        onChange={(e: SelectChangeEvent) => setSelectedBoard(e.target.value as BoardName)}
+                      >
+                        {SUPPORTED_BOARDS.map((board) => (
+                          <MenuItem key={board} value={board}>
+                            {board.charAt(0).toUpperCase() + board.slice(1)}
+                          </MenuItem>
+                        ))}
+                      </MuiSelect>
+                    </FormControl>
+
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Layout</InputLabel>
+                      <MuiSelect
+                        value={selectedLayout ?? ''}
+                        label="Layout"
+                        onChange={(e: SelectChangeEvent<number | string>) => setSelectedLayout(e.target.value as number)}
+                        disabled={!selectedBoard}
+                      >
+                        {layouts.map(({ id, name }) => (
+                          <MenuItem key={id} value={id}>{name}</MenuItem>
+                        ))}
+                      </MuiSelect>
+                    </FormControl>
+
+                    {selectedBoard !== 'moonboard' && (
+                      <FormControl fullWidth size="small">
+                        <InputLabel>Size</InputLabel>
+                        <MuiSelect
+                          value={selectedSize ?? ''}
+                          label="Size"
+                          onChange={(e: SelectChangeEvent<number | string>) => setSelectedSize(e.target.value as number)}
+                          disabled={!selectedLayout}
+                        >
+                          {sizes.map(({ id, name, description }) => (
+                            <MenuItem key={id} value={id}>{`${name} ${description}`}</MenuItem>
+                          ))}
+                        </MuiSelect>
+                      </FormControl>
+                    )}
+
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Hold Sets</InputLabel>
+                      <MuiSelect<number[]>
+                        multiple
+                        value={selectedSets}
+                        label="Hold Sets"
+                        onChange={(e) => setSelectedSets(e.target.value as number[])}
+                        disabled={!selectedSize}
+                      >
+                        {sets.map(({ id, name }) => (
+                          <MenuItem key={id} value={id}>{name}</MenuItem>
+                        ))}
+                      </MuiSelect>
+                    </FormControl>
+
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Angle</InputLabel>
+                      <MuiSelect
+                        value={selectedAngle}
+                        label="Angle"
+                        onChange={(e: SelectChangeEvent<number>) => setSelectedAngle(e.target.value as number)}
+                        disabled={!selectedBoard}
+                      >
+                        {selectedBoard &&
+                          ANGLES[selectedBoard].map((angle) => (
+                            <MenuItem key={angle} value={angle}>{angle}</MenuItem>
+                          ))}
+                      </MuiSelect>
+                    </FormControl>
+                  </Box>
+                ),
+              } satisfies CollapsibleSectionConfig]}
             />
-          </Suspense>
+            <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={32} /></Box>}>
+              <CreateBoardForm
+                boardType={selectedBoard}
+                layoutId={selectedLayout}
+                sizeId={selectedSize}
+                setIds={selectedSets.join(',')}
+                defaultAngle={selectedAngle}
+                onSuccess={(board: UserBoard) => {
+                  setShowCreateBoardForm(false);
+                  setShowNewBoardForm(false);
+                  const url = constructBoardSlugListUrl(board.slug, board.angle);
+                  if (onBoardSelected) {
+                    onBoardSelected(url);
+                    onClose();
+                  } else {
+                    router.push(url);
+                    onClose();
+                  }
+                }}
+                onCancel={() => setShowCreateBoardForm(false)}
+              />
+            </Suspense>
+          </Box>
         </SwipeableDrawer>
       )}
     </>
