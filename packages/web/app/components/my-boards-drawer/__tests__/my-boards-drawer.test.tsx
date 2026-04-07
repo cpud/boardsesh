@@ -24,26 +24,62 @@ vi.mock('../../swipeable-drawer/swipeable-drawer', () => ({
     open,
     children,
     title,
+    extra,
   }: {
     open: boolean;
     children: React.ReactNode;
-    title: string;
+    title: React.ReactNode;
+    extra?: React.ReactNode;
     onClose: () => void;
-  }) => (open ? <div data-testid={`drawer-${title}`}>{children}</div> : null),
+  }) => (open ? (
+    <div data-testid="drawer">
+      <div data-testid="drawer-header">
+        <span data-testid="drawer-title">{title}</span>
+        {extra && <span data-testid="drawer-extra">{extra}</span>}
+      </div>
+      {children}
+    </div>
+  ) : null),
 }));
 
-vi.mock('../../board-entity/edit-board-form', () => ({
-  default: ({
-    board,
-    onCancel,
+vi.mock('../../board-entity/board-detail', () => ({
+  BoardDetailContent: ({
+    boardUuid,
+    onDeleted,
   }: {
-    board: Record<string, unknown>;
-    onSuccess: (b: unknown) => void;
-    onCancel: () => void;
+    boardUuid: string;
+    initialIsFollowing?: boolean;
+    onDeleted?: () => void;
+    onFollowChange?: (boardUuid: string, isFollowing: boolean) => void;
   }) => (
-    <div data-testid="edit-board-form">
-      <span>Editing: {board.name as string}</span>
-      <button type="button" onClick={onCancel}>Cancel</button>
+    <div data-testid="board-detail-content">
+      <span>Board: {boardUuid}</span>
+      {onDeleted && <button type="button" onClick={onDeleted} data-testid="delete-board">Delete</button>}
+    </div>
+  ),
+}));
+
+vi.mock('../../social/board-search-results', () => ({
+  default: ({
+    query,
+    onBoardSelect,
+  }: {
+    query: string;
+    authToken: string | null;
+    showFollowButton?: boolean;
+    onBoardSelect?: (board: Record<string, unknown>) => void;
+  }) => (
+    <div data-testid="board-search-results">
+      <span>Query: {query}</span>
+      {onBoardSelect && (
+        <button
+          type="button"
+          data-testid="select-search-result"
+          onClick={() => onBoardSelect({ uuid: 'search-board-1', name: 'Found Board', isFollowedByMe: true })}
+        >
+          Select Board
+        </button>
+      )}
     </div>
   ),
 }));
@@ -96,7 +132,7 @@ describe('MyBoardsDrawer', () => {
 
   it('does not render when closed', () => {
     render(<MyBoardsDrawer open={false} onClose={mockOnClose} />);
-    expect(screen.queryByTestId('drawer-My Boards')).toBeNull();
+    expect(screen.queryByTestId('drawer')).toBeNull();
   });
 
   it('renders loading state', () => {
@@ -130,15 +166,16 @@ describe('MyBoardsDrawer', () => {
     expect(screen.getByText('Kilter \u00B7 Home Gym \u00B7 40\u00B0')).toBeDefined();
   });
 
-  it('opens edit drawer when clicking a board', () => {
+  it('navigates to board detail when clicking a board', () => {
     mockBoards = [makeBoard()];
     render(<MyBoardsDrawer open={true} onClose={mockOnClose} />);
 
     fireEvent.click(screen.getByTestId('board-item-board-1'));
 
-    expect(screen.getByTestId('drawer-Edit Board')).toBeDefined();
-    expect(screen.getByTestId('edit-board-form')).toBeDefined();
-    expect(screen.getByText('Editing: My Kilter Board')).toBeDefined();
+    expect(screen.getByTestId('board-detail-content')).toBeDefined();
+    expect(screen.getByText('Board: board-1')).toBeDefined();
+    // List should no longer be visible
+    expect(screen.queryByTestId('my-boards-list')).toBeNull();
   });
 
   it('renders error state when fetch fails', () => {
@@ -148,14 +185,60 @@ describe('MyBoardsDrawer', () => {
     expect(screen.getByText('Failed to load your boards')).toBeDefined();
   });
 
-  it('closes edit drawer when cancel is clicked', () => {
+  it('navigates to search view when search icon is clicked', () => {
     mockBoards = [makeBoard()];
     render(<MyBoardsDrawer open={true} onClose={mockOnClose} />);
 
-    fireEvent.click(screen.getByTestId('board-item-board-1'));
-    expect(screen.getByTestId('drawer-Edit Board')).toBeDefined();
+    fireEvent.click(screen.getByLabelText('Find a board'));
 
-    fireEvent.click(screen.getByText('Cancel'));
-    expect(screen.queryByTestId('drawer-Edit Board')).toBeNull();
+    expect(screen.getByTestId('board-search-results')).toBeDefined();
+    expect(screen.queryByTestId('my-boards-list')).toBeNull();
+  });
+
+  it('navigates back from board detail to list', () => {
+    mockBoards = [makeBoard()];
+    render(<MyBoardsDrawer open={true} onClose={mockOnClose} />);
+
+    // Navigate to board detail
+    fireEvent.click(screen.getByTestId('board-item-board-1'));
+    expect(screen.getByTestId('board-detail-content')).toBeDefined();
+
+    // Click back
+    fireEvent.click(screen.getByLabelText('Back'));
+    expect(screen.getByTestId('my-boards-list')).toBeDefined();
+    expect(screen.queryByTestId('board-detail-content')).toBeNull();
+  });
+
+  it('navigates from search to board detail and back to search', () => {
+    mockBoards = [makeBoard()];
+    render(<MyBoardsDrawer open={true} onClose={mockOnClose} />);
+
+    // Navigate to search
+    fireEvent.click(screen.getByLabelText('Find a board'));
+    expect(screen.getByTestId('board-search-results')).toBeDefined();
+
+    // Select a board from search
+    fireEvent.click(screen.getByTestId('select-search-result'));
+    expect(screen.getByTestId('board-detail-content')).toBeDefined();
+    expect(screen.getByText('Board: search-board-1')).toBeDefined();
+
+    // Back should return to search
+    fireEvent.click(screen.getByLabelText('Back'));
+    expect(screen.getByTestId('board-search-results')).toBeDefined();
+    expect(screen.queryByTestId('board-detail-content')).toBeNull();
+  });
+
+  it('returns to list view when board is deleted', () => {
+    mockBoards = [makeBoard()];
+    render(<MyBoardsDrawer open={true} onClose={mockOnClose} />);
+
+    // Navigate to board detail
+    fireEvent.click(screen.getByTestId('board-item-board-1'));
+    expect(screen.getByTestId('board-detail-content')).toBeDefined();
+
+    // Delete the board
+    fireEvent.click(screen.getByTestId('delete-board'));
+    expect(screen.queryByTestId('board-detail-content')).toBeNull();
+    expect(screen.getByTestId('my-boards-list')).toBeDefined();
   });
 });
