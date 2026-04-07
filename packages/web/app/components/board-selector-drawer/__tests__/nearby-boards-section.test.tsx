@@ -311,7 +311,7 @@ describe('NearbyBoardsSection', () => {
 
     expect(mockUseNearbyBoards).toHaveBeenCalledWith({
       enabled: true,
-      radiusKm: 100,
+      radiusKm: 50,
       limit: 10,
     });
   });
@@ -323,7 +323,7 @@ describe('NearbyBoardsSection', () => {
 
     expect(mockUseNearbyBoards).toHaveBeenCalledWith({
       enabled: false,
-      radiusKm: 100,
+      radiusKm: 50,
       limit: 10,
     });
   });

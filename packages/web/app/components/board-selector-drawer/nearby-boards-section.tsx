@@ -22,7 +22,7 @@ export default function NearbyBoardsSection({
 }: NearbyBoardsSectionProps) {
   const { boards, isLoading, permissionState, requestPermission, error } = useNearbyBoards({
     enabled: open,
-    radiusKm: 100,
+    radiusKm: 50,
     limit: 10,
   });
 

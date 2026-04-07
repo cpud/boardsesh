@@ -471,13 +471,14 @@ async function seedBoardLocations() {
         await db.execute(sql`
           INSERT INTO user_boards (
             uuid, slug, owner_id, board_type, layout_id, size_id, set_ids,
-            name, location_name, latitude, longitude,
+            name, location_name, latitude, longitude, location,
             is_public, is_owned, angle, is_angle_adjustable, gym_id,
             created_at, updated_at
           ) VALUES (
             ${rec.uuid}, ${rec.slug}, ${SYSTEM_USER_ID},
             ${rec.boardType}, ${rec.layoutId}, ${rec.sizeId}, ${rec.setIds},
             ${rec.name}, ${rec.locationName}, ${rec.latitude}, ${rec.longitude},
+            ST_MakePoint(${rec.longitude}, ${rec.latitude})::geography,
             true, false, ${rec.angle}, ${rec.isAngleAdjustable}, ${gymId},
             NOW(), NOW()
           )
@@ -486,17 +487,13 @@ async function seedBoardLocations() {
             location_name = EXCLUDED.location_name,
             latitude = EXCLUDED.latitude,
             longitude = EXCLUDED.longitude,
+            location = EXCLUDED.location,
             angle = EXCLUDED.angle,
             is_angle_adjustable = EXCLUDED.is_angle_adjustable,
             gym_id = EXCLUDED.gym_id,
             updated_at = NOW(),
             deleted_at = NULL
         `);
-
-        // Set PostGIS location
-        await db.execute(
-          sql`UPDATE user_boards SET location = ST_MakePoint(${rec.longitude}, ${rec.latitude})::geography WHERE uuid = ${rec.uuid}`
-        );
         upserted++;
       }
 
