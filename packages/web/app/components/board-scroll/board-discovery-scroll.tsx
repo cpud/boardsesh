@@ -75,6 +75,8 @@ export default function BoardDiscoveryScroll({
   useEffect(() => {
     if (myBoards.length > 0) {
       requestAnimationFrame(() => setMyBoardsVisible(true));
+    } else {
+      setMyBoardsVisible(false);
     }
   }, [myBoards.length]);
 

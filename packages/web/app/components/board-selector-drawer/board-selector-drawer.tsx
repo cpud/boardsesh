@@ -103,6 +103,7 @@ export default function BoardSelectorDrawer({
         setSelectedBoard(SUPPORTED_BOARDS[0] as BoardName);
       }
     }
+  // selectedBoard intentionally excluded: we only auto-select on open, not on every board change
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, startWithForm]);
 

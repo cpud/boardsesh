@@ -29,6 +29,7 @@ import { usePersistentSessionState } from '../persistent-session';
 import { getLastUsedBoard } from '@/app/lib/last-used-board-db';
 import { getRecentSearches } from '@/app/components/search-drawer/recent-searches-storage';
 import BoardDiscoveryScroll from '../board-scroll/board-discovery-scroll';
+import BoardSelectorDrawer from '../board-selector-drawer/board-selector-drawer';
 import { BoardConfigData } from '@/app/lib/server-board-configs';
 import { getDefaultAngleForBoard } from '@/app/lib/board-config-for-playlist';
 import { useUnreadNotificationCount } from '@/app/hooks/use-unread-notification-count';
@@ -99,6 +100,8 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
   const { openAuthModal } = useAuthModal();
   const [isBoardSelectorOpen, setIsBoardSelectorOpen] = useState(false);
   const [isBoardSelectorRendered, setIsBoardSelectorRendered] = useState(false);
+  const [isCustomBoardOpen, setIsCustomBoardOpen] = useState(false);
+  const [isCustomBoardRendered, setIsCustomBoardRendered] = useState(false);
   const [pendingCreateAction, setPendingCreateAction] = useState<PendingCreateAction>(null);
   const [selectedBoardContext, setSelectedBoardContext] = useState<SelectedBoardContext | null>(null);
   const [playlistFormValues, setPlaylistFormValues] = useState(INITIAL_PLAYLIST_FORM);
@@ -111,6 +114,9 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
   }, []);
   const handleCreatePlaylistTransitionEnd = useCallback((open: boolean) => {
     if (!open) setIsCreatePlaylistRendered(false);
+  }, []);
+  const handleCustomBoardTransitionEnd = useCallback((open: boolean) => {
+    if (!open) setIsCustomBoardRendered(false);
   }, []);
   const handleBoardSelectorTransitionEnd = useCallback((open: boolean) => {
     if (!open) setIsBoardSelectorRendered(false);
@@ -698,9 +704,29 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
             onConfigClick={handleDiscoveryConfigClick}
             onCustomClick={() => {
               setIsBoardSelectorOpen(false);
+              setIsCustomBoardRendered(true);
+              setIsCustomBoardOpen(true);
             }}
           />
         </SwipeableDrawer>
+      )}
+
+      {/* Custom Board Selector Drawer */}
+      {boardConfigs && isCustomBoardRendered && (
+        <BoardSelectorDrawer
+          open={isCustomBoardOpen}
+          onClose={() => setIsCustomBoardOpen(false)}
+          onTransitionEnd={handleCustomBoardTransitionEnd}
+          boardConfigs={boardConfigs}
+          placement="bottom"
+          onBoardSelected={(url) => {
+            handleBoardSelected(url);
+            setIsCustomBoardOpen(false);
+          }}
+          hideNearby
+          showCreateBoard
+          startWithForm
+        />
       )}
 
     </>
