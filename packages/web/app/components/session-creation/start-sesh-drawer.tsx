@@ -6,12 +6,14 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import ButtonBase from '@mui/material/ButtonBase';
 import LoginOutlined from '@mui/icons-material/LoginOutlined';
+import PlayCircleOutlineOutlined from '@mui/icons-material/PlayCircleOutlineOutlined';
+import CircularProgress from '@mui/material/CircularProgress';
 import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
 import SessionCreationForm from './session-creation-form';
 import type { SessionCreationFormData } from './session-creation-form';
 import BoardSelectorDrawer from '@/app/components/board-selector-drawer/board-selector-drawer';
 import BoardDiscoveryScroll from '@/app/components/board-scroll/board-discovery-scroll';
-import BoardThumbnail from '@/app/components/board-scroll/board-thumbnail';
+import BoardScrollCard from '@/app/components/board-scroll/board-scroll-card';
 import { useCreateSession } from '@/app/hooks/use-create-session';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { useSession } from 'next-auth/react';
@@ -59,6 +61,7 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
   const [formKey, setFormKey] = useState(0);
   const [boardSelectorExpanded, setBoardSelectorExpanded] = useState(false);
   const hasAutoSelectedRef = useRef(false);
+  const formSubmitRef = useRef<(() => void) | null>(null);
 
   // Reset auto-selection tracking when drawer closes
   useEffect(() => {
@@ -240,35 +243,24 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
   const boardSelector = (
     <Box>
       {hasSelection && !boardSelectorExpanded ? (
-        <ButtonBase
-          onClick={() => setBoardSelectorExpanded(true)}
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1.5,
-            width: '100%',
-            px: 1,
-            py: 1,
-            borderRadius: 2,
-            bgcolor: 'action.hover',
-            textAlign: 'left',
-          }}
-        >
-          <BoardThumbnail
+        <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1.5 }}>
+          <BoardScrollCard
             userBoard={selectedBoard ?? undefined}
             storedConfig={selectedCustomConfig ?? undefined}
             boardConfigs={boardConfigs}
-            size={48}
+            selected
+            onClick={() => setBoardSelectorExpanded(true)}
           />
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="body2" fontWeight={600} noWrap>
-              {selectedName}
-            </Typography>
-            <Typography variant="caption" color="primary" fontWeight={500}>
-              Change
-            </Typography>
-          </Box>
-        </ButtonBase>
+          <Typography
+            variant="caption"
+            color="primary"
+            fontWeight={500}
+            onClick={() => setBoardSelectorExpanded(true)}
+            sx={{ cursor: 'pointer', pb: 0.5 }}
+          >
+            Change
+          </Typography>
+        </Box>
       ) : (
         <BoardDiscoveryScroll
           onBoardClick={handleDiscoveryBoardClick}
@@ -295,7 +287,7 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
         onClose={handleClose}
         onTransitionEnd={onTransitionEnd}
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pb: '72px' }}>
           <Typography variant="body2" component="span">
             {isLoggedIn
               ? 'Track your climbs and invite others to join.'
@@ -308,6 +300,10 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
             submitLabel="Sesh"
             headerContent={boardSelector}
             isAnonymous={!isLoggedIn}
+            renderSubmit={({ onSubmit: formSubmit }) => {
+              formSubmitRef.current = formSubmit;
+              return null;
+            }}
           />
           {!isLoggedIn && (
             <Button
@@ -320,6 +316,30 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
               Sign in for more features
             </Button>
           )}
+        </Box>
+        {/* Sticky submit button */}
+        <Box
+          sx={{
+            position: 'sticky',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            p: 2,
+            bgcolor: 'background.paper',
+            borderTop: '1px solid var(--neutral-200)',
+            zIndex: 1,
+          }}
+        >
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={isCreating ? <CircularProgress size={16} /> : <PlayCircleOutlineOutlined />}
+            onClick={() => formSubmitRef.current?.()}
+            disabled={isCreating}
+            fullWidth
+          >
+            Sesh
+          </Button>
         </Box>
       </SwipeableDrawer>
 

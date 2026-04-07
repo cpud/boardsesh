@@ -33,6 +33,8 @@ interface SessionCreationFormProps {
   submitLabel?: string;
   headerContent?: React.ReactNode;
   isAnonymous?: boolean;
+  /** Render the submit button externally via this render prop instead of inline */
+  renderSubmit?: (props: { onSubmit: () => void; isSubmitting: boolean; label: string }) => React.ReactNode;
 }
 
 export default function SessionCreationForm({
@@ -42,6 +44,7 @@ export default function SessionCreationForm({
   submitLabel = 'Sesh',
   headerContent,
   isAnonymous = false,
+  renderSubmit,
 }: SessionCreationFormProps) {
   const [name, setName] = useState('');
   const [goal, setGoal] = useState('');
@@ -157,16 +160,20 @@ export default function SessionCreationForm({
         />
       )}
 
-      <Button
-        variant="contained"
-        size="large"
-        startIcon={isSubmitting ? <CircularProgress size={16} /> : <PlayCircleOutlineOutlined />}
-        onClick={handleSubmit}
-        disabled={isSubmitting}
-        fullWidth
-      >
-        {submitLabel}
-      </Button>
+      {renderSubmit
+        ? renderSubmit({ onSubmit: handleSubmit, isSubmitting, label: submitLabel })
+        : (
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={isSubmitting ? <CircularProgress size={16} /> : <PlayCircleOutlineOutlined />}
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            fullWidth
+          >
+            {submitLabel}
+          </Button>
+        )}
     </Stack>
   );
 }
