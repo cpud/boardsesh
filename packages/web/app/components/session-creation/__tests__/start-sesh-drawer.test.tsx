@@ -106,6 +106,7 @@ vi.mock('@/app/components/board-scroll/board-discovery-scroll', () => ({
 
 vi.mock('@/app/components/board-scroll/board-thumbnail', () => ({
   default: () => <div data-testid="board-thumbnail" />,
+  useBoardDetails: () => null,
 }));
 
 vi.mock('@/app/components/board-selector-drawer/board-selector-drawer', () => ({
