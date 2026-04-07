@@ -250,7 +250,7 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
           >
             Boards near you
           </Typography>
-          <Box sx={{ position: 'relative', width: 'fit-content' }} onClick={() => setBoardSelectorExpanded(true)}>
+          <Box data-testid="selected-board-card" sx={{ position: 'relative', width: 'fit-content' }} onClick={() => setBoardSelectorExpanded(true)}>
             <BoardScrollCard
               userBoard={selectedBoard ?? undefined}
               storedConfig={selectedCustomConfig ?? undefined}

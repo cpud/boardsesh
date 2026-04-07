@@ -79,8 +79,8 @@ vi.mock('@/app/hooks/use-my-boards', () => ({
 }));
 
 vi.mock('@/app/components/swipeable-drawer/swipeable-drawer', () => ({
-  default: ({ children, open }: { children: React.ReactNode; open: boolean }) =>
-    open ? <div data-testid="drawer">{children}</div> : null,
+  default: ({ children, open, footer }: { children: React.ReactNode; open: boolean; footer?: React.ReactNode }) =>
+    open ? <div data-testid="drawer">{children}{footer}</div> : null,
 }));
 
 vi.mock('@/app/components/board-scroll/board-discovery-scroll', () => ({
@@ -139,10 +139,10 @@ describe('StartSeshDrawer', () => {
   });
 
   async function expandBoardSelectorAndSelect(boardName: string) {
-    // If the board selector is collapsed (pill shown), expand it first
-    const changeButton = screen.queryByText('Change');
-    if (changeButton) {
-      fireEvent.click(changeButton);
+    // If the board selector is collapsed (card shown), expand it first
+    const selectedCard = screen.queryByTestId('selected-board-card');
+    if (selectedCard) {
+      fireEvent.click(selectedCard);
     }
 
     const boardCard = screen.getByTestId(`board-card-${boardName}`);
@@ -200,26 +200,25 @@ describe('StartSeshDrawer', () => {
     expect(mockRouterPush).toHaveBeenCalled();
   });
 
-  it('shows collapsed pill when board is auto-selected', async () => {
+  it('shows collapsed card when board is auto-selected', async () => {
     mockLocalBoardPath = '/b/kilter-original-12x12/40/list';
 
     render(<StartSeshDrawer open onClose={vi.fn()} />);
 
-    // Should show the board name in a pill and "Change" link
-    expect(screen.getByText('Kilter')).toBeTruthy();
-    expect(screen.getByText('Change')).toBeTruthy();
+    // Should show the selected board card with edit overlay
+    expect(screen.getByTestId('selected-board-card')).toBeTruthy();
 
     // Board discovery scroll should not be visible (collapsed)
     expect(screen.queryByTestId('board-discovery-scroll')).toBeNull();
   });
 
-  it('expands board selector when Change is clicked', async () => {
+  it('expands board selector when selected card is clicked', async () => {
     mockLocalBoardPath = '/b/kilter-original-12x12/40/list';
 
     render(<StartSeshDrawer open onClose={vi.fn()} />);
 
-    // Click Change to expand
-    fireEvent.click(screen.getByText('Change'));
+    // Click selected card to expand
+    fireEvent.click(screen.getByTestId('selected-board-card'));
 
     // Board discovery scroll should now be visible
     expect(screen.getByTestId('board-discovery-scroll')).toBeTruthy();
@@ -357,8 +356,8 @@ describe('StartSeshDrawer', () => {
 
     render(<StartSeshDrawer open onClose={vi.fn()} />);
 
-    // Should show Kilter (slug match wins), not Tension
-    expect(screen.getByText('Kilter')).toBeTruthy();
+    // Should show Kilter (slug match wins), not Tension — selected card visible
+    expect(screen.getByTestId('selected-board-card')).toBeTruthy();
 
     await submitSesh();
 
