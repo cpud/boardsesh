@@ -356,7 +356,7 @@ export default function UserDrawer({ boardDetails }: UserDrawerProps) {
 
       <SwipeableDrawer
         title="Pick a board"
-        placement="left"
+        placement="bottom"
         open={showBoardSelector}
         onClose={() => setShowBoardSelector(false)}
       >
