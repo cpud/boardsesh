@@ -17,8 +17,9 @@ import CreateBoardCard from '@/app/components/board-scroll/create-board-card';
 import { useCreateSession } from '@/app/hooks/use-create-session';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { constructBoardSlugListUrl, getBaseBoardPath } from '@/app/lib/url-utils';
+import { isBoardRoutePath } from '@/app/lib/board-route-paths';
 import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 import { setClimbSessionCookie } from '@/app/lib/climb-session-cookie';
 import { usePersistentSession } from '@/app/components/persistent-session/persistent-session-context';
@@ -46,6 +47,7 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
     localBoardPath,
     localBoardDetails,
   } = usePersistentSession();
+  const pathname = usePathname();
   const { boards, isLoading: isLoadingBoards, error: boardsError } = useMyBoards(open);
 
   const [selectedBoard, setSelectedBoard] = useState<(typeof boards)[number] | null>(null);
@@ -122,24 +124,27 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
   };
 
   const handleSubmit = async (formData: SessionCreationFormData) => {
-    if (!selectedBoard && !selectedCustomPath) {
+    let boardPath: string | undefined;
+    let navigateUrl: string | undefined;
+
+    if (selectedBoard) {
+      boardPath = `/b/${selectedBoard.slug}`;
+      navigateUrl = constructBoardSlugListUrl(selectedBoard.slug, selectedBoard.angle);
+    } else if (selectedCustomPath) {
+      boardPath = selectedCustomPath;
+      navigateUrl = selectedCustomPath;
+    } else if (isBoardRoutePath(pathname)) {
+      // Fallback: user is on a board page but no board was selected from the list
+      boardPath = getBaseBoardPath(pathname);
+      navigateUrl = pathname;
+    }
+
+    if (!boardPath || !navigateUrl) {
       showMessage('Please select a board first', 'warning');
       return;
     }
 
     try {
-      let boardPath: string;
-      let navigateUrl: string;
-
-      if (selectedBoard) {
-        boardPath = `/b/${selectedBoard.slug}`;
-        navigateUrl = constructBoardSlugListUrl(selectedBoard.slug, selectedBoard.angle);
-      } else if (selectedCustomPath) {
-        boardPath = selectedCustomPath;
-        navigateUrl = selectedCustomPath;
-      } else {
-        return;
-      }
 
       const sessionId = await createSession(formData, boardPath);
 
