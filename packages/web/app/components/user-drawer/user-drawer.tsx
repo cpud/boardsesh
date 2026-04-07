@@ -25,16 +25,18 @@ import { useSession, signOut } from 'next-auth/react';
 import { useColorMode } from '@/app/hooks/use-color-mode';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { getPlaylistsBasePath } from '@/app/lib/url-utils';
+import { getPlaylistsBasePath, constructBoardSlugListUrl, constructClimbListWithSlugs, tryConstructSlugListUrl } from '@/app/lib/url-utils';
+import { getDefaultAngleForBoard } from '@/app/lib/board-config-for-playlist';
 import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
 import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
 import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 import { HoldClassificationWizard } from '../hold-classification';
-
+import BoardDiscoveryScroll from '../board-scroll/board-discovery-scroll';
 import BoardSelectorDrawer from '../board-selector-drawer/board-selector-drawer';
 import MyBoardsDrawer from '../my-boards-drawer/my-boards-drawer';
-import { BoardDetails } from '@/app/lib/types';
 import { BoardConfigData } from '@/app/lib/server-board-configs';
+import { BoardDetails } from '@/app/lib/types';
+import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
 import {
   type StoredSession,
   getRecentSessions,
@@ -58,6 +60,7 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
   const { openAuthModal } = useAuthModal();
   const [showHoldClassification, setShowHoldClassification] = useState(false);
   const [showBoardSelector, setShowBoardSelector] = useState(false);
+  const [showCustomBoard, setShowCustomBoard] = useState(false);
   const [showMyBoards, setShowMyBoards] = useState(false);
   const [recentSessions, setRecentSessions] = useState<StoredSession[]>([]);
 
@@ -81,6 +84,30 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
   const handleDrawerTransitionEnd = useCallback((open: boolean) => {
     if (!open) setDrawerRendered(false);
   }, []);
+
+  const handleChangeBoardClick = useCallback((board: UserBoard) => {
+    if (board.slug) {
+      router.push(constructBoardSlugListUrl(board.slug, board.angle));
+    }
+    setShowBoardSelector(false);
+  }, [router]);
+
+  const handleChangeConfigClick = useCallback((config: PopularBoardConfig) => {
+    const angle = getDefaultAngleForBoard(config.boardType);
+    let url: string;
+    if (config.layoutName && config.sizeName && config.setNames.length > 0) {
+      url = constructClimbListWithSlugs(
+        config.boardType, config.layoutName, config.sizeName,
+        config.sizeDescription ?? undefined, config.setNames, angle,
+      );
+    } else {
+      const setIds = config.setIds.join(',');
+      url = tryConstructSlugListUrl(config.boardType, config.layoutId, config.sizeId, config.setIds, angle)
+        ?? `/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`;
+    }
+    router.push(url);
+    setShowBoardSelector(false);
+  }, [router]);
 
   const handleSignOut = () => {
     signOut();
@@ -171,11 +198,7 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
               className={styles.menuItem}
               onClick={() => {
                 handleClose();
-                if (boardConfigs) {
-                  setShowBoardSelector(true);
-                } else {
-                  router.push('/');
-                }
+                setShowBoardSelector(true);
               }}
             >
               <span className={styles.menuItemIcon}><SwapHorizOutlined /></span>
@@ -335,21 +358,42 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
         />
       )}
 
+      <SwipeableDrawer
+        title="Pick a board"
+        placement="bottom"
+        open={showBoardSelector}
+        onClose={() => setShowBoardSelector(false)}
+      >
+        <BoardDiscoveryScroll
+          onBoardClick={handleChangeBoardClick}
+          onConfigClick={handleChangeConfigClick}
+          onCustomClick={() => {
+            setShowBoardSelector(false);
+            setShowCustomBoard(true);
+          }}
+        />
+      </SwipeableDrawer>
+
       {boardConfigs && (
         <BoardSelectorDrawer
-          open={showBoardSelector}
-          onClose={() => setShowBoardSelector(false)}
+          open={showCustomBoard}
+          onClose={() => setShowCustomBoard(false)}
           boardConfigs={boardConfigs}
+          placement="bottom"
+          onBoardSelected={(url) => {
+            router.push(url);
+            setShowCustomBoard(false);
+          }}
         />
       )}
 
       <MyBoardsDrawer
         open={showMyBoards}
         onClose={() => setShowMyBoards(false)}
-        onCreateBoard={boardConfigs ? () => {
+        onCreateBoard={() => {
           setShowMyBoards(false);
-          setShowBoardSelector(true);
-        } : undefined}
+          setShowCustomBoard(true);
+        }}
       />
     </>
   );
