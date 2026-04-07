@@ -550,6 +550,7 @@ const ClimbsList = ({
                       left: 0,
                       width: '100%',
                       transform: `translateY(${virtualItem.start}px)`,
+                      contain: 'layout style paint',
                     }}
                   >
                     <ClimbListItem
