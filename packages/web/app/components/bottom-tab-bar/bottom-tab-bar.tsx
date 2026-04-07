@@ -101,6 +101,19 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
   const [selectedBoardContext, setSelectedBoardContext] = useState<SelectedBoardContext | null>(null);
   const [playlistFormValues, setPlaylistFormValues] = useState(INITIAL_PLAYLIST_FORM);
   const [playlistFormErrors, setPlaylistFormErrors] = useState<Record<string, string>>({});
+
+  // Stable callbacks for drawer unmount-after-close-animation pattern.
+  // Avoids invalidating MUI's SlideProps memo on every parent render.
+  const handleCreateTransitionEnd = useCallback((open: boolean) => {
+    if (!open) setIsCreateRendered(false);
+  }, []);
+  const handleCreatePlaylistTransitionEnd = useCallback((open: boolean) => {
+    if (!open) setIsCreatePlaylistRendered(false);
+  }, []);
+  const handleBoardSelectorTransitionEnd = useCallback((open: boolean) => {
+    if (!open) setIsBoardSelectorRendered(false);
+  }, []);
+
   const pathname = usePathname();
   const router = useRouter();
 
@@ -520,7 +533,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
           placement="bottom"
           open={isCreateOpen}
           onClose={() => setIsCreateOpen(false)}
-          onTransitionEnd={(open) => { if (!open) setIsCreateRendered(false); }}
+          onTransitionEnd={handleCreateTransitionEnd}
           styles={{
             wrapper: { height: 'auto' },
             body: { padding: `${themeTokens.spacing[2]}px 0` },
@@ -575,7 +588,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
             setPlaylistFormValues(INITIAL_PLAYLIST_FORM);
             setPlaylistFormErrors({});
           }}
-          onTransitionEnd={(open) => { if (!open) setIsCreatePlaylistRendered(false); }}
+          onTransitionEnd={handleCreatePlaylistTransitionEnd}
           styles={{
             wrapper: { height: 'auto' },
             body: { padding: themeTokens.spacing[4] },
@@ -647,7 +660,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
             setIsBoardSelectorOpen(false);
             setPendingCreateAction(null);
           }}
-          onTransitionEnd={(open) => { if (!open) setIsBoardSelectorRendered(false); }}
+          onTransitionEnd={handleBoardSelectorTransitionEnd}
           onBoardSelected={handleBoardSelected}
           boardConfigs={boardConfigs}
         />

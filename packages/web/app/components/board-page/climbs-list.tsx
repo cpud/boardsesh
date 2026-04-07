@@ -454,12 +454,13 @@ const ClimbsList = ({
   const selectionStore = useSelectionStore(selectedClimbUuid ?? null);
 
   // --- List virtualization ---
-  // Only ~20-30 items are mounted at a time instead of 600+.
-  // Overscan of 15 items (1080px) provides 360ms headroom at aggressive scroll speeds.
+  // Only ~40-50 items are mounted at a time instead of 600+.
+  // Overscan of 25 items (1800px) provides enough headroom so that fast scrolling
+  // never outpaces the render cycle and causes a blank screen.
   const virtualizer = useWindowVirtualizer({
     count: visibleClimbs.length,
     estimateSize: () => 72,
-    overscan: 15,
+    overscan: 25,
     getItemKey: (index) => visibleClimbs[index]?.uuid ?? index,
   });
 
@@ -532,7 +533,7 @@ const ClimbsList = ({
           {isFetching && climbs.length === 0 ? (
             <ClimbsListSkeleton aspectRatio={boardDetails.boardWidth / boardDetails.boardHeight} viewMode="list" />
           ) : (
-            <div style={{ height: virtualizer.getTotalSize(), width: '100%', position: 'relative' }}>
+            <div style={{ height: virtualizer.getTotalSize(), width: '100%', position: 'relative', backgroundColor: 'var(--semantic-surface)' }}>
               {virtualItems.map((virtualItem) => {
                 const climb = visibleClimbs[virtualItem.index];
                 const index = virtualItem.index;
@@ -541,6 +542,7 @@ const ClimbsList = ({
                   <div
                     key={virtualItem.key}
                     data-index={virtualItem.index}
+                    {...(index === 0 ? { id: 'onboarding-climb-card' } : {})}
                     style={{
                       position: 'absolute',
                       top: 0,
@@ -551,23 +553,21 @@ const ClimbsList = ({
                       contain: 'layout style paint',
                     }}
                   >
-                    <div {...(index === 0 ? { id: 'onboarding-climb-card' } : {})}>
-                      <ClimbListItem
-                        climb={climb}
-                        boardDetails={resolveBoardDetails(climb)}
-                        pathname={pathname}
-                        isDark={isDark}
-                        preferImageLayers={index < initialImageCount}
-                        onSelect={() => handleClimbClickByIndex(index)}
-                        onThumbnailClick={() => handleClimbClickByIndex(index)}
-                        disableThumbnailNavigation
-                        disableSwipe={!hydrated}
-                        unsupported={unsupportedClimbs?.has(climb.uuid)}
-                        onOpenActions={handleOpenActions}
-                        onOpenPlaylistSelector={handleOpenPlaylistSelector}
-                        addToQueue={addToQueue}
-                      />
-                    </div>
+                    <ClimbListItem
+                      climb={climb}
+                      boardDetails={resolveBoardDetails(climb)}
+                      pathname={pathname}
+                      isDark={isDark}
+                      preferImageLayers={index < initialImageCount}
+                      onSelect={() => handleClimbClickByIndex(index)}
+                      onThumbnailClick={() => handleClimbClickByIndex(index)}
+                      disableThumbnailNavigation
+                      disableSwipe={!hydrated}
+                      unsupported={unsupportedClimbs?.has(climb.uuid)}
+                      onOpenActions={handleOpenActions}
+                      onOpenPlaylistSelector={handleOpenPlaylistSelector}
+                      addToQueue={addToQueue}
+                    />
                     {renderItemExtra?.(climb)}
                   </div>
                 );
