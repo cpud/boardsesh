@@ -12,7 +12,7 @@ export interface ImageRegions {
  */
 export function calculateRegions(width: number, height: number): ImageRegions {
   const headerTop = Math.round(height * 0.11);
-  const headerHeight = Math.round(height * 0.07);
+  const headerHeight = Math.round(height * 0.09);
 
   const boardTop = Math.round(height * 0.249);
   const boardBottom = Math.round(height * 0.88);
