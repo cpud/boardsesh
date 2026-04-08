@@ -97,6 +97,7 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
         if (first) {
           const rect = containerElRef.current?.getBoundingClientRect();
           if (rect) {
+            // Store pinch origin relative to center of container
             pinchOriginRef.current = {
               x: ox - rect.left - rect.width / 2,
               y: oy - rect.top - rect.height / 2,
@@ -107,6 +108,7 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
 
         const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, s));
 
+        // Adjust translate to zoom toward pinch origin
         const prevScale = scaleRef.current;
         if (memo && prevScale !== newScale) {
           const scaleDiff = newScale - prevScale;
@@ -127,6 +129,7 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
         if (!enabled) return;
         const scale = scaleRef.current;
 
+        // Snap back to 1 if barely zoomed
         if (scale < ZOOM_THRESHOLD) {
           scaleRef.current = 1;
           translateRef.current = { x: 0, y: 0 };
@@ -138,9 +141,11 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
       },
       onDrag: ({ delta: [dx, dy], pinching, first, tap }) => {
         if (!enabled || pinching || tap || isTransitioningRef.current) return;
+        // Only allow drag-to-pan when zoomed
         if (scaleRef.current <= 1) return;
 
         if (first) {
+          // Prevent text selection during drag
           const el = contentRef.current;
           if (el) el.style.userSelect = 'none';
         }
@@ -158,6 +163,7 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
       },
       onWheel: ({ event, delta: [, dy], ctrlKey, pinching }) => {
         if (!enabled || pinching || isTransitioningRef.current) return;
+        // Only handle ctrl+wheel (trackpad pinch or ctrl+scroll)
         if (!ctrlKey) return;
 
         event.preventDefault();
@@ -165,6 +171,7 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
         const scaleFactor = 1 - dy * 0.01;
         const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scaleRef.current * scaleFactor));
 
+        // Zoom toward cursor position
         const rect = containerElRef.current?.getBoundingClientRect();
         if (rect) {
           const cursorX = (event as WheelEvent).clientX - rect.left - rect.width / 2;

@@ -14,6 +14,7 @@ export function useNestedDrawerSwipe(onClose: () => void) {
   onCloseRef.current = onClose;
 
   const stateRef = useRef({ startY: 0, scrollContainer: null as HTMLElement | null, isPulling: false, translateY: 0 });
+  const timersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
 
   // Track the Paper DOM element via state so the effect re-runs when it mounts.
   // SwipeableDrawer calls paperRef(node) when the Paper mounts/unmounts.
@@ -24,6 +25,14 @@ export function useNestedDrawerSwipe(onClose: () => void) {
 
   useEffect(() => {
     if (!paperEl) return;
+
+    const scheduleTimer = (fn: () => void, ms: number) => {
+      const id = setTimeout(() => {
+        timersRef.current.delete(id);
+        fn();
+      }, ms);
+      timersRef.current.add(id);
+    };
 
     const handleTouchStart = (e: TouchEvent) => {
       // Walk up to find the nearest scroll container so we can check scrollTop
@@ -79,16 +88,18 @@ export function useNestedDrawerSwipe(onClose: () => void) {
       const CLOSE_THRESHOLD = 80;
 
       if (state.translateY > CLOSE_THRESHOLD) {
+        // Animate off-screen then close
         const targetY = paperEl.offsetHeight;
         paperEl.style.transition = 'transform 200ms cubic-bezier(0.0, 0, 0.2, 1)';
         paperEl.style.transform = `translateY(${targetY}px)`;
-        setTimeout(() => {
+        scheduleTimer(() => {
           onCloseRef.current();
         }, 210);
       } else {
+        // Snap back
         paperEl.style.transition = 'transform 200ms cubic-bezier(0.0, 0, 0.2, 1)';
         paperEl.style.transform = '';
-        setTimeout(() => {
+        scheduleTimer(() => {
           paperEl.style.transition = '';
         }, 210);
       }
@@ -105,6 +116,11 @@ export function useNestedDrawerSwipe(onClose: () => void) {
       paperEl.removeEventListener('touchstart', handleTouchStart);
       paperEl.removeEventListener('touchmove', handleTouchMove);
       paperEl.removeEventListener('touchend', handleTouchEnd);
+      // Clear any pending animation timers
+      for (const id of timersRef.current) {
+        clearTimeout(id);
+      }
+      timersRef.current.clear();
     };
   }, [paperEl]);
 
