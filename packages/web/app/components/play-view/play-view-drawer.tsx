@@ -568,13 +568,15 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   // container through the board's overflow:hidden layers, so we block MUI
   // and handle the close gesture ourselves. When at scroll top and pulling
   // down, the play drawer Paper follows the finger and closes past threshold.
-  const boardSwipeRef = useRef({ startX: 0, startY: 0, lastY: 0, pullOriginY: 0, scrollContainer: null as HTMLElement | null, directionLocked: null as 'horizontal' | 'vertical' | null, isPulling: false, translateY: 0 });
+  const boardSwipeRef = useRef({ startY: 0, pullOriginY: 0, scrollContainer: null as HTMLElement | null, isPulling: false, translateY: 0 });
 
   const handleBoardTouchStart = useCallback((e: React.TouchEvent) => {
     (e.nativeEvent as unknown as Record<string, unknown>).defaultMuiPrevented = true;
 
-    // Find nearest scroll container (mobileScrollLayout)
-    let el: HTMLElement | null = e.currentTarget as HTMLElement;
+    // Find nearest scroll container (mobileScrollLayout) by walking up from
+    // the touched element, not e.currentTarget (which is drawerContent — the
+    // scroll container is a descendant of drawerContent, not an ancestor).
+    let el: HTMLElement | null = e.target as HTMLElement;
     let scrollContainer: HTMLElement | null = null;
     while (el) {
       const style = window.getComputedStyle(el);
@@ -585,18 +587,14 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
       el = el.parentElement;
     }
 
-    const x = e.touches[0].clientX;
     const y = e.touches[0].clientY;
     boardSwipeRef.current = {
-      startX: x,
       startY: y,
-      lastY: y,
       // pullOriginY tracks where to measure the pull-to-close gesture from.
       // If already at scroll top, it's the touch start position. Otherwise
       // it gets set when scrollTop first reaches 0 mid-gesture.
       pullOriginY: scrollContainer && scrollContainer.scrollTop <= 0 ? y : 0,
       scrollContainer,
-      directionLocked: null,
       isPulling: false,
       translateY: 0,
     };
@@ -619,31 +617,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
       return;
     }
 
-    const currentX = e.touches[0].clientX;
     const currentY = e.touches[0].clientY;
-
-    // Lock direction on first significant movement to avoid scroll during horizontal card swipes
-    if (!state.directionLocked) {
-      const dx = Math.abs(currentX - state.startX);
-      const dy = Math.abs(currentY - state.startY);
-      if (dx > 10 || dy > 10) {
-        state.directionLocked = dx > dy ? 'horizontal' : 'vertical';
-      }
-    }
-
-    // Horizontal gesture — prevent vertical scroll, let card swipe handle it
-    if (state.directionLocked === 'horizontal') {
-      if (e.cancelable) e.preventDefault();
-      return;
-    }
-
-    // Programmatic scroll for vertical gestures on the board area
-    // (touch-action: none on .boardSection prevents native scroll there)
-    if (!state.isPulling) {
-      const scrollDelta = state.lastY - currentY;
-      state.scrollContainer.scrollTop += scrollDelta;
-    }
-    state.lastY = currentY;
 
     const atTop = state.scrollContainer.scrollTop <= 0;
     const movingDown = currentY > state.startY;
