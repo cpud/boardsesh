@@ -16,6 +16,8 @@ interface UseZoomPanReturn {
   contentRef: React.RefObject<HTMLDivElement | null>;
   isZoomed: boolean;
   resetZoom: () => void;
+  /** Spread onto the gesture target element: <div {...gestureHandlers} /> */
+  gestureHandlers: ReturnType<ReturnType<typeof useGesture>>;
 }
 
 export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomPanReturn {
@@ -74,7 +76,12 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
   // Pinch origin tracking
   const pinchOriginRef = useRef({ x: 0, y: 0 });
 
-  useGesture(
+  // Use React prop-based binding (NOT target) so that event handlers fire
+  // via React's synthetic event system, which doesn't block native scroll.
+  // The browser handles single-finger vertical scroll natively via
+  // touch-action: pan-y, and the gesture library detects pinch-to-zoom
+  // from the same pointer events without interference.
+  const bind = useGesture(
     {
       onPinch: ({ origin: [ox, oy], first, offset: [s], memo }) => {
         if (!enabled || isTransitioningRef.current) return memo;
@@ -82,7 +89,6 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
         if (first) {
           const rect = containerElRef.current?.getBoundingClientRect();
           if (rect) {
-            // Store pinch origin relative to center of container
             pinchOriginRef.current = {
               x: ox - rect.left - rect.width / 2,
               y: oy - rect.top - rect.height / 2,
@@ -93,7 +99,6 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
 
         const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, s));
 
-        // Adjust translate to zoom toward pinch origin
         const prevScale = scaleRef.current;
         if (memo && prevScale !== newScale) {
           const scaleDiff = newScale - prevScale;
@@ -114,7 +119,6 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
         if (!enabled) return;
         const scale = scaleRef.current;
 
-        // Snap back to 1 if barely zoomed
         if (scale < ZOOM_THRESHOLD) {
           scaleRef.current = 1;
           translateRef.current = { x: 0, y: 0 };
@@ -126,11 +130,9 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
       },
       onDrag: ({ delta: [dx, dy], pinching, first, tap }) => {
         if (!enabled || pinching || tap || isTransitioningRef.current) return;
-        // Only allow drag-to-pan when zoomed
         if (scaleRef.current <= 1) return;
 
         if (first) {
-          // Prevent text selection during drag
           const el = contentRef.current;
           if (el) el.style.userSelect = 'none';
         }
@@ -148,7 +150,6 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
       },
       onWheel: ({ event, delta: [, dy], ctrlKey, pinching }) => {
         if (!enabled || pinching || isTransitioningRef.current) return;
-        // Only handle ctrl+wheel (trackpad pinch or ctrl+scroll)
         if (!ctrlKey) return;
 
         event.preventDefault();
@@ -156,7 +157,6 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
         const scaleFactor = 1 - dy * 0.01;
         const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scaleRef.current * scaleFactor));
 
-        // Zoom toward cursor position
         const rect = containerElRef.current?.getBoundingClientRect();
         if (rect) {
           const cursorX = (event as WheelEvent).clientX - rect.left - rect.width / 2;
@@ -175,12 +175,12 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
       },
     },
     {
-      target: containerElRef,
       pinch: {
         scaleBounds: { min: MIN_SCALE, max: MAX_SCALE },
         from: () => [scaleRef.current, 0],
       },
       drag: {
+        enabled: isZoomed,
         from: () => [translateRef.current.x, translateRef.current.y],
         filterTaps: true,
         pointer: { capture: false },
@@ -191,7 +191,6 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
     },
   );
 
-  // Ref callback to set up the container element
   const containerRef = useCallback((node: HTMLDivElement | null) => {
     containerElRef.current = node;
   }, []);
@@ -211,5 +210,6 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
     contentRef,
     isZoomed,
     resetZoom,
+    gestureHandlers: bind(),
   };
 }
