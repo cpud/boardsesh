@@ -12,6 +12,55 @@ import { publishDebouncedSessionStats } from '../sessions/debounced-stats-publis
 
 export const tickMutations = {
   /**
+   * Delete a tick (climb attempt/ascent) for the authenticated user.
+   * Only the owner can delete their own ticks.
+   */
+  deleteTick: async (
+    _: unknown,
+    { uuid }: { uuid: string },
+    ctx: ConnectionContext
+  ): Promise<boolean> => {
+    requireAuthenticated(ctx);
+    const userId = ctx.userId!;
+
+    const [tick] = await db
+      .select({ uuid: dbSchema.boardseshTicks.uuid, userId: dbSchema.boardseshTicks.userId })
+      .from(dbSchema.boardseshTicks)
+      .where(eq(dbSchema.boardseshTicks.uuid, uuid))
+      .limit(1);
+
+    if (!tick) {
+      throw new Error('Tick not found');
+    }
+    if (tick.userId !== userId) {
+      throw new Error('You can only delete your own ticks');
+    }
+
+    await db.transaction(async (tx) => {
+      // Delete related social data
+      await tx.delete(dbSchema.feedItems).where(
+        and(eq(dbSchema.feedItems.entityType, 'tick'), eq(dbSchema.feedItems.entityId, uuid))
+      );
+      await tx.delete(dbSchema.votes).where(
+        and(eq(dbSchema.votes.entityType, 'tick'), eq(dbSchema.votes.entityId, uuid))
+      );
+      await tx.delete(dbSchema.voteCounts).where(
+        and(eq(dbSchema.voteCounts.entityType, 'tick'), eq(dbSchema.voteCounts.entityId, uuid))
+      );
+      await tx.delete(dbSchema.comments).where(
+        and(eq(dbSchema.comments.entityType, 'tick'), eq(dbSchema.comments.entityId, uuid))
+      );
+      await tx.delete(dbSchema.notifications).where(
+        and(eq(dbSchema.notifications.entityType, 'tick'), eq(dbSchema.notifications.entityId, uuid))
+      );
+      // Delete the tick itself
+      await tx.delete(dbSchema.boardseshTicks).where(eq(dbSchema.boardseshTicks.uuid, uuid));
+    });
+
+    return true;
+  },
+
+  /**
    * Save a tick (climb attempt/ascent) for the authenticated user
    */
   saveTick: async (
