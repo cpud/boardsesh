@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import CopyrightOutlined from '@mui/icons-material/CopyrightOutlined';
+import DoNotTouchOutlined from '@mui/icons-material/DoNotTouchOutlined';
 import { themeTokens } from '@/app/theme/theme-config';
 import { getSoftVGradeColor, formatVGrade } from '@/app/lib/grade-colors';
 import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
@@ -46,6 +47,8 @@ export type ClimbTitleProps = {
   gradePosition?: 'inline' | 'right';
   /** When true, shows a heart indicator in the byline */
   favorited?: boolean;
+  /** When true, shows a "no matching" icon next to the climb name */
+  isNoMatch?: boolean;
 };
 
 // --- Static sx objects hoisted to module scope (no reactive deps) ---
@@ -65,6 +68,12 @@ const benchmarkIconSx = {
   marginLeft: '4px',
   fontSize: themeTokens.typography.fontSize.xs,
   color: themeTokens.colors.primary,
+} as const;
+
+const noMatchIconSx = {
+  marginLeft: '4px',
+  fontSize: themeTokens.typography.fontSize.xs,
+  color: 'text.secondary',
 } as const;
 
 const subtitleSx = {
@@ -179,6 +188,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
   titleFontSize,
   gradePosition = 'inline',
   favorited = false,
+  isNoMatch = false,
 }) => {
   const isDark = useIsDarkMode();
 
@@ -240,6 +250,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
     <Typography variant="body2" component="span" sx={nameSx}>
       {climb.name}
       {isBenchmark && <CopyrightOutlined sx={benchmarkIconSx} />}
+      {isNoMatch && <DoNotTouchOutlined sx={noMatchIconSx} />}
     </Typography>
   );
 
@@ -388,7 +399,8 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
       prev.centered === next.centered &&
       prev.titleFontSize === next.titleFontSize &&
       prev.gradePosition === next.gradePosition &&
-      prev.favorited === next.favorited
+      prev.favorited === next.favorited &&
+      prev.isNoMatch === next.isNoMatch
     );
   }
 
@@ -418,7 +430,8 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
     prev.centered === next.centered &&
     prev.titleFontSize === next.titleFontSize &&
     prev.gradePosition === next.gradePosition &&
-    prev.favorited === next.favorited
+    prev.favorited === next.favorited &&
+    prev.isNoMatch === next.isNoMatch
   );
 });
 

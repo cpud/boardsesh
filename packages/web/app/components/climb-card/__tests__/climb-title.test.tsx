@@ -248,6 +248,31 @@ describe('ClimbTitle', () => {
     });
   });
 
+  // --- No-match icon ---
+
+  describe('no-match icon', () => {
+    it('renders no-match icon when isNoMatch is true', () => {
+      render(<ClimbTitle climb={makeClimb()} isNoMatch />);
+      expect(screen.getByTestId('DoNotTouchOutlinedIcon')).toBeTruthy();
+    });
+
+    it('does not render no-match icon when isNoMatch is false', () => {
+      render(<ClimbTitle climb={makeClimb()} />);
+      expect(screen.queryByTestId('DoNotTouchOutlinedIcon')).toBeNull();
+    });
+
+    it('renders no-match icon in gradePosition="right" layout', () => {
+      render(<ClimbTitle climb={makeClimb()} gradePosition="right" isNoMatch />);
+      expect(screen.getByTestId('DoNotTouchOutlinedIcon')).toBeTruthy();
+    });
+
+    it('renders both benchmark and no-match icons when both are set', () => {
+      render(<ClimbTitle climb={makeClimb({ benchmark_difficulty: '15' })} isNoMatch />);
+      expect(screen.getByTestId('CopyrightOutlinedIcon')).toBeTruthy();
+      expect(screen.getByTestId('DoNotTouchOutlinedIcon')).toBeTruthy();
+    });
+  });
+
   // --- Edge cases ---
 
   describe('edge cases', () => {

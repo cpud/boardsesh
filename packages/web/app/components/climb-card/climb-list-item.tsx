@@ -22,6 +22,7 @@ import { themeTokens } from '@/app/theme/theme-config';
 import { getGradeTintColor } from '@/app/lib/grade-colors';
 import { getExcludedClimbActions } from '@/app/lib/climb-action-utils';
 import { useIsClimbSelected } from '../board-page/selected-climb-store';
+import { isNoMatchClimb } from '@/app/lib/no-match-climb';
 import styles from './climb-list-item.module.css';
 
 const SwipeableDrawer = dynamic(() => import('../swipeable-drawer/swipeable-drawer'), { ssr: false });
@@ -437,6 +438,8 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       [resolvedBg, contentOpacity],
     );
 
+    const noMatch = isNoMatchClimb(climb.frames, boardDetails.board_name);
+
     // Default ClimbTitle props when no override is provided
     const resolvedTitleProps = useMemo<Partial<ClimbTitleProps>>(
       () =>
@@ -446,8 +449,9 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
           titleFontSize: themeTokens.typography.fontSize.xl,
           rightAddon: <AscentStatus climbUuid={climb.uuid} fontSize={20} />,
           favorited: isFavorited,
+          isNoMatch: noMatch,
         },
-      [titleProps, climb.uuid, isFavorited],
+      [titleProps, climb.uuid, isFavorited, noMatch],
     );
 
     // Memoize right action layer styles to avoid inline object creation per render
