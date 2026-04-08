@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useReducer, useCallback, useState, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import MuiAlert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -14,7 +15,7 @@ import MuiButton from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import { InboxOutlined, SaveOutlined, ClearOutlined, ArrowBackOutlined, LoginOutlined } from '@mui/icons-material';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { parseMultipleScreenshots, deduplicateClimbs } from '@boardsesh/moonboard-ocr/browser';
@@ -25,6 +26,13 @@ import { convertOcrHoldsToMap } from '@/app/lib/moonboard-climbs-db';
 import { useBackendUrl } from '@/app/components/connection-manager/connection-settings-context';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { uploadOcrTestDataBatch } from '@/app/lib/moonboard-ocr-upload';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
+import {
+  SAVE_MOONBOARD_CLIMB_MUTATION,
+  type SaveMoonBoardClimbMutationVariables,
+  type SaveMoonBoardClimbMutationResponse,
+} from '@/app/lib/graphql/operations/new-climb-feed';
+import { refreshClimbSearchAfterSave } from '@/app/lib/climb-search-cache';
 import styles from './moonboard-bulk-import.module.css';
 
 interface MoonBoardBulkImportProps {
@@ -120,7 +128,9 @@ export default function MoonBoardBulkImport({
   angle,
 }: MoonBoardBulkImportProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { data: session } = useSession();
+  const queryClient = useQueryClient();
   const [state, dispatch] = useReducer(importReducer, initialState);
   const [isSaving, setIsSaving] = useState(false);
   const [contributeImages, setContributeImages] = useState(true);
@@ -135,6 +145,7 @@ export default function MoonBoardBulkImport({
   // Backend URL and auth token for OCR upload
   const { backendUrl } = useBackendUrl();
   const { token: authToken } = useWsAuthToken();
+  const listUrl = pathname.replace(/\/import$/, '/list');
 
   const handleFilesUpload = useCallback(
     async (fileList: File[]) => {
@@ -179,7 +190,7 @@ export default function MoonBoardBulkImport({
     if (state.climbs.length === 0) return;
 
     const userId = session?.user?.id;
-    if (!userId) {
+    if (!userId || !authToken) {
       showMessage('Please log in to save climbs', 'error');
       return;
     }
@@ -189,41 +200,36 @@ export default function MoonBoardBulkImport({
       let savedCount = 0;
       const errors: string[] = [];
       const savedClimbs: MoonBoardClimb[] = [];
+      const client = createGraphQLHttpClient(authToken);
 
       // Save each climb individually to the database
       for (const climb of state.climbs) {
         try {
-          const response = await fetch('/api/v1/moonboard/proxy/saveClimb', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              options: {
-                layout_id: layoutId,
-                user_id: userId,
-                name: climb.name,
-                description: `Setter: ${climb.setter}\nGrade: ${climb.userGrade}${climb.isBenchmark ? '\n(Benchmark)' : ''}`,
-                holds: climb.holds,
-                angle: climb.angle,
-                setter: climb.setter,
-                user_grade: climb.userGrade,
-                is_benchmark: climb.isBenchmark,
-              },
-            }),
-          });
+          const variables: SaveMoonBoardClimbMutationVariables = {
+            input: {
+              boardType: 'moonboard',
+              layoutId,
+              name: climb.name,
+              description: `Setter: ${climb.setter}\nGrade: ${climb.userGrade}${climb.isBenchmark ? '\n(Benchmark)' : ''}`,
+              holds: climb.holds,
+              angle: climb.angle,
+              isDraft: false,
+              userGrade: climb.userGrade,
+              isBenchmark: climb.isBenchmark,
+              setter: climb.setter || undefined,
+            },
+          };
 
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            errors.push(`${climb.name}: ${errorData.error || 'Failed to save'}`);
-          } else {
-            savedCount++;
-            savedClimbs.push(climb);
-          }
-        } catch {
-          errors.push(`${climb.name}: Network error`);
+          await client.request<SaveMoonBoardClimbMutationResponse>(SAVE_MOONBOARD_CLIMB_MUTATION, variables);
+          savedCount++;
+          savedClimbs.push(climb);
+        } catch (error) {
+          errors.push(`${climb.name}: ${error instanceof Error ? error.message : 'Failed to save'}`);
         }
       }
 
       if (savedCount > 0) {
+        await refreshClimbSearchAfterSave(queryClient, 'moonboard', layoutId);
         showMessage(`Successfully saved ${savedCount} climb(s) to database`, 'success');
 
         // Fire-and-forget: upload OCR test data if opted in
@@ -244,7 +250,7 @@ export default function MoonBoardBulkImport({
       if (savedCount > 0) {
         dispatch({ type: 'RESET' });
         filesMapRef.current = new Map();
-        router.back();
+        router.push(listUrl);
       }
     } catch (error) {
       console.error('Failed to save climbs:', error);
@@ -252,7 +258,7 @@ export default function MoonBoardBulkImport({
     } finally {
       setIsSaving(false);
     }
-  }, [state.climbs, layoutId, session, router, contributeImages, backendUrl, authToken, angle]);
+  }, [state.climbs, layoutId, session, authToken, queryClient, router, listUrl, contributeImages, backendUrl, showMessage, angle]);
 
   const handleRemoveClimb = useCallback((sourceFile: string) => {
     dispatch({ type: 'REMOVE_CLIMB', sourceFile });

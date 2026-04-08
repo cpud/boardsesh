@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import MuiAlert from '@mui/material/Alert';
 import MuiTooltip from '@mui/material/Tooltip';
 import Chip from '@mui/material/Chip';
@@ -39,6 +40,7 @@ import { createGraphQLClient, execute, type Client } from '../graphql-queue/grap
 import { getBackendWsUrl } from '@/app/lib/backend-url';
 import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 import { useSnackbar } from '../providers/snackbar-provider';
+import { refreshClimbSearchAfterSave } from '@/app/lib/climb-search-cache';
 import CreateClimbHeatmapOverlay from './create-climb-heatmap-overlay';
 import styles from './create-climb-form.module.css';
 import {
@@ -85,6 +87,7 @@ export default function CreateClimbForm({
   const { data: session } = useSession();
   const { mode } = useColorMode();
   const isDark = mode === 'dark';
+  const queryClient = useQueryClient();
 
   // Aurora-specific hooks
   const { isAuthenticated, saveClimb } = useBoardProvider();
@@ -243,6 +246,10 @@ export default function CreateClimbForm({
         angle,
       });
 
+      if (!isDraft) {
+        await refreshClimbSearchAfterSave(queryClient, boardDetails.board_name, boardDetails.layout_id);
+      }
+
       track('Climb Created', {
         boardLayout: boardDetails.layout_name || '',
         isDraft: isDraft,
@@ -266,7 +273,7 @@ export default function CreateClimbForm({
     } finally {
       setIsSaving(false);
     }
-  }, [boardDetails, generateFramesString, saveClimb, climbName, description, isDraft, angle, totalHolds, router]);
+  }, [boardDetails, generateFramesString, saveClimb, climbName, description, isDraft, angle, totalHolds, router, queryClient]);
 
   // Save climb - MoonBoard
   const doSaveMoonBoardClimb = useCallback(async () => {
@@ -320,6 +327,10 @@ export default function CreateClimbForm({
         { query: SAVE_MOONBOARD_CLIMB_MUTATION, variables },
       );
 
+      if (!isDraft) {
+        await refreshClimbSearchAfterSave(queryClient, 'moonboard', layoutId);
+      }
+
       showMessage('Climb saved to database!', 'success');
 
       const listUrl = pathname.replace(/\/create$/, '/list');
@@ -330,7 +341,7 @@ export default function CreateClimbForm({
     } finally {
       setIsSaving(false);
     }
-  }, [layoutId, session, litUpHoldsMap, climbName, description, userGrade, isBenchmark, isDraft, selectedAngle, pathname, router, wsAuthToken]);
+  }, [layoutId, session, litUpHoldsMap, climbName, description, userGrade, isBenchmark, isDraft, selectedAngle, pathname, router, wsAuthToken, queryClient, showMessage]);
 
   const handlePublish = useCallback(async () => {
     if (!isValid || !climbName.trim()) {

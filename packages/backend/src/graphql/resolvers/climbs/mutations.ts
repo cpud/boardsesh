@@ -91,6 +91,7 @@ export const climbMutations = {
     await applyRateLimit(ctx, 10);
 
     const validated = validateInput(SaveClimbInputSchema, input, 'input');
+    const isListed = !validated.isDraft;
 
     if (!isValidBoardName(validated.boardType)) {
       throw new Error(`Invalid board type: ${validated.boardType}. Must be one of ${SUPPORTED_BOARDS.join(', ')}`);
@@ -115,7 +116,7 @@ export const climbMutations = {
       framesPace: validated.framesPace ?? 0,
       frames: validated.frames,
       isDraft: validated.isDraft,
-      isListed: false,
+      isListed,
       createdAt: now,
       synced: false,
       syncError: null,
@@ -155,6 +156,8 @@ export const climbMutations = {
     await applyRateLimit(ctx, 10);
 
     const validated = validateInput(SaveMoonBoardClimbInputSchema, input, 'input');
+    const isDraft = validated.isDraft ?? false;
+    const isListed = !isDraft;
 
     if (validated.boardType !== 'moonboard') {
       throw new Error('saveMoonBoardClimb is only supported for boardType=moonboard');
@@ -180,8 +183,8 @@ export const climbMutations = {
       framesCount: 1,
       framesPace: 0,
       frames,
-      isDraft: validated.isDraft ?? false,
-      isListed: false,
+      isDraft,
+      isListed,
       createdAt: now,
       synced: false,
       syncError: null,

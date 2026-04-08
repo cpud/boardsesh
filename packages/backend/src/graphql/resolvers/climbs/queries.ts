@@ -83,11 +83,13 @@ export const climbQueries = {
       };
     }
 
-    // Results are cacheable when there are no user-specific filters.
-    // Uses the shared constant to stay in sync with CDN/SSR caching layers.
+    // MoonBoard data changes frequently via local creation/import flows, so keep
+    // GraphQL search results uncached there. Other boards can still use Redis
+    // when the query is anonymous and has no user-specific filters.
     const hasUserSpecificFilters = USER_SPECIFIC_SEARCH_PARAMS.some(
       (param) => !!searchParams[param as keyof typeof searchParams],
     );
+    const isCacheableBoard = input.boardName !== 'moonboard';
 
     // Only resolve userId when user-specific filters are active — otherwise the query
     // results are identical to anonymous and can be served from Redis cache.
@@ -100,7 +102,7 @@ export const climbQueries = {
       searchParams,
       sizeEdges,
       userId,
-      _isCacheable: !hasUserSpecificFilters,
+      _isCacheable: !hasUserSpecificFilters && isCacheableBoard,
     };
   },
 
