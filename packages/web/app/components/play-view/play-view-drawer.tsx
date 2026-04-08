@@ -856,20 +856,18 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
               header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
             }}
           >
-            <div onTouchStart={actionsSwipe.handleTouchStart} onTouchMove={actionsSwipe.handleTouchMove} onTouchEnd={actionsSwipe.handleTouchEnd}>
-              <ClimbActions
-                climb={currentClimb}
-                boardDetails={boardDetails}
-                angle={currentAngle}
-                currentPathname={pathname}
-                viewMode="list"
-                onOpenPlaylistSelector={() => {
-                  setIsActionsOpen(false);
-                  setIsPlaylistSelectorOpen(true);
-                }}
-                onActionComplete={handleCloseActions}
-              />
-            </div>
+            <ClimbActions
+              climb={currentClimb}
+              boardDetails={boardDetails}
+              angle={currentAngle}
+              currentPathname={pathname}
+              viewMode="list"
+              onOpenPlaylistSelector={() => {
+                setIsActionsOpen(false);
+                setIsPlaylistSelectorOpen(true);
+              }}
+              onActionComplete={handleCloseActions}
+            />
           </SwipeableDrawer>
         )}
 
@@ -889,14 +887,12 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
               header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
             }}
           >
-            <div onTouchStart={playlistSwipe.handleTouchStart} onTouchMove={playlistSwipe.handleTouchMove} onTouchEnd={playlistSwipe.handleTouchEnd}>
-              <PlaylistSelectionContent
-                climbUuid={currentClimb.uuid}
-                boardDetails={boardDetails}
-                angle={currentAngle}
-                onDone={handleClosePlaylist}
-              />
-            </div>
+            <PlaylistSelectionContent
+              climbUuid={currentClimb.uuid}
+              boardDetails={boardDetails}
+              angle={currentAngle}
+              onDone={handleClosePlaylist}
+            />
           </SwipeableDrawer>
         )}
 
