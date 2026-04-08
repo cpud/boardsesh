@@ -50,7 +50,9 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
     const el = contentRef.current;
     if (!el) return;
 
-    if (animate) {
+    const newTransform = scale === 1 ? '' : `scale(${scale}) translate(${x / scale}px, ${y / scale}px)`;
+
+    if (animate && el.style.transform !== newTransform) {
       isTransitioningRef.current = true;
       el.style.transition = 'transform 0.25s ease-out';
       const onEnd = () => {
@@ -59,11 +61,17 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
         el.removeEventListener('transitionend', onEnd);
       };
       el.addEventListener('transitionend', onEnd, { once: true });
+      // Fallback: clear transitioning state if transitionend doesn't fire
+      // (e.g. element hidden by parent animation, browser skips transition)
+      setTimeout(() => {
+        isTransitioningRef.current = false;
+      }, 300);
     } else {
       el.style.transition = '';
+      isTransitioningRef.current = false;
     }
 
-    el.style.transform = scale === 1 ? '' : `scale(${scale}) translate(${x / scale}px, ${y / scale}px)`;
+    el.style.transform = newTransform;
   }, []);
 
   const resetZoom = useCallback(() => {

@@ -174,6 +174,15 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   const [showHistory, setShowHistory] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [isBoardZoomed, setIsBoardZoomed] = useState(false);
+
+  // Lock the scroll container when the board is zoomed so single-finger
+  // drags pan the zoomed board instead of scrolling below the fold.
+  useEffect(() => {
+    const scrollContainer = playPaperRef.current?.querySelector('[data-scroll-container]') as HTMLElement | null;
+    if (!scrollContainer) return;
+    scrollContainer.style.overflowY = isBoardZoomed ? 'hidden' : '';
+  }, [isBoardZoomed, isOpen]);
+
   const queueDrawerHeightRef = useRef('60%');
   const queuePaperRef = useRef<HTMLDivElement>(null);
   const playPaperRef = useRef<HTMLDivElement>(null);
