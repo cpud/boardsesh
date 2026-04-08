@@ -515,6 +515,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
           borderRadius: `${themeTokens.borderRadius.xl}px ${themeTokens.borderRadius.xl}px var(--tab-bar-bottom-radius, ${themeTokens.borderRadius.xl}px) var(--tab-bar-bottom-radius, ${themeTokens.borderRadius.xl}px)`,
           pt: `${themeTokens.spacing[2]}px`,
           pb: `calc(${themeTokens.spacing[2]}px + var(--tab-bar-safe-area-padding, 0px))`,
+          mb: 'var(--tab-bar-bottom-extension, 0px)',
           height: 'auto',
           '@media (min-width: 768px)': {
             maxWidth: 480,
