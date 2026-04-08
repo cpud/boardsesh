@@ -567,7 +567,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   // container through the board's overflow:hidden layers, so we block MUI
   // and handle the close gesture ourselves. When at scroll top and pulling
   // down, the play drawer Paper follows the finger and closes past threshold.
-  const boardSwipeRef = useRef({ startY: 0, scrollContainer: null as HTMLElement | null, isPulling: false, translateY: 0 });
+  const boardSwipeRef = useRef({ startY: 0, pullOriginY: 0, scrollContainer: null as HTMLElement | null, isPulling: false, translateY: 0 });
 
   const handleBoardTouchStart = useCallback((e: React.TouchEvent) => {
     (e.nativeEvent as unknown as Record<string, unknown>).defaultMuiPrevented = true;
@@ -584,24 +584,56 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
       el = el.parentElement;
     }
 
-    boardSwipeRef.current = { startY: e.touches[0].clientY, scrollContainer, isPulling: false, translateY: 0 };
+    const y = e.touches[0].clientY;
+    boardSwipeRef.current = {
+      startY: y,
+      // pullOriginY tracks where to measure the pull-to-close gesture from.
+      // If already at scroll top, it's the touch start position. Otherwise
+      // it gets set when scrollTop first reaches 0 mid-gesture.
+      pullOriginY: scrollContainer && scrollContainer.scrollTop <= 0 ? y : 0,
+      scrollContainer,
+      isPulling: false,
+      translateY: 0,
+    };
   }, []);
 
   const handleBoardTouchMove = useCallback((e: React.TouchEvent) => {
     const state = boardSwipeRef.current;
     if (!state.scrollContainer) return;
 
-    const currentY = e.touches[0].clientY;
-    const deltaY = currentY - state.startY;
+    // Multi-touch (pinch-to-zoom) — cancel any pull-to-close and bail out
+    if (e.touches.length > 1) {
+      if (state.isPulling) {
+        state.isPulling = false;
+        state.translateY = 0;
+        if (playPaperRef.current) {
+          playPaperRef.current.style.transform = '';
+          playPaperRef.current.style.transition = '';
+        }
+      }
+      return;
+    }
 
-    if (state.scrollContainer.scrollTop <= 0 && deltaY > 0) {
-      if (!state.isPulling && deltaY > 10) {
+    const currentY = e.touches[0].clientY;
+    const atTop = state.scrollContainer.scrollTop <= 0;
+    const movingDown = currentY > state.startY;
+
+    if (atTop && movingDown) {
+      // Record where we first hit scroll top (for gestures that started below fold)
+      if (!state.pullOriginY) {
+        state.pullOriginY = currentY;
+      }
+
+      const pullDelta = currentY - state.pullOriginY;
+      if (!state.isPulling && pullDelta > 60) {
         state.isPulling = true;
       }
       if (state.isPulling) {
-        state.translateY = deltaY;
+        // Offset by the dead zone so the Paper starts moving from 0
+        const pullDistance = pullDelta - 60;
+        state.translateY = pullDistance;
         if (playPaperRef.current) {
-          playPaperRef.current.style.transform = `translateY(${deltaY}px)`;
+          playPaperRef.current.style.transform = `translateY(${pullDistance}px)`;
           playPaperRef.current.style.transition = 'none';
         }
       }
@@ -625,7 +657,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
       return;
     }
 
-    const CLOSE_THRESHOLD = 80;
+    const CLOSE_THRESHOLD = 70;
     const paper = playPaperRef.current;
 
     if (state.translateY > CLOSE_THRESHOLD && paper) {
@@ -669,7 +701,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
       </div>
 
       {/* Board renderer with card-swipe and floating Tick FAB */}
-      <div className={styles.boardSectionWrapper} onTouchStart={handleBoardTouchStart} onTouchMove={handleBoardTouchMove} onTouchEnd={handleBoardTouchEnd}>
+      <div className={styles.boardSectionWrapper}>
         {currentClimb && (
           <SwipeBoardCarousel
             boardDetails={boardDetails}
@@ -752,9 +784,6 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
     toggleFavorite,
     handleOpenActionsMenu,
     handleOpenQueueDrawer,
-    handleBoardTouchStart,
-    handleBoardTouchMove,
-    handleBoardTouchEnd,
   ]);
 
   return (
@@ -776,7 +805,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
       }}
     >
       {(contentReady || isOpen) ? (<>
-      <div className={styles.drawerContent}>
+      <div className={styles.drawerContent} onTouchStart={handleBoardTouchStart} onTouchMove={handleBoardTouchMove} onTouchEnd={handleBoardTouchEnd}>
         {currentClimb ? (
           <PlayDrawerContent
             climb={currentClimb}
