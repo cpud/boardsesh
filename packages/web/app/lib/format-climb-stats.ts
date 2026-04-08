@@ -15,9 +15,9 @@ export function formatCount(count: number): string {
   return `${Math.round(thousands)}k`;
 }
 
-/** Format ascent count with singular/plural label: "1 ascent", "5 ascents", "1.2k ascents" */
-export function formatAscents(count: number): string {
-  return `${formatCount(count)} ascent${count === 1 ? '' : 's'}`;
+/** Format send count with singular/plural label: "1 send", "5 sends", "1.2k sends" */
+export function formatSends(count: number): string {
+  return `${formatCount(count)} send${count === 1 ? '' : 's'}`;
 }
 
 /** Round quality_average to 1 decimal place */

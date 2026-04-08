@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatCount, formatAscents, formatQuality } from '@/app/lib/format-climb-stats';
+import { formatCount, formatSends, formatQuality } from '@/app/lib/format-climb-stats';
 
 describe('formatCount', () => {
   it('returns raw number below 1000', () => {
@@ -39,20 +39,20 @@ describe('formatCount', () => {
   });
 });
 
-describe('formatAscents', () => {
+describe('formatSends', () => {
   it('uses singular for count of 1', () => {
-    expect(formatAscents(1)).toBe('1 ascent');
+    expect(formatSends(1)).toBe('1 send');
   });
 
   it('uses plural for counts other than 1', () => {
-    expect(formatAscents(0)).toBe('0 ascents');
-    expect(formatAscents(2)).toBe('2 ascents');
-    expect(formatAscents(999)).toBe('999 ascents');
+    expect(formatSends(0)).toBe('0 sends');
+    expect(formatSends(2)).toBe('2 sends');
+    expect(formatSends(999)).toBe('999 sends');
   });
 
   it('uses plural with compact notation', () => {
-    expect(formatAscents(1000)).toBe('1k ascents');
-    expect(formatAscents(1500000)).toBe('1.5m ascents');
+    expect(formatSends(1000)).toBe('1k sends');
+    expect(formatSends(1500000)).toBe('1.5m sends');
   });
 });
 

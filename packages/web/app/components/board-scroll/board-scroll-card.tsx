@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
 import BoardRenderer from '../board-renderer/board-renderer';
 import { useBoardDetails } from './board-thumbnail';
-import { formatCount } from '@/app/lib/format-climb-stats';
+import { formatCount, formatSends } from '@/app/lib/format-climb-stats';
 import { BoardConfigData } from '@/app/lib/server-board-configs';
 import { StoredBoardConfig } from '@/app/lib/saved-boards-db';
 import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
@@ -66,7 +66,7 @@ export default function BoardScrollCard({
           cardMeta += ` \u00B7 ${userBoard.locationName}`;
         }
       } else {
-        cardMeta = `${formatCount(userBoard.totalAscents)} sends`;
+        cardMeta = formatSends(userBoard.totalAscents);
       }
     } else if (storedConfig) {
       cardName = storedConfig.name;
@@ -82,7 +82,7 @@ export default function BoardScrollCard({
       cardName = popularConfig.displayName;
       const parts: string[] = [];
       if (popularConfig.boardCount > 0) parts.push(`${formatCount(popularConfig.boardCount)} boards`);
-      parts.push(`${formatCount(popularConfig.totalAscents)} sends`);
+      parts.push(formatSends(popularConfig.totalAscents));
       cardMeta = parts.join(' \u00B7 ');
     }
 
