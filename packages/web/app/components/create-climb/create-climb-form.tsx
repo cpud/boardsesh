@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query';
 import MuiAlert from '@mui/material/Alert';
 import MuiTooltip from '@mui/material/Tooltip';
-import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import MuiButton from '@mui/material/Button';
@@ -16,7 +15,7 @@ import MuiSwitch from '@mui/material/Switch';
 import MuiSlider from '@mui/material/Slider';
 import MuiSelect from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { SettingsOutlined, CloseOutlined, LocalFireDepartmentOutlined, ArrowBackOutlined, SaveOutlined, LoginOutlined, CloudUploadOutlined, GetAppOutlined } from '@mui/icons-material';
+import { SettingsOutlined, CloseOutlined, LocalFireDepartmentOutlined, SaveOutlined, LoginOutlined, CloudUploadOutlined, GetAppOutlined } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { track } from '@vercel/analytics';
@@ -33,7 +32,6 @@ import { convertLitUpHoldsStringToMap } from '../board-renderer/util';
 import { holdIdToCoordinate, MOONBOARD_GRADES, MOONBOARD_ANGLES } from '@/app/lib/moonboard-config';
 import { getSoftFontGradeColor } from '@/app/lib/grade-colors';
 import { useColorMode } from '@/app/hooks/use-color-mode';
-import { themeTokens } from '@/app/theme/theme-config';
 import { parseScreenshot } from '@boardsesh/moonboard-ocr/browser';
 import { convertOcrHoldsToMap } from '@/app/lib/moonboard-climbs-db';
 import { createGraphQLClient, execute, type Client } from '../graphql-queue/graphql-client';
@@ -42,6 +40,8 @@ import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 import { useSnackbar } from '../providers/snackbar-provider';
 import { refreshClimbSearchAfterSave } from '@/app/lib/climb-search-cache';
 import CreateClimbHeatmapOverlay from './create-climb-heatmap-overlay';
+import HoldStatusChip from './hold-status-chip';
+import { useCreateHeaderBridgeSetters } from './create-header-bridge-context';
 import styles from './create-climb-form.module.css';
 import {
   SAVE_MOONBOARD_CLIMB_MUTATION,
@@ -85,6 +85,7 @@ export default function CreateClimbForm({
   const router = useRouter();
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { register, update, deregister } = useCreateHeaderBridgeSetters();
   const { mode } = useColorMode();
   const isDark = mode === 'dark';
   const queryClient = useQueryClient();
@@ -96,6 +97,7 @@ export default function CreateClimbForm({
 
   // Determine which auth check to use based on board type
   const isLoggedIn = boardType === 'aurora' ? isAuthenticated : !!session?.user?.id;
+  const hasMoonBoardSessionUser = !!session?.user;
 
   // Convert fork frames to initial holds map if provided (Aurora only)
   const initialHoldsMap = useMemo(() => {
@@ -156,6 +158,9 @@ export default function CreateClimbForm({
   const [climbName, setClimbName] = useState(forkName ? `${forkName} fork` : '');
   const [description, setDescription] = useState('');
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const climbNameRef = useRef(climbName);
+  const setClimbNameRef = useRef(setClimbName);
+  const headerActionRef = useRef<React.ReactNode | null>(null);
 
   // Construct the bulk import URL (MoonBoard only)
   const bulkImportUrl = pathname.replace(/\/create$/, '/import');
@@ -343,6 +348,14 @@ export default function CreateClimbForm({
     }
   }, [layoutId, session, litUpHoldsMap, climbName, description, userGrade, isBenchmark, isDraft, selectedAngle, pathname, router, wsAuthToken, queryClient, showMessage]);
 
+  const handleAuthSuccess = useCallback(async () => {
+    if (pendingFormValues) {
+      setTimeout(async () => {
+        setPendingFormValues(null);
+      }, 1000);
+    }
+  }, [pendingFormValues]);
+
   const handlePublish = useCallback(async () => {
     if (!isValid || !climbName.trim()) {
       return;
@@ -365,31 +378,7 @@ export default function CreateClimbForm({
     } else {
       await doSaveMoonBoardClimb();
     }
-  }, [boardType, isValid, climbName, isLoggedIn, description, isDraft, doSaveAuroraClimb, doSaveMoonBoardClimb]);
-
-  const handleAuthSuccess = async () => {
-    if (pendingFormValues) {
-      setTimeout(async () => {
-        setPendingFormValues(null);
-      }, 1000);
-    }
-  };
-
-  const handleCancel = useCallback(() => {
-    if (boardType === 'aurora' && boardDetails) {
-      const listUrl = constructClimbListWithSlugs(
-        boardDetails.board_name,
-        boardDetails.layout_name || '',
-        boardDetails.size_name || '',
-        boardDetails.size_description,
-        boardDetails.set_names || [],
-        angle,
-      );
-      router.push(listUrl);
-    } else {
-      router.back();
-    }
-  }, [boardType, boardDetails, angle, router]);
+  }, [boardType, isValid, climbName, isLoggedIn, description, isDraft, doSaveAuroraClimb, doSaveMoonBoardClimb, openAuthModal, handleAuthSuccess]);
 
   const canSave = isLoggedIn && isValid && climbName.trim().length > 0;
 
@@ -407,18 +396,23 @@ export default function CreateClimbForm({
     });
   }, [boardType, boardDetails]);
 
-  // Render save/login button
-  const renderSaveButton = () => {
+  const headerAction = useMemo(() => {
     if (boardType === 'aurora') {
       if (!isAuthenticated) {
         return (
-          <MuiButton variant="contained" startIcon={<LoginOutlined />} onClick={() => openAuthModal({ title: 'Sign in to save your climb', description: 'Create an account or sign in to save your climb to the board.', onSuccess: handleAuthSuccess })}>
+          <MuiButton
+            size="small"
+            variant="contained"
+            startIcon={<LoginOutlined />}
+            onClick={() => openAuthModal({ title: 'Sign in to save your climb', description: 'Create an account or sign in to save your climb to the board.', onSuccess: handleAuthSuccess })}
+          >
             Sign In
           </MuiButton>
         );
       }
       return (
         <MuiButton
+          size="small"
           variant="contained"
           startIcon={isSaving ? <CircularProgress size={16} /> : <SaveOutlined />}
           disabled={isSaving || !canSave}
@@ -430,17 +424,18 @@ export default function CreateClimbForm({
     }
 
     // MoonBoard
-    if (!session?.user) {
+    if (!hasMoonBoardSessionUser) {
       return (
         <Link href="/api/auth/signin">
-          <MuiButton variant="contained" startIcon={<LoginOutlined />}>
-            Log in to Save
+          <MuiButton size="small" variant="contained" startIcon={<LoginOutlined />}>
+            Log In
           </MuiButton>
         </Link>
       );
     }
     return (
       <MuiButton
+        size="small"
         variant="contained"
         startIcon={isSaving ? <CircularProgress size={16} /> : <SaveOutlined />}
         disabled={isSaving || !canSave}
@@ -449,47 +444,34 @@ export default function CreateClimbForm({
         {isSaving ? 'Saving...' : 'Save'}
       </MuiButton>
     );
-  };
+  }, [boardType, isAuthenticated, openAuthModal, handleAuthSuccess, isSaving, canSave, handlePublish, hasMoonBoardSessionUser]);
+
+  climbNameRef.current = climbName;
+  setClimbNameRef.current = setClimbName;
+  headerActionRef.current = headerAction;
+
+  useEffect(() => {
+    register({
+      climbName: climbNameRef.current,
+      setClimbName: setClimbNameRef.current,
+      actionSlot: headerActionRef.current,
+    });
+
+    return () => {
+      deregister();
+    };
+  }, [register, deregister]);
+
+  useEffect(() => {
+    update({
+      climbName,
+      setClimbName,
+      actionSlot: headerAction,
+    });
+  }, [climbName, headerAction, setClimbName, update]);
 
   return (
     <div className={styles.pageContainer}>
-      {/* Unified Header */}
-      <div className={styles.createHeader}>
-        <MuiButton variant="outlined" startIcon={<ArrowBackOutlined />} onClick={handleCancel}>
-          Back
-        </MuiButton>
-        <TextField
-          placeholder="Climb name"
-          inputProps={{ maxLength: 100 }}
-          className={styles.headerNameInput}
-          variant="standard"
-          value={climbName}
-          onChange={(e) => setClimbName(e.target.value)}
-        />
-        {/* MoonBoard: Show grade in header like climb card */}
-        {boardType === 'moonboard' && userGrade && (
-          <Typography
-            variant="body2"
-            component="span"
-            style={{
-              fontSize: 28,
-              fontWeight: themeTokens.typography.fontWeight.bold,
-              lineHeight: 1,
-              color: getSoftFontGradeColor(userGrade, isDark) ?? 'var(--neutral-500)',
-              flexShrink: 0,
-            }}
-          >
-            {userGrade}
-          </Typography>
-        )}
-        <IconButton
-          onClick={handleToggleSettings}
-        >
-          {showSettingsPanel ? <CloseOutlined /> : <SettingsOutlined />}
-        </IconButton>
-        {renderSaveButton()}
-      </div>
-
       {/* MoonBoard OCR errors */}
       {boardType === 'moonboard' && ocrError && (
         <MuiAlert
@@ -514,46 +496,69 @@ export default function CreateClimbForm({
       <div className={styles.contentWrapper}>
         {/* Controls bar with draft toggle (all boards) and heatmap (Aurora only) */}
         <div className={styles.climbTitleContainer}>
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-            <Typography variant="body2" component="span" color="text.secondary" className={styles.draftLabel}>
-              Draft
-            </Typography>
-            <MuiSwitch
+          <div className={styles.controlBarContent}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+              <Typography variant="body2" component="span" color="text.secondary" className={styles.draftLabel}>
+                Draft
+              </Typography>
+              <MuiSwitch
+                size="small"
+                checked={isDraft}
+                onChange={(_, checked) => setIsDraft(checked)}
+              />
+              {/* Aurora-only: Heatmap toggle */}
+              {boardType === 'aurora' && (
+                <>
+                  <MuiTooltip title={showHeatmap ? 'Hide heatmap' : 'Show hold popularity heatmap'}>
+                    <IconButton
+                      color={showHeatmap ? 'error' : 'default'}
+                      size="small"
+                      onClick={handleToggleHeatmap}
+                      className={styles.heatmapButton}
+                    >
+                      <LocalFireDepartmentOutlined />
+                    </IconButton>
+                  </MuiTooltip>
+                  {showHeatmap && (
+                    <>
+                      <Typography variant="body2" component="span" color="text.secondary" className={styles.draftLabel}>
+                        Opacity
+                      </Typography>
+                      <MuiSlider
+                        min={0.1}
+                        max={1}
+                        step={0.1}
+                        value={heatmapOpacity}
+                        onChange={(_, value) => setHeatmapOpacity(value as number)}
+                        className={styles.opacitySlider}
+                      />
+                    </>
+                  )}
+                </>
+              )}
+              {boardType === 'moonboard' && userGrade && (
+                <Typography
+                  variant="body2"
+                  component="span"
+                  className={styles.gradeBadge}
+                  style={{
+                    color: getSoftFontGradeColor(userGrade, isDark) ?? 'var(--neutral-500)',
+                  }}
+                >
+                  {userGrade}
+                </Typography>
+              )}
+            </Box>
+
+            <MuiButton
               size="small"
-              checked={isDraft}
-              onChange={(_, checked) => setIsDraft(checked)}
-            />
-            {/* Aurora-only: Heatmap toggle */}
-            {boardType === 'aurora' && (
-              <>
-                <MuiTooltip title={showHeatmap ? 'Hide heatmap' : 'Show hold popularity heatmap'}>
-                  <IconButton
-                    color={showHeatmap ? 'error' : 'default'}
-                    size="small"
-                    onClick={handleToggleHeatmap}
-                    className={styles.heatmapButton}
-                  >
-                    <LocalFireDepartmentOutlined />
-                  </IconButton>
-                </MuiTooltip>
-                {showHeatmap && (
-                  <>
-                    <Typography variant="body2" component="span" color="text.secondary" className={styles.draftLabel}>
-                      Opacity
-                    </Typography>
-                    <MuiSlider
-                      min={0.1}
-                      max={1}
-                      step={0.1}
-                      value={heatmapOpacity}
-                      onChange={(_, value) => setHeatmapOpacity(value as number)}
-                      className={styles.opacitySlider}
-                    />
-                  </>
-                )}
-              </>
-            )}
-          </Box>
+              variant={showSettingsPanel ? 'contained' : 'outlined'}
+              startIcon={showSettingsPanel ? <CloseOutlined /> : <SettingsOutlined />}
+              onClick={handleToggleSettings}
+            >
+              Settings
+            </MuiButton>
+          </div>
         </div>
 
         {/* Board Section */}
@@ -670,16 +675,16 @@ export default function CreateClimbForm({
           <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
             {boardType === 'aurora' ? (
               <>
-                <Chip label={`Starting: ${startingCount}/2`} size="small" color={startingCount > 0 ? 'success' : undefined} />
-                <Chip label={`Finish: ${finishCount}/2`} size="small" sx={finishCount > 0 ? { bgcolor: themeTokens.colors.pink, color: 'var(--semantic-surface)' } : undefined} />
-                <Chip label={`Total: ${totalHolds}`} size="small" color={totalHolds > 0 ? 'primary' : undefined} />
+                <HoldStatusChip label={`Starting: ${startingCount}/2`} active={startingCount > 0} tone="success" />
+                <HoldStatusChip label={`Finish: ${finishCount}/2`} active={finishCount > 0} tone="pink" />
+                <HoldStatusChip label={`Total: ${totalHolds}`} active={totalHolds > 0} tone="primary" />
               </>
             ) : (
               <>
-                <Chip label={`Start: ${startingCount}/2`} size="small" color={startingCount > 0 ? 'error' : undefined} />
-                <Chip label={`Hand: ${handCount}`} size="small" color={handCount > 0 ? 'primary' : undefined} />
-                <Chip label={`Finish: ${finishCount}/2`} size="small" color={finishCount > 0 ? 'success' : undefined} />
-                <Chip label={`Total: ${totalHolds}`} size="small" color={totalHolds > 0 ? 'secondary' : undefined} />
+                <HoldStatusChip label={`Start: ${startingCount}/2`} active={startingCount > 0} tone="error" />
+                <HoldStatusChip label={`Hand: ${handCount}`} active={handCount > 0} tone="primary" />
+                <HoldStatusChip label={`Finish: ${finishCount}/2`} active={finishCount > 0} tone="success" />
+                <HoldStatusChip label={`Total: ${totalHolds}`} active={totalHolds > 0} tone="secondary" />
               </>
             )}
           </Stack>
