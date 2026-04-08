@@ -484,6 +484,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                         climb={currentClimb}
                         gradePosition="right"
                         showSetterInfo
+                        isNoMatch={!!currentClimb?.is_no_match}
                       />
                     </div>
 
@@ -500,6 +501,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                           climb={peekClimbData}
                           gradePosition="right"
                           showSetterInfo
+                          isNoMatch={!!peekClimbData?.is_no_match}
                         />
                       </div>
                     )}

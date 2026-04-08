@@ -446,8 +446,9 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
           titleFontSize: themeTokens.typography.fontSize.xl,
           rightAddon: <AscentStatus climbUuid={climb.uuid} fontSize={20} />,
           favorited: isFavorited,
+          isNoMatch: !!climb.is_no_match,
         },
-      [titleProps, climb.uuid, isFavorited],
+      [titleProps, climb.uuid, isFavorited, climb.is_no_match],
     );
 
     // Memoize right action layer styles to avoid inline object creation per render

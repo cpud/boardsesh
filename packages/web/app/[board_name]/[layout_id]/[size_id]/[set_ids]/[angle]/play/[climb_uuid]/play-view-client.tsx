@@ -167,6 +167,7 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
             showSetterInfo
             titleFontSize={themeTokens.typography.fontSize['2xl']}
             rightAddon={displayClimb && <AscentStatus climbUuid={displayClimb.uuid} fontSize={themeTokens.typography.fontSize['2xl']} />}
+            isNoMatch={!!displayClimb?.is_no_match}
           />
         </div>
         <SwipeBoardCarousel

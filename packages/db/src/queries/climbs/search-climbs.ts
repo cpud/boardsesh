@@ -20,6 +20,7 @@ type RawSelectResult = {
   quality_average: number | null;
   difficulty_error: number | null;
   benchmark_difficulty: number | null;
+  description: string | null;
 };
 
 function mapResultToClimbRow(result: RawSelectResult, angle: number): ClimbRow {
@@ -36,6 +37,7 @@ function mapResultToClimbRow(result: RawSelectResult, angle: number): ClimbRow {
     difficulty_error: result.difficulty_error?.toString() || '0',
     benchmark_difficulty: result.benchmark_difficulty && result.benchmark_difficulty > 0 ? result.benchmark_difficulty.toString() : null,
     is_draft: result.is_draft ?? false,
+    description: result.description || '',
   };
 }
 
@@ -120,6 +122,7 @@ async function statsDrivenSearch(
     quality_average: sql<number | null>`ROUND(${boardClimbStats.qualityAverage}::numeric, 2)`,
     difficulty_error: sql<number | null>`ROUND(${boardClimbStats.difficultyAverage}::numeric - ${boardClimbStats.displayDifficulty}::numeric, 2)`,
     benchmark_difficulty: boardClimbStats.benchmarkDifficulty,
+    description: boardClimbs.description,
   };
 
   const results: RawSelectResult[] = await db
@@ -222,6 +225,7 @@ async function standardSearch(
     quality_average: sql<number | null>`ROUND(${boardClimbStats.qualityAverage}::numeric, 2)`,
     difficulty_error: sql<number | null>`ROUND(${boardClimbStats.difficultyAverage}::numeric - ${boardClimbStats.displayDifficulty}::numeric, 2)`,
     benchmark_difficulty: boardClimbStats.benchmarkDifficulty,
+    description: boardClimbs.description,
   };
 
   const orderByClause = sortOrder === 'asc'
@@ -247,8 +251,6 @@ async function standardSearch(
   const hasMore = results.length > pageSize;
   const trimmed = hasMore ? results.slice(0, pageSize) : results;
 
-  // description is intentionally excluded — it's unbounded text that inflates I/O.
-  // Features needing it should fetch separately via the climb detail query.
   const climbs = trimmed.map((r) => mapResultToClimbRow(r, params.angle));
   return { climbs, hasMore };
 }
