@@ -57,6 +57,15 @@ void test_parse_chunked_payload(void) {
     TEST_ASSERT_EQUAL_STRING("p1r42p2r43p198r44", protocol->getFrames().c_str());
 }
 
+void test_parse_chunked_payload_with_split_frame_delimiter(void) {
+    const char chunk1[] = "l";
+    const char chunk2[] = "#S0,P35,E197#";
+
+    TEST_ASSERT_FALSE(protocol->addData(reinterpret_cast<const uint8_t*>(chunk1), strlen(chunk1)));
+    TEST_ASSERT_TRUE(protocol->addData(reinterpret_cast<const uint8_t*>(chunk2), strlen(chunk2)));
+    TEST_ASSERT_EQUAL_STRING("p1r42p2r43p198r44", protocol->getFrames().c_str());
+}
+
 void test_parse_payload_with_aux_markers(void) {
     const char payload[] = "~Dl#S0,R35,F19,E197#";
     const bool complete = protocol->addData(reinterpret_cast<const uint8_t*>(payload), strlen(payload));
@@ -123,6 +132,7 @@ int main(int argc, char** argv) {
     RUN_TEST(test_serial_position_to_hold_id_matches_expected_serpentine_order);
     RUN_TEST(test_parse_simple_problem_payload);
     RUN_TEST(test_parse_chunked_payload);
+    RUN_TEST(test_parse_chunked_payload_with_split_frame_delimiter);
     RUN_TEST(test_parse_payload_with_aux_markers);
     RUN_TEST(test_left_match_and_foot_roles_use_distinct_codes);
     RUN_TEST(test_empty_payload_clears_frames);
