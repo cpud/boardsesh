@@ -1,17 +1,26 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { AURORA_REQUEST_DEVICE_OPTIONS } from '@/app/components/board-bluetooth-control/bluetooth-aurora';
+import { MOONBOARD_REQUEST_DEVICE_OPTIONS } from '@/app/components/board-bluetooth-control/bluetooth-moonboard';
 
-// Mock the bluetooth module
+// Mock the shared Bluetooth transport helpers
 const mockRequestDevice = vi.fn();
 const mockGetCharacteristic = vi.fn();
 const mockSplitMessages = vi.fn((data: Uint8Array) => [data]);
 const mockWriteCharacteristicSeries = vi.fn();
 
-vi.mock('@/app/components/board-bluetooth-control/bluetooth', () => ({
-  requestDevice: (...args: unknown[]) => mockRequestDevice(...args),
-  getCharacteristic: (...args: unknown[]) => mockGetCharacteristic(...args),
-  splitMessages: (data: Uint8Array) => mockSplitMessages(data),
-  writeCharacteristicSeries: (...args: unknown[]) => mockWriteCharacteristicSeries(...args),
-}));
+vi.mock('@/app/components/board-bluetooth-control/bluetooth-shared', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/app/components/board-bluetooth-control/bluetooth-shared')>();
+  return {
+    ...actual,
+    requestBluetoothDevice: (...args: Parameters<typeof actual.requestBluetoothDevice>) =>
+      mockRequestDevice(...args),
+    getUartCharacteristic: (...args: Parameters<typeof actual.getUartCharacteristic>) =>
+      mockGetCharacteristic(...args),
+    splitMessages: (data: Uint8Array) => mockSplitMessages(data),
+    writeCharacteristicSeries: (...args: Parameters<typeof actual.writeCharacteristicSeries>) =>
+      mockWriteCharacteristicSeries(...args),
+  };
+});
 
 import { WebBluetoothAdapter } from '../web-adapter';
 
@@ -86,8 +95,19 @@ describe('WebBluetoothAdapter', () => {
 
       expect(connection.deviceId).toBe('web-dev-1');
       expect(connection.deviceName).toBe('Test Board');
-      expect(mockRequestDevice).toHaveBeenCalled();
+      expect(mockRequestDevice).toHaveBeenCalledWith(AURORA_REQUEST_DEVICE_OPTIONS);
       expect(mockGetCharacteristic).toHaveBeenCalledWith(mockDevice);
+    });
+
+    it('uses Moonboard request options for Moonboard controllers', async () => {
+      const moonboardAdapter = new WebBluetoothAdapter('moonboard');
+      const mockDevice = createMockDevice();
+      mockRequestDevice.mockResolvedValue(mockDevice);
+      mockGetCharacteristic.mockResolvedValue(createMockCharacteristic());
+
+      await moonboardAdapter.requestAndConnect();
+
+      expect(mockRequestDevice).toHaveBeenCalledWith(MOONBOARD_REQUEST_DEVICE_OPTIONS);
     });
 
     it('registers gattserverdisconnected listener', async () => {
