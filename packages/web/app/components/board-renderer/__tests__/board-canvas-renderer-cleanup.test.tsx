@@ -8,15 +8,16 @@ import type { BoardDetails } from '@/app/lib/types';
 
 let resolveRenderBoard: (bitmap: ImageBitmap) => void;
 const isWorkerRenderingSupportedMock = vi.fn(() => true);
+const renderBoardMock = vi.fn(
+  () =>
+    new Promise<ImageBitmap>((resolve) => {
+      resolveRenderBoard = resolve;
+    }),
+);
 
 vi.mock('@/app/lib/board-render-worker/worker-manager', () => ({
   isWorkerRenderingSupported: isWorkerRenderingSupportedMock,
-  renderBoard: vi.fn(
-    () =>
-      new Promise<ImageBitmap>((resolve) => {
-        resolveRenderBoard = resolve;
-      }),
-  ),
+  renderBoard: renderBoardMock,
 }));
 
 vi.mock('@/app/lib/rendering-metrics', () => ({
@@ -166,5 +167,6 @@ describe('BoardCanvasRenderer cleanup', () => {
 
     expect(queryByTestId('board-image-layers')).toBeTruthy();
     expect(container.querySelector('canvas')).toBeNull();
+    expect(renderBoardMock).not.toHaveBeenCalled();
   });
 });

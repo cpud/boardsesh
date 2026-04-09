@@ -36,6 +36,7 @@ const BoardCanvasRenderer = React.memo(function BoardCanvasRenderer({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hasFired = useRef(false);
   const [failed, setFailed] = useState(false);
+  const workerSupported = isWorkerRenderingSupported();
 
   // Compute initial canvas dimensions to match worker output, so the element
   // has a correct intrinsic aspect ratio before the bitmap arrives. Older
@@ -51,9 +52,8 @@ const BoardCanvasRenderer = React.memo(function BoardCanvasRenderer({
     if (!canvas) return;
 
     // If worker rendering is unavailable (or has been disabled after a prior
-    // worker load/runtime failure), switch immediately to image URL layers —
-    // the same path used for SSR output.
-    if (!isWorkerRenderingSupported()) {
+    // worker load/runtime failure), skip worker calls.
+    if (!workerSupported) {
       setFailed(true);
       return;
     }
@@ -93,10 +93,10 @@ const BoardCanvasRenderer = React.memo(function BoardCanvasRenderer({
         canvas.height = 0;
       }
     };
-  }, [boardDetails, frames, mirrored, thumbnail, contain]);
+  }, [boardDetails, frames, mirrored, thumbnail, contain, workerSupported]);
 
   // Fall back to server-rendered image layers if the worker render fails
-  if (failed) {
+  if (failed || !workerSupported) {
     return (
       <BoardImageLayers
         boardDetails={boardDetails}
