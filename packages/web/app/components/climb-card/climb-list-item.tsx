@@ -519,9 +519,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
                 boardDetails={boardDetails}
                 currentClimb={climb}
                 pathname={pathname}
-                enableNavigation={!disableThumbnailNavigation}
                 preferImageLayers={preferImageLayers}
-                onNavigate={onNavigate}
               />
               <HeartAnimationOverlay visible={showHeart} onAnimationEnd={dismissHeart} size={32} />
             </div>
