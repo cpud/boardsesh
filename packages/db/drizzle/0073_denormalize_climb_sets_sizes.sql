@@ -28,10 +28,10 @@ FROM (
   FROM board_climbs c2
   JOIN board_product_sizes ps
     ON ps.board_type = c2.board_type
-    AND c2.edge_left >= ps.edge_left
-    AND c2.edge_right <= ps.edge_right
-    AND c2.edge_bottom >= ps.edge_bottom
-    AND c2.edge_top <= ps.edge_top
+    AND c2.edge_left > ps.edge_left
+    AND c2.edge_right < ps.edge_right
+    AND c2.edge_bottom > ps.edge_bottom
+    AND c2.edge_top < ps.edge_top
   WHERE c2.board_type != 'moonboard'
     AND c2.edge_left IS NOT NULL
   GROUP BY c2.uuid, c2.board_type
