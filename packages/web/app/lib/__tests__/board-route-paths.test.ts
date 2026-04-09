@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isBoardListPath, isBoardRoutePath } from '../board-route-paths';
+import { isBoardCreatePath, isBoardListPath, isBoardRoutePath } from '../board-route-paths';
 
 describe('board-route-paths', () => {
   describe('isBoardRoutePath', () => {
@@ -9,6 +9,11 @@ describe('board-route-paths', () => {
 
     it('detects board-name routes', () => {
       expect(isBoardRoutePath('/kilter/1/1/default/40/list')).toBe(true);
+    });
+
+    it('detects new aurora board routes', () => {
+      expect(isBoardRoutePath('/grasshopper/2020/grandmaster-12-x-12/power_flow_engage/40/list')).toBe(true);
+      expect(isBoardRoutePath('/decoy/dungeon-trainer/12x12/foundation/40/list')).toBe(true);
     });
 
     it('rejects non-board routes', () => {
@@ -25,6 +30,10 @@ describe('board-route-paths', () => {
       expect(isBoardListPath('/kilter/1/1/default/40/list')).toBe(true);
     });
 
+    it('matches new aurora board list routes', () => {
+      expect(isBoardListPath('/grasshopper/2020/grandmaster-12-x-12/power_flow_engage/40/list')).toBe(true);
+    });
+
     it('rejects non-list board routes', () => {
       expect(isBoardListPath('/b/test-board/40/view/climb-123')).toBe(false);
       expect(isBoardListPath('/kilter/1/1/default/40/play/climb-123')).toBe(false);
@@ -37,6 +46,21 @@ describe('board-route-paths', () => {
 
     it('rejects lookalike segments', () => {
       expect(isBoardListPath('/b/test-board/list-item/123')).toBe(false);
+    });
+  });
+
+  describe('isBoardCreatePath', () => {
+    it('matches slug-based board create routes', () => {
+      expect(isBoardCreatePath('/b/test-board/40/create')).toBe(true);
+    });
+
+    it('matches board-name create routes', () => {
+      expect(isBoardCreatePath('/moonboard/moonboard-2024/standard-11x18-grid/wooden-holds/40/create')).toBe(true);
+    });
+
+    it('rejects non-create board routes', () => {
+      expect(isBoardCreatePath('/b/test-board/40/list')).toBe(false);
+      expect(isBoardCreatePath('/moonboard/moonboard-2024/standard-11x18-grid/wooden-holds/40/view/climb-123')).toBe(false);
     });
   });
 });

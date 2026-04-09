@@ -3,11 +3,11 @@
 import React, { useMemo } from 'react';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import CopyrightOutlined from '@mui/icons-material/CopyrightOutlined';
+import ClimbIcons from './climb-icons';
 import { themeTokens } from '@/app/theme/theme-config';
 import { getSoftVGradeColor, formatVGrade } from '@/app/lib/grade-colors';
 import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
-import { formatAscents, formatQuality } from '@/app/lib/format-climb-stats';
+import { formatSends, formatQuality } from '@/app/lib/format-climb-stats';
 
 export type ClimbTitleData = {
   name?: string;
@@ -19,6 +19,7 @@ export type ClimbTitleData = {
   ascensionist_count?: number;
   is_draft?: boolean;
   communityGrade?: string | null;
+  is_no_match?: boolean;
 };
 
 export type ClimbTitleProps = {
@@ -46,6 +47,8 @@ export type ClimbTitleProps = {
   gradePosition?: 'inline' | 'right';
   /** When true, shows a heart indicator in the byline */
   favorited?: boolean;
+  /** When true, shows a "no matching" icon next to the climb name */
+  isNoMatch?: boolean;
 };
 
 // --- Static sx objects hoisted to module scope (no reactive deps) ---
@@ -59,12 +62,6 @@ const textOverflowSx = {
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
-} as const;
-
-const benchmarkIconSx = {
-  marginLeft: '4px',
-  fontSize: themeTokens.typography.fontSize.xs,
-  color: themeTokens.colors.primary,
 } as const;
 
 const subtitleSx = {
@@ -179,6 +176,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
   titleFontSize,
   gradePosition = 'inline',
   favorited = false,
+  isNoMatch = false,
 }) => {
   const isDark = useIsDarkMode();
 
@@ -224,8 +222,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
   }
 
   const hasGrade = displayDifficulty && climb.quality_average && climb.quality_average !== '0';
-  const benchmarkValue = climb.benchmark_difficulty != null ? Number(climb.benchmark_difficulty) : null;
-  const isBenchmark = benchmarkValue !== null && benchmarkValue > 0 && !Number.isNaN(benchmarkValue);
+  const resolvedIsNoMatch = isNoMatch || Boolean(climb.is_no_match);
 
   const renderDifficultyText = () => {
     if (hasGrade) {
@@ -239,7 +236,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
   const nameElement = (
     <Typography variant="body2" component="span" sx={nameSx}>
       {climb.name}
-      {isBenchmark && <CopyrightOutlined sx={benchmarkIconSx} />}
+      <ClimbIcons benchmarkDifficulty={climb.benchmark_difficulty} isNoMatch={resolvedIsNoMatch} />
     </Typography>
   );
 
@@ -257,7 +254,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
 
   const setterText = climb.is_draft
     ? `Draft by ${climb.setter_username}`
-    : `By ${climb.setter_username}${climb.ascensionist_count ? ` - ${formatAscents(climb.ascensionist_count)} ascent${climb.ascensionist_count === 1 ? '' : 's'}` : ''}`;
+    : `By ${climb.setter_username}${climb.ascensionist_count ? ` - ${formatSends(climb.ascensionist_count)}` : ''}`;
 
   const setterElement = showSetterInfo && climb.setter_username && (
     <Typography variant="body2" component="span" color="text.secondary" sx={setterSx}>
@@ -271,7 +268,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
       subtitleParts.push('Draft');
     }
     if (!climb.is_draft && climb.ascensionist_count) {
-      subtitleParts.push(`${formatAscents(climb.ascensionist_count)} ascent${climb.ascensionist_count === 1 ? '' : 's'}`);
+      subtitleParts.push(formatSends(climb.ascensionist_count));
     }
     if (hasGrade) {
       subtitleParts.push(`${formatQuality(climb.quality_average!)}\u2605`);
@@ -328,7 +325,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
       secondLineContent.push(`${climb.setter_username}`);
     }
     if (!climb.is_draft && climb.ascensionist_count) {
-      secondLineContent.push(`${formatAscents(climb.ascensionist_count)} ascent${climb.ascensionist_count === 1 ? '' : 's'}`);
+      secondLineContent.push(formatSends(climb.ascensionist_count));
     }
 
     return (
@@ -388,7 +385,8 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
       prev.centered === next.centered &&
       prev.titleFontSize === next.titleFontSize &&
       prev.gradePosition === next.gradePosition &&
-      prev.favorited === next.favorited
+      prev.favorited === next.favorited &&
+      prev.isNoMatch === next.isNoMatch
     );
   }
 
@@ -408,6 +406,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
     prevClimb.ascensionist_count === nextClimb.ascensionist_count &&
     prevClimb.is_draft === nextClimb.is_draft &&
     prevClimb.communityGrade === nextClimb.communityGrade &&
+    prevClimb.is_no_match === nextClimb.is_no_match &&
     prev.showAngle === next.showAngle &&
     prev.showSetterInfo === next.showSetterInfo &&
     prev.nameAddon === next.nameAddon &&
@@ -418,7 +417,8 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
     prev.centered === next.centered &&
     prev.titleFontSize === next.titleFontSize &&
     prev.gradePosition === next.gradePosition &&
-    prev.favorited === next.favorited
+    prev.favorited === next.favorited &&
+    prev.isNoMatch === next.isNoMatch
   );
 });
 

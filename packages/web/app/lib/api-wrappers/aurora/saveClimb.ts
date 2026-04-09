@@ -4,6 +4,7 @@ import { generateUuid } from './util';
 import { dbz } from '@/app/lib/db/db';
 import { UNIFIED_TABLES } from '@/app/lib/db/queries/util/table-select';
 import { boardClimbStats } from '@boardsesh/db/schema';
+import { populateDenormalizedColumns } from '@boardsesh/db/queries';
 import dayjs from 'dayjs';
 
 /**
@@ -23,6 +24,7 @@ export async function saveClimb(
 ): Promise<SaveClimbResponse> {
   const uuid = generateUuid();
   const createdAt = dayjs().format('YYYY-MM-DD HH:mm:ss');
+  const isListed = !options.is_draft;
 
   const { climbs } = UNIFIED_TABLES;
 
@@ -42,7 +44,7 @@ export async function saveClimb(
       framesPace: options.frames_pace || 0,
       frames: options.frames,
       isDraft: options.is_draft,
-      isListed: false,
+      isListed,
       createdAt,
       synced: false,
       syncError: null,
@@ -61,10 +63,14 @@ export async function saveClimb(
         framesPace: options.frames_pace || 0,
         frames: options.frames,
         isDraft: options.is_draft,
+        isListed,
         synced: false,
         syncError: null,
       },
     });
+
+  // Populate denormalized required_set_ids and compatible_size_ids
+  await populateDenormalizedColumns(dbz, board, [uuid]);
 
   // Return response - always success from client perspective
   return {

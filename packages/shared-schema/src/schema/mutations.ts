@@ -120,7 +120,7 @@ export const mutationsTypeDefs = /* GraphQL */ `
     saveTick(input: SaveTickInput!): Tick!
 
     """
-    Delete a tick by UUID. Only the owner can delete their own ticks.
+    Delete a tick (climb attempt record). Only the owner can delete.
     """
     deleteTick(uuid: ID!): Boolean!
 
@@ -128,6 +128,7 @@ export const mutationsTypeDefs = /* GraphQL */ `
     Update an existing tick. Only the owner can update their own ticks.
     """
     updateTick(uuid: ID!, input: UpdateTickInput!): Tick!
+
 
     # ============================================
     # Climb Mutations (require auth)

@@ -71,6 +71,20 @@ export interface SaveTickMutationResponse {
   saveTick: TickFromSaveTick;
 }
 
+export const DELETE_TICK = gql`
+  mutation DeleteTick($uuid: ID!) {
+    deleteTick(uuid: $uuid)
+  }
+`;
+
+export interface DeleteTickMutationVariables {
+  uuid: string;
+}
+
+export interface DeleteTickMutationResponse {
+  deleteTick: boolean;
+}
+
 // ============================================
 // Activity Feed Operations
 // ============================================
@@ -295,12 +309,6 @@ export interface GetUserProfileStatsQueryResponse {
 // ============================================
 // Tick Mutation Operations
 // ============================================
-
-export const DELETE_TICK = gql`
-  mutation DeleteTick($uuid: ID!) {
-    deleteTick(uuid: $uuid)
-  }
-`;
 
 export const UPDATE_TICK = gql`
   mutation UpdateTick($uuid: ID!, $input: UpdateTickInput!) {

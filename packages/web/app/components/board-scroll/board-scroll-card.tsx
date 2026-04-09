@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
 import BoardRenderer from '../board-renderer/board-renderer';
 import { useBoardDetails } from './board-thumbnail';
-import { formatAscents } from '@/app/lib/format-climb-stats';
+import { formatCount, formatSends } from '@/app/lib/format-climb-stats';
 import { BoardConfigData } from '@/app/lib/server-board-configs';
 import { StoredBoardConfig } from '@/app/lib/saved-boards-db';
 import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
@@ -59,9 +59,14 @@ export default function BoardScrollCard({
 
     if (userBoard) {
       cardName = userBoard.name;
-      cardMeta = BOARD_TYPE_LABELS[userBoard.boardType] || userBoard.boardType;
-      if (userBoard.locationName) {
-        cardMeta += ` \u00B7 ${userBoard.locationName}`;
+      if (userBoard.distanceMeters != null) {
+        // Nearby/discovered board — show type and location
+        cardMeta = BOARD_TYPE_LABELS[userBoard.boardType] || userBoard.boardType;
+        if (userBoard.locationName) {
+          cardMeta += ` \u00B7 ${userBoard.locationName}`;
+        }
+      } else {
+        cardMeta = formatSends(userBoard.totalAscents);
       }
     } else if (storedConfig) {
       cardName = storedConfig.name;
@@ -76,8 +81,8 @@ export default function BoardScrollCard({
     } else if (popularConfig) {
       cardName = popularConfig.displayName;
       const parts: string[] = [];
-      if (popularConfig.boardCount > 0) parts.push(`${formatAscents(popularConfig.boardCount)} boards`);
-      parts.push(`${formatAscents(popularConfig.totalAscents)} sends`);
+      if (popularConfig.boardCount > 0) parts.push(`${formatCount(popularConfig.boardCount)} boards`);
+      parts.push(formatSends(popularConfig.totalAscents));
       cardMeta = parts.join(' \u00B7 ');
     }
 

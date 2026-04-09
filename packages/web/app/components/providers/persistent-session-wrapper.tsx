@@ -23,6 +23,8 @@ import { isBoardRoutePath } from '@/app/lib/board-route-paths';
 import GlobalHeader from '../global-header/global-header';
 import SessionSummaryDialog from '../session-summary/session-summary-dialog';
 import { SearchDrawerBridgeProvider } from '../search-drawer/search-drawer-bridge-context';
+import { CreateHeaderBridgeProvider } from '../create-climb/create-header-bridge-context';
+import { isNativeApp } from '@/app/lib/ble/capacitor-utils';
 
 interface PersistentSessionWrapperProps {
   children: React.ReactNode;
@@ -42,10 +44,12 @@ export default function PersistentSessionWrapper({ children, boardConfigs }: Per
       <PersistentSessionProvider>
         <QueueBridgeProvider>
           <SearchDrawerBridgeProvider>
-            <GlobalHeader boardConfigs={boardConfigs} />
-            {children}
-            <RootBottomBar boardConfigs={boardConfigs} />
-            <RootSessionSummaryDialog />
+            <CreateHeaderBridgeProvider>
+              <GlobalHeader boardConfigs={boardConfigs} />
+              {children}
+              <RootBottomBar boardConfigs={boardConfigs} />
+              <RootSessionSummaryDialog />
+            </CreateHeaderBridgeProvider>
           </SearchDrawerBridgeProvider>
         </QueueBridgeProvider>
       </PersistentSessionProvider>
@@ -74,12 +78,16 @@ const HIDE_TAB_BAR_PAGES = ['/aurora-migration'];
 export function RootBottomBar({ boardConfigs }: { boardConfigs: BoardConfigData }) {
   const { boardDetails, angle, hasActiveQueue } = useQueueBridgeBoardInfo();
   const pathname = usePathname();
+  const isNative = isNativeApp();
 
   const hideTabBar = HIDE_TAB_BAR_PAGES.some((prefix) => pathname.startsWith(prefix)) && !hasActiveQueue;
   const shouldShowQueueShell = isBoardRoutePath(pathname) && !hasActiveQueue && !boardDetails;
 
   return (
-    <div className={bottomBarStyles.bottomBarWrapper} data-testid="bottom-bar-wrapper">
+    <div
+      className={`${bottomBarStyles.bottomBarWrapper} ${isNative ? bottomBarStyles.nativeApp : ''}`}
+      data-testid="bottom-bar-wrapper"
+    >
       {hasActiveQueue && boardDetails && (
         <ErrorBoundary>
           <BoardProvider boardName={boardDetails.board_name}>

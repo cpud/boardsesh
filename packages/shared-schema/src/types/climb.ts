@@ -1,4 +1,5 @@
 // Climb and Hold types
+import type { MoonBoardHoldsInput } from './new-climb-feed';
 
 export type HoldState = 'OFF' | 'STARTING' | 'FINISH' | 'HAND' | 'FOOT' | 'ANY' | 'NOT';
 export type LitupHold = { state: HoldState; color: string; displayColor: string };
@@ -22,6 +23,7 @@ export type Climb = {
   userAscents?: number | null; // GraphQL nullable Int
   userAttempts?: number | null; // GraphQL nullable Int
   boardType?: string; // Populated in multi-board contexts
+  is_no_match?: boolean | null; // Whether matching is disallowed
 };
 
 // Input type for Climb (matches GraphQL ClimbInput)
@@ -39,6 +41,7 @@ export type ClimbInput = {
   difficulty_error: string;
   mirrored?: boolean | null;
   benchmark_difficulty?: string | null;
+  is_no_match?: boolean | null;
   userAscents?: number | null;
   userAttempts?: number | null;
 };
@@ -113,7 +116,7 @@ export type SaveMoonBoardClimbInput = {
   layoutId: number;
   name: string;
   description?: string | null;
-  holds: unknown;
+  holds: MoonBoardHoldsInput;
   angle: number;
   isDraft?: boolean | null;
   userGrade?: string | null;

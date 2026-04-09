@@ -152,7 +152,7 @@ export default function ProfilePageContent({ userId }: { userId: string }) {
               <Typography variant="body2" component="span" color="text.secondary" className={styles.chartDescription}>
                 Latest ascents and attempts
               </Typography>
-              <AscentsFeed userId={userId} pageSize={10} />
+              <AscentsFeed userId={userId} pageSize={10} isOwnProfile={isOwnProfile} />
               {isOwnProfile && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                   <MuiButton

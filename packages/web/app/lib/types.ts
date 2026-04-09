@@ -1,4 +1,5 @@
 import { HoldRenderData, LitUpHoldsMap } from '../components/board-renderer/types';
+import type { BoardName as SharedBoardName } from '@boardsesh/shared-schema';
 import { SetIdList } from './board-data';
 
 export type Climb = {
@@ -18,6 +19,7 @@ export type Climb = {
   mirrored?: boolean;
   benchmark_difficulty: string | null; // Benchmark difficulty, can be null
   is_draft?: boolean;
+  is_no_match?: boolean;
   userAscents?: number;
   userAttempts?: number;
 };
@@ -139,7 +141,7 @@ export type ParsedBoardRouteParametersWithUuid = ParsedBoardRouteParameters & {
 
 export type ClimbUuid = string;
 
-export type BoardName = 'kilter' | 'tension' | 'moonboard';
+export type BoardName = SharedBoardName;
 export type LayoutId = number;
 export type Angle = number;
 export type Size = number;

@@ -1,12 +1,22 @@
 import { eq, and, gte, desc } from 'drizzle-orm';
-import type { ClimbSearchInput, ConnectionContext, BoardName } from '@boardsesh/shared-schema';
+import type {
+  BoardName,
+  CheckMoonBoardClimbDuplicatesInput,
+  ClimbSearchInput,
+  ConnectionContext,
+} from '@boardsesh/shared-schema';
 import { SUPPORTED_BOARDS, USER_SPECIFIC_SEARCH_PARAMS } from '@boardsesh/shared-schema';
 import type { ClimbSearchParams, ParsedBoardRouteParameters } from '../../../db/queries/climbs/index';
 import { getClimbByUuid } from '../../../db/queries/climbs/index';
-import { getSizeEdges } from '../../../db/queries/util/product-sizes-data';
 import { isValidBoardName } from '../../../db/queries/util/table-select';
-import { validateInput } from '../shared/helpers';
-import { ClimbSearchInputSchema, BoardNameSchema, ExternalUUIDSchema } from '../../../validation/schemas';
+import { applyRateLimit, validateInput } from '../shared/helpers';
+import { findMoonBoardDuplicateMatches } from './moonboard-duplicates';
+import {
+  BoardNameSchema,
+  CheckMoonBoardClimbDuplicatesInputSchema,
+  ClimbSearchInputSchema,
+  ExternalUUIDSchema,
+} from '../../../validation/schemas';
 import type { ClimbSearchContext } from '../shared/types';
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
@@ -15,6 +25,16 @@ import * as dbSchema from '@boardsesh/db/schema';
 const DEBUG = process.env.NODE_ENV === 'development';
 
 export const climbQueries = {
+  checkMoonBoardClimbDuplicates: async (
+    _: unknown,
+    { input }: { input: CheckMoonBoardClimbDuplicatesInput },
+    ctx: ConnectionContext,
+  ) => {
+    await applyRateLimit(ctx, 60, 'moonboard-duplicate-check');
+    const validated = validateInput(CheckMoonBoardClimbDuplicatesInputSchema, input, 'input');
+    return findMoonBoardDuplicateMatches(validated.layoutId, validated.angle, validated.climbs);
+  },
+
   /**
    * Search for climbs with various filters
    * Returns a context object that field resolvers use to fetch data lazily
@@ -25,12 +45,6 @@ export const climbQueries = {
     // Validate board name
     if (!isValidBoardName(input.boardName)) {
       throw new Error(`Invalid board name: ${input.boardName}. Must be one of: ${SUPPORTED_BOARDS.join(', ')}`);
-    }
-
-    // Get size edges for filtering
-    const sizeEdges = getSizeEdges(input.boardName, input.sizeId);
-    if (!sizeEdges) {
-      throw new Error(`Invalid size ID: ${input.sizeId} for board: ${input.boardName}`);
     }
 
     // Parse setIds from comma-separated string
@@ -75,7 +89,6 @@ export const climbQueries = {
       return {
         params,
         searchParams,
-        sizeEdges,
         userId: undefined,
         _cachedClimbs: [],
         _cachedHasMore: false,
@@ -83,11 +96,13 @@ export const climbQueries = {
       };
     }
 
-    // Results are cacheable when there are no user-specific filters.
-    // Uses the shared constant to stay in sync with CDN/SSR caching layers.
+    // MoonBoard data changes frequently via local creation/import flows, so keep
+    // GraphQL search results uncached there. Other boards can still use Redis
+    // when the query is anonymous and has no user-specific filters.
     const hasUserSpecificFilters = USER_SPECIFIC_SEARCH_PARAMS.some(
       (param) => !!searchParams[param as keyof typeof searchParams],
     );
+    const isCacheableBoard = input.boardName !== 'moonboard';
 
     // Only resolve userId when user-specific filters are active — otherwise the query
     // results are identical to anonymous and can be served from Redis cache.
@@ -98,9 +113,8 @@ export const climbQueries = {
     return {
       params,
       searchParams,
-      sizeEdges,
       userId,
-      _isCacheable: !hasUserSpecificFilters,
+      _isCacheable: !hasUserSpecificFilters && isCacheableBoard,
     };
   },
 

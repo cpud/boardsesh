@@ -2,7 +2,7 @@ import 'server-only';
 import { unstable_cache } from 'next/cache';
 import { getDb } from '@/app/lib/db/db';
 import { searchClimbs as sharedSearchClimbs, type ClimbSearchResult } from '@boardsesh/db/queries';
-import { getSizeEdges } from '@/app/lib/__generated__/product-sizes-data';
+import { getBoardClimbSearchTag, getLayoutClimbSearchTag } from '@/app/lib/climb-search-cache';
 import type { ParsedBoardRouteParameters, SearchRequestPagination } from '@/app/lib/types';
 import type { Climb } from '@/app/lib/types';
 import { sortObjectKeys } from '@/app/lib/cache-utils';
@@ -11,6 +11,7 @@ import { sortObjectKeys } from '@/app/lib/cache-utils';
  * Cache durations for climb search queries (in seconds)
  */
 const CACHE_DURATION_DEFAULT_SEARCH = 24 * 60 * 60; // 24 hours for default searches
+const CACHE_DURATION_DEFAULT_SEARCH_MOONBOARD = 15 * 60; // 15 minutes while MoonBoard data is still growing quickly
 const CACHE_DURATION_FILTERED_SEARCH = 60 * 60; // 1 hour for filtered searches
 
 /**
@@ -29,18 +30,15 @@ export async function cachedSearchClimbs(
   userId?: string,
   options?: { cacheable?: boolean },
 ): Promise<{ climbs: Climb[]; hasMore: boolean }> {
-  const cacheable = options?.cacheable ?? !userId;
+  // MoonBoard list data is still being actively imported/curated, so bypass
+  // the server cache there to surface new climbs immediately.
+  const cacheable = (options?.cacheable ?? !userId) && params.board_name !== 'moonboard';
 
   const revalidate = isDefaultSearch
-    ? CACHE_DURATION_DEFAULT_SEARCH
+    ? (params.board_name === 'moonboard' ? CACHE_DURATION_DEFAULT_SEARCH_MOONBOARD : CACHE_DURATION_DEFAULT_SEARCH)
     : CACHE_DURATION_FILTERED_SEARCH;
 
   const executeQuery = async () => {
-    const sizeEdges = getSizeEdges(params.board_name, params.size_id);
-    if (!sizeEdges) {
-      return { climbs: [], hasMore: false };
-    }
-
     const db = getDb();
     const result = await sharedSearchClimbs(db, params, {
       page: searchParams.page,
@@ -68,12 +66,13 @@ export async function cachedSearchClimbs(
       showOnlyAttempted: searchParams.showOnlyAttempted || undefined,
       showOnlyCompleted: searchParams.showOnlyCompleted || undefined,
       onlyDrafts: searchParams.onlyDrafts || undefined,
-    }, sizeEdges, userId);
+    }, userId);
 
     // Map ClimbRow to the web Climb type
     const climbs: Climb[] = result.climbs.map((row) => ({
       ...row,
       mirrored: undefined,
+      is_no_match: /^no match/i.test(row.description || ''),
     }));
 
     return { climbs, hasMore: result.hasMore };
@@ -117,7 +116,11 @@ export async function cachedSearchClimbs(
     cacheKey,
     {
       revalidate,
-      tags: ['climb-search'],
+      tags: [
+        'climb-search',
+        getBoardClimbSearchTag(params.board_name),
+        getLayoutClimbSearchTag(params.board_name, params.layout_id),
+      ],
     },
   );
 
