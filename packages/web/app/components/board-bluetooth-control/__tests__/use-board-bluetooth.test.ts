@@ -39,10 +39,12 @@ const {
 
 vi.mock('@/app/lib/ble/adapter-factory', () => ({
   createBluetoothAdapter: mockCreateBluetoothAdapter,
+  _resetFactoryCache: vi.fn(),
 }));
 
 vi.mock('../bluetooth-aurora', () => ({
   getAuroraBluetoothPacket: mockGetAuroraBluetoothPacket,
+  parseApiLevel: vi.fn(() => 3),
 }));
 
 vi.mock('../bluetooth-moonboard', () => ({
@@ -66,6 +68,7 @@ vi.mock('@vercel/analytics', () => ({
 }));
 
 import { useBoardBluetooth } from '../use-board-bluetooth';
+import { _resetFactoryCache } from '@/app/lib/ble/adapter-factory';
 
 const mockBoardDetails = {
   board_name: 'kilter',
@@ -94,6 +97,7 @@ const mockMoonboardDetails = {
 describe('useBoardBluetooth', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    _resetFactoryCache();
     mockCreateBluetoothAdapter.mockResolvedValue(mockAdapter);
     mockAdapter.isAvailable.mockResolvedValue(true);
     mockAdapter.requestAndConnect.mockResolvedValue({
@@ -262,6 +266,7 @@ describe('useBoardBluetooth', () => {
       'p4131r42',
       { 4131: 39 },
       'kilter',
+      3,
     );
     expect(mockGetMoonboardBluetoothPacket).not.toHaveBeenCalled();
     expect(mockAdapter.write).toHaveBeenCalledWith(new Uint8Array([1, 2, 3]), undefined);
