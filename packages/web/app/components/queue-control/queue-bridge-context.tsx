@@ -586,10 +586,15 @@ export function QueueBridgeInjector({ boardDetails, angle }: QueueBridgeInjector
   // Track whether we've done the initial injection
   const hasInjectedRef = useRef(false);
 
+  // Keep latest base board path in a ref so mount/unmount cleanup can read it
+  // without forcing the setup/cleanup effect to rerun on pathname changes.
+  const baseBoardPathRef = useRef(baseBoardPath);
+  baseBoardPathRef.current = baseBoardPath;
+
   // Initial injection: set board details + context on mount
   useLayoutEffect(() => {
     if (queueContext && queueActions && queueData) {
-      inject(queueContext, queueActions, queueData, boardDetails, angle, baseBoardPath);
+      inject(queueContext, queueActions, queueData, boardDetails, angle, baseBoardPathRef.current);
       hasInjectedRef.current = true;
     }
     // Only clean up on unmount (navigating away from board route)
@@ -598,8 +603,9 @@ export function QueueBridgeInjector({ boardDetails, angle }: QueueBridgeInjector
       clear();
     };
   // Only re-run when board details or angle change (navigation between boards)
+  // and not when pathname changes during transition off the board route.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [boardDetails, angle, baseBoardPath, inject, clear]);
+  }, [boardDetails, angle, inject, clear]);
 
   // Update the context ref whenever any of the queue context values change.
   // Also handles deferred injection if contexts were null during the useLayoutEffect.

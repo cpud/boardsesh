@@ -812,6 +812,29 @@ describe('queue-bridge-context', () => {
       );
     });
 
+    it('does not run clear/re-sync just because pathname changes before unmount', () => {
+      const item = createTestQueueItem();
+      const fakeCtx = createFakeQueueContext({
+        queue: [item],
+        currentClimbQueueItem: item,
+      });
+
+      mockSetLocalQueueState.mockClear();
+      mockPathname = '/kilter/1/10/1,2/40/list';
+
+      const rendered = renderInjector(fakeCtx);
+
+      // Simulate pathname changing during navigation transition.
+      // Injector should not tear down and re-sync until actual unmount.
+      mockPathname = '/sessions';
+      rendered.rerender();
+
+      expect(mockSetLocalQueueState).not.toHaveBeenCalled();
+
+      rendered.unmount();
+      expect(mockSetLocalQueueState).toHaveBeenCalledTimes(1);
+    });
+
     it('does not sync to local queue when party session is active', () => {
       const item = createTestQueueItem();
       const fakeCtx = createFakeQueueContext({
