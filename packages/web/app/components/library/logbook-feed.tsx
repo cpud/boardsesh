@@ -831,7 +831,7 @@ function SortPopover({
                       onChange={(e) => setDraftSortState((current) => ({ ...current, secondaryField: e.target.value as '' | SortField }))}
                       sx={{ borderRadius: '10px' }}
                     >
-                      <MenuItem value="">No tie-breaker</MenuItem>
+                      <MenuItem value="">None</MenuItem>
                       {SORT_FIELD_OPTIONS.map((option) => (
                         <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
                       ))}
