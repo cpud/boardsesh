@@ -10,6 +10,16 @@ import type { BoardName } from '@/app/lib/types';
 // Node.js runtime for reliable WASM loading via filesystem
 export const runtime = 'nodejs';
 
+const THUMBNAIL_WEBP_OPTIONS: sharp.WebpOptions = {
+  quality: 60,
+  alphaQuality: 70,
+  effort: 4,
+};
+
+const DEFAULT_WEBP_OPTIONS: sharp.WebpOptions = {
+  quality: 80,
+};
+
 // Lazily initialized WASM module with promise lock to prevent thundering herd
 let renderOverlay: ((configJson: string) => Uint8Array) | null = null;
 let wasmInitPromise: Promise<void> | null = null;
@@ -234,24 +244,24 @@ export async function GET(request: NextRequest) {
                 blend: 'over' as const,
               },
             ])
-            .webp({ quality: 80 })
+            .webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : DEFAULT_WEBP_OPTIONS)
             .toBuffer();
         } else {
           // All background loads failed — fall back to overlay-only
           webpBuffer = await sharp(overlayBuffer, { raw: { width, height, channels: 4 } })
-            .webp({ lossless: true })
+            .webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true })
             .toBuffer();
         }
       } else {
         // No background images found — fall back to overlay-only lossless
         webpBuffer = await sharp(overlayBuffer, { raw: { width, height, channels: 4 } })
-          .webp({ lossless: true })
+          .webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true })
           .toBuffer();
       }
     } else {
       // Default: overlay-only lossless WebP (25-30% smaller than PNG)
       webpBuffer = await sharp(overlayBuffer, { raw: { width, height, channels: 4 } })
-        .webp({ lossless: true })
+        .webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true })
         .toBuffer();
     }
     const sharpMs = performance.now() - sharpT0;

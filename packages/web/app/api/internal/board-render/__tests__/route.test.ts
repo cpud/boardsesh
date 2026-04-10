@@ -246,8 +246,8 @@ describe('board-render API route', () => {
     expect(response.status).toBe(200);
     // composite() should have been called (background + overlay layers)
     expect(mockComposite).toHaveBeenCalled();
-    // Should use lossy WebP for composited output
-    expect(mockWebpOptions).toHaveBeenCalledWith({ quality: 80 });
+    // Thumbnail responses should use lower-size lossy WebP options
+    expect(mockWebpOptions).toHaveBeenCalledWith({ quality: 60, alphaQuality: 70, effort: 4 });
   });
 
   it('does not call composite without include_background', async () => {
