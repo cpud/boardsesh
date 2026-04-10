@@ -1,0 +1,174 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import React from 'react';
+
+// Capture the props passed to the underlying SwipeableDrawer so we can assert on them.
+const swipeableDrawerProps: Array<Record<string, unknown>> = [];
+
+vi.mock('@/app/components/swipeable-drawer/swipeable-drawer', () => ({
+  default: (props: Record<string, unknown>) => {
+    swipeableDrawerProps.push(props);
+    const { open, children, footer } = props as {
+      open: boolean;
+      children: React.ReactNode;
+      footer?: React.ReactNode;
+    };
+    if (!open) return null;
+    return (
+      <div data-testid="swipeable-drawer">
+        {children}
+        {footer ? <div data-testid="drawer-footer">{footer}</div> : null}
+      </div>
+    );
+  },
+}));
+
+vi.mock('@/app/hooks/use-ws-auth-token', () => ({
+  useWsAuthToken: () => ({ token: null }),
+}));
+
+vi.mock('@/app/components/social/user-search-results', () => ({
+  default: () => <div data-testid="user-search-results" />,
+}));
+
+vi.mock('@/app/components/social/board-search-results', () => ({
+  default: () => <div data-testid="board-search-results" />,
+}));
+
+vi.mock('@/app/components/social/playlist-search-results', () => ({
+  default: () => <div data-testid="playlist-search-results" />,
+}));
+
+vi.mock('@/app/components/social/gym-search-results', () => ({
+  default: () => <div data-testid="gym-search-results" />,
+}));
+
+import UnifiedSearchDrawer from '../unified-search-drawer';
+import type { BoardDetails } from '@/app/lib/types';
+
+const mockBoardDetails = {
+  board_name: 'kilter',
+  layout_id: 1,
+  size_id: 10,
+  set_ids: [1, 2],
+} as unknown as BoardDetails;
+
+describe('UnifiedSearchDrawer', () => {
+  beforeEach(() => {
+    swipeableDrawerProps.length = 0;
+    vi.clearAllMocks();
+  });
+
+  it('renders all default category chips when no allow-list is provided', () => {
+    render(
+      <UnifiedSearchDrawer
+        open={true}
+        onClose={vi.fn()}
+        boardDetails={mockBoardDetails}
+        renderClimbSearch={() => <div data-testid="climb-search" />}
+      />,
+    );
+
+    // With boardDetails + default allow-list, all 5 categories render.
+    expect(screen.getByText('Climbs')).toBeTruthy();
+    expect(screen.getByText('Boards')).toBeTruthy();
+    expect(screen.getByText('Gyms')).toBeTruthy();
+    expect(screen.getByText('Users')).toBeTruthy();
+    expect(screen.getByText('Playlists')).toBeTruthy();
+  });
+
+  it('hides the category pill row entirely when allowedCategories narrows to a single category', () => {
+    render(
+      <UnifiedSearchDrawer
+        open={true}
+        onClose={vi.fn()}
+        defaultCategory="climbs"
+        allowedCategories={['climbs']}
+        boardDetails={mockBoardDetails}
+        renderClimbSearch={() => <div data-testid="climb-search" />}
+      />,
+    );
+
+    // No other category labels should appear — the pill row shouldn't render at all.
+    expect(screen.queryByText('Boards')).toBeNull();
+    expect(screen.queryByText('Gyms')).toBeNull();
+    expect(screen.queryByText('Users')).toBeNull();
+    expect(screen.queryByText('Playlists')).toBeNull();
+    // And the climb render prop is still invoked.
+    expect(screen.getByTestId('climb-search')).toBeTruthy();
+  });
+
+  it('falls back to the first allowed category when defaultCategory is not in the allow-list', () => {
+    render(
+      <UnifiedSearchDrawer
+        open={true}
+        onClose={vi.fn()}
+        defaultCategory="boards"
+        allowedCategories={['users']}
+      />,
+    );
+
+    // The users search placeholder is shown, confirming the category fell back.
+    expect(screen.getByPlaceholderText('Search climbers...')).toBeTruthy();
+    expect(screen.getByTestId('user-search-results')).toBeTruthy();
+  });
+
+  it('forwards showCloseButton and showCloseButtonOnMobile to SwipeableDrawer', () => {
+    render(
+      <UnifiedSearchDrawer
+        open={true}
+        onClose={vi.fn()}
+        defaultCategory="climbs"
+        allowedCategories={['climbs']}
+        boardDetails={mockBoardDetails}
+        renderClimbSearch={() => <div data-testid="climb-search" />}
+        showCloseButton
+        showCloseButtonOnMobile
+      />,
+    );
+
+    const last = swipeableDrawerProps[swipeableDrawerProps.length - 1];
+    expect(last.showCloseButton).toBe(true);
+    expect(last.showCloseButtonOnMobile).toBe(true);
+    expect(last.placement).toBe('top');
+  });
+
+  it('defaults showCloseButton and showCloseButtonOnMobile to false when not provided', () => {
+    render(
+      <UnifiedSearchDrawer
+        open={true}
+        onClose={vi.fn()}
+        defaultCategory="boards"
+      />,
+    );
+
+    const last = swipeableDrawerProps[swipeableDrawerProps.length - 1];
+    expect(last.showCloseButton).toBe(false);
+    expect(last.showCloseButtonOnMobile).toBe(false);
+  });
+
+  it('still shows the climbs category when boardDetails is provided without an allow-list', () => {
+    render(
+      <UnifiedSearchDrawer
+        open={true}
+        onClose={vi.fn()}
+        boardDetails={mockBoardDetails}
+        renderClimbSearch={() => <div data-testid="climb-search" />}
+      />,
+    );
+
+    expect(screen.getByText('Climbs')).toBeTruthy();
+  });
+
+  it('hides the climbs category when boardDetails is not provided', () => {
+    render(
+      <UnifiedSearchDrawer
+        open={true}
+        onClose={vi.fn()}
+        defaultCategory="boards"
+      />,
+    );
+
+    expect(screen.queryByText('Climbs')).toBeNull();
+  });
+});
