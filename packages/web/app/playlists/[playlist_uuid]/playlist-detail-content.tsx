@@ -112,12 +112,17 @@ export default function PlaylistDetailContent({
   const defaultBoardAppliedRef = useRef(!!selectedBoard);
   const { token, isLoading: tokenLoading } = useWsAuthToken();
 
-  // Fetch user's boards (with SSR initial data to avoid loading skeleton)
+  // Fetch user's boards (with SSR initial data to avoid loading skeleton).
+  // These boards are forwarded to MultiboardClimbList via the `boards` prop so
+  // we avoid duplicate GraphQL requests from MultiboardClimbList's internal hook.
   const { boards: myBoards, isLoading: boardsLoading } = useMyBoards(true, 50, initialMyBoards);
 
   // Current queue/session board info — used to default the filter to whatever the user is
   // currently sessioning on when no explicit board context came from the route.
-  const { boardDetails: currentBoardDetails, hasActiveQueue } = useQueueBridgeBoardInfo();
+  const {
+    boardDetails: currentBoardDetails,
+    isHydrated: isQueueHydrated,
+  } = useQueueBridgeBoardInfo();
 
   // Auto-select the matching board once boards finish loading.
   // - Route-provided boardSlug/boardConfig always wins.
@@ -135,9 +140,11 @@ export default function PlaylistDetailContent({
       return;
     }
 
-    // Wait for queue bridge board details if there's an active queue but details
-    // haven't hydrated yet — otherwise we'd prematurely commit to "All Boards".
-    if (!currentBoardDetails && hasActiveQueue) return;
+    // Wait until the persistent session has finished restoring from IndexedDB.
+    // On a fresh direct load both `currentBoardDetails` and `hasActiveQueue` start
+    // as null/false, so without this guard we'd commit to "All Boards" before the
+    // real queue board is available and then never re-apply because of the ref.
+    if (!isQueueHydrated) return;
 
     const match = currentBoardDetails
       ? findMatchingBoard(myBoards, undefined, {
@@ -150,7 +157,7 @@ export default function PlaylistDetailContent({
       setSelectedBoard(match);
     }
     defaultBoardAppliedRef.current = true;
-  }, [myBoards, boardsLoading, boardSlug, boardConfig, currentBoardDetails, hasActiveQueue]);
+  }, [myBoards, boardsLoading, boardSlug, boardConfig, currentBoardDetails, isQueueHydrated]);
 
   const fetchPlaylist = useCallback(async () => {
     if (tokenLoading) return;
@@ -466,7 +473,8 @@ export default function PlaylistDetailContent({
               selectedBoard={selectedBoard}
               onBoardSelect={handleBoardSelect}
               fallbackBoardTypes={[playlist.boardType]}
-              initialBoards={initialMyBoards}
+              boards={myBoards}
+              boardsLoading={boardsLoading}
             />
           )}
         </div>
