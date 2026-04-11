@@ -46,6 +46,8 @@ interface MultiboardClimbListProps {
   showBottomSpacer?: boolean;
   /** Fallback board types for default board details resolution */
   fallbackBoardTypes?: string[];
+  /** SSR-fetched user boards, forwarded to useMyBoards so the filter strip renders without a flash. */
+  initialBoards?: UserBoard[] | null;
 }
 
 export default function MultiboardClimbList({
@@ -68,8 +70,9 @@ export default function MultiboardClimbList({
   hideEndMessage = true,
   showBottomSpacer = true,
   fallbackBoardTypes,
+  initialBoards,
 }: MultiboardClimbListProps) {
-  const { boards: myBoards, isLoading: isLoadingBoards } = useMyBoards(true);
+  const { boards: myBoards, isLoading: isLoadingBoards } = useMyBoards(true, 50, initialBoards);
 
   const { boardDetailsMap, defaultBoardDetails, unsupportedClimbs } = useBoardDetailsMap(
     climbs,
