@@ -389,7 +389,7 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
           transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
           slotProps={{ paper: { sx: { minWidth: 64 } } }}
         >
-          {ATTEMPT_OPTIONS.map((n) => (
+          {[...ATTEMPT_OPTIONS].reverse().map((n) => (
             <MenuItem
               key={n}
               selected={n === attemptCount}
