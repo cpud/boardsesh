@@ -211,14 +211,15 @@ describe('QueueClimbListItem', () => {
   });
 
   describe('swipe actions', () => {
-    it('uses simple swipe thresholds since swipeRightAction is overridden (tick)', () => {
+    it('keeps default swipe thresholds while overriding swipe-left action to tick', () => {
       render(<QueueClimbListItem {...defaultProps()} />);
 
       expect(capturedSwipeOptions).not.toBeNull();
-      // swipeRightAction is overridden (tick), so simple thresholds apply
-      expect(capturedSwipeOptions?.swipeThreshold).toBe(100);
-      expect(capturedSwipeOptions?.maxSwipe).toBe(120);
-      expect(capturedSwipeOptions?.longSwipeRightThreshold).toBeUndefined();
+      expect(capturedSwipeOptions?.swipeThreshold).toBe(60);
+      expect(capturedSwipeOptions?.maxSwipe).toBe(180);
+      expect(capturedSwipeOptions?.maxSwipeLeft).toBe(120);
+      expect(capturedSwipeOptions?.longSwipeRightThreshold).toBe(150);
+      expect(capturedSwipeOptions?.confirmationPeekOffset).toBe(120);
     });
 
     it('calls onTickClick when swiped left (tick action)', () => {
@@ -231,18 +232,50 @@ describe('QueueClimbListItem', () => {
       expect(props.onTickClick).toHaveBeenCalledWith(props.item.climb);
     });
 
-    it('uses default playlist behavior on swipe right, no long-swipe in simple mode', () => {
+    it('uses default playlist behavior on swipe right and keeps long-swipe actions', () => {
       render(<QueueClimbListItem {...defaultProps()} />);
 
       // Swipe right uses default behavior (playlist selector)
       expect(capturedSwipeOptions?.onSwipeRight).toBeDefined();
-      // Long-swipe is disabled in simple swipe mode (swipeRightAction overridden)
-      expect(capturedSwipeOptions?.onSwipeRightLong).toBeUndefined();
+      expect(capturedSwipeOptions?.onSwipeRightLong).toBeDefined();
     });
 
     it('disables swipe in edit mode', () => {
       render(<QueueClimbListItem {...defaultProps()} isEditMode />);
       expect(capturedSwipeOptions?.disabled).toBe(true);
+    });
+  });
+
+  describe('thumbnail activation', () => {
+    it('sets the current queue item and dispatches the play drawer event', () => {
+      const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+      const props = defaultProps();
+      render(<QueueClimbListItem {...props} />);
+
+      // Simulate ClimbListItem calling its onThumbnailClick by clicking the thumbnail.
+      fireEvent.click(screen.getByTestId('climb-thumbnail').parentElement!);
+
+      expect(props.setCurrentClimbQueueItem).toHaveBeenCalledWith(props.item);
+      const dispatched = dispatchSpy.mock.calls.some(
+        ([event]) => event instanceof CustomEvent && event.type === 'boardsesh:open-play-drawer',
+      );
+      expect(dispatched).toBe(true);
+      dispatchSpy.mockRestore();
+    });
+
+    it('does nothing when the thumbnail is pressed in edit mode', () => {
+      const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+      const props = defaultProps();
+      render(<QueueClimbListItem {...props} isEditMode />);
+
+      fireEvent.click(screen.getByTestId('climb-thumbnail').parentElement!);
+
+      expect(props.setCurrentClimbQueueItem).not.toHaveBeenCalled();
+      const dispatched = dispatchSpy.mock.calls.some(
+        ([event]) => event instanceof CustomEvent && event.type === 'boardsesh:open-play-drawer',
+      );
+      expect(dispatched).toBe(false);
+      dispatchSpy.mockRestore();
     });
   });
 

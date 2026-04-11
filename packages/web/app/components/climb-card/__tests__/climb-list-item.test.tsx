@@ -241,6 +241,7 @@ describe('ClimbListItem', () => {
     expect(capturedSwipeOptions?.swipeThreshold).toBe(60);
     expect(capturedSwipeOptions?.longSwipeRightThreshold).toBe(150);
     expect(capturedSwipeOptions?.maxSwipe).toBe(180);
+    expect(capturedSwipeOptions?.maxSwipeLeft).toBe(100);
     expect(typeof capturedSwipeOptions?.onSwipeRightLong).toBe('function');
   });
 
@@ -264,7 +265,7 @@ describe('ClimbListItem', () => {
       expect(screen.getByTestId('LocalOfferOutlinedIcon')).toBeTruthy();
     });
 
-    it('uses simple swipe thresholds when swipeRightAction is provided', () => {
+    it('keeps default swipe thresholds when swipeRightAction is provided', () => {
       render(
         <ClimbListItem
           pathname={defaultPathname}
@@ -276,9 +277,12 @@ describe('ClimbListItem', () => {
       );
 
       expect(capturedSwipeOptions).not.toBeNull();
-      expect(capturedSwipeOptions?.swipeThreshold).toBe(100);
-      expect(capturedSwipeOptions?.maxSwipe).toBe(120);
-      expect(capturedSwipeOptions?.longSwipeRightThreshold).toBeUndefined();
+      expect(capturedSwipeOptions?.swipeThreshold).toBe(60);
+      expect(capturedSwipeOptions?.maxSwipe).toBe(180);
+      expect(capturedSwipeOptions?.maxSwipeLeft).toBe(120);
+      expect(capturedSwipeOptions?.longSwipeRightThreshold).toBe(150);
+      expect(capturedSwipeOptions?.confirmationPeekOffset).toBe(120);
+      expect(typeof capturedSwipeOptions?.onSwipeRightLong).toBe('function');
     });
 
     it('calls swipeRightAction.onAction on swipe left', () => {
@@ -445,8 +449,7 @@ describe('ClimbListItem', () => {
       expect(mockDoubleTapFavorite.dismissHeart).toHaveBeenCalled();
     });
 
-    it('delays onThumbnailClick to avoid conflict with double-click', () => {
-      vi.useFakeTimers();
+    it('calls onThumbnailClick immediately when the thumbnail is pressed', () => {
       const onThumbnailClick = vi.fn();
       render(
         <ClimbListItem
@@ -461,62 +464,78 @@ describe('ClimbListItem', () => {
       const thumbnail = screen.getByTestId('climb-thumbnail').parentElement!;
       fireEvent.click(thumbnail);
 
-      // Should not fire immediately
-      expect(onThumbnailClick).not.toHaveBeenCalled();
-
-      // Should fire after 300ms delay
-      vi.advanceTimersByTime(300);
       expect(onThumbnailClick).toHaveBeenCalledOnce();
-
-      vi.useRealTimers();
     });
 
-    it('cancels pending onThumbnailClick when double-click fires', () => {
-      vi.useFakeTimers();
-      const onThumbnailClick = vi.fn();
+    it('does not call onThumbnailClick when it is not provided', () => {
       render(
         <ClimbListItem
           pathname={defaultPathname}
           isDark={defaultIsDark}
           climb={makeClimb()}
           boardDetails={makeBoardDetails()}
-          onThumbnailClick={onThumbnailClick}
         />,
       );
 
       const thumbnail = screen.getByTestId('climb-thumbnail').parentElement!;
-
-      // First click starts the delayed handler
-      fireEvent.click(thumbnail);
-      // Double-click cancels it and triggers the like
-      fireEvent.doubleClick(thumbnail);
-
-      // Advance past the delay
-      vi.advanceTimersByTime(300);
-
-      // onThumbnailClick should never have fired
-      expect(onThumbnailClick).not.toHaveBeenCalled();
-      // Double-tap handler should have fired
-      expect(mockDoubleTapFavorite.handleDoubleTap).toHaveBeenCalled();
-
-      vi.useRealTimers();
+      // Should not throw, should be a no-op
+      expect(() => fireEvent.click(thumbnail)).not.toThrow();
     });
+  });
 
-    it('falls back to onNavigate when onThumbnailClick is not provided', () => {
-      const onNavigate = vi.fn();
+  describe('default swipe behavior', () => {
+    it('calls addToQueue on swipe-left when no override is provided', () => {
+      const addToQueue = vi.fn();
+      const climb = makeClimb();
       render(
         <ClimbListItem
           pathname={defaultPathname}
           isDark={defaultIsDark}
-          climb={makeClimb()}
+          climb={climb}
           boardDetails={makeBoardDetails()}
-          onNavigate={onNavigate}
+          addToQueue={addToQueue}
         />,
       );
 
-      const thumbnail = screen.getByTestId('climb-thumbnail').parentElement!;
-      fireEvent.click(thumbnail);
-      expect(onNavigate).toHaveBeenCalledOnce();
+      const swipeLeftHandler = capturedSwipeOptions?.onSwipeLeft as () => void;
+      swipeLeftHandler();
+      expect(addToQueue).toHaveBeenCalledWith(climb);
+    });
+
+    it('calls onOpenPlaylistSelector on swipe-right', () => {
+      const onOpenPlaylistSelector = vi.fn();
+      const climb = makeClimb();
+      render(
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={climb}
+          boardDetails={makeBoardDetails()}
+          onOpenPlaylistSelector={onOpenPlaylistSelector}
+        />,
+      );
+
+      const swipeRightHandler = capturedSwipeOptions?.onSwipeRight as () => void;
+      swipeRightHandler();
+      expect(onOpenPlaylistSelector).toHaveBeenCalledWith(climb);
+    });
+
+    it('calls onOpenActions on long swipe-right', () => {
+      const onOpenActions = vi.fn();
+      const climb = makeClimb();
+      render(
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={climb}
+          boardDetails={makeBoardDetails()}
+          onOpenActions={onOpenActions}
+        />,
+      );
+
+      const swipeRightLongHandler = capturedSwipeOptions?.onSwipeRightLong as () => void;
+      swipeRightLongHandler();
+      expect(onOpenActions).toHaveBeenCalledWith(climb);
     });
   });
 });

@@ -15,6 +15,7 @@ import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import BluetoothIcon from './bluetooth-icon';
 import { ClimbQueueItem } from './types';
 import ClimbListItem, { type SwipeActionOverride } from '../climb-card/climb-list-item';
+import { dispatchOpenPlayDrawer } from './play-drawer-event';
 import { themeTokens } from '@/app/theme/theme-config';
 import { getGradeTintColor } from '@/app/lib/grade-colors';
 
@@ -32,7 +33,6 @@ type QueueClimbListItemProps = {
   onTickClick: (climb: Climb) => void;
   onOpenActions?: (climb: Climb) => void;
   onOpenPlaylistSelector?: (climb: Climb) => void;
-  onThumbnailActivate?: () => void;
   isEditMode?: boolean;
   isSelected?: boolean;
   onToggleSelect?: (uuid: string) => void;
@@ -50,7 +50,6 @@ const QueueClimbListItem: React.FC<QueueClimbListItemProps> = ({
   onTickClick,
   onOpenActions,
   onOpenPlaylistSelector,
-  onThumbnailActivate,
   isEditMode = false,
   isSelected = false,
   onToggleSelect,
@@ -59,7 +58,7 @@ const QueueClimbListItem: React.FC<QueueClimbListItemProps> = ({
   const itemRef = useRef<HTMLDivElement>(null);
 
   // Only override swipe-left (right action) to tick instead of the default add-to-queue,
-  // since these items are already in the queue. Swipe-right uses the default playlist/actions.
+  // since these items are already in the queue. Swipe-right retains default playlist/actions.
   const swipeRightAction: SwipeActionOverride = useMemo(
     () => ({
       icon: <CheckOutlined style={{ color: 'white', fontSize: 20 }} />,
@@ -111,8 +110,8 @@ const QueueClimbListItem: React.FC<QueueClimbListItemProps> = ({
   const handleThumbnailClick = useCallback(() => {
     if (isEditMode) return;
     setCurrentClimbQueueItem(item);
-    onThumbnailActivate?.();
-  }, [isEditMode, setCurrentClimbQueueItem, item, onThumbnailActivate]);
+    dispatchOpenPlayDrawer();
+  }, [isEditMode, setCurrentClimbQueueItem, item]);
 
   // Drag-and-drop setup
   useEffect(() => {
@@ -170,7 +169,6 @@ const QueueClimbListItem: React.FC<QueueClimbListItemProps> = ({
       isDark={isDark}
       selected={isCurrent}
       disableSwipe={isEditMode}
-      disableThumbnailNavigation
       onThumbnailClick={handleThumbnailClick}
       onSelect={isEditMode ? () => onToggleSelect?.(item.uuid) : handleSelect}
       swipeRightAction={swipeRightAction}

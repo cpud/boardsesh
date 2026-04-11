@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useRef, useState, useCallback, useMemo } from 'react';
 import IconButton from '@mui/material/IconButton';
 import dynamic from 'next/dynamic';
 import MoreHorizOutlined from '@mui/icons-material/MoreHorizOutlined';
@@ -30,14 +30,11 @@ const SwipeableDrawer = dynamic(() => import('../swipeable-drawer/swipeable-draw
 const MAX_GESTURE_SWIPE = 180;
 const SHORT_ACTION_WIDTH = 120;
 const RIGHT_ACTION_WIDTH = 100;
+const RIGHT_OVERRIDE_ACTION_WIDTH = 120;
 const LONG_SWIPE_ACTION_WIDTH = MAX_GESTURE_SWIPE;
 const SHORT_SWIPE_THRESHOLD = 60;
 const TRANSITION_START = 115;
 const LONG_SWIPE_THRESHOLD = 150;
-
-// Simple swipe constants for override mode (no long-swipe)
-const SIMPLE_MAX_SWIPE = 120;
-const SIMPLE_SWIPE_THRESHOLD = 100;
 
 // Static style objects (no reactive deps, hoisted out of component to avoid per-render allocation)
 const swipeActionLayerBaseStyle: React.CSSProperties = {
@@ -168,8 +165,6 @@ type ClimbListItemProps = {
   backgroundColor?: string;
   /** Override content opacity (e.g., 0.6 for history items) */
   contentOpacity?: number;
-  /** When true, disables thumbnail click-to-navigate (e.g., in edit mode) */
-  disableThumbnailNavigation?: boolean;
   /** When true, prefer SSR image layers over the canvas renderer for this item. */
   preferImageLayers?: boolean;
   /** Handler for thumbnail clicks. When set, stops propagation so the row onClick doesn't also fire. */
@@ -178,8 +173,6 @@ type ClimbListItemProps = {
   onOpenActions?: (climb: Climb) => void;
   /** When provided, the item delegates opening the playlist selector to the parent instead of rendering its own. */
   onOpenPlaylistSelector?: (climb: Climb) => void;
-  /** Callback invoked when the user navigates via the thumbnail link (e.g., to close a drawer). Forwarded to ClimbThumbnail. */
-  onNavigate?: () => void;
   /** Optional callback to add the climb to the queue (default swipe-left action).
    *  When not provided, swipe-left is a no-op. Pass from a parent that subscribes to QueueContext. */
   addToQueue?: (climb: Climb) => void;
@@ -200,12 +193,10 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     titleProps,
     backgroundColor,
     contentOpacity,
-    disableThumbnailNavigation,
     preferImageLayers,
     onThumbnailClick,
     onOpenActions,
     onOpenPlaylistSelector,
-    onNavigate,
     addToQueue,
   }) => {
     // Subscribe to selection store — only re-renders when THIS item's selected state changes.
@@ -233,20 +224,10 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       isFavorited,
     } = useDoubleTapFavorite({ climbUuid: climb.uuid });
     const { ref: doubleTapRef, onDoubleClick: handleDoubleTapClick } = useDoubleTap(handleDoubleTap);
-    const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     // Store onThumbnailClick in a ref so the memoized handler always reads the latest
     // value without requiring onThumbnailClick in the memo comparator.
     const onThumbnailClickRef = useRef(onThumbnailClick);
     onThumbnailClickRef.current = onThumbnailClick;
-    const onNavigateRef = useRef(onNavigate);
-    onNavigateRef.current = onNavigate;
-
-    // Clear pending click timeout on unmount to prevent stale callbacks
-    useEffect(() => {
-      return () => {
-        if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
-      };
-    }, []);
 
     // Per-direction override flag
     const hasRightOverride = Boolean(swipeRightAction);
@@ -283,9 +264,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     }, [swipeRightAction]);
 
     const resolvedSwipeLeft = hasRightOverride ? handleOverrideSwipeLeft : handleDefaultSwipeLeft;
-
-    // Use simple thresholds when right action is overridden (no long-swipe needed for left action)
-    const useSimpleSwipe = hasRightOverride;
+    const rightActionRevealWidth = hasRightOverride ? RIGHT_OVERRIDE_ACTION_WIDTH : RIGHT_ACTION_WIDTH;
 
     // Direct DOM manipulation for swipe layer opacities — zero React re-renders during gesture
     const handleSwipeOffset = useCallback((offset: number) => {
@@ -319,14 +298,14 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     const { swipeHandlers, swipeLeftConfirmed, contentRef, leftActionRef, rightActionRef } = useSwipeActions({
       onSwipeLeft: resolvedSwipeLeft,
       onSwipeRight: handleDefaultSwipeRight,
-      onSwipeRightLong: useSimpleSwipe ? undefined : handleDefaultSwipeRightLong,
-      onSwipeOffsetChange: useSimpleSwipe ? undefined : handleSwipeOffset,
-      swipeThreshold: useSimpleSwipe ? SIMPLE_SWIPE_THRESHOLD : SHORT_SWIPE_THRESHOLD,
-      longSwipeRightThreshold: useSimpleSwipe ? undefined : LONG_SWIPE_THRESHOLD,
-      maxSwipe: useSimpleSwipe ? SIMPLE_MAX_SWIPE : MAX_GESTURE_SWIPE,
-      maxSwipeLeft: useSimpleSwipe ? undefined : RIGHT_ACTION_WIDTH,
+      onSwipeRightLong: handleDefaultSwipeRightLong,
+      onSwipeOffsetChange: handleSwipeOffset,
+      swipeThreshold: SHORT_SWIPE_THRESHOLD,
+      longSwipeRightThreshold: LONG_SWIPE_THRESHOLD,
+      maxSwipe: MAX_GESTURE_SWIPE,
+      maxSwipeLeft: rightActionRevealWidth,
       disabled: disableSwipe,
-      confirmationPeekOffset: RIGHT_ACTION_WIDTH,
+      confirmationPeekOffset: rightActionRevealWidth,
     });
 
     // Combined ref callback for left action container — avoids inline function recreation
@@ -347,29 +326,10 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     // Always attached (not conditional) because onThumbnailClick is excluded from
     // the memo comparator; a render-time conditional would go stale.
     const handleThumbnailClick = useCallback((e: React.MouseEvent) => {
-      if (!onThumbnailClickRef.current) {
-        if (onNavigateRef.current) {
-          e.stopPropagation();
-          onNavigateRef.current();
-        }
-        return;
-      }
+      if (!onThumbnailClickRef.current) return;
       e.stopPropagation();
-      if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
-      clickTimeoutRef.current = setTimeout(() => {
-        clickTimeoutRef.current = null;
-        onThumbnailClickRef.current?.();
-      }, 300);
+      onThumbnailClickRef.current();
     }, []);
-
-    // Thumbnail double-click handler
-    const handleThumbnailDoubleClick = useCallback(() => {
-      if (clickTimeoutRef.current) {
-        clearTimeout(clickTimeoutRef.current);
-        clickTimeoutRef.current = null;
-      }
-      handleDoubleTapClick();
-    }, [handleDoubleTapClick]);
 
     // Drawer state callbacks — extracted from inline to avoid per-render allocation
     const handleCloseActions = useCallback(() => setIsActionsOpen(false), []);
@@ -406,13 +366,13 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     );
 
 
-    const simpleRightActionStyle = useMemo(
+    const rightOverrideActionStyle = useMemo(
       () => ({
         position: 'absolute' as const,
         right: 0,
         top: 0,
         bottom: 0,
-        width: SIMPLE_MAX_SWIPE,
+        width: rightActionRevealWidth,
         backgroundColor: swipeRightAction?.color ?? themeTokens.colors.error,
         display: 'flex' as const,
         alignItems: 'center' as const,
@@ -421,7 +381,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
         opacity: 0,
         visibility: 'hidden' as const,
       }),
-      [swipeRightAction?.color],
+      [rightActionRevealWidth, swipeRightAction?.color],
     );
 
     const resolvedBg =
@@ -482,16 +442,14 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
                 <div ref={shortSwipeLayerRef} style={shortSwipeLayerInitialStyle}>
                   <LocalOfferOutlined style={iconStyle} />
                 </div>
-                {!useSimpleSwipe && (
-                  <div ref={longSwipeLayerRef} style={longSwipeLayerInitialStyle}>
-                    <MoreHorizOutlined style={iconStyle} />
-                  </div>
-                )}
+                <div ref={longSwipeLayerRef} style={longSwipeLayerInitialStyle}>
+                  <MoreHorizOutlined style={iconStyle} />
+                </div>
               </div>
 
               {/* Right action (revealed on swipe left) */}
               {hasRightOverride ? (
-                <div ref={rightActionRef} style={simpleRightActionStyle}>
+                <div ref={rightActionRef} style={rightOverrideActionStyle}>
                   {swipeRightAction?.icon ?? null}
                 </div>
               ) : (
@@ -521,7 +479,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
               ref={doubleTapRef}
               style={thumbnailStyle}
               onClick={handleThumbnailClick}
-              onDoubleClick={handleThumbnailDoubleClick}
+              onDoubleClick={handleDoubleTapClick}
             >
               <ClimbThumbnail
                 boardDetails={boardDetails}
@@ -609,11 +567,9 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       prev.titleProps === next.titleProps &&
       prev.backgroundColor === next.backgroundColor &&
       prev.contentOpacity === next.contentOpacity &&
-      prev.disableThumbnailNavigation === next.disableThumbnailNavigation &&
       prev.preferImageLayers === next.preferImageLayers &&
       prev.onOpenActions === next.onOpenActions &&
-      prev.onOpenPlaylistSelector === next.onOpenPlaylistSelector &&
-      prev.onNavigate === next.onNavigate
+      prev.onOpenPlaylistSelector === next.onOpenPlaylistSelector
     );
   },
 );
