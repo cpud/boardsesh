@@ -39,9 +39,9 @@ export const themeTokens = {
 
   // Semantic colors
   semantic: {
-    selected: 'rgba(140, 74, 82, 0.18)', // Visible rose tint for selected state
-    selectedHover: '#EFE6E8', // Darker rose tint for hover feedback
-    selectedLight: 'rgba(140, 74, 82, 0.06)', // Very subtle rose highlight
+    selected: 'rgba(175, 45, 60, 0.28)', // Visible rose tint for selected state
+    selectedHover: '#E8C8CC', // Darker rose tint for hover feedback
+    selectedLight: 'rgba(175, 45, 60, 0.10)', // Very subtle rose highlight
     selectedBorder: '#8C4A52', // Matches primary
     background: '#F9FAFB',
     surface: '#FFFFFF',
@@ -170,9 +170,9 @@ export const darkTokens = {
   },
 
   semantic: {
-    selected: 'rgba(140, 74, 82, 0.12)',
-    selectedHover: 'rgba(140, 74, 82, 0.18)',
-    selectedLight: 'rgba(140, 74, 82, 0.08)',
+    selected: 'rgba(175, 45, 60, 0.25)',
+    selectedHover: 'rgba(175, 45, 60, 0.32)',
+    selectedLight: 'rgba(175, 45, 60, 0.12)',
     selectedBorder: '#8C4A52',
     background: '#000000',
     surface: '#0A0A0A',
