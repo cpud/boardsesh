@@ -1,11 +1,8 @@
 import type { Climb, BoardDetails } from '@/app/lib/types';
 import type { BoardCompatibilityResult } from '@/app/lib/board-compatibility';
+import { titleCase } from '@/app/lib/string-utils';
 
 type QueueAddFailure = Extract<BoardCompatibilityResult, { ok: false }>;
-
-export function titleCase(value: string): string {
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
 
 function climbBoardLabel(climb: Climb): string {
   if (climb.boardType) return titleCase(climb.boardType);

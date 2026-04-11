@@ -9,7 +9,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import type { BoardDetails, BoardRouteIdentity } from '@/app/lib/types';
 import type { BoardLockReason } from './use-active-board-lock';
-import { titleCase } from './queue-add-error-messages';
+import { titleCase } from '@/app/lib/string-utils';
 
 interface ConfirmArgs {
   reason: BoardLockReason;
