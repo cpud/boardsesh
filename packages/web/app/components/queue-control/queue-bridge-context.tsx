@@ -56,12 +56,20 @@ interface QueueBridgeBoardInfo {
   boardDetails: BoardDetails | null;
   angle: Angle;
   hasActiveQueue: boolean;
+  /**
+   * True once the persistent session has finished restoring from IndexedDB
+   * (or immediately when a board-route injector is active). Consumers that
+   * want to read `hasActiveQueue`/`boardDetails` on mount must wait for this
+   * flag — otherwise they race the async restore and see stale defaults.
+   */
+  isHydrated: boolean;
 }
 
 const QueueBridgeBoardInfoContext = createContext<QueueBridgeBoardInfo>({
   boardDetails: null,
   angle: 0,
   hasActiveQueue: false,
+  isHydrated: false,
 });
 
 export function useQueueBridgeBoardInfo() {
@@ -107,6 +115,7 @@ function usePersistentSessionQueueAdapter(): {
   boardDetails: BoardDetails | null;
   angle: Angle;
   hasActiveQueue: boolean;
+  isHydrated: boolean;
   syncFromInjected: (q: ClimbQueueItem[], current: ClimbQueueItem | null, boardPath: string, bd: BoardDetails) => void;
 } {
   const ps = usePersistentSession();
@@ -389,7 +398,16 @@ function usePersistentSessionQueueAdapter(): {
     [],
   );
 
-  return { context, actionsValue, dataValue, boardDetails, angle, hasActiveQueue, syncFromInjected };
+  return {
+    context,
+    actionsValue,
+    dataValue,
+    boardDetails,
+    angle,
+    hasActiveQueue,
+    isHydrated: ps.isLocalQueueLoaded,
+    syncFromInjected,
+  };
 }
 
 // -------------------------------------------------------------------
@@ -452,14 +470,18 @@ export function QueueBridgeProvider({ children }: { children: React.ReactNode })
   const effectiveHasActiveQueue = isInjected
     ? true // If injected, a board route is active — always show bar
     : adapter.hasActiveQueue;
+  // When a board route injector is active we already know board state
+  // synchronously; otherwise mirror the persistent session's restore flag.
+  const effectiveIsHydrated = isInjected ? true : adapter.isHydrated;
 
   const boardInfo = useMemo<QueueBridgeBoardInfo>(
     () => ({
       boardDetails: effectiveBoardDetails,
       angle: effectiveAngle,
       hasActiveQueue: effectiveHasActiveQueue,
+      isHydrated: effectiveIsHydrated,
     }),
-    [effectiveBoardDetails, effectiveAngle, effectiveHasActiveQueue],
+    [effectiveBoardDetails, effectiveAngle, effectiveHasActiveQueue, effectiveIsHydrated],
   );
 
   const inject = useCallback((

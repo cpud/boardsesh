@@ -46,6 +46,16 @@ interface MultiboardClimbListProps {
   showBottomSpacer?: boolean;
   /** Fallback board types for default board details resolution */
   fallbackBoardTypes?: string[];
+  /** SSR-fetched user boards, forwarded to useMyBoards so the filter strip renders without a flash. */
+  initialBoards?: UserBoard[] | null;
+  /**
+   * Pre-fetched boards to use instead of the internal `useMyBoards` call.
+   * When provided, skips the internal GraphQL request entirely — used by
+   * callers that already hold the list (e.g. playlist detail view).
+   */
+  boards?: UserBoard[];
+  /** Loading flag matching `boards` when it's passed in externally. */
+  boardsLoading?: boolean;
 }
 
 export default function MultiboardClimbList({
@@ -68,8 +78,22 @@ export default function MultiboardClimbList({
   hideEndMessage = true,
   showBottomSpacer = true,
   fallbackBoardTypes,
+  initialBoards,
+  boards: externalBoards,
+  boardsLoading: externalBoardsLoading,
 }: MultiboardClimbListProps) {
-  const { boards: myBoards, isLoading: isLoadingBoards } = useMyBoards(true);
+  // Only fetch boards internally when the caller hasn't supplied them.
+  // Passing `enabled={false}` short-circuits useMyBoards so we don't fire a
+  // duplicate GraphQL request against the same endpoint.
+  const { boards: fetchedBoards, isLoading: fetchedBoardsLoading } = useMyBoards(
+    externalBoards === undefined,
+    50,
+    initialBoards,
+  );
+  const myBoards = externalBoards ?? fetchedBoards;
+  const isLoadingBoards = externalBoards !== undefined
+    ? (externalBoardsLoading ?? false)
+    : fetchedBoardsLoading;
 
   const { boardDetailsMap, defaultBoardDetails, unsupportedClimbs } = useBoardDetailsMap(
     climbs,

@@ -55,6 +55,7 @@ import PlaylistEditDrawer from '@/app/components/library/playlist-edit-drawer';
 import CommentSection from '@/app/components/social/comment-section';
 import MultiboardClimbList from '@/app/components/climb-list/multiboard-climb-list';
 import { useMyBoards } from '@/app/hooks/use-my-boards';
+import { useQueueBridgeBoardInfo } from '@/app/components/queue-control/queue-bridge-context';
 import { findMatchingBoard, type BoardConfig } from '@/app/lib/find-matching-board';
 import type { UserBoard } from '@boardsesh/shared-schema';
 import styles from '@/app/components/library/playlist-view.module.css';
@@ -111,20 +112,52 @@ export default function PlaylistDetailContent({
   const defaultBoardAppliedRef = useRef(!!selectedBoard);
   const { token, isLoading: tokenLoading } = useWsAuthToken();
 
-  // Fetch user's boards (with SSR initial data to avoid loading skeleton)
+  // Fetch user's boards (with SSR initial data to avoid loading skeleton).
+  // These boards are forwarded to MultiboardClimbList via the `boards` prop so
+  // we avoid duplicate GraphQL requests from MultiboardClimbList's internal hook.
   const { boards: myBoards, isLoading: boardsLoading } = useMyBoards(true, 50, initialMyBoards);
 
-  // Auto-select the matching board when boards load (fallback for non-SSR paths)
+  // Current queue/session board info — used to default the filter to whatever the user is
+  // currently sessioning on when no explicit board context came from the route.
+  const {
+    boardDetails: currentBoardDetails,
+    isHydrated: isQueueHydrated,
+  } = useQueueBridgeBoardInfo();
+
+  // Auto-select the matching board once boards finish loading.
+  // - Route-provided boardSlug/boardConfig always wins.
+  // - Otherwise fall back to the current queue's board so the filter opens on
+  //   whatever the user is actively climbing, mirroring the playlists library page.
   useEffect(() => {
     if (defaultBoardAppliedRef.current || boardsLoading || myBoards.length === 0) return;
-    if (!boardSlug && !boardConfig) return;
 
-    const match = findMatchingBoard(myBoards, boardSlug, boardConfig);
+    if (boardSlug || boardConfig) {
+      const match = findMatchingBoard(myBoards, boardSlug, boardConfig);
+      if (match) {
+        setSelectedBoard(match);
+      }
+      defaultBoardAppliedRef.current = true;
+      return;
+    }
+
+    // Wait until the persistent session has finished restoring from IndexedDB.
+    // On a fresh direct load both `currentBoardDetails` and `hasActiveQueue` start
+    // as null/false, so without this guard we'd commit to "All Boards" before the
+    // real queue board is available and then never re-apply because of the ref.
+    if (!isQueueHydrated) return;
+
+    const match = currentBoardDetails
+      ? findMatchingBoard(myBoards, undefined, {
+          boardType: currentBoardDetails.board_name,
+          layoutId: currentBoardDetails.layout_id,
+          sizeId: currentBoardDetails.size_id,
+        })
+      : null;
     if (match) {
       setSelectedBoard(match);
     }
     defaultBoardAppliedRef.current = true;
-  }, [myBoards, boardsLoading, boardSlug, boardConfig]);
+  }, [myBoards, boardsLoading, boardSlug, boardConfig, currentBoardDetails, isQueueHydrated]);
 
   const fetchPlaylist = useCallback(async () => {
     if (tokenLoading) return;
@@ -440,6 +473,8 @@ export default function PlaylistDetailContent({
               selectedBoard={selectedBoard}
               onBoardSelect={handleBoardSelect}
               fallbackBoardTypes={[playlist.boardType]}
+              boards={myBoards}
+              boardsLoading={boardsLoading}
             />
           )}
         </div>
