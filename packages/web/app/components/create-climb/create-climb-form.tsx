@@ -18,6 +18,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Badge from '@mui/material/Badge';
 import { SettingsOutlined, LocalFireDepartmentOutlined, SaveOutlined, LoginOutlined, CloudUploadOutlined, GetAppOutlined, DraftsOutlined, DeleteOutlined } from '@mui/icons-material';
 import { themeTokens } from '@/app/theme/theme-config';
+import HoldIndicator from './hold-indicator';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { track } from '@vercel/analytics';
@@ -76,36 +77,6 @@ const SETTINGS_DRAWER_STYLES = {
   body: { padding: 0 },
 };
 
-function HoldIndicator({ count, max, color, label }: { count: number; max?: number; color: string; label: string }) {
-  const active = count > 0;
-  return (
-    <MuiTooltip title={label}>
-      <Stack direction="row" alignItems="center" spacing={0.5} sx={{ cursor: 'default' }}>
-        <Box
-          sx={{
-            width: 10,
-            height: 10,
-            borderRadius: '50%',
-            backgroundColor: color,
-            opacity: active ? 1 : 0.25,
-            flexShrink: 0,
-          }}
-        />
-        <Typography
-          variant="caption"
-          sx={{
-            fontWeight: 600,
-            lineHeight: 1,
-            color: active ? color : 'text.disabled',
-            minWidth: '1.5ch',
-          }}
-        >
-          {max !== undefined ? `${count}/${max}` : String(count)}
-        </Typography>
-      </Stack>
-    </MuiTooltip>
-  );
-}
 
 interface CreateClimbFormValues {
   name: string;
@@ -880,9 +851,7 @@ export default function CreateClimbForm({
               variant="body2"
               component="span"
               className={styles.gradeBadge}
-              style={{
-                color: getSoftFontGradeColor(userGrade, isDark) ?? 'var(--neutral-500)',
-              }}
+              sx={{ color: getSoftFontGradeColor(userGrade, isDark) ?? 'var(--neutral-500)' }}
             >
               {userGrade}
             </Typography>

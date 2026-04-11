@@ -8,11 +8,13 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
 import MoonBoardRenderer from '../moonboard-renderer/moonboard-renderer';
 import { useMoonBoardCreateClimb } from '../create-climb/use-moonboard-create-climb';
-import HoldStatusChip from '../create-climb/hold-status-chip';
+import HoldIndicator from '../create-climb/hold-indicator';
 import HoldTypePicker from '../create-climb/hold-type-picker';
 import { useHoldTypePicker } from '../create-climb/use-hold-type-picker';
+import { themeTokens } from '@/app/theme/theme-config';
 import { coordinateToHoldId, MOONBOARD_HOLD_STATES } from '@/app/lib/moonboard-config';
 import { convertLitUpHoldsMapToMoonBoardHolds } from '@/app/lib/moonboard-climb-helpers';
 import type { MoonBoardClimb, GridCoordinate } from '@boardsesh/moonboard-ocr/browser';
@@ -150,12 +152,12 @@ export default function MoonBoardEditModal({
               onClose={picker.handleClose}
             />
 
-            <div className={styles.holdCounts}>
-              <HoldStatusChip label={`Start: ${startingCount}/2`} active={startingCount > 0} tone="error" />
-              <HoldStatusChip label={`Hand: ${handCount}`} active={handCount > 0} tone="primary" />
-              <HoldStatusChip label={`Finish: ${finishCount}/2`} active={finishCount > 0} tone="success" />
-              <HoldStatusChip label={`Total: ${totalHolds}`} active={totalHolds > 0} tone="secondary" />
-            </div>
+            <Stack direction="row" spacing={1.5} flexWrap="wrap" justifyContent="center" className={styles.holdCounts}>
+              <HoldIndicator count={startingCount} max={2} color={themeTokens.colors.error} label="Start" />
+              <HoldIndicator count={handCount} color={themeTokens.colors.primary} label="Hand" />
+              <HoldIndicator count={finishCount} max={2} color={themeTokens.colors.success} label="Finish" />
+              <HoldIndicator count={totalHolds} color={themeTokens.colors.secondary} label="Total" />
+            </Stack>
 
             {!isValid && totalHolds > 0 && (
               <Typography variant="body2" component="span" color="text.secondary" className={styles.validationHint}>
