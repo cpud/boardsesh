@@ -9,7 +9,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Sessions Feed - Unauthenticated', () => {
   test('renders Sessions tab as default', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/feed');
 
     // The Sessions tab should be active by default
     const sessionsTab = page.getByRole('tab', { name: 'Sessions' });
@@ -18,7 +18,7 @@ test.describe('Sessions Feed - Unauthenticated', () => {
   });
 
   test('renders initial feed items', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/feed');
 
     // Wait for feed items to render
     const feedItems = page.locator('[data-testid="activity-feed-item"]');
@@ -30,7 +30,7 @@ test.describe('Sessions Feed - Unauthenticated', () => {
   });
 
   test('infinite scroll loads more items', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/feed');
 
     // Wait for initial items to render
     const feedItems = page.locator('[data-testid="activity-feed-item"]');
@@ -53,7 +53,7 @@ test.describe('Sessions Feed - Unauthenticated', () => {
 
 test.describe('Proposals Feed', () => {
   test('renders proposals when tab is clicked', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/feed');
 
     // Click the Proposals tab
     const proposalsTab = page.getByRole('tab', { name: 'Proposals' });
@@ -69,7 +69,7 @@ test.describe('Proposals Feed', () => {
   });
 
   test('can navigate directly to proposals tab', async ({ page }) => {
-    await page.goto('/?tab=proposals');
+    await page.goto('/feed?tab=proposals');
 
     const proposalsTab = page.getByRole('tab', { name: 'Proposals' });
     await expect(proposalsTab).toHaveAttribute('aria-selected', 'true', { timeout: 15000 });
@@ -81,7 +81,7 @@ test.describe('Proposals Feed', () => {
 
 test.describe('Comments Feed', () => {
   test('renders comments when tab is clicked', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/feed');
 
     // Click the Comments tab
     const commentsTab = page.getByRole('tab', { name: 'Comments' });
@@ -97,7 +97,7 @@ test.describe('Comments Feed', () => {
   });
 
   test('can navigate directly to comments tab', async ({ page }) => {
-    await page.goto('/?tab=comments');
+    await page.goto('/feed?tab=comments');
 
     const commentsTab = page.getByRole('tab', { name: 'Comments' });
     await expect(commentsTab).toHaveAttribute('aria-selected', 'true', { timeout: 15000 });
@@ -109,7 +109,7 @@ test.describe('Comments Feed', () => {
 
 test.describe('Tab Navigation', () => {
   test('all three tabs are visible', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/feed');
 
     await expect(page.getByRole('tab', { name: 'Sessions' })).toBeVisible({ timeout: 15000 });
     await expect(page.getByRole('tab', { name: 'Proposals' })).toBeVisible();
@@ -118,7 +118,7 @@ test.describe('Tab Navigation', () => {
 
   test('tab switching preserves board filter in URL', async ({ page }) => {
     // Start with a board filter
-    await page.goto('/?board=test-board-uuid');
+    await page.goto('/feed?board=test-board-uuid');
 
     // Switch to Proposals tab
     const proposalsTab = page.getByRole('tab', { name: 'Proposals' });
@@ -139,7 +139,7 @@ test.describe('Tab Navigation', () => {
   });
 
   test('sessions tab does not have sort buttons', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/feed');
 
     // Wait for the page to load
     const sessionsTab = page.getByRole('tab', { name: 'Sessions' });
@@ -154,14 +154,15 @@ test.describe('Tab Navigation', () => {
 
 test.describe('Sessions Feed - Authenticated', () => {
   test.beforeEach(async ({ page }) => {
-    // Log in via the auth login form
-    await page.goto('/auth/login');
+    // Log in via the auth login form. The login page honors callbackUrl,
+    // so we land directly on /feed after auth succeeds.
+    await page.goto('/auth/login?callbackUrl=/feed');
     await page.getByLabel('Email').fill('test@boardsesh.com');
     await page.getByLabel('Password').fill('test');
     await page.getByRole('button', { name: 'Login' }).click();
 
-    // Wait for redirect to home page after login
-    await page.waitForURL('/', { timeout: 15000 });
+    // Wait for redirect to the feed page after login
+    await page.waitForURL('/feed', { timeout: 15000 });
   });
 
   test('renders personalized feed without sign-in alert', async ({ page }) => {
