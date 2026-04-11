@@ -24,6 +24,7 @@ import { trackListBatchRender } from '@/app/lib/rendering-metrics';
 import { classifyClimbListChange } from './climb-list-utils';
 import { getExcludedClimbActions } from '@/app/lib/climb-action-utils';
 import { SelectionStoreContext, useSelectionStore } from './selected-climb-store';
+import { dispatchOpenPlayDrawer } from '../queue-control/play-drawer-event';
 import listStyles from './climbs-list.module.css';
 
 const SwipeableDrawer = dynamic(() => import('../swipeable-drawer/swipeable-drawer'), { ssr: false });
@@ -336,10 +337,22 @@ const ClimbsList = ({
     isFetching,
   });
 
+  // Row click: activates the climb but does NOT open the play drawer.
+  // Only the thumbnail (list mode) or card cover (grid mode) opens the drawer.
   const handleClimbClickByIndex = useCallback((index: number) => {
     const climb = climbs[index];
     if (climb) {
       onClimbSelectRef.current?.(climb);
+      track('Climb List Item Clicked', { climbUuid: climb.uuid });
+    }
+  }, [climbs]);
+
+  // Thumbnail / card-cover click: activates the climb and opens the play drawer.
+  const handleClimbThumbnailClickByIndex = useCallback((index: number) => {
+    const climb = climbs[index];
+    if (climb) {
+      onClimbSelectRef.current?.(climb);
+      dispatchOpenPlayDrawer();
       track('Climb List Item Clicked', { climbUuid: climb.uuid });
     }
   }, [climbs]);
@@ -519,7 +532,7 @@ const ClimbsList = ({
                 boardDetails={resolveBoardDetails(climb)}
                 preferImageLayers={index < initialImageCount}
                 unsupported={unsupportedClimbs?.has(climb.uuid)}
-                onClimbClickByIndex={handleClimbClickByIndex}
+                onClimbClickByIndex={handleClimbThumbnailClickByIndex}
                 renderItemExtra={renderItemExtra}
               />
             </Box>
@@ -561,7 +574,7 @@ const ClimbsList = ({
                       isDark={isDark}
                       preferImageLayers={index < initialImageCount}
                       onSelect={() => handleClimbClickByIndex(index)}
-                      onThumbnailClick={() => handleClimbClickByIndex(index)}
+                      onThumbnailClick={() => handleClimbThumbnailClickByIndex(index)}
                       disableSwipe={!hydrated}
                       unsupported={unsupportedClimbs?.has(climb.uuid)}
                       onOpenActions={handleOpenActions}
