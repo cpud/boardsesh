@@ -256,6 +256,10 @@ export default function LogbookFeed() {
     closeFilterMenu();
   }, [closeFilterMenu, draftFilters]);
 
+  const clearFilters = useCallback(() => {
+    setDraftFilters(DEFAULT_FILTERS);
+  }, []);
+
   const applySort = useCallback(() => {
     setSortState({
       ...draftSortState,
@@ -510,8 +514,10 @@ export default function LogbookFeed() {
           anchorEl={filterAnchorEl}
           draftFilters={draftFilters}
           setDraftFilters={setDraftFilters}
+          appliedFilters={filters}
           onClose={closeFilterMenu}
           onApply={applyFilters}
+          onClear={clearFilters}
         />
         <SortPopover
           anchorEl={sortAnchorEl}
@@ -555,8 +561,10 @@ export default function LogbookFeed() {
         anchorEl={filterAnchorEl}
         draftFilters={draftFilters}
         setDraftFilters={setDraftFilters}
+        appliedFilters={filters}
         onClose={closeFilterMenu}
         onApply={applyFilters}
+        onClear={clearFilters}
       />
       <SortPopover
         anchorEl={sortAnchorEl}
@@ -585,16 +593,21 @@ function FilterPopover({
   anchorEl,
   draftFilters,
   setDraftFilters,
+  appliedFilters,
   onClose,
   onApply,
+  onClear,
 }: {
   anchorEl: HTMLElement | null;
   draftFilters: FilterState;
   setDraftFilters: React.Dispatch<React.SetStateAction<FilterState>>;
+  appliedFilters: FilterState;
   onClose: () => void;
   onApply: () => void;
+  onClear: () => void;
 }) {
   const open = Boolean(anchorEl);
+  const clearDisabled = isDefaultFilters(appliedFilters) && isDefaultFilters(draftFilters);
 
   return (
     <Popover
@@ -606,9 +619,14 @@ function FilterPopover({
       slotProps={{ paper: { sx: { width: 420, maxWidth: 'calc(100vw - 24px)', borderRadius: '16px', mt: 1 } } }}
     >
       <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Box>
-          <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>Filter Logbook</Typography>
-          <Typography variant="body2" color="text.secondary">Narrow down your climbing history.</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>Filter Logbook</Typography>
+            <Typography variant="body2" color="text.secondary">Narrow down your climbing history.</Typography>
+          </Box>
+          <IconButton size="small" onClick={onClose} sx={{ mt: -0.5, mr: -0.5 }}>
+            <CloseOutlined fontSize="small" />
+          </IconButton>
         </Box>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -658,6 +676,17 @@ function FilterPopover({
             />
           }
           label="Flash only"
+          sx={{ m: 0 }}
+        />
+
+        <FormControlLabel
+          control={
+            <Switch
+              checked={draftFilters.benchmarkOnly}
+              onChange={(_, checked) => setDraftFilters((current) => ({ ...current, benchmarkOnly: checked }))}
+            />
+          }
+          label="Benchmark climbs only"
           sx={{ m: 0 }}
         />
 
@@ -736,21 +765,10 @@ function FilterPopover({
           />
         </Box>
 
-        <FormControlLabel
-          control={
-            <Switch
-              checked={draftFilters.benchmarkOnly}
-              onChange={(_, checked) => setDraftFilters((current) => ({ ...current, benchmarkOnly: checked }))}
-            />
-          }
-          label="Benchmark climbs only"
-          sx={{ m: 0 }}
-        />
-
         <Divider />
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-          <Button variant="outlined" color="inherit" onClick={onClose} sx={{ textTransform: 'none' }}>Cancel</Button>
+          <Button variant="outlined" color="inherit" onClick={onClear} disabled={clearDisabled} sx={{ textTransform: 'none' }}>Clear</Button>
           <Button variant="contained" onClick={onApply} sx={{ textTransform: 'none' }}>Apply</Button>
         </Box>
       </Box>
