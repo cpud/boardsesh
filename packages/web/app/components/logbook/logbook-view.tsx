@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -23,15 +23,14 @@ interface LogbookViewProps {
 export const LogbookView: React.FC<LogbookViewProps> = ({ currentClimb }) => {
   const { logbook, boardName } = useBoardProvider();
 
-  // Filter ascents for current climb and sort by climbed_at
-  const climbAscents = logbook
-    .filter((ascent) => ascent.climb_uuid === currentClimb.uuid)
-    .sort((a, b) => {
-      // Parse dates using dayjs and compare them
-      const dateA = dayjs(a.climbed_at);
-      const dateB = dayjs(b.climbed_at);
-      return dateB.valueOf() - dateA.valueOf(); // Descending order (newest first)
-    });
+  // Filter ascents for current climb and sort by climbed_at (newest first)
+  const climbAscents = useMemo(
+    () =>
+      logbook
+        .filter((ascent) => ascent.climb_uuid === currentClimb.uuid)
+        .sort((a, b) => dayjs(b.climbed_at).valueOf() - dayjs(a.climbed_at).valueOf()),
+    [logbook, currentClimb.uuid],
+  );
 
   const showMirrorTag = boardName === 'tension';
 

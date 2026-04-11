@@ -54,8 +54,8 @@ export const LogbookSection: React.FC<LogbookSectionProps> = ({ climb }) => {
 
   if (!summary) {
     return (
-      <Typography variant="body2" component="span" color="text.secondary" sx={{ display: 'block', textAlign: 'center', padding: '16px 0' }}>
-        <BookOutlined style={{ marginRight: 8 }} />
+      <Typography variant="body2" component="span" color="text.secondary" sx={{ display: 'block', textAlign: 'center', py: 2 }}>
+        <BookOutlined sx={{ mr: 1, verticalAlign: 'middle' }} />
         No ascents logged for this climb
       </Typography>
     );

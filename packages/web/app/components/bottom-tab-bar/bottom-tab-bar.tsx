@@ -20,7 +20,7 @@ import Badge from '@mui/material/Badge';
 import { usePathname, useRouter } from 'next/navigation';
 import { track } from '@vercel/analytics';
 import { BoardDetails, BoardName } from '@/app/lib/types';
-import { constructClimbListWithSlugs, constructBoardSlugListUrl, tryConstructSlugListUrl, generateLayoutSlug, generateSizeSlug, generateSetSlug, searchParamsToUrlParams, getContextAwarePlaylistUrl, getLogbookBasePath } from '@/app/lib/url-utils';
+import { constructClimbListWithSlugs, constructBoardSlugListUrl, tryConstructSlugListUrl, generateLayoutSlug, generateSizeSlug, generateSetSlug, searchParamsToUrlParams, getContextAwarePlaylistUrl, getPlaylistsBasePath } from '@/app/lib/url-utils';
 import { themeTokens } from '@/app/theme/theme-config';
 import { useColorMode } from '@/app/hooks/use-color-mode';
 import { PlaylistsContext } from '../climb-actions/playlists-batch-context';
@@ -277,14 +277,14 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
     track('Bottom Tab Bar', { tab: 'climbs' });
   };
 
-  const logbookUrl = getLogbookBasePath(pathname);
+  const playlistsUrl = getPlaylistsBasePath(pathname);
 
   const handleLibraryTab = () => {
     setIsCreateOpen(false);
     setIsCreatePlaylistOpen(false);
     const currentUrl = pathname + (typeof window !== 'undefined' ? window.location.search : '');
-    if (logbookUrl !== currentUrl) {
-      router.push(logbookUrl);
+    if (playlistsUrl !== currentUrl) {
+      router.push(playlistsUrl);
     }
     track('Bottom Tab Bar', { tab: 'library' });
   };

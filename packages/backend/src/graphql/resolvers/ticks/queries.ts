@@ -220,7 +220,7 @@ export const tickQueries = {
           : inArray(dbSchema.boardseshTicks.status, ['flash', 'send'])
       );
     } else if (flashOnly) {
-      tickConditions.push(inArray(dbSchema.boardseshTicks.status, ['flash', 'attempt']));
+      tickConditions.push(eq(dbSchema.boardseshTicks.status, 'flash'));
     }
 
     if (benchmarkOnly) {
@@ -264,11 +264,15 @@ export const tickQueries = {
         )
       );
 
+    // Escape LIKE wildcards so user input is treated as a literal substring,
+    // not a SQL pattern (e.g. typing "100%" should match the literal string).
+    const escapeLikePattern = (value: string): string => value.replace(/[\\%_]/g, (char) => `\\${char}`);
+
     // Full conditions including climb name filter (requires JOIN)
     const allConditions = [
       ...tickConditions,
       ...(layoutIds && layoutIds.length > 0 ? [inArray(dbSchema.boardClimbs.layoutId, layoutIds)] : []),
-      ...(climbName ? [ilike(dbSchema.boardClimbs.name, `%${climbName}%`)] : []),
+      ...(climbName ? [ilike(dbSchema.boardClimbs.name, `%${escapeLikePattern(climbName)}%`)] : []),
     ];
 
     // Get total count
@@ -380,7 +384,11 @@ export const tickQueries = {
 
   /**
    * Get ascent activity feed grouped by climb and day (public query)
-   * Groups multiple attempts on the same climb on the same day into a single entry
+   * Groups multiple attempts on the same climb on the same day into a single entry.
+   *
+   * Pagination is applied to (climbUuid, day) groups directly in SQL so the
+   * resolver returns the correct totalCount and never silently truncates a
+   * user's history.
    */
   userGroupedAscentsFeed: async (
     _: unknown,
@@ -395,11 +403,56 @@ export const tickQueries = {
     const limit = validatedInput.limit ?? 20;
     const offset = validatedInput.offset ?? 0;
 
-    // Fetch recent ticks with climb and grade data
-    // We limit to 500 most recent ticks to prevent memory issues for very active users
-    // This provides enough data for typical pagination while keeping memory usage bounded
-    const MAX_FETCH_LIMIT = 500;
-    const results = await db
+    const dayExpr = sql<string>`to_char(${dbSchema.boardseshTicks.climbedAt}::timestamptz AT TIME ZONE 'UTC', 'YYYY-MM-DD')`;
+
+    // 1) Page of (climbUuid, day) keys, ordered by latest activity in that group.
+    //    Bounds the SQL fetch to exactly the groups we'll return.
+    const pageGroups = await db
+      .select({
+        climbUuid: dbSchema.boardseshTicks.climbUuid,
+        day: dayExpr.as('day'),
+        latestClimbedAt: sql<string>`max(${dbSchema.boardseshTicks.climbedAt})`.as('latest_climbed_at'),
+      })
+      .from(dbSchema.boardseshTicks)
+      .where(eq(dbSchema.boardseshTicks.userId, userId))
+      .groupBy(dbSchema.boardseshTicks.climbUuid, dayExpr)
+      .orderBy(sql`max(${dbSchema.boardseshTicks.climbedAt}) desc`)
+      .limit(limit)
+      .offset(offset);
+
+    // 2) True total group count — runs in parallel with the data fetch below.
+    const totalCountPromise = db
+      .select({ count: count() })
+      .from(
+        db
+          .select({
+            climbUuid: dbSchema.boardseshTicks.climbUuid,
+            day: dayExpr.as('day'),
+          })
+          .from(dbSchema.boardseshTicks)
+          .where(eq(dbSchema.boardseshTicks.userId, userId))
+          .groupBy(dbSchema.boardseshTicks.climbUuid, dayExpr)
+          .as('group_keys'),
+      );
+
+    if (pageGroups.length === 0) {
+      const totalCountResult = await totalCountPromise;
+      const totalCount = Number(totalCountResult[0]?.count ?? 0);
+      return { groups: [], totalCount, hasMore: false };
+    }
+
+    // 3) Fetch every tick belonging to this page of groups in a single query.
+    //    We narrow by climbUuid + a date window first, then refilter by the
+    //    exact (climbUuid, day) tuples in JS — Drizzle has no clean tuple-IN
+    //    helper, and pages are small (≤ limit groups) so the over-fetch is
+    //    bounded.
+    const climbUuidsInPage = Array.from(new Set(pageGroups.map((g) => g.climbUuid)));
+    const daysInPage = pageGroups.map((g) => g.day).sort();
+    const minDay = daysInPage[0];
+    const maxDay = daysInPage[daysInPage.length - 1];
+    const pageKeySet = new Set(pageGroups.map((g) => `${g.climbUuid}-${g.day}`));
+
+    const tickRows = await db
       .select({
         tick: dbSchema.boardseshTicks,
         climbName: dbSchema.boardClimbs.name,
@@ -407,6 +460,7 @@ export const tickQueries = {
         layoutId: dbSchema.boardClimbs.layoutId,
         frames: dbSchema.boardClimbs.frames,
         difficultyName: dbSchema.boardDifficultyGrades.boulderName,
+        day: dayExpr.as('day'),
       })
       .from(dbSchema.boardseshTicks)
       .leftJoin(
@@ -423,11 +477,16 @@ export const tickQueries = {
           eq(dbSchema.boardseshTicks.boardType, dbSchema.boardDifficultyGrades.boardType)
         )
       )
-      .where(eq(dbSchema.boardseshTicks.userId, userId))
-      .orderBy(desc(dbSchema.boardseshTicks.climbedAt))
-      .limit(MAX_FETCH_LIMIT);
+      .where(
+        and(
+          eq(dbSchema.boardseshTicks.userId, userId),
+          inArray(dbSchema.boardseshTicks.climbUuid, climbUuidsInPage),
+          gte(dayExpr, minDay),
+          lte(dayExpr, maxDay),
+        )
+      )
+      .orderBy(desc(dbSchema.boardseshTicks.climbedAt));
 
-    // Group items by climbUuid and day
     type AscentItem = {
       uuid: string;
       climbUuid: string;
@@ -467,15 +526,14 @@ export const tickQueries = {
       attemptCount: number;
       bestQuality: number | null;
       latestComment: string | null;
-      latestClimbedAt: string;
     };
 
     const groupMap = new Map<string, GroupedAscent>();
 
-    for (const { tick, climbName, setterUsername, layoutId, frames, difficultyName } of results) {
-      // Extract date from climbedAt (YYYY-MM-DD)
-      const date = tick.climbedAt.split('T')[0];
-      const key = `${tick.climbUuid}-${date}`;
+    for (const { tick, climbName, setterUsername, layoutId, frames, difficultyName, day } of tickRows) {
+      const key = `${tick.climbUuid}-${day}`;
+      // Skip ticks that fell inside the date window but belong to a different group.
+      if (!pageKeySet.has(key)) continue;
 
       const item: AscentItem = {
         uuid: tick.uuid,
@@ -497,8 +555,9 @@ export const tickQueries = {
         frames,
       };
 
-      if (!groupMap.has(key)) {
-        groupMap.set(key, {
+      let group = groupMap.get(key);
+      if (!group) {
+        group = {
           key,
           climbUuid: tick.climbUuid,
           climbName: climbName || 'Unknown Climb',
@@ -510,21 +569,19 @@ export const tickQueries = {
           frames,
           difficultyName,
           isBenchmark: tick.isBenchmark ?? false,
-          date,
+          date: day,
           items: [],
           flashCount: 0,
           sendCount: 0,
           attemptCount: 0,
           bestQuality: null,
           latestComment: null,
-          latestClimbedAt: tick.climbedAt,
-        });
+        };
+        groupMap.set(key, group);
       }
 
-      const group = groupMap.get(key)!;
       group.items.push(item);
 
-      // Update counts
       if (tick.status === 'flash') {
         group.flashCount++;
       } else if (tick.status === 'send') {
@@ -533,36 +590,24 @@ export const tickQueries = {
         group.attemptCount++;
       }
 
-      // Track best quality rating
       if (tick.quality !== null) {
         if (group.bestQuality === null || tick.quality > group.bestQuality) {
           group.bestQuality = tick.quality;
         }
       }
 
-      // Track latest comment (prefer non-empty)
       if (tick.comment && !group.latestComment) {
         group.latestComment = tick.comment;
       }
-
-      // Track latest climbedAt for sorting
-      if (tick.climbedAt > group.latestClimbedAt) {
-        group.latestClimbedAt = tick.climbedAt;
-      }
     }
 
-    // Convert to array and sort by latest activity
-    const allGroups = Array.from(groupMap.values()).sort(
-      (a, b) => new Date(b.latestClimbedAt).getTime() - new Date(a.latestClimbedAt).getTime()
-    );
+    // Preserve the SQL-decided page ordering (by latest activity).
+    const groups = pageGroups
+      .map((pg) => groupMap.get(`${pg.climbUuid}-${pg.day}`))
+      .filter((g): g is GroupedAscent => g !== undefined);
 
-    const totalCount = allGroups.length;
-
-    // Apply pagination to groups
-    const paginatedGroups = allGroups.slice(offset, offset + limit);
-
-    // Remove latestClimbedAt from final output (internal use only)
-    const groups = paginatedGroups.map(({ latestClimbedAt, ...rest }) => rest);
+    const totalCountResult = await totalCountPromise;
+    const totalCount = Number(totalCountResult[0]?.count ?? 0);
 
     return {
       groups,
