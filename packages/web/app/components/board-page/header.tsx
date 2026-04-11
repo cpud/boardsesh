@@ -21,7 +21,7 @@ import AngleSelector from './angle-selector';
 import styles from './header.module.css';
 import Link from 'next/link';
 
-type PageMode = 'list' | 'view' | 'play' | 'create' | 'other';
+type PageMode = 'list' | 'view' | 'play' | 'create' | 'playlists' | 'logbook' | 'other';
 
 type BoardSeshHeaderProps = {
   boardDetails: BoardDetails;
@@ -37,6 +37,8 @@ function usePageMode(): PageMode {
     if (pathname.includes('/view/')) return 'view';
     if (pathname.includes('/list')) return 'list';
     if (pathname.includes('/create')) return 'create';
+    if (pathname.includes('/playlists')) return 'playlists';
+    if (pathname.includes('/logbook')) return 'logbook';
     return 'other';
   }, [pathname]);
 }
@@ -88,7 +90,7 @@ export default function BoardSeshHeader({ boardDetails, angle, isAngleAdjustable
   // Check if we have any content to show — if not, don't render the toolbar
   const hasBackButton = pageMode === 'play';
   // Angle selector is now rendered inside ClimbsList on list pages
-  const hasAngleSelector = angle !== undefined && pageMode !== 'list';
+  const hasAngleSelector = angle !== undefined && pageMode !== 'list' && pageMode !== 'playlists' && pageMode !== 'logbook';
   // Create button is only shown on desktop, so skip rendering the container on list pages
   const hasCreateButton = !!createClimbUrl && pageMode !== 'list';
 
