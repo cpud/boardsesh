@@ -50,7 +50,7 @@
     "@types/swagger-ui-react": "^5.18.0",
     "@types/web-bluetooth": "^0.0.21",
     "@use-gesture/react": "^10.3.1",
-    "@vercel/analytics": "^1.6.1",
+    "@vercel/analytics": "^2.0.1",
     "@vercel/og": "^0.11.1",
     "@vercel/speed-insights": "^2.0.0",
     "@vercel/toolbar": "^0.2.2",
