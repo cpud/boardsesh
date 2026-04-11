@@ -403,7 +403,12 @@ export const tickQueries = {
     const limit = validatedInput.limit ?? 20;
     const offset = validatedInput.offset ?? 0;
 
-    const dayExpr = sql<string>`to_char(${dbSchema.boardseshTicks.climbedAt}::timestamptz AT TIME ZONE 'UTC', 'YYYY-MM-DD')`;
+    // boardsesh_ticks.climbed_at is `timestamp without time zone` storing the
+    // climber's wall-clock time at the moment of the tick (the rest of the
+    // codebase reads it back via `dayjs(...).utc(true)` to preserve that wall
+    // clock — see ascents-feed.tsx). Group by the literal stored date so a
+    // session ending at 11pm local doesn't bleed into the next day.
+    const dayExpr = sql<string>`to_char(${dbSchema.boardseshTicks.climbedAt}, 'YYYY-MM-DD')`;
 
     // 1) Page of (climbUuid, day) keys, ordered by latest activity in that group.
     //    Bounds the SQL fetch to exactly the groups we'll return.

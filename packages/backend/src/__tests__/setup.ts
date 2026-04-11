@@ -202,6 +202,8 @@ const createTablesSQL = `
     "created_at" timestamp DEFAULT now() NOT NULL,
     "updated_at" timestamp DEFAULT now() NOT NULL,
     "session_id" text,
+    "inferred_session_id" text,
+    "previous_inferred_session_id" text,
     "board_id" bigint,
     "aurora_type" text,
     "aurora_id" text,
