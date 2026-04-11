@@ -51,12 +51,21 @@ export async function GET(request: NextRequest) {
     const boardHeight = boardDetails.boardHeight || 1000;
     const holdsData = boardDetails.holdsData || [];
 
-    // Get all board image URLs (matches BoardRenderer logic)
+    // Get all board image URLs (matches BoardRenderer logic).
+    // Satori (used by @vercel/og) does not support WebP — it can't decode the
+    // image or determine its dimensions. We store PNG alongside the WebP in
+    // public/images/**, so swap .webp → .png for the OG render pipeline.
+    const origin = process.env.VERCEL_URL ? 'https://www.boardsesh.com' : 'http://localhost:3000';
     const imageUrls = Object.keys(boardDetails.images_to_holds).map((imageUrl) => {
-      const relativeUrl = getImageUrl(imageUrl, boardDetails.board_name);
-      // getImageUrl already returns the path with leading slash, so we don't need to add it again
-      return `${process.env.VERCEL_URL ? 'https://www.boardsesh.com' : 'http://localhost:3000'}${relativeUrl}`;
+      const relativeUrl = getImageUrl(imageUrl, boardDetails.board_name).replace(/\.webp$/, '.png');
+      return `${origin}${relativeUrl}`;
     });
+
+    // Render proper trademark-safe board name ("MoonBoard", not "Moonboard").
+    const boardDisplayName =
+      board_name === 'moonboard'
+        ? 'MoonBoard'
+        : board_name.charAt(0).toUpperCase() + board_name.slice(1);
 
     return new ImageResponse(
       (
@@ -215,8 +224,8 @@ export async function GET(request: NextRequest) {
               </div>
               <div style={{ display: 'flex' }}>
                 <span style={{ fontWeight: '600' }}>Board:</span>
-                <span style={{ marginLeft: '12px', textTransform: 'capitalize' }}>
-                  {board_name} • {angle}°
+                <span style={{ marginLeft: '12px' }}>
+                  {boardDisplayName} • {angle}°
                 </span>
               </div>
             </div>
