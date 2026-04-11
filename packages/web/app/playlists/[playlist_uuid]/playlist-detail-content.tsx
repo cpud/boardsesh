@@ -362,7 +362,7 @@ export default function PlaylistDetailContent({
           <div className={styles.heroContent}>
             <div
               className={styles.heroSquare}
-              style={{ backgroundColor: getPlaylistColor() }}
+              style={{ background: `linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.03) 100%), ${getPlaylistColor()}` }}
             >
               {playlist.icon ? (
                 <span className={styles.heroSquareEmoji}>{playlist.icon}</span>
