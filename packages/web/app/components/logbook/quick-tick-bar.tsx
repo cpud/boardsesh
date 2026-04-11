@@ -47,8 +47,8 @@ const SNAP_BACK_DURATION_MS = 180;
  * navigation, etc.) do not cause the user to lose their in-progress tick.
  *
  * Each tap on the bar logs exactly one row with `attemptCount: 1`. The status
- * is history-aware: if the user has no prior logbook rows for this climb +
- * angle the tick is recorded as a `flash`, otherwise it is recorded as a
+ * is history-aware: if the user has no prior logbook rows for this climb
+ * the tick is recorded as a `flash`, otherwise it is recorded as a
  * `send`. Totals are derived server-side by aggregating rows.
  */
 export const QuickTickBar: React.FC<QuickTickBarProps> = ({

@@ -11,6 +11,14 @@ import CloseOutlined from '@mui/icons-material/CloseOutlined';
 import { useBoardProvider } from '../board-provider/board-provider-context';
 import { themeTokens } from '@/app/theme/theme-config';
 import dayjs from 'dayjs';
+import type { LogbookEntry } from '@/app/hooks/use-logbook';
+
+function getAscentChipLabel(ascent: LogbookEntry): string {
+  if (ascent.status === 'flash') return 'Flash';
+  if (ascent.status === 'send') return 'Send';
+  if (ascent.is_ascent) return ascent.tries === 1 ? 'Flash' : 'Send';
+  return 'Attempt';
+}
 
 interface PlayViewCommentsProps {
   climbUuid: string | undefined;
@@ -77,17 +85,7 @@ const PlayViewComments: React.FC<PlayViewCommentsProps> = ({ climbUuid }) => {
                   {dayjs(ascent.climbed_at).format('MMM D, YYYY')}
                 </Typography>
                 <Chip
-                  label={
-                    ascent.status === 'flash'
-                      ? 'Flash'
-                      : ascent.status === 'send'
-                        ? 'Send'
-                        : ascent.is_ascent
-                          ? ascent.tries === 1
-                            ? 'Flash'
-                            : 'Send'
-                          : 'Attempt'
-                  }
+                  label={getAscentChipLabel(ascent)}
                   size="small"
                   sx={{
                     height: themeTokens.spacing[5],
