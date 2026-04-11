@@ -4,13 +4,13 @@
  * These tests generate screenshots for the help page documentation.
  * They use a mobile viewport since the help screenshots show the mobile UI.
  *
- * Run all tests (unauthenticated only):
- *   bunx playwright test e2e/help-screenshots.spec.ts
+ * Run via the dedicated Playwright project (viewport set in playwright.config.ts):
+ *   cd packages/web && bunx playwright test --project=help-screenshots
  *
  * Run with authenticated tests using 1Password CLI:
  *   TEST_USER_EMAIL=$(op read "op://Boardsesh/Boardsesh local/username") \
  *   TEST_USER_PASSWORD=$(op read "op://Boardsesh/Boardsesh local/password") \
- *   bunx playwright test e2e/help-screenshots.spec.ts
+ *   bunx playwright test --project=help-screenshots
  *
  * Prerequisites:
  *   - Dev server running: bun run dev
@@ -21,11 +21,10 @@ import { test, expect } from '@playwright/test';
 const SCREENSHOT_DIR = 'public/help';
 const boardUrl = '/kilter/original/12x12-square/screw_bolt/40/list';
 
-test.describe('Help Page Screenshots', () => {
-  // Use mobile viewport - help screenshots show mobile UI, and many
-  // interactive elements (search pill, drawers) are mobile-only.
-  test.use({ viewport: { width: 390, height: 844 } });
+// Viewport (390×844) is set at the project level in playwright.config.ts.
+// Both describe blocks here inherit it without needing their own test.use() calls.
 
+test.describe('Help Page Screenshots', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(boardUrl);
     await page.waitForSelector('#onboarding-climb-card, [data-testid="climb-card"]', { timeout: 30000 })
@@ -118,8 +117,6 @@ test.describe('Help Page Screenshots', () => {
 
 // Authenticated tests - requires TEST_USER_EMAIL and TEST_USER_PASSWORD env vars
 test.describe('Help Page Screenshots - Authenticated', () => {
-  test.use({ viewport: { width: 390, height: 844 } });
-
   const testEmail = process.env.TEST_USER_EMAIL;
   const testPassword = process.env.TEST_USER_PASSWORD;
 
