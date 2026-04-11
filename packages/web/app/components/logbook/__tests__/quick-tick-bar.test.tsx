@@ -339,6 +339,45 @@ describe('QuickTickBar', () => {
     });
   });
 
+  describe('null currentClimb on mount', () => {
+    it('renders without crashing when currentClimb is initially null', () => {
+      render(<QuickTickBar {...defaultProps} currentClimb={null} />);
+      expect(screen.getByTestId('quick-tick-bar')).toBeTruthy();
+    });
+
+    it('does not call saveTick when currentClimb is null and confirm is clicked', async () => {
+      render(<QuickTickBar {...defaultProps} currentClimb={null} />);
+
+      await act(async () => {
+        screen.getByTestId('quick-tick-confirm').click();
+      });
+
+      expect(mockSaveTick).not.toHaveBeenCalled();
+      expect(defaultProps.onSave).not.toHaveBeenCalled();
+    });
+
+    it('defers the snapshot until a non-null climb arrives', async () => {
+      const climb = makeClimb({ uuid: 'deferred-climb' });
+      const { rerender } = render(<QuickTickBar {...defaultProps} currentClimb={null} />);
+
+      // Snapshot should be absent — confirm should be a no-op.
+      await act(async () => {
+        screen.getByTestId('quick-tick-confirm').click();
+      });
+      expect(mockSaveTick).not.toHaveBeenCalled();
+
+      // Now provide a climb — the snapshot should be initialized.
+      rerender(<QuickTickBar {...defaultProps} currentClimb={climb} />);
+
+      await act(async () => {
+        screen.getByTestId('quick-tick-confirm').click();
+      });
+
+      expect(mockSaveTick).toHaveBeenCalledTimes(1);
+      expect(mockSaveTick.mock.calls[0][0].climbUuid).toBe('deferred-climb');
+    });
+  });
+
   describe('climb snapshot', () => {
     it('keeps ticking the original climb even when currentClimb prop changes', async () => {
       const originalClimb = makeClimb({ uuid: 'original-climb' });
