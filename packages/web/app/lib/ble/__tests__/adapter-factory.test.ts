@@ -29,7 +29,7 @@ describe('adapter-factory', () => {
     it('allows multiple adapter detections by resetting cache state', async () => {
       // First call - should detect platform
       delete (globalThis as unknown as Record<string, unknown>).Capacitor;
-      const adapter1 = await createBluetoothAdapter();
+      const adapter1 = await createBluetoothAdapter('kilter');
       expect(adapter1).toBeDefined();
       expect(typeof adapter1.isAvailable).toBe('function');
 
@@ -37,7 +37,7 @@ describe('adapter-factory', () => {
       _resetFactoryCache();
 
       // Should be able to create adapter again
-      const adapter2 = await createBluetoothAdapter();
+      const adapter2 = await createBluetoothAdapter('kilter');
       expect(adapter2).toBeDefined();
       expect(typeof adapter2.isAvailable).toBe('function');
     });
@@ -48,7 +48,7 @@ describe('adapter-factory', () => {
       delete (globalThis as unknown as Record<string, unknown>).Capacitor;
       _resetFactoryCache();
 
-      const adapter = await createBluetoothAdapter();
+      const adapter = await createBluetoothAdapter('kilter');
 
       // Verify the adapter implements the BluetoothAdapter interface
       expect(typeof adapter.isAvailable).toBe('function');
@@ -62,10 +62,10 @@ describe('adapter-factory', () => {
       delete (globalThis as unknown as Record<string, unknown>).Capacitor;
       _resetFactoryCache();
 
-      const adapter1 = await createBluetoothAdapter();
-      const adapter2 = await createBluetoothAdapter();
+      const adapter1 = await createBluetoothAdapter('kilter');
+      const adapter2 = await createBluetoothAdapter('tension');
 
-      // Both should have the same constructor name (same adapter type)
+      // Both should have the same constructor name (same adapter type, cached factory)
       expect(adapter1.constructor.name).toBe(adapter2.constructor.name);
     });
   });
