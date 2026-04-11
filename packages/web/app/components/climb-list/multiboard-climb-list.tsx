@@ -13,8 +13,9 @@ import BoardFilterStrip from '@/app/components/board-scroll/board-filter-strip';
 import ClimbsList from '@/app/components/board-page/climbs-list';
 import { FavoritesProvider } from '@/app/components/climb-actions/favorites-batch-context';
 import { PlaylistsProvider } from '@/app/components/climb-actions/playlists-batch-context';
-import { getDefaultAngleForBoard } from '@/app/lib/board-config-for-playlist';
+import { getDefaultAngleForBoard, type SessionBoardConfig } from '@/app/lib/board-config-for-playlist';
 import { useOptionalQueueActions } from '@/app/components/graphql-queue';
+import { usePersistentSessionState } from '@/app/components/persistent-session/persistent-session-context';
 import type { UserBoard } from '@boardsesh/shared-schema';
 import type { Climb } from '@/app/lib/types';
 
@@ -95,10 +96,26 @@ export default function MultiboardClimbList({
     ? (externalBoardsLoading ?? false)
     : fetchedBoardsLoading;
 
-  const { boardDetailsMap, defaultBoardDetails, unsupportedClimbs } = useBoardDetailsMap(
+  // Prefer the user's active session (the board they are actually climbing on)
+  // so playlist previews match the physical wall. Falls back to the list's
+  // selected board when there is no session.
+  const { activeSession } = usePersistentSessionState();
+  const sessionBoard: SessionBoardConfig | null = useMemo(() => {
+    if (!activeSession?.parsedParams) return null;
+    const { board_name, layout_id, size_id, set_ids } = activeSession.parsedParams;
+    return {
+      boardType: board_name,
+      layoutId: layout_id,
+      sizeId: size_id,
+      setIds: set_ids,
+    };
+  }, [activeSession]);
+
+  const { boardDetailsByClimb, defaultBoardDetails, unsupportedClimbs, upsizedClimbs } = useBoardDetailsMap(
     climbs,
     myBoards,
     selectedBoard,
+    sessionBoard,
     fallbackBoardTypes,
   );
 
@@ -206,8 +223,9 @@ export default function MultiboardClimbList({
           <PlaylistsProvider {...playlistsProviderProps}>
             <ClimbsList
               boardDetails={defaultBoardDetails}
-              boardDetailsMap={boardDetailsMap}
+              boardDetailsByClimb={boardDetailsByClimb}
               unsupportedClimbs={unsupportedClimbs}
+              upsizedClimbs={upsizedClimbs}
               climbs={climbs}
               selectedClimbUuid={effectiveSelectedUuid}
               isFetching={isFetching}

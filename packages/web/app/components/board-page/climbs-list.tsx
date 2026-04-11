@@ -2,6 +2,9 @@
 import React, { useEffect, useCallback, useState, useMemo, useRef, useImperativeHandle, forwardRef } from 'react';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import AppsOutlined from '@mui/icons-material/AppsOutlined';
 import FormatListBulletedOutlined from '@mui/icons-material/FormatListBulletedOutlined';
 import { usePathname } from 'next/navigation';
@@ -148,8 +151,9 @@ SharedDrawers.displayName = 'SharedDrawers';
 
 export type ClimbsListProps = {
   boardDetails: BoardDetails;
-  boardDetailsMap?: Record<string, BoardDetails>;
+  boardDetailsByClimb?: Record<string, BoardDetails>;
   unsupportedClimbs?: Set<string>;
+  upsizedClimbs?: Set<string>;
   initialImageCount?: number;
   climbs: Climb[];
   selectedClimbUuid?: string | null;
@@ -184,7 +188,9 @@ type GridClimbItemProps = {
   boardDetails: BoardDetails;
   preferImageLayers: boolean;
   unsupported?: boolean;
+  needsBiggerBoard?: boolean;
   onClimbClickByIndex: (index: number) => void;
+  onNeedsBiggerBoard?: () => void;
   renderItemExtra?: (climb: Climb) => React.ReactNode;
 };
 
@@ -194,10 +200,18 @@ const GridClimbItem = React.memo(function GridClimbItem({
   boardDetails,
   preferImageLayers,
   unsupported,
+  needsBiggerBoard,
   onClimbClickByIndex,
+  onNeedsBiggerBoard,
   renderItemExtra,
 }: GridClimbItemProps) {
-  const handleCoverClick = useCallback(() => onClimbClickByIndex(index), [onClimbClickByIndex, index]);
+  const handleCoverClick = useCallback(() => {
+    if (needsBiggerBoard) {
+      onNeedsBiggerBoard?.();
+      return;
+    }
+    onClimbClickByIndex(index);
+  }, [onClimbClickByIndex, index, needsBiggerBoard, onNeedsBiggerBoard]);
   return (
     <>
       <div {...(index === 0 ? { id: 'onboarding-climb-card' } : {})}>
@@ -206,7 +220,7 @@ const GridClimbItem = React.memo(function GridClimbItem({
           boardDetails={boardDetails}
           preferImageLayers={preferImageLayers}
           onCoverClick={handleCoverClick}
-          unsupported={unsupported}
+          unsupported={unsupported || needsBiggerBoard}
         />
       </div>
       {renderItemExtra?.(climb)}
@@ -216,8 +230,9 @@ const GridClimbItem = React.memo(function GridClimbItem({
 
 const ClimbsList = ({
   boardDetails,
-  boardDetailsMap,
+  boardDetailsByClimb,
   unsupportedClimbs,
+  upsizedClimbs,
   initialImageCount = 0,
   climbs,
   selectedClimbUuid,
@@ -359,17 +374,21 @@ const ClimbsList = ({
 
   const resolveBoardDetails = useCallback(
     (climb: Climb): BoardDetails => {
-      if (boardDetailsMap && climb.boardType && climb.layoutId != null) {
-        const key = `${climb.boardType}:${climb.layoutId}`;
-        return boardDetailsMap[key] || boardDetails;
+      if (boardDetailsByClimb) {
+        const resolved = boardDetailsByClimb[climb.uuid];
+        if (resolved) return resolved;
       }
       return boardDetails;
     },
-    [boardDetails, boardDetailsMap],
+    [boardDetails, boardDetailsByClimb],
   );
 
   // --- Shared drawers via imperative handle (state lives in SharedDrawers, not here) ---
   const drawerRef = useRef<SharedDrawerHandle>(null);
+
+  const [biggerBoardOpen, setBiggerBoardOpen] = useState(false);
+  const handleNeedsBiggerBoard = useCallback(() => setBiggerBoardOpen(true), []);
+  const handleCloseBiggerBoard = useCallback(() => setBiggerBoardOpen(false), []);
 
   const handleOpenActions = useCallback((climb: Climb) => {
     if (process.env.NODE_ENV !== 'production' && !drawerRef.current) {
@@ -532,7 +551,9 @@ const ClimbsList = ({
                 boardDetails={resolveBoardDetails(climb)}
                 preferImageLayers={index < initialImageCount}
                 unsupported={unsupportedClimbs?.has(climb.uuid)}
+                needsBiggerBoard={upsizedClimbs?.has(climb.uuid)}
                 onClimbClickByIndex={handleClimbThumbnailClickByIndex}
+                onNeedsBiggerBoard={handleNeedsBiggerBoard}
                 renderItemExtra={renderItemExtra}
               />
             </Box>
@@ -577,6 +598,8 @@ const ClimbsList = ({
                       onThumbnailClick={() => handleClimbThumbnailClickByIndex(index)}
                       disableSwipe={!hydrated}
                       unsupported={unsupportedClimbs?.has(climb.uuid)}
+                      needsBiggerBoard={upsizedClimbs?.has(climb.uuid)}
+                      onNeedsBiggerBoard={handleNeedsBiggerBoard}
                       onOpenActions={handleOpenActions}
                       onOpenPlaylistSelector={handleOpenPlaylistSelector}
                       addToQueue={addToQueue}
@@ -609,6 +632,18 @@ const ClimbsList = ({
 
       {/* Shared drawers — owns its own state so open/close doesn't re-render the list */}
       <SharedDrawers ref={drawerRef} boardDetails={boardDetails} resolveBoardDetails={resolveBoardDetails} />
+
+      <Snackbar
+        open={biggerBoardOpen}
+        autoHideDuration={4000}
+        onClose={handleCloseBiggerBoard}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="warning" onClose={handleCloseBiggerBoard} variant="filled">
+          <AlertTitle>Won&apos;t fit your board</AlertTitle>
+          This one runs off the edge of your wall. You&apos;ll need a bigger size to send it.
+        </Alert>
+      </Snackbar>
     </Box>
     </SelectionStoreContext.Provider>
   );
