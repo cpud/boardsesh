@@ -123,14 +123,27 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
   const gradeColor = getSoftVGradeColor(vGrade, isDark);
 
   // Fall back to matching the climb's own difficulty string against the
-  // grade list so the menu can highlight + scroll to the "current" grade
-  // even before the user picks an override.
+  // grade list so the menu can highlight the "current" grade even before
+  // the user picks an override.
   const climbGradeId = useMemo(() => {
     const source = tickTarget?.climb.difficulty ?? currentClimb?.difficulty;
     if (!source) return undefined;
     return grades.find((g) => g.difficulty_name === source)?.difficulty_id;
   }, [tickTarget, currentClimb, grades]);
   const currentGradeId = difficulty ?? climbGradeId;
+
+  // When the climb already has an established grade, only show a narrow
+  // window of 5 grades (two softer, two harder) around it so the user can
+  // nudge up or down without scrolling through the full V0 → V16 list.
+  // Projects without a grade still see every option.
+  const displayedGrades = useMemo(() => {
+    if (climbGradeId === undefined) return grades;
+    const idx = grades.findIndex((g) => g.difficulty_id === climbGradeId);
+    if (idx === -1) return grades;
+    const start = Math.max(0, idx - 2);
+    const end = Math.min(grades.length, idx + 3);
+    return grades.slice(start, end);
+  }, [grades, climbGradeId]);
 
   const handleSave = useCallback(
     async (isAscent: boolean) => {
@@ -322,7 +335,6 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
           anchorEl={gradeAnchorEl}
           open={Boolean(gradeAnchorEl)}
           onClose={() => setGradeAnchorEl(null)}
-          slotProps={{ paper: { sx: { maxHeight: 240 } } }}
           MenuListProps={{ autoFocusItem: true }}
         >
           <MenuItem
@@ -333,26 +345,18 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
           >
             —
           </MenuItem>
-          {grades.map((grade) => {
-            const isCurrent = grade.difficulty_id === currentGradeId;
-            return (
-              <MenuItem
-                key={grade.difficulty_id}
-                selected={isCurrent}
-                ref={(el) => {
-                  if (el && isCurrent) {
-                    el.scrollIntoView({ block: 'center' });
-                  }
-                }}
-                onClick={() => {
-                  setDifficulty(grade.difficulty_id);
-                  setGradeAnchorEl(null);
-                }}
-              >
-                {grade.v_grade}
-              </MenuItem>
-            );
-          })}
+          {displayedGrades.map((grade) => (
+            <MenuItem
+              key={grade.difficulty_id}
+              selected={grade.difficulty_id === currentGradeId}
+              onClick={() => {
+                setDifficulty(grade.difficulty_id);
+                setGradeAnchorEl(null);
+              }}
+            >
+              {grade.v_grade}
+            </MenuItem>
+          ))}
         </Menu>
 
         <IconButton
