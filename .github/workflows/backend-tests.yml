@@ -81,11 +81,10 @@ jobs:
       - name: Run backend integration tests
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            BASE="origin/${{ github.base_ref }}"
+            bun run --filter=boardsesh-backend test:run -- --changed "origin/${{ github.base_ref }}" --reporter=verbose --reporter=junit --outputFile.junit=./test-results/junit.xml
           else
-            BASE="HEAD~1"
+            bun run --filter=boardsesh-backend test:run -- --reporter=verbose --reporter=junit --outputFile.junit=./test-results/junit.xml
           fi
-          bun run --filter=boardsesh-backend test:run -- --changed "$BASE" --reporter=verbose --reporter=junit --outputFile.junit=./test-results/junit.xml
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5433/boardsesh_backend_test
           REDIS_URL: redis://localhost:6380

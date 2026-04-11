@@ -134,11 +134,10 @@ jobs:
     - name: Run tests
       run: |
         if [ "${{ github.event_name }}" = "pull_request" ]; then
-          BASE="origin/${{ github.base_ref }}"
+          bun run --filter=@boardsesh/web test:run -- --changed "origin/${{ github.base_ref }}" --reporter=verbose --reporter=github-actions --reporter=junit --outputFile.junit=./test-results/junit.xml
         else
-          BASE="HEAD~1"
+          bun run --filter=@boardsesh/web test:run -- --reporter=verbose --reporter=github-actions --reporter=junit --outputFile.junit=./test-results/junit.xml
         fi
-        bun run --filter=@boardsesh/web test:run -- --changed "$BASE" --reporter=verbose --reporter=github-actions --reporter=junit --outputFile.junit=./test-results/junit.xml
 
     - name: Upload test results
       uses: actions/upload-artifact@v4

@@ -47,8 +47,7 @@ jobs:
     - name: Run OCR tests
       run: |
         if [ "${{ github.event_name }}" = "pull_request" ]; then
-          BASE="origin/${{ github.base_ref }}"
+          bun run --filter=@boardsesh/moonboard-ocr test -- --changed "origin/${{ github.base_ref }}"
         else
-          BASE="HEAD~1"
+          bun run --filter=@boardsesh/moonboard-ocr test
         fi
-        bun run --filter=@boardsesh/moonboard-ocr test -- --changed "$BASE"
