@@ -31,13 +31,56 @@
   margin-left: auto;
 }
 
-/* Match the visual weight of the adjacent CheckOutlined / CloseOutlined icons
-   (24px) so the stars line up with the action buttons. */
+/* Match the visual weight of the adjacent icon buttons so the stars line
+   up with the action buttons. */
 .rating :global(.MuiRating-icon) {
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .gradeLabel {
   min-width: 0;
   flex-shrink: 0;
+}
+
+/* Tries counter — ButtonBase that shows the selected number on the row
+   baseline with a subtle "tries" byline absolutely positioned beneath so
+   it cannot push the number out of alignment with its siblings. */
+.attemptButton {
+  position: relative;
+  flex-shrink: 0;
+  padding: 4px 6px;
+  min-width: 24px;
+  border-radius: 4px;
+  line-height: 1;
+  color: inherit;
+  opacity: 0.75;
+  transition: opacity 150ms ease;
+}
+
+.attemptButton:hover,
+.attemptButton:focus-visible {
+  opacity: 1;
+}
+
+.attemptNumber {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.attemptLabel {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 1px;
+  font-size: 8px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: inherit;
+  opacity: 0.55;
+  white-space: nowrap;
+  pointer-events: none;
+  text-transform: lowercase;
 }
