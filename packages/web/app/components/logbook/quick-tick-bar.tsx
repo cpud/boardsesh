@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useSwipeable } from 'react-swipeable';
+import ButtonBase from '@mui/material/ButtonBase';
 import IconButton from '@mui/material/IconButton';
 import Rating from '@mui/material/Rating';
 import Typography from '@mui/material/Typography';
@@ -11,6 +12,7 @@ import Typography from '@mui/material/Typography';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
+import CloseOutlined from '@mui/icons-material/CloseOutlined';
 import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import { track } from '@vercel/analytics';
 import { Angle, Climb, BoardDetails } from '@/app/lib/types';
@@ -54,17 +56,21 @@ const SWIPE_DISMISS_THRESHOLD = 80;
 const EXIT_DURATION_MS = 220;
 const SNAP_BACK_DURATION_MS = 180;
 
+/** Options shown in the attempts picker. 10 displays as "9+" in the UI. */
+const ATTEMPT_OPTIONS: readonly number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
 /**
  * Inline tick entry bar. Designed to be embedded in a parent row (e.g. the queue
  * control bar) in place of the climb title. The component owns its own snapshot
  * of the climb so that mid-flow changes to the active climb (party session
  * navigation, etc.) do not cause the user to lose their in-progress tick.
  *
- * Tapping the tick button logs one row for the climb. The user picks the
- * attempt count (1–9+) from the attempts counter to the left of the tick
- * button; the saved row carries that count. Status is history-aware: a first
- * attempt with no prior history records as `flash`, otherwise as `send`.
- * Totals are derived server-side by aggregating rows.
+ * The user picks how many tries (1–9+) they put into the climb via the tries
+ * counter, then taps either the confirm (✓) button to log a send with that
+ * count or the fail (X) button to log the same count of tries without a send.
+ * Send status is history-aware: a one-try send with no prior history records
+ * as `flash`, otherwise `send`. Fail rows always record as `attempt`. Totals
+ * are derived server-side by aggregating rows.
  */
 export const QuickTickBar: React.FC<QuickTickBarProps> = ({
   currentClimb,
@@ -150,17 +156,22 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
     return grades.slice(start, end);
   }, [grades, climbGradeId]);
 
-  const handleConfirm = useCallback(
-    async () => {
+  const handleSave = useCallback(
+    async (isAscent: boolean) => {
       if (!tickTarget || isSaving) return;
 
       const { climb, angle: targetAngle, boardDetails: targetBoard, hasPriorHistory } = tickTarget;
 
-      // Status is history-aware: flash only if the user has no prior history
-      // for this climb AND this is a one-try send; otherwise send. The user
-      // can pick how many attempts this send took via the attempts picker.
-      const status: TickStatus =
-        hasPriorHistory || attemptCount > 1 ? 'send' : 'flash';
+      // Status is history-aware for sends: a first-go send with no prior
+      // history is a flash, otherwise it's a send. Multi-try sends can't be
+      // flashes by definition. Non-ascents always save as `attempt`, with
+      // the selected count representing how many tries the user made.
+      let status: TickStatus;
+      if (isAscent) {
+        status = hasPriorHistory || attemptCount > 1 ? 'send' : 'flash';
+      } else {
+        status = 'attempt';
+      }
 
       setIsSaving(true);
       try {
@@ -203,6 +214,9 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
     },
     [tickTarget, quality, difficulty, comment, isSaving, saveTick, onSave, attemptCount],
   );
+
+  const handleConfirm = useCallback(() => handleSave(true), [handleSave]);
+  const handleFail = useCallback(() => handleSave(false), [handleSave]);
 
   const triggerDismiss = useCallback(() => {
     if (isDismissing) return;
@@ -267,7 +281,6 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
   const userAscentsCount =
     tickTarget?.climb.userAscents ?? currentClimb?.userAscents ?? 0;
 
-  const attemptOptions = useMemo(() => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const, []);
   const attemptDisplay = attemptCount >= 10 ? '9+' : String(attemptCount);
 
   return (
@@ -365,22 +378,25 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
           #{userAscentsCount}
         </Typography>
 
-        {/* Attempts counter. Shows the selected attempt count aligned on the
-            same baseline as the adjacent items; the "attempts" byline is
-            absolutely positioned underneath so it does not push the number
-            out of alignment. Opens a small menu upward with options 1–9+. */}
-        <button
-          type="button"
+        {/* Tries counter. Shows the selected try count aligned on the same
+            baseline as the adjacent items; the "tries" byline is absolutely
+            positioned underneath so it does not push the number out of
+            alignment. Opens a small menu upward with options 1–9+. The
+            selected value drives both the attempt (X) and confirm (✓)
+            buttons so the user can log 5 tries without a send by picking 5
+            and tapping X. */}
+        <ButtonBase
           onClick={(e) => setAttemptAnchorEl(e.currentTarget)}
-          aria-label={`Attempts: ${attemptDisplay}`}
+          aria-label={`Tries: ${attemptDisplay}`}
           aria-haspopup="menu"
           aria-expanded={Boolean(attemptAnchorEl)}
           data-testid="quick-tick-attempt"
           className={styles.attemptButton}
+          disableRipple={false}
         >
           <span className={styles.attemptNumber}>{attemptDisplay}</span>
-          <span className={styles.attemptLabel}>attempts</span>
-        </button>
+          <span className={styles.attemptLabel}>tries</span>
+        </ButtonBase>
         <Menu
           anchorEl={attemptAnchorEl}
           open={Boolean(attemptAnchorEl)}
@@ -389,7 +405,7 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
           transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
           slotProps={{ paper: { sx: { minWidth: 64 } } }}
         >
-          {attemptOptions.map((n) => (
+          {ATTEMPT_OPTIONS.map((n) => (
             <MenuItem
               key={n}
               selected={n === attemptCount}
@@ -406,10 +422,29 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
 
         <IconButton
           size="small"
+          onClick={handleFail}
+          disabled={isSaving}
+          sx={{
+            p: '4px',
+            color: themeTokens.colors.error,
+            opacity: themeTokens.opacity.subtle,
+            '&:hover': {
+              color: themeTokens.colors.error,
+              opacity: 1,
+            },
+          }}
+          aria-label={`Log ${attemptDisplay} tries without a send`}
+          data-testid="quick-tick-fail"
+        >
+          <CloseOutlined fontSize="small" />
+        </IconButton>
+
+        <IconButton
+          size="small"
           onClick={handleConfirm}
           disabled={isSaving}
-          className={styles.confirmButton}
           sx={{
+            p: '4px',
             color: themeTokens.colors.success,
             opacity: themeTokens.opacity.subtle,
             '&:hover': {

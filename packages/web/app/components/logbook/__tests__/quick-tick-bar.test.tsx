@@ -167,7 +167,7 @@ describe('QuickTickBar', () => {
   });
 
   describe('layout', () => {
-    it('renders the controls in the expected order: rating, comment toggle, grade, # ascents, attempt, confirm — all clustered to the right', () => {
+    it('renders the controls in the expected order: rating, comment toggle, grade, # ascents, tries counter, fail, confirm — all clustered to the right', () => {
       render(<QuickTickBar {...defaultProps} />);
 
       const rating = screen.getByTestId('quick-tick-rating');
@@ -175,43 +175,47 @@ describe('QuickTickBar', () => {
       const gradeLabel = screen.getByTestId('quick-tick-grade');
       const ascents = screen.getByTestId('quick-tick-ascents');
       const attemptBtn = screen.getByTestId('quick-tick-attempt');
+      const failBtn = screen.getByTestId('quick-tick-fail');
       const confirmBtn = screen.getByTestId('quick-tick-confirm');
 
       // Rating sits directly inside the single flex row alongside the
-      // comment toggle, grade label, ascents display, attempt counter and
-      // confirm button. The "swipe left to dismiss" hint is not rendered
-      // here — it lives as a transient toast above the queue control bar
-      // instead.
+      // comment toggle, grade label, ascents display, tries counter, fail
+      // (X) and confirm (✓) buttons. The "swipe left to dismiss" hint is
+      // not rendered here — it lives as a transient toast above the queue
+      // control bar instead.
       const controls = rating.parentElement!;
       expect(commentToggle.parentElement).toBe(controls);
       expect(gradeLabel.parentElement).toBe(controls);
       expect(ascents.parentElement).toBe(controls);
       expect(attemptBtn.parentElement).toBe(controls);
+      expect(failBtn.parentElement).toBe(controls);
       expect(confirmBtn.parentElement).toBe(controls);
 
       // Siblings of .controls must appear in this order: rating, comment
-      // toggle, grade label, # ascents, attempt counter, confirm (tick).
+      // toggle, grade label, # ascents, tries counter, fail (X), confirm (✓).
       const siblings = Array.from(controls.children) as HTMLElement[];
       const ratingIdx = siblings.indexOf(rating);
       const commentIdx = siblings.indexOf(commentToggle);
       const gradeIdx = siblings.indexOf(gradeLabel);
       const ascentsIdx = siblings.indexOf(ascents);
       const attemptIdx = siblings.indexOf(attemptBtn);
+      const failIdx = siblings.indexOf(failBtn);
       const confirmIdx = siblings.indexOf(confirmBtn);
       expect(ratingIdx).toBeLessThan(commentIdx);
       expect(commentIdx).toBeLessThan(gradeIdx);
       expect(gradeIdx).toBeLessThan(ascentsIdx);
       expect(ascentsIdx).toBeLessThan(attemptIdx);
-      expect(confirmIdx).toBeGreaterThan(attemptIdx);
+      expect(attemptIdx).toBeLessThan(failIdx);
+      expect(failIdx).toBeLessThan(confirmIdx);
     });
 
-    it('defaults the attempts counter to 1 and exposes an attempts byline for the user', () => {
+    it('defaults the tries counter to 1 and exposes a "tries" byline for the user', () => {
       render(<QuickTickBar {...defaultProps} />);
       const attemptBtn = screen.getByTestId('quick-tick-attempt');
       // The top-line number (the "1" that must stay aligned with the other
-      // row items) is rendered directly; the "attempts" label sits beneath.
+      // row items) is rendered directly; the "tries" label sits beneath.
       expect(attemptBtn.textContent).toContain('1');
-      expect(attemptBtn.textContent?.toLowerCase()).toContain('attempts');
+      expect(attemptBtn.textContent?.toLowerCase()).toContain('tries');
     });
 
     it('renders the # ascents display using the climb userAscents count', () => {
@@ -355,6 +359,41 @@ describe('QuickTickBar', () => {
       const call = mockSaveTick.mock.calls[0][0];
       expect(call.attemptCount).toBe(10);
       expect(call.status).toBe('send');
+    });
+
+    it('fail (X) button saves status attempt with the default tries count of 1', async () => {
+      render(<QuickTickBar {...defaultProps} />);
+
+      await act(async () => {
+        screen.getByTestId('quick-tick-fail').click();
+      });
+
+      expect(mockSaveTick).toHaveBeenCalledTimes(1);
+      const call = mockSaveTick.mock.calls[0][0];
+      expect(call.status).toBe('attempt');
+      expect(call.attemptCount).toBe(1);
+      expect(defaultProps.onSave).toHaveBeenCalledTimes(1);
+    });
+
+    it('fail (X) button logs the selected tries count — the "5 tries no send" flow', async () => {
+      render(<QuickTickBar {...defaultProps} />);
+
+      // Pick 5 tries from the counter menu.
+      await act(async () => {
+        screen.getByTestId('quick-tick-attempt').click();
+      });
+      await act(async () => {
+        screen.getByTestId('quick-tick-attempt-option-5').click();
+      });
+
+      // Tap X to log a failed session with that try count.
+      await act(async () => {
+        screen.getByTestId('quick-tick-fail').click();
+      });
+
+      const call = mockSaveTick.mock.calls[0][0];
+      expect(call.status).toBe('attempt');
+      expect(call.attemptCount).toBe(5);
     });
 
     it('uses userAscents on the climb to default to send without touching the logbook', async () => {
