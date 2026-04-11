@@ -176,7 +176,6 @@ export default function CreateClimbForm({
   const [climbName, setClimbName] = useState(forkName ? `${forkName} fork` : '');
   const [description, setDescription] = useState('');
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
-  const handleBoardZoomChange = useCallback(() => {}, []);
   const zoomResetKey = boardType === 'moonboard' ? `moonboard-${selectedAngle}` : `aurora-${angle}`;
   const climbNameRef = useRef(climbName);
   const setClimbNameRef = useRef(setClimbName);
@@ -605,7 +604,7 @@ export default function CreateClimbForm({
   }, [climbName, headerAction, setClimbName, update]);
 
   return (
-    <div className={styles.pageContainer}>
+    <div className={styles.pageContainer} data-testid="climb-setter">
       {/* Header section: alerts + control row */}
       <div className={styles.headerSection}>
         {/* MoonBoard OCR errors */}
@@ -707,8 +706,8 @@ export default function CreateClimbForm({
       </div>
 
       {/* Board section: zoomable SVG renderer */}
-      <div className={styles.boardSectionWrapper}>
-        <ZoomableBoard resetKey={zoomResetKey} onZoomChange={handleBoardZoomChange}>
+      <div className={styles.boardSectionWrapper} data-testid="climb-setter-board">
+        <ZoomableBoard resetKey={zoomResetKey}>
           {boardType === 'aurora' && boardDetails ? (
             <div className={styles.zoomFill}>
               <BoardRenderer
