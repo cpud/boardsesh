@@ -36,13 +36,21 @@ vi.mock('../../climb-card/climb-list-item', () => ({
 }));
 
 import DraftsDrawer from '../drafts-drawer';
+import type { BoardDetails } from '@/app/lib/types';
 
-const boardDetails = {
-  board_name: 'kilter' as const,
+const boardDetails: BoardDetails = {
+  board_name: 'kilter',
   layout_id: 1,
   size_id: 2,
   set_ids: [3, 4],
-  angle: 40,
+  images_to_holds: {},
+  holdsData: [],
+  edge_left: 0,
+  edge_right: 100,
+  edge_bottom: 0,
+  edge_top: 100,
+  boardHeight: 100,
+  boardWidth: 100,
 };
 
 function renderDrawer(open = true) {
