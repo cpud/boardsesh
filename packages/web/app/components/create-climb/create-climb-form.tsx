@@ -34,6 +34,7 @@ import { useBoardBluetooth } from '../board-bluetooth-control/use-board-bluetoot
 import type { MoonBoardClimbDuplicateMatch, UpdateClimbInput } from '@boardsesh/shared-schema';
 import type { BoardDetails, Climb } from '@/app/lib/types';
 import { convertLitUpHoldsStringToMap } from '../board-renderer/util';
+import type { LitUpHoldsMap } from '../board-renderer/types';
 import { MOONBOARD_GRADES, MOONBOARD_ANGLES } from '@/app/lib/moonboard-config';
 import { getSoftFontGradeColor } from '@/app/lib/grade-colors';
 import { useColorMode } from '@/app/hooks/use-color-mode';
@@ -847,12 +848,22 @@ export default function CreateClimbForm({
   //
   // Tracks the loaded row as savedClimb so subsequent Save presses update it
   // in place rather than creating a duplicate.
+  //
+  // The create form only ever produces single-frame climbs (framesCount: 1),
+  // but a draft may originate from elsewhere with multiple frames. In that
+  // case we flatten every frame into a single map — later frames override
+  // earlier ones for the same hold id — so no holds are silently dropped.
+  // Frame separation is lost on re-save, which is acceptable because the
+  // editor has no concept of multiple frames.
   const handleLoadDraft = useCallback((climb: Climb) => {
     if (boardType !== 'aurora' || !boardDetails || !loadAuroraHolds) return;
 
     const framesMap = convertLitUpHoldsStringToMap(climb.frames, boardDetails.board_name);
-    const holdsForFrame = framesMap[0] ?? {};
-    loadAuroraHolds(holdsForFrame);
+    const frameEntries = Object.entries(framesMap)
+      .sort(([a], [b]) => Number(a) - Number(b))
+      .map(([, frame]) => frame);
+    const mergedHolds = frameEntries.reduce((acc, frame) => ({ ...acc, ...frame }), {} as LitUpHoldsMap);
+    loadAuroraHolds(mergedHolds);
     setClimbName(climb.name || '');
     setDescription(climb.description || '');
     setSavedClimb({
@@ -896,14 +907,18 @@ export default function CreateClimbForm({
         );
       }
       if (justSaved) {
+        // Pure confirmation state — no onClick so a mis-tap can't fire off
+        // another save (which would otherwise publish a draft the user
+        // thought they were just dismissing). The button flips back to the
+        // normal Save state automatically on the next edit or after the
+        // 3s timeout.
         return (
           <MuiButton
             size="small"
             variant="contained"
             color="success"
             startIcon={<CheckCircleOutlined />}
-            onClick={handlePublish}
-            disabled={isSaving}
+            disableRipple
           >
             Saved
           </MuiButton>

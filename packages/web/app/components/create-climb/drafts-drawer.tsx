@@ -11,7 +11,7 @@ import ClimbListItem from '../climb-card/climb-list-item';
 import { useColorMode } from '@/app/hooks/use-color-mode';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
-  SEARCH_CLIMBS,
+  SEARCH_DRAFT_CLIMBS,
   type ClimbSearchInputVariables,
   type ClimbSearchResponse,
 } from '@/app/lib/graphql/operations/climb-search';
@@ -130,7 +130,7 @@ const DraftsDrawer: React.FC<DraftsDrawerProps> = ({ open, onClose, boardDetails
         onlyDrafts: true,
       };
       const client = createGraphQLHttpClient(wsAuthToken);
-      const result = await client.request<ClimbSearchResponse>(SEARCH_CLIMBS, { input });
+      const result = await client.request<ClimbSearchResponse>(SEARCH_DRAFT_CLIMBS, { input });
       return result.searchClimbs.climbs;
     },
     staleTime: 30 * 1000,
