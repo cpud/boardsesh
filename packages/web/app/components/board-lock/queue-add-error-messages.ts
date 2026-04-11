@@ -3,7 +3,7 @@ import type { BoardCompatibilityResult } from '@/app/lib/board-compatibility';
 
 type QueueAddFailure = Extract<BoardCompatibilityResult, { ok: false }>;
 
-function titleCase(value: string): string {
+export function titleCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 

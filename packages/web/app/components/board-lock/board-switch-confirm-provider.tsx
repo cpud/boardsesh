@@ -9,6 +9,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import type { BoardDetails, BoardRouteIdentity } from '@/app/lib/types';
 import type { BoardLockReason } from './use-active-board-lock';
+import { titleCase } from './queue-add-error-messages';
 
 interface ConfirmArgs {
   reason: BoardLockReason;
@@ -35,8 +36,7 @@ export function useBoardSwitchConfirm(): BoardSwitchConfirmContextValue | null {
 }
 
 function formatBoardLabel(board: BoardDetails | BoardRouteIdentity): string {
-  const name = board.board_name.charAt(0).toUpperCase() + board.board_name.slice(1);
-  const parts = [name];
+  const parts = [titleCase(board.board_name)];
   if (board.layout_name) parts.push(board.layout_name);
   if (board.size_name) parts.push(board.size_name);
   return parts.join(' · ');

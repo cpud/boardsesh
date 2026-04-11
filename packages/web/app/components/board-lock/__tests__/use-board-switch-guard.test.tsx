@@ -133,6 +133,31 @@ describe('useBoardSwitchGuard', () => {
     expect(onConfirmed).toHaveBeenCalledOnce();
   });
 
+  it('still disconnects bluetooth even when onConfirmed throws', () => {
+    mockLock = {
+      lockedBoard: makeBoard({ board_name: 'kilter', layout_id: 1 }),
+      reason: 'bluetooth',
+    };
+    const { result } = renderHook(() => useBoardSwitchGuard());
+    const onConfirmed = vi.fn().mockImplementation(() => {
+      throw new Error('navigation failed');
+    });
+
+    act(() => {
+      result.current(makeTarget({ board_name: 'tension', layout_id: 2 }), onConfirmed);
+    });
+
+    const args = mockConfirmBoardSwitch.mock.calls[0][0];
+    expect(() => {
+      act(() => {
+        args.onConfirmed();
+      });
+    }).toThrow('navigation failed');
+
+    expect(mockDisconnectAll).toHaveBeenCalledOnce();
+    expect(onConfirmed).toHaveBeenCalledOnce();
+  });
+
   it('falls back to immediate call-through when the confirm provider is missing', () => {
     mockLock = {
       lockedBoard: makeBoard({ board_name: 'kilter' }),
