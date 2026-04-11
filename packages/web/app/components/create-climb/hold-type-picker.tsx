@@ -206,7 +206,7 @@ function Swatch({ label, color, isActive, isDisabled, isClear, onClick }: Swatch
       <Typography
         variant="caption"
         sx={{
-          fontSize: 8,
+          fontSize: 11,
           fontWeight: themeTokens.typography.fontWeight.medium,
           lineHeight: 1,
           color: 'text.primary',
