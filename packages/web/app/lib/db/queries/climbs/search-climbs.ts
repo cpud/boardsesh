@@ -145,7 +145,7 @@ export async function cachedSearchClimbs(
     sortBy: searchParams.sortBy,
     sortOrder: searchParams.sortOrder,
     name: searchParams.name,
-    setter: searchParams.settername,
+    settername: searchParams.settername,
     onlyTallClimbs: searchParams.onlyTallClimbs,
     holdsFilter: searchParams.holdsFilter,
     hideAttempted: searchParams.hideAttempted,
