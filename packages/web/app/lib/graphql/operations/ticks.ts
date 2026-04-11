@@ -106,6 +106,8 @@ export const GET_USER_ASCENTS_FEED = gql`
         quality
         difficulty
         difficultyName
+        consensusDifficulty
+        consensusDifficultyName
         isBenchmark
         comment
         climbedAt
@@ -132,6 +134,8 @@ export interface AscentFeedItem {
   quality: number | null;
   difficulty: number | null;
   difficultyName: string | null;
+  consensusDifficulty: number | null;
+  consensusDifficultyName: string | null;
   isBenchmark: boolean;
   comment: string;
   climbedAt: string;
@@ -144,6 +148,23 @@ export interface GetUserAscentsFeedQueryVariables {
   input?: {
     limit?: number;
     offset?: number;
+    boardType?: string;
+    layoutIds?: number[];
+    status?: 'flash' | 'send' | 'attempt';
+    statusMode?: 'both' | 'send' | 'attempt';
+    flashOnly?: boolean;
+    climbName?: string;
+    sortBy?: 'recent' | 'hardest' | 'easiest' | 'mostAttempts' | 'climbName' | 'loggedGrade' | 'consensusGrade' | 'date' | 'attemptCount';
+    sortOrder?: 'asc' | 'desc';
+    secondarySortBy?: 'climbName' | 'loggedGrade' | 'consensusGrade' | 'date' | 'attemptCount';
+    secondarySortOrder?: 'asc' | 'desc';
+    minDifficulty?: number;
+    maxDifficulty?: number;
+    minAngle?: number;
+    maxAngle?: number;
+    benchmarkOnly?: boolean;
+    fromDate?: string;
+    toDate?: string;
   };
 }
 
@@ -294,5 +315,55 @@ export interface GetUserProfileStatsQueryResponse {
   userProfileStats: {
     totalDistinctClimbs: number;
     layoutStats: LayoutStats[];
+  };
+}
+
+// ============================================
+// Tick Mutation Operations
+// ============================================
+
+export const UPDATE_TICK = gql`
+  mutation UpdateTick($uuid: ID!, $input: UpdateTickInput!) {
+    updateTick(uuid: $uuid, input: $input) {
+      uuid
+      status
+      attemptCount
+      quality
+      difficulty
+      isBenchmark
+      comment
+      updatedAt
+    }
+  }
+`;
+
+export interface DeleteTickVariables {
+  uuid: string;
+}
+
+export interface UpdateTickInput {
+  status?: 'flash' | 'send' | 'attempt';
+  attemptCount?: number;
+  quality?: number | null;
+  difficulty?: number | null;
+  isBenchmark?: boolean;
+  comment?: string;
+}
+
+export interface UpdateTickVariables {
+  uuid: string;
+  input: UpdateTickInput;
+}
+
+export interface UpdateTickResponse {
+  updateTick: {
+    uuid: string;
+    status: string;
+    attemptCount: number;
+    quality: number | null;
+    difficulty: number | null;
+    isBenchmark: boolean;
+    comment: string;
+    updatedAt: string;
   };
 }

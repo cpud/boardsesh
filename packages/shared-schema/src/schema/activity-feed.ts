@@ -33,6 +33,10 @@ export const activityFeedTypeDefs = /* GraphQL */ `
     difficulty: Int
     "Human-readable difficulty name"
     difficultyName: String
+    "Consensus difficulty rounded to the nearest grade ID"
+    consensusDifficulty: Int
+    "Human-readable consensus difficulty name"
+    consensusDifficultyName: String
     "Whether this is a benchmark climb"
     isBenchmark: Boolean!
     "Comment"
@@ -118,6 +122,40 @@ export const activityFeedTypeDefs = /* GraphQL */ `
     limit: Int
     "Number of items to skip"
     offset: Int
+    "Optional board type filter (kilter, tension, moonboard)"
+    boardType: String
+    "Optional layout filters within the selected board type"
+    layoutIds: [Int!]
+    "Legacy status filter (flash, send, attempt)"
+    status: String
+    "Status mode filter: both, send, attempt"
+    statusMode: String
+    "When true, only include flashes within the selected status mode"
+    flashOnly: Boolean
+    "Optional climb name search (case-insensitive partial match)"
+    climbName: String
+    "Optional minimum difficulty filter (difficulty_id)"
+    minDifficulty: Int
+    "Optional maximum difficulty filter (difficulty_id)"
+    maxDifficulty: Int
+    "Optional minimum wall angle filter"
+    minAngle: Int
+    "Optional maximum wall angle filter"
+    maxAngle: Int
+    "When true, only include benchmark climbs"
+    benchmarkOnly: Boolean
+    "Primary sort field"
+    sortBy: String
+    "Primary sort order: desc (default) or asc"
+    sortOrder: String
+    "Optional secondary sort field"
+    secondarySortBy: String
+    "Optional secondary sort order"
+    secondarySortOrder: String
+    "Optional start date filter (ISO date string, inclusive)"
+    fromDate: String
+    "Optional end date filter (ISO date string, inclusive)"
+    toDate: String
   }
 
   """

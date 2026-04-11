@@ -124,6 +124,12 @@ export const mutationsTypeDefs = /* GraphQL */ `
     """
     deleteTick(uuid: ID!): Boolean!
 
+    """
+    Update an existing tick. Only the owner can update their own ticks.
+    """
+    updateTick(uuid: ID!, input: UpdateTickInput!): Tick!
+
+
     # ============================================
     # Climb Mutations (require auth)
     # ============================================

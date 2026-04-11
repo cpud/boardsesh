@@ -1,4 +1,4 @@
-import { eq, and, desc, inArray, sql, count } from 'drizzle-orm';
+import { eq, and, desc, asc, inArray, sql, count, ilike, gte, lte } from 'drizzle-orm';
 import type { ConnectionContext, BoardName } from '@boardsesh/shared-schema';
 import { SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
 import { db } from '../../../db/client';
@@ -132,7 +132,33 @@ export const tickQueries = {
    */
   userAscentsFeed: async (
     _: unknown,
-    { userId, input }: { userId: string; input?: { limit?: number; offset?: number } }
+    {
+      userId,
+      input,
+    }: {
+      userId: string;
+      input?: {
+        limit?: number;
+        offset?: number;
+        boardType?: string;
+        layoutIds?: number[];
+        status?: string;
+        statusMode?: string;
+        flashOnly?: boolean;
+        climbName?: string;
+        sortBy?: string;
+        sortOrder?: string;
+        secondarySortBy?: string;
+        secondarySortOrder?: string;
+        minDifficulty?: number;
+        maxDifficulty?: number;
+        minAngle?: number;
+        maxAngle?: number;
+        benchmarkOnly?: boolean;
+        fromDate?: string;
+        toDate?: string;
+      };
+    }
   ): Promise<{
     items: unknown[];
     totalCount: number;
@@ -142,17 +168,67 @@ export const tickQueries = {
     const validatedInput = validateInput(AscentFeedInputSchema, input || {}, 'input');
     const limit = validatedInput.limit ?? 20;
     const offset = validatedInput.offset ?? 0;
+    const boardType = validatedInput.boardType;
+    const layoutIds = validatedInput.layoutIds;
+    const climbName = validatedInput.climbName;
+    const sortBy = validatedInput.sortBy ?? 'recent';
+    const sortOrder = validatedInput.sortOrder ?? 'desc';
+    const secondarySortBy = validatedInput.secondarySortBy;
+    const secondarySortOrder = validatedInput.secondarySortOrder ?? 'desc';
+    const minDifficulty = validatedInput.minDifficulty;
+    const maxDifficulty = validatedInput.maxDifficulty;
+    const minAngle = validatedInput.minAngle;
+    const maxAngle = validatedInput.maxAngle;
+    const benchmarkOnly = validatedInput.benchmarkOnly ?? false;
+    const fromDate = validatedInput.fromDate;
+    const toDate = validatedInput.toDate;
+    const legacyStatus = validatedInput.status;
+    const statusMode = validatedInput.statusMode ?? (legacyStatus === 'attempt' ? 'attempt' : legacyStatus ? 'send' : 'both');
+    const flashOnly = validatedInput.flashOnly ?? (legacyStatus === 'flash');
 
-    // Get total count of ticks for this user
-    const countResult = await db
-      .select({ count: count() })
-      .from(dbSchema.boardseshTicks)
-      .where(eq(dbSchema.boardseshTicks.userId, userId));
+    const consensusDifficultyExpr = sql<number | null>`ROUND(${dbSchema.boardClimbStats.displayDifficulty})`;
+    const consensusDifficultyNameExpr = sql<string | null>`(
+      SELECT bdg.boulder_name
+      FROM board_difficulty_grades bdg
+      WHERE bdg.board_type = ${dbSchema.boardseshTicks.boardType}
+        AND bdg.difficulty = ROUND(${dbSchema.boardClimbStats.displayDifficulty})
+      LIMIT 1
+    )`;
+    const resolvedBenchmarkExpr = sql<boolean>`CASE
+      WHEN COALESCE(${dbSchema.boardClimbStats.benchmarkDifficulty}, 0) > 0 OR ${dbSchema.boardseshTicks.isBenchmark} = true THEN true
+      ELSE false
+    END`;
 
-    const totalCount = Number(countResult[0]?.count || 0);
+    // Build shared WHERE conditions
+    const tickConditions = [
+      eq(dbSchema.boardseshTicks.userId, userId),
+      ...(boardType ? [eq(dbSchema.boardseshTicks.boardType, boardType)] : []),
+      ...(minDifficulty !== undefined ? [gte(dbSchema.boardseshTicks.difficulty, minDifficulty)] : []),
+      ...(maxDifficulty !== undefined ? [lte(dbSchema.boardseshTicks.difficulty, maxDifficulty)] : []),
+      ...(minAngle !== undefined ? [gte(dbSchema.boardseshTicks.angle, minAngle)] : []),
+      ...(maxAngle !== undefined ? [lte(dbSchema.boardseshTicks.angle, maxAngle)] : []),
+      ...(fromDate ? [gte(dbSchema.boardseshTicks.climbedAt, fromDate)] : []),
+      ...(toDate ? [lte(dbSchema.boardseshTicks.climbedAt, toDate + 'T23:59:59.999Z')] : []),
+    ];
 
-    // Fetch ticks with climb and grade data using JOINs (eliminates N+1 queries)
-    const results = await db
+    if (statusMode === 'attempt') {
+      tickConditions.push(eq(dbSchema.boardseshTicks.status, 'attempt'));
+    } else if (statusMode === 'send') {
+      tickConditions.push(
+        flashOnly
+          ? eq(dbSchema.boardseshTicks.status, 'flash')
+          : inArray(dbSchema.boardseshTicks.status, ['flash', 'send'])
+      );
+    } else if (flashOnly) {
+      tickConditions.push(inArray(dbSchema.boardseshTicks.status, ['flash', 'attempt']));
+    }
+
+    if (benchmarkOnly) {
+      tickConditions.push(sql`(${resolvedBenchmarkExpr}) = true`);
+    }
+
+    // Base query with JOINs (shared by count and data queries)
+    const baseQuery = db
       .select({
         tick: dbSchema.boardseshTicks,
         climbName: dbSchema.boardClimbs.name,
@@ -160,6 +236,9 @@ export const tickQueries = {
         layoutId: dbSchema.boardClimbs.layoutId,
         frames: dbSchema.boardClimbs.frames,
         difficultyName: dbSchema.boardDifficultyGrades.boulderName,
+        consensusDifficulty: consensusDifficultyExpr,
+        consensusDifficultyName: consensusDifficultyNameExpr,
+        resolvedIsBenchmark: resolvedBenchmarkExpr,
       })
       .from(dbSchema.boardseshTicks)
       .leftJoin(
@@ -170,19 +249,107 @@ export const tickQueries = {
         )
       )
       .leftJoin(
+        dbSchema.boardClimbStats,
+        and(
+          eq(dbSchema.boardseshTicks.climbUuid, dbSchema.boardClimbStats.climbUuid),
+          eq(dbSchema.boardseshTicks.boardType, dbSchema.boardClimbStats.boardType),
+          eq(dbSchema.boardseshTicks.angle, dbSchema.boardClimbStats.angle)
+        )
+      )
+      .leftJoin(
         dbSchema.boardDifficultyGrades,
         and(
           eq(dbSchema.boardseshTicks.difficulty, dbSchema.boardDifficultyGrades.difficulty),
           eq(dbSchema.boardseshTicks.boardType, dbSchema.boardDifficultyGrades.boardType)
         )
+      );
+
+    // Full conditions including climb name filter (requires JOIN)
+    const allConditions = [
+      ...tickConditions,
+      ...(layoutIds && layoutIds.length > 0 ? [inArray(dbSchema.boardClimbs.layoutId, layoutIds)] : []),
+      ...(climbName ? [ilike(dbSchema.boardClimbs.name, `%${climbName}%`)] : []),
+    ];
+
+    // Get total count
+    const countQuery = db
+      .select({ count: count() })
+      .from(dbSchema.boardseshTicks)
+      .leftJoin(
+        dbSchema.boardClimbs,
+        and(
+          eq(dbSchema.boardseshTicks.climbUuid, dbSchema.boardClimbs.uuid),
+          eq(dbSchema.boardseshTicks.boardType, dbSchema.boardClimbs.boardType)
+        )
       )
-      .where(eq(dbSchema.boardseshTicks.userId, userId))
-      .orderBy(desc(dbSchema.boardseshTicks.climbedAt))
+      .leftJoin(
+        dbSchema.boardClimbStats,
+        and(
+          eq(dbSchema.boardseshTicks.climbUuid, dbSchema.boardClimbStats.climbUuid),
+          eq(dbSchema.boardseshTicks.boardType, dbSchema.boardClimbStats.boardType),
+          eq(dbSchema.boardseshTicks.angle, dbSchema.boardClimbStats.angle)
+        )
+      )
+      .where(and(...allConditions));
+
+    const countResult = await countQuery;
+    const totalCount = Number(countResult[0]?.count || 0);
+
+    const buildOrderClause = (field: string, direction: string) => {
+      const dir = direction === 'asc' ? 'asc' : 'desc';
+      switch (field) {
+        case 'climbName':
+          return sql`${dbSchema.boardClimbs.name} ${sql.raw(dir)} nulls last`;
+        case 'loggedGrade':
+        case 'easiest':
+        case 'hardest':
+          return sql`${dbSchema.boardseshTicks.difficulty} ${sql.raw(dir)} nulls last`;
+        case 'consensusGrade':
+          return sql`${consensusDifficultyExpr} ${sql.raw(dir)} nulls last`;
+        case 'attemptCount':
+        case 'mostAttempts':
+          return sql`${dbSchema.boardseshTicks.attemptCount} ${sql.raw(dir)} nulls last`;
+        case 'date':
+        case 'recent':
+        default:
+          return sql`${dbSchema.boardseshTicks.climbedAt} ${sql.raw(dir)} nulls last`;
+      }
+    };
+
+    const resolvedPrimarySort =
+      sortBy === 'recent'
+        ? { field: 'date', direction: sortOrder }
+        : sortBy === 'hardest'
+          ? { field: 'consensusGrade', direction: 'desc' }
+          : sortBy === 'easiest'
+            ? { field: 'loggedGrade', direction: 'asc' }
+            : sortBy === 'mostAttempts'
+              ? { field: 'attemptCount', direction: 'desc' }
+              : { field: sortBy, direction: sortOrder };
+
+    const resolvedSecondarySort =
+      sortBy === 'hardest'
+        ? { field: 'loggedGrade', direction: 'desc' }
+        : secondarySortBy
+          ? { field: secondarySortBy, direction: secondarySortOrder }
+          : null;
+
+    const orderClauses = [
+      buildOrderClause(resolvedPrimarySort.field, resolvedPrimarySort.direction),
+      ...(resolvedSecondarySort ? [buildOrderClause(resolvedSecondarySort.field, resolvedSecondarySort.direction)] : []),
+      desc(dbSchema.boardseshTicks.climbedAt),
+      desc(dbSchema.boardseshTicks.uuid),
+    ];
+
+    // Fetch paginated results
+    const results = await baseQuery
+      .where(and(...allConditions))
+      .orderBy(...orderClauses)
       .limit(limit)
       .offset(offset);
 
     // Map results to response format
-    const items = results.map(({ tick, climbName, setterUsername, layoutId, frames, difficultyName }) => ({
+    const items = results.map(({ tick, climbName, setterUsername, layoutId, frames, difficultyName, consensusDifficulty, consensusDifficultyName, resolvedIsBenchmark }) => ({
       uuid: tick.uuid,
       climbUuid: tick.climbUuid,
       climbName: climbName || 'Unknown Climb',
@@ -196,7 +363,9 @@ export const tickQueries = {
       quality: tick.quality,
       difficulty: tick.difficulty,
       difficultyName,
-      isBenchmark: tick.isBenchmark,
+      consensusDifficulty: consensusDifficulty !== null && consensusDifficulty !== undefined ? Number(consensusDifficulty) : null,
+      consensusDifficultyName,
+      isBenchmark: Boolean(resolvedIsBenchmark),
       comment: tick.comment || '',
       climbedAt: tick.climbedAt,
       frames,

@@ -5,7 +5,7 @@ import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { sessions } from '../../../db/schema';
 import { requireAuthenticated, validateInput } from '../shared/helpers';
-import { SaveTickInputSchema } from '../../../validation/schemas';
+import { SaveTickInputSchema, UpdateTickInputSchema } from '../../../validation/schemas';
 import { resolveBoardFromPath } from '../social/boards';
 import { publishSocialEvent } from '../../../events';
 import { assignInferredSession } from '../../../jobs/inferred-session-builder';
@@ -201,6 +201,69 @@ export const tickMutations = {
     }
 
     return result;
+  },
+
+  /**
+   * Update an existing tick. Only the owner can update their own ticks.
+   */
+  updateTick: async (
+    _: unknown,
+    { uuid, input }: { uuid: string; input: unknown },
+    ctx: ConnectionContext
+  ): Promise<unknown> => {
+    requireAuthenticated(ctx);
+    const userId = ctx.userId!;
+
+    const validatedInput = validateInput(UpdateTickInputSchema, input, 'input');
+
+    // Verify ownership and get current tick
+    const existing = await db
+      .select()
+      .from(dbSchema.boardseshTicks)
+      .where(eq(dbSchema.boardseshTicks.uuid, uuid))
+      .limit(1);
+
+    if (existing.length === 0) {
+      throw new Error('Tick not found');
+    }
+    if (existing[0].userId !== userId) {
+      throw new Error('Not authorized to update this tick');
+    }
+
+    const updates: Record<string, unknown> = {
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (validatedInput.status !== undefined) updates.status = validatedInput.status;
+    if (validatedInput.attemptCount !== undefined) updates.attemptCount = validatedInput.attemptCount;
+    if (validatedInput.quality !== undefined) updates.quality = validatedInput.quality;
+    if (validatedInput.difficulty !== undefined) updates.difficulty = validatedInput.difficulty;
+    if (validatedInput.isBenchmark !== undefined) updates.isBenchmark = validatedInput.isBenchmark;
+    if (validatedInput.comment !== undefined) updates.comment = validatedInput.comment;
+
+    const [updated] = await db
+      .update(dbSchema.boardseshTicks)
+      .set(updates)
+      .where(eq(dbSchema.boardseshTicks.uuid, uuid))
+      .returning();
+
+    return {
+      uuid: updated.uuid,
+      userId: updated.userId,
+      boardType: updated.boardType,
+      climbUuid: updated.climbUuid,
+      angle: updated.angle,
+      isMirror: updated.isMirror,
+      status: updated.status,
+      attemptCount: updated.attemptCount,
+      quality: updated.quality,
+      difficulty: updated.difficulty,
+      isBenchmark: updated.isBenchmark,
+      comment: updated.comment || '',
+      climbedAt: updated.climbedAt,
+      createdAt: updated.createdAt,
+      updatedAt: updated.updatedAt,
+    };
   },
 };
 
