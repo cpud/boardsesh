@@ -76,13 +76,18 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
   // Otherwise, disable swipe when showCloseButton is explicitly false.
   const effectiveSwipeEnabled = swipeEnabled ?? (showCloseButton !== false);
 
-  const rootClassName = showCloseButtonOnMobile
-    ? (userRootClassName ?? className ?? '')
-    : userRootClassName
-      ? `${styles.mobileHideClose} ${userRootClassName}`
-      : className
-        ? `${styles.mobileHideClose} ${className}`
-        : styles.mobileHideClose;
+  // `rootClassName` and `className` are accepted as aliases and are not meant
+  // to be merged — prefer `rootClassName`, fall back to `className`. When
+  // the consumer opts out via `showCloseButtonOnMobile`, we skip applying
+  // the `mobileHideClose` CSS module class that otherwise hides the close
+  // button on viewports <768px.
+  const userClasses = userRootClassName ?? className;
+  const rootClassName = [
+    showCloseButtonOnMobile ? null : styles.mobileHideClose,
+    userClasses,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const horizontalDragHandle = useMemo(() => showDragHandle ? (
     <div className={styles.dragHandleZoneHorizontal}>

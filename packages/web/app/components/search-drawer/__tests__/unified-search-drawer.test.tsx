@@ -27,20 +27,41 @@ vi.mock('@/app/hooks/use-ws-auth-token', () => ({
   useWsAuthToken: () => ({ token: null }),
 }));
 
+// Track mount counts so we can assert that a category's result component was
+// never transiently rendered (the zero-flash guarantee).
+const renderCounts = {
+  users: 0,
+  boards: 0,
+  playlists: 0,
+  gyms: 0,
+};
+
 vi.mock('@/app/components/social/user-search-results', () => ({
-  default: () => <div data-testid="user-search-results" />,
+  default: () => {
+    renderCounts.users += 1;
+    return <div data-testid="user-search-results" />;
+  },
 }));
 
 vi.mock('@/app/components/social/board-search-results', () => ({
-  default: () => <div data-testid="board-search-results" />,
+  default: () => {
+    renderCounts.boards += 1;
+    return <div data-testid="board-search-results" />;
+  },
 }));
 
 vi.mock('@/app/components/social/playlist-search-results', () => ({
-  default: () => <div data-testid="playlist-search-results" />,
+  default: () => {
+    renderCounts.playlists += 1;
+    return <div data-testid="playlist-search-results" />;
+  },
 }));
 
 vi.mock('@/app/components/social/gym-search-results', () => ({
-  default: () => <div data-testid="gym-search-results" />,
+  default: () => {
+    renderCounts.gyms += 1;
+    return <div data-testid="gym-search-results" />;
+  },
 }));
 
 import UnifiedSearchDrawer from '../unified-search-drawer';
@@ -56,6 +77,10 @@ const mockBoardDetails = {
 describe('UnifiedSearchDrawer', () => {
   beforeEach(() => {
     swipeableDrawerProps.length = 0;
+    renderCounts.users = 0;
+    renderCounts.boards = 0;
+    renderCounts.playlists = 0;
+    renderCounts.gyms = 0;
     vi.clearAllMocks();
   });
 
@@ -111,6 +136,23 @@ describe('UnifiedSearchDrawer', () => {
     // The users search placeholder is shown, confirming the category fell back.
     expect(screen.getByPlaceholderText('Search climbers...')).toBeTruthy();
     expect(screen.getByTestId('user-search-results')).toBeTruthy();
+  });
+
+  it('never transiently mounts the wrong category results on first render (no flash)', () => {
+    render(
+      <UnifiedSearchDrawer
+        open={true}
+        onClose={vi.fn()}
+        defaultCategory="boards"
+        allowedCategories={['users']}
+      />,
+    );
+
+    // If the fallback ran as a post-render effect, BoardSearchResults would
+    // mount once before unmounting in favor of UserSearchResults. Deriving the
+    // effective category during render avoids that mount entirely.
+    expect(renderCounts.boards).toBe(0);
+    expect(renderCounts.users).toBeGreaterThan(0);
   });
 
   it('forwards showCloseButton and showCloseButtonOnMobile to SwipeableDrawer', () => {

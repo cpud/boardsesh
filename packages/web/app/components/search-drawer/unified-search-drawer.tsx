@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
@@ -47,26 +47,19 @@ export default function UnifiedSearchDrawer({
   showCloseButton = false,
 }: UnifiedSearchDrawerProps) {
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState<SearchCategory>(defaultCategory);
+  const [selectedCategory, setSelectedCategory] = useState<SearchCategory>(defaultCategory);
   const { token } = useWsAuthToken();
-
-  const handleCategoryChange = (newCategory: SearchCategory) => {
-    setCategory(newCategory);
-    setQuery('');
-  };
 
   const handleClose = useCallback(() => {
     onClose();
     setQuery('');
   }, [onClose]);
 
-  const isClimbMode = category === 'climbs' && !!boardDetails && !!renderClimbSearch;
-
-  // Derive once per relevant input change. Use a stable string key for the
-  // allow-list so callers passing a fresh array literal each render (the
-  // common case, e.g. `allowedCategories={['climbs']}`) don't invalidate the
-  // memo — which would otherwise re-run the category-fallback effect every
-  // render.
+  // Stable string key for the allow-list. Callers commonly pass a fresh
+  // array literal every render (e.g. `allowedCategories={['climbs']}`),
+  // which would otherwise break memoization of `visibleCategories`. Joining
+  // on a character that can't appear in a `SearchCategory` literal gives us
+  // a cheap value-equality key without a deep-compare helper.
   const hasBoardDetails = !!boardDetails;
   const allowedCategoriesKey = allowedCategories ? allowedCategories.join('|') : '';
   const visibleCategories = useMemo<{ key: SearchCategory; label: string }[]>(() => {
@@ -85,14 +78,23 @@ export default function UnifiedSearchDrawer({
       .map(({ key, label }) => ({ key, label }));
   }, [hasBoardDetails, allowedCategoriesKey]);
 
-  const showCategoryChips = visibleCategories.length > 1;
+  // Derive the effective category during render instead of correcting it in
+  // a post-render effect. This avoids a one-frame flash of the wrong results
+  // when `selectedCategory` isn't (or no longer is) in `visibleCategories`.
+  const category: SearchCategory = useMemo(() => {
+    if (visibleCategories.length === 0) return selectedCategory;
+    if (visibleCategories.some((c) => c.key === selectedCategory)) return selectedCategory;
+    return visibleCategories[0].key;
+  }, [selectedCategory, visibleCategories]);
 
-  useEffect(() => {
-    if (visibleCategories.length === 0) return;
-    if (!visibleCategories.some((c) => c.key === category)) {
-      setCategory(visibleCategories[0].key);
-    }
-  }, [category, visibleCategories]);
+  const handleCategoryChange = (newCategory: SearchCategory) => {
+    setSelectedCategory(newCategory);
+    setQuery('');
+  };
+
+  const isClimbMode = category === 'climbs' && !!boardDetails && !!renderClimbSearch;
+
+  const showCategoryChips = visibleCategories.length > 1;
 
   return (
     <SwipeableDrawer
