@@ -15,6 +15,9 @@ import type { BoardDetails, Angle, Climb, SearchRequestPagination } from '@/app/
 import type { ClimbQueueItem } from './types';
 import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { canAddClimbToBoard } from '@/app/lib/board-compatibility';
+import { useSnackbar } from '../providers/snackbar-provider';
+import { queueAddErrorMessage } from '../board-lock/queue-add-error-messages';
 
 const LiveActivityBridge = dynamic(
   () => import('@/app/lib/live-activity/live-activity-bridge'),
@@ -83,6 +86,7 @@ function usePersistentSessionQueueAdapter(): {
   syncFromInjected: (q: ClimbQueueItem[], current: ClimbQueueItem | null, boardPath: string, bd: BoardDetails) => void;
 } {
   const ps = usePersistentSession();
+  const { showMessage } = useSnackbar();
 
   const isParty = !!ps.activeSession;
   const queue = isParty ? ps.queue : ps.localQueue;
@@ -115,8 +119,22 @@ function usePersistentSessionQueueAdapter(): {
   }, [boardDetails, angle]);
 
   // --- Ref holding latest values so action callbacks can be stable ---
-  const latestRef = useRef({ queue, currentClimbQueueItem, boardDetails, baseBoardPath, ps });
-  latestRef.current = { queue, currentClimbQueueItem, boardDetails, baseBoardPath, ps };
+  const latestRef = useRef({ queue, currentClimbQueueItem, boardDetails, baseBoardPath, ps, showMessage });
+  latestRef.current = { queue, currentClimbQueueItem, boardDetails, baseBoardPath, ps, showMessage };
+
+  // Validates a climb against the locked board (session) or the current
+  // adapter board. Shows a Snackbar error and returns false if not
+  // compatible. Message formatting lives in `queue-add-error-messages`
+  // so the board-route and root-level entry points speak the same copy.
+  const validateClimbForQueue = useCallback((climb: Climb): boolean => {
+    const r = latestRef.current;
+    const target = r.ps.activeSession?.boardDetails ?? r.boardDetails;
+    if (!target) return true;
+    const result = canAddClimbToBoard(climb, target);
+    if (result.ok) return true;
+    r.showMessage(queueAddErrorMessage(climb, target, result), 'error');
+    return false;
+  }, []);
 
   const getNextClimbQueueItem = useCallback((): ClimbQueueItem | null => {
     const r = latestRef.current;
@@ -146,6 +164,7 @@ function usePersistentSessionQueueAdapter(): {
     (climb: Climb) => {
       const r = latestRef.current;
       if (!r.boardDetails) return;
+      if (!validateClimbForQueue(climb)) return;
       const newItem: ClimbQueueItem = {
         climb,
         addedBy: null,
@@ -156,7 +175,7 @@ function usePersistentSessionQueueAdapter(): {
       const current = r.currentClimbQueueItem ?? newItem;
       r.ps.setLocalQueueState(newQueue, current, r.baseBoardPath, r.boardDetails);
     },
-    [],
+    [validateClimbForQueue],
   );
 
   const removeFromQueue = useCallback(
@@ -202,6 +221,7 @@ function usePersistentSessionQueueAdapter(): {
     (climb: Climb) => {
       const r = latestRef.current;
       if (!r.boardDetails) return;
+      if (!validateClimbForQueue(climb)) return;
       const newItem: ClimbQueueItem = {
         climb,
         addedBy: null,
@@ -219,7 +239,7 @@ function usePersistentSessionQueueAdapter(): {
       }
       r.ps.setLocalQueueState(newQueue, newItem, r.baseBoardPath, r.boardDetails);
     },
-    [],
+    [validateClimbForQueue],
   );
 
   // No-op functions for fields not used by the bottom bar
