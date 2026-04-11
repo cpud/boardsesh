@@ -147,7 +147,7 @@ describe('DraftsDrawer', () => {
     });
   });
 
-  it('navigates to the climb view and closes when a draft is selected', async () => {
+  it('navigates to the climb view and closes when no onLoadDraft is provided', async () => {
     const onClose = vi.fn();
     mockRequest.mockResolvedValue({
       searchClimbs: {
@@ -171,6 +171,37 @@ describe('DraftsDrawer', () => {
     const pushedUrl: string = mockPush.mock.calls[0][0];
     expect(pushedUrl).toContain('kilter');
     expect(pushedUrl).toContain('draft-1');
+  });
+
+  it('calls onLoadDraft with the climb and closes instead of navigating', async () => {
+    const onClose = vi.fn();
+    const onLoadDraft = vi.fn();
+    mockRequest.mockResolvedValue({
+      searchClimbs: {
+        climbs: [{ uuid: 'draft-1', name: 'My Draft', frames: 'p1r42', angle: 40 }],
+        hasMore: false,
+      },
+    });
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <DraftsDrawer
+          open
+          onClose={onClose}
+          boardDetails={boardDetails}
+          angle={40}
+          onLoadDraft={onLoadDraft}
+        />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => screen.getByTestId('climb-item-draft-1'));
+    fireEvent.click(screen.getByTestId('climb-item-draft-1'));
+
+    expect(onLoadDraft).toHaveBeenCalledTimes(1);
+    expect(onLoadDraft.mock.calls[0][0]).toMatchObject({ uuid: 'draft-1', name: 'My Draft' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it('passes onlyDrafts: true in the query variables', async () => {

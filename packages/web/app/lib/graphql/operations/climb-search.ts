@@ -1,7 +1,13 @@
 import { gql } from 'graphql-request';
 import type { Climb, HoldState } from '@/app/lib/types';
 
-// Slim fragment for search/list views (no description or mirrored - unused in list/card)
+// Slim fragment for search/list views. Intentionally omits `description` to
+// keep the list payload small — descriptions can be long and no list UI
+// renders them. The drafts drawer uses `SEARCH_DRAFT_CLIMBS` below, which
+// extends this fragment with `description` so a draft can be loaded back
+// into the create form in a single round-trip.
+// published_at/created_at are used by the create form to enforce the 24h
+// post-publish edit window.
 const CLIMB_SEARCH_FIELDS = `
   uuid
   setter_username
@@ -16,6 +22,13 @@ const CLIMB_SEARCH_FIELDS = `
   benchmark_difficulty
   is_draft
   is_no_match
+  published_at
+  created_at
+`;
+
+const CLIMB_DRAFT_FIELDS = `
+  ${CLIMB_SEARCH_FIELDS}
+  description
 `;
 
 // Full fragment for single-climb views that need all fields
@@ -42,6 +55,21 @@ export const SEARCH_CLIMBS = gql`
     searchClimbs(input: $input) {
       climbs {
         ${CLIMB_SEARCH_FIELDS}
+      }
+      hasMore
+    }
+  }
+`;
+
+// Used by the drafts drawer only — fetches `description` alongside the
+// usual fields so tapping a draft can populate the create form without a
+// second round-trip. Kept separate so list and search queries don't pay
+// for the extra payload.
+export const SEARCH_DRAFT_CLIMBS = gql`
+  query SearchDraftClimbs($input: ClimbSearchInput!) {
+    searchClimbs(input: $input) {
+      climbs {
+        ${CLIMB_DRAFT_FIELDS}
       }
       hasMore
     }

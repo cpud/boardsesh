@@ -11,7 +11,7 @@ import ClimbListItem from '../climb-card/climb-list-item';
 import { useColorMode } from '@/app/hooks/use-color-mode';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
-  SEARCH_CLIMBS,
+  SEARCH_DRAFT_CLIMBS,
   type ClimbSearchInputVariables,
   type ClimbSearchResponse,
 } from '@/app/lib/graphql/operations/climb-search';
@@ -35,9 +35,16 @@ export interface DraftsDrawerProps {
   onClose: () => void;
   boardDetails: BoardDetails;
   angle: number;
+  /**
+   * Called when the user taps a draft. When provided, the drawer delegates to
+   * the host (typically the create form) so the draft's holds, name, and
+   * description are loaded back into the editor. When omitted, the drawer
+   * falls back to navigating to the climb view page.
+   */
+  onLoadDraft?: (climb: Climb) => void;
 }
 
-const DraftsDrawer: React.FC<DraftsDrawerProps> = ({ open, onClose, boardDetails, angle }) => {
+const DraftsDrawer: React.FC<DraftsDrawerProps> = ({ open, onClose, boardDetails, angle, onLoadDraft }) => {
   const router = useRouter();
   const { mode } = useColorMode();
   const isDark = mode === 'dark';
@@ -123,7 +130,7 @@ const DraftsDrawer: React.FC<DraftsDrawerProps> = ({ open, onClose, boardDetails
         onlyDrafts: true,
       };
       const client = createGraphQLHttpClient(wsAuthToken);
-      const result = await client.request<ClimbSearchResponse>(SEARCH_CLIMBS, { input });
+      const result = await client.request<ClimbSearchResponse>(SEARCH_DRAFT_CLIMBS, { input });
       return result.searchClimbs.climbs;
     },
     staleTime: 30 * 1000,
@@ -134,6 +141,12 @@ const DraftsDrawer: React.FC<DraftsDrawerProps> = ({ open, onClose, boardDetails
 
   const handleSelectDraft = useCallback(
     (climb: Climb) => {
+      if (onLoadDraft) {
+        onLoadDraft(climb);
+        onClose();
+        return;
+      }
+
       const url = constructClimbViewUrl(
         {
           board_name: boardDetails.board_name,
@@ -148,7 +161,7 @@ const DraftsDrawer: React.FC<DraftsDrawerProps> = ({ open, onClose, boardDetails
       onClose();
       router.push(url);
     },
-    [router, onClose, boardDetails, angle],
+    [router, onClose, boardDetails, angle, onLoadDraft],
   );
 
   // Current page pathname for ClimbListItem (used for thumbnail prefetch hints)

@@ -137,6 +137,11 @@ export function useCreateClimb(boardName: BoardName, options?: UseCreateClimbOpt
     setLitUpHoldsMap({});
   }, []);
 
+  // Replace the entire holds map in one shot (used when loading a draft back into the form).
+  const loadHolds = useCallback((next: LitUpHoldsMap) => {
+    setLitUpHoldsMap(next);
+  }, []);
+
   return {
     litUpHoldsMap,
     setHoldState,
@@ -146,5 +151,6 @@ export function useCreateClimb(boardName: BoardName, options?: UseCreateClimbOpt
     totalHolds,
     isValid,
     resetHolds,
+    loadHolds,
   };
 }
