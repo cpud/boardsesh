@@ -85,7 +85,7 @@ This plan transforms Boardsesh's UI into a Spotify-like experience with a persis
 ├────────────────────────────────────┤
 │ [T] "Current Climb" V4  [Q] [✓]  │  ← Compact now-playing bar (~45px)
 ├────────────────────────────────────┤
-│  🏠 Climb  📚 Your Library ✚ Create │
+│  🏠 Climb  📚 Discover ✚ Create │
 └────────────────────────────────────┘
 ```
 
