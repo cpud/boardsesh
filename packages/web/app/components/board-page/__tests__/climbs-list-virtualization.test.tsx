@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import type { Climb, BoardDetails } from '@/app/lib/types';
 
@@ -23,8 +23,28 @@ vi.mock('next/dynamic', () => ({
 }));
 
 vi.mock('../../climb-card/climb-list-item', () => ({
-  default: ({ climb }: { climb: Climb }) => (
+  default: ({
+    climb,
+    onSelect,
+    onThumbnailClick,
+  }: {
+    climb: Climb;
+    onSelect?: () => void;
+    onThumbnailClick?: () => void;
+  }) => (
     <div data-testid="climb-list-item" data-uuid={climb.uuid}>
+      <span
+        data-testid={`row-${climb.uuid}`}
+        role="button"
+        aria-hidden
+        onClick={() => onSelect?.()}
+      />
+      <span
+        data-testid={`thumb-${climb.uuid}`}
+        role="button"
+        aria-hidden
+        onClick={() => onThumbnailClick?.()}
+      />
       {climb.name}
     </div>
   ),
@@ -263,6 +283,65 @@ describe('ClimbsList virtualization', () => {
 
     const items = screen.getAllByTestId('climb-list-item');
     expect(items).toHaveLength(5);
+  });
+});
+
+describe('ClimbsList thumbnail vs row click', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    lastVirtualizerOpts = null;
+  });
+
+  it('row click activates the climb but does NOT open the play drawer', () => {
+    const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+    const onClimbSelect = vi.fn();
+    render(
+      <ClimbsList
+        boardDetails={makeBoardDetails()}
+        climbs={allClimbs.slice(0, 3)}
+        isFetching={false}
+        hasMore={false}
+        onLoadMore={vi.fn()}
+        onClimbSelect={onClimbSelect}
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId('row-climb-0'));
+
+    expect(onClimbSelect).toHaveBeenCalledWith(
+      expect.objectContaining({ uuid: 'climb-0' }),
+    );
+    const dispatched = dispatchSpy.mock.calls.some(
+      ([event]) => event instanceof CustomEvent && event.type === 'boardsesh:open-play-drawer',
+    );
+    expect(dispatched).toBe(false);
+    dispatchSpy.mockRestore();
+  });
+
+  it('thumbnail click activates the climb AND opens the play drawer', () => {
+    const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+    const onClimbSelect = vi.fn();
+    render(
+      <ClimbsList
+        boardDetails={makeBoardDetails()}
+        climbs={allClimbs.slice(0, 3)}
+        isFetching={false}
+        hasMore={false}
+        onLoadMore={vi.fn()}
+        onClimbSelect={onClimbSelect}
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId('thumb-climb-0'));
+
+    expect(onClimbSelect).toHaveBeenCalledWith(
+      expect.objectContaining({ uuid: 'climb-0' }),
+    );
+    const dispatched = dispatchSpy.mock.calls.some(
+      ([event]) => event instanceof CustomEvent && event.type === 'boardsesh:open-play-drawer',
+    );
+    expect(dispatched).toBe(true);
+    dispatchSpy.mockRestore();
   });
 });
 

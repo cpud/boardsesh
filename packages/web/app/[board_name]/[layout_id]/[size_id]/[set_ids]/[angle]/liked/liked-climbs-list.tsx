@@ -248,23 +248,39 @@ export default function LikedClimbsList({
     isFetching: isFetchingNextPage,
   });
 
-  const handleClimbDoubleClick = useCallback((climb: Climb) => {
+  // Row click: activates the climb but does NOT open the play drawer.
+  // Only the thumbnail (list mode) or card cover (grid mode) opens the drawer.
+  const handleClimbSelect = useCallback((climb: Climb) => {
+    setSelectedClimbUuid(climb.uuid);
+    setCurrentClimb(climb);
+  }, [setCurrentClimb]);
+
+  // Thumbnail / card-cover click: activates the climb and opens the play drawer.
+  const handleClimbOpenDrawer = useCallback((climb: Climb) => {
     setSelectedClimbUuid(climb.uuid);
     setCurrentClimb(climb);
     dispatchOpenPlayDrawer();
-    track('Liked Climb Card Double Clicked', {
+    track('Liked Climb Card Clicked', {
       climbUuid: climb.uuid,
       angle: climb.angle,
     });
   }, [setCurrentClimb]);
 
-  const climbHandlersMap = useMemo(() => {
+  const selectHandlersMap = useMemo(() => {
     const map = new Map<string, () => void>();
     visibleClimbs.forEach(climb => {
-      map.set(climb.uuid, () => handleClimbDoubleClick(climb));
+      map.set(climb.uuid, () => handleClimbSelect(climb));
     });
     return map;
-  }, [visibleClimbs, handleClimbDoubleClick]);
+  }, [visibleClimbs, handleClimbSelect]);
+
+  const openDrawerHandlersMap = useMemo(() => {
+    const map = new Map<string, () => void>();
+    visibleClimbs.forEach(climb => {
+      map.set(climb.uuid, () => handleClimbOpenDrawer(climb));
+    });
+    return map;
+  }, [visibleClimbs, handleClimbOpenDrawer]);
 
   const sentinelStyle = useMemo(
     () => ({ minHeight: '20px', marginTop: '16px' }),
@@ -357,7 +373,7 @@ export default function LikedClimbsList({
               <ClimbCard
                 climb={climb}
                 boardDetails={boardDetails}
-                onCoverClick={climbHandlersMap.get(climb.uuid)}
+                onCoverClick={openDrawerHandlersMap.get(climb.uuid)}
               />
             </Box>
           ))}
@@ -374,8 +390,8 @@ export default function LikedClimbsList({
               boardDetails={boardDetails}
               pathname={pathname}
               isDark={isDark}
-              onSelect={climbHandlersMap.get(climb.uuid)}
-              onThumbnailClick={climbHandlersMap.get(climb.uuid)}
+              onSelect={selectHandlersMap.get(climb.uuid)}
+              onThumbnailClick={openDrawerHandlersMap.get(climb.uuid)}
               onOpenActions={handleOpenActions}
               onOpenPlaylistSelector={handleOpenPlaylistSelector}
               addToQueue={addToQueue}
