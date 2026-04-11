@@ -357,10 +357,11 @@ export default function SessionDetailContent({
   // Collect tick UUIDs for batch vote summary fetching
   const tickUuids = useMemo(() => ticks.map((t) => t.uuid), [ticks]);
 
-  // Build boardDetailsMap for multi-board support
-  const { boardDetailsMap, defaultBoardDetails, unsupportedClimbs } = useBoardDetailsMap(
+  // Build per-climb BoardDetails for multi-board support
+  const { boardDetailsByClimb, defaultBoardDetails, unsupportedClimbs, upsizedClimbs } = useBoardDetailsMap(
     sessionClimbs,
     myBoards,
+    null,
     null,
     boardTypes,
   );
@@ -593,8 +594,9 @@ export default function SessionDetailContent({
             <PlaylistsProvider {...playlistsProviderProps}>
               <ClimbsList
                 boardDetails={effectiveBoardDetails}
-                boardDetailsMap={boardDetailsMap}
+                boardDetailsByClimb={boardDetailsByClimb}
                 unsupportedClimbs={unsupportedClimbs}
+                upsizedClimbs={upsizedClimbs}
                 climbs={sessionClimbs}
                 isFetching={false}
                 hasMore={false}

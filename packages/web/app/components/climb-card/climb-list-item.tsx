@@ -151,6 +151,10 @@ type ClimbListItemProps = {
   selected?: boolean;
   /** When true, the item is visually dimmed (greyed out) but still interactive */
   unsupported?: boolean;
+  /** When true, the climb fits only on a bigger board than the user's current session — render dimmed and route clicks to `onNeedsBiggerBoard` instead of selecting. */
+  needsBiggerBoard?: boolean;
+  /** Fired when the user taps a `needsBiggerBoard` item, so the parent can show a warning. */
+  onNeedsBiggerBoard?: () => void;
   /** When true, swipe gestures (favorite/queue) are disabled */
   disableSwipe?: boolean;
   onSelect?: () => void;
@@ -186,6 +190,8 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     isDark,
     selected: selectedOverride,
     unsupported,
+    needsBiggerBoard,
+    onNeedsBiggerBoard,
     disableSwipe,
     onSelect,
     swipeRightAction,
@@ -322,13 +328,36 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       }
     }, [disableSwipe, swipeHandlers, contentRef]);
 
+    // Stable refs so the memoized handlers below stay stable across renders
+    // even when the bigger-board callback identity changes.
+    const onNeedsBiggerBoardRef = useRef(onNeedsBiggerBoard);
+    onNeedsBiggerBoardRef.current = onNeedsBiggerBoard;
+    const needsBiggerBoardRef = useRef(needsBiggerBoard);
+    needsBiggerBoardRef.current = needsBiggerBoard;
+    const onSelectRef = useRef(onSelect);
+    onSelectRef.current = onSelect;
+
     // Thumbnail click handler — uses ref to avoid stale closure.
     // Always attached (not conditional) because onThumbnailClick is excluded from
     // the memo comparator; a render-time conditional would go stale.
     const handleThumbnailClick = useCallback((e: React.MouseEvent) => {
+      if (needsBiggerBoardRef.current) {
+        e.stopPropagation();
+        onNeedsBiggerBoardRef.current?.();
+        return;
+      }
       if (!onThumbnailClickRef.current) return;
       e.stopPropagation();
       onThumbnailClickRef.current();
+    }, []);
+
+    // Row click — same interception for the bigger-board case.
+    const handleRowClick = useCallback(() => {
+      if (needsBiggerBoardRef.current) {
+        onNeedsBiggerBoardRef.current?.();
+        return;
+      }
+      onSelectRef.current?.();
     }, []);
 
     // Drawer state callbacks — extracted from inline to avoid per-render allocation
@@ -360,9 +389,9 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       () => ({
         position: 'relative' as const,
         overflow: 'hidden' as const,
-        ...(unsupported ? { opacity: 0.5, filter: 'grayscale(80%)' } : {}),
+        ...(unsupported || needsBiggerBoard ? { opacity: 0.5, filter: 'grayscale(80%)' } : {}),
       }),
-      [unsupported],
+      [unsupported, needsBiggerBoard],
     );
 
 
@@ -471,7 +500,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
           <div
             {...(disableSwipe ? {} : swipeHandlers)}
             ref={contentCombinedRef}
-            onClick={onSelect}
+            onClick={handleRowClick}
             style={swipeableContentStyle}
           >
             {/* Thumbnail */}
@@ -561,6 +590,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       prev.isDark === next.isDark &&
       prev.selected === next.selected &&
       prev.unsupported === next.unsupported &&
+      prev.needsBiggerBoard === next.needsBiggerBoard &&
       prev.disableSwipe === next.disableSwipe &&
       prev.boardDetails === next.boardDetails &&
       prev.swipeRightAction === next.swipeRightAction &&

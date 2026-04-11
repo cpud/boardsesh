@@ -5,15 +5,21 @@ import { renderHook } from '@testing-library/react';
 vi.mock('@/app/lib/board-config-for-playlist', () => ({
   getUserBoardDetails: vi.fn(),
   getBoardDetailsForPlaylist: vi.fn(),
+  resolveBoardDetailsForClimb: vi.fn(),
 }));
 
 import { useBoardDetailsMap } from '../use-board-details-map';
-import { getUserBoardDetails, getBoardDetailsForPlaylist } from '@/app/lib/board-config-for-playlist';
+import {
+  getUserBoardDetails,
+  getBoardDetailsForPlaylist,
+  resolveBoardDetailsForClimb,
+} from '@/app/lib/board-config-for-playlist';
 import type { UserBoard } from '@boardsesh/shared-schema';
 import type { Climb, BoardDetails } from '@/app/lib/types';
 
 const mockGetUserBoardDetails = vi.mocked(getUserBoardDetails);
 const mockGetBoardDetailsForPlaylist = vi.mocked(getBoardDetailsForPlaylist);
+const mockResolveBoardDetailsForClimb = vi.mocked(resolveBoardDetailsForClimb);
 
 function makeClimb(overrides: Partial<Climb> = {}): Climb {
   return {
@@ -70,76 +76,57 @@ describe('useBoardDetailsMap', () => {
   });
 
   it('should return empty map when no climbs provided', () => {
-    const { result } = renderHook(() =>
-      useBoardDetailsMap([], []),
-    );
+    const { result } = renderHook(() => useBoardDetailsMap([], []));
 
-    expect(Object.keys(result.current.boardDetailsMap)).toHaveLength(0);
+    expect(Object.keys(result.current.boardDetailsByClimb)).toHaveLength(0);
     expect(result.current.unsupportedClimbs.size).toBe(0);
+    expect(result.current.upsizedClimbs.size).toBe(0);
   });
 
-  it('should build boardDetailsMap keyed by "boardType:layoutId"', () => {
-    const climb = makeClimb({ boardType: 'kilter', layoutId: 1 });
-    const genericDetails = makeBoardDetails('kilter');
-    mockGetBoardDetailsForPlaylist.mockReturnValue(genericDetails);
+  it('should key boardDetailsByClimb by climb uuid', () => {
+    const climb = makeClimb({ uuid: 'c1', boardType: 'kilter', layoutId: 1 });
+    const details = makeBoardDetails('kilter');
+    mockResolveBoardDetailsForClimb.mockReturnValue({ details, status: 'exact' });
 
-    const { result } = renderHook(() =>
-      useBoardDetailsMap([climb], []),
-    );
+    const { result } = renderHook(() => useBoardDetailsMap([climb], []));
 
-    expect(result.current.boardDetailsMap['kilter:1']).toBe(genericDetails);
+    expect(result.current.boardDetailsByClimb['c1']).toBe(details);
   });
 
-  it('should prefer user board details over generic details', () => {
-    const climb = makeClimb({ boardType: 'kilter', layoutId: 1 });
-    const userBoard = makeUserBoard({ boardType: 'kilter', layoutId: 1 });
-    const userDetails = makeBoardDetails('kilter-user');
-    const genericDetails = makeBoardDetails('kilter-generic');
+  it('should populate upsizedClimbs for climbs that only fit on a bigger size', () => {
+    const climb = makeClimb({ uuid: 'c1', boardType: 'kilter', layoutId: 1 });
+    const userBoard = makeUserBoard({ boardType: 'kilter' });
+    const details = makeBoardDetails('kilter-bigger');
+    mockResolveBoardDetailsForClimb.mockReturnValue({ details, status: 'upsized' });
 
-    mockGetUserBoardDetails.mockReturnValue(userDetails);
-    mockGetBoardDetailsForPlaylist.mockReturnValue(genericDetails);
+    const { result } = renderHook(() => useBoardDetailsMap([climb], [userBoard]));
 
-    const { result } = renderHook(() =>
-      useBoardDetailsMap([climb], [userBoard]),
-    );
-
-    expect(result.current.boardDetailsMap['kilter:1']).toBe(userDetails);
-    // Generic should NOT be called because user board took precedence
-    expect(mockGetBoardDetailsForPlaylist).not.toHaveBeenCalled();
-  });
-
-  it('should fall back to generic details when user does not own that board', () => {
-    const climb = makeClimb({ boardType: 'tension', layoutId: 2 });
-    const genericDetails = makeBoardDetails('tension');
-
-    mockGetBoardDetailsForPlaylist.mockReturnValue(genericDetails);
-
-    const { result } = renderHook(() =>
-      useBoardDetailsMap([climb], []),
-    );
-
-    expect(result.current.boardDetailsMap['tension:2']).toBe(genericDetails);
-    expect(mockGetBoardDetailsForPlaylist).toHaveBeenCalledWith('tension', 2);
-  });
-
-  it('should populate unsupportedClimbs set for board types user does not own', () => {
-    const climb1 = makeClimb({ uuid: 'c1', boardType: 'kilter', layoutId: 1 });
-    const climb2 = makeClimb({ uuid: 'c2', boardType: 'tension', layoutId: 2 });
-    const userBoard = makeUserBoard({ boardType: 'kilter', layoutId: 1 });
-
-    const kilterDetails = makeBoardDetails('kilter');
-    const tensionDetails = makeBoardDetails('tension');
-    mockGetUserBoardDetails.mockReturnValue(kilterDetails);
-    mockGetBoardDetailsForPlaylist.mockReturnValue(tensionDetails);
-
-    const { result } = renderHook(() =>
-      useBoardDetailsMap([climb1, climb2], [userBoard]),
-    );
-
-    // Kilter climb is supported (user owns kilter board)
+    expect(result.current.upsizedClimbs.has('c1')).toBe(true);
     expect(result.current.unsupportedClimbs.has('c1')).toBe(false);
-    // Tension climb is unsupported (user doesn't own tension board)
-    expect(result.current.unsupportedClimbs.has('c2')).toBe(true);
+    expect(result.current.boardDetailsByClimb['c1']).toBe(details);
+  });
+
+  it('should mark climbs as unsupported when the resolver reports incompatible', () => {
+    const climb = makeClimb({ uuid: 'c1', boardType: 'kilter', layoutId: 1 });
+    const userBoard = makeUserBoard({ boardType: 'kilter' });
+    const details = makeBoardDetails('fallback');
+    mockResolveBoardDetailsForClimb.mockReturnValue({ details, status: 'incompatible' });
+
+    const { result } = renderHook(() => useBoardDetailsMap([climb], [userBoard]));
+
+    expect(result.current.unsupportedClimbs.has('c1')).toBe(true);
+    expect(result.current.boardDetailsByClimb['c1']).toBe(details);
+  });
+
+  it('should mark climbs unsupported when the user owns none of that board type', () => {
+    const climb = makeClimb({ uuid: 'c1', boardType: 'tension', layoutId: 2 });
+    const kilterBoard = makeUserBoard({ boardType: 'kilter' });
+    const details = makeBoardDetails('tension');
+    mockResolveBoardDetailsForClimb.mockReturnValue({ details, status: 'exact' });
+
+    const { result } = renderHook(() => useBoardDetailsMap([climb], [kilterBoard]));
+
+    expect(result.current.unsupportedClimbs.has('c1')).toBe(true);
   });
 
   it('should not mark any climbs as unsupported when the user owns zero boards', () => {
@@ -147,7 +134,10 @@ describe('useBoardDetailsMap', () => {
     // selection auto-activates the climb's own board config downstream.
     const climb1 = makeClimb({ uuid: 'c1', boardType: 'kilter', layoutId: 1 });
     const climb2 = makeClimb({ uuid: 'c2', boardType: 'tension', layoutId: 2 });
-    mockGetBoardDetailsForPlaylist.mockReturnValue(makeBoardDetails('kilter'));
+    mockResolveBoardDetailsForClimb.mockReturnValue({
+      details: makeBoardDetails('kilter'),
+      status: 'exact',
+    });
 
     const { result } = renderHook(() =>
       useBoardDetailsMap([climb1, climb2], []),
@@ -159,12 +149,9 @@ describe('useBoardDetailsMap', () => {
   it('should return defaultBoardDetails from selectedBoard when provided', () => {
     const selectedBoard = makeUserBoard({ boardType: 'kilter', layoutId: 1 });
     const selectedDetails = makeBoardDetails('kilter-selected');
-
     mockGetUserBoardDetails.mockReturnValue(selectedDetails);
 
-    const { result } = renderHook(() =>
-      useBoardDetailsMap([], [], selectedBoard),
-    );
+    const { result } = renderHook(() => useBoardDetailsMap([], [], selectedBoard));
 
     expect(result.current.defaultBoardDetails).toBe(selectedDetails);
   });
@@ -172,12 +159,9 @@ describe('useBoardDetailsMap', () => {
   it('should return defaultBoardDetails from first myBoard as fallback', () => {
     const myBoard = makeUserBoard({ boardType: 'kilter', layoutId: 1 });
     const myBoardDetails = makeBoardDetails('kilter-mine');
-
     mockGetUserBoardDetails.mockReturnValue(myBoardDetails);
 
-    const { result } = renderHook(() =>
-      useBoardDetailsMap([], [myBoard]),
-    );
+    const { result } = renderHook(() => useBoardDetailsMap([], [myBoard]));
 
     expect(result.current.defaultBoardDetails).toBe(myBoardDetails);
   });
@@ -187,7 +171,7 @@ describe('useBoardDetailsMap', () => {
     mockGetBoardDetailsForPlaylist.mockReturnValue(genericDetails);
 
     const { result } = renderHook(() =>
-      useBoardDetailsMap([], [], null, ['tension']),
+      useBoardDetailsMap([], [], null, null, ['tension']),
     );
 
     expect(result.current.defaultBoardDetails).toBe(genericDetails);
@@ -197,33 +181,26 @@ describe('useBoardDetailsMap', () => {
   it('should handle multiple climbs from different board types', () => {
     const climb1 = makeClimb({ uuid: 'c1', boardType: 'kilter', layoutId: 1 });
     const climb2 = makeClimb({ uuid: 'c2', boardType: 'tension', layoutId: 2 });
-    const climb3 = makeClimb({ uuid: 'c3', boardType: 'kilter', layoutId: 1 }); // duplicate key
-
     const kilterDetails = makeBoardDetails('kilter');
     const tensionDetails = makeBoardDetails('tension');
 
-    mockGetBoardDetailsForPlaylist
-      .mockReturnValueOnce(kilterDetails)
-      .mockReturnValueOnce(tensionDetails);
+    mockResolveBoardDetailsForClimb.mockImplementation((climb) => {
+      if (climb.uuid === 'c1') return { details: kilterDetails, status: 'exact' };
+      return { details: tensionDetails, status: 'exact' };
+    });
 
-    const { result } = renderHook(() =>
-      useBoardDetailsMap([climb1, climb2, climb3], []),
-    );
+    const { result } = renderHook(() => useBoardDetailsMap([climb1, climb2], []));
 
-    // Only 2 unique keys in the boardDetailsMap
-    expect(Object.keys(result.current.boardDetailsMap)).toHaveLength(2);
-    expect(result.current.boardDetailsMap['kilter:1']).toBe(kilterDetails);
-    expect(result.current.boardDetailsMap['tension:2']).toBe(tensionDetails);
+    expect(result.current.boardDetailsByClimb['c1']).toBe(kilterDetails);
+    expect(result.current.boardDetailsByClimb['c2']).toBe(tensionDetails);
   });
 
-  it('should skip climbs without boardType or layoutId', () => {
+  it('should skip climbs when the resolver returns null', () => {
     const climb1 = makeClimb({ uuid: 'c1', boardType: undefined, layoutId: 1 });
-    const climb2 = makeClimb({ uuid: 'c2', boardType: 'kilter', layoutId: null });
+    mockResolveBoardDetailsForClimb.mockReturnValue(null);
 
-    const { result } = renderHook(() =>
-      useBoardDetailsMap([climb1, climb2], []),
-    );
+    const { result } = renderHook(() => useBoardDetailsMap([climb1], []));
 
-    expect(Object.keys(result.current.boardDetailsMap)).toHaveLength(0);
+    expect(Object.keys(result.current.boardDetailsByClimb)).toHaveLength(0);
   });
 });
