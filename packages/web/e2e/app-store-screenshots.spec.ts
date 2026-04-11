@@ -4,13 +4,13 @@
  * Captures screenshots at iPhone 15 Pro Max resolution for App Store submission.
  * Screenshots are saved to mobile/screenshots/ for upload to App Store Connect.
  *
- * Run (unauthenticated scenes only):
- *   bunx playwright test e2e/app-store-screenshots.spec.ts
+ * Run via the dedicated Playwright project (viewport set in playwright.config.ts):
+ *   cd packages/web && bunx playwright test --project=app-store-screenshots
  *
  * Run with authenticated scenes (queue, party mode):
  *   TEST_USER_EMAIL=$(op read "op://Boardsesh/Boardsesh local/username") \
  *   TEST_USER_PASSWORD=$(op read "op://Boardsesh/Boardsesh local/password") \
- *   bunx playwright test e2e/app-store-screenshots.spec.ts
+ *   bunx playwright test --project=app-store-screenshots
  *
  * Prerequisites:
  *   - Dev server running: bun run dev
@@ -27,24 +27,11 @@ import path from 'path';
 const SCREENSHOT_DIR = path.resolve(__dirname, '../../../mobile/screenshots');
 const boardUrl = '/kilter/original/12x12-square/screw_bolt/40/list';
 
-// iPhone 15 Pro Max logical viewport. Playwright renders at 1x by default,
-// so we set deviceScaleFactor to get the actual App Store resolution.
-// 1320x2868 at 3x = 440x956 logical pixels.
-const VIEWPORT = { width: 440, height: 956 };
-const DEVICE_SCALE_FACTOR = 3;
-
+// Board-page screenshots: beforeEach navigates to the board list.
+// Viewport and device settings come from the app-store-screenshots project in playwright.config.ts.
 test.describe('App Store Screenshots', () => {
   // These are heavy pages at 3x scale -- give them room to load
   test.setTimeout(90_000);
-
-  test.use({
-    viewport: VIEWPORT,
-    deviceScaleFactor: DEVICE_SCALE_FACTOR,
-    isMobile: true,
-    hasTouch: true,
-    userAgent:
-      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
-  });
 
   test.beforeEach(async ({ page }) => {
     await page.goto(boardUrl, { waitUntil: 'domcontentloaded', timeout: 60_000 });
@@ -152,19 +139,8 @@ test.describe('App Store Screenshots', () => {
 
     await page.screenshot({ path: `${SCREENSHOT_DIR}/06-party-mode.png` });
   });
-});
 
-// Home page screenshot (board selection) - separate describe since different URL
-test.describe('App Store Screenshots - Home', () => {
-  test.use({
-    viewport: VIEWPORT,
-    deviceScaleFactor: DEVICE_SCALE_FACTOR,
-    isMobile: true,
-    hasTouch: true,
-    userAgent:
-      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
-  });
-
+  // Home page (board selection) screenshot -- navigates away from boardUrl
   test('00-home', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('domcontentloaded');
