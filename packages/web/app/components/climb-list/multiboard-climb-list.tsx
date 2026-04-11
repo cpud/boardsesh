@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -92,8 +92,9 @@ export default function MultiboardClimbList({
   });
   const queueActions = useOptionalQueueActions();
 
-  // Default climb navigation via redirect API
-  const defaultNavigateToClimb = useCallback(async (climb: Climb) => {
+  // Fallback for the rare case with no queue bridge (e.g. mid-hydration): navigate
+  // to the climb's view page so the user is never stranded.
+  const navigateToClimb = useCallback(async (climb: Climb) => {
     try {
       const bt = climb.boardType || selectedBoard?.boardType;
       if (!bt) return;
@@ -107,7 +108,24 @@ export default function MultiboardClimbList({
     }
   }, [selectedBoard]);
 
-  const handleClimbSelect = onClimbSelect ?? defaultNavigateToClimb;
+  // Internal selection state drives the visual highlight. A caller-supplied
+  // selectedClimbUuid takes precedence so controlled usage still works.
+  const [internalSelectedUuid, setInternalSelectedUuid] = useState<string | null>(null);
+  const effectiveSelectedUuid = selectedClimbUuid ?? internalSelectedUuid;
+
+  // Row click: activate the climb (visual highlight + set as queue's current climb).
+  // Thumbnail click reuses this via ClimbsList and additionally dispatches the
+  // PLAY_DRAWER_EVENT so the play view drawer opens. Mirrors the pattern in
+  // liked-climbs-list.tsx and board-page-climbs-list.tsx.
+  const handleClimbSelect = useCallback((climb: Climb) => {
+    setInternalSelectedUuid(climb.uuid);
+    if (queueActions?.setCurrentClimb) {
+      queueActions.setCurrentClimb(climb);
+    } else {
+      navigateToClimb(climb);
+    }
+    onClimbSelect?.(climb);
+  }, [queueActions, navigateToClimb, onClimbSelect]);
 
   const handleSortChange = (_: React.MouseEvent<HTMLElement>, value: SortBy | null) => {
     if (value && onSortChange) {
@@ -167,7 +185,7 @@ export default function MultiboardClimbList({
               boardDetailsMap={boardDetailsMap}
               unsupportedClimbs={unsupportedClimbs}
               climbs={climbs}
-              selectedClimbUuid={selectedClimbUuid}
+              selectedClimbUuid={effectiveSelectedUuid}
               isFetching={isFetching}
               hasMore={hasMore}
               onClimbSelect={handleClimbSelect}
