@@ -1,0 +1,41 @@
+name: Publish Test Reports
+
+# Runs after the CI workflows complete — including PRs from forks.
+# The workflow_run trigger executes in the base repo context, so
+# GITHUB_TOKEN has checks:write permission even for forked PRs.
+on:
+  workflow_run:
+    workflows: ["Web Tests", "Backend Integration Tests"]
+    types:
+      - completed
+
+permissions:
+  checks: write
+  contents: read
+
+jobs:
+  publish-web-tests:
+    if: github.event.workflow.name == 'Web Tests'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish Web Unit Tests report
+        uses: dorny/test-reporter@v1
+        with:
+          artifact: web-test-results
+          name: Web Unit Tests
+          path: '*.xml'
+          reporter: java-junit
+          fail-on-error: false
+
+  publish-backend-tests:
+    if: github.event.workflow.name == 'Backend Integration Tests'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish Backend Integration Tests report
+        uses: dorny/test-reporter@v1
+        with:
+          artifact: backend-test-results
+          name: Backend Integration Tests
+          path: '*.xml'
+          reporter: java-junit
+          fail-on-error: false
