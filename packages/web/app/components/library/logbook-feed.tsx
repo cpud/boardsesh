@@ -127,14 +127,14 @@ function LogbookItemSkeleton() {
   return (
     <MuiCard className={feedStyles.feedItem}>
       <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
-        <Box sx={{ display: 'flex', gap: '12px' }}>
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
           <Skeleton variant="rounded" width={64} height={64} animation="wave" sx={{ flexShrink: 0 }} />
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, minWidth: 0 }}>
-            <Box sx={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1, minWidth: 0 }}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               <Skeleton variant="rounded" width={80} height={24} animation="wave" />
               <Skeleton variant="rounded" width={100} height={16} animation="wave" />
             </Box>
-            <Box sx={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               <Skeleton variant="rounded" width={40} height={24} animation="wave" />
               <Skeleton variant="rounded" width={48} height={24} animation="wave" />
             </Box>
@@ -241,6 +241,20 @@ export default function LogbookFeed() {
   const closeFilterMenu = useCallback(() => setFilterAnchorEl(null), []);
   const closeSortMenu = useCallback(() => setSortAnchorEl(null), []);
   const closeBoardMenu = useCallback(() => setBoardAnchorEl(null), []);
+
+  const handleBoardChipClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      const value = event.currentTarget.dataset.boardFilter as BoardFilter | undefined;
+      if (!value) return;
+      setBoardFilter(value);
+      if (value !== 'all' && BOARD_LAYOUT_OPTIONS[value].length > 1) {
+        setBoardAnchorEl(event.currentTarget);
+      } else {
+        setBoardAnchorEl(null);
+      }
+    },
+    [],
+  );
 
   const applyFilters = useCallback(() => {
     setFilters({
@@ -392,7 +406,7 @@ export default function LogbookFeed() {
       />
 
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', flex: 1, minWidth: 220 }}>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', flex: 1, minWidth: 0 }}>
           {BOARD_OPTIONS.map((opt) => (
             <Chip
               key={opt.value}
@@ -400,14 +414,8 @@ export default function LogbookFeed() {
               size="small"
               variant={boardFilter === opt.value ? 'filled' : 'outlined'}
               color={boardFilter === opt.value ? 'primary' : 'default'}
-              onClick={(event) => {
-                setBoardFilter(opt.value);
-                if (opt.value !== 'all' && BOARD_LAYOUT_OPTIONS[opt.value].length > 1) {
-                  setBoardAnchorEl(event.currentTarget);
-                } else {
-                  setBoardAnchorEl(null);
-                }
-              }}
+              data-board-filter={opt.value}
+              onClick={handleBoardChipClick}
             />
           ))}
         </Box>
@@ -442,7 +450,7 @@ export default function LogbookFeed() {
     return (
       <>
         {filterBar}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {Array.from({ length: 5 }).map((_, i) => (
             <LogbookItemSkeleton key={i} />
           ))}
@@ -497,7 +505,7 @@ export default function LogbookFeed() {
     <>
       {filterBar}
       <div className={feedStyles.feed}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {items.map((item) => (
             <LogbookFeedItem key={item.uuid} item={item} showBoardType={showBoardType} onDelete={handleDelete} />
           ))}

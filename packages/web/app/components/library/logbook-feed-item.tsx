@@ -90,7 +90,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = ({ item, showBoardType, 
   return (
     <MuiCard className={styles.feedItem}>
       <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
-        <Box sx={{ display: 'flex', gap: '12px' }}>
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
           {item.frames && item.layoutId && (
             <AscentThumbnail
               boardType={item.boardType}
@@ -103,9 +103,9 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = ({ item, showBoardType, 
             />
           )}
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, minWidth: 0 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '4px' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1, minWidth: 0 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 0.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, minWidth: 0 }}>
                 <Chip
                   icon={statusDisplay.icon as React.ReactElement}
                   label={statusDisplay.label}
@@ -118,7 +118,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = ({ item, showBoardType, 
                   {item.climbName}
                 </MuiTypography>
               </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, flexShrink: 0 }}>
                 <MuiTypography variant="body2" component="span" color="text.secondary" className={styles.timeAgo}>
                   {timeAgo}
                 </MuiTypography>
@@ -144,7 +144,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = ({ item, showBoardType, 
               </Box>
             </Box>
 
-            <Box sx={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
               {item.consensusDifficultyName && (
                 <Chip label={`Consensus ${item.consensusDifficultyName}`} size="small" variant="outlined" />
               )}

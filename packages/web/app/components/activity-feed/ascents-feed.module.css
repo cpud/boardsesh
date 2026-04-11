@@ -6,6 +6,8 @@
 
 .feed {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .feedItem {
@@ -91,6 +93,8 @@
   border-radius: 4px; /* borderRadius.sm */
   margin-top: 4px;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .loading {
