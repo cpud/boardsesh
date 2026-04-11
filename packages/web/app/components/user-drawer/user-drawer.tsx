@@ -35,8 +35,11 @@ import BoardDiscoveryScroll from '../board-scroll/board-discovery-scroll';
 import BoardSelectorDrawer from '../board-selector-drawer/board-selector-drawer';
 import MyBoardsDrawer from '../my-boards-drawer/my-boards-drawer';
 import { BoardConfigData } from '@/app/lib/server-board-configs';
-import { BoardDetails } from '@/app/lib/types';
+import { BoardDetails, BoardName } from '@/app/lib/types';
+import type { BoardRouteIdentity } from '@/app/lib/types';
+import { SUPPORTED_BOARDS } from '@/app/lib/board-data';
 import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
+import { useBoardSwitchGuard } from '@/app/components/board-lock/use-board-switch-guard';
 import {
   type StoredSession,
   getRecentSessions,
@@ -44,6 +47,10 @@ import {
   extractBoardName,
 } from '@/app/lib/session-history-db';
 import styles from './user-drawer.module.css';
+
+function asBoardName(value: string): BoardName | null {
+  return (SUPPORTED_BOARDS as readonly string[]).includes(value) ? (value as BoardName) : null;
+}
 
 interface UserDrawerProps {
   boardDetails?: BoardDetails | null;
@@ -69,6 +76,7 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
 
   const { mode, toggleMode } = useColorMode();
   const isMoonboard = boardDetails?.board_name === 'moonboard';
+  const guardBoardSwitch = useBoardSwitchGuard();
 
   // Load recent sessions when drawer opens
   useEffect(() => {
@@ -98,11 +106,24 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
   }, []);
 
   const handleChangeBoardClick = useCallback((board: UserBoard) => {
-    if (board.slug) {
-      router.push(constructBoardSlugListUrl(board.slug, board.angle));
+    if (!board.slug) return;
+    const boardName = asBoardName(board.boardType);
+    const navigate = () => {
+      router.push(constructBoardSlugListUrl(board.slug!, board.angle));
+      setShowBoardSelector(false);
+    };
+    if (!boardName) {
+      navigate();
+      return;
     }
-    setShowBoardSelector(false);
-  }, [router]);
+    const target: BoardRouteIdentity = {
+      board_name: boardName,
+      layout_id: board.layoutId,
+      size_id: board.sizeId,
+      set_ids: board.setIds ? board.setIds.split(',').map(Number).filter(Number.isFinite) : [],
+    };
+    guardBoardSwitch(target, navigate);
+  }, [router, guardBoardSwitch]);
 
   const handleChangeConfigClick = useCallback((config: PopularBoardConfig) => {
     const angle = getDefaultAngleForBoard(config.boardType);
@@ -117,9 +138,23 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
       url = tryConstructSlugListUrl(config.boardType, config.layoutId, config.sizeId, config.setIds, angle)
         ?? `/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`;
     }
-    router.push(url);
-    setShowBoardSelector(false);
-  }, [router]);
+    const navigate = () => {
+      router.push(url);
+      setShowBoardSelector(false);
+    };
+    const boardName = asBoardName(config.boardType);
+    if (!boardName) {
+      navigate();
+      return;
+    }
+    const target: BoardRouteIdentity = {
+      board_name: boardName,
+      layout_id: config.layoutId,
+      size_id: config.sizeId,
+      set_ids: config.setIds,
+    };
+    guardBoardSwitch(target, navigate);
+  }, [router, guardBoardSwitch]);
 
   const handleSignOut = () => {
     signOut();
