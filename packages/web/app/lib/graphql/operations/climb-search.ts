@@ -1,11 +1,13 @@
 import { gql } from 'graphql-request';
 import type { Climb, HoldState } from '@/app/lib/types';
 
-// Slim fragment for search/list views (no description or mirrored - unused in list/card)
+// Slim fragment for search/list views. Description is requested so the drafts
+// drawer can load a draft back into the create form without a second round-trip.
 const CLIMB_SEARCH_FIELDS = `
   uuid
   setter_username
   name
+  description
   frames
   angle
   ascensionist_count
