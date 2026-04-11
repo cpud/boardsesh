@@ -389,6 +389,65 @@ describe('useLiveActivity', () => {
     await hook.unmount();
   });
 
+  it('only sends full queue update when queue and current climb change in the same render (effect ordering)', async () => {
+    // This test enforces the documented constraint at use-live-activity.ts:153-155:
+    // Effect 1 (queue-sync) MUST be declared before Effect 2 (climb-nav) in source
+    // order.  React runs effects top-to-bottom, so Effect 1 sets
+    // queueSyncedRef.current = true before Effect 2 checks it.
+    //
+    // If the two effects were swapped, Effect 2 would read queueSyncedRef.current
+    // === false, call updateLiveActivityClimb, and then Effect 1 would also call
+    // updateLiveActivity — causing both mocks to fire instead of just one.
+    mockIsNativeApp.mockReturnValue(true);
+    mockGetPlatform.mockReturnValue('ios');
+
+    const item1 = makeQueueItem('1');
+    const item2 = makeQueueItem('2');
+
+    const hook = await renderLiveActivityHook({
+      ...defaultProps(),
+      queue: [item1],
+      currentClimbQueueItem: item1,
+      boardDetails: makeBoardDetails(),
+      isSessionActive: true,
+      sessionId: 'test-session',
+    });
+
+    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    expect(mockStartLiveActivitySession).toHaveBeenCalledTimes(1);
+
+    mockUpdateLiveActivity.mockClear();
+    mockUpdateLiveActivityClimb.mockClear();
+
+    // Change BOTH queue and currentClimbQueueItem in the same render.
+    // Both effects have changed deps and will run this cycle:
+    //   Effect 1 (queue-sync): serializedQueue changed → runs, sets queueSyncedRef=true
+    //   Effect 2 (climb-nav):  currentClimbQueueItem + queue changed → runs, but reads
+    //                          queueSyncedRef=true and short-circuits
+    await hook.rerender({
+      queue: [item1, item2],
+      currentClimbQueueItem: item2,
+    });
+
+    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+
+    // Effect 1 should have sent the full update.
+    expect(mockUpdateLiveActivity).toHaveBeenCalledWith(
+      expect.objectContaining({
+        climbName: 'Test Climb 2',
+        currentIndex: 1,
+        totalClimbs: 2,
+        hasNext: false,
+        hasPrevious: true,
+      }),
+    );
+    // Effect 2 must have been suppressed — if effects were declared in reverse order
+    // this assertion would fail because Effect 2 would fire before queueSyncedRef is set.
+    expect(mockUpdateLiveActivityClimb).not.toHaveBeenCalled();
+
+    await hook.unmount();
+  });
+
   it('handles plugin unavailability gracefully', async () => {
     mockIsNativeApp.mockReturnValue(true);
     mockGetPlatform.mockReturnValue('ios');
