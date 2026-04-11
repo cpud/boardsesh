@@ -21,36 +21,24 @@ import AngleSelector from './angle-selector';
 import styles from './header.module.css';
 import Link from 'next/link';
 
-type PageMode = 'list' | 'view' | 'play' | 'create' | 'playlists' | 'logbook' | 'other';
-
 type BoardSeshHeaderProps = {
   boardDetails: BoardDetails;
   angle?: number;
   isAngleAdjustable?: boolean;
 };
 
-function usePageMode(): PageMode {
-  const pathname = usePathname();
-
-  return React.useMemo(() => {
-    if (pathname.includes('/play/')) return 'play';
-    if (pathname.includes('/view/')) return 'view';
-    if (pathname.includes('/list')) return 'list';
-    if (pathname.includes('/create')) return 'create';
-    if (pathname.includes('/playlists')) return 'playlists';
-    if (pathname.includes('/logbook')) return 'logbook';
-    return 'other';
-  }, [pathname]);
-}
-
 export default function BoardSeshHeader({ boardDetails, angle, isAngleAdjustable }: BoardSeshHeaderProps) {
+  const pathname = usePathname();
   const { currentClimb } = useCurrentClimb();
   const { totalSearchResultCount, isFetchingClimbs } = useSearchData();
   const { uiSearchParams, clearClimbSearchParams } = useUISearchParams();
-  const pageMode = usePageMode();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
+  const isCreatePage = pathname.includes('/create');
+  const isListPage = pathname.includes('/list');
+  const isPlayPage = pathname.includes('/play/');
+  const isViewPage = pathname.includes('/view/');
 
   // Stable callback for the bridge injector
   const openDrawer = useCallback(() => setSearchDropdownOpen(true), []);
@@ -60,7 +48,7 @@ export default function BoardSeshHeader({ boardDetails, angle, isAngleAdjustable
   const filtersActive = hasActiveFilters(uiSearchParams);
 
   // Create mode has its own header in the form — hide the board toolbar
-  if (pageMode === 'create') {
+  if (isCreatePage) {
     return null;
   }
 
@@ -88,11 +76,11 @@ export default function BoardSeshHeader({ boardDetails, angle, isAngleAdjustable
     : null;
 
   // Check if we have any content to show — if not, don't render the toolbar
-  const hasBackButton = pageMode === 'play';
-  // Angle selector is now rendered inside ClimbsList on list pages
-  const hasAngleSelector = angle !== undefined && pageMode !== 'list' && pageMode !== 'playlists' && pageMode !== 'logbook';
+  const hasBackButton = isPlayPage;
+  // Angle selector is only needed on play/view pages
+  const hasAngleSelector = angle !== undefined && (isPlayPage || isViewPage);
   // Create button is only shown on desktop, so skip rendering the container on list pages
-  const hasCreateButton = !!createClimbUrl && pageMode !== 'list';
+  const hasCreateButton = !!createClimbUrl && !isListPage;
 
   return (
     <>
@@ -101,7 +89,7 @@ export default function BoardSeshHeader({ boardDetails, angle, isAngleAdjustable
         openDrawer={openDrawer}
         summary={summary}
         hasActiveFilters={filtersActive}
-        isOnListPage={pageMode === 'list'}
+        isOnListPage={isListPage}
       />
 
       {(hasBackButton || hasAngleSelector || hasCreateButton) && (
