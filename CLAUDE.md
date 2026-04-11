@@ -96,6 +96,12 @@ The `boardsesh-dev-db` image is published to GHCR and contains PostgreSQL 17 + P
 - `bun run backend:start` - Start backend in production mode
 - `bun run db:up` - Start development databases, run migrations, and import MoonBoard data (uses pre-built image with Kilter/Tension data)
 
+### Running E2E Tests
+
+- `bun run test:e2e` - Full Playwright run: brings up the pre-built dev DB, exports the seeded test user, and runs every spec in `packages/web/e2e/`. Playwright's `webServer` config auto-starts `bun run dev` (backend + web) for you.
+- `bun run test:e2e:setup` - Only bring up the dev DB. Useful when iterating on a single spec: after setup, run `bun run --filter=@boardsesh/web test:e2e -- e2e/<spec>.spec.ts` (or use `test:e2e:ui` for the Playwright UI).
+- The seeded test user is `test@boardsesh.com` / `test`, exported as `TEST_USER_EMAIL`/`TEST_USER_PASSWORD` by the script so screenshot specs (`app-store-screenshots`, `help-screenshots`) run end-to-end without 1Password.
+
 ### Database Commands (run from root or packages/db/)
 
 - `bun run db:migrate` - Apply migrations (also runs on Vercel build)
