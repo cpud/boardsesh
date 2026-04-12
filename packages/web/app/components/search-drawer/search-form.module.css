@@ -100,13 +100,13 @@
 
 /* Scoped MUI overrides for hold search select */
 .holdSearchHeaderCompact :global(.MuiOutlinedInput-root) {
-  background-color: var(--neutral-50, #F9FAFB);
+  background-color: var(--semantic-surface, #FFFFFF);
   border-radius: 12px;
   transition: background-color 200ms ease, box-shadow 200ms ease;
 }
 
 .holdSearchHeaderCompact :global(.MuiOutlinedInput-root:hover) {
-  background-color: var(--neutral-100, #F3F4F6);
+  background-color: var(--neutral-50, #F9FAFB);
 }
 
 .holdSearchHeaderCompact :global(.MuiOutlinedInput-root.Mui-focused) {
