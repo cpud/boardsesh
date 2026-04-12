@@ -6,7 +6,7 @@ import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import { parseBoardRouteParamsWithSlugs } from '@/app/lib/url-utils.server';
 import { convertLitUpHoldsStringToMap, getImageUrl } from '@/app/components/board-renderer/util';
 import { HoldRenderData } from '@/app/components/board-renderer/types';
-import { themeTokens } from '@/app/theme/theme-config';
+import { darkTokens } from '@/app/theme/theme-config';
 
 export const runtime = 'edge';
 
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: '#ffffff',
+            background: darkTokens.semantic.background,
             padding: '40px',
             gap: '40px',
           }}
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
               flexShrink: 0,
               alignItems: 'center',
               justifyContent: 'center',
-              background: themeTokens.neutral[100],
+              background: darkTokens.neutral[100],
             }}
           >
             {/* Inner container with exact board dimensions */}
@@ -180,7 +180,7 @@ export async function GET(request: NextRequest) {
               flexDirection: 'column',
               justifyContent: 'center',
               gap: '20px',
-              color: '#333',
+              color: '#E5E7EB',
               maxWidth: '400px',
             }}
           >
@@ -211,7 +211,7 @@ export async function GET(request: NextRequest) {
                 flexDirection: 'column',
                 gap: '12px',
                 fontSize: '24px',
-                color: '#666',
+                color: '#9CA3AF',
               }}
             >
               <div style={{ display: 'flex' }}>
