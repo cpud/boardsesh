@@ -10,7 +10,6 @@ import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import {
-  LabelOutlined,
   PublicOutlined,
   LockOutlined,
   SentimentDissatisfiedOutlined,
@@ -45,6 +44,7 @@ import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { LoadingSpinner } from '@/app/components/ui/loading-spinner';
 import { EmptyState } from '@/app/components/ui/empty-state';
 import FollowButton from '@/app/components/ui/follow-button';
+import PlaylistPreviewSquare from '@/app/components/library/playlist-preview-square';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { getBoardDetailsForPlaylist, getDefaultAngleForBoard } from '@/app/lib/board-config-for-playlist';
 import { themeTokens } from '@/app/theme/theme-config';
@@ -334,15 +334,13 @@ export default function PlaylistDetailContent({
         {/* Hero Card */}
         <div className={styles.heroSection}>
           <div className={styles.heroContent}>
-            <div
-              className={styles.heroSquare}
-              style={{ background: `linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.08) 100%), ${getPlaylistColor()}` }}
-            >
-              {playlist.icon ? (
-                <span className={styles.heroSquareEmoji}>{playlist.icon}</span>
-              ) : (
-                <LabelOutlined className={styles.heroSquareIcon} />
-              )}
+            <div className={styles.heroSquare}>
+              <PlaylistPreviewSquare
+                boardType={playlist.boardType}
+                layoutId={playlist.layoutId}
+                color={getPlaylistColor()}
+                icon={playlist.icon}
+              />
             </div>
             <div className={styles.heroInfo}>
               <Typography variant="h5" component="h2" className={styles.heroName}>

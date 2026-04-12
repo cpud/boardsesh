@@ -18,12 +18,13 @@ import {
 
 export const getClimb = cache(async (params: ParsedBoardRouteParametersWithUuid): Promise<Climb> => {
   const result = await sql`
-        SELECT climbs.uuid, climbs.setter_username, climbs.name, climbs.description,
+        SELECT climbs.uuid, climbs.setter_username, climbs.user_id as "userId", climbs.name, climbs.description,
         climbs.frames, COALESCE(climb_stats.angle, ${params.angle}) as angle, COALESCE(climb_stats.ascensionist_count, 0) as ascensionist_count,
         ROUND(climb_stats.display_difficulty::numeric, 0) as difficulty_id,
         ROUND(climb_stats.quality_average::numeric, 2) as quality_average,
         ROUND(climb_stats.difficulty_average::numeric - climb_stats.display_difficulty::numeric, 2) AS difficulty_error,
-        CASE WHEN climb_stats.benchmark_difficulty > 0 THEN climb_stats.benchmark_difficulty::text ELSE NULL END as benchmark_difficulty
+        CASE WHEN climb_stats.benchmark_difficulty > 0 THEN climb_stats.benchmark_difficulty::text ELSE NULL END as benchmark_difficulty,
+        climbs.is_draft, climbs.created_at, climbs.published_at
         FROM board_climbs climbs
         LEFT JOIN board_climb_stats climb_stats
           ON climb_stats.climb_uuid = climbs.uuid

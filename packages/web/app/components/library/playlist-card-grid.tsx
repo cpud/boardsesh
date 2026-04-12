@@ -47,6 +47,8 @@ export default function PlaylistCardGrid({
           key={playlist.uuid}
           name={playlist.name}
           climbCount={playlist.climbCount}
+          boardType={playlist.boardType}
+          layoutId={playlist.layoutId}
           color={playlist.color}
           icon={playlist.icon}
           href={getPlaylistUrl(playlist.uuid)}

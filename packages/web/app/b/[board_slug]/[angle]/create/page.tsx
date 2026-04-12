@@ -2,12 +2,14 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import { resolveBoardBySlug, boardToRouteParams } from '@/app/lib/board-slug-utils';
 import { getBoardDetails } from '@/app/lib/board-constants';
+import { getClimb } from '@/app/lib/data/queries';
 import CreateClimbForm from '@/app/components/create-climb/create-climb-form';
 import {
   MOONBOARD_LAYOUTS,
   MOONBOARD_SETS,
   MoonBoardLayoutKey,
 } from '@/app/lib/moonboard-config';
+import type { Climb } from '@/app/lib/types';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -29,7 +31,7 @@ function getMoonBoardHoldSetImages(layoutKey: MoonBoardLayoutKey, setIds: number
 
 interface CreatePageProps {
   params: Promise<{ board_slug: string; angle: string }>;
-  searchParams: Promise<{ forkFrames?: string; forkName?: string }>;
+  searchParams: Promise<{ forkFrames?: string; forkName?: string; editClimbUuid?: string }>;
 }
 
 export default async function BoardSlugCreatePage(props: CreatePageProps) {
@@ -63,6 +65,33 @@ export default async function BoardSlugCreatePage(props: CreatePageProps) {
 
   const boardDetails = await getBoardDetails(parsedParams);
 
+  // When the caller asks to edit an existing climb (drafts, or a recent
+  // publish still inside the 24h edit window), load it up-front so the form
+  // can seed holds, name, description, and the saved-row tracker on mount.
+  // MoonBoard edit-via-URL isn't wired yet; drafts drawer is Aurora-only.
+  //
+  // We track `editClimbError` separately so the form can surface a message
+  // when the link is broken (expired, wrong board, typo) rather than silently
+  // mounting an empty form.
+  let editClimb: Climb | undefined;
+  let editClimbError: string | undefined;
+  if (searchParams.editClimbUuid) {
+    try {
+      const loaded = await getClimb({
+        ...parsedParams,
+        climb_uuid: searchParams.editClimbUuid,
+      });
+      if (!loaded) {
+        editClimbError = "We couldn't find that climb on this board.";
+      } else {
+        editClimb = loaded;
+      }
+    } catch (error) {
+      console.error('Failed to load edit climb:', error);
+      editClimbError = "We couldn't load that climb. It may have been deleted or belongs to a different board.";
+    }
+  }
+
   return (
     <CreateClimbForm
       boardType="aurora"
@@ -70,6 +99,8 @@ export default async function BoardSlugCreatePage(props: CreatePageProps) {
       boardDetails={boardDetails}
       forkFrames={searchParams.forkFrames}
       forkName={searchParams.forkName}
+      editClimb={editClimb}
+      editClimbError={editClimbError}
     />
   );
 }

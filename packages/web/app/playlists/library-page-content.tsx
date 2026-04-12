@@ -376,6 +376,8 @@ export default function LibraryPageContent({
                   key={p.uuid}
                   name={p.name}
                   climbCount={p.climbCount}
+                  boardType={p.boardType}
+                  layoutId={p.layoutId}
                   color={p.color}
                   icon={p.icon}
                   href={getPlaylistUrl(p.uuid)}
@@ -394,6 +396,8 @@ export default function LibraryPageContent({
                   key={p.uuid}
                   name={p.name}
                   climbCount={p.climbCount}
+                  boardType={p.boardType}
+                  layoutId={p.layoutId}
                   color={p.color}
                   icon={p.icon}
                   href={getPlaylistUrl(p.uuid)}
