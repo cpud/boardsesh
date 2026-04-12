@@ -48,6 +48,15 @@ Sentry.init({
       return null;
     }
 
+    // Ignore DuckDuckGo browser-internal feature detection errors
+    // (e.g., "feature named `pageContext` was not found")
+    if (
+      errorMessage.includes("feature named") &&
+      errorMessage.includes("was not found")
+    ) {
+      return null;
+    }
+
     return event;
   },
 });
