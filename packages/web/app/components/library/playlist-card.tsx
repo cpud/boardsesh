@@ -1,30 +1,15 @@
 'use client';
 
 import React from 'react';
-import { LabelOutlined, FavoriteOutlined } from '@mui/icons-material';
 import Link from 'next/link';
-import { themeTokens } from '@/app/theme/theme-config';
+import PlaylistPreviewSquare from './playlist-preview-square';
 import styles from './library.module.css';
-
-const PLAYLIST_COLORS = [
-  themeTokens.colors.primary,
-  themeTokens.colors.logoGreen,
-  themeTokens.colors.purple,
-  themeTokens.colors.warning,
-  themeTokens.colors.pink,
-  themeTokens.colors.success,
-  themeTokens.colors.logoRose,
-  themeTokens.colors.amber,
-];
-
-// Validate hex color format
-const isValidHexColor = (color: string): boolean => {
-  return /^#([0-9A-Fa-f]{3}){1,2}$/.test(color);
-};
 
 export type PlaylistCardProps = {
   name: string;
   climbCount: number;
+  boardType: string;
+  layoutId?: number | null;
   color?: string;
   icon?: string;
   href: string;
@@ -36,6 +21,8 @@ export type PlaylistCardProps = {
 export default function PlaylistCard({
   name,
   climbCount,
+  boardType,
+  layoutId,
   color,
   icon,
   href,
@@ -43,32 +30,19 @@ export default function PlaylistCard({
   index = 0,
   isLikedClimbs,
 }: PlaylistCardProps) {
-  const backgroundColor = isLikedClimbs
-    ? undefined
-    : color && isValidHexColor(color)
-      ? color
-      : PLAYLIST_COLORS[index % PLAYLIST_COLORS.length];
-
-  const FallbackIcon = isLikedClimbs ? FavoriteOutlined : LabelOutlined;
-
-  const renderIcon = (sizeClass: string) => {
-    if (isLikedClimbs) {
-      return <FavoriteOutlined className={sizeClass} />;
-    }
-    if (icon) {
-      return <span className={variant === 'grid' ? styles.cardCompactEmoji : styles.cardEmoji}>{icon}</span>;
-    }
-    return <FallbackIcon className={sizeClass} />;
-  };
-
   if (variant === 'grid') {
     return (
       <Link href={href} className={styles.cardCompact}>
-        <div
-          className={`${styles.cardCompactSquare} ${isLikedClimbs ? styles.likedGradient : ''}`}
-          style={!isLikedClimbs ? { background: `linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.08) 100%), ${backgroundColor}` } : undefined}
-        >
-          {renderIcon(styles.cardCompactIcon)}
+        <div className={styles.cardCompactSquare}>
+          <PlaylistPreviewSquare
+            boardType={boardType}
+            layoutId={layoutId}
+            color={color}
+            icon={icon}
+            isLikedClimbs={isLikedClimbs}
+            index={index}
+            className={styles.previewCompact}
+          />
         </div>
         <div className={styles.cardCompactInfo}>
           <div className={styles.cardCompactName}>{name}</div>
@@ -85,11 +59,15 @@ export default function PlaylistCard({
       href={href}
       className={`${styles.card} ${styles.cardScroll}`}
     >
-      <div
-        className={`${styles.cardSquare} ${isLikedClimbs ? styles.likedGradient : ''}`}
-        style={!isLikedClimbs ? { background: `linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.08) 100%), ${backgroundColor}` } : undefined}
-      >
-        {renderIcon(styles.cardIcon)}
+      <div className={styles.cardSquare}>
+        <PlaylistPreviewSquare
+          boardType={boardType}
+          layoutId={layoutId}
+          color={color}
+          icon={icon}
+          isLikedClimbs={isLikedClimbs}
+          index={index}
+        />
       </div>
       <div className={styles.cardName}>{name}</div>
       <div className={styles.cardMeta}>
