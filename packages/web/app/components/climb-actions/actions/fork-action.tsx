@@ -7,6 +7,7 @@ import CallSplitOutlined from '@mui/icons-material/CallSplitOutlined';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import Link from 'next/link';
 import { track } from '@vercel/analytics';
+import { useSession } from 'next-auth/react';
 import { ClimbActionProps, ClimbActionResult } from '../types';
 import { constructCreateClimbUrl } from '@/app/lib/url-utils';
 import { themeTokens } from '@/app/theme/theme-config';
@@ -26,12 +27,13 @@ export function ForkAction({
   onComplete,
 }: ClimbActionProps): ClimbActionResult {
   const { iconSize, shouldShowLabel } = computeActionDisplay(viewMode, size, showLabel);
+  const { data: session } = useSession();
 
   // Fork is not supported for moonboard yet
   const isMoonboard = boardDetails.board_name === 'moonboard';
   const canFork = !isMoonboard && !!(boardDetails.layout_name && boardDetails.size_name && boardDetails.set_names);
 
-  const isEdit = !!climb.is_draft;
+  const isEdit = !!climb.is_draft && !!climb.userId && climb.userId === session?.user?.id;
 
   const url = canFork
     ? constructCreateClimbUrl(

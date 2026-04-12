@@ -10,6 +10,8 @@ import {
   MoonBoardLayoutKey,
 } from '@/app/lib/moonboard-config';
 import { Metadata } from 'next';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/lib/auth/auth-options';
 
 export const metadata: Metadata = {
   title: 'Create Climb | Boardsesh',
@@ -74,7 +76,12 @@ export default async function CreateClimbPage(props: CreateClimbPageProps) {
       if (!loaded) {
         editClimbError = "We couldn't find that climb on this board.";
       } else {
-        editClimb = loaded;
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id || loaded.userId !== session.user.id) {
+          editClimbError = "You can only edit your own climbs.";
+        } else {
+          editClimb = loaded;
+        }
       }
     } catch (error) {
       console.error('Failed to load edit climb:', error);
