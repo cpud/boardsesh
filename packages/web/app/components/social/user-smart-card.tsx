@@ -53,7 +53,7 @@ const CHIP_SX = { height: 20, fontSize: '0.7rem' } as const;
 
 export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardProps) {
   const router = useRouter();
-  const { gradeFormat } = useGradeFormat();
+  const { gradeFormat, loaded: gradeFormatLoaded } = useGradeFormat();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [totalClimbs, setTotalClimbs] = useState(0);
   const [rawStats, setRawStats] = useState<GetUserProfileStatsQueryResponse['userProfileStats'] | null>(null);
@@ -205,7 +205,7 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
               <div className={styles.gradeLegend}>
                 {gradeBars.map((bar: GradeBar) => (
                   <span key={bar.grade} className={styles.gradeLegendLabel}>
-                    {bar.grade}
+                    {gradeFormatLoaded ? bar.grade : <Skeleton variant="text" width={20} sx={{ display: 'inline-block', fontSize: 'inherit' }} />}
                   </span>
                 ))}
               </div>
