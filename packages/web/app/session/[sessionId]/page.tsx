@@ -37,9 +37,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .map((p) => p.displayName || 'Climber')
     .join(', ');
 
+  const title = `${session.sessionName || 'Climbing Session'} | Boardsesh`;
+  const description = `${participantNames} - ${session.totalSends} sends, ${session.totalFlashes} flashes`;
+
+  const ogImageUrl = new URL('/api/og/session', 'https://boardsesh.com');
+  ogImageUrl.searchParams.set('sessionId', sessionId);
+  const ogImage = ogImageUrl.toString();
+
   return {
-    title: `${session.sessionName || 'Climbing Session'} | Boardsesh`,
-    description: `${participantNames} - ${session.totalSends} sends, ${session.totalFlashes} flashes`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url: `/session/${sessionId}`,
+      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImage],
+    },
   };
 }
 
