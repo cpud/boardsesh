@@ -76,13 +76,13 @@
 
 /* Scoped MUI input overrides for modern filled-background look */
 .panelContent :global(.MuiOutlinedInput-root) {
-  background-color: var(--neutral-50, #F9FAFB);
+  background-color: var(--semantic-surface, #FFFFFF);
   border-radius: 12px;
   transition: background-color 200ms ease, box-shadow 200ms ease;
 }
 
 .panelContent :global(.MuiOutlinedInput-root:hover) {
-  background-color: var(--neutral-100, #F3F4F6);
+  background-color: var(--neutral-50, #F9FAFB);
 }
 
 .panelContent :global(.MuiOutlinedInput-root.Mui-focused) {
