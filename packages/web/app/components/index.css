@@ -49,6 +49,18 @@
   --overlay-dark: rgba(0, 0, 0, 0.6);
   --overlay-text: rgba(255, 255, 255, 0.9);
 
+  /* Spacing scale (matches themeTokens.spacing in theme-config.ts) */
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+
   /* Layout */
   --global-header-height: calc(max(8dvh, 48px) + env(safe-area-inset-top, 0px));
 }

@@ -98,8 +98,9 @@
 .cardCompactInfo {
   flex: 1;
   min-width: 0;
-  padding-left: 10px;
-  padding-right: 8px;
+  /* Slightly more left padding to create visual separation from the thumbnail */
+  padding-left: var(--spacing-3);
+  padding-right: var(--spacing-2);
 }
 
 .cardCompactName {
@@ -249,11 +250,11 @@
 .skeletonCompact {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--spacing-2);
   background-color: var(--semantic-surface);
   border-radius: 8px;
   overflow: hidden;
-  padding-right: 8px;
+  padding-right: var(--spacing-2);
 }
 
 .skeletonCompactText {
