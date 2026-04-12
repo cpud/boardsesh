@@ -11,6 +11,8 @@ import {
 } from '@/app/lib/moonboard-config';
 import type { Climb } from '@/app/lib/types';
 import { Metadata } from 'next';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/lib/auth/auth-options';
 
 export const metadata: Metadata = {
   title: 'Create Climb | Boardsesh',
@@ -31,7 +33,8 @@ function getMoonBoardHoldSetImages(layoutKey: MoonBoardLayoutKey, setIds: number
 
 interface CreatePageProps {
   params: Promise<{ board_slug: string; angle: string }>;
-  searchParams: Promise<{ forkFrames?: string; forkName?: string; editClimbUuid?: string }>;
+  searchParams: Promise<{ forkFrames?: string; forkName?: string; forkDescription?: string; editClimbUuid?: string }>;
+
 }
 
 export default async function BoardSlugCreatePage(props: CreatePageProps) {
@@ -84,7 +87,12 @@ export default async function BoardSlugCreatePage(props: CreatePageProps) {
       if (!loaded) {
         editClimbError = "We couldn't find that climb on this board.";
       } else {
-        editClimb = loaded;
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id || loaded.userId !== session.user.id) {
+          editClimbError = "You can only edit your own climbs.";
+        } else {
+          editClimb = loaded;
+        }
       }
     } catch (error) {
       console.error('Failed to load edit climb:', error);
@@ -99,6 +107,7 @@ export default async function BoardSlugCreatePage(props: CreatePageProps) {
       boardDetails={boardDetails}
       forkFrames={searchParams.forkFrames}
       forkName={searchParams.forkName}
+      forkDescription={searchParams.forkDescription}
       editClimb={editClimb}
       editClimbError={editClimbError}
     />

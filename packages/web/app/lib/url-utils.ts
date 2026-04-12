@@ -509,7 +509,7 @@ export const constructCreateClimbUrl = (
   sizeDescription: string | undefined,
   setNames: string[],
   angle: number,
-  forkParams?: { frames: string; name: string },
+  forkParams?: { frames: string; name: string; description?: string; editClimbUuid?: string },
 ) => {
   const layoutSlug = generateLayoutSlug(layoutName);
   const sizeSlug = generateSizeSlug(sizeName, sizeDescription);
@@ -521,6 +521,8 @@ export const constructCreateClimbUrl = (
       forkFrames: forkParams.frames,
       forkName: forkParams.name,
     });
+    if (forkParams.description) params.set('forkDescription', forkParams.description);
+    if (forkParams.editClimbUuid) params.set('editClimbUuid', forkParams.editClimbUuid);
     return `${baseUrl}?${params.toString()}`;
   }
 

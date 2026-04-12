@@ -85,11 +85,12 @@ export const climbMutations = {
       throw new Error(`Invalid board type: ${validated.boardType}. Must be one of ${SUPPORTED_BOARDS.join(', ')}`);
     }
 
-    const uuid = generateClimbUuid();
     const now = new Date().toISOString();
     const publishedAt = validated.isDraft ? null : now;
     const { displayName, name, avatarUrl } = await getUserProfile(ctx.userId!);
     const preferredSetter = displayName || name || null;
+
+    const uuid = generateClimbUuid();
 
     await db.insert(UNIFIED_TABLES.climbs).values({
       boardType: validated.boardType,

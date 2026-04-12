@@ -24,12 +24,21 @@ vi.mock('@mui/icons-material/CallSplitOutlined', () => ({
   default: () => 'CallSplitOutlinedIcon',
 }));
 
+vi.mock('@mui/icons-material/EditOutlined', () => ({
+  default: () => 'EditOutlinedIcon',
+}));
+
 vi.mock('@mui/material/Button', () => ({
   default: ({ children }: { children?: React.ReactNode }) => children,
 }));
 
 vi.mock('../../action-tooltip', () => ({
   ActionTooltip: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+const mockUseSession = vi.fn();
+vi.mock('next-auth/react', () => ({
+  useSession: () => mockUseSession(),
 }));
 
 import { ForkAction } from '../fork-action';
@@ -90,6 +99,7 @@ function createTestProps(overrides?: Partial<ClimbActionProps>): ClimbActionProp
 describe('ForkAction', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseSession.mockReturnValue({ data: null, status: 'unauthenticated', update: vi.fn() });
   });
 
   describe('availability', () => {
@@ -189,6 +199,119 @@ describe('ForkAction', () => {
       const props = createTestProps();
       const result = ForkAction(props);
       expect(result.key).toBe('fork');
+    });
+  });
+
+  describe('edit mode for owned drafts', () => {
+    it('shows Edit label when climb is a draft owned by the current user', () => {
+      mockUseSession.mockReturnValue({
+        data: { user: { id: 'user-123' }, expires: '' },
+        status: 'authenticated',
+        update: vi.fn(),
+      });
+      const props = createTestProps({
+        climb: createTestClimb({ is_draft: true, userId: 'user-123' }),
+      });
+      const result = ForkAction(props);
+      expect(result.menuItem.label).toBeDefined();
+    });
+
+    it('passes editClimbUuid when editing an owned draft', () => {
+      mockUseSession.mockReturnValue({
+        data: { user: { id: 'user-123' }, expires: '' },
+        status: 'authenticated',
+        update: vi.fn(),
+      });
+      const props = createTestProps({
+        climb: createTestClimb({
+          is_draft: true,
+          userId: 'user-123',
+          description: 'Draft description',
+        }),
+      });
+      ForkAction(props);
+
+      expect(constructCreateClimbUrl).toHaveBeenCalledWith(
+        'kilter',
+        'Original',
+        '12x12',
+        'Full Size',
+        ['Standard', 'Extended'],
+        40,
+        {
+          frames: 'p1r12p2r13',
+          name: 'Test Climb',
+          description: 'Draft description',
+          editClimbUuid: 'test-uuid-123',
+        },
+      );
+    });
+
+    it('shows Fork (not Edit) for drafts not owned by the current user', () => {
+      mockUseSession.mockReturnValue({
+        data: { user: { id: 'different-user' }, expires: '' },
+        status: 'authenticated',
+        update: vi.fn(),
+      });
+      const props = createTestProps({
+        climb: createTestClimb({ is_draft: true, userId: 'user-123' }),
+      });
+      ForkAction(props);
+
+      // Should be called with fork params (no editClimbUuid)
+      expect(constructCreateClimbUrl).toHaveBeenCalledWith(
+        'kilter',
+        'Original',
+        '12x12',
+        'Full Size',
+        ['Standard', 'Extended'],
+        40,
+        { frames: 'p1r12p2r13', name: 'Test Climb' },
+      );
+    });
+
+    it('shows Fork for drafts when user is not authenticated', () => {
+      mockUseSession.mockReturnValue({
+        data: null,
+        status: 'unauthenticated',
+        update: vi.fn(),
+      });
+      const props = createTestProps({
+        climb: createTestClimb({ is_draft: true, userId: 'user-123' }),
+      });
+      ForkAction(props);
+
+      expect(constructCreateClimbUrl).toHaveBeenCalledWith(
+        'kilter',
+        'Original',
+        '12x12',
+        'Full Size',
+        ['Standard', 'Extended'],
+        40,
+        { frames: 'p1r12p2r13', name: 'Test Climb' },
+      );
+    });
+
+    it('shows Fork for non-draft climbs even if owned by current user', () => {
+      mockUseSession.mockReturnValue({
+        data: { user: { id: 'user-123' }, expires: '' },
+        status: 'authenticated',
+        update: vi.fn(),
+      });
+      const props = createTestProps({
+        climb: createTestClimb({ is_draft: false, userId: 'user-123' }),
+      });
+      ForkAction(props);
+
+      expect(constructCreateClimbUrl).toHaveBeenCalledWith(
+        'kilter',
+        'Original',
+        '12x12',
+        'Full Size',
+        ['Standard', 'Extended'],
+        40,
+        { frames: 'p1r12p2r13', name: 'Test Climb' },
+      );
     });
   });
 });

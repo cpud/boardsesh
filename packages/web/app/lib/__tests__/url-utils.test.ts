@@ -28,7 +28,8 @@ import {
   tryConstructSlugPlayUrl,
   tryConstructSlugViewUrl,
   tryConstructSlugListUrl,
-  DEFAULT_SEARCH_PARAMS
+  DEFAULT_SEARCH_PARAMS,
+  constructCreateClimbUrl,
 } from '../url-utils';
 import type { SearchRequestPagination, BoardDetails } from '../types';
 
@@ -1355,5 +1356,49 @@ describe('tryConstructSlugListUrl', () => {
   it('should return null when static data lookup fails', () => {
     const result = tryConstructSlugListUrl('kilter', 9999, 9999, [9999], 40);
     expect(result).toBeNull();
+  });
+});
+
+describe('constructCreateClimbUrl', () => {
+  it('builds a create URL without query params when no forkParams', () => {
+    const url = constructCreateClimbUrl('kilter', 'Original', '12x12', 'Full Size', ['Standard'], 40);
+    expect(url).toContain('/create');
+    expect(url).not.toContain('?');
+  });
+
+  it('includes forkFrames and forkName when forkParams provided', () => {
+    const url = constructCreateClimbUrl('kilter', 'Original', '12x12', 'Full Size', ['Standard'], 40, {
+      frames: 'p1r12',
+      name: 'My Climb',
+    });
+    expect(url).toContain('forkFrames=p1r12');
+    expect(url).toContain('forkName=My+Climb');
+  });
+
+  it('uses editClimbUuid (not editUuid) as the query param name', () => {
+    const url = constructCreateClimbUrl('kilter', 'Original', '12x12', 'Full Size', ['Standard'], 40, {
+      frames: 'p1r12',
+      name: 'Draft',
+      editClimbUuid: 'abc-123',
+    });
+    expect(url).toContain('editClimbUuid=abc-123');
+    expect(url).not.toContain('editUuid=');
+  });
+
+  it('includes forkDescription when provided', () => {
+    const url = constructCreateClimbUrl('kilter', 'Original', '12x12', 'Full Size', ['Standard'], 40, {
+      frames: 'p1r12',
+      name: 'Draft',
+      description: 'A cool problem',
+    });
+    expect(url).toContain('forkDescription=A+cool+problem');
+  });
+
+  it('omits editClimbUuid from URL when not provided', () => {
+    const url = constructCreateClimbUrl('kilter', 'Original', '12x12', 'Full Size', ['Standard'], 40, {
+      frames: 'p1r12',
+      name: 'Fork',
+    });
+    expect(url).not.toContain('editClimbUuid');
   });
 });
