@@ -11,6 +11,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import LinearProgress from '@mui/material/LinearProgress';
+import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Chip from '@mui/material/Chip';
 import EmojiEventsOutlined from '@mui/icons-material/EmojiEventsOutlined';
@@ -18,13 +19,15 @@ import TimerOutlined from '@mui/icons-material/TimerOutlined';
 import FlagOutlined from '@mui/icons-material/FlagOutlined';
 import PersonOutlined from '@mui/icons-material/PersonOutlined';
 import type { SessionSummary } from '@boardsesh/shared-schema';
-import { getGradeColor, formatVGrade } from '@/app/lib/grade-colors';
+import { getGradeColor as getVividGradeColor } from '@/app/lib/grade-colors';
+import { useGradeFormat } from '@/app/hooks/use-grade-format';
 
 interface SessionSummaryViewProps {
   summary: SessionSummary;
 }
 
 export default function SessionSummaryView({ summary }: SessionSummaryViewProps) {
+  const { formatGrade, loaded: gradeFormatLoaded } = useGradeFormat();
   const maxGradeCount = Math.max(...summary.gradeDistribution.map((g) => g.count), 1);
 
   const formatDuration = (minutes: number | null | undefined) => {
@@ -105,15 +108,19 @@ export default function SessionSummaryView({ summary }: SessionSummaryViewProps)
               <Typography variant="body2" fontWeight={600}>
                 {summary.hardestClimb.climbName}
               </Typography>
-              <Chip
-                label={formatVGrade(summary.hardestClimb.grade) ?? summary.hardestClimb.grade}
-                size="small"
-                sx={{
-                  bgcolor: getGradeColor(summary.hardestClimb.grade),
-                  color: '#fff',
-                  fontWeight: 600,
-                }}
-              />
+              {gradeFormatLoaded ? (
+                <Chip
+                  label={formatGrade(summary.hardestClimb.grade) ?? summary.hardestClimb.grade}
+                  size="small"
+                  sx={{
+                    bgcolor: getVividGradeColor(summary.hardestClimb.grade),
+                    color: '#fff',
+                    fontWeight: 600,
+                  }}
+                />
+              ) : (
+                <Skeleton variant="rounded" width={40} height={24} />
+              )}
             </Box>
           </CardContent>
         </Card>
@@ -129,12 +136,16 @@ export default function SessionSummaryView({ summary }: SessionSummaryViewProps)
             <Stack spacing={0.75}>
               {summary.gradeDistribution.map((g) => (
                 <Box key={g.grade} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography
-                    variant="body2"
-                    sx={{ minWidth: 40, fontWeight: 600, textAlign: 'right' }}
-                  >
-                    {formatVGrade(g.grade) ?? g.grade}
-                  </Typography>
+                  {gradeFormatLoaded ? (
+                    <Typography
+                      variant="body2"
+                      sx={{ minWidth: 40, fontWeight: 600, textAlign: 'right' }}
+                    >
+                      {formatGrade(g.grade) ?? g.grade}
+                    </Typography>
+                  ) : (
+                    <Skeleton variant="text" width={40} sx={{ fontSize: '0.875rem' }} />
+                  )}
                   <LinearProgress
                     variant="determinate"
                     value={(g.count / maxGradeCount) * 100}
@@ -144,7 +155,7 @@ export default function SessionSummaryView({ summary }: SessionSummaryViewProps)
                       borderRadius: 1,
                       bgcolor: 'action.hover',
                       '& .MuiLinearProgress-bar': {
-                        bgcolor: getGradeColor(g.grade),
+                        bgcolor: getVividGradeColor(g.grade) ?? 'action.selected',
                         borderRadius: 1,
                       },
                     }}

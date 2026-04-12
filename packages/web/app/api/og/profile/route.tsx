@@ -4,20 +4,18 @@ import { NextRequest } from 'next/server';
 import { sql } from '@/app/lib/db/db';
 import { themeTokens } from '@/app/theme/theme-config';
 import { FONT_GRADE_COLORS, getGradeColorWithOpacity } from '@/app/lib/grade-colors';
+import { BOULDER_GRADES } from '@/app/lib/board-data';
 
 export const runtime = 'edge';
 
-// Maps difficulty ID to font grade name (same as profile-constants.ts)
-const DIFFICULTY_TO_GRADE: Record<number, string> = {
-  10: '4a', 11: '4b', 12: '4c',
-  13: '5a', 14: '5b', 15: '5c',
-  16: '6a', 17: '6a+', 18: '6b', 19: '6b+',
-  20: '6c', 21: '6c+',
-  22: '7a', 23: '7a+', 24: '7b', 25: '7b+', 26: '7c', 27: '7c+',
-  28: '8a', 29: '8a+', 30: '8b', 31: '8b+', 32: '8c', 33: '8c+',
-};
+// Maps difficulty ID to Font grade name for OG image labels.
+// OG images are static server-rendered PNGs — they always use Font grades
+// since we can't access the user's display preference here.
+const DIFFICULTY_TO_GRADE: Record<number, string> = Object.fromEntries(
+  BOULDER_GRADES.map((g) => [g.difficulty_id, g.font_grade]),
+);
 
-const GRADE_ORDER = Object.values(DIFFICULTY_TO_GRADE);
+const GRADE_ORDER: string[] = BOULDER_GRADES.map((g) => g.font_grade);
 
 export async function GET(request: NextRequest) {
   try {

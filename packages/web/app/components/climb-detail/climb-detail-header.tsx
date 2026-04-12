@@ -3,9 +3,10 @@
 import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Skeleton from '@mui/material/Skeleton';
 import CopyrightOutlined from '@mui/icons-material/CopyrightOutlined';
 import { themeTokens } from '@/app/theme/theme-config';
-import { getSoftVGradeColor, formatVGrade } from '@/app/lib/grade-colors';
+import { useGradeFormat } from '@/app/hooks/use-grade-format';
 import { formatSends } from '@/app/lib/format-climb-stats';
 import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
 import type { Climb } from '@/app/lib/types';
@@ -25,11 +26,12 @@ export default function ClimbDetailHeader({
   communityGrade,
 }: ClimbDetailHeaderProps) {
   const isDark = useIsDarkMode();
+  const { formatGrade, getGradeColor, loaded: gradeFormatLoaded } = useGradeFormat();
 
   // Use community grade when available, otherwise fall back to original difficulty
   const displayDifficulty = communityGrade || climb.difficulty;
-  const vGrade = formatVGrade(displayDifficulty);
-  const gradeColor = vGrade ? getSoftVGradeColor(vGrade, isDark) : undefined;
+  const formattedGrade = formatGrade(displayDifficulty);
+  const gradeColor = formattedGrade ? getGradeColor(displayDifficulty, isDark) : undefined;
 
   // Check if climb is a benchmark/classic
   const benchmarkValue = climb.benchmark_difficulty != null ? Number(climb.benchmark_difficulty) : null;
@@ -49,7 +51,9 @@ export default function ClimbDetailHeader({
     >
       {/* Left: Grade */}
       <Box sx={{ flexShrink: 0, minWidth: 48 }}>
-        {vGrade ? (
+        {!gradeFormatLoaded && displayDifficulty ? (
+          <Skeleton variant="rounded" width={48} height={themeTokens.typography.fontSize['2xl']} />
+        ) : formattedGrade ? (
           <Typography
             variant="h5"
             component="span"
@@ -60,7 +64,7 @@ export default function ClimbDetailHeader({
               color: gradeColor ?? 'text.primary',
             }}
           >
-            {vGrade}
+            {formattedGrade}
           </Typography>
         ) : displayDifficulty ? (
           <Typography

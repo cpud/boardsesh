@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import Avatar from '@mui/material/Avatar';
 import AvatarGroup from '@mui/material/AvatarGroup';
 import Chip from '@mui/material/Chip';
+import Skeleton from '@mui/material/Skeleton';
 import TimerOutlined from '@mui/icons-material/TimerOutlined';
 import FlagOutlined from '@mui/icons-material/FlagOutlined';
 import FlashOnOutlined from '@mui/icons-material/FlashOnOutlined';
@@ -22,7 +23,8 @@ import OutcomeDoughnut from '@/app/components/charts/outcome-doughnut';
 import VoteButton from '@/app/components/social/vote-button';
 import FeedCommentButton from '@/app/components/social/feed-comment-button';
 import { themeTokens } from '@/app/theme/theme-config';
-import { getGradeColor, getGradeTextColor, formatVGrade } from '@/app/lib/grade-colors';
+import { getGradeColor, getGradeTextColor } from '@/app/lib/grade-colors';
+import { useGradeFormat } from '@/app/hooks/use-grade-format';
 
 interface SessionFeedCardProps {
   session: SessionFeedItem;
@@ -64,6 +66,8 @@ function formatRelativeTime(isoString: string): string {
 }
 
 export default function SessionFeedCard({ session }: SessionFeedCardProps) {
+  const { formatGrade, loaded: gradeFormatLoaded } = useGradeFormat();
+
   const {
     sessionId,
     sessionName,
@@ -93,8 +97,8 @@ export default function SessionFeedCard({ session }: SessionFeedCardProps) {
   const hardestGradeTextColor = getGradeTextColor(hardestGradeColor);
 
   const gradeBars = React.useMemo(
-    () => buildSessionGradeBars(gradeDistribution),
-    [gradeDistribution],
+    () => buildSessionGradeBars(gradeDistribution, formatGrade),
+    [gradeDistribution, formatGrade],
   );
 
   return (
@@ -229,16 +233,20 @@ export default function SessionFeedCard({ session }: SessionFeedCardProps) {
               />
             )}
             {hardestGrade && (
-              <Chip
-                label={formatVGrade(hardestGrade) ?? hardestGrade}
-                size="small"
-                sx={{
-                  borderRadius: themeTokens.borderRadius.full,
-                  bgcolor: hardestGradeColor || 'var(--neutral-200)',
-                  color: hardestGradeTextColor,
-                  fontWeight: 600,
-                }}
-              />
+              gradeFormatLoaded ? (
+                <Chip
+                  label={formatGrade(hardestGrade) ?? hardestGrade}
+                  size="small"
+                  sx={{
+                    borderRadius: themeTokens.borderRadius.full,
+                    bgcolor: hardestGradeColor || 'var(--neutral-200)',
+                    color: hardestGradeTextColor,
+                    fontWeight: 600,
+                  }}
+                />
+              ) : (
+                <Skeleton variant="rounded" width={40} height={24} sx={{ borderRadius: themeTokens.borderRadius.full }} />
+              )
             )}
           </Box>
 

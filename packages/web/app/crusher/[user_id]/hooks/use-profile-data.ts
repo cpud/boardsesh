@@ -12,6 +12,7 @@ import {
   type GetUserProfileStatsQueryResponse,
 } from '@/app/lib/graphql/operations';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
+import { useGradeFormat } from '@/app/hooks/use-grade-format';
 import {
   type UserProfile,
   type LogbookEntry,
@@ -31,6 +32,7 @@ import {
 export function useProfileData(userId: string) {
   const { data: session } = useSession();
   const { showMessage } = useSnackbar();
+  const { gradeFormat } = useGradeFormat();
 
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -162,23 +164,23 @@ export function useProfileData(userId: string) {
   );
 
   const aggregatedStackedBars = useMemo(
-    () => buildAggregatedStackedBars(allBoardsTicks, aggregatedTimeframe),
-    [allBoardsTicks, aggregatedTimeframe],
+    () => buildAggregatedStackedBars(allBoardsTicks, aggregatedTimeframe, gradeFormat),
+    [allBoardsTicks, aggregatedTimeframe, gradeFormat],
   );
 
   const weeklyBars = useMemo(
-    () => buildWeeklyBars(filteredLogbook, weeklyFromDate || undefined, weeklyToDate || undefined),
-    [filteredLogbook, weeklyFromDate, weeklyToDate],
+    () => buildWeeklyBars(filteredLogbook, weeklyFromDate || undefined, weeklyToDate || undefined, gradeFormat),
+    [filteredLogbook, weeklyFromDate, weeklyToDate, gradeFormat],
   );
 
   const aggregatedFlashRedpointBars = useMemo(
-    () => buildAggregatedFlashRedpointBars(allBoardsTicks, aggregatedTimeframe),
-    [allBoardsTicks, aggregatedTimeframe],
+    () => buildAggregatedFlashRedpointBars(allBoardsTicks, aggregatedTimeframe, gradeFormat),
+    [allBoardsTicks, aggregatedTimeframe, gradeFormat],
   );
 
   const statisticsSummary = useMemo(
-    () => buildStatisticsSummary(profileStats),
-    [profileStats],
+    () => buildStatisticsSummary(profileStats, gradeFormat),
+    [profileStats, gradeFormat],
   );
 
   const vPointsTimeline = useMemo(

@@ -91,3 +91,24 @@ export const getAlwaysTickInApp = async (): Promise<boolean> => {
 export const setAlwaysTickInApp = async (enabled: boolean): Promise<void> => {
   await setPreference('alwaysTickInApp', enabled);
 };
+
+export type { GradeDisplayFormat } from './grade-colors';
+// Re-export so existing consumers don't break.
+// The canonical definition lives in grade-colors.ts.
+import type { GradeDisplayFormat } from './grade-colors';
+
+/**
+ * Get the grade display format preference.
+ * Defaults to 'v-grade' if not set.
+ */
+export const getGradeDisplayFormat = async (): Promise<GradeDisplayFormat> => {
+  const value = await getPreference<GradeDisplayFormat>('gradeDisplayFormat');
+  return value === 'font' ? 'font' : 'v-grade';
+};
+
+/**
+ * Set the grade display format preference.
+ */
+export const setGradeDisplayFormat = async (format: GradeDisplayFormat): Promise<void> => {
+  await setPreference('gradeDisplayFormat', format);
+};

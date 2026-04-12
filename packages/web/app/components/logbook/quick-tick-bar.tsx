@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 // NOTE: the "swipe left to dismiss" hint is intentionally NOT rendered here —
 // it lives above the queue control bar as a transient toast so it doesn't
 // push the stars out of alignment with the action buttons.
+import Skeleton from '@mui/material/Skeleton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
@@ -20,7 +21,7 @@ import { useBoardProvider } from '../board-provider/board-provider-context';
 import type { LogbookEntry, TickStatus } from '@/app/hooks/use-logbook';
 import { TENSION_KILTER_GRADES } from '@/app/lib/board-data';
 import { themeTokens } from '@/app/theme/theme-config';
-import { formatVGrade, getSoftVGradeColor } from '@/app/lib/grade-colors';
+import { useGradeFormat } from '@/app/hooks/use-grade-format';
 import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
 import styles from './quick-tick-bar.module.css';
 
@@ -86,6 +87,7 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
 }) => {
   const { saveTick, logbook } = useBoardProvider();
   const isDark = useIsDarkMode();
+  const { formatGrade, getGradeColor, loaded: gradeFormatLoaded } = useGradeFormat();
 
   // Snapshot the target climb the first time we get a non-null climb.
   // All subsequent saves use this snapshot, not the live props.
@@ -126,13 +128,13 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
     : undefined;
 
   // Prefer the user's override (which carries the full "font/v" difficulty
-  // name so formatVGrade can disambiguate V5 vs V5+), otherwise fall back
+  // name so formatGrade can disambiguate V5 vs V5+), otherwise fall back
   // to the snapshot climb's own difficulty string.
   const displayDifficulty =
     selectedGrade?.difficulty_name ?? tickTarget?.climb.difficulty ?? currentClimb?.difficulty ?? '';
-  const vGrade = formatVGrade(displayDifficulty);
-  const gradeLabel = vGrade ?? (displayDifficulty || '—');
-  const gradeColor = getSoftVGradeColor(vGrade, isDark);
+  const formattedGrade = formatGrade(displayDifficulty);
+  const gradeLabel = formattedGrade ?? (displayDifficulty || '—');
+  const gradeColor = getGradeColor(displayDifficulty, isDark);
 
   // Fall back to matching the climb's own difficulty string against the
   // grade list so the menu can highlight the "current" grade even before
@@ -309,28 +311,37 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
           <ChatBubbleOutlineOutlined fontSize="small" />
         </IconButton>
 
-        {/* Colourised V-grade, matching the styling used by ClimbTitle's
+        {/* Colourised grade, matching the styling used by ClimbTitle's
             right-aligned large grade. Click opens the override menu. */}
-        <Typography
-          variant="body2"
-          component="span"
-          onClick={(e) => setGradeAnchorEl(e.currentTarget)}
-          role="button"
-          aria-label="Select logged grade"
-          data-testid="quick-tick-grade"
-          className={styles.gradeLabel}
-          sx={{
-            fontSize: themeTokens.typography.fontSize.sm,
-            fontWeight: themeTokens.typography.fontWeight.bold,
-            lineHeight: 1,
-            color: gradeColor ?? 'text.secondary',
-            cursor: 'pointer',
-            flexShrink: 0,
-            px: '4px',
-          }}
-        >
-          {gradeLabel}
-        </Typography>
+        {!gradeFormatLoaded ? (
+          <Skeleton
+            variant="rounded"
+            width={themeTokens.typography.fontSize.sm * 2.5}
+            height={themeTokens.typography.fontSize.sm}
+            sx={{ flexShrink: 0, mx: '4px' }}
+          />
+        ) : (
+          <Typography
+            variant="body2"
+            component="span"
+            onClick={(e) => setGradeAnchorEl(e.currentTarget)}
+            role="button"
+            aria-label="Select logged grade"
+            data-testid="quick-tick-grade"
+            className={styles.gradeLabel}
+            sx={{
+              fontSize: themeTokens.typography.fontSize.sm,
+              fontWeight: themeTokens.typography.fontWeight.bold,
+              lineHeight: 1,
+              color: gradeColor ?? 'text.secondary',
+              cursor: 'pointer',
+              flexShrink: 0,
+              px: '4px',
+            }}
+          >
+            {gradeLabel}
+          </Typography>
+        )}
         <Menu
           anchorEl={gradeAnchorEl}
           open={Boolean(gradeAnchorEl)}
@@ -358,7 +369,7 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
                   setGradeAnchorEl(null);
                 }}
               >
-                {formatVGrade(grade.difficulty_name) ?? grade.v_grade}
+                {formatGrade(grade.difficulty_name) ?? grade.v_grade}
               </MenuItem>
             );
           })}

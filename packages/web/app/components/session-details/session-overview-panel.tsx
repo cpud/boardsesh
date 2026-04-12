@@ -10,6 +10,7 @@ import AvatarGroup from '@mui/material/AvatarGroup';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
+import Skeleton from '@mui/material/Skeleton';
 import FlagOutlined from '@mui/icons-material/FlagOutlined';
 import TimerOutlined from '@mui/icons-material/TimerOutlined';
 import FlashOnOutlined from '@mui/icons-material/FlashOnOutlined';
@@ -22,7 +23,7 @@ import type { SessionFeedParticipant, SessionGradeDistributionItem } from '@boar
 import { deduplicateBy } from '@/app/utils/deduplicate';
 import { CssBarChart } from '@/app/components/charts/css-bar-chart';
 import { buildSessionGradeBars, SESSION_GRADE_LEGEND } from '@/app/components/charts/session-grade-bars';
-import { formatVGrade } from '@/app/lib/grade-colors';
+import { useGradeFormat } from '@/app/hooks/use-grade-format';
 
 interface SessionOverviewPanelProps {
   participants: SessionFeedParticipant[];
@@ -91,6 +92,8 @@ export default function SessionOverviewPanel({
   getParticipantHref,
   afterParticipants,
 }: SessionOverviewPanelProps) {
+  const { formatGrade, loaded: gradeFormatLoaded } = useGradeFormat();
+
   // Defensive dedup: during WebSocket reconnection race conditions the server
   // may briefly report the same participant twice. Deduplicating by userId
   // keeps the UI stable until the next authoritative state sync arrives.
@@ -102,8 +105,8 @@ export default function SessionOverviewPanel({
   const isMultiUser = uniqueParticipants.length > 1;
 
   const gradeBars = React.useMemo(
-    () => buildSessionGradeBars(gradeDistribution),
-    [gradeDistribution],
+    () => buildSessionGradeBars(gradeDistribution, formatGrade),
+    [gradeDistribution, formatGrade],
   );
 
   return (
@@ -224,7 +227,9 @@ export default function SessionOverviewPanel({
         )}
         <Chip label={`${tickCount} climb${tickCount !== 1 ? 's' : ''}`} variant="outlined" />
         {hardestGrade && (
-          <Chip label={`Hardest: ${formatVGrade(hardestGrade) ?? hardestGrade}`} variant="outlined" />
+          gradeFormatLoaded
+            ? <Chip label={`Hardest: ${formatGrade(hardestGrade) ?? hardestGrade}`} variant="outlined" />
+            : <Skeleton variant="rounded" width={80} height={32} />
         )}
       </Box>
 

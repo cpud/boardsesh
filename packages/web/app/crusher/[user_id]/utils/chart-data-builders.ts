@@ -6,11 +6,14 @@ import type { GetUserProfileStatsQueryResponse } from '@/app/lib/graphql/operati
 import type { CssBarChartBar } from '@/app/components/charts/css-bar-chart';
 import type { GroupedBar } from '@/app/components/charts/css-bar-chart';
 import { themeTokens } from '@/app/theme/theme-config';
+import { type GradeDisplayFormat } from '@/app/lib/grade-colors';
 import {
   type LogbookEntry,
   type TimeframeType,
   type AggregatedTimeframeType,
   difficultyMapping,
+  getDifficultyMapping,
+  sortGrades,
   getGradeChartColor,
   getLayoutKey,
   getLayoutDisplayName,
@@ -95,7 +98,9 @@ export interface LayoutLegendEntry {
 export function buildAggregatedStackedBars(
   allBoardsTicks: Record<string, LogbookEntry[]>,
   aggregatedTimeframe: AggregatedTimeframeType,
+  gradeFormat: GradeDisplayFormat = 'v-grade',
 ): { bars: CssBarChartBar[]; legendEntries: LayoutLegendEntry[] } | null {
+  const mapping = getDifficultyMapping(gradeFormat);
   const layoutGradeClimbs: Record<string, Record<string, Set<string>>> = {};
   const allGrades = new Set<string>();
   const allLayouts = new Set<string>();
@@ -106,7 +111,7 @@ export function buildAggregatedStackedBars(
 
     filteredTicks.forEach((entry) => {
       if (entry.difficulty === null || entry.status === 'attempt' || !entry.climbUuid) return;
-      const grade = difficultyMapping[entry.difficulty];
+      const grade = mapping[entry.difficulty];
       if (grade) {
         const layoutKey = getLayoutKey(boardType, entry.layoutId);
         if (!layoutGradeClimbs[layoutKey]) layoutGradeClimbs[layoutKey] = {};
@@ -120,7 +125,7 @@ export function buildAggregatedStackedBars(
 
   if (allGrades.size === 0) return null;
 
-  const sortedGrades = GRADE_ORDER.filter((g) => allGrades.has(g));
+  const sortedGrades = sortGrades(Array.from(allGrades), gradeFormat);
 
   const layoutOrder = [
     'kilter-1', 'kilter-8', 'tension-9', 'tension-10', 'tension-11',
@@ -167,8 +172,11 @@ export function buildWeeklyBars(
   filteredLogbook: LogbookEntry[],
   weeklyFromDate?: string,
   weeklyToDate?: string,
+  gradeFormat: GradeDisplayFormat = 'v-grade',
 ): CssBarChartBar[] | null {
   if (filteredLogbook.length === 0) return null;
+
+  const mapping = getDifficultyMapping(gradeFormat);
 
   // Apply weekly date filter if provided
   const entries = (weeklyFromDate || weeklyToDate)
@@ -200,7 +208,7 @@ export function buildWeeklyBars(
     if (entry.difficulty === null) return;
     const d = dayjs(entry.climbed_at);
     const weekKey = `${d.isoWeekYear()}-W${d.isoWeek()}`;
-    const difficulty = difficultyMapping[entry.difficulty];
+    const difficulty = mapping[entry.difficulty];
     if (difficulty) {
       if (!weeklyData[weekKey]) weeklyData[weekKey] = {};
       weeklyData[weekKey][difficulty] = (weeklyData[weekKey][difficulty] || 0) + 1;
@@ -208,8 +216,15 @@ export function buildWeeklyBars(
   });
 
   // Find which grades actually appear
-  const activeGrades = GRADE_ORDER.filter((grade) =>
-    weekKeys.some((wk) => (weeklyData[wk]?.[grade] || 0) > 0),
+  const usedGrades = new Set<string>();
+  Object.values(weeklyData).forEach((weekGrades) => {
+    Object.keys(weekGrades).forEach((grade) => usedGrades.add(grade));
+  });
+  const activeGrades = sortGrades(
+    Array.from(usedGrades).filter((grade) =>
+      weekKeys.some((wk) => (weeklyData[wk]?.[grade] || 0) > 0),
+    ),
+    gradeFormat,
   );
 
   if (activeGrades.length === 0) return null;
@@ -235,15 +250,19 @@ export function buildWeeklyBars(
 
 // ── Flash vs Redpoint grouped bars ──────────────────────────────────
 
-export function buildFlashRedpointBars(filteredLogbook: LogbookEntry[]): GroupedBar[] | null {
+export function buildFlashRedpointBars(
+  filteredLogbook: LogbookEntry[],
+  gradeFormat: GradeDisplayFormat = 'v-grade',
+): GroupedBar[] | null {
   if (filteredLogbook.length === 0) return null;
 
+  const mapping = getDifficultyMapping(gradeFormat);
   const flash: Record<string, number> = {};
   const redpoint: Record<string, number> = {};
 
   filteredLogbook.forEach((entry) => {
     if (entry.difficulty === null) return;
-    const difficulty = difficultyMapping[entry.difficulty];
+    const difficulty = mapping[entry.difficulty];
     if (!difficulty) return;
     // Prefer the canonical status field when available. Fall back to the old
     // tries-based heuristic for legacy rows that don't have status set.
@@ -257,7 +276,7 @@ export function buildFlashRedpointBars(filteredLogbook: LogbookEntry[]): Grouped
   });
 
   const allGrades = new Set([...Object.keys(flash), ...Object.keys(redpoint)]);
-  const sortedGrades = GRADE_ORDER.filter((g) => allGrades.has(g));
+  const sortedGrades = sortGrades(Array.from(allGrades), gradeFormat);
 
   if (sortedGrades.length === 0) return null;
 
@@ -276,12 +295,13 @@ export function buildFlashRedpointBars(filteredLogbook: LogbookEntry[]): Grouped
 export function buildAggregatedFlashRedpointBars(
   allBoardsTicks: Record<string, LogbookEntry[]>,
   aggregatedTimeframe: AggregatedTimeframeType,
+  gradeFormat: GradeDisplayFormat = 'v-grade',
 ): GroupedBar[] | null {
   const allEntries = BOARD_TYPES.flatMap((boardType) =>
     filterByAggregatedTimeframe(allBoardsTicks[boardType] || [], aggregatedTimeframe),
   );
 
-  return buildFlashRedpointBars(allEntries);
+  return buildFlashRedpointBars(allEntries, gradeFormat);
 }
 
 // ── V-Points stacked area timeline ──────────────────────────────────
@@ -361,6 +381,7 @@ export function buildVPointsTimeline(
   const skippedKeys = allWeekKeys.length > 104 ? allWeekKeys.slice(0, -104) : [];
 
   // Per-layout: sum points per week
+  // V-Points always use V-grade mapping regardless of display format
   const layoutWeeklyPoints: Record<string, Record<string, number>> = {};
   for (const layoutKey of activeLayouts) {
     const weekPoints: Record<string, number> = {};
@@ -445,11 +466,13 @@ export interface LayoutPercentage {
 
 export function buildStatisticsSummary(
   profileStats: GetUserProfileStatsQueryResponse['userProfileStats'] | null,
+  gradeFormat: GradeDisplayFormat = 'v-grade',
 ): { totalAscents: number; layoutPercentages: LayoutPercentage[] } {
   if (!profileStats) {
     return { totalAscents: 0, layoutPercentages: [] };
   }
 
+  const mapping = getDifficultyMapping(gradeFormat);
   const totalAscents = profileStats.totalDistinctClimbs;
 
   const layoutsWithExactPercentages = profileStats.layoutStats
@@ -459,7 +482,7 @@ export function buildStatisticsSummary(
       stats.gradeCounts.forEach(({ grade, count }) => {
         const difficultyNum = parseInt(grade, 10);
         if (!isNaN(difficultyNum)) {
-          const gradeName = difficultyMapping[difficultyNum];
+          const gradeName = mapping[difficultyNum];
           if (gradeName) {
             grades[gradeName] = (grades[gradeName] || 0) + count;
           }

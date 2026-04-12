@@ -17,8 +17,9 @@ import {
   type GetUserProfileStatsQueryVariables,
   type GetUserProfileStatsQueryResponse,
 } from '@/app/lib/graphql/operations';
-import { difficultyMapping } from '@/app/crusher/[user_id]/utils/profile-constants';
-import { V_GRADE_COLORS, getGradeColorWithOpacity } from '@/app/lib/grade-colors';
+import { getDifficultyMapping, sortGrades } from '@/app/crusher/[user_id]/utils/profile-constants';
+import { V_GRADE_COLORS, FONT_GRADE_COLORS, getGradeColorWithOpacity } from '@/app/lib/grade-colors';
+import { useGradeFormat } from '@/app/hooks/use-grade-format';
 import styles from './user-smart-card.module.css';
 
 interface UserSmartCardProps {
@@ -48,14 +49,14 @@ interface GradeBar {
   color: string;
 }
 
-const GRADE_ORDER = [...new Set(Object.values(difficultyMapping))];
 const CHIP_SX = { height: 20, fontSize: '0.7rem' } as const;
 
 export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardProps) {
   const router = useRouter();
+  const { gradeFormat, loaded: gradeFormatLoaded } = useGradeFormat();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [totalClimbs, setTotalClimbs] = useState(0);
-  const [gradeBars, setGradeBars] = useState<GradeBar[]>([]);
+  const [rawStats, setRawStats] = useState<GetUserProfileStatsQueryResponse['userProfileStats'] | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -83,29 +84,7 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
 
       if (statsData) {
         setTotalClimbs(statsData.totalDistinctClimbs);
-
-        // Aggregate grade counts across all layouts, grouped by V-grade
-        const gradeAgg: Record<string, number> = {};
-        for (const layout of statsData.layoutStats) {
-          for (const gc of layout.gradeCounts) {
-            const num = parseInt(gc.grade, 10);
-            if (isNaN(num)) continue;
-            const grade = difficultyMapping[num];
-            if (!grade) continue;
-            gradeAgg[grade] = (gradeAgg[grade] || 0) + gc.count;
-          }
-        }
-
-        // Convert to sorted bars
-        const bars: GradeBar[] = Object.entries(gradeAgg)
-          .map(([grade, count]) => {
-            const hex = V_GRADE_COLORS[grade];
-            const color = hex ? getGradeColorWithOpacity(hex, 0.4) : 'rgba(200, 200, 200, 0.4)';
-            return { grade, count, color };
-          })
-          .sort((a: GradeBar, b: GradeBar) => GRADE_ORDER.indexOf(a.grade) - GRADE_ORDER.indexOf(b.grade));
-
-        setGradeBars(bars);
+        setRawStats(statsData);
       }
     } catch {
       // Silently fail — card is a nice-to-have
@@ -117,6 +96,28 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
   useEffect(() => {
     fetchData();
   }, [fetchData, refreshKey]);
+
+  const gradeBars = useMemo(() => {
+    if (!rawStats) return [];
+    const mapping = getDifficultyMapping(gradeFormat);
+    const gradeAgg: Record<string, number> = {};
+    for (const layout of rawStats.layoutStats) {
+      for (const gc of layout.gradeCounts) {
+        const num = parseInt(gc.grade, 10);
+        if (isNaN(num)) continue;
+        const grade = mapping[num];
+        if (!grade) continue;
+        gradeAgg[grade] = (gradeAgg[grade] || 0) + gc.count;
+      }
+    }
+    const sortedGradeKeys = sortGrades(Object.keys(gradeAgg), gradeFormat);
+    return sortedGradeKeys.map((grade) => {
+      const count = gradeAgg[grade];
+      const hex = V_GRADE_COLORS[grade] ?? FONT_GRADE_COLORS[grade.toLowerCase()];
+      const color = hex ? getGradeColorWithOpacity(hex, 0.4) : 'rgba(200, 200, 200, 0.4)';
+      return { grade, count, color };
+    });
+  }, [rawStats, gradeFormat]);
 
   const maxCount = useMemo(() => Math.max(...gradeBars.map((b: GradeBar) => b.count), 1), [gradeBars]);
 
@@ -204,7 +205,7 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
               <div className={styles.gradeLegend}>
                 {gradeBars.map((bar: GradeBar) => (
                   <span key={bar.grade} className={styles.gradeLegendLabel}>
-                    {bar.grade}
+                    {gradeFormatLoaded ? bar.grade : <Skeleton variant="text" width={20} sx={{ display: 'inline-block', fontSize: 'inherit' }} />}
                   </span>
                 ))}
               </div>
