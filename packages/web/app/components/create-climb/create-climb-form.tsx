@@ -15,7 +15,7 @@ import MuiSwitch from '@mui/material/Switch';
 import MuiSelect from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Badge from '@mui/material/Badge';
-import { SettingsOutlined, LocalFireDepartmentOutlined, SaveOutlined, LoginOutlined, CloudUploadOutlined, GetAppOutlined, DraftsOutlined, DeleteOutlined, CheckCircleOutlined, LockOutlined } from '@mui/icons-material';
+import { SettingsOutlined, LocalFireDepartmentOutlined, SaveOutlined, LoginOutlined, CloudUploadOutlined, GetAppOutlined, DraftsOutlined, DeleteOutlined, CheckCircleOutlined, LockOutlined, PlayCircleOutlineOutlined } from '@mui/icons-material';
 import { themeTokens } from '@/app/theme/theme-config';
 import HoldIndicator from './hold-indicator';
 import { usePathname } from 'next/navigation';
@@ -44,7 +44,7 @@ import { getBackendWsUrl } from '@/app/lib/backend-url';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 import { useSnackbar } from '../providers/snackbar-provider';
-import { useOptionalQueueActions } from '@/app/components/graphql-queue';
+import { useOptionalQueueActions, useOptionalQueueData } from '@/app/components/graphql-queue';
 import { refreshClimbSearchAfterSave } from '@/app/lib/climb-search-cache';
 import { ConfirmPopover } from '@/app/components/ui/confirm-popover';
 import { saveAutosave, loadAutosave, clearAutosave } from '@/app/lib/create-climb-autosave-db';
@@ -207,6 +207,20 @@ export default function CreateClimbForm({
   // The create page is always mounted inside GraphQLQueueProvider, but use the
   // optional hook so unit tests that render the form in isolation don't blow up.
   const queueActions = useOptionalQueueActions();
+  const queueData = useOptionalQueueData();
+
+  // Stable UUID for preview climbs pushed to the queue before saving. This
+  // ensures repeated "Set Active" presses update the same queue slot.
+  const previewUuidRef = useRef<string | null>(null);
+  const getPreviewUuid = useCallback(() => {
+    if (!previewUuidRef.current) {
+      // crypto.randomUUID() is unavailable in older Safari / non-secure contexts
+      previewUuidRef.current = typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    }
+    return previewUuidRef.current;
+  }, []);
 
   const markJustSaved = useCallback(() => {
     setJustSaved(true);
@@ -379,6 +393,7 @@ export default function CreateClimbForm({
       sendFramesToBoard(frames);
     }
   }, [boardType, litUpHoldsMap, isConnected, generateFramesString, sendFramesToBoard]);
+
 
   // As soon as the user edits the climb after a successful save, flip the
   // button back to its normal "Save" state so they can save the revision.
@@ -590,6 +605,57 @@ export default function CreateClimbForm({
     },
     [queueActions, queueItemUuid, buildClimbFromFormState],
   );
+
+  // Pushes the current WIP climb to the party queue without saving, so other
+  // session members can see it on their screens. Uses the saved climb's UUID if
+  // available, otherwise a stable preview UUID.
+  const handleSetActive = useCallback(async () => {
+    if (!queueActions) return;
+
+    const uuid = savedClimb?.uuid ?? getPreviewUuid();
+    const frames = boardType === 'aurora' && generateFramesString
+      ? generateFramesString()
+      : '';
+
+    const climb = buildClimbFromFormState(uuid, frames);
+
+    if (queueItemUuid) {
+      queueActions.replaceQueueItem(queueItemUuid, climb);
+    } else {
+      const newItem = await queueActions.setCurrentClimb(climb);
+      if (newItem) {
+        setQueueItemUuid(newItem.uuid);
+      }
+    }
+
+    track('Create Climb Set Active', {
+      boardType,
+      hasBeenSaved: !!savedClimb,
+    });
+  }, [queueActions, savedClimb, getPreviewUuid, boardType, generateFramesString, buildClimbFromFormState, queueItemUuid]);
+
+  // Whether the current WIP climb is already the active climb in the queue.
+  const isPreviewActive = useMemo(() => {
+    if (!queueData?.currentClimb) return false;
+    const activeUuid = queueData.currentClimb.uuid;
+    return activeUuid === savedClimb?.uuid || activeUuid === previewUuidRef.current;
+  }, [queueData?.currentClimb, savedClimb?.uuid]);
+
+  // Keep the queue item in sync with hold changes. Once a climb lands in the
+  // queue (via Save or Set Active), every hold edit pushes an update so party
+  // members see the latest layout in real time — same as Bluetooth above.
+  useEffect(() => {
+    if (!queueActions || !queueItemUuid) return;
+
+    const uuid = savedClimb?.uuid ?? previewUuidRef.current;
+    if (!uuid) return;
+
+    const frames = boardType === 'aurora' && generateFramesString
+      ? generateFramesString()
+      : '';
+    const climb = buildClimbFromFormState(uuid, frames);
+    queueActions.replaceQueueItem(queueItemUuid, climb);
+  }, [litUpHoldsMap, queueActions, queueItemUuid, savedClimb?.uuid, boardType, generateFramesString, buildClimbFromFormState]);
 
   // Save climb - Aurora
   //
@@ -1405,6 +1471,23 @@ export default function CreateClimbForm({
           </Typography>
         )}
         <div className={styles.bottomControlsSaveSlot}>
+          {queueActions && (
+            <MuiTooltip title={isPreviewActive ? 'Active' : 'Set active'}>
+              <span>
+                <IconButton
+                  size="small"
+                  disabled={totalHolds === 0 || isPreviewActive}
+                  onClick={handleSetActive}
+                  aria-label={isPreviewActive ? 'Currently active' : 'Set as active climb'}
+                >
+                  <PlayCircleOutlineOutlined
+                    fontSize="small"
+                    sx={isPreviewActive ? { color: themeTokens.colors.primary } : undefined}
+                  />
+                </IconButton>
+              </span>
+            </MuiTooltip>
+          )}
           <MuiTooltip title="Climb settings">
             <IconButton size="small" onClick={handleToggleSettings} aria-label="Climb settings">
               <SettingsOutlined fontSize="small" />
