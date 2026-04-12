@@ -911,11 +911,9 @@ export default function CreateClimbForm({
     if (boardType === 'moonboard' && !hasMoonBoardSessionUser) {
       return (
         <MuiTooltip title="Log in to save your climb">
-          <Link href="/api/auth/signin" aria-label="Log in to save">
-            <IconButton size="small" color="primary" component="span">
-              <LoginOutlined fontSize="small" />
-            </IconButton>
-          </Link>
+          <IconButton size="small" color="primary" component={Link} href="/api/auth/signin" aria-label="Log in to save">
+            <LoginOutlined fontSize="small" />
+          </IconButton>
         </MuiTooltip>
       );
     }
@@ -1176,11 +1174,9 @@ export default function CreateClimbForm({
               </span>
             </MuiTooltip>
             <MuiTooltip title="Bulk import">
-              <Link href={bulkImportUrl} aria-label="Bulk import">
-                <IconButton size="small" component="span">
-                  <GetAppOutlined fontSize="small" />
-                </IconButton>
-              </Link>
+              <IconButton size="small" component={Link} href={bulkImportUrl} aria-label="Bulk import">
+                <GetAppOutlined fontSize="small" />
+              </IconButton>
             </MuiTooltip>
           </>
         )}
