@@ -46,7 +46,8 @@ import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 import { useSnackbar } from '../providers/snackbar-provider';
 import { refreshClimbSearchAfterSave } from '@/app/lib/climb-search-cache';
 import { ConfirmPopover } from '@/app/components/ui/confirm-popover';
-import { saveAutosave, loadAutosave, clearAutosave, type CreateClimbAutosave } from '@/app/lib/create-climb-autosave-db';
+import { saveAutosave, loadAutosave, clearAutosave } from '@/app/lib/create-climb-autosave-db';
+import { useDebouncedValue } from '@/app/hooks/use-debounced-value';
 import CreateClimbHeatmapOverlay from './create-climb-heatmap-overlay';
 import DraftsDrawer from './drafts-drawer';
 import HoldTypePicker from './hold-type-picker';
@@ -304,24 +305,24 @@ export default function CreateClimbForm({
   }, []);
 
   // Debounced autosave on changes
+  const autosaveData = useMemo(() => ({
+    holdsJson: JSON.stringify(litUpHoldsMap),
+    climbName,
+    description,
+    isDraft,
+    boardKey: autosaveBoardKey,
+    savedAt: Date.now(),
+  }), [litUpHoldsMap, climbName, description, isDraft, autosaveBoardKey]);
+  const debouncedAutosave = useDebouncedValue(autosaveData, 500);
+
   useEffect(() => {
     if (!autosaveRestoredRef.current) return;
     if (totalHolds === 0 && !climbName && !description) {
       clearAutosave();
       return;
     }
-    const timer = setTimeout(() => {
-      saveAutosave({
-        holdsJson: JSON.stringify(litUpHoldsMap),
-        climbName,
-        description,
-        isDraft,
-        boardKey: autosaveBoardKey,
-        savedAt: Date.now(),
-      });
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [litUpHoldsMap, climbName, description, isDraft, totalHolds, autosaveBoardKey]);
+    saveAutosave(debouncedAutosave);
+  }, [debouncedAutosave, totalHolds, climbName, description]);
 
   const moonBoardHolds = useMemo(
     () => (boardType === 'moonboard' ? convertLitUpHoldsMapToMoonBoardHolds(litUpHoldsMap) : null),
