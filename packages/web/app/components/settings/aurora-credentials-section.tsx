@@ -30,8 +30,10 @@ import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import LinkOutlined from '@mui/icons-material/LinkOutlined';
 import SyncOutlined from '@mui/icons-material/SyncOutlined';
 import WarningOutlined from '@mui/icons-material/WarningOutlined';
+import EmailOutlined from '@mui/icons-material/EmailOutlined';
 import FileUploadOutlined from '@mui/icons-material/FileUploadOutlined';
 import RadioButtonUncheckedOutlined from '@mui/icons-material/RadioButtonUncheckedOutlined';
+import { useSession } from 'next-auth/react';
 import type { AuroraCredentialStatus } from '@/app/api/internal/aurora-credentials/route';
 import type { UnsyncedCounts } from '@/app/api/internal/aurora-credentials/unsynced/route';
 import type { ImportResult } from '@/app/lib/data-sync/aurora/json-import';
@@ -67,6 +69,23 @@ export const STEP_LABELS: Record<ImportStep, string> = {
   sessions: 'Building sessions',
 };
 
+function buildKilterDataRequestMailto(userName?: string | null, userEmail?: string | null): string {
+  const name = userName || '[YOUR NAME]';
+  const email = userEmail || '[YOUR EMAIL]';
+  const subject = 'Kilterboard data';
+  const body = `Hey there!
+
+Ex-app user here. I was wondering if I could get a copy of my data so I can save my logbooks and other data for personal tracking records.
+
+My username is ${name}, and this should be under this email (${email}).
+
+Thanks!
+
+${name}`;
+
+  return `mailto:peter@auroraclimbing.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 export interface BoardCredentialCardProps {
   boardType: 'kilter' | 'tension';
   credential: AuroraCredentialStatus | null;
@@ -76,6 +95,8 @@ export interface BoardCredentialCardProps {
   onImportJson: () => void;
   isRemoving: boolean;
   isImporting: boolean;
+  userName?: string | null;
+  userEmail?: string | null;
 }
 
 export function BoardCredentialCard({
@@ -87,6 +108,8 @@ export function BoardCredentialCard({
   onImportJson,
   isRemoving,
   isImporting,
+  userName,
+  userEmail,
 }: BoardCredentialCardProps) {
   const boardName = boardType.charAt(0).toUpperCase() + boardType.slice(1);
   const totalUnsynced = unsyncedCounts.ascents + unsyncedCounts.climbs;
@@ -132,14 +155,15 @@ export function BoardCredentialCard({
           </div>
           {isKilter ? (
             <Typography variant="body2" component="span" color="text.secondary" className={styles.notConnectedText}>
-              The Kilter backend has been shut down. You can import your data using an Aurora JSON export file.
+              The Kilter backend has been shut down. You can import your data using an Aurora JSON export file, or
+              email Aurora Climbing to request a data export.
             </Typography>
           ) : (
             <Typography variant="body2" component="span" color="text.secondary" className={styles.notConnectedText}>
               Not connected. Link your {boardName} account to import your Aurora data, or import from a JSON export file.
             </Typography>
           )}
-          <div className={styles.buttonRow}>
+          <div className={isKilter ? styles.buttonColumn : styles.buttonRow}>
             {!isKilter && (
               <Button variant="contained" startIcon={<LinkOutlined />} onClick={onAdd}>
                 Link
@@ -153,6 +177,15 @@ export function BoardCredentialCard({
             >
               Import
             </Button>
+            {isKilter && (
+              <Button
+                variant="outlined"
+                startIcon={<EmailOutlined />}
+                href={buildKilterDataRequestMailto(userName, userEmail)}
+              >
+                Request your data
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -272,6 +305,7 @@ export function ImportProgressSteps({ progress }: { progress: ImportProgress | n
 }
 
 export default function AuroraCredentialsSection() {
+  const { data: session } = useSession();
   const { showMessage } = useSnackbar();
   const [credentials, setCredentials] = useState<AuroraCredentialStatus[]>([]);
   const [unsyncedCounts, setUnsyncedCounts] = useState<UnsyncedCounts | null>(null);
@@ -564,6 +598,8 @@ export default function AuroraCredentialsSection() {
               onImportJson={() => handleImportClick('kilter')}
               isRemoving={removingBoard === 'kilter'}
               isImporting={isImporting && importingBoard === 'kilter'}
+              userName={session?.user?.name}
+              userEmail={session?.user?.email}
             />
             <BoardCredentialCard
               boardType="tension"
