@@ -88,7 +88,6 @@ export const ClimbSearchInputSchema = z.object({
 });
 
 export const SaveClimbInputSchema = z.object({
-  uuid: z.string().min(1).max(100).optional(),
   boardType: BoardNameSchema,
   layoutId: z.number().int().positive('Layout ID must be positive'),
   name: z.string().min(1).max(200),

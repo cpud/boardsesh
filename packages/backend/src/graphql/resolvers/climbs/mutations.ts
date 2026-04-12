@@ -90,67 +90,28 @@ export const climbMutations = {
     const { displayName, name, avatarUrl } = await getUserProfile(ctx.userId!);
     const preferredSetter = displayName || name || null;
 
-    let uuid: string;
+    const uuid = generateClimbUuid();
 
-    if (validated.uuid) {
-      // Edit mode — verify the user owns this climb
-      const [existing] = await db
-        .select({ userId: UNIFIED_TABLES.climbs.userId })
-        .from(UNIFIED_TABLES.climbs)
-        .where(eq(UNIFIED_TABLES.climbs.uuid, validated.uuid))
-        .limit(1);
-
-      if (!existing) {
-        throw new Error('Climb not found');
-      }
-      if (existing.userId !== ctx.userId) {
-        throw new Error('You can only edit your own climbs');
-      }
-
-      uuid = validated.uuid;
-
-      await db
-        .update(UNIFIED_TABLES.climbs)
-        .set({
-          name: validated.name,
-          description: validated.description ?? '',
-          angle: validated.angle,
-          framesCount: validated.framesCount ?? 1,
-          framesPace: validated.framesPace ?? 0,
-          frames: validated.frames,
-          isDraft: validated.isDraft,
-          isListed,
-          publishedAt,
-          setterUsername: preferredSetter,
-          synced: false,
-          syncError: null,
-        })
-        .where(eq(UNIFIED_TABLES.climbs.uuid, uuid));
-    } else {
-      // Create mode
-      uuid = generateClimbUuid();
-
-      await db.insert(UNIFIED_TABLES.climbs).values({
-        boardType: validated.boardType,
-        uuid,
-        layoutId: validated.layoutId,
-        userId: ctx.userId!,
-        setterId: null,
-        setterUsername: preferredSetter,
-        name: validated.name,
-        description: validated.description ?? '',
-        angle: validated.angle,
-        framesCount: validated.framesCount ?? 1,
-        framesPace: validated.framesPace ?? 0,
-        frames: validated.frames,
-        isDraft: validated.isDraft,
-        isListed,
-        createdAt: now,
-        publishedAt,
-        synced: false,
-        syncError: null,
-      });
-    }
+    await db.insert(UNIFIED_TABLES.climbs).values({
+      boardType: validated.boardType,
+      uuid,
+      layoutId: validated.layoutId,
+      userId: ctx.userId!,
+      setterId: null,
+      setterUsername: preferredSetter,
+      name: validated.name,
+      description: validated.description ?? '',
+      angle: validated.angle,
+      framesCount: validated.framesCount ?? 1,
+      framesPace: validated.framesPace ?? 0,
+      frames: validated.frames,
+      isDraft: validated.isDraft,
+      isListed,
+      createdAt: now,
+      publishedAt,
+      synced: false,
+      syncError: null,
+    });
 
     // Populate denormalized required_set_ids and compatible_size_ids
     await populateDenormalizedColumns(db, validated.boardType, [uuid]);

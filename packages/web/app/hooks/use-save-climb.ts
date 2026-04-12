@@ -55,7 +55,6 @@ export function useSaveClimb(boardName: BoardName) {
       try {
         const variables: SaveClimbMutationVariables = {
           input: {
-            ...(options.uuid ? { uuid: options.uuid } : {}),
             boardType: boardName,
             layoutId: options.layout_id,
             name: options.name,

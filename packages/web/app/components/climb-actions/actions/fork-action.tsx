@@ -42,7 +42,7 @@ export function ForkAction({
         boardDetails.set_names!,
         angle,
         isEdit
-          ? { frames: climb.frames, name: climb.name, description: climb.description, editUuid: climb.uuid }
+          ? { frames: climb.frames, name: climb.name, description: climb.description, editClimbUuid: climb.uuid }
           : { frames: climb.frames, name: climb.name },
       )
     : null;

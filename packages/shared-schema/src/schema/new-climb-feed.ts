@@ -70,8 +70,6 @@ export const newClimbFeedTypeDefs = /* GraphQL */ `
   }
 
   input SaveClimbInput {
-    "Optional UUID — when provided, updates an existing climb (must be owned by the user)"
-    uuid: ID
     boardType: String!
     layoutId: Int!
     name: String!
