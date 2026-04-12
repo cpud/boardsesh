@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
@@ -8,8 +8,14 @@ vi.mock('@/app/hooks/use-is-dark-mode', () => ({
   useIsDarkMode: () => false,
 }));
 
-const defaultGradeFormatReturn = {
-  gradeFormat: 'v-grade' as const,
+const defaultGradeFormatReturn: {
+  gradeFormat: 'v-grade' | 'font';
+  formatGrade: (d: string | null | undefined) => string | null;
+  getGradeColor: (d: string | null | undefined, darkMode?: boolean) => string | undefined;
+  loaded: boolean;
+  setGradeFormat: ReturnType<typeof vi.fn>;
+} = {
+  gradeFormat: 'v-grade',
   formatGrade: (d: string | null | undefined) => {
     if (!d) return null;
     const match = d.match(/V\d+\+?/i);
@@ -24,10 +30,10 @@ const defaultGradeFormatReturn = {
   setGradeFormat: vi.fn(),
 };
 
-const mockUseGradeFormat = vi.fn(() => defaultGradeFormatReturn);
+const mockUseGradeFormat = vi.fn<() => typeof defaultGradeFormatReturn>(() => defaultGradeFormatReturn);
 
 vi.mock('@/app/hooks/use-grade-format', () => ({
-  useGradeFormat: (...args: unknown[]) => mockUseGradeFormat(...args),
+  useGradeFormat: () => mockUseGradeFormat(),
 }));
 
 vi.mock('@/app/theme/theme-config', () => ({
@@ -323,7 +329,7 @@ describe('ClimbTitle', () => {
   describe('Font grade format', () => {
     beforeEach(() => {
       mockUseGradeFormat.mockReturnValue({
-        gradeFormat: 'font' as const,
+        gradeFormat: 'font',
         formatGrade: (d: string | null | undefined) => {
           if (!d) return null;
           const slash = d.indexOf('/');
@@ -352,7 +358,7 @@ describe('ClimbTitle', () => {
     it('calls getGradeColor with the difficulty string', () => {
       const getGradeColorSpy = vi.fn(() => '#color-font');
       mockUseGradeFormat.mockReturnValue({
-        gradeFormat: 'font' as const,
+        gradeFormat: 'font',
         formatGrade: (d: string | null | undefined) => {
           if (!d) return null;
           const slash = d.indexOf('/');
@@ -372,7 +378,7 @@ describe('ClimbTitle', () => {
   describe('loading state', () => {
     beforeEach(() => {
       mockUseGradeFormat.mockReturnValue({
-        gradeFormat: 'v-grade' as const,
+        gradeFormat: 'v-grade',
         formatGrade: () => null,
         getGradeColor: () => undefined,
         loaded: false,

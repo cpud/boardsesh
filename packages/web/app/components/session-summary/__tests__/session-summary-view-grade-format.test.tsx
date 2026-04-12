@@ -4,8 +4,15 @@ import React from 'react';
 
 // --- Mocks ---
 
-const defaultGradeFormat = {
-  gradeFormat: 'v-grade' as const,
+interface GradeFormatMock {
+  gradeFormat: 'v-grade' | 'font';
+  formatGrade: (d: string | null | undefined) => string | null;
+  getGradeColor: (d?: string | null, dk?: boolean) => string | undefined;
+  loaded: boolean;
+  setGradeFormat: ReturnType<typeof vi.fn>;
+}
+const defaultGradeFormat: GradeFormatMock = {
+  gradeFormat: 'v-grade',
   formatGrade: (d: string | null | undefined) => {
     if (!d) return null;
     const match = d.match(/V\d+\+?/i);
@@ -15,9 +22,9 @@ const defaultGradeFormat = {
   loaded: true,
   setGradeFormat: vi.fn(),
 };
-const mockUseGradeFormat = vi.fn(() => defaultGradeFormat);
+const mockUseGradeFormat = vi.fn<() => GradeFormatMock>(() => defaultGradeFormat);
 vi.mock('@/app/hooks/use-grade-format', () => ({
-  useGradeFormat: (...args: unknown[]) => mockUseGradeFormat(...args),
+  useGradeFormat: () => mockUseGradeFormat(),
 }));
 
 vi.mock('@/app/lib/grade-colors', () => ({
@@ -61,7 +68,7 @@ describe('SessionSummaryView grade format integration', () => {
   it('renders Font grade in hardest climb chip', () => {
     mockUseGradeFormat.mockReturnValue({
       ...defaultGradeFormat,
-      gradeFormat: 'font' as const,
+      gradeFormat: 'font',
       formatGrade: (d: string | null | undefined) => {
         if (!d) return null;
         const slashIndex = d.indexOf('/');

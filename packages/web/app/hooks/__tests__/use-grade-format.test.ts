@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 
-const mockGetFormat = vi.fn<() => Promise<'v-grade' | 'font'>>().mockResolvedValue('v-grade');
-const mockSetFormat = vi.fn<(f: 'v-grade' | 'font') => Promise<void>>().mockResolvedValue(undefined);
+const mockGetFormat = vi.fn().mockResolvedValue('v-grade' as 'v-grade' | 'font');
+const mockSetFormat = vi.fn().mockResolvedValue(undefined);
 
 vi.mock('@/app/lib/user-preferences-db', () => ({
-  getGradeDisplayFormat: (...args: unknown[]) => mockGetFormat(...args as []),
-  setGradeDisplayFormat: (...args: unknown[]) => mockSetFormat(...args as []),
+  getGradeDisplayFormat: () => mockGetFormat(),
+  setGradeDisplayFormat: (f: string) => mockSetFormat(f),
 }));
 
 vi.mock('@/app/lib/grade-colors', () => ({
