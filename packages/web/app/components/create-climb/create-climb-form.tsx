@@ -46,6 +46,7 @@ import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 import { useSnackbar } from '../providers/snackbar-provider';
 import { refreshClimbSearchAfterSave } from '@/app/lib/climb-search-cache';
 import { ConfirmPopover } from '@/app/components/ui/confirm-popover';
+import { saveAutosave, loadAutosave, clearAutosave, type CreateClimbAutosave } from '@/app/lib/create-climb-autosave-db';
 import CreateClimbHeatmapOverlay from './create-climb-heatmap-overlay';
 import DraftsDrawer from './drafts-drawer';
 import HoldTypePicker from './hold-type-picker';
@@ -187,6 +188,7 @@ export default function CreateClimbForm({
 
   const markJustSaved = useCallback(() => {
     setJustSaved(true);
+    clearAutosave();
     if (savedTimeoutRef.current !== null) {
       window.clearTimeout(savedTimeoutRef.current);
     }
@@ -269,6 +271,58 @@ export default function CreateClimbForm({
   // Construct the bulk import URL (MoonBoard only)
   const bulkImportUrl = pathname.replace(/\/create$/, '/import');
 
+  // Autosave: persist form state to IndexedDB on every change (debounced).
+  // Only one autosave is stored at a time, scoped to the current board.
+  const autosaveBoardKey = boardType === 'aurora' && boardDetails
+    ? `${boardDetails.board_name}:${boardDetails.layout_id}:${boardDetails.size_id}:${angle}`
+    : `moonboard:${layoutId}:${angle}`;
+  const autosaveRestoredRef = useRef(false);
+
+  // Restore autosave on mount (only if not forking)
+  useEffect(() => {
+    if (autosaveRestoredRef.current || forkFrames || forkName) return;
+    autosaveRestoredRef.current = true;
+    loadAutosave(autosaveBoardKey).then((saved) => {
+      if (!saved) return;
+      try {
+        const holds = JSON.parse(saved.holdsJson);
+        if (boardType === 'aurora' && loadAuroraHolds) {
+          loadAuroraHolds(holds);
+        } else if (boardType === 'moonboard' && setLitUpHoldsMap) {
+          setLitUpHoldsMap(holds);
+        }
+        if (saved.climbName) setClimbName(saved.climbName);
+        if (saved.description) setDescription(saved.description);
+        setIsDraft(saved.isDraft);
+      } catch {
+        // Corrupt autosave — ignore and clear
+        clearAutosave();
+      }
+    });
+  // Only run on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Debounced autosave on changes
+  useEffect(() => {
+    if (!autosaveRestoredRef.current) return;
+    if (totalHolds === 0 && !climbName && !description) {
+      clearAutosave();
+      return;
+    }
+    const timer = setTimeout(() => {
+      saveAutosave({
+        holdsJson: JSON.stringify(litUpHoldsMap),
+        climbName,
+        description,
+        isDraft,
+        boardKey: autosaveBoardKey,
+        savedAt: Date.now(),
+      });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [litUpHoldsMap, climbName, description, isDraft, totalHolds, autosaveBoardKey]);
+
   const moonBoardHolds = useMemo(
     () => (boardType === 'moonboard' ? convertLitUpHoldsMapToMoonBoardHolds(litUpHoldsMap) : null),
     [boardType, litUpHoldsMap],
@@ -315,6 +369,7 @@ export default function CreateClimbForm({
     setClimbName('');
     setDescription('');
     clearJustSaved();
+    clearAutosave();
     setSavedClimb(null);
     if (boardType === 'aurora' && isConnected) {
       sendFramesToBoard('');
