@@ -9,6 +9,7 @@ import Avatar from '@mui/material/Avatar';
 import AvatarGroup from '@mui/material/AvatarGroup';
 import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
+import Skeleton from '@mui/material/Skeleton';
 import TimerOutlined from '@mui/icons-material/TimerOutlined';
 import FlagOutlined from '@mui/icons-material/FlagOutlined';
 import GroupsOutlined from '@mui/icons-material/GroupsOutlined';
@@ -99,9 +100,13 @@ export default function SessionSummaryFeedItem({ item }: SessionSummaryFeedItemP
           <Box sx={{ display: 'flex', gap: 0.5, mb: 1, flexWrap: 'wrap' }}>
             {gradeDistribution.slice(0, 6).map((g) => (
               <Box key={g.grade} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Typography variant="caption" sx={{ fontWeight: 600, minWidth: 24, visibility: gradeFormatLoaded ? 'visible' : 'hidden' }}>
-                  {formatGrade(g.grade) ?? g.grade}
-                </Typography>
+                {gradeFormatLoaded ? (
+                  <Typography variant="caption" sx={{ fontWeight: 600, minWidth: 24 }}>
+                    {formatGrade(g.grade) ?? g.grade}
+                  </Typography>
+                ) : (
+                  <Skeleton variant="text" width={24} sx={{ fontSize: '0.75rem' }} />
+                )}
                 <LinearProgress
                   variant="determinate"
                   value={(g.count / maxGradeCount) * 100}

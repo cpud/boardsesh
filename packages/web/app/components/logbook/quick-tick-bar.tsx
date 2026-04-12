@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 // NOTE: the "swipe left to dismiss" hint is intentionally NOT rendered here —
 // it lives above the queue control bar as a transient toast so it doesn't
 // push the stars out of alignment with the action buttons.
+import Skeleton from '@mui/material/Skeleton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
@@ -86,7 +87,7 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
 }) => {
   const { saveTick, logbook } = useBoardProvider();
   const isDark = useIsDarkMode();
-  const { formatGrade, getGradeColor } = useGradeFormat();
+  const { formatGrade, getGradeColor, loaded: gradeFormatLoaded } = useGradeFormat();
 
   // Snapshot the target climb the first time we get a non-null climb.
   // All subsequent saves use this snapshot, not the live props.
@@ -310,28 +311,37 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
           <ChatBubbleOutlineOutlined fontSize="small" />
         </IconButton>
 
-        {/* Colourised V-grade, matching the styling used by ClimbTitle's
+        {/* Colourised grade, matching the styling used by ClimbTitle's
             right-aligned large grade. Click opens the override menu. */}
-        <Typography
-          variant="body2"
-          component="span"
-          onClick={(e) => setGradeAnchorEl(e.currentTarget)}
-          role="button"
-          aria-label="Select logged grade"
-          data-testid="quick-tick-grade"
-          className={styles.gradeLabel}
-          sx={{
-            fontSize: themeTokens.typography.fontSize.sm,
-            fontWeight: themeTokens.typography.fontWeight.bold,
-            lineHeight: 1,
-            color: gradeColor ?? 'text.secondary',
-            cursor: 'pointer',
-            flexShrink: 0,
-            px: '4px',
-          }}
-        >
-          {gradeLabel}
-        </Typography>
+        {!gradeFormatLoaded ? (
+          <Skeleton
+            variant="rounded"
+            width={themeTokens.typography.fontSize.sm * 2.5}
+            height={themeTokens.typography.fontSize.sm}
+            sx={{ flexShrink: 0, mx: '4px' }}
+          />
+        ) : (
+          <Typography
+            variant="body2"
+            component="span"
+            onClick={(e) => setGradeAnchorEl(e.currentTarget)}
+            role="button"
+            aria-label="Select logged grade"
+            data-testid="quick-tick-grade"
+            className={styles.gradeLabel}
+            sx={{
+              fontSize: themeTokens.typography.fontSize.sm,
+              fontWeight: themeTokens.typography.fontWeight.bold,
+              lineHeight: 1,
+              color: gradeColor ?? 'text.secondary',
+              cursor: 'pointer',
+              flexShrink: 0,
+              px: '4px',
+            }}
+          >
+            {gradeLabel}
+          </Typography>
+        )}
         <Menu
           anchorEl={gradeAnchorEl}
           open={Boolean(gradeAnchorEl)}
