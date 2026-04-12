@@ -17,15 +17,21 @@ export const SESSION_GRADE_LEGEND = [
 /**
  * Convert session grade distribution data into CssBarChart bars.
  * Data arrives hardest-first from the backend; this reverses to easiest-first for display.
+ *
+ * @param formatGradeFn - Optional formatter for grade labels. When omitted, falls back to
+ *   formatVGrade. Components that have access to the useGradeFormat hook should pass
+ *   their `formatGrade` function here so labels respect the user's display preference.
  */
 export function buildSessionGradeBars(
   gradeDistribution: SessionGradeDistributionItem[],
+  formatGradeFn?: (grade: string) => string | null,
 ): CssBarChartBar[] {
   const sorted = [...gradeDistribution].reverse();
+  const fmt = formatGradeFn ?? ((g: string) => formatVGrade(g));
 
   return sorted.map((item) => ({
     key: item.grade,
-    label: formatVGrade(item.grade) ?? item.grade,
+    label: fmt(item.grade) ?? item.grade,
     segments: [
       { value: item.flash, color: FLASH_COLOR, label: 'Flash' },
       { value: item.send, color: SEND_COLOR, label: 'Send' },

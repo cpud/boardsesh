@@ -96,8 +96,8 @@ export default function SessionFeedCard({ session }: SessionFeedCardProps) {
   const hardestGradeTextColor = getGradeTextColor(hardestGradeColor);
 
   const gradeBars = React.useMemo(
-    () => buildSessionGradeBars(gradeDistribution),
-    [gradeDistribution],
+    () => buildSessionGradeBars(gradeDistribution, formatGrade),
+    [gradeDistribution, formatGrade],
   );
 
   return (

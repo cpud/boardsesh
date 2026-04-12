@@ -3,6 +3,7 @@
 import React, { useMemo } from 'react';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import Skeleton from '@mui/material/Skeleton';
 import ClimbIcons from './climb-icons';
 import { themeTokens } from '@/app/theme/theme-config';
 import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
@@ -179,7 +180,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
   isNoMatch = false,
 }) => {
   const isDark = useIsDarkMode();
-  const { formatGrade, getGradeColor } = useGradeFormat();
+  const { formatGrade, getGradeColor, loaded: gradeFormatLoaded } = useGradeFormat();
 
   const resolvedSubtitleSx = ellipsis ? subtitleEllipsisSx : subtitleSx;
 
@@ -247,10 +248,14 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
     </Typography>
   );
 
-  const largeGradeElement = formattedGrade && (
-    <Typography variant="body2" component="span" sx={largeGradeSx}>
-      {formattedGrade}
-    </Typography>
+  const largeGradeElement = displayDifficulty && (
+    !gradeFormatLoaded ? (
+      <Skeleton variant="rounded" width={nameFontSize * 2.2} height={nameFontSize} sx={{ flexShrink: 0 }} />
+    ) : formattedGrade ? (
+      <Typography variant="body2" component="span" sx={largeGradeSx}>
+        {formattedGrade}
+      </Typography>
+    ) : null
   );
 
   const setterText = climb.is_draft

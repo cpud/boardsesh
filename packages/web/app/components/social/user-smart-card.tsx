@@ -17,8 +17,9 @@ import {
   type GetUserProfileStatsQueryVariables,
   type GetUserProfileStatsQueryResponse,
 } from '@/app/lib/graphql/operations';
-import { difficultyMapping } from '@/app/crusher/[user_id]/utils/profile-constants';
-import { V_GRADE_COLORS, getGradeColorWithOpacity } from '@/app/lib/grade-colors';
+import { getDifficultyMapping, sortGrades } from '@/app/crusher/[user_id]/utils/profile-constants';
+import { V_GRADE_COLORS, FONT_GRADE_COLORS, getGradeColorWithOpacity } from '@/app/lib/grade-colors';
+import { useGradeFormat } from '@/app/hooks/use-grade-format';
 import styles from './user-smart-card.module.css';
 
 interface UserSmartCardProps {
@@ -48,11 +49,11 @@ interface GradeBar {
   color: string;
 }
 
-const GRADE_ORDER = [...new Set(Object.values(difficultyMapping))];
 const CHIP_SX = { height: 20, fontSize: '0.7rem' } as const;
 
 export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardProps) {
   const router = useRouter();
+  const { gradeFormat } = useGradeFormat();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [totalClimbs, setTotalClimbs] = useState(0);
   const [gradeBars, setGradeBars] = useState<GradeBar[]>([]);
@@ -84,26 +85,27 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
       if (statsData) {
         setTotalClimbs(statsData.totalDistinctClimbs);
 
-        // Aggregate grade counts across all layouts, grouped by V-grade
+        // Aggregate grade counts across all layouts, grouped by display grade
+        const mapping = getDifficultyMapping(gradeFormat);
         const gradeAgg: Record<string, number> = {};
         for (const layout of statsData.layoutStats) {
           for (const gc of layout.gradeCounts) {
             const num = parseInt(gc.grade, 10);
             if (isNaN(num)) continue;
-            const grade = difficultyMapping[num];
+            const grade = mapping[num];
             if (!grade) continue;
             gradeAgg[grade] = (gradeAgg[grade] || 0) + gc.count;
           }
         }
 
         // Convert to sorted bars
-        const bars: GradeBar[] = Object.entries(gradeAgg)
-          .map(([grade, count]) => {
-            const hex = V_GRADE_COLORS[grade];
-            const color = hex ? getGradeColorWithOpacity(hex, 0.4) : 'rgba(200, 200, 200, 0.4)';
-            return { grade, count, color };
-          })
-          .sort((a: GradeBar, b: GradeBar) => GRADE_ORDER.indexOf(a.grade) - GRADE_ORDER.indexOf(b.grade));
+        const sortedGradeKeys = sortGrades(Object.keys(gradeAgg), gradeFormat);
+        const bars: GradeBar[] = sortedGradeKeys.map((grade) => {
+          const count = gradeAgg[grade];
+          const hex = V_GRADE_COLORS[grade] ?? FONT_GRADE_COLORS[grade.toLowerCase()];
+          const color = hex ? getGradeColorWithOpacity(hex, 0.4) : 'rgba(200, 200, 200, 0.4)';
+          return { grade, count, color };
+        });
 
         setGradeBars(bars);
       }
@@ -112,7 +114,7 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, gradeFormat]);
 
   useEffect(() => {
     fetchData();

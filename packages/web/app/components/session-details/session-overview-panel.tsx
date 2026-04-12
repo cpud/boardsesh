@@ -104,8 +104,8 @@ export default function SessionOverviewPanel({
   const isMultiUser = uniqueParticipants.length > 1;
 
   const gradeBars = React.useMemo(
-    () => buildSessionGradeBars(gradeDistribution),
-    [gradeDistribution],
+    () => buildSessionGradeBars(gradeDistribution, formatGrade),
+    [gradeDistribution, formatGrade],
   );
 
   return (
