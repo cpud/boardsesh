@@ -262,6 +262,113 @@ const lightShadows = [
   ...Array(16).fill(themeTokens.shadows.xl),
 ] as unknown as typeof createTheme extends (o: { shadows?: infer S }) => unknown ? S : never;
 
+// Dark mode component overrides — extends shared overrides with white input fields
+const darkComponents: Components<Theme> = {
+  ...sharedComponents,
+  MuiInputBase: {
+    styleOverrides: {
+      root: {
+        backgroundColor: '#FFFFFF',
+        color: themeTokens.neutral[800],
+        '&.Mui-disabled': {
+          backgroundColor: themeTokens.neutral[200],
+        },
+      },
+      input: {
+        '&::placeholder': {
+          color: themeTokens.neutral[500],
+          opacity: 1,
+        },
+      },
+    },
+  },
+  MuiOutlinedInput: {
+    ...sharedComponents.MuiOutlinedInput,
+    styleOverrides: {
+      root: {
+        borderRadius: themeTokens.borderRadius.md,
+        backgroundColor: '#FFFFFF',
+        color: themeTokens.neutral[800],
+        '& .MuiOutlinedInput-notchedOutline': {
+          borderColor: themeTokens.neutral[300],
+        },
+        '&:hover .MuiOutlinedInput-notchedOutline': {
+          borderColor: themeTokens.neutral[400],
+        },
+        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+          borderColor: themeTokens.colors.primary,
+        },
+        '&.Mui-disabled': {
+          backgroundColor: themeTokens.neutral[200],
+        },
+      },
+    },
+  },
+  MuiFilledInput: {
+    styleOverrides: {
+      root: {
+        backgroundColor: '#FFFFFF',
+        color: themeTokens.neutral[800],
+        '&:hover': {
+          backgroundColor: themeTokens.neutral[100],
+        },
+        '&.Mui-focused': {
+          backgroundColor: '#FFFFFF',
+        },
+        '&.Mui-disabled': {
+          backgroundColor: themeTokens.neutral[200],
+        },
+      },
+    },
+  },
+  MuiSelect: {
+    ...sharedComponents.MuiSelect,
+    styleOverrides: {
+      root: {
+        borderRadius: themeTokens.borderRadius.md,
+        backgroundColor: '#FFFFFF',
+        color: themeTokens.neutral[800],
+      },
+      icon: {
+        color: themeTokens.neutral[500],
+      },
+    },
+  },
+  MuiAutocomplete: {
+    styleOverrides: {
+      inputRoot: {
+        backgroundColor: '#FFFFFF',
+        color: themeTokens.neutral[800],
+      },
+    },
+  },
+  MuiInputLabel: {
+    styleOverrides: {
+      root: {
+        color: themeTokens.neutral[500],
+        '&.Mui-focused': {
+          color: themeTokens.colors.primary,
+        },
+      },
+    },
+  },
+  MuiTextField: {
+    ...sharedComponents.MuiTextField,
+    styleOverrides: {
+      root: {
+        '& .MuiOutlinedInput-root': {
+          borderRadius: themeTokens.borderRadius.md,
+          backgroundColor: '#FFFFFF',
+          color: themeTokens.neutral[800],
+        },
+        '& .MuiInputLabel-root': {
+          color: themeTokens.neutral[500],
+        },
+      },
+    },
+  },
+};
+
 const darkShadows = [
   'none',
   darkTokens.shadows.xs,
@@ -364,7 +471,7 @@ export const darkTheme = createTheme({
     },
   },
   shadows: darkShadows,
-  components: sharedComponents,
+  components: darkComponents,
 });
 
 // Backward compat — existing imports of `muiTheme` continue to work

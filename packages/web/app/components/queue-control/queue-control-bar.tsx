@@ -458,7 +458,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
           <div
             className={styles.swipeContainer}
             style={{
-              padding: `10px ${themeTokens.spacing[3]}px`,
+              padding: `${themeTokens.spacing[2]}px ${themeTokens.spacing[3]}px`,
               backgroundColor: gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
             }}
           >
@@ -556,7 +556,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
             {...swipeHandlers}
             className={styles.swipeContainer}
             style={{
-              padding: `10px ${themeTokens.spacing[3]}px`,
+              padding: `${themeTokens.spacing[2]}px ${themeTokens.spacing[3]}px`,
               backgroundColor: gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
             }}
           >

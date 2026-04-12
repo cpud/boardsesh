@@ -61,6 +61,11 @@
   --spacing-12: 48px;
   --spacing-16: 64px;
 
+  /* Input field backgrounds */
+  --input-bg: #F9FAFB;
+  --input-bg-hover: #F3F4F6;
+  --input-bg-focused: #FFFFFF;
+
   /* Layout */
   --global-header-height: calc(max(8dvh, 48px) + env(safe-area-inset-top, 0px));
 }
@@ -93,6 +98,11 @@ html[data-theme="dark"] {
   --color-success-bg: rgba(107, 144, 128, 0.12);
   --color-error-bg: rgba(184, 82, 76, 0.12);
   --color-warning-bg: rgba(196, 148, 60, 0.12);
+
+  /* Input field backgrounds (white in dark mode) */
+  --input-bg: #FFFFFF;
+  --input-bg-hover: #F3F4F6;
+  --input-bg-focused: #FFFFFF;
 
   /* Shadows (stronger for dark backgrounds) */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
@@ -225,6 +235,42 @@ button,
   .queue-bar-shadow::before {
     display: none;
   }
+}
+
+/* Force all MUI form inputs to white in dark mode */
+html[data-theme="dark"] .MuiOutlinedInput-root {
+  background-color: var(--input-bg, #FFFFFF);
+  color: #1F2937;
+}
+
+html[data-theme="dark"] .MuiOutlinedInput-root:hover {
+  background-color: var(--input-bg-hover, #F3F4F6);
+}
+
+html[data-theme="dark"] .MuiOutlinedInput-root.Mui-focused {
+  background-color: var(--input-bg-focused, #FFFFFF);
+}
+
+html[data-theme="dark"] .MuiFilledInput-root {
+  background-color: var(--input-bg, #FFFFFF);
+  color: #1F2937;
+}
+
+html[data-theme="dark"] .MuiSelect-icon {
+  color: #6B7280;
+}
+
+html[data-theme="dark"] .MuiInputLabel-root {
+  color: #6B7280;
+}
+
+html[data-theme="dark"] .MuiInputLabel-root.Mui-focused {
+  color: #8C4A52;
+}
+
+html[data-theme="dark"] .MuiOutlinedInput-input::placeholder {
+  color: #6B7280;
+  opacity: 1;
 }
 
 /* Ensure all interactive elements have minimum 16px font to prevent iOS auto-zoom on focus */
