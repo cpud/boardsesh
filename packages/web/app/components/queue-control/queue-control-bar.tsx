@@ -756,13 +756,13 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                   {/* Party / Cancel button — swaps to X when tick mode is active */}
                   {tickBarActive ? (
                     <IconButton
-                      onClick={() => setActiveDrawer('none')}
+                      onClick={(e) => quickTickBarRef.current?.saveAttempt(e.currentTarget)}
                       sx={{
                         color: themeTokens.colors.error,
                         opacity: themeTokens.opacity.subtle,
                         '&:hover': { color: themeTokens.colors.error, opacity: 1 },
                       }}
-                      aria-label="Cancel tick"
+                      aria-label="Log attempt"
                     >
                       <CloseOutlined />
                     </IconButton>
