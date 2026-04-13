@@ -28,7 +28,7 @@ vi.mock('@/app/hooks/use-grade-format', () => ({
   }),
 }));
 
-import SessionOverviewPanel from '../session-overview-panel';
+import SessionOverviewPanel, { buildSessionSummaryParts } from '../session-overview-panel';
 
 type SessionOverviewPanelProps = React.ComponentProps<typeof SessionOverviewPanel>;
 
@@ -100,10 +100,11 @@ describe('SessionOverviewPanel', () => {
     expect(screen.getByText('1 participant')).toBeTruthy();
   });
 
-  it('shows sends/flashes/attempts/tickCount chips', () => {
+  it('shows sends/flashes/attempts/tickCount chips (sends excludes flashes)', () => {
     render(<SessionOverviewPanel {...makeProps()} />);
 
-    expect(screen.getByText('5 sends')).toBeTruthy();
+    // totalSends=5 includes 2 flashes, so sends chip shows 5-2=3
+    expect(screen.getByText('3 sends')).toBeTruthy();
     expect(screen.getByText('2 flashes')).toBeTruthy();
     expect(screen.getByText('3 attempts')).toBeTruthy();
     expect(screen.getByText('8 climbs')).toBeTruthy();
@@ -231,7 +232,7 @@ describe('SessionOverviewPanel', () => {
   });
 
   it('uses singular form for 1 send', () => {
-    render(<SessionOverviewPanel {...makeProps({ totalSends: 1 })} />);
+    render(<SessionOverviewPanel {...makeProps({ totalSends: 1, totalFlashes: 0 })} />);
     expect(screen.getByText('1 send')).toBeTruthy();
   });
 
@@ -255,8 +256,55 @@ describe('SessionOverviewPanel', () => {
     expect(screen.queryByText(/attempt/)).toBeNull();
   });
 
+  it('hides sends chip when all sends are flashes', () => {
+    render(<SessionOverviewPanel {...makeProps({ totalSends: 3, totalFlashes: 3 })} />);
+    expect(screen.getByText('3 flashes')).toBeTruthy();
+    expect(screen.queryByText(/send/)).toBeNull();
+  });
+
+  it('handles totalFlashes > totalSends gracefully (no negative sends)', () => {
+    // Defensive: should not happen in practice, but guard against it
+    render(<SessionOverviewPanel {...makeProps({ totalSends: 1, totalFlashes: 3 })} />);
+    expect(screen.getByText('3 flashes')).toBeTruthy();
+    expect(screen.queryByText(/send/)).toBeNull();
+  });
+
   it('does not show duration chip when durationMinutes is null', () => {
     render(<SessionOverviewPanel {...makeProps({ durationMinutes: null })} />);
     expect(screen.queryByText(/min/)).toBeNull();
+  });
+});
+
+describe('buildSessionSummaryParts', () => {
+  const base = { totalFlashes: 0, totalSends: 0, totalAttempts: 0, tickCount: 0 };
+
+  it('subtracts flashes from sends', () => {
+    const parts = buildSessionSummaryParts({ ...base, totalSends: 5, totalFlashes: 2, tickCount: 5 });
+    expect(parts).toContain('2 flashes');
+    expect(parts).toContain('3 sends');
+  });
+
+  it('omits sends when all sends are flashes', () => {
+    const parts = buildSessionSummaryParts({ ...base, totalSends: 3, totalFlashes: 3, tickCount: 3 });
+    expect(parts).toContain('3 flashes');
+    expect(parts.find((p) => p.includes('send'))).toBeUndefined();
+  });
+
+  it('handles totalFlashes > totalSends gracefully', () => {
+    const parts = buildSessionSummaryParts({ ...base, totalSends: 1, totalFlashes: 3, tickCount: 3 });
+    expect(parts).toContain('3 flashes');
+    expect(parts.find((p) => p.includes('send'))).toBeUndefined();
+  });
+
+  it('includes hardest grade when provided', () => {
+    const parts = buildSessionSummaryParts({ ...base, tickCount: 1, hardestGrade: 'V5' });
+    expect(parts).toContain('Hardest: V5');
+  });
+
+  it('applies formatGrade to hardest grade', () => {
+    const parts = buildSessionSummaryParts({
+      ...base, tickCount: 1, hardestGrade: 'V5', formatGrade: () => '5c',
+    });
+    expect(parts).toContain('Hardest: 5c');
   });
 });
