@@ -627,10 +627,27 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
               ...tickDismissRowStyle,
             }}
           >
+            {/* Close button — top-right corner of the tick bar */}
+            <div className={styles.tickCloseButton}>
+              <IconButton
+                onClick={() => setActiveDrawer('none')}
+                size="small"
+                aria-label="Close tick bar"
+                sx={{
+                  color: 'text.primary',
+                  backgroundColor: 'action.selected',
+                  '&:hover': { backgroundColor: 'action.focus' },
+                }}
+              >
+                <CloseOutlined sx={{ fontSize: 16 }} />
+              </IconButton>
+            </div>
             <div className={styles.tickRowInner} style={tickSwipeOffset > 0 ? { overflow: 'hidden' } : undefined}>
-              {/* Drag handle — pull down to dismiss */}
-              <div className={styles.tickDragHandle} aria-hidden="true">
-                <div className={styles.tickDragHandleBar} />
+              {/* Drag handle */}
+              <div className={styles.tickDragHandleRow}>
+                <div className={styles.tickDragHandle} aria-hidden="true">
+                  <div className={styles.tickDragHandleBar} />
+                </div>
               </div>
               <QuickTickBar
                 ref={quickTickBarRef}
