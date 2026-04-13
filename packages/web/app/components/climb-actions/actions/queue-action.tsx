@@ -40,8 +40,12 @@ export function QueueAction({
       setRecentlyAdded(false);
     }, 5000);
 
-    onComplete?.();
-  }, [queueActions, recentlyAdded, climb, boardDetails.layout_name, onComplete]);
+    // Don't call onComplete in list mode — keep the drawer open so the user
+    // sees the "Added" confirmation. Other modes close as before.
+    if (viewMode !== 'list') {
+      onComplete?.();
+    }
+  }, [queueActions, recentlyAdded, climb, boardDetails.layout_name, onComplete, viewMode]);
 
   const label = recentlyAdded ? 'Added' : 'Add to Queue';
   const shortLabel = recentlyAdded ? 'Added' : 'Queue';
@@ -51,7 +55,8 @@ export function QueueAction({
     ? { color: themeTokens.colors.success, fontSize: iconSize }
     : { fontSize: iconSize };
   const icon = <Icon sx={iconStyle} />;
-  const listIcon = <Icon sx={{ fontSize: iconSize }} />;
+  const ListIcon = recentlyAdded ? CheckCircleOutlined : AddCircleOutlined;
+  const listIcon = <ListIcon sx={{ fontSize: iconSize }} />;
 
   return buildActionResult({
     key: 'queue',
