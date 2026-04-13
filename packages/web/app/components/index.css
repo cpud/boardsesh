@@ -237,9 +237,38 @@ button,
   }
 }
 
-/* Dark-mode input icon/adornment colors — MUI theme overrides handle
-   backgrounds and text, but nested SVG icons and adornments need a CSS
-   rule because MUI doesn't expose a clean slot for them. */
+/* Dark-mode input overrides — MUI theme darkComponents handles most
+   input styling, but color-scheme:dark can override native input
+   backgrounds. These CSS rules ensure inputs stay white in dark mode
+   using the tokenized custom properties. */
+html[data-theme="dark"] .MuiOutlinedInput-root,
+html[data-theme="dark"] .MuiFilledInput-root {
+  background-color: var(--input-bg);
+  color: var(--neutral-800);
+}
+
+html[data-theme="dark"] .MuiOutlinedInput-root:hover {
+  background-color: var(--input-bg-hover);
+}
+
+html[data-theme="dark"] .MuiOutlinedInput-root.Mui-focused {
+  background-color: var(--input-bg-focused);
+}
+
+html[data-theme="dark"] .MuiSelect-icon,
+html[data-theme="dark"] .MuiInputLabel-root {
+  color: var(--neutral-500);
+}
+
+html[data-theme="dark"] .MuiInputLabel-root.Mui-focused {
+  color: var(--color-primary);
+}
+
+html[data-theme="dark"] .MuiOutlinedInput-input::placeholder {
+  color: var(--neutral-500);
+  opacity: 1;
+}
+
 html[data-theme="dark"] .MuiOutlinedInput-root .MuiSvgIcon-root,
 html[data-theme="dark"] .MuiOutlinedInput-root .MuiInputAdornment-root,
 html[data-theme="dark"] .MuiFilledInput-root .MuiSvgIcon-root,
