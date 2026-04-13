@@ -93,8 +93,14 @@ export function useDrawerDragResize({
   }, []);
 
   const onTouchMove = useCallback((e: React.TouchEvent) => {
-    if (Math.abs(e.touches[0].clientY - dragStartY.current) > DRAG_MOVE_THRESHOLD) {
+    const deltaY = e.touches[0].clientY - dragStartY.current;
+    if (Math.abs(deltaY) > DRAG_MOVE_THRESHOLD) {
       isDragGesture.current = true;
+    }
+    // Only show visual feedback for downward drags (positive deltaY)
+    if (isDragGesture.current && deltaY > 0 && paperRef.current) {
+      paperRef.current.style.transition = 'none';
+      paperRef.current.style.transform = `translateY(${deltaY}px)`;
     }
   }, []);
 
@@ -111,16 +117,32 @@ export function useDrawerDragResize({
   }, []);
 
   const onTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (!isDragGesture.current) return;
+    const paper = paperRef.current;
+
+    if (!isDragGesture.current) {
+      // Reset any partial transform from a tiny drag
+      if (paper) {
+        paper.style.transition = '';
+        paper.style.transform = '';
+      }
+      return;
+    }
+
     const deltaY = e.changedTouches[0].clientY - dragStartY.current;
     const result = computeDragResult(deltaY, dragStartHeight.current, true, expandedHeight);
+
+    // Animate back to resting position
+    if (paper) {
+      paper.style.transition = 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+      paper.style.transform = '';
+    }
+
     switch (result) {
       case 'expand':
         updateHeight(expandedHeight);
         break;
       case 'collapse':
         updateHeight(initialHeight);
-        // Scroll content back to top so auto-expand doesn't immediately re-trigger
         scrollToTop();
         break;
       case 'close':
