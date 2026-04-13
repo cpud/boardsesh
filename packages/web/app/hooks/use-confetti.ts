@@ -27,6 +27,9 @@ export function useConfetti() {
       origin: { x, y },
       gravity: 0.8,
       disableForReducedMotion: true,
+      // Must be above MUI drawer z-index (1300) so confetti is visible
+      // when fired from inside a SwipeableDrawer portal.
+      zIndex: 1400,
     });
   }, []);
 
