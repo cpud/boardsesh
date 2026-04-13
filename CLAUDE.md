@@ -203,6 +203,7 @@ We are using next.js app router, it's important we try to use server side compon
 - Always use CSS media queries for mobile/responsive design
 - For rendering avoid JavaScript breakpoint detection & Grid.useBreakpoint()
 - While we work together, be careful to remove any code you no longer use, so we dont end up with lots of deadcode
+- **Dark mode uses white input fields** — This is intentional for contrast. All input components (TextField, Select, Autocomplete, etc.) have white backgrounds in dark mode via `darkTokens.semantic.inputSurface`. Do not change them to dark backgrounds.
 - **Never use `any` type** - The `no-explicit-any` lint rule is set to `deny` across all packages. Use `unknown`, proper types, or `as unknown as SpecificType` for type assertions. No exceptions - `any` defeats the purpose of TypeScript
 
 ### Copy & Microcopy

@@ -177,6 +177,7 @@ export const darkTokens = {
     background: '#000000',
     surface: '#0A0A0A',
     surfaceElevated: '#121212',
+    inputSurface: '#FFFFFF',
     surfaceOverlay: 'rgba(10, 10, 10, 0.95)',
     overlayLight: 'rgba(0, 0, 0, 0.4)',
     overlayDark: 'rgba(0, 0, 0, 0.7)',

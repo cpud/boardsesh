@@ -268,7 +268,7 @@ const darkComponents: Components<Theme> = {
   MuiInputBase: {
     styleOverrides: {
       root: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: darkTokens.semantic.inputSurface,
         color: themeTokens.neutral[800],
         '&.Mui-disabled': {
           backgroundColor: themeTokens.neutral[200],
@@ -287,7 +287,7 @@ const darkComponents: Components<Theme> = {
     styleOverrides: {
       root: {
         borderRadius: themeTokens.borderRadius.md,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: darkTokens.semantic.inputSurface,
         color: themeTokens.neutral[800],
         '& .MuiOutlinedInput-notchedOutline': {
           borderColor: themeTokens.neutral[300],
@@ -307,13 +307,13 @@ const darkComponents: Components<Theme> = {
   MuiFilledInput: {
     styleOverrides: {
       root: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: darkTokens.semantic.inputSurface,
         color: themeTokens.neutral[800],
         '&:hover': {
           backgroundColor: themeTokens.neutral[100],
         },
         '&.Mui-focused': {
-          backgroundColor: '#FFFFFF',
+          backgroundColor: darkTokens.semantic.inputSurface,
         },
         '&.Mui-disabled': {
           backgroundColor: themeTokens.neutral[200],
@@ -326,7 +326,7 @@ const darkComponents: Components<Theme> = {
     styleOverrides: {
       root: {
         borderRadius: themeTokens.borderRadius.md,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: darkTokens.semantic.inputSurface,
         color: themeTokens.neutral[800],
       },
       icon: {
@@ -337,7 +337,7 @@ const darkComponents: Components<Theme> = {
   MuiAutocomplete: {
     styleOverrides: {
       inputRoot: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: darkTokens.semantic.inputSurface,
         color: themeTokens.neutral[800],
       },
     },
@@ -358,7 +358,7 @@ const darkComponents: Components<Theme> = {
       root: {
         '& .MuiOutlinedInput-root': {
           borderRadius: themeTokens.borderRadius.md,
-          backgroundColor: '#FFFFFF',
+          backgroundColor: darkTokens.semantic.inputSurface,
           color: themeTokens.neutral[800],
         },
         '& .MuiInputLabel-root': {
