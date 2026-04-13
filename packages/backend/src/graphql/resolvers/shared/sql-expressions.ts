@@ -5,14 +5,34 @@ import { db } from '../../../db/client';
 
 /**
  * Aliased board_difficulty_grades table for consensus grade lookups.
- * Join this on ROUND(boardClimbStats.displayDifficulty) + boardType
- * to avoid correlated subqueries.
+ * Resolves the community-voted grade from boardClimbStats.displayDifficulty
+ * without a correlated subquery.
+ *
+ * ## Required joins (in order)
+ *
+ * Queries that use any of the expressions below must include these joins:
+ *
+ * 1. `boardClimbStats` — joined on (climbUuid, boardType, angle)
+ * 2. `boardDifficultyGrades` — joined on (tick.difficulty, boardType) — user's logged grade
+ * 3. `consensusGradeTable` — joined via `consensusGradeJoinCondition` — consensus grade
+ *
+ * Example:
+ * ```ts
+ * db.select({ difficultyName: difficultyNameWithFallbackExpr })
+ *   .from(boardseshTicks)
+ *   .leftJoin(boardClimbStats, ...)
+ *   .leftJoin(boardDifficultyGrades, ...)
+ *   .leftJoin(consensusGradeTable, consensusGradeJoinCondition)
+ * ```
+ *
+ * If a required join is missing the query will produce nulls (not an error)
+ * because these are LEFT JOINs with nullable column references.
  */
 export const consensusGradeTable = aliasedTable(dbSchema.boardDifficultyGrades, 'consensus_grade');
 
 /**
- * JOIN condition for consensusGradeTable — requires boardClimbStats
- * to already be joined in the query.
+ * JOIN condition for consensusGradeTable.
+ * Requires boardClimbStats to already be joined in the query.
  */
 export const consensusGradeJoinCondition = and(
   eq(consensusGradeTable.difficulty, sql`ROUND(${dbSchema.boardClimbStats.displayDifficulty})`),
@@ -20,15 +40,16 @@ export const consensusGradeJoinCondition = and(
 );
 
 /**
- * SQL expression: consensus difficulty name from the joined consensus grade table.
- * Requires consensusGradeTable to be LEFT JOINed in the query.
+ * Consensus difficulty name from the joined consensus grade table.
+ * Requires `consensusGradeTable` LEFT JOIN (see {@link consensusGradeTable}).
  */
 export const consensusDifficultyNameExpr = sql<string | null>`${consensusGradeTable.boulderName}`;
 
 /**
- * SQL expression: COALESCE user-logged grade with consensus grade.
- * Falls back to consensus when user didn't log a grade.
- * Requires both boardDifficultyGrades and consensusGradeTable to be joined.
+ * COALESCE user-logged grade with consensus grade.
+ * Falls back to consensus when the user didn't log a grade.
+ * Requires both `boardDifficultyGrades` and `consensusGradeTable` LEFT JOINs
+ * (see {@link consensusGradeTable}).
  */
 export const difficultyNameWithFallbackExpr = sql<string | null>`COALESCE(
   ${dbSchema.boardDifficultyGrades.boulderName},
@@ -36,8 +57,8 @@ export const difficultyNameWithFallbackExpr = sql<string | null>`COALESCE(
 )`;
 
 /**
- * SQL expression: rounded consensus difficulty ID.
- * Requires boardClimbStats to be joined in the query.
+ * Rounded consensus difficulty ID.
+ * Requires `boardClimbStats` to be joined in the query.
  */
 export const consensusDifficultyExpr = sql<number | null>`ROUND(${dbSchema.boardClimbStats.displayDifficulty})`;
 

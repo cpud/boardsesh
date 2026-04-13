@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-function formatElapsed(seconds: number, short?: boolean): string {
+export function formatElapsed(seconds: number, short?: boolean): string {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   if (short) {
@@ -41,8 +41,9 @@ export function useSessionTimer(
     };
 
     update();
-    // Short format only changes every minute — 10s is enough to stay current
-    const id = setInterval(update, short ? 10000 : 1000);
+    // Long format (hh:mm:ss) ticks every 1s; short format (hh:mm) only
+    // changes on the minute boundary so we poll every 10s to save cycles.
+    const id = setInterval(update, short ? 10_000 : 1_000);
     return () => clearInterval(id);
   }, [startedAt, short]);
 
