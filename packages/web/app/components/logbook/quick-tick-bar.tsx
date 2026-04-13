@@ -8,6 +8,7 @@ import { useBoardProvider } from '../board-provider/board-provider-context';
 import type { LogbookEntry, TickStatus } from '@/app/hooks/use-logbook';
 import { TENSION_KILTER_GRADES } from '@/app/lib/board-data';
 import { useConfetti } from '@/app/hooks/use-confetti';
+import { saveTickDraft, loadTickDraft, clearTickDraft } from '@/app/lib/tick-draft-db';
 import {
   TickControls,
   TickGradeButton,
@@ -34,6 +35,8 @@ export interface QuickTickBarProps {
   onSave: () => void;
   /** Called when a save fails so the parent can show feedback. */
   onError?: () => void;
+  /** Called when a draft is restored from a previous failed save. */
+  onDraftRestored?: (comment: string) => void;
   /** Current comment text. Owned by the parent so the comment field can live
    *  outside this bar (above the queue control bar) without causing reflow. */
   comment: string;
@@ -62,6 +65,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
   boardDetails,
   onSave,
   onError,
+  onDraftRestored,
   comment,
   commentSlot,
 }, ref) => {
@@ -90,9 +94,24 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
 
   const [quality, setQuality] = useState<number | null>(null);
   const [difficulty, setDifficulty] = useState<number | undefined>(undefined);
-  const [isSaving, setIsSaving] = useState(false);
   const [attemptCount, setAttemptCount] = useState<number>(1);
   const [expandedControl, setExpandedControl] = useState<ExpandedControl>(null);
+
+  // Restore draft values from a previous failed save for this climb.
+  const draftLoaded = useRef(false);
+  useEffect(() => {
+    if (!tickTarget || draftLoaded.current) return;
+    draftLoaded.current = true;
+    loadTickDraft(tickTarget.climb.uuid, Number(tickTarget.angle)).then((draft) => {
+      if (!draft) return;
+      setQuality(draft.quality);
+      setDifficulty(draft.difficulty);
+      setAttemptCount(draft.attemptCount);
+      if (draft.comment) {
+        onDraftRestored?.(draft.comment);
+      }
+    });
+  }, [tickTarget, onDraftRestored]);
   // Track which picker was last open so we can keep it mounted during collapse.
   const [lastExpandedControl, setLastExpandedControl] = useState<ExpandedControl>(null);
   const [pickerVisible, setPickerVisible] = useState(false);
@@ -142,8 +161,8 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
   }, []);
 
   const handleSave = useCallback(
-    async (isAscent: boolean, confettiOrigin?: HTMLElement | null) => {
-      if (!tickTarget || isSaving) return;
+    (isAscent: boolean, confettiOrigin?: HTMLElement | null) => {
+      if (!tickTarget) return;
 
       const { climb, angle: targetAngle, boardDetails: targetBoard, hasPriorHistory } = tickTarget;
 
@@ -154,26 +173,31 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
         status = 'attempt';
       }
 
-      setIsSaving(true);
-      try {
-        await saveTick({
-          climbUuid: climb.uuid,
-          angle: Number(targetAngle),
-          isMirror: !!climb.mirrored,
-          status,
-          attemptCount,
-          quality: quality ?? undefined,
-          difficulty,
-          isBenchmark: false,
-          comment: comment || '',
-          climbedAt: new Date().toISOString(),
-          layoutId: targetBoard.layout_id,
-          sizeId: targetBoard.size_id,
-          setIds: Array.isArray(targetBoard.set_ids)
-            ? targetBoard.set_ids.join(',')
-            : String(targetBoard.set_ids),
-        });
+      // Capture values for the draft in case the save fails.
+      const draftValues = { climbUuid: climb.uuid, angle: Number(targetAngle), quality, difficulty, attemptCount, comment, status };
 
+      // Fire confetti and close the bar immediately — don't wait for the network.
+      fireConfetti(confettiOrigin ?? document.getElementById('button-tick'));
+      onSave();
+
+      // Fire-and-forget: the logbook cache updates optimistically via useSaveTick's onMutate.
+      saveTick({
+        climbUuid: climb.uuid,
+        angle: Number(targetAngle),
+        isMirror: !!climb.mirrored,
+        status,
+        attemptCount,
+        quality: quality ?? undefined,
+        difficulty,
+        isBenchmark: false,
+        comment: comment || '',
+        climbedAt: new Date().toISOString(),
+        layoutId: targetBoard.layout_id,
+        sizeId: targetBoard.size_id,
+        setIds: Array.isArray(targetBoard.set_ids)
+          ? targetBoard.set_ids.join(',')
+          : String(targetBoard.set_ids),
+      }).then(() => {
         track('Quick Tick Saved', {
           boardLayout: targetBoard.layout_name || '',
           status,
@@ -182,20 +206,16 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
           hasDifficulty: difficulty !== undefined,
           hasComment: comment.length > 0,
         });
-
-        fireConfetti(confettiOrigin ?? document.getElementById('button-tick'));
-
-        onSave();
-      } catch {
+        clearTickDraft(climb.uuid, Number(targetAngle));
+      }).catch(() => {
         track('Quick Tick Failed', {
           boardLayout: targetBoard.layout_name || '',
         });
+        saveTickDraft(draftValues);
         onError?.();
-      } finally {
-        setIsSaving(false);
-      }
+      });
     },
-    [tickTarget, quality, difficulty, comment, isSaving, saveTick, onSave, attemptCount, fireConfetti, onError],
+    [tickTarget, quality, difficulty, comment, saveTick, onSave, attemptCount, fireConfetti, onError],
   );
 
   const handleConfirm = useCallback(() => handleSave(true), [handleSave]);

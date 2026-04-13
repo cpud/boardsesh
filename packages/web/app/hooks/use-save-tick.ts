@@ -3,7 +3,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useWsAuthToken } from './use-ws-auth-token';
 import { useSession } from 'next-auth/react';
-import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   SAVE_TICK,
@@ -12,6 +11,7 @@ import {
 } from '@/app/lib/graphql/operations';
 import type { BoardName } from '@/app/lib/types';
 import type { TickStatus, LogbookEntry } from './use-logbook';
+import { clearTickDraft } from '@/app/lib/tick-draft-db';
 
 // Options for saving a tick (local storage, no Aurora required)
 export interface SaveTickOptions {
@@ -38,7 +38,6 @@ export interface SaveTickOptions {
 export function useSaveTick(boardName: BoardName) {
   const { token } = useWsAuthToken();
   const { status: sessionStatus } = useSession();
-  const { showMessage } = useSnackbar();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -102,7 +101,7 @@ export function useSaveTick(boardName: BoardName) {
 
       return { tempUuid };
     },
-    onSuccess: (savedTick, _options, context) => {
+    onSuccess: (savedTick, options, context) => {
       // Replace temp entry with real data
       if (context?.tempUuid) {
         queryClient.setQueriesData<LogbookEntry[]>(
@@ -115,28 +114,19 @@ export function useSaveTick(boardName: BoardName) {
             ),
         );
       }
+      // Clear any IndexedDB draft for this climb (belt-and-suspenders with QuickTickBar's .then)
+      clearTickDraft(options.climbUuid, options.angle);
     },
-    onError: (err, _options, context) => {
-      // Rollback optimistic update
+    onError: (_err, _options, context) => {
+      // Rollback optimistic update. User-facing error feedback is handled by
+      // the caller (e.g. QuickTickBar's .catch → onError callback) to avoid
+      // duplicate snackbars.
       if (context?.tempUuid) {
         queryClient.setQueriesData<LogbookEntry[]>(
           { queryKey: ['logbook', boardName] },
           (old) => old?.filter((entry) => entry.uuid !== context.tempUuid),
         );
       }
-
-      let errorMessage = 'Failed to save tick';
-      if (err instanceof Error) {
-        if ('response' in err && typeof err.response === 'object' && err.response !== null) {
-          const response = err.response as { errors?: Array<{ message: string }> };
-          if (response.errors && response.errors.length > 0) {
-            errorMessage = response.errors[0].message;
-          }
-        } else {
-          errorMessage = err.message;
-        }
-      }
-      showMessage(errorMessage, 'error');
     },
   });
 }
