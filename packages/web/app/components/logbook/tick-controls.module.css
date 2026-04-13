@@ -173,13 +173,14 @@
   min-width: 0;
 }
 
-/* Scroll direction arrows — sit at left/right edges of the scrollable area.
-   Use backdrop-filter blur so the edge fades smoothly regardless of background. */
+/* Scroll direction arrows — frosted glass gradient at scrollable edges.
+   Combines backdrop-filter blur with a horizontal semi-transparent gradient
+   that fades from opaque frosted glass to fully transparent. */
 .scrollIndicator {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 24px;
+  width: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -188,24 +189,34 @@
   opacity: 0;
   transition: opacity 200ms ease;
   color: inherit;
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 
 .scrollIndicatorVisible {
-  opacity: 0.55;
+  opacity: 1;
 }
 
 .scrollIndicatorLeft {
   left: 0;
-  mask-image: linear-gradient(to right, black 40%, transparent);
-  -webkit-mask-image: linear-gradient(to right, black 40%, transparent);
+  background: linear-gradient(to right, rgba(180, 180, 180, 0.45) 0%, rgba(180, 180, 180, 0) 100%);
+  mask-image: linear-gradient(to right, black 60%, transparent);
+  -webkit-mask-image: linear-gradient(to right, black 60%, transparent);
 }
 
 .scrollIndicatorRight {
   right: 0;
-  mask-image: linear-gradient(to left, black 40%, transparent);
-  -webkit-mask-image: linear-gradient(to left, black 40%, transparent);
+  background: linear-gradient(to left, rgba(180, 180, 180, 0.45) 0%, rgba(180, 180, 180, 0) 100%);
+  mask-image: linear-gradient(to left, black 60%, transparent);
+  -webkit-mask-image: linear-gradient(to left, black 60%, transparent);
+}
+
+:global(html[data-theme="dark"]) .scrollIndicatorLeft {
+  background: linear-gradient(to right, rgba(120, 120, 120, 0.4) 0%, rgba(120, 120, 120, 0) 100%);
+}
+
+:global(html[data-theme="dark"]) .scrollIndicatorRight {
+  background: linear-gradient(to left, rgba(120, 120, 120, 0.4) 0%, rgba(120, 120, 120, 0) 100%);
 }
 
 .pickerItem {
