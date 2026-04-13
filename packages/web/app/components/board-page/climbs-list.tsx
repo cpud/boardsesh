@@ -123,37 +123,23 @@ const SharedDrawers = React.memo(forwardRef<SharedDrawerHandle, SharedDrawersPro
       <>
         <SwipeableDrawer
           placement="bottom"
+          title={
+            activeDrawerClimb ? (
+              <div data-swipe-blocked="" {...actionsDragHandlers} style={{ touchAction: 'none' }}>
+                <DrawerClimbHeader climb={activeDrawerClimb} boardDetails={activeDrawerBoardDetails} />
+              </div>
+            ) : undefined
+          }
           height="60%"
           paperRef={actionsPaperRef}
           open={drawerMode === 'actions'}
           onClose={handleCloseDrawer}
           onTransitionEnd={handleDrawerTransitionEnd}
           swipeEnabled={false}
-          showDragHandle={false}
           styles={sharedDrawerStyles}
         >
           {activeDrawerClimb && (
             <>
-              {/* Sticky drag handle + header zone */}
-              <div
-                data-swipe-blocked=""
-                {...actionsDragHandlers}
-                style={{ touchAction: 'none', position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'var(--semantic-surface)' }}
-              >
-                <div className={drawerCss.dragHandleZoneHorizontal}>
-                  <div className={drawerCss.dragHandleBarHorizontal} />
-                </div>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: `${themeTokens.spacing[3]}px`,
-                    borderBottom: '1px solid var(--neutral-200)',
-                  }}
-                >
-                  <DrawerClimbHeader climb={activeDrawerClimb} boardDetails={activeDrawerBoardDetails} />
-                </Box>
-              </div>
               <ClimbActions
                 climb={activeDrawerClimb}
                 boardDetails={activeDrawerBoardDetails}
@@ -624,7 +610,7 @@ const ClimbsList = ({
           {isFetching && climbs.length === 0 ? (
             <ClimbsListSkeleton aspectRatio={boardDetails.boardWidth / boardDetails.boardHeight} viewMode="list" />
           ) : (
-            <div style={{ height: virtualizer.getTotalSize(), width: '100%', position: 'relative', backgroundColor: 'var(--semantic-surface)' }}>
+            <div style={{ height: virtualizer.getTotalSize(), width: '100%', position: 'relative', backgroundColor: 'inherit' }}>
               {virtualItems.map((virtualItem) => {
                 const climb = visibleClimbs[virtualItem.index];
                 const index = virtualItem.index;

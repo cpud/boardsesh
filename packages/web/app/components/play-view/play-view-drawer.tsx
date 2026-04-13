@@ -793,12 +793,18 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
         {isOpen && currentClimb && isActionsOpen && (
           <SwipeableDrawer
             placement="bottom"
+            title={
+              currentClimb ? (
+                <div data-swipe-blocked="" {...actionsDragHandlers} style={{ touchAction: 'none' }}>
+                  <DrawerClimbHeader climb={currentClimb} boardDetails={boardDetails} />
+                </div>
+              ) : undefined
+            }
             height="60%"
             paperRef={actionsPaperRef}
             open={isActionsOpen}
             onClose={handleCloseActions}
             swipeEnabled={false}
-            showDragHandle={false}
             disablePortal
             styles={{
               wrapper: {
@@ -809,25 +815,6 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
             }}
           >
             <>
-              <div
-                data-swipe-blocked=""
-                {...actionsDragHandlers}
-                style={{ touchAction: 'none', position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'var(--semantic-surface)' }}
-              >
-                <div className={drawerStyles.dragHandleZoneHorizontal}>
-                  <div className={drawerStyles.dragHandleBarHorizontal} />
-                </div>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: `${themeTokens.spacing[3]}px`,
-                    borderBottom: '1px solid var(--neutral-200)',
-                  }}
-                >
-                  <DrawerClimbHeader climb={currentClimb} boardDetails={boardDetails} />
-                </Box>
-              </div>
               <ClimbActions
                 climb={currentClimb}
                 boardDetails={boardDetails}

@@ -484,35 +484,19 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(({ boardDetails, i
       {/* Shared actions drawer — only mount when a climb's actions are open */}
       {actionsClimb && (
         <SwipeableDrawer
+          title={
+            <div data-swipe-blocked="" {...actionsDragHandlers} style={{ touchAction: 'none' }}>
+              <DrawerClimbHeader climb={actionsClimb} boardDetails={boardDetails} />
+            </div>
+          }
           placement="bottom"
           height="60%"
           paperRef={actionsPaperRef}
           open
           onClose={handleCloseActions}
           swipeEnabled={false}
-          showDragHandle={false}
           styles={actionsDrawerStyles}
         >
-          {/* Sticky drag handle + header zone */}
-          <div
-            data-swipe-blocked=""
-            {...actionsDragHandlers}
-            style={{ touchAction: 'none', position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'var(--semantic-surface)' }}
-          >
-            <div className={drawerCss.dragHandleZoneHorizontal}>
-              <div className={drawerCss.dragHandleBarHorizontal} />
-            </div>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: `${themeTokens.spacing[3]}px`,
-                borderBottom: '1px solid var(--neutral-200)',
-              }}
-            >
-              <DrawerClimbHeader climb={actionsClimb} boardDetails={boardDetails} />
-            </Box>
-          </div>
           <ClimbActions
             climb={actionsClimb}
             boardDetails={boardDetails}

@@ -4,6 +4,7 @@ import {
   isDragGestureDetected,
   DRAG_MOVE_THRESHOLD,
   DRAG_SNAP_THRESHOLD,
+  DRAG_CLOSE_THRESHOLD,
 } from '@/app/hooks/use-drawer-drag-resize';
 
 describe('Actions drawer drag-to-resize logic', () => {
@@ -14,6 +15,10 @@ describe('Actions drawer drag-to-resize logic', () => {
 
     it('DRAG_SNAP_THRESHOLD is 30', () => {
       expect(DRAG_SNAP_THRESHOLD).toBe(30);
+    });
+
+    it('DRAG_CLOSE_THRESHOLD is 120', () => {
+      expect(DRAG_CLOSE_THRESHOLD).toBe(120);
     });
   });
 
@@ -75,11 +80,11 @@ describe('Actions drawer drag-to-resize logic', () => {
     });
 
     it('returns "none" for small upward drag within dead zone', () => {
-      expect(computeDragResult(-15, '100%', true)).toBe('none');
+      expect(computeDragResult(-15, '90%', true)).toBe('none');
     });
 
     it('returns "none" for small downward drag within dead zone', () => {
-      expect(computeDragResult(20, '100%', true)).toBe('none');
+      expect(computeDragResult(20, '90%', true)).toBe('none');
     });
 
     it('returns "expand" for upward drag just beyond threshold (deltaY = -31)', () => {
@@ -90,16 +95,16 @@ describe('Actions drawer drag-to-resize logic', () => {
       expect(computeDragResult(-200, '60%', true)).toBe('expand');
     });
 
-    it('returns "expand" for upward drag from 100% (idempotent)', () => {
-      expect(computeDragResult(-50, '100%', true)).toBe('expand');
+    it('returns "expand" for upward drag from 90% (idempotent)', () => {
+      expect(computeDragResult(-50, '90%', true)).toBe('expand');
     });
 
-    it('returns "collapse" for downward drag just beyond threshold from 100%', () => {
-      expect(computeDragResult(31, '100%', true)).toBe('collapse');
+    it('returns "collapse" for downward drag just beyond threshold from 90%', () => {
+      expect(computeDragResult(31, '90%', true)).toBe('collapse');
     });
 
-    it('returns "collapse" for large downward drag from 100%', () => {
-      expect(computeDragResult(150, '100%', true)).toBe('collapse');
+    it('returns "close" for long downward drag from 90% (exceeds close threshold)', () => {
+      expect(computeDragResult(150, '90%', true)).toBe('close');
     });
 
     it('returns "close" for downward drag just beyond threshold from 60%', () => {
@@ -126,14 +131,14 @@ describe('Actions drawer drag-to-resize logic', () => {
       expect(reopenResult).toBe('expand');
     });
 
-    it('after collapse from 100% to 60%, subsequent downward drag closes', () => {
-      expect(computeDragResult(50, '100%', true)).toBe('collapse');
+    it('after collapse from 90% to 60%, subsequent downward drag closes', () => {
+      expect(computeDragResult(50, '90%', true)).toBe('collapse');
       expect(computeDragResult(50, '60%', true)).toBe('close');
     });
 
     it('full lifecycle: open at 60% -> expand -> collapse -> close', () => {
       expect(computeDragResult(-50, '60%', true)).toBe('expand');
-      expect(computeDragResult(50, '100%', true)).toBe('collapse');
+      expect(computeDragResult(50, '90%', true)).toBe('collapse');
       expect(computeDragResult(50, '60%', true)).toBe('close');
     });
   });
@@ -157,12 +162,12 @@ describe('Actions drawer drag-to-resize logic', () => {
       expect(computeDragResult(endY - startY, '60%', gesture)).toBe('expand');
     });
 
-    it('deliberate downward swipe from 100% collapses', () => {
+    it('deliberate downward swipe from 90% collapses', () => {
       const startY = 200;
       const endY = 260;
       const gesture = isDragGestureDetected(startY, endY);
       expect(gesture).toBe(true);
-      expect(computeDragResult(endY - startY, '100%', gesture)).toBe('collapse');
+      expect(computeDragResult(endY - startY, '90%', gesture)).toBe('collapse');
     });
 
     it('deliberate downward swipe from 60% closes', () => {

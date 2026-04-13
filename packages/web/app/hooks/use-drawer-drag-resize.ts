@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef } from 'react';
 
 export const DRAG_MOVE_THRESHOLD = 10;
 export const DRAG_SNAP_THRESHOLD = 30;
+export const DRAG_CLOSE_THRESHOLD = 120;
 
 export type DragResult = 'expand' | 'collapse' | 'close' | 'none';
 
@@ -17,11 +18,13 @@ export function computeDragResult(
   deltaY: number,
   startHeight: string,
   isGesture: boolean,
-  expandedHeight = '100%',
+  expandedHeight = '90%',
   threshold = DRAG_SNAP_THRESHOLD,
+  closeThreshold = DRAG_CLOSE_THRESHOLD,
 ): DragResult {
   if (!isGesture) return 'none';
   if (deltaY < -threshold) return 'expand';
+  if (deltaY > closeThreshold) return 'close';
   if (deltaY > threshold) {
     return startHeight === expandedHeight ? 'collapse' : 'close';
   }
@@ -35,7 +38,7 @@ export interface DrawerDragResizeOptions {
   onClose: () => void;
   /** Initial/collapsed height. Defaults to '60%'. */
   initialHeight?: string;
-  /** Expanded height. Defaults to '100%'. */
+  /** Expanded height. Defaults to '90%'. */
   expandedHeight?: string;
 }
 
@@ -53,15 +56,15 @@ export interface DrawerDragResizeResult {
 /**
  * Hook that implements Spotify-style drag-to-resize for bottom drawers.
  *
- * Drag up → expand to 100%.
- * Drag down from 100% → collapse to initial height (60%).
+ * Drag up → expand to 90%.
+ * Drag down from expanded → collapse to initial height (60%).
  * Drag down from initial height → close.
  */
 export function useDrawerDragResize({
   open,
   onClose,
   initialHeight = '60%',
-  expandedHeight = '100%',
+  expandedHeight = '90%',
 }: DrawerDragResizeOptions): DrawerDragResizeResult {
   const paperRef = useRef<HTMLDivElement>(null);
   const heightRef = useRef(initialHeight);
@@ -98,14 +101,17 @@ export function useDrawerDragResize({
   const onTouchEnd = useCallback((e: React.TouchEvent) => {
     if (!isDragGesture.current) return;
     const deltaY = e.changedTouches[0].clientY - dragStartY.current;
-    if (deltaY < -DRAG_SNAP_THRESHOLD) {
-      updateHeight(expandedHeight);
-    } else if (deltaY > DRAG_SNAP_THRESHOLD) {
-      if (dragStartHeight.current === expandedHeight) {
+    const result = computeDragResult(deltaY, dragStartHeight.current, true, expandedHeight);
+    switch (result) {
+      case 'expand':
+        updateHeight(expandedHeight);
+        break;
+      case 'collapse':
         updateHeight(initialHeight);
-      } else {
+        break;
+      case 'close':
         onClose();
-      }
+        break;
     }
   }, [onClose, initialHeight, expandedHeight, updateHeight]);
 
