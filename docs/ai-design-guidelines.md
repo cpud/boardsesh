@@ -228,6 +228,29 @@ Climbing difficulty is represented by a spectrum from yellow through red to purp
 
 ---
 
+## Dark Mode
+
+Dark mode tokens live in `darkTokens` in `packages/web/app/theme/theme-config.ts`. The neutral palette is fully inverted (50 = black, 900 = near-white), and surfaces use near-black values.
+
+### Dark Mode Surfaces
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `darkTokens.semantic.background` | `#000000` | Page background |
+| `darkTokens.semantic.surface` | `#0A0A0A` | Card surfaces |
+| `darkTokens.semantic.surfaceElevated` | `#121212` | Elevated surfaces (paper) |
+| `darkTokens.semantic.inputSurface` | `#FFFFFF` | All input field backgrounds |
+
+### White Input Fields (Intentional)
+
+Dark mode uses **white input fields** (`darkTokens.semantic.inputSurface`) on dark backgrounds. This is a deliberate design decision for high contrast and clarity — inputs must stand out from the surrounding dark UI.
+
+All input variants (TextField, OutlinedInput, FilledInput, Select, Autocomplete) use white backgrounds with dark text (`themeTokens.neutral[800]`) in dark mode. These overrides are defined in `darkComponents` in `packages/web/app/theme/mui-theme.ts`.
+
+**Do not change dark mode input backgrounds to dark colors.** This is not a bug — it is the intended design.
+
+---
+
 ## Typography Hierarchy
 
 ### Display Grade
@@ -740,6 +763,7 @@ These are explicitly prohibited in the Boardsesh codebase:
 | Creating new files unnecessarily | Edit existing files; prefer CSS modules co-located with components |
 | Adding unused code | Remove dead code immediately |
 | Over-engineering | Minimum complexity for current task |
+| Dark input backgrounds in dark mode | Use `darkTokens.semantic.inputSurface` (white) — intentional high-contrast design |
 
 ---
 
