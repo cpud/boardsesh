@@ -3,38 +3,52 @@
 import React, { useRef, useState, useCallback, useMemo } from 'react';
 import IconButton from '@mui/material/IconButton';
 import dynamic from 'next/dynamic';
+import MoreHorizOutlined from '@mui/icons-material/MoreHorizOutlined';
 import AddOutlined from '@mui/icons-material/AddOutlined';
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
-import MoreHorizOutlined from '@mui/icons-material/MoreHorizOutlined';
+import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
 import { Climb, BoardDetails } from '@/app/lib/types';
 import ClimbThumbnail from './climb-thumbnail';
 import ClimbTitle, { type ClimbTitleProps } from './climb-title';
+import DrawerClimbHeader from './drawer-climb-header';
+import { AscentStatus } from './ascent-status';
 import { ClimbActions } from '../climb-actions';
 import { useDoubleTapFavorite } from '../climb-actions/use-double-tap-favorite';
 import HeartAnimationOverlay from './heart-animation-overlay';
+import PlaylistSelectionContent from '../climb-actions/playlist-selection-content';
 import { useSwipeActions } from '@/app/hooks/use-swipe-actions';
 import { useDoubleTap } from '@/app/lib/hooks/use-double-tap';
 import { themeTokens } from '@/app/theme/theme-config';
 import { getGradeTintColor } from '@/app/lib/grade-colors';
 import { getExcludedClimbActions } from '@/app/lib/climb-action-utils';
-import type { ClimbActionType } from '../climb-actions/types';
 import { useIsClimbSelected } from '../board-page/selected-climb-store';
-import { AscentStatus } from './ascent-status';
 import { InlineListTickBar } from '../logbook/inline-list-tick-bar';
 import { useSnackbar } from '../providers/snackbar-provider';
 import styles from './climb-list-item.module.css';
 
 const SwipeableDrawer = dynamic(() => import('../swipeable-drawer/swipeable-drawer'), { ssr: false });
-const PlaylistSelectionContent = dynamic(() => import('../climb-actions/playlist-selection-content'), { ssr: false });
-const DrawerClimbHeader = dynamic(() => import('./drawer-climb-header'), { ssr: false });
 
-// Swipe gesture constants
+// Keep swipe visuals aligned with gesture max distance
 const MAX_GESTURE_SWIPE = 180;
+const SHORT_ACTION_WIDTH = 120;
 const RIGHT_ACTION_WIDTH = 100;
 const RIGHT_OVERRIDE_ACTION_WIDTH = 120;
+const LONG_SWIPE_ACTION_WIDTH = MAX_GESTURE_SWIPE;
 const SHORT_SWIPE_THRESHOLD = 60;
+const TRANSITION_START = 115;
+const LONG_SWIPE_THRESHOLD = 150;
 
-// Static style objects (hoisted out of component)
+// Static style objects (no reactive deps, hoisted out of component to avoid per-render allocation)
+const swipeActionLayerBaseStyle: React.CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-start',
+  paddingLeft: themeTokens.spacing[4],
+  willChange: 'opacity',
+};
+
 const rightSwipeActionLayerBaseStyle: React.CSSProperties = {
   position: 'absolute',
   inset: 0,
@@ -43,6 +57,19 @@ const rightSwipeActionLayerBaseStyle: React.CSSProperties = {
   justifyContent: 'flex-end',
   paddingRight: themeTokens.spacing[4],
   willChange: 'opacity',
+};
+
+// Static initial styles for action layers — opacity updated via direct DOM manipulation during swipe
+const shortSwipeLayerInitialStyle: React.CSSProperties = {
+  ...swipeActionLayerBaseStyle,
+  backgroundColor: themeTokens.colors.primary,
+  opacity: 0,
+};
+
+const longSwipeLayerInitialStyle: React.CSSProperties = {
+  ...swipeActionLayerBaseStyle,
+  backgroundColor: themeTokens.neutral[600],
+  opacity: 0,
 };
 
 const rightActionLayerDefaultStyle: React.CSSProperties = {
@@ -57,6 +84,21 @@ const rightActionLayerConfirmedStyle: React.CSSProperties = {
   backgroundColor: themeTokens.colors.success,
   opacity: 0,
   transition: 'opacity 120ms ease-out',
+};
+
+const defaultLeftActionStyle: React.CSSProperties = {
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  bottom: 0,
+  width: SHORT_ACTION_WIDTH,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-start',
+  paddingLeft: themeTokens.spacing[3],
+  opacity: 0,
+  visibility: 'hidden',
+  overflow: 'hidden',
 };
 
 const defaultRightActionStyle: React.CSSProperties = {
@@ -82,6 +124,12 @@ const centerStyle: React.CSSProperties = { flex: 1, minWidth: 0 };
 
 const iconButtonStyle: React.CSSProperties = { flexShrink: 0, color: 'var(--neutral-400)' };
 
+const drawerStyles = {
+  wrapper: { height: 'auto', width: '100%' },
+  body: { padding: `${themeTokens.spacing[2]}px 0` },
+  header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
+} as const;
+
 const playlistDrawerStyles = {
   wrapper: { height: 'auto', maxHeight: '70vh', width: '100%' },
   body: { padding: 0 },
@@ -97,23 +145,42 @@ export type SwipeActionOverride = {
 type ClimbListItemProps = {
   climb: Climb;
   boardDetails: BoardDetails;
+  /** Current pathname — passed from parent to avoid per-instance usePathname() context lookups. */
   pathname: string;
+  /** Whether the app is in dark mode — passed from parent to avoid per-instance context lookups. */
   isDark: boolean;
+  /** Override selected state (e.g. in queue drawer). When omitted, subscribes to SelectionStoreContext. */
   selected?: boolean;
+  /** When true, the item is visually dimmed (greyed out) but still interactive */
   unsupported?: boolean;
+  /** When true, the climb fits only on a bigger board than the user's current session — render dimmed and route clicks to `onNeedsBiggerBoard` instead of selecting. */
   needsBiggerBoard?: boolean;
+  /** Fired when the user taps a `needsBiggerBoard` item, so the parent can show a warning. */
   onNeedsBiggerBoard?: () => void;
+  /** When true, swipe gestures (favorite/queue) are disabled */
   disableSwipe?: boolean;
   onSelect?: () => void;
+  /** Override the right swipe action (revealed on swipe left). Default: add to queue.
+   *  Only used by queue items to replace add-to-queue with tick. */
   swipeRightAction?: SwipeActionOverride;
+  /** Content rendered between the title and menu button (e.g., avatar) */
   afterTitleSlot?: React.ReactNode;
+  /** Override ClimbTitle props. When provided, replaces the defaults entirely. */
   titleProps?: Partial<ClimbTitleProps>;
+  /** Override background color of the swipeable content */
   backgroundColor?: string;
+  /** Override content opacity (e.g., 0.6 for history items) */
   contentOpacity?: number;
+  /** When true, prefer SSR image layers over the canvas renderer for this item. */
   preferImageLayers?: boolean;
+  /** Handler for thumbnail clicks. When set, stops propagation so the row onClick doesn't also fire. */
   onThumbnailClick?: () => void;
+  /** When provided, the item delegates opening the actions drawer to the parent instead of rendering its own. */
   onOpenActions?: (climb: Climb) => void;
+  /** When provided, the item delegates opening the playlist selector to the parent instead of rendering its own. */
   onOpenPlaylistSelector?: (climb: Climb) => void;
+  /** Optional callback to add the climb to the queue (default swipe-left action).
+   *  When not provided, swipe-left is a no-op. Pass from a parent that subscribes to QueueContext. */
   addToQueue?: (climb: Climb) => void;
 };
 
@@ -140,16 +207,26 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     onOpenPlaylistSelector,
     addToQueue,
   }) => {
+    // Subscribe to selection store — only re-renders when THIS item's selected state changes.
+    // When `selectedOverride` is provided (e.g. queue drawer), use that instead.
     const storeSelected = useIsClimbSelected(climb.uuid);
     const selected = selectedOverride ?? storeSelected;
     // When parent provides both drawer callbacks, skip local drawers entirely.
+    // Both must be present to ensure the parent handles all drawer interactions.
     const hasParentDrawers = Boolean(onOpenActions && onOpenPlaylistSelector);
+    const [isActionsOpen, setIsActionsOpen] = useState(false);
     const [isPlaylistSelectorOpen, setIsPlaylistSelectorOpen] = useState(false);
     const [isInlineTickOpen, setIsInlineTickOpen] = useState(false);
+    const { showMessage } = useSnackbar();
+    // Refs for inner action layer elements — updated via direct DOM manipulation during swipe
+    const shortSwipeLayerRef = useRef<HTMLDivElement>(null);
+    const longSwipeLayerRef = useRef<HTMLDivElement>(null);
     const rightActionLayerRef = useRef<HTMLDivElement>(null);
+    const leftActionContainerRef = useRef<HTMLDivElement>(null);
+    // Store addToQueue in a ref so the memoized handler always reads the latest
+    // value without requiring addToQueue in the memo comparator.
     const addToQueueRef = useRef(addToQueue);
     addToQueueRef.current = addToQueue;
-    const { showMessage } = useSnackbar();
     const {
       handleDoubleTap,
       showHeart,
@@ -157,6 +234,8 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       isFavorited,
     } = useDoubleTapFavorite({ climbUuid: climb.uuid });
     const { ref: doubleTapRef, onDoubleClick: handleDoubleTapClick } = useDoubleTap(handleDoubleTap);
+    // Store onThumbnailClick in a ref so the memoized handler always reads the latest
+    // value without requiring onThumbnailClick in the memo comparator.
     const onThumbnailClickRef = useRef(onThumbnailClick);
     onThumbnailClickRef.current = onThumbnailClick;
 
@@ -169,11 +248,25 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       addToQueueRef.current?.(climb);
     }, [climb]);
 
-    // Swipe right: reveal action overlay (in reveal-toggle mode, this is just a notification)
-    const handleSwipeRightReveal = useCallback(() => {
-      // In reveal-toggle mode, this fires when the overlay is revealed.
-      // No action needed — the overlay is now visible.
-    }, []);
+    // Swipe right short (left action): open playlist selector
+    const handleDefaultSwipeRight = useCallback(() => {
+      if (onOpenPlaylistSelector) {
+        onOpenPlaylistSelector(climb);
+      } else {
+        setIsActionsOpen(false);
+        setIsPlaylistSelectorOpen(true);
+      }
+    }, [onOpenPlaylistSelector, climb]);
+
+    // Swipe right long (left action): open actions menu
+    const handleDefaultSwipeRightLong = useCallback(() => {
+      if (onOpenActions) {
+        onOpenActions(climb);
+      } else {
+        setIsPlaylistSelectorOpen(false);
+        setIsActionsOpen(true);
+      }
+    }, [onOpenActions, climb]);
 
     // Override handler for right swipe action (e.g., tick in queue)
     const handleOverrideSwipeLeft = useCallback(() => {
@@ -185,7 +278,26 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
 
     // Direct DOM manipulation for swipe layer opacities — zero React re-renders during gesture
     const handleSwipeOffset = useCallback((offset: number) => {
+      const rightOffset = offset > 0 ? offset : 0;
       const leftOffset = offset < 0 ? -offset : 0;
+
+      // Right swipe: short (playlist) → long (actions) transition
+      const rightBaseOpacity = Math.min(1, rightOffset / SHORT_SWIPE_THRESHOLD);
+      const transitionRange = LONG_SWIPE_THRESHOLD - TRANSITION_START;
+      const blend =
+        transitionRange > 0
+          ? Math.max(0, Math.min(1, (rightOffset - TRANSITION_START) / transitionRange))
+          : 1;
+
+      if (shortSwipeLayerRef.current) {
+        shortSwipeLayerRef.current.style.opacity = String(rightBaseOpacity * (1 - blend));
+      }
+      if (longSwipeLayerRef.current) {
+        longSwipeLayerRef.current.style.opacity = String(rightBaseOpacity * blend);
+      }
+      if (leftActionContainerRef.current) {
+        leftActionContainerRef.current.style.width = `${SHORT_ACTION_WIDTH + (LONG_SWIPE_ACTION_WIDTH - SHORT_ACTION_WIDTH) * blend}px`;
+      }
 
       // Left swipe: queue/tick action opacity
       if (rightActionLayerRef.current) {
@@ -193,19 +305,26 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       }
     }, []);
 
-    const { swipeHandlers, swipeLeftConfirmed, revealed, closeReveal, contentRef, leftActionRef, rightActionRef } = useSwipeActions({
+    const { swipeHandlers, swipeLeftConfirmed, contentRef, leftActionRef, rightActionRef } = useSwipeActions({
       onSwipeLeft: resolvedSwipeLeft,
-      onSwipeRight: handleSwipeRightReveal,
+      onSwipeRight: handleDefaultSwipeRight,
+      onSwipeRightLong: handleDefaultSwipeRightLong,
       onSwipeOffsetChange: handleSwipeOffset,
       swipeThreshold: SHORT_SWIPE_THRESHOLD,
+      longSwipeRightThreshold: LONG_SWIPE_THRESHOLD,
       maxSwipe: MAX_GESTURE_SWIPE,
       maxSwipeLeft: rightActionRevealWidth,
-      disabled: disableSwipe || isInlineTickOpen,
+      disabled: disableSwipe,
       confirmationPeekOffset: rightActionRevealWidth,
-      revealMode: 'reveal-toggle',
-      revealOffset: MAX_GESTURE_SWIPE,
     });
 
+    // Combined ref callback for left action container — avoids inline function recreation
+    const leftActionCombinedRef = useCallback((node: HTMLDivElement | null) => {
+      leftActionRef(node);
+      leftActionContainerRef.current = node;
+    }, [leftActionRef]);
+
+    // Combined ref callback for swipeable content div
     const contentCombinedRef = useCallback((node: HTMLDivElement | null) => {
       if (!disableSwipe) {
         swipeHandlers.ref(node);
@@ -213,7 +332,8 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       }
     }, [disableSwipe, swipeHandlers, contentRef]);
 
-    // Stable refs
+    // Stable refs so the memoized handlers below stay stable across renders
+    // even when the bigger-board callback identity changes.
     const onNeedsBiggerBoardRef = useRef(onNeedsBiggerBoard);
     onNeedsBiggerBoardRef.current = onNeedsBiggerBoard;
     const needsBiggerBoardRef = useRef(needsBiggerBoard);
@@ -221,6 +341,9 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     const onSelectRef = useRef(onSelect);
     onSelectRef.current = onSelect;
 
+    // Thumbnail click handler — uses ref to avoid stale closure.
+    // Always attached (not conditional) because onThumbnailClick is excluded from
+    // the memo comparator; a render-time conditional would go stale.
     const handleThumbnailClick = useCallback((e: React.MouseEvent) => {
       if (needsBiggerBoardRef.current) {
         e.stopPropagation();
@@ -232,61 +355,29 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       onThumbnailClickRef.current();
     }, []);
 
+    // Row click — same interception for the bigger-board case.
     const handleRowClick = useCallback(() => {
-      if (revealed) {
-        closeReveal();
-        return;
-      }
       if (needsBiggerBoardRef.current) {
         onNeedsBiggerBoardRef.current?.();
         return;
       }
       onSelectRef.current?.();
-    }, [revealed, closeReveal]);
+    }, []);
 
+    // Drawer state callbacks — extracted from inline to avoid per-render allocation
+    const handleCloseActions = useCallback(() => setIsActionsOpen(false), []);
+    const handleOpenPlaylistFromActions = useCallback(() => {
+      setIsActionsOpen(false);
+      setIsPlaylistSelectorOpen(true);
+    }, []);
     const handleClosePlaylist = useCallback(() => setIsPlaylistSelectorOpen(false), []);
 
-    // Menu button click handler (desktop)
-    const handleMenuClick = useCallback((e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (onOpenActions) {
-        onOpenActions(climb);
-      }
-    }, [onOpenActions, climb]);
-
-    const excludeActions = useMemo(
-      () => getExcludedClimbActions(boardDetails.board_name, 'list'),
-      [boardDetails.board_name],
-    );
-
-    // Overlay has additional exclusions: queue (accessible via swipe-left) and setActive (contextual)
-    const overlayExcludeActions = useMemo<ClimbActionType[]>(
-      () => [...excludeActions, 'queue', 'setActive'],
-      [excludeActions],
-    );
-
-    // Handle tick action from the overlay
-    const handleTickFromOverlay = useCallback(() => {
-      closeReveal();
+    // Inline tick bar callbacks
+    const handleOpenInlineTickBar = useCallback(() => {
+      setIsActionsOpen(false);
       setIsInlineTickOpen(true);
-    }, [closeReveal]);
+    }, []);
 
-    // Handle playlist action from the overlay
-    const handlePlaylistFromOverlay = useCallback(() => {
-      closeReveal();
-      if (onOpenPlaylistSelector) {
-        onOpenPlaylistSelector(climb);
-      } else {
-        setIsPlaylistSelectorOpen(true);
-      }
-    }, [closeReveal, onOpenPlaylistSelector, climb]);
-
-    // Handle action complete in overlay (close overlay after most actions)
-    const handleOverlayActionComplete = useCallback(() => {
-      closeReveal();
-    }, [closeReveal]);
-
-    // Close tick bar
     const handleCloseTickBar = useCallback(() => {
       setIsInlineTickOpen(false);
     }, []);
@@ -295,17 +386,32 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       showMessage("Couldn't save your tick — it's saved as a draft", 'error');
     }, [showMessage]);
 
-    // Memoize style objects
+    // Menu button click handler — extracted from inline to avoid per-render allocation
+    const handleMenuClick = useCallback((e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (onOpenActions) {
+        onOpenActions(climb);
+      } else {
+        setIsPlaylistSelectorOpen(false);
+        setIsActionsOpen(true);
+      }
+    }, [onOpenActions, climb]);
+
+    const excludeActions = useMemo(
+      () => getExcludedClimbActions(boardDetails.board_name, 'list'),
+      [boardDetails.board_name],
+    );
+
+    // Memoize style objects to prevent recreation on every render
     const containerStyle = useMemo(
       () => ({
         position: 'relative' as const,
         overflow: 'hidden' as const,
-        // When overlay is revealed, set min-height so the absolutely-positioned
-        // right action layer doesn't collapse, but let the content area be replaced.
         ...(unsupported || needsBiggerBoard ? { opacity: 0.5, filter: 'grayscale(80%)' } : {}),
       }),
       [unsupported, needsBiggerBoard],
     );
+
 
     const rightOverrideActionStyle = useMemo(
       () => ({
@@ -346,20 +452,20 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       [resolvedBg, contentOpacity],
     );
 
+    // Default ClimbTitle props when no override is provided
     const resolvedTitleProps = useMemo<Partial<ClimbTitleProps>>(
       () =>
         titleProps ?? {
           gradePosition: 'right',
           showSetterInfo: true,
           titleFontSize: themeTokens.typography.fontSize.xl,
-          rightAddon: <AscentStatus climbUuid={climb.uuid} fontSize={20} />,
           favorited: isFavorited,
           isNoMatch: !!climb.is_no_match,
         },
-      [titleProps, climb.uuid, isFavorited, climb.is_no_match],
+      [titleProps, isFavorited, climb.is_no_match],
     );
 
-    // Memoize right action layer styles
+    // Memoize right action layer styles to avoid inline object creation per render
     const rightActionDefaultLayerStyle = useMemo(
       () => swipeLeftConfirmed
         ? { ...rightActionLayerDefaultStyle, opacity: 0 }
@@ -377,8 +483,15 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
         <div style={containerStyle}>
           {!disableSwipe && (
             <>
-              {/* Left action layer — bg for swipe gesture DOM manipulation */}
-              <div ref={leftActionRef} className={styles.actionsOverlayBg} />
+              {/* Left action (revealed on swipe right) */}
+              <div ref={leftActionCombinedRef} style={defaultLeftActionStyle}>
+                <div ref={shortSwipeLayerRef} style={shortSwipeLayerInitialStyle}>
+                  <LocalOfferOutlined style={iconStyle} />
+                </div>
+                <div ref={longSwipeLayerRef} style={longSwipeLayerInitialStyle}>
+                  <MoreHorizOutlined style={iconStyle} />
+                </div>
+              </div>
 
               {/* Right action (revealed on swipe left) */}
               {hasRightOverride ? (
@@ -387,9 +500,11 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
                 </div>
               ) : (
                 <div ref={rightActionRef} style={defaultRightActionStyle}>
+                  {/* Default layer (Add icon) — opacity driven by swipe gesture via ref */}
                   <div ref={rightActionLayerRef} style={rightActionDefaultLayerStyle}>
                     <AddOutlined style={iconStyle} />
                   </div>
+                  {/* Confirmed layer (Check icon) — crossfades in via CSS transition */}
                   <div style={rightActionConfirmedLayerStyle}>
                     <CheckOutlined style={iconStyle} />
                   </div>
@@ -405,7 +520,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
             onClick={handleRowClick}
             style={swipeableContentStyle}
           >
-            {/* Thumbnail */}
+            {/* Thumbnail with ascent status badge */}
             <div
               ref={doubleTapRef}
               style={thumbnailStyle}
@@ -420,9 +535,10 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
                 preferImageLayers={preferImageLayers}
               />
               <HeartAnimationOverlay visible={showHeart} onAnimationEnd={dismissHeart} size={32} />
+              <AscentStatus climbUuid={climb.uuid} fontSize={12} className={styles.thumbnailBadge} />
             </div>
 
-            {/* Center + Right: Name, stars, setter, colorized grade */}
+            {/* Center: Name, stars, setter, colorized grade */}
             <div style={centerStyle}>
               <ClimbTitle climb={climb} {...resolvedTitleProps} />
             </div>
@@ -430,9 +546,8 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
             {/* After-title slot (e.g., avatar) */}
             {afterTitleSlot}
 
-            {/* Menu: ellipsis button (hidden on mobile — replaced by swipe overlay) */}
+            {/* Ellipsis button — always visible */}
             <IconButton
-              className={styles.menuButton}
               size="small"
               aria-label="More actions"
               onClick={handleMenuClick}
@@ -444,24 +559,47 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
           </div>
         </div>
 
-        {/* Actions overlay — rendered outside the overflow:hidden container so it can be 2 rows */}
-        {revealed && (
-          <div className={styles.actionsOverlay} onClick={handleRowClick}>
-            <ClimbActions
-              climb={climb}
-              boardDetails={boardDetails}
-              angle={climb.angle}
-              currentPathname={pathname}
-              viewMode="overlay"
-              exclude={overlayExcludeActions}
-              onOpenPlaylistSelector={handlePlaylistFromOverlay}
-              onActionComplete={handleOverlayActionComplete}
-              onTickAction={handleTickFromOverlay}
-            />
-          </div>
+        {/* Default actions drawers - only rendered when no parent drawer callbacks */}
+        {!hasParentDrawers && (
+          <>
+            <SwipeableDrawer
+              title={<DrawerClimbHeader climb={climb} boardDetails={boardDetails} />}
+              placement="bottom"
+              open={isActionsOpen}
+              onClose={handleCloseActions}
+              styles={drawerStyles}
+            >
+              <ClimbActions
+                climb={climb}
+                boardDetails={boardDetails}
+                angle={climb.angle}
+                currentPathname={pathname}
+                viewMode="list"
+                exclude={excludeActions}
+                onOpenPlaylistSelector={handleOpenPlaylistFromActions}
+                onActionComplete={handleCloseActions}
+                onTickAction={handleOpenInlineTickBar}
+              />
+            </SwipeableDrawer>
+
+            <SwipeableDrawer
+              title={<DrawerClimbHeader climb={climb} boardDetails={boardDetails} />}
+              placement="bottom"
+              open={isPlaylistSelectorOpen}
+              onClose={handleClosePlaylist}
+              styles={playlistDrawerStyles}
+            >
+              <PlaylistSelectionContent
+                climbUuid={climb.uuid}
+                boardDetails={boardDetails}
+                angle={climb.angle}
+                onDone={handleClosePlaylist}
+              />
+            </SwipeableDrawer>
+          </>
         )}
 
-        {/* Inline tick bar — only mounted when open to avoid unnecessary hook invocations */}
+        {/* Inline tick bar — only mounted when open */}
         {isInlineTickOpen && (
           <InlineListTickBar
             climb={climb}
@@ -471,24 +609,6 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
             onClose={handleCloseTickBar}
             onError={handleTickError}
           />
-        )}
-
-        {/* Playlist selector drawer — only when not delegated to parent */}
-        {!hasParentDrawers && (
-          <SwipeableDrawer
-            title={<DrawerClimbHeader climb={climb} boardDetails={boardDetails} />}
-            placement="bottom"
-            open={isPlaylistSelectorOpen}
-            onClose={handleClosePlaylist}
-            styles={playlistDrawerStyles}
-          >
-            <PlaylistSelectionContent
-              climbUuid={climb.uuid}
-              boardDetails={boardDetails}
-              angle={climb.angle}
-              onDone={handleClosePlaylist}
-            />
-          </SwipeableDrawer>
         )}
       </>
     );

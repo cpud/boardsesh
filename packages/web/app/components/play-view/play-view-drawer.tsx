@@ -12,7 +12,6 @@ import SkipPreviousOutlined from '@mui/icons-material/SkipPreviousOutlined';
 import SkipNextOutlined from '@mui/icons-material/SkipNextOutlined';
 import MoreHorizOutlined from '@mui/icons-material/MoreHorizOutlined';
 import CloseOutlined from '@mui/icons-material/CloseOutlined';
-import ThumbDownAltOutlined from '@mui/icons-material/ThumbDownAltOutlined';
 import FormatListBulletedOutlined from '@mui/icons-material/FormatListBulletedOutlined';
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
 import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
@@ -83,15 +82,13 @@ interface PlayViewActionBarProps {
   supportsMirroring: boolean;
   isFavorited: boolean;
   remainingQueueCount: number;
-  actionsExpanded: boolean;
   onPrevClick: () => void;
   onNextClick: () => void;
   onMirror: () => void;
   onToggleFavorite: () => void;
-  onToggleActions: () => void;
+  onOpenActions: () => void;
   onOpenQueue: () => void;
   angleSelector?: React.ReactNode;
-  expandedActionsContent?: React.ReactNode;
 }
 
 export const PlayViewActionBar = React.memo(function PlayViewActionBar({
@@ -101,89 +98,52 @@ export const PlayViewActionBar = React.memo(function PlayViewActionBar({
   supportsMirroring,
   isFavorited,
   remainingQueueCount,
-  actionsExpanded,
   onPrevClick,
   onNextClick,
   onMirror,
   onToggleFavorite,
-  onToggleActions,
+  onOpenActions,
   onOpenQueue,
   angleSelector,
-  expandedActionsContent,
 }: PlayViewActionBarProps) {
   return (
-    <div className={styles.actionBarWrapper}>
-      <div className={`${styles.actionBar} ${actionsExpanded ? styles.actionBarExpanded : ''}`}>
-        <div className={styles.actionBarItem}>
-          <IconButton disabled={!canSwipePrevious} onClick={onPrevClick}>
-            <SkipPreviousOutlined />
-          </IconButton>
-          <span className={styles.actionBarLabel}>Prev</span>
-        </div>
-        {supportsMirroring && (
-          <div className={styles.actionBarItem}>
-            <IconButton
-              color={isMirrored ? 'primary' : 'default'}
-              onClick={onMirror}
-              sx={
-                isMirrored
-                  ? { backgroundColor: themeTokens.colors.purple, borderColor: themeTokens.colors.purple, color: 'common.white', '&:hover': { backgroundColor: themeTokens.colors.purple } }
-                  : undefined
-              }
-            >
-              <SyncOutlined />
-            </IconButton>
-            <span className={styles.actionBarLabel}>Mirror</span>
-          </div>
-        )}
-        <div className={styles.actionBarItem}>
-          <IconButton onClick={onToggleFavorite}>
-            {isFavorited ? <Favorite sx={{ color: themeTokens.colors.error }} /> : <FavoriteBorderOutlined />}
-          </IconButton>
-          <span className={styles.actionBarLabel}>{isFavorited ? 'Liked' : 'Like'}</span>
-        </div>
-        <div className={styles.actionBarItem}>
-          <ShareBoardButton />
-          <span className={styles.actionBarLabel}>LEDs</span>
-        </div>
-        {angleSelector}
-        <div className={styles.actionBarItem}>
-          <IconButton onClick={onToggleActions} aria-label={actionsExpanded ? 'Close actions' : 'Climb actions'}>
-            {actionsExpanded ? <CloseOutlined /> : <MoreHorizOutlined />}
-          </IconButton>
-          <span className={styles.actionBarLabel}>{actionsExpanded ? 'Close' : 'More'}</span>
-        </div>
-        <div className={styles.actionBarItem}>
-          <MuiBadge badgeContent={remainingQueueCount} max={99} sx={{ '& .MuiBadge-badge': { backgroundColor: themeTokens.colors.primary, color: 'common.white' } }}>
-            <IconButton onClick={onOpenQueue} aria-label="Open queue">
-              <FormatListBulletedOutlined />
-            </IconButton>
-          </MuiBadge>
-          <span className={styles.actionBarLabel}>Queue</span>
-        </div>
-        <div className={styles.actionBarItem}>
-          <IconButton disabled={!canSwipeNext} onClick={onNextClick}>
-            <SkipNextOutlined />
-          </IconButton>
-          <span className={styles.actionBarLabel}>Next</span>
-        </div>
-      </div>
-
-      {/* Expanded actions row — animates open/closed below the main bar */}
-      <div className={`${styles.expandedActionsRow} ${actionsExpanded ? styles.expandedActionsRowOpen : ''}`}>
-        <div className={styles.expandedActionsContent}>
-          {expandedActionsContent}
-        </div>
-      </div>
+    <div className={styles.actionBar}>
+      <IconButton disabled={!canSwipePrevious} onClick={onPrevClick}>
+        <SkipPreviousOutlined />
+      </IconButton>
+      {supportsMirroring && (
+        <IconButton
+          color={isMirrored ? 'primary' : 'default'}
+          onClick={onMirror}
+          sx={
+            isMirrored
+              ? { backgroundColor: themeTokens.colors.purple, borderColor: themeTokens.colors.purple, color: 'common.white', '&:hover': { backgroundColor: themeTokens.colors.purple } }
+              : undefined
+          }
+        >
+          <SyncOutlined />
+        </IconButton>
+      )}
+      <IconButton onClick={onToggleFavorite}>
+        {isFavorited ? <Favorite sx={{ color: themeTokens.colors.error }} /> : <FavoriteBorderOutlined />}
+      </IconButton>
+      <ShareBoardButton />
+      {angleSelector}
+      <IconButton onClick={onOpenActions} aria-label="Climb actions">
+        <MoreHorizOutlined />
+      </IconButton>
+      <MuiBadge badgeContent={remainingQueueCount} max={99} sx={{ '& .MuiBadge-badge': { backgroundColor: themeTokens.colors.primary, color: 'common.white' } }}>
+        <IconButton onClick={onOpenQueue} aria-label="Open queue">
+          <FormatListBulletedOutlined />
+        </IconButton>
+      </MuiBadge>
+      <IconButton disabled={!canSwipeNext} onClick={onNextClick}>
+        <SkipNextOutlined />
+      </IconButton>
     </div>
   );
 });
 PlayViewActionBar.displayName = 'PlayViewActionBar';
-
-/** Actions already in the action bar — excluded from the expanded actions row. */
-const PLAY_VIEW_EXPANDED_EXCLUDE: Array<import('../climb-actions/types').ClimbActionType> = [
-  'tick', 'queue', 'favorite', 'mirror', 'share',
-];
 
 /**
  * Extracted tick bar component that owns its own `tickComment` state.
@@ -274,44 +234,49 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
             />
           }
         />
-        {/* Tick bar action buttons */}
+        {/* Close button — top-right corner like the queue control bar */}
         {isTickBarActive && (
-          <div className={styles.tickBarButtons}>
+          <div className={styles.tickBarClose}>
             <IconButton
               size="small"
-              onClick={() => quickTickBarRef.current?.saveAttempt()}
-              aria-label="Log attempt"
+              onClick={handleClose}
+              aria-label="Close tick bar"
               sx={{
-                width: 36,
-                height: 36,
-                backgroundColor: themeTokens.colors.error,
-                color: 'common.white',
-                '&:hover': { backgroundColor: themeTokens.colors.error },
+                color: 'text.primary',
+                backgroundColor: 'action.selected',
+                '&:hover': { backgroundColor: 'action.focus' },
               }}
             >
-              <ThumbDownAltOutlined sx={{ fontSize: 18 }} />
+              <CloseOutlined sx={{ fontSize: 16 }} />
             </IconButton>
+          </div>
+        )}
+        {/* Action buttons — attempt (X) + save (check), matching queue control bar layout */}
+        {isTickBarActive && (
+          <div className={styles.tickBarButtons}>
+            {/* Attempt button — subtle X, matches queue control bar */}
             <IconButton
-              size="small"
-              onClick={() => quickTickBarRef.current?.save()}
-              aria-label="Log ascent"
+              onClick={(e) => quickTickBarRef.current?.saveAttempt(e.currentTarget)}
               sx={{
-                width: 40,
-                height: 40,
+                color: themeTokens.colors.error,
+                opacity: themeTokens.opacity.subtle,
+                '&:hover': { color: themeTokens.colors.error, opacity: 1 },
+              }}
+              aria-label="Log attempt"
+            >
+              <CloseOutlined />
+            </IconButton>
+            {/* Save button — green check, same size as FAB */}
+            <IconButton
+              onClick={() => quickTickBarRef.current?.save()}
+              sx={{
                 backgroundColor: themeTokens.colors.success,
                 color: 'common.white',
                 '&:hover': { backgroundColor: themeTokens.colors.success },
               }}
+              aria-label="Log ascent"
             >
-              <CheckOutlined sx={{ fontSize: 20 }} />
-            </IconButton>
-            <IconButton
-              size="small"
-              onClick={handleClose}
-              aria-label="Cancel"
-              sx={{ width: 36, height: 36, color: 'text.secondary' }}
-            >
-              <CloseOutlined sx={{ fontSize: 16 }} />
+              <CheckOutlined />
             </IconButton>
           </div>
         )}
@@ -336,7 +301,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   angle,
 }) => {
   const isOpen = activeDrawer === 'play';
-  const [actionsExpanded, setActionsExpanded] = useState(false);
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [isQueueOpen, setIsQueueOpen] = useState(false);
   const [queueMounted, setQueueMounted] = useState(false);
   const [isPlaylistSelectorOpen, setIsPlaylistSelectorOpen] = useState(false);
@@ -411,13 +376,13 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   }, [isOpen, setActiveDrawer]);
 
   const handleClose = useCallback(() => {
-    if (isQueueOpen || isPlaylistSelectorOpen) return;
+    if (isActionsOpen || isQueueOpen || isPlaylistSelectorOpen) return;
     setDrawerOpen(false);
     setActiveDrawer('none');
     if (window.location.hash === '#playing') {
       window.history.back();
     }
-  }, [setActiveDrawer, isQueueOpen, isPlaylistSelectorOpen]);
+  }, [setActiveDrawer, isActionsOpen, isQueueOpen, isPlaylistSelectorOpen]);
 
   // Compute ascent info for tick FAB badge
   const currentAngle = typeof angle === 'string' ? parseInt(angle, 10) : angle;
@@ -452,7 +417,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
 
   // Tick FAB → inline tick bar
   const handleTickFabClick = useCallback(() => {
-    setActionsExpanded(false);
+    setIsActionsOpen(false);
     setIsTickBarActive(true);
   }, []);
 
@@ -477,11 +442,13 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
     const next = getNextClimbQueueItem();
     if (next) setCurrentClimbQueueItem(next);
   }, [getNextClimbQueueItem, setCurrentClimbQueueItem]);
-  const handleToggleActions = useCallback(() => {
-    setActionsExpanded(prev => !prev);
+  const handleOpenActionsMenu = useCallback(() => {
+    setIsQueueOpen(false);
+    setIsPlaylistSelectorOpen(false);
+    setIsActionsOpen(true);
   }, []);
   const handleOpenQueueDrawer = useCallback(() => {
-    setActionsExpanded(false);
+    setIsActionsOpen(false);
     setIsPlaylistSelectorOpen(false);
     setQueueMounted(true);
     setIsQueueOpen(true);
@@ -489,7 +456,9 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
 
   const isMirrored = !!currentClimb?.mirrored;
 
-  // Playlist drawer
+  // Custom swipe-to-close for nested disablePortal drawers (actions + playlist)
+  const handleCloseActions = useCallback(() => setIsActionsOpen(false), []);
+  const actionsSwipe = useNestedDrawerSwipe(handleCloseActions);
   const handleClosePlaylist = useCallback(() => setIsPlaylistSelectorOpen(false), []);
   const playlistSwipe = useNestedDrawerSwipe(handleClosePlaylist);
 
@@ -534,7 +503,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
       setDrawerOpen(false);
       setQueueMounted(false);
       setIsQueueOpen(false);
-      setActionsExpanded(false);
+      setIsActionsOpen(false);
       setIsTickBarActive(false);
     }
   }, [isOpen]);
@@ -611,26 +580,6 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
     boardPull.onTouchEnd();
   }, [boardPull]);
 
-  // Expanded actions content for the action bar
-  const expandedActionsContent = useMemo(() => {
-    if (!currentClimb) return null;
-    return (
-      <ClimbActions
-        climb={currentClimb}
-        boardDetails={boardDetails}
-        angle={currentAngle}
-        currentPathname={pathname}
-        viewMode="overlay"
-        exclude={PLAY_VIEW_EXPANDED_EXCLUDE}
-        onOpenPlaylistSelector={() => {
-          setActionsExpanded(false);
-          setIsPlaylistSelectorOpen(true);
-        }}
-        onActionComplete={() => setActionsExpanded(false)}
-      />
-    );
-  }, [currentClimb, boardDetails, currentAngle, pathname]);
-
   const aboveFold = useMemo(() => {
     if (!currentClimb) return null;
     return (
@@ -702,12 +651,11 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
           supportsMirroring={!!boardDetails.supportsMirroring}
           isFavorited={isFavorited}
           remainingQueueCount={remainingQueueCount}
-          actionsExpanded={actionsExpanded}
           onPrevClick={handlePrevNavClick}
           onNextClick={handleNextNavClick}
           onMirror={mirrorClimb}
           onToggleFavorite={toggleFavorite}
-          onToggleActions={handleToggleActions}
+          onOpenActions={handleOpenActionsMenu}
           onOpenQueue={handleOpenQueueDrawer}
           angleSelector={
             <AngleSelector
@@ -718,7 +666,6 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
               isAngleAdjustable
             />
           }
-          expandedActionsContent={expandedActionsContent}
         />
       )}
     </>
@@ -744,14 +691,12 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
     isMirrored,
     isFavorited,
     remainingQueueCount,
-    actionsExpanded,
     handlePrevNavClick,
     handleNextNavClick,
     mirrorClimb,
     toggleFavorite,
-    handleToggleActions,
+    handleOpenActionsMenu,
     handleOpenQueueDrawer,
-    expandedActionsContent,
     angle,
     handleTickBarClose,
     handleTickBarError,
@@ -768,7 +713,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
       onTransitionEnd={handleTransitionEnd}
       keepMounted
       paperRef={playPaperRef}
-      swipeEnabled={!isQueueOpen && !isPlaylistSelectorOpen}
+      swipeEnabled={!isActionsOpen && !isQueueOpen && !isPlaylistSelectorOpen}
       showDragHandle={true}
       styles={{
         body: { padding: 0 },
@@ -805,6 +750,37 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
           <ClimbDetailShellClient mode="play" sections={[]} aboveFold={null} />
         )}
       </div>
+
+        {/* Climb actions drawer */}
+        {isOpen && currentClimb && isActionsOpen && (
+          <SwipeableDrawer
+            title={<DrawerClimbHeader climb={currentClimb} boardDetails={boardDetails} />}
+            placement="bottom"
+            open={isActionsOpen}
+            onClose={handleCloseActions}
+            paperRef={actionsSwipe.paperRef}
+            swipeEnabled={false}
+            disablePortal
+            styles={{
+              wrapper: { height: 'auto' },
+              body: { padding: `${themeTokens.spacing[2]}px 0` },
+              header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
+            }}
+          >
+            <ClimbActions
+              climb={currentClimb}
+              boardDetails={boardDetails}
+              angle={currentAngle}
+              currentPathname={pathname}
+              viewMode="list"
+              onOpenPlaylistSelector={() => {
+                setIsActionsOpen(false);
+                setIsPlaylistSelectorOpen(true);
+              }}
+              onActionComplete={handleCloseActions}
+            />
+          </SwipeableDrawer>
+        )}
 
         {/* Playlist selector drawer */}
         {isOpen && currentClimb && isPlaylistSelectorOpen && (

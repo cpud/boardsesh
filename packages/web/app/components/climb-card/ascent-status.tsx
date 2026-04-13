@@ -8,7 +8,14 @@ import { useOptionalBoardProvider } from '../board-provider/board-provider-conte
 import { themeTokens } from '@/app/theme/theme-config';
 import styles from './ascent-status.module.css';
 
-export const AscentStatus = ({ climbUuid, fontSize }: { climbUuid: ClimbUuid; fontSize?: number }) => {
+interface AscentStatusProps {
+  climbUuid: ClimbUuid;
+  fontSize?: number;
+  /** Optional className for the outermost wrapper (e.g. positioning on a thumbnail). */
+  className?: string;
+}
+
+export const AscentStatus = ({ climbUuid, fontSize, className }: AscentStatusProps) => {
   const boardProvider = useOptionalBoardProvider();
   const logbook = boardProvider?.logbook ?? [];
   const boardName = boardProvider?.boardName ?? 'kilter';
@@ -25,32 +32,41 @@ export const AscentStatus = ({ climbUuid, fontSize }: { climbUuid: ClimbUuid; fo
 
   if (!hasAttempts) return null;
 
+  // Frosted glass: semi-transparent so backdrop-filter blur shows through
+  const successColor = 'rgba(107, 144, 128, 0.7)';
+  const attemptColor = 'rgba(184, 82, 76, 0.7)';
+
   if (supportsMirroring) {
     return (
-      <div className={styles.ascentStatusContainer}>
+      <div className={`${styles.ascentStatusContainer} ${className ?? ''}`}>
         {/* Regular ascent icon */}
         {hasSuccessfulAscent ? (
           <div className={styles.ascentIconRegular}>
-            <CheckOutlined style={{ color: 'var(--neutral-400)', fontSize }} />
+            <CheckOutlined style={{ color: successColor, fontSize }} />
           </div>
         ) : null}
         {/* Mirrored ascent icon */}
         {hasSuccessfulMirroredAscent ? (
           <div className={styles.ascentIconMirrored}>
-            <CheckOutlined style={{ color: 'var(--neutral-400)', fontSize }} />
+            <CheckOutlined style={{ color: successColor, fontSize }} />
           </div>
         ) : null}
         {!hasSuccessfulMirroredAscent && !hasSuccessfulAscent ? (
-          <CloseOutlined className={styles.ascentIconRegular} style={{ color: themeTokens.colors.error, fontSize }} />
+          <CloseOutlined className={styles.ascentIconRegular} style={{ color: attemptColor, fontSize }} />
         ) : null}
       </div>
     );
   }
 
   // Single icon for non-mirroring boards
+  const wrapperClass = className ?? '';
   return hasSuccessfulAscent ? (
-    <CheckOutlined style={{ color: 'var(--neutral-400)', fontSize }} />
+    <span className={wrapperClass} style={{ backgroundColor: successColor }}>
+      <CheckOutlined style={{ color: 'white', fontSize }} />
+    </span>
   ) : (
-    <CloseOutlined style={{ color: themeTokens.colors.error, fontSize }} />
+    <span className={wrapperClass} style={{ backgroundColor: attemptColor }}>
+      <CloseOutlined style={{ color: 'white', fontSize }} />
+    </span>
   );
 };

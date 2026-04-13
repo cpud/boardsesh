@@ -56,9 +56,8 @@ function buildProps(overrides: Partial<React.ComponentProps<typeof PlayViewActio
     onNextClick: vi.fn(),
     onMirror: vi.fn(),
     onToggleFavorite: vi.fn(),
-    onToggleActions: vi.fn(),
+    onOpenActions: vi.fn(),
     onOpenQueue: vi.fn(),
-    actionsExpanded: false,
     ...overrides,
   };
 }
@@ -138,11 +137,11 @@ describe('PlayViewActionBar', () => {
     expect(onToggleFavorite).toHaveBeenCalledOnce();
   });
 
-  it('calls onToggleActions when actions button clicked', () => {
-    const onToggleActions = vi.fn();
-    render(<PlayViewActionBar {...buildProps({ onToggleActions })} />);
+  it('calls onOpenActions when actions button clicked', () => {
+    const onOpenActions = vi.fn();
+    render(<PlayViewActionBar {...buildProps({ onOpenActions })} />);
     fireEvent.click(screen.getByLabelText('Climb actions'));
-    expect(onToggleActions).toHaveBeenCalledOnce();
+    expect(onOpenActions).toHaveBeenCalledOnce();
   });
 
   it('calls onOpenQueue when queue button clicked', () => {

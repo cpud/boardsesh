@@ -37,8 +37,8 @@
 }
 
 .tickFab {
-  width: 56px;
-  height: 56px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--color-success) 0%, var(--color-success-dark, #1b8a4a) 100%);
   color: white;
@@ -55,19 +55,19 @@
 /* Badge for ascent count */
 .tickFabBadge {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 20px;
-  height: 20px;
-  border-radius: 10px;
+  top: -3px;
+  right: -3px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
   background-color: var(--color-primary);
   color: white;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 5px;
+  padding: 0 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
@@ -98,7 +98,7 @@
 }
 
 .tickFabIcon {
-  font-size: 28px;
+  font-size: 20px;
 }
 
 /* Floating tick bar — overlays the bottom of the board section, no reflow */
@@ -121,11 +121,20 @@
 }
 
 .tickBarInner {
+  position: relative;
   padding: 8px 12px;
   /* background-color set inline via grade tint color */
   border-top: 1px solid var(--neutral-200);
   border-radius: 12px 12px 0 0;
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tickBarClose {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  z-index: 2;
+  color: var(--neutral-500);
 }
 
 .tickBarButtons {
@@ -134,68 +143,18 @@
   justify-content: flex-end;
   gap: 8px;
   padding-top: 8px;
-}
-
-/* Action bar wrapper for main bar + expandable actions */
-.actionBarWrapper {
-  flex-shrink: 0;
-  border-top: 1px solid var(--neutral-100);
+  /* Right-pad so the save button aligns with the FAB position (right: 16px from boardSectionWrapper,
+     minus the tickBarInner's 12px padding = 4px extra) */
+  padding-right: 4px;
 }
 
 .actionBar {
   display: flex;
   justify-content: space-around;
-  align-items: flex-start;
+  align-items: center;
   padding: 8px 16px 12px;
-}
-
-.actionBarItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.actionBarLabel {
-  font-size: 10px;
-  line-height: 1;
-  color: var(--neutral-500);
-  white-space: nowrap;
-  display: none;
-}
-
-.actionBarExpanded .actionBarLabel {
-  display: block;
-}
-
-/* Expanded actions row — grid animation below the main bar */
-.expandedActionsRow {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 200ms ease-out;
-  overflow: hidden;
-}
-
-.expandedActionsRowOpen {
-  grid-template-rows: 1fr;
-}
-
-.expandedActionsContent {
-  overflow: hidden;
-  min-height: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 4px;
-  padding: 0 16px;
-  /* Fixed dark background — not var(--neutral-700) which flips in dark mode */
-  background-color: #1F2937;
-  border-radius: 8px;
-}
-
-.expandedActionsRowOpen .expandedActionsContent {
-  padding: 8px 16px;
-  margin: 0 16px 12px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--neutral-100);
 }
 
 .swipeCardContainer {
@@ -204,9 +163,10 @@
   position: relative;
 }
 
-/* Top-align the board canvas within the carousel card so it sits right under the title.
-   The canvas renderer sets align-items: center via inline style, so !important is needed. */
-.swipeCardContainer > div {
+/* Top-align the board canvas so it sits right under the title.
+   BoardCanvasRenderer wraps <canvas> in a div with inline align-items:center.
+   Target only the direct parent of <canvas> to avoid breaking the zoom hint overlay. */
+.boardSection :has(> canvas) {
   align-items: flex-start !important;
 }
 
