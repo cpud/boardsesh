@@ -300,11 +300,13 @@
   position: relative;
 }
 
-/* Tick controls row — expands upward from the main bar */
+/* Tick controls row — expands upward from the main bar.
+   z-index ensures the expanded comment overlays the swipeWrapper below. */
 .tickRow {
   padding: 8px 12px;
   animation: tickRowExpand 200ms ease-out;
   position: relative;
+  z-index: 1;
 }
 
 @keyframes tickRowExpand {
@@ -328,15 +330,20 @@
   min-width: 0;
 }
 
-/* When focused, grow downward over the main bar without changing tick row height */
+/* When focused, the container keeps its single-line height (40px matches
+   MUI small outlined TextField) so the tick row doesn't shift. The
+   TextField inside is absolute so it grows downward over the queue bar. */
 .tickCommentExpanded {
-  position: absolute;
-  left: 12px;
-  width: 70%;
-  top: 4px;
+  position: relative;
+  height: 40px;
   z-index: 2;
-  background: inherit;
-  padding: 4px 0;
+}
+
+.tickCommentExpanded :global(.MuiTextField-root) {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
 }
 
 /* Peek text — absolutely positioned to slide in from the edge during swipe */

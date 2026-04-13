@@ -621,8 +621,9 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                     size="small"
                     variant="outlined"
                     placeholder="Comment..."
-                    multiline={tickCommentFocused}
-                    maxRows={4}
+                    multiline
+                    minRows={1}
+                    maxRows={tickCommentFocused ? 4 : 1}
                     value={tickComment}
                     onChange={(e) => setTickComment(e.target.value)}
                     onFocus={handleTickCommentFocus}
