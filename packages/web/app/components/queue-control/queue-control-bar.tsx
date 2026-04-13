@@ -18,7 +18,7 @@ import NextClimbButton from './next-climb-button';
 import { usePathname, useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { constructPlayUrlWithSlugs, getContextAwareClimbViewUrl, isNumericId, tryConstructSlugPlayUrl } from '@/app/lib/url-utils';
-import { BoardRouteParameters, BoardDetails, Angle } from '@/app/lib/types';
+import { BoardRouteParameters, BoardDetails, Angle, Climb } from '@/app/lib/types';
 import PreviousClimbButton from './previous-climb-button';
 import QueueList, { QueueListHandle } from './queue-list';
 import { useSwipeable } from 'react-swipeable';
@@ -157,11 +157,6 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
   const handleTickCommentFocus = useCallback(() => setTickCommentFocused(true), []);
   const handleTickCommentBlur = useCallback(() => setTickCommentFocused(false), []);
 
-  // Note: the tick bar intentionally stays open when the active climb changes
-  // (e.g. party session navigation). QuickTickBar snapshots its target climb
-  // internally so the user can finish ticking the climb they opened the bar
-  // for, even after someone else advances the queue.
-
   // Reset dismissed state when connection is restored so banner reappears on next disconnect
   useEffect(() => {
     if (!isDisconnected) {
@@ -171,7 +166,6 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
 
   const { mode } = useColorMode();
   const isDark = mode === 'dark';
-  const gradeTintColor = useMemo(() => getGradeTintColor(currentClimb?.difficulty, 'default', isDark), [currentClimb?.difficulty, isDark]);
 
   // Show reconnecting UI only when online but WebSocket is down.
   // When truly offline (browser has no network), show normal controls with an offline indicator instead.
@@ -279,6 +273,21 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
   const tickBarActive = activeDrawer === 'tick';
   const canSwipeNext = !viewOnlyMode && !!nextClimb && !tickBarActive;
   const canSwipePrevious = !viewOnlyMode && !!previousClimb && !tickBarActive;
+
+  // Snapshot the displayed climb when tick mode opens so the queue bar stays
+  // frozen on the climb being ticked, even if another user advances the queue.
+  const [tickClimb, setTickClimb] = useState<Climb | null>(null);
+  useEffect(() => {
+    if (tickBarActive && currentClimb && !tickClimb) {
+      setTickClimb(currentClimb);
+    } else if (!tickBarActive) {
+      setTickClimb(null);
+    }
+  }, [tickBarActive, currentClimb, tickClimb]);
+
+  // The climb shown in the queue bar — frozen during tick mode.
+  const displayedClimb = tickBarActive ? (tickClimb ?? currentClimb) : currentClimb;
+  const gradeTintColor = useMemo(() => getGradeTintColor(displayedClimb?.difficulty, 'default', isDark), [displayedClimb?.difficulty, isDark]);
 
   // Clear tick-bar comment state whenever the tick bar closes so a fresh
   // activation always starts empty.
@@ -521,7 +530,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                   <div className={`${styles.boardPreviewContainer} ${enterDirection ? styles.thumbnailEnter : ''}`}>
                     <ClimbThumbnail
                       boardDetails={boardDetails}
-                      currentClimb={currentClimb}
+                      currentClimb={displayedClimb}
                       pathname={pathname}
                       onClick={handleThumbnailClick}
                     />
@@ -676,7 +685,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                   <div className={`${styles.boardPreviewContainer} ${enterDirection ? styles.thumbnailEnter : ''}`}>
                     <ClimbThumbnail
                       boardDetails={boardDetails}
-                      currentClimb={currentClimb}
+                      currentClimb={displayedClimb}
                       pathname={pathname}
                       onClick={handleThumbnailClick}
                     />
@@ -696,7 +705,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                       }}
                     >
                       <ClimbTitle
-                        climb={currentClimb}
+                        climb={displayedClimb}
                         gradePosition="right"
                         showSetterInfo
                       />
@@ -734,12 +743,12 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                           mirrorClimb();
                           track('Mirror Climb Toggled', {
                             boardLayout: boardDetails.layout_name || '',
-                            mirrored: !currentClimb?.mirrored,
+                            mirrored: !displayedClimb?.mirrored,
                           });
                         }}
-                        color={currentClimb?.mirrored ? 'primary' : 'default'}
+                        color={displayedClimb?.mirrored ? 'primary' : 'default'}
                         sx={
-                          currentClimb?.mirrored
+                          displayedClimb?.mirrored
                             ? { backgroundColor: themeTokens.colors.purple, borderColor: themeTokens.colors.purple, color: 'common.white', '&:hover': { backgroundColor: themeTokens.colors.purple } }
                             : undefined
                         }
