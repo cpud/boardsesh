@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useMemo, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useImperativeHandle, useRef, forwardRef } from 'react';
 import Stack from '@mui/material/Stack';
 import { track } from '@vercel/analytics';
 import { Angle, Climb, BoardDetails } from '@/app/lib/types';
@@ -79,6 +79,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
   const [isSaving, setIsSaving] = useState(false);
   const [attemptCount, setAttemptCount] = useState<number>(1);
   const [expandedControl, setExpandedControl] = useState<ExpandedControl>(null);
+  const gradeButtonRef = useRef<HTMLButtonElement>(null);
 
   const grades = TENSION_KILTER_GRADES;
 
@@ -89,14 +90,8 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
   }, [tickTarget, currentClimb, grades]);
   const currentGradeId = difficulty ?? climbGradeId;
 
-  const displayedGrades = useMemo(() => {
-    if (climbGradeId === undefined) return grades;
-    const idx = grades.findIndex((g) => g.difficulty_id === climbGradeId);
-    if (idx === -1) return grades;
-    const start = Math.max(0, idx - 2);
-    const end = Math.min(grades.length, idx + 3);
-    return grades.slice(start, end);
-  }, [grades, climbGradeId]);
+  // Show all grades — horizontal scroll replaces the old ±2 windowing.
+  const displayedGrades = grades;
 
   const climbDifficulty = tickTarget?.climb.difficulty ?? currentClimb?.difficulty ?? undefined;
 
@@ -189,6 +184,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
               grades={displayedGrades}
               currentGradeId={currentGradeId}
               onSelect={handleGradeSelect}
+              gradeButtonRef={gradeButtonRef}
             />
           )}
           {expandedControl === 'tries' && (
@@ -206,6 +202,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
         <div className={styles.leftSection}>
           {commentSlot}
           <TickGradeButton
+            ref={gradeButtonRef}
             difficulty={difficulty}
             climbDifficulty={climbDifficulty}
             displayedGrades={displayedGrades}

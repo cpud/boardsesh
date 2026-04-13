@@ -333,12 +333,17 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
   const tickDismissHandlers = useSwipeable({
     onSwiping: (eventData) => {
       if (!tickSwipeEnabled) return;
+      // Don't intercept swipes on horizontally-scrollable picker strips
+      const target = eventData.event.target as HTMLElement | null;
+      if (target?.closest('[data-scrollable-picker]')) return;
       if (Math.abs(eventData.deltaY) > Math.abs(eventData.deltaX)) return;
       if (eventData.deltaX > 0) { setTickSwipeOffset(0); return; }
       setTickSwipeOffset(eventData.deltaX);
     },
     onSwipedLeft: (eventData) => {
       if (!tickSwipeEnabled) return;
+      const target = eventData.event.target as HTMLElement | null;
+      if (target?.closest('[data-scrollable-picker]')) return;
       if (Math.abs(eventData.deltaX) >= 80) {
         setIsTickDismissing(true);
         setTickSwipeOffset(-window.innerWidth);
@@ -349,6 +354,8 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
     },
     onSwiped: (eventData) => {
       if (!tickSwipeEnabled) return;
+      const target = eventData.event.target as HTMLElement | null;
+      if (target?.closest('[data-scrollable-picker]')) return;
       if (eventData.dir !== 'Left') setTickSwipeOffset(0);
     },
     trackMouse: false,

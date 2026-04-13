@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useLayoutEffect, useEffect, forwardRef } from 'react';
 import ButtonBase from '@mui/material/ButtonBase';
 import Skeleton from '@mui/material/Skeleton';
 import StarIcon from '@mui/icons-material/Star';
@@ -10,6 +10,33 @@ import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
 import styles from './tick-controls.module.css';
 
 export type ExpandedControl = 'grade' | 'stars' | 'tries' | null;
+
+/**
+ * Stops touch events from propagating to parent react-swipeable handlers.
+ * Without this, the parent's `preventScrollOnSwipe: true` calls preventDefault()
+ * on touchmove, blocking native horizontal scroll in the picker.
+ */
+function useStopTouchPropagation(ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const stop = (e: TouchEvent) => e.stopPropagation();
+
+    // Must use { passive: true } so the browser can still scroll natively.
+    // stopPropagation prevents the parent swipeable from seeing the event,
+    // but does NOT block the browser's default scroll behavior.
+    el.addEventListener('touchstart', stop, { passive: true });
+    el.addEventListener('touchmove', stop, { passive: true });
+    el.addEventListener('touchend', stop, { passive: true });
+
+    return () => {
+      el.removeEventListener('touchstart', stop);
+      el.removeEventListener('touchmove', stop);
+      el.removeEventListener('touchend', stop);
+    };
+  }, [ref]);
+}
 
 /* ------------------------------------------------------------------ */
 /*  Grade button — rendered separately from stars/tries for alignment */
@@ -31,14 +58,15 @@ export interface TickGradeButtonProps {
 /**
  * Standalone grade button — positioned independently from the
  * stars/tries controls so it can align with the consensus grade below.
+ * Uses forwardRef so the parent can measure its position for picker scroll alignment.
  */
-export const TickGradeButton: React.FC<TickGradeButtonProps> = ({
+export const TickGradeButton = forwardRef<HTMLButtonElement, TickGradeButtonProps>(({
   difficulty,
   climbDifficulty,
   displayedGrades,
   expandedControl,
   onExpandedControlChange,
-}) => {
+}, ref) => {
   const isDark = useIsDarkMode();
   const { formatGrade, getGradeColor, loaded: gradeFormatLoaded } = useGradeFormat();
 
@@ -53,6 +81,7 @@ export const TickGradeButton: React.FC<TickGradeButtonProps> = ({
 
   return (
     <ButtonBase
+      ref={ref}
       onClick={() => onExpandedControlChange(expandedControl === 'grade' ? null : 'grade')}
       aria-label="Select logged grade"
       aria-haspopup="listbox"
@@ -71,7 +100,9 @@ export const TickGradeButton: React.FC<TickGradeButtonProps> = ({
       <span className={styles.gradeByline}>user</span>
     </ButtonBase>
   );
-};
+});
+
+TickGradeButton.displayName = 'TickGradeButton';
 
 /* ------------------------------------------------------------------ */
 /*  Stars + Tries controls                                            */
@@ -101,7 +132,7 @@ export const TickControls: React.FC<TickControlsProps> = ({
   expandedControl,
   onExpandedControlChange,
 }) => {
-  const attemptDisplay = attemptCount >= 10 ? '9+' : String(attemptCount);
+  const attemptDisplay = attemptCount >= 20 ? '19+' : String(attemptCount);
 
   const toggle = (control: 'stars' | 'tries') => {
     onExpandedControlChange(expandedControl === control ? null : control);
@@ -184,12 +215,43 @@ export const InlineGradePicker: React.FC<{
   grades: readonly { difficulty_id: number; difficulty_name: string; v_grade: string }[];
   currentGradeId: number | undefined;
   onSelect: (value: number | undefined) => void;
-}> = ({ grades, currentGradeId, onSelect }) => {
+  /** Ref to the grade button for scroll alignment positioning. */
+  gradeButtonRef?: React.RefObject<HTMLButtonElement | null>;
+}> = ({ grades, currentGradeId, onSelect, gradeButtonRef }) => {
   const { formatGrade, getGradeColor } = useGradeFormat();
   const isDark = useIsDarkMode();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Prevent parent swipeable from stealing touch events while scrolling the picker.
+  useStopTouchPropagation(containerRef);
+
+  // On mount, scroll so the selected grade aligns above the grade button.
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    const gradeButton = gradeButtonRef?.current;
+    if (!container || !gradeButton || currentGradeId === undefined) return;
+
+    const selectedEl = container.querySelector(
+      `[data-grade-id="${currentGradeId}"]`,
+    ) as HTMLElement | null;
+    if (!selectedEl) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const gradeButtonRect = gradeButton.getBoundingClientRect();
+
+    // Align the selected item's center with the grade button's center
+    const gradeButtonCenterInContainer =
+      gradeButtonRect.left + gradeButtonRect.width / 2 - containerRect.left;
+    const selectedItemCenter =
+      selectedEl.offsetLeft + selectedEl.offsetWidth / 2;
+
+    const targetScrollLeft = selectedItemCenter - gradeButtonCenterInContainer;
+    const maxScroll = container.scrollWidth - container.clientWidth;
+    container.scrollLeft = Math.max(0, Math.min(targetScrollLeft, maxScroll));
+  }, [currentGradeId, gradeButtonRef]);
 
   return (
-    <div className={styles.pickerRow} role="listbox" aria-label="Grade override">
+    <div ref={containerRef} className={styles.pickerRowScrollable} role="listbox" aria-label="Grade override" data-scrollable-picker>
       <ButtonBase
         onClick={() => onSelect(undefined)}
         className={`${styles.pickerItem} ${currentGradeId === undefined ? styles.pickerItemSelected : ''}`}
@@ -206,6 +268,7 @@ export const InlineGradePicker: React.FC<{
         return (
           <ButtonBase
             key={grade.difficulty_id}
+            data-grade-id={grade.difficulty_id}
             onClick={() => onSelect(grade.difficulty_id)}
             className={`${styles.pickerItem} ${isSelected ? styles.pickerItemSelected : ''}`}
             aria-label={formatted}
@@ -222,25 +285,32 @@ export const InlineGradePicker: React.FC<{
   );
 };
 
-/** Options: 1–9, then 9+ (value = 10). */
-const ATTEMPT_OPTIONS: readonly number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+/** Options: 1–19, then 19+ (value = 20). */
+const ATTEMPT_OPTIONS: readonly number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
 export const InlineTriesPicker: React.FC<{
   attemptCount: number;
   onSelect: (value: number) => void;
-}> = ({ attemptCount, onSelect }) => (
-  <div className={styles.pickerRow} role="listbox" aria-label="Attempt count">
-    {ATTEMPT_OPTIONS.map((n) => (
-      <ButtonBase
-        key={n}
-        onClick={() => onSelect(n)}
-        className={`${styles.pickerItem} ${n === attemptCount ? styles.pickerItemSelected : ''}`}
-        aria-label={n === 10 ? '9+ tries' : `${n} ${n === 1 ? 'try' : 'tries'}`}
-        aria-selected={n === attemptCount}
-        role="option"
-      >
-        <span className={styles.pickerNumber}>{n === 10 ? '9+' : n}</span>
-      </ButtonBase>
-    ))}
-  </div>
-);
+}> = ({ attemptCount, onSelect }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Prevent parent swipeable from stealing touch events while scrolling the picker.
+  useStopTouchPropagation(containerRef);
+
+  return (
+    <div ref={containerRef} className={styles.pickerRowScrollable} role="listbox" aria-label="Attempt count" data-scrollable-picker>
+      {ATTEMPT_OPTIONS.map((n) => (
+        <ButtonBase
+          key={n}
+          onClick={() => onSelect(n)}
+          className={`${styles.pickerItem} ${n === attemptCount ? styles.pickerItemSelected : ''}`}
+          aria-label={n === 20 ? '19+ tries' : `${n} ${n === 1 ? 'try' : 'tries'}`}
+          aria-selected={n === attemptCount}
+          role="option"
+        >
+          <span className={styles.pickerNumber}>{n === 20 ? '19+' : n}</span>
+        </ButtonBase>
+      ))}
+    </div>
+  );
+};
