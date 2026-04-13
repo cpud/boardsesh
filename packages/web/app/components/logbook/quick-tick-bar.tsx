@@ -108,14 +108,15 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
 
   const grades = TENSION_KILTER_GRADES;
 
-  const climbGradeId = useMemo(() => {
+  const currentGradeId = difficulty;
+
+  // Consensus grade ID — used to scroll the picker to the right neighbourhood
+  // when no user grade is selected, so the user has a reference point.
+  const consensusGradeId = useMemo(() => {
     const source = tickTarget?.climb.difficulty ?? currentClimb?.difficulty;
     if (!source) return undefined;
     return grades.find((g) => g.difficulty_name === source)?.difficulty_id;
   }, [tickTarget, currentClimb, grades]);
-  const currentGradeId = difficulty ?? climbGradeId;
-
-  const climbDifficulty = tickTarget?.climb.difficulty ?? currentClimb?.difficulty ?? undefined;
 
   // Picker selection handlers — select the value and collapse the picker.
   const handleStarSelect = useCallback((value: number | null) => {
@@ -205,6 +206,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
             <InlineGradePicker
               grades={grades}
               currentGradeId={currentGradeId}
+              focusGradeId={consensusGradeId}
               onSelect={handleGradeSelect}
               gradeButtonRef={gradeButtonRef}
             />
@@ -230,7 +232,6 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
           <TickGradeButton
             ref={gradeButtonRef}
             difficulty={difficulty}
-            climbDifficulty={climbDifficulty}
             displayedGrades={grades}
             expandedControl={expandedControl}
             onExpandedControlChange={setExpandedControl}

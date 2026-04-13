@@ -615,13 +615,13 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                       onBlur={handleTickCommentBlur}
                       slotProps={{
                         htmlInput: { maxLength: 2000, 'aria-label': 'Tick comment' },
-                      }}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <ChatBubbleOutlineOutlined sx={{ fontSize: 16, opacity: 0.5 }} />
-                          </InputAdornment>
-                        ),
+                        input: {
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <ChatBubbleOutlineOutlined sx={{ fontSize: 16, opacity: 0.5 }} />
+                            </InputAdornment>
+                          ),
+                        },
                       }}
                       sx={{
                         '& .MuiOutlinedInput-root': {

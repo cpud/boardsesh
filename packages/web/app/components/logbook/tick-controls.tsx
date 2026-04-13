@@ -129,8 +129,6 @@ const ScrollIndicatorWrapper: React.FC<{
 export interface TickGradeButtonProps {
   /** Current difficulty override (difficulty_id or undefined). */
   difficulty: number | undefined;
-  /** The climb's own difficulty string, used as fallback display. */
-  climbDifficulty: string | undefined;
   /** Grade list for looking up the selected grade name. */
   displayedGrades: readonly { difficulty_id: number; difficulty_name: string; v_grade: string }[];
   /** Which control's picker is currently expanded. */
@@ -146,7 +144,6 @@ export interface TickGradeButtonProps {
  */
 export const TickGradeButton = forwardRef<HTMLButtonElement, TickGradeButtonProps>(({
   difficulty,
-  climbDifficulty,
   displayedGrades,
   expandedControl,
   onExpandedControlChange,
@@ -158,7 +155,7 @@ export const TickGradeButton = forwardRef<HTMLButtonElement, TickGradeButtonProp
     ? displayedGrades.find((g) => g.difficulty_id === difficulty)
     : undefined;
 
-  const displayDifficulty = selectedGrade?.difficulty_name ?? climbDifficulty ?? '';
+  const displayDifficulty = selectedGrade?.difficulty_name ?? '';
   const formattedGrade = formatGrade(displayDifficulty);
   const gradeLabel = formattedGrade ?? (displayDifficulty || '—');
   const gradeColor = getGradeColor(displayDifficulty, isDark);
@@ -300,10 +297,12 @@ export const InlineStarPicker: React.FC<{
 export const InlineGradePicker: React.FC<{
   grades: readonly { difficulty_id: number; difficulty_name: string; v_grade: string }[];
   currentGradeId: number | undefined;
+  /** Grade to scroll to on mount when no grade is selected (e.g. consensus grade). */
+  focusGradeId?: number;
   onSelect: (value: number | undefined) => void;
   /** Ref to the grade button for scroll alignment positioning. */
   gradeButtonRef?: React.RefObject<HTMLButtonElement | null>;
-}> = ({ grades, currentGradeId, onSelect, gradeButtonRef }) => {
+}> = ({ grades, currentGradeId, focusGradeId, onSelect, gradeButtonRef }) => {
   const { formatGrade, getGradeColor } = useGradeFormat();
   const isDark = useIsDarkMode();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -311,29 +310,31 @@ export const InlineGradePicker: React.FC<{
   useStopHorizontalTouchPropagation(containerRef);
   const { canScrollLeft, canScrollRight } = useScrollIndicators(containerRef);
 
-  // On mount, scroll so the selected grade aligns above the grade button.
+  // On mount, scroll so the selected (or focus) grade aligns above the grade button.
+  // When no grade is selected, scroll to the consensus grade (focusGradeId) as a reference point.
+  const scrollTargetId = currentGradeId ?? focusGradeId;
   useLayoutEffect(() => {
     const container = containerRef.current;
     const gradeButton = gradeButtonRef?.current;
-    if (!container || !gradeButton || currentGradeId === undefined) return;
+    if (!container || !gradeButton || scrollTargetId === undefined) return;
 
-    const selectedEl = container.querySelector(
-      `[data-grade-id="${currentGradeId}"]`,
+    const targetEl = container.querySelector(
+      `[data-grade-id="${scrollTargetId}"]`,
     ) as HTMLElement | null;
-    if (!selectedEl) return;
+    if (!targetEl) return;
 
     const containerRect = container.getBoundingClientRect();
     const gradeButtonRect = gradeButton.getBoundingClientRect();
 
     const gradeButtonCenterInContainer =
       gradeButtonRect.left + gradeButtonRect.width / 2 - containerRect.left;
-    const selectedItemCenter =
-      selectedEl.offsetLeft + selectedEl.offsetWidth / 2;
+    const targetItemCenter =
+      targetEl.offsetLeft + targetEl.offsetWidth / 2;
 
-    const targetScrollLeft = selectedItemCenter - gradeButtonCenterInContainer;
+    const targetScrollLeft = targetItemCenter - gradeButtonCenterInContainer;
     const maxScroll = container.scrollWidth - container.clientWidth;
     container.scrollLeft = Math.max(0, Math.min(targetScrollLeft, maxScroll));
-  }, [currentGradeId, gradeButtonRef]);
+  }, [scrollTargetId, gradeButtonRef]);
 
   return (
     <ScrollIndicatorWrapper canScrollLeft={canScrollLeft} canScrollRight={canScrollRight}>
@@ -351,12 +352,13 @@ export const InlineGradePicker: React.FC<{
           const formatted = formatGrade(grade.difficulty_name) ?? grade.v_grade;
           const color = getGradeColor(grade.difficulty_name, isDark);
           const isSelected = grade.difficulty_id === currentGradeId;
+          const isFocused = !isSelected && currentGradeId === undefined && grade.difficulty_id === focusGradeId;
           return (
             <ButtonBase
               key={grade.difficulty_id}
               data-grade-id={grade.difficulty_id}
               onClick={() => onSelect(grade.difficulty_id)}
-              className={`${styles.pickerItem} ${isSelected ? styles.pickerItemSelected : ''}`}
+              className={`${styles.pickerItem} ${isSelected || isFocused ? styles.pickerItemSelected : ''}`}
               aria-label={formatted}
               aria-selected={isSelected}
               role="option"

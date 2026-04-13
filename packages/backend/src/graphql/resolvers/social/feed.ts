@@ -1,4 +1,4 @@
-import { eq, and, desc, inArray } from 'drizzle-orm';
+import { eq, and, desc, inArray, sql } from 'drizzle-orm';
 import type { ConnectionContext } from '@boardsesh/shared-schema';
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
@@ -50,7 +50,13 @@ export const socialFeedQueries = {
         setterUsername: dbSchema.boardClimbs.setterUsername,
         layoutId: dbSchema.boardClimbs.layoutId,
         frames: dbSchema.boardClimbs.frames,
-        difficultyName: dbSchema.boardDifficultyGrades.boulderName,
+        difficultyName: sql<string | null>`COALESCE(${dbSchema.boardDifficultyGrades.boulderName}, (
+  SELECT bdg.boulder_name
+  FROM board_difficulty_grades bdg
+  WHERE bdg.board_type = ${dbSchema.boardseshTicks.boardType}
+    AND bdg.difficulty = ROUND(${dbSchema.boardClimbStats.displayDifficulty})
+  LIMIT 1
+))`,
       })
       .from(dbSchema.boardseshTicks)
       .innerJoin(dbSchema.users, eq(dbSchema.boardseshTicks.userId, dbSchema.users.id))
@@ -67,6 +73,14 @@ export const socialFeedQueries = {
         and(
           eq(dbSchema.boardseshTicks.difficulty, dbSchema.boardDifficultyGrades.difficulty),
           eq(dbSchema.boardseshTicks.boardType, dbSchema.boardDifficultyGrades.boardType)
+        )
+      )
+      .leftJoin(
+        dbSchema.boardClimbStats,
+        and(
+          eq(dbSchema.boardseshTicks.climbUuid, dbSchema.boardClimbStats.climbUuid),
+          eq(dbSchema.boardseshTicks.boardType, dbSchema.boardClimbStats.boardType),
+          eq(dbSchema.boardseshTicks.angle, dbSchema.boardClimbStats.angle)
         )
       )
       .where(inArray(dbSchema.boardseshTicks.userId, followedUserIds))
@@ -131,7 +145,13 @@ export const socialFeedQueries = {
         setterUsername: dbSchema.boardClimbs.setterUsername,
         layoutId: dbSchema.boardClimbs.layoutId,
         frames: dbSchema.boardClimbs.frames,
-        difficultyName: dbSchema.boardDifficultyGrades.boulderName,
+        difficultyName: sql<string | null>`COALESCE(${dbSchema.boardDifficultyGrades.boulderName}, (
+  SELECT bdg.boulder_name
+  FROM board_difficulty_grades bdg
+  WHERE bdg.board_type = ${dbSchema.boardseshTicks.boardType}
+    AND bdg.difficulty = ROUND(${dbSchema.boardClimbStats.displayDifficulty})
+  LIMIT 1
+))`,
       })
       .from(dbSchema.boardseshTicks)
       .innerJoin(dbSchema.users, eq(dbSchema.boardseshTicks.userId, dbSchema.users.id))
@@ -148,6 +168,14 @@ export const socialFeedQueries = {
         and(
           eq(dbSchema.boardseshTicks.difficulty, dbSchema.boardDifficultyGrades.difficulty),
           eq(dbSchema.boardseshTicks.boardType, dbSchema.boardDifficultyGrades.boardType)
+        )
+      )
+      .leftJoin(
+        dbSchema.boardClimbStats,
+        and(
+          eq(dbSchema.boardseshTicks.climbUuid, dbSchema.boardClimbStats.climbUuid),
+          eq(dbSchema.boardseshTicks.boardType, dbSchema.boardClimbStats.boardType),
+          eq(dbSchema.boardseshTicks.angle, dbSchema.boardClimbStats.angle)
         )
       )
       .orderBy(desc(dbSchema.boardseshTicks.climbedAt))
