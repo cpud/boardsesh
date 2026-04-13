@@ -98,6 +98,18 @@ export function useDrawerDragResize({
     }
   }, []);
 
+  const scrollToTop = useCallback(() => {
+    const paper = paperRef.current;
+    if (!paper) return;
+    for (const el of paper.querySelectorAll<HTMLElement>('*')) {
+      const overflow = getComputedStyle(el).overflowY;
+      if ((overflow === 'auto' || overflow === 'scroll') && el.scrollTop > 0) {
+        el.scrollTop = 0;
+        break;
+      }
+    }
+  }, []);
+
   const onTouchEnd = useCallback((e: React.TouchEvent) => {
     if (!isDragGesture.current) return;
     const deltaY = e.changedTouches[0].clientY - dragStartY.current;
@@ -108,12 +120,14 @@ export function useDrawerDragResize({
         break;
       case 'collapse':
         updateHeight(initialHeight);
+        // Scroll content back to top so auto-expand doesn't immediately re-trigger
+        scrollToTop();
         break;
       case 'close':
         onClose();
         break;
     }
-  }, [onClose, initialHeight, expandedHeight, updateHeight]);
+  }, [onClose, initialHeight, expandedHeight, updateHeight, scrollToTop]);
 
   // Auto-expand when the user scrolls content inside the drawer.
   // Find the scroll container (element with overflow auto/scroll) inside the paper.
