@@ -109,6 +109,45 @@ export function useDrawerDragResize({
     }
   }, [onClose, initialHeight, expandedHeight, updateHeight]);
 
+  // Auto-expand when the user scrolls content inside the drawer.
+  // Find the scroll container (element with overflow auto/scroll) inside the paper.
+  useEffect(() => {
+    if (!open) return;
+    const paper = paperRef.current;
+    if (!paper) return;
+
+    // Find the scrollable body element — SwipeableDrawer renders a Box with overflow: auto
+    let scrollEl: HTMLElement | null = null;
+    const candidates = paper.querySelectorAll<HTMLElement>('*');
+    for (const el of candidates) {
+      const overflow = getComputedStyle(el).overflowY;
+      if ((overflow === 'auto' || overflow === 'scroll') && el.scrollHeight > el.clientHeight) {
+        scrollEl = el;
+        break;
+      }
+    }
+    // Fallback: even if not yet scrollable, find the body box by overflow style
+    if (!scrollEl) {
+      for (const el of candidates) {
+        const overflow = getComputedStyle(el).overflowY;
+        if (overflow === 'auto' || overflow === 'scroll') {
+          scrollEl = el;
+          break;
+        }
+      }
+    }
+    if (!scrollEl) return;
+
+    const handleScroll = () => {
+      if (heightRef.current !== expandedHeight && scrollEl!.scrollTop > 0) {
+        updateHeight(expandedHeight);
+      }
+    };
+
+    scrollEl.addEventListener('scroll', handleScroll, { passive: true });
+    return () => scrollEl!.removeEventListener('scroll', handleScroll);
+  }, [open, expandedHeight, updateHeight]);
+
   return {
     paperRef,
     dragHandlers: { onTouchStart, onTouchMove, onTouchEnd },

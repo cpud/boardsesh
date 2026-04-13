@@ -812,7 +812,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
               <div
                 data-swipe-blocked=""
                 {...actionsDragHandlers}
-                style={{ touchAction: 'none' }}
+                style={{ touchAction: 'none', position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'var(--semantic-surface)' }}
               >
                 <div className={drawerStyles.dragHandleZoneHorizontal}>
                   <div className={drawerStyles.dragHandleBarHorizontal} />

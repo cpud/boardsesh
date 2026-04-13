@@ -601,11 +601,11 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
               showDragHandle={false}
               styles={actionsDrawerStyles}
             >
-              {/* Drag handle + header zone */}
+              {/* Sticky drag handle + header zone */}
               <div
                 data-swipe-blocked=""
                 {...actionsDragHandlers}
-                style={{ touchAction: 'none' }}
+                style={{ touchAction: 'none', position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'var(--semantic-surface)' }}
               >
                 <div className={drawerCss.dragHandleZoneHorizontal}>
                   <div className={drawerCss.dragHandleBarHorizontal} />
