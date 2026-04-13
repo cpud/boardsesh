@@ -288,7 +288,7 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
           </IconButton>
           <IconButton
             id="button-tick"
-            onClick={() => quickTickBarRef.current?.save()}
+            onClick={(e) => quickTickBarRef.current?.save(e.currentTarget)}
             sx={{
               backgroundColor: themeTokens.colors.success,
               color: 'common.white',

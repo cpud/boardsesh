@@ -36,8 +36,8 @@ export interface QuickTickBarProps {
 }
 
 export interface QuickTickBarHandle {
-  /** Trigger a save (ascent). Called by the parent tick button. */
-  save: () => void;
+  /** Trigger a save (ascent). Pass the origin element for confetti positioning. */
+  save: (originElement?: HTMLElement | null) => void;
   /** Trigger a save (attempt). Pass the origin element for confetti positioning. */
   saveAttempt: (originElement?: HTMLElement | null) => void;
 }

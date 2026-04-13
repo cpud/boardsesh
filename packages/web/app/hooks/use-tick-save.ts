@@ -130,7 +130,7 @@ export function useTickSave(options: UseTickSaveOptions): {
     [tickTarget, quality, difficulty, comment, saveTick, onSave, attemptCount, fireConfetti, onError],
   );
 
-  const save = useCallback(() => handleSave(true), [handleSave]);
+  const save = useCallback((originElement?: HTMLElement | null) => handleSave(true, originElement), [handleSave]);
   const saveAttempt = useCallback((originElement?: HTMLElement | null) => handleSave(false, originElement), [handleSave]);
 
   return { save, saveAttempt };
