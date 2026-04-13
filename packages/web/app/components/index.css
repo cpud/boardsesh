@@ -103,6 +103,8 @@ html[data-theme="dark"] {
   --input-bg: #FFFFFF;
   --input-bg-hover: #F3F4F6;
   --input-bg-focused: #FFFFFF;
+  /* Input text stays dark in dark mode because inputs have white backgrounds */
+  --input-text: #1F2937;
 
   /* Shadows (stronger for dark backgrounds) */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
@@ -244,7 +246,7 @@ button,
 html[data-theme="dark"] .MuiOutlinedInput-root,
 html[data-theme="dark"] .MuiFilledInput-root {
   background-color: var(--input-bg);
-  color: var(--neutral-800);
+  color: var(--input-text);
 }
 
 html[data-theme="dark"] .MuiOutlinedInput-root:hover {
