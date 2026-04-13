@@ -171,10 +171,12 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
   const [commentFocused, setCommentFocused] = useState(false);
   const quickTickBarRef = useRef<QuickTickBarHandle>(null);
   const isDark = useIsDarkMode();
-  // Use 'light' variant — fully opaque in both modes, needed since this bar
-  // floats over the board (the 'default' dark variant is 60% transparent).
+  // Match queue control bar tint — 'default' variant.
+  // In dark mode the tint is semi-transparent, so the backdrop-filter blur
+  // fills in behind it. The fallback uses surfaceElevated (#121212) which
+  // is visibly distinct from pure black.
   const gradeTintColor = useMemo(
-    () => getGradeTintColor(currentClimb.difficulty, 'light', isDark),
+    () => getGradeTintColor(currentClimb.difficulty, 'default', isDark),
     [currentClimb.difficulty, isDark],
   );
 
@@ -198,7 +200,11 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
     <div className={`${styles.tickBarContainer} ${isTickBarActive ? styles.tickBarContainerActive : ''}`}>
       <div
         className={styles.tickBarInner}
-        style={{ backgroundColor: gradeTintColor ?? (isDark ? 'var(--semantic-surfaceElevated)' : 'var(--semantic-surface)') }}
+        style={{
+          backgroundColor: isDark ? 'var(--semantic-surfaceElevated)' : 'var(--semantic-surface)',
+          // Grade tint as a solid overlay via linear-gradient (single-color gradient)
+          ...(gradeTintColor ? { backgroundImage: `linear-gradient(${gradeTintColor}, ${gradeTintColor})` } : {}),
+        }}
       >
         {/* Close button — top-right corner, identical to queue control bar */}
         <div className={styles.tickBarClose}>
