@@ -61,6 +61,11 @@
   --spacing-12: 48px;
   --spacing-16: 64px;
 
+  /* Input field backgrounds */
+  --input-bg: #F9FAFB;
+  --input-bg-hover: #F3F4F6;
+  --input-bg-focused: #FFFFFF;
+
   /* Layout */
   --global-header-height: calc(max(8dvh, 48px) + env(safe-area-inset-top, 0px));
 }
@@ -85,14 +90,19 @@ html[data-theme="dark"] {
   --semantic-background: #000000;
   --semantic-surface: #0A0A0A;
   --semantic-surface-overlay: rgba(10, 10, 10, 0.95);
-  --semantic-selected: rgba(140, 74, 82, 0.12);
-  --semantic-selected-hover: rgba(140, 74, 82, 0.18);
-  --semantic-selected-light: rgba(140, 74, 82, 0.08);
+  --semantic-selected: rgba(175, 45, 60, 0.14);
+  --semantic-selected-hover: rgba(175, 45, 60, 0.20);
+  --semantic-selected-light: rgba(175, 45, 60, 0.08);
 
   /* Status background tints (semi-transparent for dark) */
   --color-success-bg: rgba(107, 144, 128, 0.12);
   --color-error-bg: rgba(184, 82, 76, 0.12);
   --color-warning-bg: rgba(196, 148, 60, 0.12);
+
+  /* Input field backgrounds (white in dark mode) */
+  --input-bg: #FFFFFF;
+  --input-bg-hover: #F3F4F6;
+  --input-bg-focused: #FFFFFF;
 
   /* Shadows (stronger for dark backgrounds) */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
@@ -225,6 +235,16 @@ button,
   .queue-bar-shadow::before {
     display: none;
   }
+}
+
+/* Dark-mode input icon/adornment colors — MUI theme overrides handle
+   backgrounds and text, but nested SVG icons and adornments need a CSS
+   rule because MUI doesn't expose a clean slot for them. */
+html[data-theme="dark"] .MuiOutlinedInput-root .MuiSvgIcon-root,
+html[data-theme="dark"] .MuiOutlinedInput-root .MuiInputAdornment-root,
+html[data-theme="dark"] .MuiFilledInput-root .MuiSvgIcon-root,
+html[data-theme="dark"] .MuiFilledInput-root .MuiInputAdornment-root {
+  color: var(--neutral-500);
 }
 
 /* Ensure all interactive elements have minimum 16px font to prevent iOS auto-zoom on focus */

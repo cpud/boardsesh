@@ -28,7 +28,7 @@ vi.mock('@vercel/analytics', () => ({
 }));
 
 // Import after mocks.
-import { QuickTickBar, hasPriorHistoryForClimb } from '../quick-tick-bar';
+import { QuickTickBar, QuickTickBarHandle, hasPriorHistoryForClimb } from '../quick-tick-bar';
 
 // --- Fixtures ---
 
@@ -93,11 +93,8 @@ const defaultProps = {
   angle: 40 as Angle,
   boardDetails: makeBoardDetails(),
   onSave: vi.fn(),
-  onCancel: vi.fn(),
   comment: '',
-  commentOpen: false,
-  onCommentToggle: vi.fn(),
-  commentFocused: false,
+  commentSlot: null,
 };
 
 /**
@@ -131,8 +128,6 @@ describe('QuickTickBar', () => {
     mockLogbookRef.current = [];
     mockSaveTick.mockResolvedValue(undefined);
     defaultProps.onSave = vi.fn();
-    defaultProps.onCancel = vi.fn();
-    defaultProps.onCommentToggle = vi.fn();
   });
 
   afterEach(() => {
@@ -167,46 +162,23 @@ describe('QuickTickBar', () => {
   });
 
   describe('layout', () => {
-    it('renders the controls in the expected order: rating, comment toggle, grade, tries counter, fail, confirm — all clustered to the right', () => {
+    it('renders the controls: grade in left section, stars + tries in right section', async () => {
       render(<QuickTickBar {...defaultProps} />);
 
+      // Grade label only appears after the async useGradeFormat hook loads.
+      const gradeLabel = await screen.findByTestId('quick-tick-grade');
       const rating = screen.getByTestId('quick-tick-rating');
-      const commentToggle = screen.getByRole('button', { name: /toggle comment/i });
-      const gradeLabel = screen.getByTestId('quick-tick-grade');
       const attemptBtn = screen.getByTestId('quick-tick-attempt');
-      const failBtn = screen.getByTestId('quick-tick-fail');
-      const confirmBtn = screen.getByTestId('quick-tick-confirm');
 
-      // Rating sits directly inside the single flex row alongside the
-      // comment toggle, grade label, tries counter, fail (X) and confirm
-      // (✓) buttons. The "swipe left to dismiss" hint is not rendered here
-      // — it lives as a transient toast above the queue control bar
-      // instead.
-      const controls = rating.parentElement!;
-      expect(commentToggle.parentElement).toBe(controls);
-      expect(gradeLabel.parentElement).toBe(controls);
-      expect(attemptBtn.parentElement).toBe(controls);
-      expect(failBtn.parentElement).toBe(controls);
-      expect(confirmBtn.parentElement).toBe(controls);
+      // Grade is in the left section (separate from stars/tries for alignment).
+      // Stars and tries share a parent (the Stack inside rightControls).
+      expect(rating.parentElement).toBe(attemptBtn.parentElement);
+      expect(gradeLabel.parentElement).not.toBe(rating.parentElement);
 
-      // The quick tick bar intentionally does NOT show the user's prior
-      // ascent count — it's clutter the user doesn't need while logging.
-      expect(screen.queryByTestId('quick-tick-ascents')).toBeNull();
-
-      // Siblings of .controls must appear in this order: rating, comment
-      // toggle, grade label, tries counter, fail (X), confirm (✓).
-      const siblings = Array.from(controls.children) as HTMLElement[];
-      const ratingIdx = siblings.indexOf(rating);
-      const commentIdx = siblings.indexOf(commentToggle);
-      const gradeIdx = siblings.indexOf(gradeLabel);
-      const attemptIdx = siblings.indexOf(attemptBtn);
-      const failIdx = siblings.indexOf(failBtn);
-      const confirmIdx = siblings.indexOf(confirmBtn);
-      expect(ratingIdx).toBeLessThan(commentIdx);
-      expect(commentIdx).toBeLessThan(gradeIdx);
-      expect(gradeIdx).toBeLessThan(attemptIdx);
-      expect(attemptIdx).toBeLessThan(failIdx);
-      expect(failIdx).toBeLessThan(confirmIdx);
+      // All three are present.
+      expect(gradeLabel).toBeTruthy();
+      expect(rating).toBeTruthy();
+      expect(attemptBtn).toBeTruthy();
     });
 
     it('defaults the tries counter to 1 and exposes a "tries" byline for the user', () => {
@@ -223,20 +195,16 @@ describe('QuickTickBar', () => {
       expect(screen.queryByTestId('quick-tick-hint')).toBeNull();
     });
 
-    it('invokes onCommentToggle when the comment button is tapped', () => {
-      render(<QuickTickBar {...defaultProps} />);
-      fireEvent.click(screen.getByRole('button', { name: /toggle comment/i }));
-      expect(defaultProps.onCommentToggle).toHaveBeenCalledTimes(1);
-    });
   });
 
   describe('save behaviour — history-aware default', () => {
     it('saves as flash with attemptCount 1 when the logbook is empty', async () => {
       mockLogbookRef.current = [];
-      render(<QuickTickBar {...defaultProps} />);
+      const ref = React.createRef<QuickTickBarHandle>();
+      render(<QuickTickBar ref={ref} {...defaultProps} />);
 
       await act(async () => {
-        screen.getByTestId('quick-tick-confirm').click();
+        ref.current!.save();
       });
 
       expect(mockSaveTick).toHaveBeenCalledTimes(1);
@@ -251,10 +219,11 @@ describe('QuickTickBar', () => {
       mockLogbookRef.current = [
         makeLogbookEntry({ uuid: 'p1', climb_uuid: 'climb-1', angle: 40 }),
       ];
-      render(<QuickTickBar {...defaultProps} />);
+      const ref = React.createRef<QuickTickBarHandle>();
+      render(<QuickTickBar ref={ref} {...defaultProps} />);
 
       await act(async () => {
-        screen.getByTestId('quick-tick-confirm').click();
+        ref.current!.save();
       });
 
       const call = mockSaveTick.mock.calls[0][0];
@@ -268,10 +237,11 @@ describe('QuickTickBar', () => {
         makeLogbookEntry({ uuid: 'p2', status: 'attempt' }),
         makeLogbookEntry({ uuid: 'p3', status: 'attempt' }),
       ];
-      render(<QuickTickBar {...defaultProps} />);
+      const ref = React.createRef<QuickTickBarHandle>();
+      render(<QuickTickBar ref={ref} {...defaultProps} />);
 
       await act(async () => {
-        screen.getByTestId('quick-tick-confirm').click();
+        ref.current!.save();
       });
 
       const call = mockSaveTick.mock.calls[0][0];
@@ -283,10 +253,11 @@ describe('QuickTickBar', () => {
       mockLogbookRef.current = [
         makeLogbookEntry({ uuid: 'other-climb', climb_uuid: 'climb-other', angle: 40 }),
       ];
-      render(<QuickTickBar {...defaultProps} />);
+      const ref = React.createRef<QuickTickBarHandle>();
+      render(<QuickTickBar ref={ref} {...defaultProps} />);
 
       await act(async () => {
-        screen.getByTestId('quick-tick-confirm').click();
+        ref.current!.save();
       });
 
       const call = mockSaveTick.mock.calls[0][0];
@@ -294,36 +265,37 @@ describe('QuickTickBar', () => {
       expect(call.attemptCount).toBe(1);
     });
 
-    it('clicking the attempts counter opens a menu and does NOT save on its own', async () => {
+    it('clicking the attempts counter opens the tries picker and does NOT save on its own', async () => {
       render(<QuickTickBar {...defaultProps} />);
 
       await act(async () => {
         screen.getByTestId('quick-tick-attempt').click();
       });
 
-      // Menu should be open with the 1–9+ options available.
-      expect(screen.getByTestId('quick-tick-attempt-option-1')).toBeTruthy();
-      expect(screen.getByTestId('quick-tick-attempt-option-9plus')).toBeTruthy();
-      // Selecting a number is state only — no row is saved until the user
-      // taps the tick button.
+      // Picker should be open with options 1–99 available.
+      expect(screen.getByRole('option', { name: '1 try' })).toBeTruthy();
+      expect(screen.getByRole('option', { name: '99 tries' })).toBeTruthy();
+      // Selecting a number is state only — no row is saved until the parent
+      // calls ref.current.save().
       expect(mockSaveTick).not.toHaveBeenCalled();
     });
 
-    it('uses the selected attempt count when saving via the tick button', async () => {
+    it('uses the selected attempt count when saving via the ref handle', async () => {
       mockLogbookRef.current = [];
-      render(<QuickTickBar {...defaultProps} />);
+      const ref = React.createRef<QuickTickBarHandle>();
+      render(<QuickTickBar ref={ref} {...defaultProps} />);
 
-      // Open the attempts menu and pick "3".
+      // Open the tries picker and pick "3".
       await act(async () => {
         screen.getByTestId('quick-tick-attempt').click();
       });
       await act(async () => {
-        screen.getByTestId('quick-tick-attempt-option-3').click();
+        screen.getByRole('option', { name: '3 tries' }).click();
       });
 
-      // Now tap tick.
+      // Now save via the imperative handle.
       await act(async () => {
-        screen.getByTestId('quick-tick-confirm').click();
+        ref.current!.save();
       });
 
       expect(mockSaveTick).toHaveBeenCalledTimes(1);
@@ -333,67 +305,17 @@ describe('QuickTickBar', () => {
       expect(call.attemptCount).toBe(3);
     });
 
-    it('uses attempt count 10 when the user picks the 9+ option', async () => {
-      render(<QuickTickBar {...defaultProps} />);
-      await act(async () => {
-        screen.getByTestId('quick-tick-attempt').click();
-      });
-      await act(async () => {
-        screen.getByTestId('quick-tick-attempt-option-9plus').click();
-      });
-      await act(async () => {
-        screen.getByTestId('quick-tick-confirm').click();
-      });
-      const call = mockSaveTick.mock.calls[0][0];
-      expect(call.attemptCount).toBe(10);
-      expect(call.status).toBe('send');
-    });
-
-    it('fail (X) button saves status attempt with the default tries count of 1', async () => {
-      render(<QuickTickBar {...defaultProps} />);
-
-      await act(async () => {
-        screen.getByTestId('quick-tick-fail').click();
-      });
-
-      expect(mockSaveTick).toHaveBeenCalledTimes(1);
-      const call = mockSaveTick.mock.calls[0][0];
-      expect(call.status).toBe('attempt');
-      expect(call.attemptCount).toBe(1);
-      expect(defaultProps.onSave).toHaveBeenCalledTimes(1);
-    });
-
-    it('fail (X) button logs the selected tries count — the "5 tries no send" flow', async () => {
-      render(<QuickTickBar {...defaultProps} />);
-
-      // Pick 5 tries from the counter menu.
-      await act(async () => {
-        screen.getByTestId('quick-tick-attempt').click();
-      });
-      await act(async () => {
-        screen.getByTestId('quick-tick-attempt-option-5').click();
-      });
-
-      // Tap X to log a failed session with that try count.
-      await act(async () => {
-        screen.getByTestId('quick-tick-fail').click();
-      });
-
-      const call = mockSaveTick.mock.calls[0][0];
-      expect(call.status).toBe('attempt');
-      expect(call.attemptCount).toBe(5);
-    });
-
     it('uses userAscents on the climb to default to send without touching the logbook', async () => {
       // Logbook is intentionally empty — the fast path should look at the
       // climb's own counts and still treat this as a send.
       mockLogbookRef.current = [];
       const climbWithHistory = makeClimb({ userAscents: 2, userAttempts: 0 });
 
-      render(<QuickTickBar {...defaultProps} currentClimb={climbWithHistory} />);
+      const ref = React.createRef<QuickTickBarHandle>();
+      render(<QuickTickBar ref={ref} {...defaultProps} currentClimb={climbWithHistory} />);
 
       await act(async () => {
-        screen.getByTestId('quick-tick-confirm').click();
+        ref.current!.save();
       });
 
       const call = mockSaveTick.mock.calls[0][0];
@@ -405,10 +327,11 @@ describe('QuickTickBar', () => {
       mockLogbookRef.current = [];
       const climbWithAttempts = makeClimb({ userAscents: 0, userAttempts: 1 });
 
-      render(<QuickTickBar {...defaultProps} currentClimb={climbWithAttempts} />);
+      const ref = React.createRef<QuickTickBarHandle>();
+      render(<QuickTickBar ref={ref} {...defaultProps} currentClimb={climbWithAttempts} />);
 
       await act(async () => {
-        screen.getByTestId('quick-tick-confirm').click();
+        ref.current!.save();
       });
 
       const call = mockSaveTick.mock.calls[0][0];
@@ -417,14 +340,19 @@ describe('QuickTickBar', () => {
     });
 
     it('reflects the quality rating in the save payload', async () => {
-      render(<QuickTickBar {...defaultProps} />);
+      const ref = React.createRef<QuickTickBarHandle>();
+      render(<QuickTickBar ref={ref} {...defaultProps} />);
 
-      // MUI Rating renders radio inputs for each star value.
-      const threeStars = screen.getAllByRole('radio', { name: /3 star/i })[0];
-      fireEvent.click(threeStars);
+      // Open the star picker and pick 3 stars.
+      await act(async () => {
+        screen.getByTestId('quick-tick-rating').click();
+      });
+      await act(async () => {
+        screen.getByRole('option', { name: '3 stars' }).click();
+      });
 
       await act(async () => {
-        screen.getByTestId('quick-tick-confirm').click();
+        ref.current!.save();
       });
 
       const call = mockSaveTick.mock.calls[0][0];
@@ -433,18 +361,17 @@ describe('QuickTickBar', () => {
 
     it('does not call onSave when saveTick rejects and leaves the bar mounted', async () => {
       mockSaveTick.mockRejectedValueOnce(new Error('network down'));
-      render(<QuickTickBar {...defaultProps} />);
+      const ref = React.createRef<QuickTickBarHandle>();
+      render(<QuickTickBar ref={ref} {...defaultProps} />);
 
       await act(async () => {
-        screen.getByTestId('quick-tick-confirm').click();
+        ref.current!.save();
       });
 
       expect(mockSaveTick).toHaveBeenCalledTimes(1);
       expect(defaultProps.onSave).not.toHaveBeenCalled();
       // Bar should still be mounted and usable for a retry.
       expect(screen.getByTestId('quick-tick-bar')).toBeTruthy();
-      const confirm = screen.getByTestId('quick-tick-confirm') as HTMLButtonElement;
-      expect(confirm.disabled).toBe(false);
     });
   });
 
@@ -454,11 +381,12 @@ describe('QuickTickBar', () => {
       expect(screen.getByTestId('quick-tick-bar')).toBeTruthy();
     });
 
-    it('does not call saveTick when currentClimb is null and confirm is clicked', async () => {
-      render(<QuickTickBar {...defaultProps} currentClimb={null} />);
+    it('does not call saveTick when currentClimb is null and save is called', async () => {
+      const ref = React.createRef<QuickTickBarHandle>();
+      render(<QuickTickBar ref={ref} {...defaultProps} currentClimb={null} />);
 
       await act(async () => {
-        screen.getByTestId('quick-tick-confirm').click();
+        ref.current!.save();
       });
 
       expect(mockSaveTick).not.toHaveBeenCalled();
@@ -467,19 +395,20 @@ describe('QuickTickBar', () => {
 
     it('defers the snapshot until a non-null climb arrives', async () => {
       const climb = makeClimb({ uuid: 'deferred-climb' });
-      const { rerender } = render(<QuickTickBar {...defaultProps} currentClimb={null} />);
+      const ref = React.createRef<QuickTickBarHandle>();
+      const { rerender } = render(<QuickTickBar ref={ref} {...defaultProps} currentClimb={null} />);
 
-      // Snapshot should be absent — confirm should be a no-op.
+      // Snapshot should be absent — save should be a no-op.
       await act(async () => {
-        screen.getByTestId('quick-tick-confirm').click();
+        ref.current!.save();
       });
       expect(mockSaveTick).not.toHaveBeenCalled();
 
       // Now provide a climb — the snapshot should be initialized.
-      rerender(<QuickTickBar {...defaultProps} currentClimb={climb} />);
+      rerender(<QuickTickBar ref={ref} {...defaultProps} currentClimb={climb} />);
 
       await act(async () => {
-        screen.getByTestId('quick-tick-confirm').click();
+        ref.current!.save();
       });
 
       expect(mockSaveTick).toHaveBeenCalledTimes(1);
@@ -503,15 +432,16 @@ describe('QuickTickBar', () => {
         makeLogbookEntry({ uuid: 'n5', climb_uuid: 'new-climb' }),
       ];
 
+      const ref = React.createRef<QuickTickBarHandle>();
       const { rerender } = render(
-        <QuickTickBar {...defaultProps} currentClimb={originalClimb} />,
+        <QuickTickBar ref={ref} {...defaultProps} currentClimb={originalClimb} />,
       );
 
       // Simulate another party member advancing the queue mid-tick.
-      rerender(<QuickTickBar {...defaultProps} currentClimb={newClimb} />);
+      rerender(<QuickTickBar ref={ref} {...defaultProps} currentClimb={newClimb} />);
 
       await act(async () => {
-        screen.getByTestId('quick-tick-confirm').click();
+        ref.current!.save();
       });
 
       const call = mockSaveTick.mock.calls[0][0];
@@ -521,60 +451,15 @@ describe('QuickTickBar', () => {
     });
   });
 
-  describe('swipe to dismiss', () => {
-    beforeEach(() => {
-      vi.useFakeTimers();
-    });
-
-    it('calls onCancel when swiped left past the threshold', () => {
-      render(<QuickTickBar {...defaultProps} />);
-      const bar = screen.getByTestId('quick-tick-bar');
-
-      simulateSwipe(bar, -120);
-
-      // Exit animation is scheduled via setTimeout — advance to flush it.
-      act(() => {
-        vi.runAllTimers();
-      });
-
-      expect(defaultProps.onCancel).toHaveBeenCalledTimes(1);
-    });
-
-    it('does not call onCancel when swipe is below the threshold', () => {
-      render(<QuickTickBar {...defaultProps} />);
-      const bar = screen.getByTestId('quick-tick-bar');
-
-      simulateSwipe(bar, -40);
-
-      act(() => {
-        vi.runAllTimers();
-      });
-
-      expect(defaultProps.onCancel).not.toHaveBeenCalled();
-    });
-
-    it('ignores swipes while the commentFocused prop is true', () => {
-      // The comment TextField lives in the parent QueueControlBar, so the
-      // bar learns that the user is typing via the `commentFocused` prop.
-      render(<QuickTickBar {...defaultProps} commentFocused={true} />);
-
-      const bar = screen.getByTestId('quick-tick-bar');
-      simulateSwipe(bar, -200);
-
-      act(() => {
-        vi.runAllTimers();
-      });
-
-      expect(defaultProps.onCancel).not.toHaveBeenCalled();
-    });
-  });
+  // Swipe-to-dismiss is handled by the parent queue-control-bar, not QuickTickBar.
 
   describe('controlled comment prop', () => {
     it('forwards the comment prop in the save payload', async () => {
-      render(<QuickTickBar {...defaultProps} comment="sick send" />);
+      const ref = React.createRef<QuickTickBarHandle>();
+      render(<QuickTickBar ref={ref} {...defaultProps} comment="sick send" />);
 
       await act(async () => {
-        screen.getByTestId('quick-tick-confirm').click();
+        ref.current!.save();
       });
 
       expect(mockSaveTick).toHaveBeenCalledTimes(1);
@@ -582,135 +467,342 @@ describe('QuickTickBar', () => {
     });
   });
 
-  describe('displayedGrades — grade window logic', () => {
-    // The component only narrows the grade list when the climb's difficulty
-    // string matches a difficulty_name in TENSION_KILTER_GRADES exactly
-    // (e.g. '6c/V5'). Strings like 'V5' produce no match, so climbGradeId
-    // is undefined and all 24 grades are shown.
+  describe('displayedGrades — all grades always shown', () => {
+    // All grades are always shown in the horizontally-scrollable picker,
+    // regardless of the climb's difficulty.
 
-    it('shows all 24 grades when the climb difficulty does not match any grade name', () => {
-      // makeClimb() defaults to difficulty: 'V5', which has no entry in the
-      // grade list (names use the full '6c/V5' format).
+    it('shows all 24 grades when the climb difficulty does not match any grade name', async () => {
       render(<QuickTickBar {...defaultProps} />);
-      fireEvent.click(screen.getByTestId('quick-tick-grade'));
+      fireEvent.click(await screen.findByTestId('quick-tick-grade'));
 
-      const items = screen.getAllByRole('menuitem');
-      // 24 grade rows + 1 "—" (no-grade) row
+      const items = screen.getAllByRole('option');
+      // 24 grade options + 1 "—" (clear) option
       expect(items).toHaveLength(25);
     });
 
-    it('shows all 24 grades when the climb has no difficulty set', () => {
+    it('shows all 24 grades when the climb has no difficulty set', async () => {
       const climb = makeClimb({ difficulty: undefined });
       render(<QuickTickBar {...defaultProps} currentClimb={climb} />);
-      fireEvent.click(screen.getByTestId('quick-tick-grade'));
+      fireEvent.click(await screen.findByTestId('quick-tick-grade'));
 
-      const items = screen.getAllByRole('menuitem');
+      const items = screen.getAllByRole('option');
       expect(items).toHaveLength(25);
     });
 
-    it('shows a 5-grade window (±2) around a mid-range matched grade', () => {
-      // '6c/V5' is difficulty_id 20 at index 10 in the grade array.
-      // window: max(0, 10-2)=8 … min(24, 10+3)=13  →  indices 8–12.
-      // Those map to: 6b/V4, 6b+/V4, 6c/V5, 6c+/V5, 7a/V6
+    it('shows all 24 grades even when the climb has a matched difficulty', async () => {
       const climb = makeClimb({ difficulty: '6c/V5' });
       render(<QuickTickBar {...defaultProps} currentClimb={climb} />);
-      fireEvent.click(screen.getByTestId('quick-tick-grade'));
+      fireEvent.click(await screen.findByTestId('quick-tick-grade'));
 
-      const items = screen.getAllByRole('menuitem');
-      expect(items).toHaveLength(6); // 5 grade rows + "—"
-
-      const gradeLabels = items.slice(1).map((el) => el.textContent);
-      expect(gradeLabels).toEqual(['V4', 'V4', 'V5', 'V5', 'V6']);
-    });
-
-    it('clamps the lower boundary: V0 at index 0 yields only 3 grades', () => {
-      // '4a/V0' is difficulty_id 10 at index 0.
-      // start = max(0, 0-2) = 0, end = min(24, 0+3) = 3  →  3 grades
-      const climb = makeClimb({ difficulty: '4a/V0' });
-      render(<QuickTickBar {...defaultProps} currentClimb={climb} />);
-      fireEvent.click(screen.getByTestId('quick-tick-grade'));
-
-      const items = screen.getAllByRole('menuitem');
-      expect(items).toHaveLength(4); // 3 grade rows + "—"
-
-      const gradeLabels = items.slice(1).map((el) => el.textContent);
-      expect(gradeLabels).toEqual(['V0', 'V0', 'V0']);
-    });
-
-    it('clamps the upper boundary: V16 at the last index yields only 3 grades', () => {
-      // '8c+/V16' is difficulty_id 33 at index 23 (last entry).
-      // start = max(0, 23-2) = 21, end = min(24, 23+3) = 24  →  3 grades
-      const climb = makeClimb({ difficulty: '8c+/V16' });
-      render(<QuickTickBar {...defaultProps} currentClimb={climb} />);
-      fireEvent.click(screen.getByTestId('quick-tick-grade'));
-
-      const items = screen.getAllByRole('menuitem');
-      expect(items).toHaveLength(4); // 3 grade rows + "—"
-
-      const gradeLabels = items.slice(1).map((el) => el.textContent);
-      expect(gradeLabels).toEqual(['V14', 'V15', 'V16']);
-    });
-
-    it('near-low boundary: second grade (4b/V0 at index 1) yields 4 grades', () => {
-      // start = max(0, 1-2) = 0, end = min(24, 1+3) = 4  →  4 grades
-      const climb = makeClimb({ difficulty: '4b/V0' });
-      render(<QuickTickBar {...defaultProps} currentClimb={climb} />);
-      fireEvent.click(screen.getByTestId('quick-tick-grade'));
-
-      const items = screen.getAllByRole('menuitem');
-      expect(items).toHaveLength(5); // 4 grade rows + "—"
-    });
-
-    it('near-high boundary: second-to-last grade (8c/V15 at index 22) yields 4 grades', () => {
-      // start = max(0, 22-2) = 20, end = min(24, 22+3) = 24  →  4 grades
-      const climb = makeClimb({ difficulty: '8c/V15' });
-      render(<QuickTickBar {...defaultProps} currentClimb={climb} />);
-      fireEvent.click(screen.getByTestId('quick-tick-grade'));
-
-      const items = screen.getAllByRole('menuitem');
-      expect(items).toHaveLength(5); // 4 grade rows + "—"
+      const items = screen.getAllByRole('option');
+      expect(items).toHaveLength(25);
     });
   });
 
-  describe('grade menu autoFocus', () => {
-    it('focuses the matched grade item when the menu opens', async () => {
-      // '6c/V5' matches difficulty_id 20 exactly, so currentGradeId = 20
-      // and isCurrent is true for that MenuItem.  autoFocus={isCurrent} means
-      // React calls .focus() on that element when the menu mounts.
+  describe('grade picker selection', () => {
+    it('marks the matched grade as selected when the picker opens', async () => {
       const climb = makeClimb({ difficulty: '6c/V5' });
       render(<QuickTickBar {...defaultProps} currentClimb={climb} />);
 
+      const gradeEl = await screen.findByTestId('quick-tick-grade');
       await act(async () => {
-        fireEvent.click(screen.getByTestId('quick-tick-grade'));
+        fireEvent.click(gradeEl);
       });
 
-      // Wait for MUI's focus management to settle.
       await waitFor(() => {
-        const active = document.activeElement;
-        expect(active?.getAttribute('role')).toBe('menuitem');
-        // The focused item should carry the Mui-selected class (selected={isCurrent})
-        // confirming it is the current-grade item, not just the first item.
-        expect(active?.classList.contains('Mui-selected')).toBe(true);
-        expect(active?.textContent).toBe('V5');
+        const items = screen.getAllByRole('option');
+        const selectedItems = items.filter((el) => el.getAttribute('aria-selected') === 'true');
+        expect(selectedItems).toHaveLength(1);
+        expect(selectedItems[0].textContent).toBe('V5');
       });
     });
 
-    it('does not auto-focus any grade item when the climb has no matched difficulty', async () => {
-      // When climbGradeId is undefined, currentGradeId is also undefined and
-      // isCurrent is false for every row, so no item has autoFocus={true}.
-      // MUI falls back to focusing the first focusable item in the menu (the
-      // "—" option), which does NOT have Mui-selected.
+    it('does not mark any grade as selected when the climb has no matched difficulty', async () => {
       render(<QuickTickBar {...defaultProps} />);
 
+      const gradeEl = await screen.findByTestId('quick-tick-grade');
       await act(async () => {
-        fireEvent.click(screen.getByTestId('quick-tick-grade'));
+        fireEvent.click(gradeEl);
       });
 
       await waitFor(() => {
-        const items = screen.getAllByRole('menuitem');
-        const selectedItems = items.filter((el) => el.classList.contains('Mui-selected'));
-        expect(selectedItems).toHaveLength(0);
+        const items = screen.getAllByRole('option');
+        // Only the "—" clear option is selected (currentGradeId is undefined)
+        const selectedItems = items.filter((el) => el.getAttribute('aria-selected') === 'true');
+        expect(selectedItems).toHaveLength(1);
+        expect(selectedItems[0].textContent).toBe('—');
       });
+    });
+  });
+
+  describe('picker panel animation', () => {
+    it('keeps picker content mounted during 200ms collapse animation', async () => {
+      vi.useFakeTimers();
+
+      render(<QuickTickBar {...defaultProps} />);
+
+      // Open the star picker.
+      await act(async () => {
+        screen.getByTestId('quick-tick-rating').click();
+      });
+
+      // Star picker should be visible.
+      expect(screen.getByRole('listbox', { name: 'Star rating' })).toBeTruthy();
+
+      // Click stars again to close the picker.
+      await act(async () => {
+        screen.getByTestId('quick-tick-rating').click();
+      });
+
+      // Picker content should still be mounted (collapse animation in progress).
+      expect(screen.queryByRole('listbox', { name: 'Star rating' })).toBeTruthy();
+
+      // Advance past the 200ms animation timeout.
+      await act(async () => {
+        vi.advanceTimersByTime(200);
+      });
+
+      // Now the picker content should be unmounted.
+      expect(screen.queryByRole('listbox', { name: 'Star rating' })).toBeNull();
+    });
+  });
+
+  describe('comment focus collapses pickers', () => {
+    it('collapses an open picker when the comment slot gains focus', async () => {
+      const commentInput = <input data-testid="comment-input" />;
+      render(<QuickTickBar {...defaultProps} commentSlot={commentInput} />);
+
+      // Open the star picker.
+      await act(async () => {
+        screen.getByTestId('quick-tick-rating').click();
+      });
+
+      // Star picker should be visible.
+      expect(screen.getByRole('listbox', { name: 'Star rating' })).toBeTruthy();
+
+      // Focus the comment input — should collapse pickers.
+      await act(async () => {
+        fireEvent.focus(screen.getByTestId('comment-input'));
+      });
+
+      // The expandedControl should now be null. Wait for collapse.
+      // The picker panel CSS class should no longer include the expanded state.
+      // The aria-expanded on the rating button should be false.
+      expect(screen.getByTestId('quick-tick-rating').getAttribute('aria-expanded')).toBe('false');
+    });
+  });
+
+  describe('star picker clear button', () => {
+    it('has a "No rating" option that resets quality to null', async () => {
+      const ref = React.createRef<QuickTickBarHandle>();
+      render(<QuickTickBar ref={ref} {...defaultProps} />);
+
+      // Open star picker and pick 4 stars.
+      await act(async () => {
+        screen.getByTestId('quick-tick-rating').click();
+      });
+      await act(async () => {
+        screen.getByRole('option', { name: '4 stars' }).click();
+      });
+
+      // Re-open and pick "No rating".
+      await act(async () => {
+        screen.getByTestId('quick-tick-rating').click();
+      });
+      await act(async () => {
+        screen.getByRole('option', { name: 'No rating' }).click();
+      });
+
+      // Save and verify quality is undefined (not set).
+      await act(async () => {
+        ref.current!.save();
+      });
+
+      const call = mockSaveTick.mock.calls[0][0];
+      expect(call.quality).toBeUndefined();
+    });
+  });
+
+  describe('tries picker range', () => {
+    it('renders 99 options in the tries picker', async () => {
+      render(<QuickTickBar {...defaultProps} />);
+
+      await act(async () => {
+        screen.getByTestId('quick-tick-attempt').click();
+      });
+
+      const listbox = screen.getByRole('listbox', { name: 'Attempt count' });
+      const options = listbox.querySelectorAll('[role="option"]');
+      expect(options).toHaveLength(99);
+    });
+
+    it('supports selecting a high attempt count', async () => {
+      const ref = React.createRef<QuickTickBarHandle>();
+      render(<QuickTickBar ref={ref} {...defaultProps} />);
+
+      await act(async () => {
+        screen.getByTestId('quick-tick-attempt').click();
+      });
+      await act(async () => {
+        screen.getByRole('option', { name: '50 tries' }).click();
+      });
+
+      await act(async () => {
+        ref.current!.save();
+      });
+
+      const call = mockSaveTick.mock.calls[0][0];
+      expect(call.attemptCount).toBe(50);
+      expect(call.status).toBe('send');
+    });
+  });
+
+  describe('grade picker clear button', () => {
+    it('has a "Clear grade override" option that resets difficulty', async () => {
+      const ref = React.createRef<QuickTickBarHandle>();
+      const climb = makeClimb({ difficulty: '6c/V5' });
+      render(<QuickTickBar ref={ref} {...defaultProps} currentClimb={climb} />);
+
+      // Open grade picker and pick a different grade.
+      await act(async () => {
+        fireEvent.click(await screen.findByTestId('quick-tick-grade'));
+      });
+      await act(async () => {
+        screen.getByRole('option', { name: 'Clear grade override' }).click();
+      });
+
+      // Save and verify difficulty is undefined (reset to climb's default).
+      await act(async () => {
+        ref.current!.save();
+      });
+
+      const call = mockSaveTick.mock.calls[0][0];
+      expect(call.difficulty).toBeUndefined();
+    });
+  });
+
+  describe('picker toggle behaviour', () => {
+    it('clicking the same control button closes its picker', async () => {
+      render(<QuickTickBar {...defaultProps} />);
+
+      // Open star picker.
+      await act(async () => {
+        screen.getByTestId('quick-tick-rating').click();
+      });
+      expect(screen.getByTestId('quick-tick-rating').getAttribute('aria-expanded')).toBe('true');
+
+      // Click the same button again — should close.
+      await act(async () => {
+        screen.getByTestId('quick-tick-rating').click();
+      });
+      expect(screen.getByTestId('quick-tick-rating').getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('clicking a different control switches the picker', async () => {
+      render(<QuickTickBar {...defaultProps} />);
+
+      // Open star picker.
+      await act(async () => {
+        screen.getByTestId('quick-tick-rating').click();
+      });
+      expect(screen.getByTestId('quick-tick-rating').getAttribute('aria-expanded')).toBe('true');
+      expect(screen.getByTestId('quick-tick-attempt').getAttribute('aria-expanded')).toBe('false');
+
+      // Click the tries button — should switch to tries picker.
+      await act(async () => {
+        screen.getByTestId('quick-tick-attempt').click();
+      });
+      expect(screen.getByTestId('quick-tick-rating').getAttribute('aria-expanded')).toBe('false');
+      expect(screen.getByTestId('quick-tick-attempt').getAttribute('aria-expanded')).toBe('true');
+
+      // Tries picker should be visible, star picker should not.
+      expect(screen.getByRole('listbox', { name: 'Attempt count' })).toBeTruthy();
+      expect(screen.queryByRole('listbox', { name: 'Star rating' })).toBeNull();
+    });
+  });
+
+  describe('double-save prevention', () => {
+    it('second save is blocked after the first save triggers a re-render with isSaving=true', async () => {
+      // Make saveTick hang until we resolve it manually.
+      let resolveSave: (() => void) | undefined;
+      mockSaveTick.mockImplementation(() => new Promise<void>((resolve) => {
+        resolveSave = resolve;
+      }));
+
+      const ref = React.createRef<QuickTickBarHandle>();
+      render(<QuickTickBar ref={ref} {...defaultProps} />);
+
+      // First save — starts the async operation and sets isSaving = true.
+      await act(async () => {
+        ref.current!.save();
+      });
+
+      expect(mockSaveTick).toHaveBeenCalledTimes(1);
+
+      // Second save — isSaving is now true after re-render, so this is a no-op.
+      await act(async () => {
+        ref.current!.save();
+      });
+
+      expect(mockSaveTick).toHaveBeenCalledTimes(1);
+
+      // Resolve the pending save.
+      await act(async () => {
+        resolveSave!();
+      });
+    });
+  });
+
+  describe('aria-expanded state', () => {
+    it('toggles aria-expanded on the rating button', async () => {
+      render(<QuickTickBar {...defaultProps} />);
+
+      const ratingBtn = screen.getByTestId('quick-tick-rating');
+      expect(ratingBtn.getAttribute('aria-expanded')).toBe('false');
+
+      await act(async () => {
+        ratingBtn.click();
+      });
+      expect(ratingBtn.getAttribute('aria-expanded')).toBe('true');
+
+      await act(async () => {
+        ratingBtn.click();
+      });
+      expect(ratingBtn.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('toggles aria-expanded on the tries button', async () => {
+      render(<QuickTickBar {...defaultProps} />);
+
+      const triesBtn = screen.getByTestId('quick-tick-attempt');
+      expect(triesBtn.getAttribute('aria-expanded')).toBe('false');
+
+      await act(async () => {
+        triesBtn.click();
+      });
+      expect(triesBtn.getAttribute('aria-expanded')).toBe('true');
+
+      await act(async () => {
+        triesBtn.click();
+      });
+      expect(triesBtn.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('toggles aria-expanded on the grade button', async () => {
+      render(<QuickTickBar {...defaultProps} />);
+
+      const gradeBtn = await screen.findByTestId('quick-tick-grade');
+      expect(gradeBtn.getAttribute('aria-expanded')).toBe('false');
+
+      await act(async () => {
+        gradeBtn.click();
+      });
+      expect(gradeBtn.getAttribute('aria-expanded')).toBe('true');
+
+      await act(async () => {
+        gradeBtn.click();
+      });
+      expect(gradeBtn.getAttribute('aria-expanded')).toBe('false');
     });
   });
 });

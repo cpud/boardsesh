@@ -4,6 +4,7 @@ import { SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { requireAuthenticated, validateInput } from '../shared/helpers';
+import { consensusDifficultyNameExpr, consensusDifficultyExpr, difficultyNameWithFallbackExpr, consensusGradeTable, consensusGradeJoinCondition } from '../shared/sql-expressions';
 import { GetTicksInputSchema, BoardNameSchema, AscentFeedInputSchema } from '../../../validation/schemas';
 
 export const tickQueries = {
@@ -186,14 +187,6 @@ export const tickQueries = {
     const statusMode = validatedInput.statusMode ?? (legacyStatus === 'attempt' ? 'attempt' : legacyStatus ? 'send' : 'both');
     const flashOnly = validatedInput.flashOnly ?? (legacyStatus === 'flash');
 
-    const consensusDifficultyExpr = sql<number | null>`ROUND(${dbSchema.boardClimbStats.displayDifficulty})`;
-    const consensusDifficultyNameExpr = sql<string | null>`(
-      SELECT bdg.boulder_name
-      FROM board_difficulty_grades bdg
-      WHERE bdg.board_type = ${dbSchema.boardseshTicks.boardType}
-        AND bdg.difficulty = ROUND(${dbSchema.boardClimbStats.displayDifficulty})
-      LIMIT 1
-    )`;
     const resolvedBenchmarkExpr = sql<boolean>`CASE
       WHEN COALESCE(${dbSchema.boardClimbStats.benchmarkDifficulty}, 0) > 0 OR ${dbSchema.boardseshTicks.isBenchmark} = true THEN true
       ELSE false
@@ -262,7 +255,8 @@ export const tickQueries = {
           eq(dbSchema.boardseshTicks.difficulty, dbSchema.boardDifficultyGrades.difficulty),
           eq(dbSchema.boardseshTicks.boardType, dbSchema.boardDifficultyGrades.boardType)
         )
-      );
+      )
+      .leftJoin(consensusGradeTable, consensusGradeJoinCondition);
 
     // Escape LIKE wildcards so user input is treated as a literal substring,
     // not a SQL pattern (e.g. typing "100%" should match the literal string).
@@ -457,6 +451,11 @@ export const tickQueries = {
     const maxDay = daysInPage[daysInPage.length - 1];
     const pageKeySet = new Set(pageGroups.map((g) => `${g.climbUuid}-${g.day}`));
 
+    // Use timestamp range instead of to_char() in WHERE so Postgres can use
+    // the (user_id, climbed_at) btree index for the date window filter.
+    const minTimestamp = `${minDay}T00:00:00`;
+    const maxTimestamp = `${maxDay}T23:59:59.999999`;
+
     const tickRows = await db
       .select({
         tick: dbSchema.boardseshTicks,
@@ -464,7 +463,7 @@ export const tickQueries = {
         setterUsername: dbSchema.boardClimbs.setterUsername,
         layoutId: dbSchema.boardClimbs.layoutId,
         frames: dbSchema.boardClimbs.frames,
-        difficultyName: dbSchema.boardDifficultyGrades.boulderName,
+        difficultyName: difficultyNameWithFallbackExpr,
         day: dayExpr.as('day'),
       })
       .from(dbSchema.boardseshTicks)
@@ -482,12 +481,21 @@ export const tickQueries = {
           eq(dbSchema.boardseshTicks.boardType, dbSchema.boardDifficultyGrades.boardType)
         )
       )
+      .leftJoin(
+        dbSchema.boardClimbStats,
+        and(
+          eq(dbSchema.boardseshTicks.climbUuid, dbSchema.boardClimbStats.climbUuid),
+          eq(dbSchema.boardseshTicks.boardType, dbSchema.boardClimbStats.boardType),
+          eq(dbSchema.boardseshTicks.angle, dbSchema.boardClimbStats.angle)
+        )
+      )
+      .leftJoin(consensusGradeTable, consensusGradeJoinCondition)
       .where(
         and(
           eq(dbSchema.boardseshTicks.userId, userId),
           inArray(dbSchema.boardseshTicks.climbUuid, climbUuidsInPage),
-          gte(dayExpr, minDay),
-          lte(dayExpr, maxDay),
+          gte(dbSchema.boardseshTicks.climbedAt, minTimestamp),
+          lte(dbSchema.boardseshTicks.climbedAt, maxTimestamp),
         )
       )
       .orderBy(desc(dbSchema.boardseshTicks.climbedAt));

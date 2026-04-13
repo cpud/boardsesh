@@ -526,6 +526,13 @@
       "when": 1775948680739,
       "tag": "0074_last_mandarin",
       "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "7",
+      "when": 1776278400000,
+      "tag": "0075_add_user_climbed_at_index",
+      "breakpoints": true
     }
   ]
 }

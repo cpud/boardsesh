@@ -94,11 +94,8 @@ const defaultProps = {
   angle: 40 as unknown as Parameters<typeof QuickTickBar>[0]['angle'],
   boardDetails: { layout_id: 1, size_id: 1, set_ids: '1', layout_name: 'Test' } as unknown as Parameters<typeof QuickTickBar>[0]['boardDetails'],
   onSave: vi.fn(),
-  onCancel: vi.fn(),
   comment: '',
-  commentOpen: false,
-  onCommentToggle: vi.fn(),
-  commentFocused: false,
+  commentSlot: null,
 };
 
 describe('QuickTickBar grade format integration', () => {

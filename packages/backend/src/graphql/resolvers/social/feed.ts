@@ -3,6 +3,7 @@ import type { ConnectionContext } from '@boardsesh/shared-schema';
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { requireAuthenticated, validateInput } from '../shared/helpers';
+import { difficultyNameWithFallbackExpr, consensusGradeTable, consensusGradeJoinCondition } from '../shared/sql-expressions';
 import { FollowingAscentsFeedInputSchema } from '../../../validation/schemas';
 
 export const socialFeedQueries = {
@@ -50,7 +51,7 @@ export const socialFeedQueries = {
         setterUsername: dbSchema.boardClimbs.setterUsername,
         layoutId: dbSchema.boardClimbs.layoutId,
         frames: dbSchema.boardClimbs.frames,
-        difficultyName: dbSchema.boardDifficultyGrades.boulderName,
+        difficultyName: difficultyNameWithFallbackExpr,
       })
       .from(dbSchema.boardseshTicks)
       .innerJoin(dbSchema.users, eq(dbSchema.boardseshTicks.userId, dbSchema.users.id))
@@ -69,6 +70,15 @@ export const socialFeedQueries = {
           eq(dbSchema.boardseshTicks.boardType, dbSchema.boardDifficultyGrades.boardType)
         )
       )
+      .leftJoin(
+        dbSchema.boardClimbStats,
+        and(
+          eq(dbSchema.boardseshTicks.climbUuid, dbSchema.boardClimbStats.climbUuid),
+          eq(dbSchema.boardseshTicks.boardType, dbSchema.boardClimbStats.boardType),
+          eq(dbSchema.boardseshTicks.angle, dbSchema.boardClimbStats.angle)
+        )
+      )
+      .leftJoin(consensusGradeTable, consensusGradeJoinCondition)
       .where(inArray(dbSchema.boardseshTicks.userId, followedUserIds))
       .orderBy(desc(dbSchema.boardseshTicks.climbedAt))
       .limit(limit + 1)
@@ -131,7 +141,7 @@ export const socialFeedQueries = {
         setterUsername: dbSchema.boardClimbs.setterUsername,
         layoutId: dbSchema.boardClimbs.layoutId,
         frames: dbSchema.boardClimbs.frames,
-        difficultyName: dbSchema.boardDifficultyGrades.boulderName,
+        difficultyName: difficultyNameWithFallbackExpr,
       })
       .from(dbSchema.boardseshTicks)
       .innerJoin(dbSchema.users, eq(dbSchema.boardseshTicks.userId, dbSchema.users.id))
@@ -150,6 +160,15 @@ export const socialFeedQueries = {
           eq(dbSchema.boardseshTicks.boardType, dbSchema.boardDifficultyGrades.boardType)
         )
       )
+      .leftJoin(
+        dbSchema.boardClimbStats,
+        and(
+          eq(dbSchema.boardseshTicks.climbUuid, dbSchema.boardClimbStats.climbUuid),
+          eq(dbSchema.boardseshTicks.boardType, dbSchema.boardClimbStats.boardType),
+          eq(dbSchema.boardseshTicks.angle, dbSchema.boardClimbStats.angle)
+        )
+      )
+      .leftJoin(consensusGradeTable, consensusGradeJoinCondition)
       .orderBy(desc(dbSchema.boardseshTicks.climbedAt))
       .limit(limit + 1)
       .offset(offset);

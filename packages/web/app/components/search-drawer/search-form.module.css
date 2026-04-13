@@ -100,17 +100,17 @@
 
 /* Scoped MUI overrides for hold search select */
 .holdSearchHeaderCompact :global(.MuiOutlinedInput-root) {
-  background-color: var(--semantic-surface, #FFFFFF);
+  background-color: var(--input-bg, #F9FAFB);
   border-radius: 12px;
   transition: background-color 200ms ease, box-shadow 200ms ease;
 }
 
 .holdSearchHeaderCompact :global(.MuiOutlinedInput-root:hover) {
-  background-color: var(--neutral-50, #F9FAFB);
+  background-color: var(--input-bg-hover, #F3F4F6);
 }
 
 .holdSearchHeaderCompact :global(.MuiOutlinedInput-root.Mui-focused) {
-  background-color: var(--semantic-surface, #FFFFFF);
+  background-color: var(--input-bg-focused, #FFFFFF);
   box-shadow: 0 0 0 2px var(--color-primary, #8C4A52);
 }
 

@@ -5,6 +5,7 @@ import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { sessions } from '../../../db/schema';
 import { requireAuthenticated, validateInput } from '../shared/helpers';
+import { getConsensusDifficultyName } from '../shared/sql-expressions';
 import { SaveTickInputSchema, UpdateTickInputSchema } from '../../../validation/schemas';
 import { resolveBoardFromPath } from '../social/boards';
 import { publishSocialEvent } from '../../../events';
@@ -322,6 +323,8 @@ async function publishAscentEvent(
           )
           .limit(1);
         difficultyName = grade?.boulderName ?? undefined;
+      } else {
+        difficultyName = await getConsensusDifficultyName(tick.climbUuid, tick.boardType, tick.angle);
       }
 
       let boardUuid: string | undefined;

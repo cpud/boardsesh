@@ -1,28 +1,20 @@
 'use client';
 
-import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { useSwipeable } from 'react-swipeable';
-import ButtonBase from '@mui/material/ButtonBase';
-import IconButton from '@mui/material/IconButton';
-import Rating from '@mui/material/Rating';
-import Typography from '@mui/material/Typography';
-// NOTE: the "swipe left to dismiss" hint is intentionally NOT rendered here —
-// it lives above the queue control bar as a transient toast so it doesn't
-// push the stars out of alignment with the action buttons.
-import Skeleton from '@mui/material/Skeleton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import CheckOutlined from '@mui/icons-material/CheckOutlined';
-import CloseOutlined from '@mui/icons-material/CloseOutlined';
-import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import React, { useState, useCallback, useEffect, useMemo, useImperativeHandle, useRef, forwardRef } from 'react';
+import Stack from '@mui/material/Stack';
 import { track } from '@vercel/analytics';
 import { Angle, Climb, BoardDetails } from '@/app/lib/types';
 import { useBoardProvider } from '../board-provider/board-provider-context';
 import type { LogbookEntry, TickStatus } from '@/app/hooks/use-logbook';
 import { TENSION_KILTER_GRADES } from '@/app/lib/board-data';
-import { themeTokens } from '@/app/theme/theme-config';
-import { useGradeFormat } from '@/app/hooks/use-grade-format';
-import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
+import {
+  TickControls,
+  TickGradeButton,
+  InlineStarPicker,
+  InlineGradePicker,
+  InlineTriesPicker,
+  type ExpandedControl,
+} from './tick-controls';
 import styles from './quick-tick-bar.module.css';
 
 /** Snapshot of the tick target taken when the bar is first opened with a valid climb. */
@@ -39,125 +31,106 @@ export interface QuickTickBarProps {
   angle: Angle;
   boardDetails: BoardDetails;
   onSave: () => void;
-  onCancel: () => void;
   /** Current comment text. Owned by the parent so the comment field can live
    *  outside this bar (above the queue control bar) without causing reflow. */
   comment: string;
-  /** Whether the parent is currently rendering the comment input. */
-  commentOpen: boolean;
-  /** Called when the user taps the comment button inside this bar. */
-  onCommentToggle: () => void;
-  /** Whether the parent's comment input currently has focus. Used to disable
-   *  the swipe-to-dismiss gesture so the user can type without the bar
-   *  sliding away under them. */
-  commentFocused: boolean;
+  /** Comment input element rendered by the parent — placed in the row next to tick controls. */
+  commentSlot: React.ReactNode;
 }
 
-const SWIPE_DISMISS_THRESHOLD = 80;
-const EXIT_DURATION_MS = 220;
-const SNAP_BACK_DURATION_MS = 180;
-
-/** Options shown in the attempts picker. 10 displays as "9+" in the UI. */
-const ATTEMPT_OPTIONS: readonly number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-const REVERSED_ATTEMPT_OPTIONS: readonly number[] = [...ATTEMPT_OPTIONS].reverse();
+export interface QuickTickBarHandle {
+  /** Trigger a save (ascent). Called by the parent tick button. */
+  save: () => void;
+}
 
 /**
- * Inline tick entry bar. Designed to be embedded in a parent row (e.g. the queue
- * control bar) in place of the climb title. The component owns its own snapshot
- * of the climb so that mid-flow changes to the active climb (party session
- * navigation, etc.) do not cause the user to lose their in-progress tick.
+ * Stateful tick entry wrapper. Manages the tick target snapshot, form state
+ * (quality, difficulty, attempts), expansion state, and save logic.
  *
- * The user picks how many tries (1–9+) they put into the climb via the tries
- * counter, then taps either the confirm (✓) button to log a send with that
- * count or the fail (X) button to log the same count of tries without a send.
- * Send status is history-aware: a one-try send with no prior history records
- * as `flash`, otherwise `send`. Fail rows always record as `attempt`. Totals
- * are derived server-side by aggregating rows.
+ * Layout mirrors the queue control bar below:
+ *   [comment (flex:1) + grade] [stars + tries]
+ * so the user grade aligns vertically with the consensus grade.
  */
-export const QuickTickBar: React.FC<QuickTickBarProps> = ({
+export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
   currentClimb,
   angle,
   boardDetails,
   onSave,
-  onCancel,
   comment,
-  commentOpen,
-  onCommentToggle,
-  commentFocused,
-}) => {
+  commentSlot,
+}, ref) => {
   const { saveTick, logbook } = useBoardProvider();
-  const isDark = useIsDarkMode();
-  const { formatGrade, getGradeColor, loaded: gradeFormatLoaded } = useGradeFormat();
 
   // Snapshot the target climb the first time we get a non-null climb.
-  // All subsequent saves use this snapshot, not the live props.
-  const [tickTarget, setTickTarget] = useState<TickTarget | null>(() =>
-    currentClimb ? buildTickTarget(currentClimb, angle, boardDetails, logbook) : null,
-  );
+  // Uses a ref flag so it only fires once, avoiding re-snapshot when
+  // angle/boardDetails/logbook change after the initial capture.
+  const tickTargetTaken = useRef(false);
+  const [tickTarget, setTickTarget] = useState<TickTarget | null>(() => {
+    if (currentClimb) {
+      tickTargetTaken.current = true;
+      return buildTickTarget(currentClimb, angle, boardDetails, logbook);
+    }
+    return null;
+  });
   useEffect(() => {
-    if (!tickTarget && currentClimb) {
+    if (!tickTargetTaken.current && currentClimb) {
+      tickTargetTaken.current = true;
       setTickTarget(buildTickTarget(currentClimb, angle, boardDetails, logbook));
     }
-    // Intentionally only re-runs while we have no snapshot yet. Once set, the
-    // snapshot is intentionally sticky until the component unmounts.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentClimb, tickTarget]);
+  }, [currentClimb, angle, boardDetails, logbook]);
 
   const [quality, setQuality] = useState<number | null>(null);
   const [difficulty, setDifficulty] = useState<number | undefined>(undefined);
   const [isSaving, setIsSaving] = useState(false);
-  const [gradeAnchorEl, setGradeAnchorEl] = useState<HTMLElement | null>(null);
-  const [attemptAnchorEl, setAttemptAnchorEl] = useState<HTMLElement | null>(null);
   const [attemptCount, setAttemptCount] = useState<number>(1);
-  const [swipeOffset, setSwipeOffset] = useState(0);
-  const [isDismissing, setIsDismissing] = useState(false);
-  const dismissTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [expandedControl, setExpandedControl] = useState<ExpandedControl>(null);
+  // Track which picker was last open so we can keep it mounted during collapse.
+  const [lastExpandedControl, setLastExpandedControl] = useState<ExpandedControl>(null);
+  const [pickerVisible, setPickerVisible] = useState(false);
+
+  useEffect(() => {
+    if (expandedControl) {
+      setLastExpandedControl(expandedControl);
+      setPickerVisible(true);
+    } else {
+      // Keep content mounted during the 200ms CSS grid collapse transition.
+      const timer = setTimeout(() => setPickerVisible(false), 200);
+      return () => clearTimeout(timer);
+    }
+  }, [expandedControl]);
+
+  // The control to actually render — either the currently expanded one, or
+  // the last one that was open (kept alive during the collapse animation).
+  const renderedControl = expandedControl ?? (pickerVisible ? lastExpandedControl : null);
+
+  const gradeButtonRef = useRef<HTMLButtonElement>(null);
+  const triesButtonRef = useRef<HTMLButtonElement>(null);
 
   const grades = TENSION_KILTER_GRADES;
 
-  useEffect(() => {
-    return () => {
-      if (dismissTimeoutRef.current) {
-        clearTimeout(dismissTimeoutRef.current);
-      }
-    };
-  }, []);
+  const currentGradeId = difficulty;
 
-  const selectedGrade = difficulty
-    ? grades.find((g) => g.difficulty_id === difficulty)
-    : undefined;
-
-  // Prefer the user's override (which carries the full "font/v" difficulty
-  // name so formatGrade can disambiguate V5 vs V5+), otherwise fall back
-  // to the snapshot climb's own difficulty string.
-  const displayDifficulty =
-    selectedGrade?.difficulty_name ?? tickTarget?.climb.difficulty ?? currentClimb?.difficulty ?? '';
-  const formattedGrade = formatGrade(displayDifficulty);
-  const gradeLabel = formattedGrade ?? (displayDifficulty || '—');
-  const gradeColor = getGradeColor(displayDifficulty, isDark);
-
-  // Fall back to matching the climb's own difficulty string against the
-  // grade list so the menu can highlight the "current" grade even before
-  // the user picks an override.
-  const climbGradeId = useMemo(() => {
-    const source = tickTarget?.climb.difficulty ?? currentClimb?.difficulty;
+  const consensusGradeId = useMemo(() => {
+    const source = tickTarget?.climb.difficulty;
     if (!source) return undefined;
     return grades.find((g) => g.difficulty_name === source)?.difficulty_id;
-  }, [tickTarget, currentClimb, grades]);
-  const currentGradeId = difficulty ?? climbGradeId;
+  }, [tickTarget, grades]);
 
-  // When the climb already has an established grade, only show a narrow
-  // window of 5 grades (two softer, two harder) around it so the user can
-  // nudge up or down without scrolling through the full V0 → V16 list.
-  // Projects without a grade still see every option.
-  const displayedGrades = useMemo(() => {
-    if (climbGradeId === undefined) return grades;
-    const idx = grades.findIndex((g) => g.difficulty_id === climbGradeId);
-    if (idx === -1) return grades;
-    const start = Math.max(0, idx - 2);
-    const end = Math.min(grades.length, idx + 3);
-    return grades.slice(start, end);
-  }, [grades, climbGradeId]);
+  // Picker selection handlers — select the value and collapse the picker.
+  const handleStarSelect = useCallback((value: number | null) => {
+    setQuality(value);
+    setExpandedControl(null);
+  }, []);
+
+  const handleGradeSelect = useCallback((value: number | undefined) => {
+    setDifficulty(value);
+    setExpandedControl(null);
+  }, []);
+
+  const handleTriesSelect = useCallback((value: number) => {
+    setAttemptCount(value);
+    setExpandedControl(null);
+  }, []);
 
   const handleSave = useCallback(
     async (isAscent: boolean) => {
@@ -165,10 +138,6 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
 
       const { climb, angle: targetAngle, boardDetails: targetBoard, hasPriorHistory } = tickTarget;
 
-      // Status is history-aware for sends: a first-go send with no prior
-      // history is a flash, otherwise it's a send. Multi-try sends can't be
-      // flashes by definition. Non-ascents always save as `attempt`, with
-      // the selected count representing how many tries the user made.
       let status: TickStatus;
       if (isAscent) {
         status = hasPriorHistory || attemptCount > 1 ? 'send' : 'flash';
@@ -207,7 +176,6 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
 
         onSave();
       } catch {
-        // Error surfaced via snackbar inside useSaveTick.
         track('Quick Tick Failed', {
           boardLayout: targetBoard.layout_name || '',
         });
@@ -219,255 +187,76 @@ export const QuickTickBar: React.FC<QuickTickBarProps> = ({
   );
 
   const handleConfirm = useCallback(() => handleSave(true), [handleSave]);
-  const handleFail = useCallback(() => handleSave(false), [handleSave]);
 
-  const triggerDismiss = useCallback(() => {
-    if (isDismissing) return;
-    setIsDismissing(true);
-    // Slide the bar fully off-screen to the left, then tell the parent to close.
-    setSwipeOffset(-window.innerWidth);
-    dismissTimeoutRef.current = setTimeout(() => {
-      onCancel();
-    }, EXIT_DURATION_MS);
-  }, [isDismissing, onCancel]);
-
-  const swipeEnabled = !commentFocused && !isSaving && !isDismissing;
-
-  const swipeHandlers = useSwipeable({
-    onSwiping: (eventData) => {
-      if (!swipeEnabled) return;
-      // Only track horizontal left drags.
-      if (Math.abs(eventData.deltaY) > Math.abs(eventData.deltaX)) return;
-      if (eventData.deltaX > 0) {
-        setSwipeOffset(0);
-        return;
-      }
-      setSwipeOffset(eventData.deltaX);
-    },
-    onSwipedLeft: (eventData) => {
-      if (!swipeEnabled) return;
-      if (Math.abs(eventData.deltaX) >= SWIPE_DISMISS_THRESHOLD) {
-        triggerDismiss();
-      } else {
-        setSwipeOffset(0);
-      }
-    },
-    onSwiped: (eventData) => {
-      if (!swipeEnabled) return;
-      // Reset if we ended on any non-left direction.
-      if (eventData.dir !== 'Left') {
-        setSwipeOffset(0);
-      }
-    },
-    trackMouse: false,
-    preventScrollOnSwipe: true,
-    delta: 10,
-  });
-
-  const rootStyle = useMemo<React.CSSProperties>(() => {
-    const transition = isDismissing
-      ? `transform ${EXIT_DURATION_MS}ms ease-out, opacity ${EXIT_DURATION_MS}ms ease-out`
-      : swipeOffset === 0
-        ? `transform ${SNAP_BACK_DURATION_MS}ms ease-out`
-        : 'none';
-    return {
-      transform: `translateX(${swipeOffset}px)`,
-      opacity: isDismissing ? 0 : 1,
-      transition,
-    };
-  }, [swipeOffset, isDismissing]);
-
-  // Apply swipe handlers only when gesture capture is allowed so focused
-  // comment text selection, or in-flight saves, don't get hijacked.
-  const rootHandlers = swipeEnabled ? swipeHandlers : {};
-
-  const attemptDisplay = attemptCount >= 10 ? '9+' : String(attemptCount);
+  useImperativeHandle(ref, () => ({
+    save: handleConfirm,
+  }), [handleConfirm]);
 
   return (
-    <div
-      {...rootHandlers}
-      className={styles.tickBar}
-      style={rootStyle}
-      data-testid="quick-tick-bar"
-    >
-      <div className={styles.controls}>
-        {/* Order: stars, comment, grade, tries, attempt, tick. The rating
-            sits to the right of the bar, sized to match the adjacent icon
-            buttons. */}
-        <Rating
-          value={quality}
-          onChange={(_, val) => setQuality(val)}
-          max={5}
-          data-testid="quick-tick-rating"
-          className={styles.rating}
-        />
+    <div data-testid="quick-tick-bar" className={styles.tickBar}>
+      {/* Picker panel — expands above the controls row when a control is active */}
+      <div className={`${styles.pickerPanel} ${expandedControl ? styles.pickerPanelExpanded : ''}`}>
+        <div className={styles.pickerPanelContent}>
+          {renderedControl === 'stars' && (
+            <InlineStarPicker quality={quality} onSelect={handleStarSelect} />
+          )}
+          {renderedControl === 'grade' && (
+            <InlineGradePicker
+              grades={grades}
+              currentGradeId={currentGradeId}
+              focusGradeId={consensusGradeId}
+              onSelect={handleGradeSelect}
+              gradeButtonRef={gradeButtonRef}
+            />
+          )}
+          {renderedControl === 'tries' && (
+            <InlineTriesPicker attemptCount={attemptCount} onSelect={handleTriesSelect} triesButtonRef={triesButtonRef} />
+          )}
+        </div>
+      </div>
 
-        <IconButton
-          size="small"
-          onClick={onCommentToggle}
-          color={commentOpen ? 'primary' : 'default'}
-          aria-label="Toggle comment"
-        >
-          <ChatBubbleOutlineOutlined fontSize="small" />
-        </IconButton>
-
-        {/* Colourised grade, matching the styling used by ClimbTitle's
-            right-aligned large grade. Click opens the override menu. */}
-        {!gradeFormatLoaded ? (
-          <Skeleton
-            variant="rounded"
-            width={themeTokens.typography.fontSize.sm * 2.5}
-            height={themeTokens.typography.fontSize.sm}
-            sx={{ flexShrink: 0, mx: '4px' }}
+      {/* Controls row — mirrors the queue bar layout:
+          [comment + grade (flex:1)] [stars + tries (flex:none)]
+          so user grade aligns with the consensus grade below. */}
+      <div className={styles.controlsRow}>
+        {/* Left section: comment fills space, grade sits at right edge —
+            mirrors the queue bar's [thumbnail + title + grade] column. */}
+        <div className={styles.leftSection}>
+          {/* Collapse any open picker when the comment field gains focus */}
+          <div role="group" onFocus={() => setExpandedControl(null)} className={styles.commentWrapper}>
+            {commentSlot}
+          </div>
+          <TickGradeButton
+            ref={gradeButtonRef}
+            difficulty={difficulty}
+            displayedGrades={grades}
+            expandedControl={expandedControl}
+            onExpandedControlChange={setExpandedControl}
           />
-        ) : (
-          <Typography
-            variant="body2"
-            component="span"
-            onClick={(e) => setGradeAnchorEl(e.currentTarget)}
-            role="button"
-            aria-label="Select logged grade"
-            data-testid="quick-tick-grade"
-            className={styles.gradeLabel}
-            sx={{
-              fontSize: themeTokens.typography.fontSize.sm,
-              fontWeight: themeTokens.typography.fontWeight.bold,
-              lineHeight: 1,
-              color: gradeColor ?? 'text.secondary',
-              cursor: 'pointer',
-              flexShrink: 0,
-              px: '4px',
-            }}
-          >
-            {gradeLabel}
-          </Typography>
-        )}
-        <Menu
-          anchorEl={gradeAnchorEl}
-          open={Boolean(gradeAnchorEl)}
-          onClose={() => setGradeAnchorEl(null)}
-          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-          transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-          slotProps={{ paper: { sx: { maxHeight: 240 } } }}
-        >
-          <MenuItem
-            onClick={() => {
-              setDifficulty(undefined);
-              setGradeAnchorEl(null);
-            }}
-          >
-            —
-          </MenuItem>
-          {displayedGrades.map((grade) => {
-            const isCurrent = grade.difficulty_id === currentGradeId;
-            return (
-              <MenuItem
-                key={grade.difficulty_id}
-                selected={isCurrent}
-                onClick={() => {
-                  setDifficulty(grade.difficulty_id);
-                  setGradeAnchorEl(null);
-                }}
-              >
-                {formatGrade(grade.difficulty_name) ?? grade.v_grade}
-              </MenuItem>
-            );
-          })}
-        </Menu>
+        </div>
 
-        {/* Tries counter. Shows the selected try count aligned on the same
-            baseline as the adjacent items; the "tries" byline is absolutely
-            positioned underneath so it does not push the number out of
-            alignment. Opens a small menu upward with options 1–9+. The
-            selected value drives both the attempt (X) and confirm (✓)
-            buttons so the user can log 5 tries without a send by picking 5
-            and tapping X. */}
-        <ButtonBase
-          onClick={(e) => setAttemptAnchorEl(e.currentTarget)}
-          aria-label={`Tries: ${attemptDisplay}`}
-          aria-haspopup="menu"
-          aria-expanded={Boolean(attemptAnchorEl)}
-          data-testid="quick-tick-attempt"
-          className={styles.attemptButton}
-          disableRipple={false}
-        >
-          <span className={styles.attemptNumber}>{attemptDisplay}</span>
-          <span className={styles.attemptLabel}>tries</span>
-        </ButtonBase>
-        <Menu
-          anchorEl={attemptAnchorEl}
-          open={Boolean(attemptAnchorEl)}
-          onClose={() => setAttemptAnchorEl(null)}
-          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-          transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-          slotProps={{ paper: { sx: { minWidth: 64 } } }}
-        >
-          {REVERSED_ATTEMPT_OPTIONS.map((n) => (
-            <MenuItem
-              key={n}
-              selected={n === attemptCount}
-              onClick={() => {
-                setAttemptCount(n);
-                setAttemptAnchorEl(null);
-              }}
-              data-testid={`quick-tick-attempt-option-${n === 10 ? '9plus' : n}`}
-            >
-              {n === 10 ? '9+' : n}
-            </MenuItem>
-          ))}
-        </Menu>
-
-        <IconButton
-          size="small"
-          onClick={handleFail}
-          disabled={isSaving}
-          sx={{
-            p: '4px',
-            color: themeTokens.colors.error,
-            opacity: themeTokens.opacity.subtle,
-            '&:hover': {
-              color: themeTokens.colors.error,
-              opacity: 1,
-            },
-          }}
-          aria-label={`Log ${attemptDisplay} tries without a send`}
-          data-testid="quick-tick-fail"
-        >
-          <CloseOutlined fontSize="small" />
-        </IconButton>
-
-        <IconButton
-          size="small"
-          onClick={handleConfirm}
-          disabled={isSaving}
-          sx={{
-            p: '4px',
-            color: themeTokens.colors.success,
-            opacity: themeTokens.opacity.subtle,
-            '&:hover': {
-              color: themeTokens.colors.successHover,
-              opacity: 1,
-            },
-          }}
-          aria-label="Confirm ascent"
-          data-testid="quick-tick-confirm"
-        >
-          <CheckOutlined fontSize="small" />
-        </IconButton>
+        {/* Right section: stars + tries — mirrors the queue bar's button
+            cluster (Close + Tick) so widths match and grades align. */}
+        <div className={styles.rightControls}>
+          <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+            <TickControls
+              quality={quality}
+              attemptCount={attemptCount}
+              expandedControl={expandedControl}
+              onExpandedControlChange={setExpandedControl}
+              triesButtonRef={triesButtonRef}
+            />
+          </Stack>
+        </div>
       </div>
     </div>
   );
-};
+});
+
+QuickTickBar.displayName = 'QuickTickBar';
 
 /**
  * Decide whether the user has any prior history for a climb at open time.
- *
- * Fast path: the climb payload already carries `userAscents` and
- * `userAttempts` counts from the climb list query, so in the common case we
- * avoid walking the logbook entirely. When those fields are missing (e.g. the
- * climb was fetched through a slim query that does not include the user
- * aggregation), we fall back to filtering the in-memory logbook by climb
- * uuid. Exposed for tests.
  */
 export function hasPriorHistoryForClimb(
   climb: Climb,
@@ -478,7 +267,6 @@ export function hasPriorHistoryForClimb(
   if (ascents != null || attempts != null) {
     return (ascents ?? 0) + (attempts ?? 0) > 0;
   }
-  // Fallback: slim climb payload — consult the local logbook instead.
   return logbook.some((entry) => entry.climb_uuid === climb.uuid);
 }
 

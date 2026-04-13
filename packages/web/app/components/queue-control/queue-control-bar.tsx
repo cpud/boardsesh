@@ -18,11 +18,12 @@ import NextClimbButton from './next-climb-button';
 import { usePathname, useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { constructPlayUrlWithSlugs, getContextAwareClimbViewUrl, isNumericId, tryConstructSlugPlayUrl } from '@/app/lib/url-utils';
-import { BoardRouteParameters, BoardDetails, Angle } from '@/app/lib/types';
+import { BoardRouteParameters, BoardDetails, Angle, Climb } from '@/app/lib/types';
 import PreviousClimbButton from './previous-climb-button';
 import QueueList, { QueueListHandle } from './queue-list';
+import { useSwipeable } from 'react-swipeable';
 import { TickButton } from '../logbook/tick-button';
-import { QuickTickBar } from '../logbook/quick-tick-bar';
+import { QuickTickBar, type QuickTickBarHandle } from '../logbook/quick-tick-bar';
 import ClimbThumbnail from '../climb-card/climb-thumbnail';
 import ClimbTitle from '../climb-card/climb-title';
 import { themeTokens } from '@/app/theme/theme-config';
@@ -33,6 +34,8 @@ import PlayViewDrawer from '../play-view/play-view-drawer';
 import CircularProgress from '@mui/material/CircularProgress';
 import CloseOutlined from '@mui/icons-material/CloseOutlined';
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
+import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import InputAdornment from '@mui/material/InputAdornment';
 import { getGradeTintColor } from '@/app/lib/grade-colors';
 import { useColorMode } from '@/app/hooks/use-color-mode';
 import { ConfirmPopover } from '@/app/components/ui/confirm-popover';
@@ -143,22 +146,16 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
   // separate bar *above* the queue control bar without reflowing the main bar.
   // QuickTickBar reads the value back out via props when saving the tick.
   const [tickComment, setTickComment] = useState('');
-  const [tickCommentOpen, setTickCommentOpen] = useState(false);
   const [tickCommentFocused, setTickCommentFocused] = useState(false);
-  const handleTickCommentToggle = useCallback(() => setTickCommentOpen((prev) => !prev), []);
+  const quickTickBarRef = useRef<QuickTickBarHandle>(null);
+
+  // Swipe-to-dismiss state — tracks vertical offset during down-swipe gesture.
+  const [tickSwipeOffset, setTickSwipeOffset] = useState(0);
+
+  // Keep the tick row mounted during the close animation so it can collapse.
+  const [tickRowVisible, setTickRowVisible] = useState(false);
   const handleTickCommentFocus = useCallback(() => setTickCommentFocused(true), []);
   const handleTickCommentBlur = useCallback(() => setTickCommentFocused(false), []);
-
-  // Transient "swipe left to dismiss" hint that floats above the queue
-  // control bar whenever the tick bar opens. Visible for 3s then fades out,
-  // then unmounted so it doesn't hold layout space while invisible.
-  const [swipeHintVisible, setSwipeHintVisible] = useState(false);
-  const [swipeHintMounted, setSwipeHintMounted] = useState(false);
-
-  // Note: the tick bar intentionally stays open when the active climb changes
-  // (e.g. party session navigation). QuickTickBar snapshots its target climb
-  // internally so the user can finish ticking the climb they opened the bar
-  // for, even after someone else advances the queue.
 
   // Reset dismissed state when connection is restored so banner reappears on next disconnect
   useEffect(() => {
@@ -169,7 +166,6 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
 
   const { mode } = useColorMode();
   const isDark = mode === 'dark';
-  const gradeTintColor = useMemo(() => getGradeTintColor(currentClimb?.difficulty, 'default', isDark), [currentClimb?.difficulty, isDark]);
 
   // Show reconnecting UI only when online but WebSocket is down.
   // When truly offline (browser has no network), show normal controls with an offline indicator instead.
@@ -278,35 +274,75 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
   const canSwipeNext = !viewOnlyMode && !!nextClimb && !tickBarActive;
   const canSwipePrevious = !viewOnlyMode && !!previousClimb && !tickBarActive;
 
-  // Clear tick-bar comment state whenever the tick bar closes so a fresh
-  // activation always starts empty.
+  // Snapshot the displayed climb when tick mode opens so the queue bar stays
+  // frozen on the climb being ticked, even if another user advances the queue.
+  const [tickClimb, setTickClimb] = useState<Climb | null>(null);
   useEffect(() => {
-    if (!tickBarActive) {
+    if (tickBarActive && currentClimb && !tickClimb) {
+      setTickClimb(currentClimb);
+    } else if (!tickBarActive) {
+      setTickClimb(null);
+    }
+  }, [tickBarActive, currentClimb, tickClimb]);
+
+  // The climb shown in the queue bar — frozen during tick mode.
+  const displayedClimb = tickBarActive ? (tickClimb ?? currentClimb) : currentClimb;
+  const gradeTintColor = useMemo(() => getGradeTintColor(displayedClimb?.difficulty, 'default', isDark), [displayedClimb?.difficulty, isDark]);
+
+  // Reset all tick-bar state on close; keep the row mounted during the 200ms collapse.
+  useEffect(() => {
+    if (tickBarActive) {
+      setTickRowVisible(true);
+    } else {
       setTickComment('');
-      setTickCommentOpen(false);
       setTickCommentFocused(false);
+      setTickSwipeOffset(0);
+      const timer = setTimeout(() => setTickRowVisible(false), 200);
+      return () => clearTimeout(timer);
     }
   }, [tickBarActive]);
 
-  // Show the swipe hint every time the tick bar opens, fade it after 3s,
-  // then unmount it after the CSS transition completes (300ms) so it stops
-  // occupying layout space for the rest of the tick session.
-  const SWIPE_HINT_TRANSITION_MS = 300; // must match CSS transition duration
-  useEffect(() => {
-    if (!tickBarActive) {
-      setSwipeHintVisible(false);
-      setSwipeHintMounted(false);
-      return;
+  const tickSwipeEnabled = tickBarActive && !tickCommentFocused;
+
+  const tickDismissHandlers = useSwipeable({
+    onSwiping: (eventData) => {
+      if (!tickSwipeEnabled) return;
+      const target = eventData.event.target as HTMLElement | null;
+      if (target?.closest('[data-scrollable-picker]')) return;
+      // Only track downward swipes; ignore horizontal-dominant gestures
+      if (Math.abs(eventData.deltaX) > Math.abs(eventData.deltaY)) return;
+      if (eventData.deltaY < 0) { setTickSwipeOffset(0); return; }
+      setTickSwipeOffset(eventData.deltaY);
+    },
+    onSwipedDown: (eventData) => {
+      if (!tickSwipeEnabled) return;
+      const target = eventData.event.target as HTMLElement | null;
+      if (target?.closest('[data-scrollable-picker]')) return;
+      if (Math.abs(eventData.deltaY) >= 80) {
+        // Just close — the CSS grid collapse animation handles the visual exit
+        setActiveDrawer('none');
+      } else {
+        setTickSwipeOffset(0);
+      }
+    },
+    onSwiped: (eventData) => {
+      if (!tickSwipeEnabled) return;
+      const target = eventData.event.target as HTMLElement | null;
+      if (target?.closest('[data-scrollable-picker]')) return;
+      if (eventData.dir !== 'Down') setTickSwipeOffset(0);
+    },
+    trackMouse: false,
+    preventScrollOnSwipe: false,
+    delta: 10,
+  });
+
+  const tickDismissStyle = useMemo<React.CSSProperties | undefined>(() => {
+    if (tickSwipeOffset === 0) {
+      return { transition: 'grid-template-rows 180ms ease-out, opacity 180ms ease-out' };
     }
-    setSwipeHintMounted(true);
-    setSwipeHintVisible(true);
-    const fadeTimer = setTimeout(() => setSwipeHintVisible(false), 3000);
-    const unmountTimer = setTimeout(() => setSwipeHintMounted(false), 3000 + SWIPE_HINT_TRANSITION_MS);
-    return () => {
-      clearTimeout(fadeTimer);
-      clearTimeout(unmountTimer);
-    };
-  }, [tickBarActive]);
+    const fraction = Math.max(0, 1 - tickSwipeOffset / 150);
+    return { gridTemplateRows: `${fraction}fr`, opacity: fraction, transition: 'none' };
+  }, [tickSwipeOffset]);
 
   const { swipeHandlers, swipeOffset, isAnimating, animationDirection, enterDirection, clearEnterAnimation } = useCardSwipeNavigation({
     onSwipeNext: handleSwipeNext,
@@ -407,7 +443,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
     } else {
       showMessage('Unable to leave session. Please try again.', 'warning');
     }
-  }, [endSession, disconnect]);
+  }, [endSession, disconnect, showMessage]);
 
   // Reconnect-only view helpers
   const renderReconnectingRow = () => (
@@ -468,7 +504,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                   <div className={`${styles.boardPreviewContainer} ${enterDirection ? styles.thumbnailEnter : ''}`}>
                     <ClimbThumbnail
                       boardDetails={boardDetails}
-                      currentClimb={currentClimb}
+                      currentClimb={displayedClimb}
                       pathname={pathname}
                       onClick={handleThumbnailClick}
                     />
@@ -516,40 +552,95 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
           </span>
         </div>
       )}
-      {/* Transient "swipe left to dismiss" hint — floats above the queue
-          control bar the first 3 seconds after tick mode opens, then fades
-          away so it doesn't interfere with the stars or action buttons.
-          Unmounted after the fade finishes so it releases its layout space. */}
-      {swipeHintMounted && (
-        <div
-          className={`${styles.swipeHint} ${swipeHintVisible ? styles.swipeHintVisible : ''}`}
-          aria-hidden="true"
-          data-testid="quick-tick-swipe-hint"
-        >
-          swipe left to dismiss
-        </div>
-      )}
-      {/* Tick-mode comment bar — rendered above the main card so tapping the
-          comment button doesn't reflow the queue control bar. */}
-      {tickBarActive && tickCommentOpen && (
-        <div className={styles.commentBar}>
-          <TextField
-            autoFocus
-            fullWidth
-            size="small"
-            variant="standard"
-            placeholder="Comment..."
-            value={tickComment}
-            onChange={(e) => setTickComment(e.target.value)}
-            onFocus={handleTickCommentFocus}
-            onBlur={handleTickCommentBlur}
-            slotProps={{ htmlInput: { maxLength: 2000, 'aria-label': 'Tick comment' } }}
-          />
-        </div>
-      )}
       {/* Main Control Bar */}
-      <MuiCard variant="outlined" className={styles.card} sx={{ border: 'none', backgroundColor: 'transparent' }}>
+      <MuiCard
+        variant="outlined"
+        className={styles.card}
+        sx={{ border: 'none', backgroundColor: 'transparent' }}
+      >
         <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
+        {/* Tick-mode controls — expands/collapses via CSS grid transition.
+            Swipe-to-dismiss handlers are on the tick row only, not the whole card. */}
+        {(tickBarActive || tickRowVisible) && (
+          <div
+            {...(tickBarActive ? tickDismissHandlers : {})}
+            className={`${styles.tickRow} ${tickBarActive ? styles.tickRowExpanded : ''} ${tickSwipeOffset > 0 ? styles.tickRowSwiping : ''}`}
+            style={{
+              backgroundColor: gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
+              ...tickDismissStyle,
+            }}
+          >
+            {/* Close button — top-right corner of the tick bar */}
+            <div className={styles.tickCloseButton}>
+              <IconButton
+                onClick={() => setActiveDrawer('none')}
+                size="small"
+                aria-label="Close tick bar"
+                sx={{
+                  color: 'text.primary',
+                  backgroundColor: 'action.selected',
+                  '&:hover': { backgroundColor: 'action.focus' },
+                }}
+              >
+                <CloseOutlined sx={{ fontSize: 16 }} />
+              </IconButton>
+            </div>
+            <div className={styles.tickRowInner}>
+              {/* Drag handle */}
+              <div className={styles.tickDragHandleRow}>
+                <div className={styles.tickDragHandle} aria-hidden="true">
+                  <div className={styles.tickDragHandleBar} />
+                </div>
+              </div>
+              {tickBarActive && (
+                <QuickTickBar
+                  ref={quickTickBarRef}
+                  currentClimb={currentClimb}
+                  angle={angle}
+                  boardDetails={boardDetails}
+                  onSave={() => setActiveDrawer('none')}
+                  comment={tickComment}
+                  commentSlot={
+                    <div className={`${styles.tickComment} ${tickCommentFocused ? styles.tickCommentExpanded : ''}`}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        variant="outlined"
+                        placeholder="Comment..."
+                        multiline
+                        minRows={1}
+                        maxRows={tickCommentFocused ? 4 : 1}
+                        value={tickComment}
+                        onChange={(e) => setTickComment(e.target.value)}
+                        onFocus={handleTickCommentFocus}
+                        onBlur={handleTickCommentBlur}
+                        slotProps={{
+                          htmlInput: { maxLength: 2000, 'aria-label': 'Tick comment' },
+                          input: {
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <ChatBubbleOutlineOutlined sx={{ fontSize: 16, opacity: 0.5 }} />
+                              </InputAdornment>
+                            ),
+                          },
+                        }}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: '8px',
+                            backgroundColor: 'var(--neutral-50)',
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderColor: 'var(--neutral-200)',
+                            },
+                          },
+                        }}
+                      />
+                    </div>
+                  }
+                />
+              )}
+            </div>
+          </div>
+        )}
         {/* Swipe container - captures swipe gestures, does NOT translate */}
         <div className={styles.swipeWrapper}>
           <div
@@ -568,7 +659,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                   <div className={`${styles.boardPreviewContainer} ${enterDirection ? styles.thumbnailEnter : ''}`}>
                     <ClimbThumbnail
                       boardDetails={boardDetails}
-                      currentClimb={currentClimb}
+                      currentClimb={displayedClimb}
                       pathname={pathname}
                       onClick={handleThumbnailClick}
                     />
@@ -576,61 +667,45 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
 
                   {/* Text swipe clip — overflow hidden to contain sliding text */}
                   <div className={styles.textSwipeClip}>
-                    {tickBarActive ? (
-                      <QuickTickBar
-                        currentClimb={currentClimb}
-                        angle={angle}
-                        boardDetails={boardDetails}
-                        onSave={() => setActiveDrawer('none')}
-                        onCancel={() => setActiveDrawer('none')}
-                        comment={tickComment}
-                        commentOpen={tickCommentOpen}
-                        onCommentToggle={handleTickCommentToggle}
-                        commentFocused={tickCommentFocused}
+                    {/* Current climb text — slides with finger */}
+                    <div
+                      id="onboarding-queue-toggle"
+                      onClick={tickBarActive ? undefined : handleClimbInfoClick}
+                      className={styles.queueToggle}
+                      style={{
+                        transform: tickBarActive ? undefined : `translateX(${swipeOffset}px)`,
+                        transition: tickBarActive ? undefined : getTextTransitionStyle(),
+                        cursor: tickBarActive ? 'default' : undefined,
+                      }}
+                    >
+                      <ClimbTitle
+                        climb={displayedClimb}
+                        gradePosition="right"
+                        showSetterInfo
                       />
-                    ) : (
-                      <>
-                        {/* Current climb text — slides with finger */}
-                        <div
-                          id="onboarding-queue-toggle"
-                          onClick={handleClimbInfoClick}
-                          className={`${styles.queueToggle} ${isListPage ? styles.listPage : ''}`}
-                          style={{
-                            transform: `translateX(${swipeOffset}px)`,
-                            transition: getTextTransitionStyle(),
-                          }}
-                        >
-                          <ClimbTitle
-                            climb={currentClimb}
-                            gradePosition="right"
-                            showSetterInfo
-                          />
-                        </div>
+                    </div>
 
-                        {/* Peek text — shows next/previous climb sliding in from the edge */}
-                        {showPeek && peekClimbData && (
-                          <div
-                            className={`${styles.queueToggle} ${styles.peekText}`}
-                            style={{
-                              transform: getPeekTransform(),
-                              transition: getTextTransitionStyle(),
-                            }}
-                          >
-                            <ClimbTitle
-                              climb={peekClimbData}
-                              gradePosition="right"
-                              showSetterInfo
-                            />
-                          </div>
-                        )}
-                      </>
+                    {/* Peek text — shows next/previous climb sliding in from the edge */}
+                    {!tickBarActive && showPeek && peekClimbData && (
+                      <div
+                        className={`${styles.queueToggle} ${styles.peekText}`}
+                        style={{
+                          transform: getPeekTransform(),
+                          transition: getTextTransitionStyle(),
+                        }}
+                      >
+                        <ClimbTitle
+                          climb={peekClimbData}
+                          gradePosition="right"
+                          showSetterInfo
+                        />
+                      </div>
                     )}
                   </div>
                 </div>
               </Box>
 
-              {/* Button cluster — hidden when tick bar is active to give full width */}
-              {!tickBarActive && (
+              {/* Button cluster — always visible, lightbulb swaps to X in tick mode */}
               <Box sx={{ flex: 'none', marginLeft: `${themeTokens.spacing[1]}px` }}>
                 <Stack direction="row" spacing={0.5}>
                   {/* Mirror button - desktop only */}
@@ -642,12 +717,12 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                           mirrorClimb();
                           track('Mirror Climb Toggled', {
                             boardLayout: boardDetails.layout_name || '',
-                            mirrored: !currentClimb?.mirrored,
+                            mirrored: !displayedClimb?.mirrored,
                           });
                         }}
-                        color={currentClimb?.mirrored ? 'primary' : 'default'}
+                        color={displayedClimb?.mirrored ? 'primary' : 'default'}
                         sx={
-                          currentClimb?.mirrored
+                          displayedClimb?.mirrored
                             ? { backgroundColor: themeTokens.colors.purple, borderColor: themeTokens.colors.purple, color: 'common.white', '&:hover': { backgroundColor: themeTokens.colors.purple } }
                             : undefined
                         }
@@ -678,19 +753,33 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                       <NextClimbButton navigate={isViewPage || isPlayPage} boardDetails={boardDetails} />
                     </Stack>
                   </span>
-                  {/* Party button */}
-                  <ShareBoardButton />
-                  {/* Tick button */}
+                  {/* Party / Cancel button — swaps to X when tick mode is active */}
+                  {tickBarActive ? (
+                    <IconButton
+                      onClick={() => setActiveDrawer('none')}
+                      sx={{
+                        color: themeTokens.colors.error,
+                        opacity: themeTokens.opacity.subtle,
+                        '&:hover': { color: themeTokens.colors.error, opacity: 1 },
+                      }}
+                      aria-label="Cancel tick"
+                    >
+                      <CloseOutlined />
+                    </IconButton>
+                  ) : (
+                    <ShareBoardButton />
+                  )}
+                  {/* Tick button — activates tick mode, or saves when already active */}
                   <TickButton
-                    currentClimb={currentClimb}
+                    currentClimb={displayedClimb}
                     angle={angle}
                     boardDetails={boardDetails}
                     onActivateTickBar={() => setActiveDrawer('tick')}
+                    onTickSave={() => quickTickBarRef.current?.save()}
                     tickBarActive={tickBarActive}
                   />
                 </Stack>
               </Box>
-              )}
             </Box>
           </div>
         </div>
