@@ -20,6 +20,8 @@ export type RenderRequest = {
   backgroundUrls: string[];
   /** Origin URL for resolving WASM assets (sent from main thread) */
   origin?: string;
+  /** Pixels to crop from the top of the output (shifts board content up) */
+  cropTop?: number;
 };
 
 /** Pre-decoded background images sent from main thread to avoid per-worker fetching */
@@ -83,15 +85,16 @@ async function fetchBackgroundImage(url: string): Promise<ImageBitmap> {
 async function renderBoard(request: RenderRequest): Promise<ImageBitmap> {
   await ensureWasmInitialized();
 
-  const { boardWidth, boardHeight, outputWidth, frames, mirrored, thumbnail, holds, holdStateMap, backgroundUrls } =
+  const { boardWidth, boardHeight, outputWidth, frames, mirrored, thumbnail, holds, holdStateMap, backgroundUrls, cropTop = 0 } =
     request;
 
-  const outputHeight = Math.round((outputWidth * boardHeight) / boardWidth);
+  const fullOutputHeight = Math.round((outputWidth * boardHeight) / boardWidth);
+  const outputHeight = fullOutputHeight - cropTop;
 
   // Fetch all background images in parallel
   const bgImages = await Promise.all(backgroundUrls.map(fetchBackgroundImage));
 
-  // Create OffscreenCanvas at target resolution
+  // Create OffscreenCanvas at target resolution (cropped height)
   const canvas = new OffscreenCanvas(outputWidth, outputHeight);
   const ctx = canvas.getContext('2d');
   if (!ctx) {
@@ -104,9 +107,9 @@ async function renderBoard(request: RenderRequest): Promise<ImageBitmap> {
     ctx.scale(-1, 1);
   }
 
-  // Draw background images (scaled to fill canvas)
+  // Draw background images shifted up by cropTop so the top edge is cropped
   for (const bgImage of bgImages) {
-    ctx.drawImage(bgImage, 0, 0, outputWidth, outputHeight);
+    ctx.drawImage(bgImage, 0, -cropTop, outputWidth, fullOutputHeight);
   }
 
   // Render hold overlay via WASM
@@ -133,9 +136,9 @@ async function renderBoard(request: RenderRequest): Promise<ImageBitmap> {
     const rgbaSlice = rawBytes.slice(8);
     const rgbaData = new Uint8ClampedArray(rgbaSlice.buffer, rgbaSlice.byteOffset, rgbaSlice.byteLength);
 
-    // Draw overlay on top of backgrounds
+    // Draw overlay on top of backgrounds (shifted up by cropTop to match background)
     const overlayImageData = new ImageData(rgbaData, overlayWidth, overlayHeight);
-    ctx.drawImage(await createImageBitmap(overlayImageData), 0, 0, outputWidth, outputHeight);
+    ctx.drawImage(await createImageBitmap(overlayImageData), 0, -cropTop, outputWidth, fullOutputHeight);
   }
 
   // Transfer as ImageBitmap

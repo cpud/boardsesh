@@ -23,6 +23,29 @@ function cacheKey(boardDetails: BoardDetails, frames: string, mirrored: boolean,
   return `${boardDetails.board_name}:${boardDetails.layout_id}:${boardDetails.size_id}:${boardDetails.set_ids.join(',')}:${frames}:${mirrored ? 1 : 0}:${thumbnail ? 1 : 0}`;
 }
 
+/**
+ * Compute how many pixels to crop from the top of the rendered board.
+ * Uses the topmost hold position (minimum cy) minus its radius so the
+ * board image starts just above the first row of holds.
+ */
+export function computeCropTop(boardDetails: BoardDetails, outputWidth: number): number {
+  const holds = boardDetails.holdsData;
+  if (holds.length === 0) return 0;
+
+  // Find the topmost hold edge (cy - r) across all holds on the board
+  let minTop = Infinity;
+  for (const h of holds) {
+    const top = h.cy - h.r;
+    if (top < minTop) minTop = top;
+  }
+
+  // Scale from board coords to output pixels
+  const scale = outputWidth / boardDetails.boardWidth;
+  const cropPx = Math.max(0, Math.floor(minTop * scale));
+
+  return cropPx;
+}
+
 function cachePut(key: string, bitmap: ImageBitmap): void {
   // Evict oldest entry if at capacity.
   // Don't call .close() on evicted bitmaps — components may still hold references
@@ -277,6 +300,7 @@ export function renderBoard(options: RenderBoardOptions): Promise<ImageBitmap> {
 
   const id = nextRequestId++;
   const outputWidth = thumbnail ? THUMBNAIL_WIDTH : boardDetails.boardWidth;
+  const cropTop = thumbnail ? 0 : computeCropTop(boardDetails, outputWidth);
 
   // Build holds array for WASM
   const holds = boardDetails.holdsData.map((h: HoldRenderData) => ({
@@ -313,6 +337,7 @@ export function renderBoard(options: RenderBoardOptions): Promise<ImageBitmap> {
     holdStateMap,
     origin: window.location.origin,
     backgroundUrls,
+    cropTop,
   };
 
   // Deduplicate: if the same render is already in flight, reuse its promise
