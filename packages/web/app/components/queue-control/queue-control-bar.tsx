@@ -157,12 +157,6 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
   const handleTickCommentFocus = useCallback(() => setTickCommentFocused(true), []);
   const handleTickCommentBlur = useCallback(() => setTickCommentFocused(false), []);
 
-  // Transient "swipe down to dismiss" hint that floats above the queue
-  // control bar whenever the tick bar opens. Visible for 3s then fades out,
-  // then unmounted so it doesn't hold layout space while invisible.
-  const [swipeHintVisible, setSwipeHintVisible] = useState(false);
-  const [swipeHintMounted, setSwipeHintMounted] = useState(false);
-
   // Note: the tick bar intentionally stays open when the active climb changes
   // (e.g. party session navigation). QuickTickBar snapshots its target climb
   // internally so the user can finish ticking the climb they opened the bar
@@ -293,26 +287,6 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
       setTickComment('');
       setTickCommentFocused(false);
     }
-  }, [tickBarActive]);
-
-  // Show the swipe hint every time the tick bar opens, fade it after 3s,
-  // then unmount it after the CSS transition completes (300ms) so it stops
-  // occupying layout space for the rest of the tick session.
-  const SWIPE_HINT_TRANSITION_MS = 300; // must match CSS transition duration
-  useEffect(() => {
-    if (!tickBarActive) {
-      setSwipeHintVisible(false);
-      setSwipeHintMounted(false);
-      return;
-    }
-    setSwipeHintMounted(true);
-    setSwipeHintVisible(true);
-    const fadeTimer = setTimeout(() => setSwipeHintVisible(false), 3000);
-    const unmountTimer = setTimeout(() => setSwipeHintMounted(false), 3000 + SWIPE_HINT_TRANSITION_MS);
-    return () => {
-      clearTimeout(fadeTimer);
-      clearTimeout(unmountTimer);
-    };
   }, [tickBarActive]);
 
   // Reset swipe offset when tick mode deactivates.
@@ -593,19 +567,6 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                 : 'Offline. Changes will sync when you reconnect.'
               : 'Offline'}
           </span>
-        </div>
-      )}
-      {/* Transient "swipe down to dismiss" hint — floats above the queue
-          control bar the first 3 seconds after tick mode opens, then fades
-          away so it doesn't interfere with the stars or action buttons.
-          Unmounted after the fade finishes so it releases its layout space. */}
-      {swipeHintMounted && (
-        <div
-          className={`${styles.swipeHint} ${swipeHintVisible ? styles.swipeHintVisible : ''}`}
-          aria-hidden="true"
-          data-testid="quick-tick-swipe-hint"
-        >
-          swipe down to dismiss
         </div>
       )}
       {/* Main Control Bar */}
