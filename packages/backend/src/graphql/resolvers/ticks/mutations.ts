@@ -1,10 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
-import { eq, and, inArray, sql } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
 import type { ConnectionContext } from '@boardsesh/shared-schema';
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { sessions } from '../../../db/schema';
 import { requireAuthenticated, validateInput } from '../shared/helpers';
+import { getConsensusDifficultyName } from '../shared/sql-expressions';
 import { SaveTickInputSchema, UpdateTickInputSchema } from '../../../validation/schemas';
 import { resolveBoardFromPath } from '../social/boards';
 import { publishSocialEvent } from '../../../events';
@@ -323,26 +324,7 @@ async function publishAscentEvent(
           .limit(1);
         difficultyName = grade?.boulderName ?? undefined;
       } else {
-        // Fall back to consensus grade from climb stats
-        const [consensus] = await db
-          .select({ boulderName: dbSchema.boardDifficultyGrades.boulderName })
-          .from(dbSchema.boardClimbStats)
-          .innerJoin(
-            dbSchema.boardDifficultyGrades,
-            and(
-              eq(dbSchema.boardDifficultyGrades.difficulty, sql`ROUND(${dbSchema.boardClimbStats.displayDifficulty})`),
-              eq(dbSchema.boardDifficultyGrades.boardType, dbSchema.boardClimbStats.boardType)
-            )
-          )
-          .where(
-            and(
-              eq(dbSchema.boardClimbStats.climbUuid, tick.climbUuid),
-              eq(dbSchema.boardClimbStats.boardType, tick.boardType),
-              eq(dbSchema.boardClimbStats.angle, tick.angle)
-            )
-          )
-          .limit(1);
-        difficultyName = consensus?.boulderName ?? undefined;
+        difficultyName = await getConsensusDifficultyName(tick.climbUuid, tick.boardType, tick.angle);
       }
 
       let boardUuid: string | undefined;

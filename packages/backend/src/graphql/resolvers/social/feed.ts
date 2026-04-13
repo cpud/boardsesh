@@ -1,8 +1,9 @@
-import { eq, and, desc, inArray, sql } from 'drizzle-orm';
+import { eq, and, desc, inArray } from 'drizzle-orm';
 import type { ConnectionContext } from '@boardsesh/shared-schema';
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { requireAuthenticated, validateInput } from '../shared/helpers';
+import { difficultyNameWithFallbackExpr } from '../shared/sql-expressions';
 import { FollowingAscentsFeedInputSchema } from '../../../validation/schemas';
 
 export const socialFeedQueries = {
@@ -50,13 +51,7 @@ export const socialFeedQueries = {
         setterUsername: dbSchema.boardClimbs.setterUsername,
         layoutId: dbSchema.boardClimbs.layoutId,
         frames: dbSchema.boardClimbs.frames,
-        difficultyName: sql<string | null>`COALESCE(${dbSchema.boardDifficultyGrades.boulderName}, (
-  SELECT bdg.boulder_name
-  FROM board_difficulty_grades bdg
-  WHERE bdg.board_type = ${dbSchema.boardseshTicks.boardType}
-    AND bdg.difficulty = ROUND(${dbSchema.boardClimbStats.displayDifficulty})
-  LIMIT 1
-))`,
+        difficultyName: difficultyNameWithFallbackExpr,
       })
       .from(dbSchema.boardseshTicks)
       .innerJoin(dbSchema.users, eq(dbSchema.boardseshTicks.userId, dbSchema.users.id))
@@ -145,13 +140,7 @@ export const socialFeedQueries = {
         setterUsername: dbSchema.boardClimbs.setterUsername,
         layoutId: dbSchema.boardClimbs.layoutId,
         frames: dbSchema.boardClimbs.frames,
-        difficultyName: sql<string | null>`COALESCE(${dbSchema.boardDifficultyGrades.boulderName}, (
-  SELECT bdg.boulder_name
-  FROM board_difficulty_grades bdg
-  WHERE bdg.board_type = ${dbSchema.boardseshTicks.boardType}
-    AND bdg.difficulty = ROUND(${dbSchema.boardClimbStats.displayDifficulty})
-  LIMIT 1
-))`,
+        difficultyName: difficultyNameWithFallbackExpr,
       })
       .from(dbSchema.boardseshTicks)
       .innerJoin(dbSchema.users, eq(dbSchema.boardseshTicks.userId, dbSchema.users.id))

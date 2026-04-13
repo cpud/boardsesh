@@ -110,13 +110,11 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
 
   const currentGradeId = difficulty;
 
-  // Consensus grade ID — used to scroll the picker to the right neighbourhood
-  // when no user grade is selected, so the user has a reference point.
   const consensusGradeId = useMemo(() => {
-    const source = tickTarget?.climb.difficulty ?? currentClimb?.difficulty;
+    const source = tickTarget?.climb.difficulty;
     if (!source) return undefined;
     return grades.find((g) => g.difficulty_name === source)?.difficulty_id;
-  }, [tickTarget, currentClimb, grades]);
+  }, [tickTarget, grades]);
 
   // Picker selection handlers — select the value and collapse the picker.
   const handleStarSelect = useCallback((value: number | null) => {

@@ -4,6 +4,7 @@ import { SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { requireAuthenticated, validateInput } from '../shared/helpers';
+import { consensusDifficultyNameExpr, consensusDifficultyExpr, difficultyNameWithFallbackExpr } from '../shared/sql-expressions';
 import { GetTicksInputSchema, BoardNameSchema, AscentFeedInputSchema } from '../../../validation/schemas';
 
 export const tickQueries = {
@@ -186,14 +187,6 @@ export const tickQueries = {
     const statusMode = validatedInput.statusMode ?? (legacyStatus === 'attempt' ? 'attempt' : legacyStatus ? 'send' : 'both');
     const flashOnly = validatedInput.flashOnly ?? (legacyStatus === 'flash');
 
-    const consensusDifficultyExpr = sql<number | null>`ROUND(${dbSchema.boardClimbStats.displayDifficulty})`;
-    const consensusDifficultyNameExpr = sql<string | null>`(
-      SELECT bdg.boulder_name
-      FROM board_difficulty_grades bdg
-      WHERE bdg.board_type = ${dbSchema.boardseshTicks.boardType}
-        AND bdg.difficulty = ROUND(${dbSchema.boardClimbStats.displayDifficulty})
-      LIMIT 1
-    )`;
     const resolvedBenchmarkExpr = sql<boolean>`CASE
       WHEN COALESCE(${dbSchema.boardClimbStats.benchmarkDifficulty}, 0) > 0 OR ${dbSchema.boardseshTicks.isBenchmark} = true THEN true
       ELSE false
@@ -464,13 +457,7 @@ export const tickQueries = {
         setterUsername: dbSchema.boardClimbs.setterUsername,
         layoutId: dbSchema.boardClimbs.layoutId,
         frames: dbSchema.boardClimbs.frames,
-        difficultyName: sql<string | null>`COALESCE(${dbSchema.boardDifficultyGrades.boulderName}, (
-  SELECT bdg.boulder_name
-  FROM board_difficulty_grades bdg
-  WHERE bdg.board_type = ${dbSchema.boardseshTicks.boardType}
-    AND bdg.difficulty = ROUND(${dbSchema.boardClimbStats.displayDifficulty})
-  LIMIT 1
-))`,
+        difficultyName: difficultyNameWithFallbackExpr,
         day: dayExpr.as('day'),
       })
       .from(dbSchema.boardseshTicks)
