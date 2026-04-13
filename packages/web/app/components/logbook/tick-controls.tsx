@@ -14,28 +14,50 @@ import styles from './tick-controls.module.css';
 export type ExpandedControl = 'grade' | 'stars' | 'tries' | null;
 
 /**
- * Stops touch events from propagating to parent react-swipeable handlers.
- * Without this, the parent's `preventScrollOnSwipe: true` calls preventDefault()
- * on touchmove, blocking native horizontal scroll in the picker.
+ * Stops horizontal touch events from propagating to parent swipeable handlers,
+ * while allowing vertical touches through so swipe-to-dismiss still works.
+ * Tracks the initial touch direction and only stops propagation for
+ * horizontal-dominant moves (protecting native picker scroll).
  */
-function useStopTouchPropagation(ref: React.RefObject<HTMLElement | null>) {
+function useStopHorizontalTouchPropagation(ref: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
-    const stop = (e: TouchEvent) => e.stopPropagation();
+    let startX = 0;
+    let startY = 0;
+    let decided = false;
+    let isHorizontal = false;
 
-    // Must use { passive: true } so the browser can still scroll natively.
-    // stopPropagation prevents the parent swipeable from seeing the event,
-    // but does NOT block the browser's default scroll behavior.
-    el.addEventListener('touchstart', stop, { passive: true });
-    el.addEventListener('touchmove', stop, { passive: true });
-    el.addEventListener('touchend', stop, { passive: true });
+    const onStart = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+      decided = false;
+      isHorizontal = false;
+    };
+
+    const onMove = (e: TouchEvent) => {
+      if (!decided) {
+        const touch = e.touches[0];
+        const dx = Math.abs(touch.clientX - startX);
+        const dy = Math.abs(touch.clientY - startY);
+        if (dx + dy > 5) {
+          decided = true;
+          isHorizontal = dx > dy;
+        }
+      }
+      // Only block propagation for horizontal swipes (protects picker scroll)
+      // Vertical swipes propagate to parent for swipe-to-dismiss
+      if (isHorizontal) e.stopPropagation();
+    };
+
+    el.addEventListener('touchstart', onStart, { passive: true });
+    el.addEventListener('touchmove', onMove, { passive: true });
 
     return () => {
-      el.removeEventListener('touchstart', stop);
-      el.removeEventListener('touchmove', stop);
-      el.removeEventListener('touchend', stop);
+      el.removeEventListener('touchstart', onStart);
+      el.removeEventListener('touchmove', onMove);
     };
   }, [ref]);
 }
@@ -283,7 +305,7 @@ export const InlineGradePicker: React.FC<{
   const isDark = useIsDarkMode();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useStopTouchPropagation(containerRef);
+  useStopHorizontalTouchPropagation(containerRef);
   const { canScrollLeft, canScrollRight } = useScrollIndicators(containerRef);
 
   // On mount, scroll so the selected grade aligns above the grade button.
@@ -358,7 +380,7 @@ export const InlineTriesPicker: React.FC<{
 }> = ({ attemptCount, onSelect, triesButtonRef }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useStopTouchPropagation(containerRef);
+  useStopHorizontalTouchPropagation(containerRef);
   const { canScrollLeft, canScrollRight } = useScrollIndicators(containerRef);
 
   // When attemptCount > 10, scroll so the selected try aligns above the tries button.

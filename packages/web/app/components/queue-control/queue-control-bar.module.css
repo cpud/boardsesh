@@ -309,6 +309,9 @@
   transition: grid-template-rows 200ms ease-out, opacity 200ms ease-out;
   position: relative;
   z-index: 1;
+  /* Allow horizontal touch (picker scrolling) but block vertical touch
+     so down-swipe doesn't scroll the underlying climb list. */
+  touch-action: pan-x;
 }
 
 .tickRowExpanded {
