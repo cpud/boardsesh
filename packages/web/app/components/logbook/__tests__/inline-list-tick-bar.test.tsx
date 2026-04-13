@@ -84,7 +84,7 @@ function makeBoardDetails(overrides: Partial<BoardDetails> = {}): BoardDetails {
     set_names: ['Standard'],
     supportsMirroring: true,
     images_to_holds: {},
-    holdsData: {},
+    holdsData: [],
     edge_left: 0,
     edge_right: 0,
     edge_bottom: 0,
