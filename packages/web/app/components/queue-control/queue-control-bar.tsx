@@ -627,7 +627,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                         sx={{
                           '& .MuiOutlinedInput-root': {
                             borderRadius: '8px',
-                            backgroundColor: 'var(--neutral-50)',
+                            backgroundColor: 'var(--input-bg)',
                             '& .MuiOutlinedInput-notchedOutline': {
                               borderColor: 'var(--neutral-200)',
                             },

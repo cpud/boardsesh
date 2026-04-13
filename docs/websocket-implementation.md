@@ -499,6 +499,17 @@ sequenceDiagram
 | `mirrorCurrentClimb` | `ClimbMirrored` | Flips the mirror flag on the current climb. |
 | `setQueue` | `FullSync` | Bulk replaces queue + current climb. Used for offline → online reconciliation. |
 
+### Tick Mode and Queue Bar Freeze
+
+When a user opens the inline tick bar (to log a send/flash/attempt for the current climb), the queue control bar freezes navigation to prevent the active climb from changing mid-tick. This is implemented client-side in `queue-control-bar.tsx`:
+
+- **Freeze trigger**: Opening tick mode sets `activeDrawer: 'tick'` in the queue bar state.
+- **Frozen behaviour**: While tick mode is open, swipe navigation and prev/next buttons on the queue bar are disabled. The bar continues to display the climb being ticked, even if other participants change the current climb via WebSocket.
+- **Unfreeze**: Closing tick mode (via the close button, swipe-to-dismiss, or after saving) unfreezes the bar and syncs back to the latest server state.
+- **Unmount guarantee**: `QuickTickBar` unmounts when tick mode closes. Internal refs (e.g. `tickTargetTaken`) rely on this unmount to reset — they are not explicitly cleared.
+
+This prevents data-loss scenarios where a user is mid-tick and a peer's navigation changes the climb, which would cause the tick to be saved against the wrong climb.
+
 ### Optimistic Updates with Correlation IDs
 
 ```mermaid

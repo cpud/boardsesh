@@ -64,6 +64,8 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
   // Snapshot the target climb the first time we get a non-null climb.
   // Uses a ref flag so it only fires once, avoiding re-snapshot when
   // angle/boardDetails/logbook change after the initial capture.
+  // NOTE: tickTargetTaken resets only on unmount — this works because
+  // QuickTickBar is unmounted when tick mode closes (see queue-control-bar).
   const tickTargetTaken = useRef(false);
   const [tickTarget, setTickTarget] = useState<TickTarget | null>(() => {
     if (currentClimb) {

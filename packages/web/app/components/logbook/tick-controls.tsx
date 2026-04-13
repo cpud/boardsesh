@@ -174,7 +174,7 @@ export const TickGradeButton = forwardRef<HTMLButtonElement, TickGradeButtonProp
       {!gradeFormatLoaded ? (
         <Skeleton variant="rounded" width={24} height={14} />
       ) : (
-        <span className={styles.gradeNumber} style={{ color: gradeColor ?? undefined }}>
+        <span className={styles.gradeNumber} {...(gradeColor ? { style: { '--grade-color': gradeColor } as React.CSSProperties } : {})}>
           {gradeLabel}
         </span>
       )}
@@ -363,7 +363,7 @@ export const InlineGradePicker: React.FC<{
               aria-selected={isSelected || isFocused}
               role="option"
             >
-              <span className={styles.pickerGrade} style={{ color: color ?? undefined }}>
+              <span className={styles.pickerGrade} {...(color ? { style: { '--grade-color': color } as React.CSSProperties } : {})}>
                 {formatted}
               </span>
             </ButtonBase>
