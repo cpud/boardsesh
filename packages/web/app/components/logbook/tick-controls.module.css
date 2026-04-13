@@ -167,6 +167,47 @@
   display: none;
 }
 
+/* Wrapper for scrollable pickers — positions the scroll arrow indicators */
+.scrollableWrapper {
+  position: relative;
+  min-width: 0;
+}
+
+/* Scroll direction arrows — sit at left/right edges of the scrollable area.
+   Use backdrop-filter blur so the edge fades smoothly regardless of background. */
+.scrollIndicator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms ease;
+  color: inherit;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.scrollIndicatorVisible {
+  opacity: 0.55;
+}
+
+.scrollIndicatorLeft {
+  left: 0;
+  mask-image: linear-gradient(to right, black 40%, transparent);
+  -webkit-mask-image: linear-gradient(to right, black 40%, transparent);
+}
+
+.scrollIndicatorRight {
+  right: 0;
+  mask-image: linear-gradient(to left, black 40%, transparent);
+  -webkit-mask-image: linear-gradient(to left, black 40%, transparent);
+}
+
 .pickerItem {
   display: inline-flex;
   align-items: center;

@@ -80,6 +80,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
   const [attemptCount, setAttemptCount] = useState<number>(1);
   const [expandedControl, setExpandedControl] = useState<ExpandedControl>(null);
   const gradeButtonRef = useRef<HTMLButtonElement>(null);
+  const triesButtonRef = useRef<HTMLButtonElement>(null);
 
   const grades = TENSION_KILTER_GRADES;
 
@@ -188,7 +189,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
             />
           )}
           {expandedControl === 'tries' && (
-            <InlineTriesPicker attemptCount={attemptCount} onSelect={handleTriesSelect} />
+            <InlineTriesPicker attemptCount={attemptCount} onSelect={handleTriesSelect} triesButtonRef={triesButtonRef} />
           )}
         </div>
       </div>
@@ -225,6 +226,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
               isSaving={isSaving}
               expandedControl={expandedControl}
               onExpandedControlChange={setExpandedControl}
+              triesButtonRef={triesButtonRef}
             />
           </Stack>
         </div>
