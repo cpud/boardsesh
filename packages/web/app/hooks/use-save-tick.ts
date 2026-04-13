@@ -12,6 +12,7 @@ import {
 } from '@/app/lib/graphql/operations';
 import type { BoardName } from '@/app/lib/types';
 import type { TickStatus, LogbookEntry } from './use-logbook';
+import { clearTickDraft } from '@/app/lib/tick-draft-db';
 
 // Options for saving a tick (local storage, no Aurora required)
 export interface SaveTickOptions {
@@ -102,7 +103,7 @@ export function useSaveTick(boardName: BoardName) {
 
       return { tempUuid };
     },
-    onSuccess: (savedTick, _options, context) => {
+    onSuccess: (savedTick, options, context) => {
       // Replace temp entry with real data
       if (context?.tempUuid) {
         queryClient.setQueriesData<LogbookEntry[]>(
@@ -115,6 +116,8 @@ export function useSaveTick(boardName: BoardName) {
             ),
         );
       }
+      // Clear any IndexedDB draft for this climb (belt-and-suspenders with QuickTickBar's .then)
+      clearTickDraft(options.climbUuid);
     },
     onError: (err, _options, context) => {
       // Rollback optimistic update
