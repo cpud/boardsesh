@@ -451,6 +451,11 @@ export const tickQueries = {
     const maxDay = daysInPage[daysInPage.length - 1];
     const pageKeySet = new Set(pageGroups.map((g) => `${g.climbUuid}-${g.day}`));
 
+    // Use timestamp range instead of to_char() in WHERE so Postgres can use
+    // the (user_id, climbed_at) btree index for the date window filter.
+    const minTimestamp = `${minDay}T00:00:00`;
+    const maxTimestamp = `${maxDay}T23:59:59.999999`;
+
     const tickRows = await db
       .select({
         tick: dbSchema.boardseshTicks,
@@ -489,8 +494,8 @@ export const tickQueries = {
         and(
           eq(dbSchema.boardseshTicks.userId, userId),
           inArray(dbSchema.boardseshTicks.climbUuid, climbUuidsInPage),
-          gte(dayExpr, minDay),
-          lte(dayExpr, maxDay),
+          gte(dbSchema.boardseshTicks.climbedAt, minTimestamp),
+          lte(dbSchema.boardseshTicks.climbedAt, maxTimestamp),
         )
       )
       .orderBy(desc(dbSchema.boardseshTicks.climbedAt));

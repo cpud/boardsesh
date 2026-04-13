@@ -104,6 +104,8 @@ export const boardseshTicks = pgTable(
     inferredSessionIdx: index('boardsesh_ticks_inferred_session_idx').on(table.inferredSessionId),
     // Index for climbed_at for sorting
     climbedAtIdx: index('boardsesh_ticks_climbed_at_idx').on(table.climbedAt),
+    // Composite index for user logbook feed queries that filter by user and sort/group by date
+    userClimbedAtIdx: index('boardsesh_ticks_user_climbed_at_idx').on(table.userId, table.climbedAt),
     // Index for board-scoped queries
     boardClimbedAtIdx: index('boardsesh_ticks_board_climbed_at_idx').on(table.boardId, table.climbedAt),
     boardUserIdx: index('boardsesh_ticks_board_user_idx').on(table.boardId, table.userId),
