@@ -97,7 +97,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
   useEffect(() => {
     if (!tickTarget || draftLoaded.current) return;
     draftLoaded.current = true;
-    loadTickDraft(tickTarget.climb.uuid).then((draft) => {
+    loadTickDraft(tickTarget.climb.uuid, Number(tickTarget.angle)).then((draft) => {
       if (!draft) return;
       setQuality(draft.quality);
       setDifficulty(draft.difficulty);
@@ -174,7 +174,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
       }
 
       // Capture values for the draft in case the save fails.
-      const draftValues = { climbUuid: climb.uuid, quality, difficulty, attemptCount, comment, status };
+      const draftValues = { climbUuid: climb.uuid, angle: Number(targetAngle), quality, difficulty, attemptCount, comment, status };
 
       // Fire confetti and close the bar immediately — don't wait for the network.
       fireConfetti(confettiOrigin ?? document.getElementById('button-tick'));
@@ -206,7 +206,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
           hasDifficulty: difficulty !== undefined,
           hasComment: comment.length > 0,
         });
-        clearTickDraft(climb.uuid);
+        clearTickDraft(climb.uuid, Number(targetAngle));
       }).catch(() => {
         track('Quick Tick Failed', {
           boardLayout: targetBoard.layout_name || '',

@@ -117,7 +117,7 @@ export function useSaveTick(boardName: BoardName) {
         );
       }
       // Clear any IndexedDB draft for this climb (belt-and-suspenders with QuickTickBar's .then)
-      clearTickDraft(options.climbUuid);
+      clearTickDraft(options.climbUuid, options.angle);
     },
     onError: (err, _options, context) => {
       // Rollback optimistic update
