@@ -30,6 +30,9 @@ vi.mock('@mui/icons-material/FavoriteBorderOutlined', () => ({
 vi.mock('@mui/icons-material/MoreHorizOutlined', () => ({
   default: () => React.createElement('svg', { 'data-testid': 'icon-more' }),
 }));
+vi.mock('@mui/icons-material/CloseOutlined', () => ({
+  default: () => React.createElement('svg', { 'data-testid': 'icon-close' }),
+}));
 vi.mock('@mui/icons-material/FormatListBulletedOutlined', () => ({
   default: () => React.createElement('svg', { 'data-testid': 'icon-queue' }),
 }));

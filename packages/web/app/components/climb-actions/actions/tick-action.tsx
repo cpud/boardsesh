@@ -44,6 +44,7 @@ export function TickAction({
   disabled,
   className,
   onComplete,
+  onTickAction,
 }: ClimbActionProps): ClimbActionResult {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedBoard, setSelectedBoard] = useState<UserBoard | null>(null);
@@ -96,6 +97,11 @@ export function TickAction({
       existingAscentCount: badgeCount,
     });
 
+    if (onTickAction) {
+      onTickAction();
+      return;
+    }
+
     if (!isAuthenticated && alwaysUseApp && loaded) {
       const url = constructClimbInfoUrl(boardDetails, climb.uuid);
       if (url) {
@@ -106,7 +112,7 @@ export function TickAction({
     }
 
     setDrawerVisible(true);
-  }, [boardDetails, badgeCount, isAuthenticated, alwaysUseApp, loaded, climb.uuid, angle]);
+  }, [boardDetails, badgeCount, isAuthenticated, alwaysUseApp, loaded, climb.uuid, angle, onTickAction]);
 
   const closeDrawer = useCallback(() => {
     setDrawerVisible(false);

@@ -1,18 +1,2 @@
-.ascentStatusContainer {
-  position: relative;
-  width: 16px;
-  height: 16px;
-  display: flex;
-  align-items: center;
-}
-
-.ascentIconRegular {
-  position: absolute;
-  left: 0;
-}
-
-.ascentIconMirrored {
-  position: absolute;
-  transform: scaleX(-1);
-  left: 2px;
-}
+/* No longer used — mirroring badge positioning is now handled by
+   the caller via className/mirroredClassName props. */

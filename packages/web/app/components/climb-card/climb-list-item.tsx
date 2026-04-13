@@ -22,6 +22,9 @@ import { themeTokens } from '@/app/theme/theme-config';
 import { getGradeTintColor } from '@/app/lib/grade-colors';
 import { getExcludedClimbActions } from '@/app/lib/climb-action-utils';
 import { useIsClimbSelected } from '../board-page/selected-climb-store';
+import { InlineListTickBar } from '../logbook/inline-list-tick-bar';
+import { useOptionalBoardProvider } from '../board-provider/board-provider-context';
+import { useSnackbar } from '../providers/snackbar-provider';
 import styles from './climb-list-item.module.css';
 
 const SwipeableDrawer = dynamic(() => import('../swipeable-drawer/swipeable-drawer'), { ssr: false });
@@ -209,11 +212,15 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     // When `selectedOverride` is provided (e.g. queue drawer), use that instead.
     const storeSelected = useIsClimbSelected(climb.uuid);
     const selected = selectedOverride ?? storeSelected;
+    // Check if we're inside a BoardProvider — needed for inline tick bar
+    const boardProvider = useOptionalBoardProvider();
     // When parent provides both drawer callbacks, skip local drawers entirely.
     // Both must be present to ensure the parent handles all drawer interactions.
     const hasParentDrawers = Boolean(onOpenActions && onOpenPlaylistSelector);
     const [isActionsOpen, setIsActionsOpen] = useState(false);
     const [isPlaylistSelectorOpen, setIsPlaylistSelectorOpen] = useState(false);
+    const [isInlineTickOpen, setIsInlineTickOpen] = useState(false);
+    const { showMessage } = useSnackbar();
     // Refs for inner action layer elements — updated via direct DOM manipulation during swipe
     const shortSwipeLayerRef = useRef<HTMLDivElement>(null);
     const longSwipeLayerRef = useRef<HTMLDivElement>(null);
@@ -368,6 +375,20 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     }, []);
     const handleClosePlaylist = useCallback(() => setIsPlaylistSelectorOpen(false), []);
 
+    // Inline tick bar callbacks
+    const handleOpenInlineTickBar = useCallback(() => {
+      setIsActionsOpen(false);
+      setIsInlineTickOpen(true);
+    }, []);
+
+    const handleCloseTickBar = useCallback(() => {
+      setIsInlineTickOpen(false);
+    }, []);
+
+    const handleTickError = useCallback(() => {
+      showMessage("Couldn't save your tick — it's saved as a draft", 'error');
+    }, [showMessage]);
+
     // Menu button click handler — extracted from inline to avoid per-render allocation
     const handleMenuClick = useCallback((e: React.MouseEvent) => {
       e.stopPropagation();
@@ -441,11 +462,10 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
           gradePosition: 'right',
           showSetterInfo: true,
           titleFontSize: themeTokens.typography.fontSize.xl,
-          rightAddon: <AscentStatus climbUuid={climb.uuid} fontSize={20} />,
           favorited: isFavorited,
           isNoMatch: !!climb.is_no_match,
         },
-      [titleProps, climb.uuid, isFavorited, climb.is_no_match],
+      [titleProps, isFavorited, climb.is_no_match],
     );
 
     // Memoize right action layer styles to avoid inline object creation per render
@@ -503,7 +523,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
             onClick={handleRowClick}
             style={swipeableContentStyle}
           >
-            {/* Thumbnail */}
+            {/* Thumbnail with ascent status badge */}
             <div
               ref={doubleTapRef}
               style={thumbnailStyle}
@@ -518,9 +538,10 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
                 preferImageLayers={preferImageLayers}
               />
               <HeartAnimationOverlay visible={showHeart} onAnimationEnd={dismissHeart} size={32} />
+              <AscentStatus climbUuid={climb.uuid} fontSize={12} className={styles.thumbnailBadge} mirroredClassName={styles.thumbnailBadgeMirrored} />
             </div>
 
-            {/* Center + Right: Name, stars, setter, colorized grade */}
+            {/* Center: Name, stars, setter, colorized grade */}
             <div style={centerStyle}>
               <ClimbTitle climb={climb} {...resolvedTitleProps} />
             </div>
@@ -528,9 +549,8 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
             {/* After-title slot (e.g., avatar) */}
             {afterTitleSlot}
 
-            {/* Menu: ellipsis button (hidden on mobile — replaced by far left swipe) */}
+            {/* Ellipsis button — always visible */}
             <IconButton
-              className={styles.menuButton}
               size="small"
               aria-label="More actions"
               onClick={handleMenuClick}
@@ -561,6 +581,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
                 exclude={excludeActions}
                 onOpenPlaylistSelector={handleOpenPlaylistFromActions}
                 onActionComplete={handleCloseActions}
+                onTickAction={boardProvider?.isAuthenticated ? handleOpenInlineTickBar : undefined}
               />
             </SwipeableDrawer>
 
@@ -579,6 +600,17 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
               />
             </SwipeableDrawer>
           </>
+        )}
+
+        {/* Inline tick bar — only mounted when open and inside a BoardProvider */}
+        {isInlineTickOpen && boardProvider && (
+          <InlineListTickBar
+            climb={climb}
+            angle={climb.angle}
+            boardDetails={boardDetails}
+            onClose={handleCloseTickBar}
+            onError={handleTickError}
+          />
         )}
       </>
     );

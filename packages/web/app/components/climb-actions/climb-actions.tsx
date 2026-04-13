@@ -103,6 +103,7 @@ export function ClimbActions({
   onActionComplete,
   onOpenPlaylistSelector,
   auroraAppUrl,
+  onTickAction,
 }: ClimbActionsProps) {
   // Determine which actions to show
   const actionsToShow = useMemo(() => {
@@ -123,8 +124,9 @@ export function ClimbActions({
       size,
       onOpenPlaylistSelector,
       auroraAppUrl,
+      onTickAction,
     }),
-    [climb, boardDetails, angle, currentPathname, viewMode, size, onOpenPlaylistSelector, auroraAppUrl]
+    [climb, boardDetails, angle, currentPathname, viewMode, size, onOpenPlaylistSelector, auroraAppUrl, onTickAction]
   );
 
   // Memoize action complete handler to prevent creating new functions on every render

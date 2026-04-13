@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import type { BoardDetails } from '@/app/lib/types';
-import { isWorkerRenderingSupported, renderBoard } from '@/app/lib/board-render-worker/worker-manager';
+import { isWorkerRenderingSupported, renderBoard, computeCropTop } from '@/app/lib/board-render-worker/worker-manager';
 import { trackRenderComplete, trackRenderError, type RenderContext } from '@/app/lib/rendering-metrics';
 import { THUMBNAIL_WIDTH } from './types';
 import BoardImageLayers from './board-image-layers';
@@ -43,9 +43,10 @@ const BoardCanvasRenderer = React.memo(function BoardCanvasRenderer({
   // iOS Safari (18.x) mis-renders canvases that start at the default 300×150
   // inside aspect-ratio containers with absolute positioning.
   const initialWidth = thumbnail ? THUMBNAIL_WIDTH : boardDetails.boardWidth;
+  const cropTop = thumbnail ? 0 : computeCropTop(boardDetails, initialWidth);
   const initialHeight = thumbnail
     ? Math.round((THUMBNAIL_WIDTH * boardDetails.boardHeight) / boardDetails.boardWidth)
-    : boardDetails.boardHeight;
+    : boardDetails.boardHeight - cropTop;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -60,7 +61,7 @@ const BoardCanvasRenderer = React.memo(function BoardCanvasRenderer({
     const context: RenderContext = thumbnail ? 'thumbnail' : contain ? 'full-board' : 'card';
     const startTime = performance.now();
 
-    renderBoard({ boardDetails, frames, mirrored, thumbnail })
+    renderBoard({ boardDetails, frames, mirrored, thumbnail, cropTop })
       .then((bitmap) => {
         if (cancelled) return;
         canvas.width = bitmap.width;
@@ -106,13 +107,17 @@ const BoardCanvasRenderer = React.memo(function BoardCanvasRenderer({
     );
   }
 
+  // Cropped boards top-align so the board starts right under the header;
+  // uncropped (wide) boards center vertically in the available space.
+  const topAlign = cropTop > 0;
+
   if (contain || thumbnail) {
     return (
       <div
         style={{
           display: 'flex',
           justifyContent: 'center',
-          alignItems: 'center',
+          alignItems: topAlign ? 'flex-start' : 'center',
           overflow: 'hidden',
           ...style,
         }}

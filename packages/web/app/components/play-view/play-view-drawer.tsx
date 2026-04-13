@@ -3,15 +3,18 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState, useMemo, useDeferredValue } from 'react';
 import MuiBadge from '@mui/material/Badge';
 import IconButton from '@mui/material/IconButton';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
 import SyncOutlined from '@mui/icons-material/SyncOutlined';
 import FavoriteBorderOutlined from '@mui/icons-material/FavoriteBorderOutlined';
 import Favorite from '@mui/icons-material/Favorite';
 import SkipPreviousOutlined from '@mui/icons-material/SkipPreviousOutlined';
 import SkipNextOutlined from '@mui/icons-material/SkipNextOutlined';
 import MoreHorizOutlined from '@mui/icons-material/MoreHorizOutlined';
+import CloseOutlined from '@mui/icons-material/CloseOutlined';
 import FormatListBulletedOutlined from '@mui/icons-material/FormatListBulletedOutlined';
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
-import CloseOutlined from '@mui/icons-material/CloseOutlined';
+import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import { usePathname } from 'next/navigation';
 import { useQueueActions, useCurrentClimb, useQueueList, useSessionData } from '../graphql-queue';
 import { ClimbActions } from '../climb-actions';
@@ -27,7 +30,7 @@ import { themeTokens } from '@/app/theme/theme-config';
 import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
 import AngleSelector from '../board-page/angle-selector';
 import ClimbDetailHeader from '@/app/components/climb-detail/climb-detail-header';
-import { LogAscentDrawer } from '../logbook/log-ascent-drawer';
+import { QuickTickBar, type QuickTickBarHandle } from '../logbook/quick-tick-bar';
 import type { ActiveDrawer } from '../queue-control/queue-control-bar';
 import { PLAY_DRAWER_EVENT } from '../queue-control/play-drawer-event';
 import type { BoardDetails, Angle, Climb } from '@/app/lib/types';
@@ -37,6 +40,9 @@ import { useBuildClimbDetailSections } from '@/app/components/climb-detail/build
 import { renderBoard } from '@/app/lib/board-render-worker/worker-manager';
 import { useNestedDrawerSwipe } from '@/app/lib/hooks/use-nested-drawer-swipe';
 import { usePullToClose, findScrollContainer } from '@/app/lib/hooks/pull-to-close';
+import { useSnackbar } from '../providers/snackbar-provider';
+import { getGradeTintColor } from '@/app/lib/grade-colors';
+import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
 import QueueDrawer from './queue-drawer';
 
 
@@ -139,6 +145,170 @@ export const PlayViewActionBar = React.memo(function PlayViewActionBar({
 });
 PlayViewActionBar.displayName = 'PlayViewActionBar';
 
+/**
+ * Extracted tick bar component that owns its own `tickComment` state.
+ * This prevents comment keystrokes from invalidating the parent `aboveFold` useMemo,
+ * which would otherwise re-render the entire board carousel on every keystroke.
+ */
+interface PlayViewTickBarProps {
+  isTickBarActive: boolean;
+  currentClimb: Climb;
+  angle: Angle;
+  boardDetails: BoardDetails;
+  onClose: () => void;
+  onError: () => void;
+}
+
+const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBar({
+  isTickBarActive,
+  currentClimb,
+  angle,
+  boardDetails,
+  onClose,
+  onError,
+}) {
+  const [tickComment, setTickComment] = useState('');
+  const [commentFocused, setCommentFocused] = useState(false);
+  const quickTickBarRef = useRef<QuickTickBarHandle>(null);
+  const isDark = useIsDarkMode();
+  // Match queue control bar tint — 'default' variant.
+  // In dark mode the tint is semi-transparent, so the backdrop-filter blur
+  // fills in behind it. The fallback uses surfaceElevated (#121212) which
+  // is visibly distinct from pure black.
+  const gradeTintColor = useMemo(
+    () => getGradeTintColor(currentClimb.difficulty, 'default', isDark),
+    [currentClimb.difficulty, isDark],
+  );
+
+  const handleCommentFocus = useCallback(() => setCommentFocused(true), []);
+  const handleCommentBlur = useCallback(() => setCommentFocused(false), []);
+
+  // Reset comment when the tick bar closes
+  const handleClose = useCallback(() => {
+    setTickComment('');
+    setCommentFocused(false);
+    onClose();
+  }, [onClose]);
+
+  // Reset comment when the climb changes
+  useEffect(() => {
+    setTickComment('');
+    setCommentFocused(false);
+  }, [currentClimb.uuid]);
+
+  return (
+    <div className={`${styles.tickBarContainer} ${isTickBarActive ? styles.tickBarContainerActive : ''}`}>
+      <div
+        className={styles.tickBarInner}
+        style={{
+          backgroundColor: isDark ? 'var(--semantic-surfaceElevated)' : 'var(--semantic-surface)',
+          // Grade tint as a solid overlay via linear-gradient (single-color gradient)
+          ...(gradeTintColor ? { backgroundImage: `linear-gradient(${gradeTintColor}, ${gradeTintColor})` } : {}),
+        }}
+      >
+        {/* Drag handle — identical to queue control bar */}
+        <div className={styles.tickBarDragHandleRow}>
+          <div className={styles.tickBarDragHandle}>
+            <div className={styles.tickBarDragHandleBar} />
+          </div>
+        </div>
+        {isTickBarActive && (
+          <>
+            {/* Close button — top-right corner, identical to queue control bar */}
+            <div className={styles.tickBarClose}>
+              <IconButton
+                size="small"
+                onClick={handleClose}
+                aria-label="Close tick bar"
+                sx={{
+                  color: 'text.primary',
+                  backgroundColor: 'action.selected',
+                  '&:hover': { backgroundColor: 'action.focus' },
+                }}
+              >
+                <CloseOutlined sx={{ fontSize: 16 }} />
+              </IconButton>
+            </div>
+            <QuickTickBar
+              ref={quickTickBarRef}
+              currentClimb={currentClimb}
+              angle={angle}
+              boardDetails={boardDetails}
+              onSave={handleClose}
+              onError={onError}
+              onDraftRestored={(draftComment) => setTickComment(draftComment)}
+              comment={tickComment}
+              commentSlot={
+                <div className={`${styles.tickBarComment} ${commentFocused ? styles.tickBarCommentExpanded : ''}`}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    variant="outlined"
+                    placeholder="Comment..."
+                    multiline
+                    minRows={1}
+                    maxRows={commentFocused ? 4 : 1}
+                    value={tickComment}
+                    onChange={(e) => setTickComment(e.target.value)}
+                    onFocus={handleCommentFocus}
+                    onBlur={handleCommentBlur}
+                    slotProps={{
+                      htmlInput: { maxLength: 2000, 'aria-label': 'Tick comment' },
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <ChatBubbleOutlineOutlined sx={{ fontSize: 16, opacity: 0.5 }} />
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                        backgroundColor: 'var(--input-bg)',
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'var(--neutral-200)',
+                        },
+                      },
+                    }}
+                  />
+                </div>
+              }
+            />
+            {/* Action buttons — attempt (X) + save (check), both fire confetti from click target */}
+            <div className={styles.tickBarButtons}>
+              <IconButton
+                onClick={(e) => quickTickBarRef.current?.saveAttempt(e.currentTarget)}
+                sx={{
+                  color: themeTokens.colors.error,
+                  opacity: themeTokens.opacity.subtle,
+                  '&:hover': { color: themeTokens.colors.error, opacity: 1 },
+                }}
+                aria-label="Log attempt"
+              >
+                <CloseOutlined />
+              </IconButton>
+              <IconButton
+                id="button-tick"
+                onClick={(e) => quickTickBarRef.current?.save(e.currentTarget)}
+                sx={{
+                  backgroundColor: themeTokens.colors.success,
+                  color: 'common.white',
+                  '&:hover': { backgroundColor: themeTokens.colors.success },
+                }}
+                aria-label="Log ascent"
+              >
+                <CheckOutlined />
+              </IconButton>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+});
+PlayViewTickBar.displayName = 'PlayViewTickBar';
+
 interface PlayViewDrawerProps {
   activeDrawer: ActiveDrawer;
   setActiveDrawer: (drawer: ActiveDrawer) => void;
@@ -156,16 +326,11 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   const isOpen = activeDrawer === 'play';
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [isQueueOpen, setIsQueueOpen] = useState(false);
-  // Lazy-mount: queue drawer tree only exists in DOM after the user first opens it.
-  // This avoids mounting ~30 ClimbListItems (~225ms) when the play drawer opens.
   const [queueMounted, setQueueMounted] = useState(false);
   const [isPlaylistSelectorOpen, setIsPlaylistSelectorOpen] = useState(false);
-  const [isTickDrawerOpen, setIsTickDrawerOpen] = useState(false);
+  const [isTickBarActive, setIsTickBarActive] = useState(false);
   const [isBoardZoomed, setIsBoardZoomed] = useState(false);
 
-  // Lock the scroll container when the board is zoomed so single-finger
-  // drags pan the zoomed board instead of scrolling below the fold.
-  // isOpen re-runs the query when the drawer mounts (scroll container may not exist yet).
   useEffect(() => {
     const scrollContainer = playPaperRef.current?.querySelector('[data-scroll-container]') as HTMLElement | null;
     if (!scrollContainer) return;
@@ -175,22 +340,18 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   const playPaperRef = useRef<HTMLDivElement>(null);
 
   const pathname = usePathname();
+  const { showMessage } = useSnackbar();
 
-  // Get logbook data for tick FAB badge
   const { logbook } = useBoardProvider();
 
-  // Fine-grained context hooks (only re-render when specific data changes)
   const currentClimbData = useCurrentClimb();
   const queueListData = useQueueList();
   const sessionData = useSessionData();
 
-  // When the drawer is closed, defer context updates so they don't block the main
-  // thread. React will batch these into low-priority renders that yield to user input.
   const deferredCurrentClimb = useDeferredValue(currentClimbData);
   const deferredQueue = useDeferredValue(queueListData);
   const deferredSession = useDeferredValue(sessionData);
 
-  // Use immediate values when open (responsive), deferred when closed (non-blocking)
   const { currentClimb, currentClimbQueueItem } = isOpen ? currentClimbData : deferredCurrentClimb;
   const { queue } = isOpen ? queueListData : deferredQueue;
   const { viewOnlyMode } = isOpen ? sessionData : deferredSession;
@@ -216,7 +377,6 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
     : -1;
   const remainingQueueCount = currentQueueIndex >= 0 ? queue.length - currentQueueIndex : queue.length;
 
-  // Wake lock when drawer is open
   useWakeLock(isOpen);
 
   // Hash-based back button support
@@ -239,16 +399,13 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   }, [isOpen, setActiveDrawer]);
 
   const handleClose = useCallback(() => {
-    if (isActionsOpen || isQueueOpen || isPlaylistSelectorOpen || isTickDrawerOpen) return;
-    // Set drawerOpen false directly so React batches it with the parent state
-    // update in a single render. This avoids a multi-cycle delay that would
-    // leave the Paper sitting at the swipe position after a fling gesture.
+    if (isActionsOpen || isQueueOpen || isPlaylistSelectorOpen) return;
     setDrawerOpen(false);
     setActiveDrawer('none');
     if (window.location.hash === '#playing') {
       window.history.back();
     }
-  }, [setActiveDrawer, isActionsOpen, isQueueOpen, isPlaylistSelectorOpen, isTickDrawerOpen]);
+  }, [setActiveDrawer, isActionsOpen, isQueueOpen, isPlaylistSelectorOpen]);
 
   // Compute ascent info for tick FAB badge
   const currentAngle = typeof angle === 'string' ? parseInt(angle, 10) : angle;
@@ -281,7 +438,25 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   const canSwipeNext = !viewOnlyMode && !!nextItem;
   const canSwipePrevious = !viewOnlyMode && !!prevItem;
 
-  const handleTickFabClick = useCallback(() => setIsTickDrawerOpen(true), []);
+  // Tick FAB → inline tick bar
+  const handleTickFabClick = useCallback(() => {
+    setIsActionsOpen(false);
+    setIsTickBarActive(true);
+  }, []);
+
+  const handleTickBarClose = useCallback(() => {
+    setIsTickBarActive(false);
+  }, []);
+
+  // Reset tick bar when the climb changes so it doesn't stay open for the wrong climb
+  useEffect(() => {
+    setIsTickBarActive(false);
+  }, [currentClimb?.uuid]);
+
+  const handleTickBarError = useCallback(() => {
+    showMessage("Couldn't save your tick — it's saved as a draft", 'error');
+  }, [showMessage]);
+
   const handlePrevNavClick = useCallback(() => {
     const prev = getPreviousClimbQueueItem();
     if (prev) setCurrentClimbQueueItem(prev);
@@ -316,14 +491,10 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   }, []);
   const handleQueueTransitionEnd = useCallback((open: boolean) => {
     if (!open && !isQueueOpen) {
-      // Unmount queue tree after close animation completes
       setQueueMounted(false);
     }
   }, [isQueueOpen]);
-  // Close the nested queue drawer whenever something (a queue item thumbnail,
-  // a suggested item thumbnail, etc.) asks for the play drawer to open. The
-  // QueueControlBar listener already handles activeDrawer; here we just
-  // collapse the nested queue drawer so the user can see the play view.
+
   useEffect(() => {
     const handler = () => setIsQueueOpen(false);
     window.addEventListener(PLAY_DRAWER_EVENT, handler);
@@ -334,9 +505,6 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   const openRafRef = useRef<number>(0);
   const hasBeenMountedRef = useRef(false);
 
-  // Eagerly pre-mount drawer content during browser idle time so the DOM and
-  // WASM board render are ready before the user ever opens the drawer.
-  // Falls back to immediate mount if the user opens before idle fires.
   const [contentReady, setContentReady] = useState(false);
   useEffect(() => {
     const setReady = () => {
@@ -352,32 +520,27 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
     return () => cancelAnimationFrame(id);
   }, []);
 
-  // Close path: runs before paint so the Slide exit animation starts immediately
   useLayoutEffect(() => {
     if (!isOpen) {
       cancelAnimationFrame(openRafRef.current);
       setDrawerOpen(false);
-      // Unmount queue drawer tree when play drawer closes
       setQueueMounted(false);
       setIsQueueOpen(false);
+      setIsActionsOpen(false);
+      setIsTickBarActive(false);
     }
   }, [isOpen]);
 
-  // Open path: if content is already pre-mounted, open immediately (0ms).
-  // Otherwise give the browser one frame to paint freshly-mounted content.
   useEffect(() => {
     if (isOpen) {
-      // Clear any leftover inline styles from a custom pull-to-close gesture
       if (playPaperRef.current) {
         playPaperRef.current.style.transform = '';
         playPaperRef.current.style.transition = '';
       }
-      setContentReady(true); // ensure content mounts if idle hasn't fired yet
+      setContentReady(true);
       if (hasBeenMountedRef.current) {
-        // Content already in DOM — open instantly
         setDrawerOpen(true);
       } else {
-        // First open before idle: single rAF (~16ms) instead of double (~33ms)
         hasBeenMountedRef.current = true;
         openRafRef.current = requestAnimationFrame(() => {
           setDrawerOpen(true);
@@ -387,21 +550,11 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
     return () => cancelAnimationFrame(openRafRef.current);
   }, [isOpen]);
 
-  // Once the open animation completes, enable below-fold sections permanently.
-  // Using "once enabled, stays enabled" avoids section unmount/remount on re-opens.
   const [sectionsEverEnabled, setSectionsEverEnabled] = useState(false);
   const handleTransitionEnd = useCallback((open: boolean) => {
     if (open) setSectionsEverEnabled(true);
   }, []);
 
-  // Pre-warm WASM board render whenever the current climb changes (even when
-  // drawer is closed). The worker runs off-thread so this has zero main-thread
-  // cost. When the drawer opens, BoardCanvasRenderer gets an instant cache hit.
-  //
-  // Deps use optional chaining (currentClimb?.frames, currentClimb?.mirrored)
-  // intentionally: we only care about re-running when the climb's visual data
-  // changes, not when the entire currentClimb object reference changes. The
-  // guard `if (currentClimb)` inside the effect body ensures safe access.
   const currentFrames = currentClimb?.frames;
   const currentMirrored = currentClimb?.mirrored;
   useEffect(() => {
@@ -413,11 +566,6 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- see comment above
   }, [currentFrames, currentMirrored, boardDetails]);
 
-  // Custom pull-to-close on the board area.
-  // MUI's getDomTreeShapes fails to detect the mobileScrollLayout scroll
-  // container through the board's overflow:hidden layers, so we block MUI
-  // and handle the close gesture ourselves. When at scroll top and pulling
-  // down, the play drawer Paper follows the finger and closes past threshold.
   const handleBoardPullClose = useCallback(() => {
     setDrawerOpen(false);
     setActiveDrawer('none');
@@ -438,14 +586,10 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   const handleBoardTouchStart = useCallback((e: React.TouchEvent) => {
     (e.nativeEvent as unknown as Record<string, unknown>).defaultMuiPrevented = true;
 
-    // Find nearest scroll container (mobileScrollLayout) by walking up from
-    // the touched element, not e.currentTarget (which is drawerContent — the
-    // scroll container is a descendant of drawerContent, not an ancestor).
     const scrollContainer = findScrollContainer(e.target as HTMLElement);
     const y = e.touches[0].clientY;
     boardPull.onTouchStart(y, scrollContainer);
 
-    // When at scroll top at touch start, set pullOriginY to the touch Y
     if (scrollContainer && scrollContainer.scrollTop <= 0) {
       boardPull.stateRef.current.pullOriginY = y;
     }
@@ -463,7 +607,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
     if (!currentClimb) return null;
     return (
     <>
-      {/* Header: Grade | Name | Spacer (angle now lives in the action bar) */}
+      {/* Header: Grade | Name */}
       <div className={styles.headerSection}>
         <ClimbDetailHeader climb={currentClimb} />
       </div>
@@ -491,13 +635,14 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
           />
         )}
 
-        {/* Floating Tick FAB - only when drawer is open */}
+        {/* Floating Tick FAB - hides when tick bar is active */}
         {isOpen && (
           <div className={styles.tickFabContainer}>
             <button
-              className={`${styles.tickFab} ${hasSuccessfulAscent ? styles.tickFabSuccess : ''}`}
+              className={`${styles.tickFab} ${hasSuccessfulAscent ? styles.tickFabSuccess : ''} ${isTickBarActive ? styles.tickFabHiding : ''}`}
               onClick={handleTickFabClick}
               aria-label="Log ascent"
+              disabled={isTickBarActive}
             >
               <CheckOutlined className={styles.tickFabIcon} />
               {ascentCount > 0 && (
@@ -506,9 +651,21 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
             </button>
           </div>
         )}
+
+        {/* Floating tick bar — overlays bottom of board section, no reflow */}
+        {isOpen && currentClimb && (
+          <PlayViewTickBar
+            isTickBarActive={isTickBarActive}
+            currentClimb={currentClimb}
+            angle={angle}
+            boardDetails={boardDetails}
+            onClose={handleTickBarClose}
+            onError={handleTickBarError}
+          />
+        )}
       </div>
 
-      {/* Action bar - only rendered when drawer is open */}
+      {/* Action bar */}
       {isOpen && (
         <PlayViewActionBar
           canSwipePrevious={canSwipePrevious}
@@ -553,6 +710,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
     hasSuccessfulAscent,
     ascentCount,
     handleTickFabClick,
+    isTickBarActive,
     isMirrored,
     isFavorited,
     remainingQueueCount,
@@ -562,6 +720,9 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
     toggleFavorite,
     handleOpenActionsMenu,
     handleOpenQueueDrawer,
+    angle,
+    handleTickBarClose,
+    handleTickBarError,
   ]);
 
   return (
@@ -613,7 +774,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
         )}
       </div>
 
-        {/* Climb actions drawer — only mount when play drawer is open AND actions requested */}
+        {/* Climb actions drawer */}
         {isOpen && currentClimb && isActionsOpen && (
           <SwipeableDrawer
             title={<DrawerClimbHeader climb={currentClimb} boardDetails={boardDetails} />}
@@ -644,7 +805,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
           </SwipeableDrawer>
         )}
 
-        {/* Playlist selector drawer — only mount when play drawer is open */}
+        {/* Playlist selector drawer */}
         {isOpen && currentClimb && isPlaylistSelectorOpen && (
           <SwipeableDrawer
             title={<DrawerClimbHeader climb={currentClimb} boardDetails={boardDetails} />}
@@ -668,19 +829,9 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
             />
           </SwipeableDrawer>
         )}
-
-        {/* Tick / Log Ascent drawer — only mount when play drawer is open */}
-        {isOpen && currentClimb && isTickDrawerOpen && (
-          <LogAscentDrawer
-            open={isTickDrawerOpen}
-            onClose={() => setIsTickDrawerOpen(false)}
-            currentClimb={currentClimb}
-            boardDetails={boardDetails}
-          />
-        )}
       </>) : null}
 
-        {/* Queue list drawer — lazy-mounted on first open, unmounted after close animation */}
+        {/* Queue list drawer */}
         {queueMounted && (
           <QueueDrawer
             open={isQueueOpen}

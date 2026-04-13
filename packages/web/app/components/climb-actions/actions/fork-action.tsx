@@ -57,8 +57,8 @@ export function ForkAction({
     onComplete?.();
   };
 
-  const label = isEdit ? 'Edit' : 'Fork';
-  const tooltip = isEdit ? 'Edit this draft' : 'Fork this climb';
+  const label = isEdit ? 'Edit' : 'Remix';
+  const tooltip = isEdit ? 'Edit this draft' : 'Remix this climb';
   const icon = isEdit
     ? <EditOutlined sx={{ fontSize: iconSize }} />
     : <CallSplitOutlined sx={{ fontSize: iconSize }} />;
