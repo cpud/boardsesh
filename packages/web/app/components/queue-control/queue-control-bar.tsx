@@ -366,22 +366,24 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
     delta: 10,
   });
 
-  // During a down-swipe, slide the inner content downward. The outer container
-  // clips it (overflow: hidden), making it look like it slides into the queue bar.
-  const tickDismissInnerStyle = useMemo<React.CSSProperties | undefined>(() => {
+  // During a down-swipe, progressively shrink the tick row's visible height.
+  // This makes the content appear to slide down into the queue bar below.
+  const tickDismissRowStyle = useMemo<React.CSSProperties | undefined>(() => {
     if (tickSwipeOffset === 0) return undefined;
+    // Map swipe distance to a collapsing fraction (1 = fully open, 0 = collapsed)
+    const fraction = Math.max(0, 1 - tickSwipeOffset / 150);
     return {
-      transform: `translateY(${tickSwipeOffset}px)`,
-      opacity: Math.max(0, 1 - tickSwipeOffset / 150),
+      gridTemplateRows: `${fraction}fr`,
+      opacity: fraction,
       transition: 'none',
     };
   }, [tickSwipeOffset]);
 
-  // Snap-back transition when swipe is released without triggering dismiss.
-  const tickDismissSnapBack = useMemo<React.CSSProperties | undefined>(() => {
+  // Snap-back: smooth return to fully expanded when swipe doesn't trigger dismiss.
+  const tickDismissSnapBackStyle = useMemo<React.CSSProperties | undefined>(() => {
     if (tickSwipeOffset !== 0) return undefined;
     return {
-      transition: 'transform 180ms ease-out, opacity 180ms ease-out',
+      transition: 'grid-template-rows 180ms ease-out, opacity 180ms ease-out',
     };
   }, [tickSwipeOffset]);
 
@@ -619,9 +621,13 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
           <div
             {...(tickBarActive ? tickDismissHandlers : {})}
             className={`${styles.tickRow} ${tickBarActive ? styles.tickRowExpanded : ''}`}
-            style={{ backgroundColor: gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)') }}
+            style={{
+              backgroundColor: gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
+              ...tickDismissSnapBackStyle,
+              ...tickDismissRowStyle,
+            }}
           >
-            <div className={styles.tickRowInner} style={{ ...tickDismissSnapBack, ...tickDismissInnerStyle }}>
+            <div className={styles.tickRowInner} style={tickSwipeOffset > 0 ? { overflow: 'hidden' } : undefined}>
               {/* Drag handle — pull down to dismiss */}
               <div className={styles.tickDragHandle} aria-hidden="true">
                 <div className={styles.tickDragHandleBar} />
