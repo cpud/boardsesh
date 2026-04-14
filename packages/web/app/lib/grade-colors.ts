@@ -1,5 +1,4 @@
-// Re-export grade color data and core lookups from the canonical source
-export {
+import {
   V_GRADE_COLORS,
   FONT_GRADE_COLORS,
   DEFAULT_GRADE_COLOR,
@@ -7,9 +6,10 @@ export {
   getFontGradeColor,
   getGradeColor,
 } from '@boardsesh/board-constants/grade-colors';
-
 import { BOULDER_GRADES } from './board-data';
-import { getVGradeColor, getFontGradeColor, getGradeColor } from '@boardsesh/board-constants/grade-colors';
+
+// Re-export grade color data and core lookups from the canonical source
+export { V_GRADE_COLORS, FONT_GRADE_COLORS, DEFAULT_GRADE_COLOR, getVGradeColor, getFontGradeColor, getGradeColor };
 
 /**
  * Extract V-grade from a difficulty string (e.g., "6a/V3" -> "V3")

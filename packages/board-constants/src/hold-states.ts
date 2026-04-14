@@ -96,24 +96,23 @@ export const HOLD_STATE_MAP: Record<BoardName, Record<HoldCode, HoldStateInfo>> 
   },
 };
 
-// Derive the primary (highest-numbered) role code for each hold state per board.
-// For boards with multiple products (e.g., Kilter has Products 1-7), the last code wins.
-export const STATE_TO_PRIMARY_CODE: Record<BoardName, Partial<Record<HoldState, HoldCode>>> = (() => {
-  const result = {} as Record<BoardName, Partial<Record<HoldState, HoldCode>>>;
-  for (const boardName of Object.keys(HOLD_STATE_MAP) as BoardName[]) {
-    const stateMap: Partial<Record<HoldState, HoldCode>> = {};
-    const entries = Object.entries(HOLD_STATE_MAP[boardName]);
-    for (const [codeStr, info] of entries) {
-      const code = Number(codeStr);
-      // Skip auxiliary/preview-only states from primary code mapping
-      if (info.name === 'AUX') continue;
-      // For states with multiple codes (e.g., Kilter products), keep the highest code
-      stateMap[info.name] = code;
-    }
-    result[boardName] = stateMap;
-  }
-  return result;
-})();
+// The canonical role code used when *writing* frame strings for each board.
+// Boards with multiple products (e.g., Kilter Products 1-7) share the same
+// state names but use different numeric codes per product. This map picks a
+// single canonical code per state that matches what the Aurora API and BLE
+// protocol expect. These cannot be derived from HOLD_STATE_MAP automatically
+// because "which product is canonical" varies by board.
+export const STATE_TO_PRIMARY_CODE: Record<BoardName, Partial<Record<HoldState, HoldCode>>> = {
+  // Product 7 – Kilter Board Homewall (current canonical product)
+  kilter: { STARTING: 42, HAND: 43, FINISH: 44, FOOT: 45 },
+  // Product 1 – Tension (canonical)
+  tension: { STARTING: 1, HAND: 2, FINISH: 3, FOOT: 4 },
+  // MoonBoard (codes 42-44 are the saved-climb codes; 45-48 are BLE preview only)
+  moonboard: { STARTING: 42, HAND: 43, FINISH: 44 },
+  decoy: { STARTING: 1, HAND: 2, FINISH: 3, FOOT: 4 },
+  touchstone: { STARTING: 1, HAND: 2, FINISH: 3, FOOT: 4 },
+  grasshopper: { STARTING: 1, HAND: 2, FINISH: 3, FOOT: 4 },
+};
 
 // Warned hold states to avoid log spam
 const warnedHoldStates = new Set<string>();

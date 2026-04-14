@@ -33,6 +33,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint .",
     "generate": "node --import tsx scripts/generate-board-constants.ts"
