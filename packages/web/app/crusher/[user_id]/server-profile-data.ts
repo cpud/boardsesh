@@ -42,7 +42,7 @@ export async function getProfileData(
 
   return {
     id: user.id,
-    email: isOwnProfile ? (user.email ?? '') : '',
+    email: isOwnProfile ? (user.email ?? '') : undefined,
     name: user.name,
     image: user.image,
     profile: profile

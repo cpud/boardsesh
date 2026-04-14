@@ -225,7 +225,7 @@ export async function cachedUserTicks(
   type Response = import('@/app/lib/graphql/operations/ticks').GetUserTicksQueryResponse;
 
   try {
-    const tag = `user-ticks-${userId}`;
+    const tag = `user-ticks-${userId}-${boardType}`;
     const query = createCachedGraphQLQuery<Response>(
       GET_USER_TICKS,
       tag,

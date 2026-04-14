@@ -48,7 +48,7 @@ export function useProfileData(userId: string, initialData?: InitialData) {
   const [profile, setProfile] = useState<UserProfile | null>(initialData?.initialProfile ?? null);
   const [selectedBoard, setSelectedBoard] = useState<string>('kilter');
   const [logbook, setLogbook] = useState<LogbookEntry[]>(initialData?.initialLogbook ?? []);
-  const [loadingStats, setLoadingStats] = useState(!initialData?.initialLogbook);
+  const [loadingStats, setLoadingStats] = useState(false);
   const [timeframe, setTimeframe] = useState<TimeframeType>('all');
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
