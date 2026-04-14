@@ -149,16 +149,22 @@ export function useDrawerDragResize({
     }
   }, []);
 
-  /** Find and cache the scrollable element inside the paper. */
+  /** Find and cache the scrollable element inside the paper.
+   *  SwipeableDrawer structure: Paper > wrapperBox > [header, bodyBox, ...].
+   *  The bodyBox (overflow: auto) is at depth 2, so we only check grandchildren. */
   const findScrollEl = useCallback((): HTMLElement | null => {
     if (scrollElRef.current && scrollElRef.current.isConnected) return scrollElRef.current;
     const paper = paperRef.current;
     if (!paper) return null;
-    for (const el of paper.querySelectorAll<HTMLElement>('*')) {
-      const overflow = getComputedStyle(el).overflowY;
-      if (overflow === 'auto' || overflow === 'scroll') {
-        scrollElRef.current = el;
-        return el;
+    // Check direct children and grandchildren only (depth 2)
+    for (const child of paper.children) {
+      for (const grandchild of child.children) {
+        const el = grandchild as HTMLElement;
+        const overflow = getComputedStyle(el).overflowY;
+        if (overflow === 'auto' || overflow === 'scroll') {
+          scrollElRef.current = el;
+          return el;
+        }
       }
     }
     return null;

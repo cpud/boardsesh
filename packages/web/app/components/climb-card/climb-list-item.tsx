@@ -2,7 +2,6 @@
 
 import React, { useRef, useState, useCallback, useMemo } from 'react';
 import IconButton from '@mui/material/IconButton';
-import Box from '@mui/material/Box';
 import dynamic from 'next/dynamic';
 import MoreHorizOutlined from '@mui/icons-material/MoreHorizOutlined';
 import AddOutlined from '@mui/icons-material/AddOutlined';
@@ -28,7 +27,6 @@ import { InlineListTickBar } from '../logbook/inline-list-tick-bar';
 import { useOptionalBoardProvider } from '../board-provider/board-provider-context';
 import { useSnackbar } from '../providers/snackbar-provider';
 import styles from './climb-list-item.module.css';
-import drawerCss from '../swipeable-drawer/swipeable-drawer.module.css';
 
 const SwipeableDrawer = dynamic(() => import('../swipeable-drawer/swipeable-drawer'), { ssr: false });
 const QueueDrawer = dynamic(() => import('../play-view/queue-drawer'), { ssr: false });
