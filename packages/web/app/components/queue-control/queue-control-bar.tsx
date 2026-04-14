@@ -65,6 +65,37 @@ import { PLAY_DRAWER_EVENT as PLAY_DRAWER_EVENT_INTERNAL } from './play-drawer-e
 
 const QUEUE_DRAWER_STYLES = { wrapper: { height: '70%' }, body: { padding: 0 } } as const;
 
+const TICK_BADGE_SX = {
+  '& .MuiBadge-badge': {
+    backgroundColor: themeTokens.colors.success,
+    color: 'common.white',
+    width: 16,
+    height: 16,
+    minWidth: 16,
+    borderRadius: '50%',
+    border: '2px solid transparent',
+  },
+} as const;
+
+function TickBadgeAvatar({ user, hasTicked, size = 28 }: {
+  user: { id: string; username: string; avatarUrl?: string };
+  hasTicked: boolean;
+  size?: number;
+}) {
+  const avatar = <Avatar alt={user.username} src={user.avatarUrl ?? undefined} sx={size !== 28 ? { width: size, height: size } : undefined} />;
+  if (!hasTicked) return avatar;
+  return (
+    <Badge
+      overlap="circular"
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      badgeContent={<CheckOutlined sx={{ fontSize: 10 }} />}
+      sx={TICK_BADGE_SX}
+    >
+      {avatar}
+    </Badge>
+  );
+}
+
 export interface QueueControlBarProps {
   boardDetails: BoardDetails;
   angle: Angle;
@@ -353,13 +384,14 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
   // Uses both connection IDs and stable userIds so the badge matches
   // regardless of which ID the avatar was deduped with.
   const tickedBySet = useMemo(() => {
-    const currentQueueItem = queue.find((item) => item.climb.uuid === currentClimb?.uuid);
+    const climbUuid = currentClimb?.uuid;
+    const currentQueueItem = queue.find((item) => item.climb.uuid === climbUuid);
     const set = new Set(currentQueueItem?.tickedBy ?? []);
-    if (myUserId && currentClimb && localTickedClimbs.has(currentClimb.uuid)) {
+    if (myUserId && climbUuid && localTickedClimbs.has(climbUuid)) {
       set.add(myUserId);
     }
     return set;
-  }, [queue, currentClimb?.uuid, myUserId, localTickedClimbs, currentClimb]);
+  }, [queue, currentClimb?.uuid, myUserId, localTickedClimbs]);
 
   // Reset local tick cache when the active session changes
   useEffect(() => {
@@ -634,9 +666,10 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                 onClick={() => setDismissedDisconnect(true)}
                 role="button"
                 tabIndex={0}
+                aria-label="Dismiss offline notice"
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setDismissedDisconnect(true); } }}
               >
-                <CloudOffOutlined sx={{ fontSize: 'body2.fontSize', flexShrink: 0 }} />
+                <CloudOffOutlined sx={{ fontSize: 14, flexShrink: 0 }} />
                 <span className={styles.offlineBannerText}>
                   {sessionId
                     ? users && users.length > 1
@@ -644,6 +677,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                       : 'Offline. Changes will sync when you reconnect.'
                     : 'Offline'}
                 </span>
+                <CloseOutlined sx={{ fontSize: 14, flexShrink: 0, opacity: 0.6 }} />
               </div>
             )}
             {activeSession ? (
@@ -666,6 +700,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                     onClick={(e) => { e.stopPropagation(); setParticipantsExpanded((prev) => !prev); }}
                     role="button"
                     tabIndex={0}
+                    aria-label={participantsExpanded ? 'Hide participants' : 'Show participants'}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); setParticipantsExpanded((prev) => !prev); } }}
                   >
                     {participantsExpanded ? (
@@ -679,32 +714,13 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                           '& .MuiAvatar-root': { width: 28, height: 28, fontSize: 11, border: '2px solid transparent' },
                         }}
                       >
-                        {uniqueSessionUsers.map((user) => {
-                          const hasTicked = tickedBySet.has(user.id) || (user.userId != null && tickedBySet.has(user.userId));
-                          return hasTicked ? (
-                            <Badge
-                              key={user.id}
-                              overlap="circular"
-                              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                              badgeContent={<CheckOutlined sx={{ fontSize: 10 }} />}
-                              sx={{
-                                '& .MuiBadge-badge': {
-                                  backgroundColor: themeTokens.colors.success,
-                                  color: 'common.white',
-                                  width: 16,
-                                  height: 16,
-                                  minWidth: 16,
-                                  borderRadius: '50%',
-                                  border: '2px solid transparent',
-                                },
-                              }}
-                            >
-                              <Avatar alt={user.username} src={user.avatarUrl ?? undefined} />
-                            </Badge>
-                          ) : (
-                            <Avatar key={user.id} alt={user.username} src={user.avatarUrl ?? undefined} />
-                          );
-                        })}
+                        {uniqueSessionUsers.map((user) => (
+                          <TickBadgeAvatar
+                            key={user.id}
+                            user={user}
+                            hasTicked={tickedBySet.has(user.id) || (user.userId != null && tickedBySet.has(user.userId))}
+                          />
+                        ))}
                       </AvatarGroup>
                     )}
                   </div>
@@ -755,38 +771,18 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                   </Box>
                 ) : (
                   <div className={styles.participantScroll}>
-                    {uniqueSessionUsers.map((user) => {
-                      const hasTicked = tickedBySet.has(user.id) || (user.userId != null && tickedBySet.has(user.userId));
-                      return (
-                        <div key={user.id} className={styles.participantItem}>
-                          {hasTicked ? (
-                            <Badge
-                              overlap="circular"
-                              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                              badgeContent={<CheckOutlined sx={{ fontSize: 10 }} />}
-                              sx={{
-                                '& .MuiBadge-badge': {
-                                  backgroundColor: themeTokens.colors.success,
-                                  color: 'common.white',
-                                  width: 16,
-                                  height: 16,
-                                  minWidth: 16,
-                                  borderRadius: '50%',
-                                  border: '2px solid transparent',
-                                },
-                              }}
-                            >
-                              <Avatar alt={user.username} src={user.avatarUrl ?? undefined} sx={{ width: 32, height: 32 }} />
-                            </Badge>
-                          ) : (
-                            <Avatar alt={user.username} src={user.avatarUrl ?? undefined} sx={{ width: 32, height: 32 }} />
-                          )}
-                          <Typography variant="caption" className={styles.participantName} noWrap>
-                            {user.username}
-                          </Typography>
-                        </div>
-                      );
-                    })}
+                    {uniqueSessionUsers.map((user) => (
+                      <div key={user.id} className={styles.participantItem}>
+                        <TickBadgeAvatar
+                          user={user}
+                          hasTicked={tickedBySet.has(user.id) || (user.userId != null && tickedBySet.has(user.userId))}
+                          size={32}
+                        />
+                        <Typography variant="caption" className={styles.participantName} noWrap>
+                          {user.username}
+                        </Typography>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

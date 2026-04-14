@@ -160,21 +160,21 @@
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
-  transition: grid-template-rows 200ms ease-out, opacity 200ms ease-out;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  transition: grid-template-rows 200ms ease-out, opacity 200ms ease-out, border-bottom-color 200ms ease-out;
+  border-bottom: 1px solid transparent;
 }
 
 .participantBarExpanded {
   grid-template-rows: 1fr;
   opacity: 1;
+  border-bottom-color: rgba(0, 0, 0, 0.06);
 }
 
 .participantBar:not(.participantBarExpanded) {
   pointer-events: none;
-  border-bottom: none;
 }
 
-:global(html[data-theme="dark"]) .participantBar {
+:global(html[data-theme="dark"]) .participantBarExpanded {
   border-bottom-color: rgba(0, 0, 0, 0.3);
 }
 
