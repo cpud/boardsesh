@@ -10,7 +10,7 @@ import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import MuiButton from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import { HistoryOutlined, ShareOutlined } from '@mui/icons-material';
+import { HistoryOutlined, IosShare } from '@mui/icons-material';
 import Link from 'next/link';
 import { EmptyState } from '@/app/components/ui/empty-state';
 import Logo from '@/app/components/brand/logo';
@@ -140,7 +140,7 @@ export default function ProfilePageContent({
         </Typography>
         {profile && (
           <IconButton onClick={handleShare} aria-label="Share profile">
-            <ShareOutlined />
+            <IosShare />
           </IconButton>
         )}
       </Box>

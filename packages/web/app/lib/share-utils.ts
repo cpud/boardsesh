@@ -17,6 +17,32 @@ type ShareOptions = {
   onError?: () => void;
 };
 
+/**
+ * Fallback clipboard copy for non-secure contexts where
+ * navigator.clipboard is unavailable.
+ */
+function legacyCopy(text: string): boolean {
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.select();
+  try {
+    return document.execCommand('copy');
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
+
+async function copyToClipboard(text: string): Promise<void> {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+  } else if (!legacyCopy(text)) {
+    throw new Error('Copy failed');
+  }
+}
+
 export async function shareWithFallback({
   url,
   title,
@@ -34,7 +60,7 @@ export async function shareWithFallback({
       track(trackingEvent, { ...trackingProps, method: 'native' });
       return true;
     } else {
-      await navigator.clipboard.writeText(url);
+      await copyToClipboard(url);
       onClipboardSuccess?.();
       track(trackingEvent, { ...trackingProps, method: 'clipboard' });
       return true;
@@ -42,7 +68,7 @@ export async function shareWithFallback({
   } catch (error) {
     if ((error as Error).name !== 'AbortError') {
       try {
-        await navigator.clipboard.writeText(url);
+        await copyToClipboard(url);
         onClipboardSuccess?.();
         track(trackingEvent, { ...trackingProps, method: 'clipboard' });
         return true;

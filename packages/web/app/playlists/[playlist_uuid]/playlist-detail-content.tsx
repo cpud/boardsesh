@@ -18,7 +18,7 @@ import {
   EditOutlined,
   DeleteOutlined,
   PeopleOutlined,
-  ShareOutlined,
+  IosShare,
 } from '@mui/icons-material';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Climb } from '@/app/lib/types';
@@ -416,7 +416,7 @@ export default function PlaylistDetailContent({
                 onClick={handleShare}
                 aria-label="Share playlist"
               >
-                <ShareOutlined />
+                <IosShare />
               </IconButton>
             )}
             <IconButton

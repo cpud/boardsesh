@@ -2,7 +2,7 @@
 
 import React, { useCallback } from 'react';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
-import ShareOutlined from '@mui/icons-material/ShareOutlined';
+import IosShare from '@mui/icons-material/IosShare';
 import { ClimbActionProps, ClimbActionResult } from '../types';
 import {
   getContextAwareClimbViewUrl,
@@ -55,7 +55,7 @@ export function ShareAction({
     }
   }, [climb, viewUrl, boardDetails.board_name, onComplete, showMessage]);
 
-  const icon = <ShareOutlined sx={{ fontSize: iconSize }} />;
+  const icon = <IosShare sx={{ fontSize: iconSize }} />;
 
   return buildActionResult({
     key: 'share',

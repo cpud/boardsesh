@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
-import ShareOutlined from '@mui/icons-material/ShareOutlined';
+import IosShare from '@mui/icons-material/IosShare';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { shareWithFallback } from '@/app/lib/share-utils';
 import Box from '@mui/material/Box';
@@ -636,7 +636,7 @@ export default function SessionDetailContent({
           </Box>
           {!isEditing && (
             <IconButton size="small" onClick={handleShare} aria-label="Share session">
-              <ShareOutlined fontSize="small" />
+              <IosShare fontSize="small" />
             </IconButton>
           )}
           {canEdit && !isEditing && (

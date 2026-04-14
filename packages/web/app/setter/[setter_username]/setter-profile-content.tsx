@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
-import { PersonOutlined, SentimentDissatisfiedOutlined, ShareOutlined } from '@mui/icons-material';
+import { PersonOutlined, SentimentDissatisfiedOutlined, IosShare } from '@mui/icons-material';
 import { useSession } from 'next-auth/react';
 import BackButton from '@/app/components/back-button';
 import FollowButton from '@/app/components/ui/follow-button';
@@ -98,7 +98,7 @@ export default function SetterProfileContent({ username }: SetterProfileContentP
       <div className={styles.actionsSection}>
         <BackButton fallbackUrl="/" />
         <IconButton onClick={handleShare} aria-label="Share setter profile">
-          <ShareOutlined />
+          <IosShare />
         </IconButton>
       </div>
 
