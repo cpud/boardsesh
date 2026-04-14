@@ -44,6 +44,7 @@ export async function shareWithFallback({
       try {
         await navigator.clipboard.writeText(url);
         onClipboardSuccess?.();
+        track(trackingEvent, { ...trackingProps, method: 'clipboard' });
         return true;
       } catch {
         onError?.();

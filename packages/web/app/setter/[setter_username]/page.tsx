@@ -40,7 +40,7 @@ export async function generateMetadata({
         title,
         description,
         url: canonicalUrl,
-        images: [{ url: ogImagePath, width: 1200, height: 630 }],
+        images: [{ url: ogImagePath, width: 1200, height: 630, alt: `${displayName}'s setter profile` }],
       },
       twitter: {
         card: 'summary_large_image',

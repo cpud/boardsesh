@@ -62,7 +62,9 @@ export async function GET(request: NextRequest) {
     // Setter may not be linked to a user account — that's okay
     const setter = setterRows.length > 0 ? setterRows[0] : null;
     const displayName = setter?.display_name || setter?.name || username;
-    const avatarUrl = setter?.avatar_url || null;
+    const origin = process.env.VERCEL_URL ? 'https://www.boardsesh.com' : 'http://localhost:3000';
+    const rawAvatarUrl = setter?.avatar_url || null;
+    const avatarUrl = rawAvatarUrl && !rawAvatarUrl.startsWith('http') ? `${origin}${rawAvatarUrl}` : rawAvatarUrl;
 
     // Build grade bars from ascents of climbs this setter created
     const gradeBars: Array<{ grade: string; count: number; color: string }> = [];

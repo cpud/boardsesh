@@ -182,6 +182,25 @@ describe('shareWithFallback', () => {
       });
     });
 
+    it('tracks clipboard method on error-path fallback', async () => {
+      const { track } = await import('@vercel/analytics');
+      const share = vi.fn().mockRejectedValue(new Error('Share failed'));
+      const canShare = vi.fn().mockReturnValue(true);
+      const writeText = vi.fn().mockResolvedValue(undefined);
+      mockNavigator({
+        share,
+        canShare,
+        clipboard: { writeText } as unknown as Clipboard,
+      } as unknown as Partial<Navigator>);
+
+      await shareWithFallback(baseOptions);
+
+      expect(track).toHaveBeenCalledWith('Test Shared', {
+        source: 'unit-test',
+        method: 'clipboard',
+      });
+    });
+
     it('tracks clipboard method', async () => {
       const { track } = await import('@vercel/analytics');
       const writeText = vi.fn().mockResolvedValue(undefined);
