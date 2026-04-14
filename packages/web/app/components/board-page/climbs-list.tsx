@@ -16,11 +16,7 @@ import drawerCss from '../swipeable-drawer/swipeable-drawer.module.css';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { Climb, BoardDetails } from '@/app/lib/types';
 import ErrorBoundary from '../error-boundary';
-import ClimbCard from '../climb-card/climb-card';
 import ClimbListItem from '../climb-card/climb-list-item';
-import DrawerClimbHeader from '../climb-card/drawer-climb-header';
-import { ClimbActions } from '../climb-actions';
-import PlaylistSelectionContent from '../climb-actions/playlist-selection-content';
 import { ClimbCardSkeleton, ClimbListItemSkeleton } from './board-page-skeleton';
 import { themeTokens } from '@/app/theme/theme-config';
 import { getPreference, setPreference } from '@/app/lib/user-preferences-db';
@@ -34,6 +30,10 @@ import listStyles from './climbs-list.module.css';
 
 const SwipeableDrawer = dynamic(() => import('../swipeable-drawer/swipeable-drawer'), { ssr: false });
 const QueueDrawer = dynamic(() => import('../play-view/queue-drawer'), { ssr: false });
+const DrawerClimbHeader = dynamic(() => import('../climb-card/drawer-climb-header'), { ssr: false });
+const ClimbActions = dynamic(() => import('../climb-actions/climb-actions'), { ssr: false });
+const PlaylistSelectionContent = dynamic(() => import('../climb-actions/playlist-selection-content'), { ssr: false });
+const ClimbCard = dynamic(() => import('../climb-card/climb-card'), { ssr: false });
 
 type ViewMode = 'grid' | 'list';
 
