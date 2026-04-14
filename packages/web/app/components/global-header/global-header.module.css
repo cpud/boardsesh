@@ -49,9 +49,6 @@
   pointer-events: none;
 }
 
-.seshIconButton {
-  flex-shrink: 0;
-}
 
 .headerTransparent {
   position: fixed;

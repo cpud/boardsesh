@@ -43,8 +43,10 @@ import { useColorMode } from '@/app/hooks/use-color-mode';
 import { ConfirmPopover } from '@/app/components/ui/confirm-popover';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { usePersistentSessionState } from '../persistent-session/persistent-session-context';
+import PlayCircleOutlineOutlined from '@mui/icons-material/PlayCircleOutlineOutlined';
 import { dispatchOpenSeshSettingsDrawer } from '../sesh-settings/sesh-settings-drawer-event';
 import { generateSessionName } from '@/app/lib/session-utils';
+import StartSeshDrawer from '../session-creation/start-sesh-drawer';
 import styles from './queue-control-bar.module.css';
 
 export type ActiveDrawer = 'none' | 'play' | 'queue' | 'tick';
@@ -64,6 +66,7 @@ export interface QueueControlBarProps {
 
 const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }) => {
   const [activeDrawer, setActiveDrawer] = useState<ActiveDrawer>('none');
+  const [startSeshOpen, setStartSeshOpen] = useState(false);
   const pathname = usePathname();
   const params = useParams<BoardRouteParameters>();
   const searchParams = useSearchParams();
@@ -570,35 +573,48 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
         sx={{ border: 'none', backgroundColor: 'transparent' }}
       >
         <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
-        {/* Session header — name + avatars */}
-        {activeSession && !tickBarActive && !tickRowVisible && (
-          <div
-            key={`session-header-${tickCloseCount}`}
-            className={styles.sessionHeader}
-            onClick={dispatchOpenSeshSettingsDrawer}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') dispatchOpenSeshSettingsDrawer(); }}
-            style={{
-              backgroundColor: sessionTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
-            }}
-          >
-            <span className={styles.sessionName}>
-              {persistentSession?.name || activeSession.sessionName || generateSessionName(persistentSession?.startedAt ?? new Date().toISOString(), [boardDetails.board_name])}
-            </span>
-            {sessionUsers.length > 0 && (
-              <AvatarGroup
-                max={3}
-                sx={{
-                  '& .MuiAvatar-root': { width: 28, height: 28, fontSize: 11, border: '2px solid transparent' },
-                }}
-              >
-                {sessionUsers.map((user) => (
-                  <Avatar key={user.id} alt={user.username} src={user.avatarUrl ?? undefined} />
-                ))}
-              </AvatarGroup>
-            )}
-          </div>
+        {/* Session header — name + avatars, or start sesh prompt */}
+        {!tickBarActive && !tickRowVisible && (
+          activeSession ? (
+            <div
+              key={`session-header-${tickCloseCount}`}
+              className={styles.sessionHeader}
+              onClick={dispatchOpenSeshSettingsDrawer}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') dispatchOpenSeshSettingsDrawer(); }}
+              style={{
+                backgroundColor: sessionTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
+              }}
+            >
+              <span className={styles.sessionName}>
+                {persistentSession?.name || activeSession.sessionName || generateSessionName(persistentSession?.startedAt ?? new Date().toISOString(), [boardDetails.board_name])}
+              </span>
+              {sessionUsers.length > 0 && (
+                <AvatarGroup
+                  max={3}
+                  sx={{
+                    '& .MuiAvatar-root': { width: 28, height: 28, fontSize: 11, border: '2px solid transparent' },
+                  }}
+                >
+                  {sessionUsers.map((user) => (
+                    <Avatar key={user.id} alt={user.username} src={user.avatarUrl ?? undefined} />
+                  ))}
+                </AvatarGroup>
+              )}
+            </div>
+          ) : (
+            <div
+              className={styles.sessionHeader}
+              onClick={() => setStartSeshOpen(true)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setStartSeshOpen(true); }}
+            >
+              <PlayCircleOutlineOutlined sx={{ fontSize: 16, opacity: 0.7 }} />
+              <span className={styles.sessionName}>Start sesh</span>
+            </div>
+          )
         )}
         {/* Tick-mode controls — expands/collapses via CSS grid transition.
             Swipe-to-dismiss handlers are on the tick row only, not the whole card. */}
@@ -861,6 +877,11 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
         setActiveDrawer={setActiveDrawer}
         boardDetails={boardDetails}
         angle={angle}
+      />
+
+      <StartSeshDrawer
+        open={startSeshOpen}
+        onClose={() => setStartSeshOpen(false)}
       />
     </div>
   );

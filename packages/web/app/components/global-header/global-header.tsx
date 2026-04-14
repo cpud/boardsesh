@@ -7,18 +7,16 @@ import InputAdornment from '@mui/material/InputAdornment';
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import ClearOutlined from '@mui/icons-material/ClearOutlined';
 import FilterListOutlined from '@mui/icons-material/FilterListOutlined';
-import PlayCircleOutlineOutlined from '@mui/icons-material/PlayCircleOutlineOutlined';
-import StopCircleOutlined from '@mui/icons-material/StopCircleOutlined';
 import UnifiedSearchDrawer from '@/app/components/search-drawer/unified-search-drawer';
 import { useSearchDrawerBridge } from '@/app/components/search-drawer/search-drawer-bridge-context';
 import UserDrawer from '@/app/components/user-drawer/user-drawer';
 import StartSeshDrawer from '@/app/components/session-creation/start-sesh-drawer';
 import SeshSettingsDrawer from '@/app/components/sesh-settings/sesh-settings-drawer';
 import { SESH_SETTINGS_DRAWER_EVENT } from '@/app/components/sesh-settings/sesh-settings-drawer-event';
-import { usePersistentSessionState, useIsOnBoardRoute } from '@/app/components/persistent-session/persistent-session-context';
+import { useIsOnBoardRoute } from '@/app/components/persistent-session/persistent-session-context';
 import { BoardConfigData } from '@/app/lib/server-board-configs';
 import { isBoardCreatePath } from '@/app/lib/board-route-paths';
-import { themeTokens } from '@/app/theme/theme-config';
+
 import { usePathname } from 'next/navigation';
 import BackButton from '@/app/components/back-button';
 import Typography from '@mui/material/Typography';
@@ -43,13 +41,13 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
   const [startSeshRendered, setStartSeshRendered] = useState(false);
   const [seshSettingsOpen, setSeshSettingsOpen] = useState(false);
   const [seshSettingsRendered, setSeshSettingsRendered] = useState(false);
-  const { activeSession } = usePersistentSessionState();
+
   const isOnBoardRoute = useIsOnBoardRoute();
   const { openClimbSearchDrawer, nameFilter, setNameFilter, hasActiveNonNameFilters: nonNameFiltersActive } = useSearchDrawerBridge();
   const pathname = usePathname();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const hasActiveSession = !!activeSession;
+
 
   // Unmount drawer trees after close animation finishes to avoid rendering
   // MUI Modal/Portal/FocusTrap infrastructure on every parent re-render.
@@ -108,15 +106,6 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
     }
   };
 
-  const handleSeshClick = () => {
-    if (hasActiveSession) {
-      setSeshSettingsRendered(true);
-      setSeshSettingsOpen(true);
-    } else {
-      setStartSeshRendered(true);
-      setStartSeshOpen(true);
-    }
-  };
 
   const searchPlaceholder = useClimbSearchBridge ? 'Search climbs...' : 'What do you want to climb?';
 
@@ -190,18 +179,6 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
           </div>
         )}
 
-        <IconButton
-          className={styles.seshIconButton}
-          onClick={handleSeshClick}
-          aria-label={hasActiveSession ? 'Session settings' : 'Start session'}
-          sx={hasActiveSession ? {
-            backgroundColor: themeTokens.colors.success,
-            color: '#fff',
-            '&:hover': { backgroundColor: themeTokens.colors.successHover },
-          } : undefined}
-        >
-          {hasActiveSession ? <StopCircleOutlined /> : <PlayCircleOutlineOutlined />}
-        </IconButton>
       </header>
 
       {searchRendered && (
