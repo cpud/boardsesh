@@ -527,6 +527,7 @@ export default function SessionDetailContent({
         defaultSummary: 'Share link or QR code',
         getSummary: () => [],
         content: inviteContent,
+        defaultActive: true,
       });
     }
 
