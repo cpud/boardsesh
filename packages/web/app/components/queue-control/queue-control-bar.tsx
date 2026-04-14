@@ -454,7 +454,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
 
   const tickDismissStyle = useMemo<React.CSSProperties | undefined>(() => {
     if (tickSwipeOffset === 0) {
-      return { transition: 'grid-template-rows 180ms ease-out, opacity 180ms ease-out' };
+      return { transition: 'grid-template-rows 200ms ease-out, opacity 200ms ease-out' };
     }
     const fraction = Math.max(0, 1 - tickSwipeOffset / 150);
     return { gridTemplateRows: `${fraction}fr`, opacity: fraction, transition: 'none' };
@@ -529,7 +529,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
     // the new text sliding in from the old exit position
     if (enterDirection) return 'none';
     if (isAnimating) return `transform ${EXIT_DURATION}ms ease-out`;
-    if (swipeOffset === 0) return `transform ${SNAP_BACK_DURATION}ms ease`;
+    if (swipeOffset === 0) return `transform ${SNAP_BACK_DURATION}ms ease-out`;
     return 'none';
   };
 
@@ -656,9 +656,11 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
         sx={{ border: 'none', backgroundColor: 'transparent' }}
       >
         <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
-        {/* Session header — name + avatars, or start sesh prompt */}
-        {!tickBarActive && !tickRowVisible && (
-          <div className={styles.sessionHeaderWrapper}>
+        {/* Session header — name + avatars, or start sesh prompt.
+            Uses CSS grid collapse instead of unmounting so the transition
+            between session header and tick row is smooth. */}
+          <div className={`${styles.sessionHeaderWrapper} ${!tickBarActive && !tickRowVisible ? styles.sessionHeaderExpanded : ''}`}>
+          <div className={styles.sessionHeaderInner}>
             {/* Offline overlay on session header */}
             {isDisconnected && !dismissedDisconnect && (
               <div
@@ -789,7 +791,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
             </div>
             )}
           </div>
-        )}
+          </div>
         {/* Tick-mode controls — expands/collapses via CSS grid transition.
             Swipe-to-dismiss handlers are on the tick row only, not the whole card. */}
         {(tickBarActive || tickRowVisible) && (

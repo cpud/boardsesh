@@ -50,7 +50,7 @@
 
   .card {
     width: auto;
-    margin: 0 5px;
+    margin: 0 var(--space-1, 4px);
     border-radius: 4px;
     border-top: none;
     overflow: hidden;
@@ -88,8 +88,21 @@
   color: var(--neutral-100);
 }
 
-/* Session header wrapper — positioning context for offline overlay */
+/* Session header wrapper — uses CSS grid collapse so toggling tick mode
+   doesn't cause a layout jump (smooth collapse instead of hard unmount). */
 .sessionHeaderWrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms ease-out;
+}
+
+.sessionHeaderExpanded {
+  grid-template-rows: 1fr;
+}
+
+.sessionHeaderInner {
+  overflow: hidden;
+  min-height: 0;
   position: relative;
 }
 
@@ -109,6 +122,11 @@
   -webkit-backdrop-filter: blur(20px);
   cursor: pointer;
   white-space: nowrap;
+  transition: opacity 150ms ease;
+}
+
+.offlineBanner:active {
+  opacity: 0.7;
 }
 
 .offlineBannerText {
@@ -133,9 +151,29 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
+@media (hover: hover) {
+  .sessionHeader:hover {
+    filter: brightness(0.95);
+  }
+}
+
+.sessionHeader:active {
+  filter: brightness(0.9);
+}
+
 :global(html[data-theme="dark"]) .sessionHeader {
   border-bottom-color: rgba(0, 0, 0, 0.3);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+@media (hover: hover) {
+  :global(html[data-theme="dark"]) .sessionHeader:hover {
+    filter: brightness(1.1);
+  }
+}
+
+:global(html[data-theme="dark"]) .sessionHeader:active {
+  filter: brightness(1.15);
 }
 
 .sessionName {
@@ -190,6 +228,7 @@
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  transition: padding 200ms ease-out;
 }
 
 .participantScroll::-webkit-scrollbar {
@@ -270,6 +309,7 @@
   cursor: pointer;
   min-width: 0;
   flex: 1;
+  will-change: transform;
 }
 
 /* Hide navigation buttons on mobile - use swipe instead */
@@ -294,10 +334,11 @@
   }
 }
 
-/* Swipe container for mobile navigation */
+/* Swipe container for mobile navigation.
+   pan-y lets the browser handle vertical scroll natively while giving
+   JavaScript full control of horizontal swipe gestures. */
 .swipeContainer {
-  touch-action: manipulation;
-  transition: background-color 300ms ease;
+  touch-action: pan-y;
   cursor: pointer;
 }
 
@@ -337,19 +378,24 @@
   overflow: hidden;
   min-height: 0;
   padding: 0 12px;
-  transition: padding 200ms ease-out;
+  transition: padding 200ms ease-out, overflow 0s 200ms;
 }
 
 .tickRowExpanded .tickRowInner {
   padding: 8px 12px;
-  /* Allow comment box to overflow downward over the queue bar */
+  /* Allow comment box to overflow downward over the queue bar.
+     The transition-delay on overflow keeps hidden during collapse
+     so the grid clip works progressively, then switches to visible
+     once the expand transition finishes. */
   overflow: visible;
+  transition: padding 200ms ease-out, overflow 0s 0s;
 }
 
 /* During swipe-to-dismiss, force overflow hidden so content clips as
    the grid row collapses — overrides the visible overflow above. */
 .tickRowSwiping .tickRowInner {
   overflow: hidden;
+  transition: none;
 }
 
 /* Drag handle row — centers the handle pill with close button at the right */
@@ -364,7 +410,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2px 0;
+  padding: 12px 0;
   cursor: grab;
 }
 
@@ -420,6 +466,7 @@
   justify-content: center;
   cursor: default;
   pointer-events: none;
+  will-change: transform;
 }
 
 @keyframes thumbnailFadeIn {
@@ -429,4 +476,5 @@
 
 .thumbnailEnter {
   animation: thumbnailFadeIn 120ms ease-out;
+  will-change: transform, opacity;
 }
