@@ -328,12 +328,13 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
   const gradeTintColor = useMemo(() => getGradeTintColor(displayedClimb?.difficulty, 'default', isDark), [displayedClimb?.difficulty, isDark]);
   const sessionTintColor = useMemo(() => getGradeTintColor(displayedClimb?.difficulty, 'session', isDark), [displayedClimb?.difficulty, isDark]);
 
-  // Deduplicate session users by userId (stable DB UUID) with username fallback.
-  // Reconnections create new connection IDs for the same user, causing ghost duplicates.
+  // Deduplicate session users by userId (stable DB UUID).
+  // When userId is absent (unauthenticated), fall back to connection id
+  // so distinct participants with the same display name aren't merged.
   const uniqueSessionUsers = useMemo(() => {
     const seen = new Set<string>();
     return sessionUsers.filter((user) => {
-      const key = user.userId ?? user.username;
+      const key = user.userId ?? user.id;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -350,6 +351,11 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
     }
     return set;
   }, [queue, currentClimb?.uuid, clientId, localTickedClimbs, currentClimb]);
+
+  // Reset local tick cache when the active session changes
+  useEffect(() => {
+    setLocalTickedClimbs(new Set());
+  }, [sessionId]);
 
   // Close expanded participants when tick mode opens
   useEffect(() => {
