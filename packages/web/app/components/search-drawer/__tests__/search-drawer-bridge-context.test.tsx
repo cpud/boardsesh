@@ -59,7 +59,7 @@ describe('search-drawer-bridge-context', () => {
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <SearchDrawerBridgeProvider>
           {children}
-          <SearchDrawerBridgeInjector {...props} />
+          <SearchDrawerBridgeInjector nameFilter="" onNameFilterChange={() => {}} hasActiveNonNameFilters={false} {...props} />
         </SearchDrawerBridgeProvider>
       );
       return renderHook(() => useSearchDrawerBridge(), { wrapper });
@@ -137,6 +137,9 @@ describe('search-drawer-bridge-context', () => {
             summary="V5-V7"
             hasActiveFilters={true}
             isOnListPage={isOnListPage}
+            nameFilter=""
+            onNameFilterChange={() => {}}
+            hasActiveNonNameFilters={false}
           />
         </SearchDrawerBridgeProvider>
       );
@@ -164,6 +167,9 @@ describe('search-drawer-bridge-context', () => {
             summary={summary}
             hasActiveFilters={hasActiveFilters}
             isOnListPage={true}
+            nameFilter=""
+            onNameFilterChange={() => {}}
+            hasActiveNonNameFilters={false}
           />
         </SearchDrawerBridgeProvider>
       );
@@ -192,6 +198,9 @@ describe('search-drawer-bridge-context', () => {
             summary={summary}
             hasActiveFilters={hasActiveFilters}
             isOnListPage={true}
+            nameFilter=""
+            onNameFilterChange={() => {}}
+            hasActiveNonNameFilters={false}
           />
         </SearchDrawerBridgeProvider>
       );
@@ -219,6 +228,9 @@ describe('search-drawer-bridge-context', () => {
             summary="V5-V7"
             hasActiveFilters={true}
             isOnListPage={isOnListPage}
+            nameFilter=""
+            onNameFilterChange={() => {}}
+            hasActiveNonNameFilters={false}
           />
         </SearchDrawerBridgeProvider>
       );
@@ -249,6 +261,9 @@ describe('search-drawer-bridge-context', () => {
             summary="V5-V7"
             hasActiveFilters={false}
             isOnListPage={true}
+            nameFilter=""
+            onNameFilterChange={() => {}}
+            hasActiveNonNameFilters={false}
           />
         </SearchDrawerBridgeProvider>
       );
