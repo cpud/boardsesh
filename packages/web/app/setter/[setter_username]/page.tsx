@@ -28,19 +28,24 @@ export async function generateMetadata({
 
     const displayName = result.rows[0]?.display_name || result.rows[0]?.name || username;
     const ogImagePath = `/api/og/setter?username=${encodeURIComponent(setter_username)}`;
+    const title = `${displayName} - Setter | Boardsesh`;
+    const description = `Climbs created by ${displayName} on Boardsesh`;
+    const canonicalUrl = `/setter/${encodeURIComponent(setter_username)}`;
 
     return {
-      title: `${displayName} - Setter | Boardsesh`,
-      description: `Climbs created by ${displayName} on Boardsesh`,
+      title,
+      description,
+      alternates: { canonical: canonicalUrl },
       openGraph: {
-        title: `${displayName} - Setter | Boardsesh`,
-        description: `Climbs created by ${displayName} on Boardsesh`,
+        title,
+        description,
+        url: canonicalUrl,
         images: [{ url: ogImagePath, width: 1200, height: 630 }],
       },
       twitter: {
         card: 'summary_large_image',
-        title: `${displayName} - Setter | Boardsesh`,
-        description: `Climbs created by ${displayName} on Boardsesh`,
+        title,
+        description,
         images: [ogImagePath],
       },
     };

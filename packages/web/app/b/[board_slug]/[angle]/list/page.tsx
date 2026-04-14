@@ -13,15 +13,11 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/lib/auth/auth-options';
 import { scheduleOverlayWarming } from '@/app/lib/warm-overlay-cache';
 import { buildOverlayUrl } from '@/app/components/board-renderer/util';
+import { formatBoardDisplayName } from '@/app/lib/string-utils';
 
 interface BoardSlugListPageProps {
   params: Promise<{ board_slug: string; angle: string }>;
   searchParams: Promise<SearchRequestPagination>;
-}
-
-function capitalizeBoardName(boardType: string): string {
-  if (boardType === 'moonboard') return 'MoonBoard';
-  return boardType.charAt(0).toUpperCase() + boardType.slice(1);
 }
 
 export async function generateMetadata(props: BoardSlugListPageProps): Promise<Metadata> {
@@ -33,7 +29,7 @@ export async function generateMetadata(props: BoardSlugListPageProps): Promise<M
       return { title: 'Climbs | Boardsesh', description: 'Browse climbing routes' };
     }
 
-    const boardName = capitalizeBoardName(board.boardType);
+    const boardName = formatBoardDisplayName(board.boardType);
     const angle = params.angle;
     const title = `${boardName} Climbs at ${angle}\u00B0 | Boardsesh`;
     const description = `Browse climbing routes on ${boardName} at ${angle}\u00B0`;

@@ -4,13 +4,9 @@ import { NextRequest } from 'next/server';
 import { dbz } from '@/app/lib/db/db';
 import { sql } from 'drizzle-orm';
 import { themeTokens } from '@/app/theme/theme-config';
+import { formatBoardDisplayName } from '@/app/lib/string-utils';
 
 export const runtime = 'edge';
-
-function capitalizeBoardType(boardType: string): string {
-  if (boardType === 'moonboard') return 'MoonBoard';
-  return boardType.charAt(0).toUpperCase() + boardType.slice(1);
-}
 
 export async function GET(request: NextRequest) {
   try {
@@ -55,7 +51,7 @@ export async function GET(request: NextRequest) {
     const icon = playlist.icon || null;
     const boardType = playlist.board_type;
     const climbCount = Number(playlist.climb_count);
-    const boardLabel = capitalizeBoardType(boardType);
+    const boardLabel = formatBoardDisplayName(boardType);
 
     return new ImageResponse(
       (
