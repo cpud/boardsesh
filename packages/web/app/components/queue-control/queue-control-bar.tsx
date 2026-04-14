@@ -341,16 +341,25 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
     });
   }, [sessionUsers]);
 
+  // Resolve the current user's stable userId from the session users list
+  const myUserId = useMemo(() => {
+    if (!clientId) return null;
+    const me = sessionUsers.find((u) => u.id === clientId);
+    return me?.userId ?? clientId;
+  }, [sessionUsers, clientId]);
+
   // Track which participants have ticked the current climb.
   // Merges backend-provided tickedBy with locally tracked ticks.
+  // Uses both connection IDs and stable userIds so the badge matches
+  // regardless of which ID the avatar was deduped with.
   const tickedBySet = useMemo(() => {
     const currentQueueItem = queue.find((item) => item.climb.uuid === currentClimb?.uuid);
     const set = new Set(currentQueueItem?.tickedBy ?? []);
-    if (clientId && currentClimb && localTickedClimbs.has(currentClimb.uuid)) {
-      set.add(clientId);
+    if (myUserId && currentClimb && localTickedClimbs.has(currentClimb.uuid)) {
+      set.add(myUserId);
     }
     return set;
-  }, [queue, currentClimb?.uuid, clientId, localTickedClimbs, currentClimb]);
+  }, [queue, currentClimb?.uuid, myUserId, localTickedClimbs, currentClimb]);
 
   // Reset local tick cache when the active session changes
   useEffect(() => {
@@ -640,26 +649,24 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
             {activeSession ? (
               <div
                 className={styles.sessionHeader}
+                onClick={dispatchOpenSeshSettingsDrawer}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') dispatchOpenSeshSettingsDrawer(); }}
                 style={{
                   backgroundColor: sessionTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
                 }}
               >
-                <span
-                  className={styles.sessionName}
-                  onClick={dispatchOpenSeshSettingsDrawer}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') dispatchOpenSeshSettingsDrawer(); }}
-                >
+                <span className={styles.sessionName}>
                   {persistentSession?.name || activeSession.sessionName || generateSessionName(persistentSession?.startedAt ?? new Date().toISOString(), [boardDetails.board_name])}
                 </span>
                 {uniqueSessionUsers.length > 0 && (
                   <div
                     className={styles.avatarToggle}
-                    onClick={() => setParticipantsExpanded((prev) => !prev)}
+                    onClick={(e) => { e.stopPropagation(); setParticipantsExpanded((prev) => !prev); }}
                     role="button"
                     tabIndex={0}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setParticipantsExpanded((prev) => !prev); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); setParticipantsExpanded((prev) => !prev); } }}
                   >
                     {participantsExpanded ? (
                       <IconButton size="small" component="span" tabIndex={-1} sx={{ p: 0.25 }}>
@@ -673,7 +680,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                         }}
                       >
                         {uniqueSessionUsers.map((user) => {
-                          const hasTicked = tickedBySet.has(user.id);
+                          const hasTicked = tickedBySet.has(user.id) || (user.userId != null && tickedBySet.has(user.userId));
                           return hasTicked ? (
                             <Badge
                               key={user.id}
@@ -749,7 +756,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                 ) : (
                   <div className={styles.participantScroll}>
                     {uniqueSessionUsers.map((user) => {
-                      const hasTicked = tickedBySet.has(user.id);
+                      const hasTicked = tickedBySet.has(user.id) || (user.userId != null && tickedBySet.has(user.userId));
                       return (
                         <div key={user.id} className={styles.participantItem}>
                           {hasTicked ? (

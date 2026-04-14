@@ -127,6 +127,7 @@
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
+  cursor: pointer;
   touch-action: manipulation;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
@@ -145,7 +146,6 @@
   white-space: nowrap;
   font-size: 12px;
   font-weight: 600;
-  cursor: pointer;
 }
 
 /* Avatar toggle — clickable area for expanding participant bar */
