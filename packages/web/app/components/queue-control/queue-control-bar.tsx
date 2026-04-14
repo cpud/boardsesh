@@ -409,11 +409,9 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
     let timer: ReturnType<typeof setTimeout>;
     const animations: Animation[] = [];
 
-    // TODO: remove these bypasses after testing
-    Promise.resolve().then(() => {
-      // const seen = await getPreference('swipeHint:queueBarSeen');
-      // if (cancelled || seen) return;
-      // if (!window.matchMedia('(pointer: coarse)').matches) return;
+    getPreference<boolean>('swipeHint:queueBarSeen').then((seen) => {
+      if (cancelled || seen) return;
+      if (!window.matchMedia('(pointer: coarse)').matches) return;
 
       timer = setTimeout(() => {
         if (cancelled) return;
@@ -442,8 +440,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
         }).then(() => {
           if (cancelled) return;
           el.style.transform = '';
-          // TODO: re-enable after testing
-          // setPreference('swipeHint:queueBarSeen', true);
+          setPreference('swipeHint:queueBarSeen', true);
         }).catch(() => { /* cancelled */ });
       }, 800);
     });

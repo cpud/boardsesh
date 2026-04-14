@@ -26,10 +26,9 @@ export default function SwipeHintOrchestrator() {
     let timer: ReturnType<typeof setTimeout>;
 
     const run = async () => {
-      // TODO: remove these bypasses after testing
-      // const seen = await getPreference<boolean>(PREF_KEY);
-      // if (cancelled || seen) return;
-      // if (!window.matchMedia('(pointer: coarse)').matches) return;
+      const seen = await getPreference<boolean>(PREF_KEY);
+      if (cancelled || seen) return;
+      if (!window.matchMedia('(pointer: coarse)').matches) return;
 
       timer = setTimeout(async () => {
         if (cancelled) return;
@@ -97,8 +96,7 @@ export default function SwipeHintOrchestrator() {
           }
 
           if (!cancelled) {
-            // TODO: re-enable after testing
-            // setPreference(PREF_KEY, true);
+            setPreference(PREF_KEY, true);
           }
         } catch {
           // Animation cancelled
