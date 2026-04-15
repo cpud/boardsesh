@@ -7,7 +7,8 @@
 --
 -- Safe to re-run: only moves ticks that still have session_id IS NULL.
 
--- Step 1: Move inferred ticks into party sessions where the gap is <= 2 hours
+-- Step 1: Move inferred ticks into party sessions where the gap is <= 2 hours.
+-- Uses DISTINCT ON to pick the nearest party session when a user has multiple.
 WITH party_session_bounds AS (
   SELECT
     bs.id AS party_session_id,
@@ -19,7 +20,7 @@ WITH party_session_bounds AS (
   GROUP BY bs.id, bs.created_by_user_id
 ),
 ticks_to_adopt AS (
-  SELECT
+  SELECT DISTINCT ON (bt.uuid)
     bt.uuid AS tick_uuid,
     bt.inferred_session_id,
     psb.party_session_id
@@ -28,12 +29,14 @@ ticks_to_adopt AS (
   WHERE bt.session_id IS NULL
     AND bt.climbed_at >= psb.first_party_tick - INTERVAL '2 hours'
     AND bt.climbed_at < psb.first_party_tick
+  ORDER BY bt.uuid, ABS(EXTRACT(EPOCH FROM (bt.climbed_at - psb.first_party_tick)))
 )
 UPDATE boardsesh_ticks
 SET session_id = ta.party_session_id,
     inferred_session_id = NULL
 FROM ticks_to_adopt ta
 WHERE boardsesh_ticks.uuid = ta.tick_uuid;
+--> statement-breakpoint
 
 -- Step 2: Delete inferred sessions that now have zero ticks remaining
 DELETE FROM inferred_sessions ins
@@ -42,6 +45,7 @@ WHERE NOT EXISTS (
   WHERE bt.inferred_session_id = ins.id
 )
 AND ins.tick_count > 0;
+--> statement-breakpoint
 
 -- Step 3: Recalculate stats for inferred sessions that lost some ticks
 UPDATE inferred_sessions ins

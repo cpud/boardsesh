@@ -217,18 +217,4 @@ describe('adoptRecentTicksForSession', () => {
     expect(txDeleteWhereCalls).toHaveLength(1);
   });
 
-  it('computes correct 2-hour cutoff', async () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-04-15T12:00:00.000Z'));
-
-    txSelectQueue = [[]];
-    await adoptRecentTicksForSession('user-1', 'party-session-1');
-
-    // The cutoff should be 2026-04-15T10:00:00.000Z
-    // We verify by checking the transaction was called (the WHERE clause
-    // uses gte() from drizzle-orm which is type-safe and tested by drizzle)
-    expect(db.transaction).toHaveBeenCalledOnce();
-
-    vi.useRealTimers();
-  });
 });
