@@ -105,7 +105,7 @@ describe('StatsSummary', () => {
   it('renders total ascents count', () => {
     render(<StatsSummary {...createDefaultProps()} />);
     expect(screen.getByText('42')).toBeTruthy();
-    expect(screen.getByText('Distinct Climbs')).toBeTruthy();
+    expect(screen.getByText('Problems Sent')).toBeTruthy();
   });
 
   it('renders layout percentage bar when multiple layouts', () => {

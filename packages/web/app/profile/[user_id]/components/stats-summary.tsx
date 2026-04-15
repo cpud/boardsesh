@@ -48,7 +48,7 @@ export default function StatsSummary({
     <MuiCard className={styles.statsCard}><CardContent>
       <div className={styles.statsSummaryHeader}>
         <div className={styles.totalAscentsContainer}>
-          <Typography variant="body2" component="span" className={styles.totalAscentsLabel}>Distinct Climbs</Typography>
+          <Typography variant="body2" component="span" className={styles.totalAscentsLabel}>Problems Sent</Typography>
           <Typography variant="h4" component="h2" className={styles.totalAscentsValue}>
             {statisticsSummary.totalAscents}
           </Typography>
@@ -61,7 +61,7 @@ export default function StatsSummary({
             {statisticsSummary.layoutPercentages.map((layout) => (
               <MuiTooltip
                 key={layout.layoutKey}
-                title={`${layout.displayName}: ${layout.count} distinct climbs (${layout.percentage}%)`}
+                title={`${layout.displayName}: ${layout.count} problems (${layout.percentage}%)`}
               >
                 <div
                   className={styles.percentageSegment}

@@ -165,7 +165,7 @@ export default function ProfilePageContent({
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           <ProfileNavCard
             title="Statistics"
-            subtitle={statisticsSummary.totalAscents > 0 ? `${statisticsSummary.totalAscents} distinct climbs` : 'Grades, progression, and more'}
+            subtitle={statisticsSummary.totalAscents > 0 ? `${statisticsSummary.totalAscents} problems sent` : 'Grades, progression, and more'}
             href={`/profile/${userId}/statistics`}
             icon={<ShowChartOutlined />}
           />
