@@ -60,7 +60,7 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
   }
 
   // On /you and /settings pages, show user drawer + share + settings cog, no search bar
-  if (pathname.startsWith('/you') || pathname.startsWith('/settings')) {
+  if (pathname.startsWith('/you') || pathname.startsWith('/settings') || pathname.startsWith('/profile')) {
     const handleShareProfile = () => {
       if (!session?.user?.id) return;
       const shareUrl = `${window.location.origin}/profile/${session.user.id}`;
