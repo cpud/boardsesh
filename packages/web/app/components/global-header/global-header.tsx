@@ -8,8 +8,11 @@ import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import ClearOutlined from '@mui/icons-material/ClearOutlined';
 import FilterListOutlined from '@mui/icons-material/FilterListOutlined';
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
+import IosShareOutlined from '@mui/icons-material/IosShare';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import UnifiedSearchDrawer from '@/app/components/search-drawer/unified-search-drawer';
+import { shareWithFallback } from '@/app/lib/share-utils';
 import { useSearchDrawerBridge } from '@/app/components/search-drawer/search-drawer-bridge-context';
 import UserDrawer from '@/app/components/user-drawer/user-drawer';
 import { useIsOnBoardRoute } from '@/app/components/persistent-session/persistent-session-context';
@@ -36,7 +39,7 @@ interface GlobalHeaderProps {
 export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchRendered, setSearchRendered] = useState(false);
-
+  const { data: session } = useSession();
 
   const isOnBoardRoute = useIsOnBoardRoute();
   const { openClimbSearchDrawer, nameFilter, setNameFilter, hasActiveNonNameFilters: nonNameFiltersActive } = useSearchDrawerBridge();
@@ -56,12 +59,30 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
     return null;
   }
 
-  // On /you and /settings pages, show user drawer + settings cog, no search bar
+  // On /you and /settings pages, show user drawer + share + settings cog, no search bar
   if (pathname.startsWith('/you') || pathname.startsWith('/settings')) {
+    const handleShareProfile = () => {
+      if (!session?.user?.id) return;
+      const shareUrl = `${window.location.origin}/profile/${session.user.id}`;
+      const displayName = session.user.name || 'My';
+      shareWithFallback({
+        url: shareUrl,
+        title: `${displayName}'s climbing profile`,
+        text: `Check out ${displayName}'s climbing profile on Boardsesh`,
+        trackingEvent: 'Profile Shared',
+        trackingProps: { source: 'you-header' },
+      });
+    };
+
     return (
       <header className={styles.header}>
         <UserDrawer boardConfigs={boardConfigs} />
         <div style={{ flex: 1 }} />
+        {session?.user?.id && (
+          <IconButton onClick={handleShareProfile} aria-label="Share profile" size="small">
+            <IosShareOutlined />
+          </IconButton>
+        )}
         <IconButton component={Link} href="/settings" aria-label="Settings" size="small">
           <SettingsOutlined />
         </IconButton>
