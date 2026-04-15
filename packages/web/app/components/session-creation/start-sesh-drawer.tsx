@@ -29,6 +29,8 @@ import { isBoardRoutePath } from '@/app/lib/board-route-paths';
 import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 import { setClimbSessionCookie } from '@/app/lib/climb-session-cookie';
 import { usePersistentSession } from '@/app/components/persistent-session/persistent-session-context';
+import { useQueueBridgeBoardInfo } from '@/app/components/queue-control/queue-bridge-context';
+import { useQueueList, useCurrentClimb } from '@/app/components/graphql-queue';
 import { useMyBoards } from '@/app/hooks/use-my-boards';
 import { BoardConfigData } from '@/app/lib/server-board-configs';
 import type { StoredBoardConfig } from '@/app/lib/saved-boards-db';
@@ -57,6 +59,9 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
     localBoardDetails,
   } = usePersistentSession();
   const pathname = usePathname();
+  const { boardDetails: bridgeBoardDetails, angle: bridgeAngle } = useQueueBridgeBoardInfo();
+  const { queue: bridgeQueue } = useQueueList();
+  const { currentClimbQueueItem: bridgeCurrentClimbQueueItem } = useCurrentClimb();
   const { boards, error: boardsError } = useMyBoards(open);
 
   const [selectedBoard, setSelectedBoard] = useState<(typeof boards)[number] | null>(null);
@@ -201,32 +206,34 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
     try {
       const sessionId = await createSession(formData, boardPath);
 
-      if (
-        localBoardPath &&
-        (localQueue.length > 0 || localCurrentClimbQueueItem) &&
-        getBaseBoardPath(localBoardPath) === getBaseBoardPath(boardPath)
-      ) {
-        setInitialQueueForSession(sessionId, localQueue, localCurrentClimbQueueItem, formData.name);
+      // Effective values: prefer local state, fall back to bridge context
+      // (local state may be empty when the bridge injector is active on a board route)
+      const effectiveBoardDetails = localBoardDetails ?? bridgeBoardDetails;
+      const effectiveBoardPath = localBoardPath ?? (bridgeBoardDetails && pathname ? getBaseBoardPath(pathname) : null);
+      const effectiveQueue = localQueue.length > 0 ? localQueue : bridgeQueue;
+      const effectiveCurrentClimb = localCurrentClimbQueueItem ?? bridgeCurrentClimbQueueItem;
+      const boardsMatch = effectiveBoardPath != null && getBaseBoardPath(effectiveBoardPath) === getBaseBoardPath(boardPath);
+
+      // Transfer existing queue to the new session if on the same board
+      if (boardsMatch && (effectiveQueue.length > 0 || effectiveCurrentClimb)) {
+        setInitialQueueForSession(sessionId, effectiveQueue, effectiveCurrentClimb, formData.name);
       }
 
       setClimbSessionCookie(sessionId);
 
-      if (
-        localBoardPath &&
-        localBoardDetails &&
-        getBaseBoardPath(localBoardPath) === getBaseBoardPath(boardPath)
-      ) {
-        const angle = selectedBoard?.angle ?? selectedCustomConfig?.angle ?? 0;
+      // Activate the session immediately so the UI updates without needing a reload
+      if (effectiveBoardDetails && boardsMatch) {
+        const angle = selectedBoard?.angle ?? selectedCustomConfig?.angle ?? bridgeAngle ?? 0;
         activateSession({
           sessionId,
           sessionName: formData.name,
-          boardPath: localBoardPath,
-          boardDetails: localBoardDetails,
+          boardPath,
+          boardDetails: effectiveBoardDetails,
           parsedParams: {
-            board_name: localBoardDetails.board_name,
-            layout_id: localBoardDetails.layout_id,
-            size_id: localBoardDetails.size_id,
-            set_ids: localBoardDetails.set_ids,
+            board_name: effectiveBoardDetails.board_name,
+            layout_id: effectiveBoardDetails.layout_id,
+            size_id: effectiveBoardDetails.size_id,
+            set_ids: effectiveBoardDetails.set_ids,
             angle,
           },
           namedBoardName: selectedBoard?.name,
@@ -237,7 +244,7 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
       router.push(navigateUrl);
 
       track('Session Started', {
-        boardName: localBoardDetails?.board_name ?? '',
+        boardName: effectiveBoardDetails?.board_name ?? '',
         hasGoal: !!formData.goal,
         isDiscoverable: !!formData.discoverable,
       });

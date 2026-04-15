@@ -135,6 +135,26 @@ vi.mock('@/app/components/board-selector-drawer/board-selector-drawer', () => ({
   default: () => null,
 }));
 
+vi.mock('@/app/components/queue-control/queue-bridge-context', () => ({
+  useQueueBridgeBoardInfo: () => ({
+    boardDetails: null,
+    angle: 0,
+    hasActiveQueue: false,
+    isHydrated: false,
+  }),
+}));
+
+vi.mock('@/app/components/graphql-queue', () => ({
+  useQueueList: () => ({
+    queue: [],
+    suggestedClimbs: [],
+  }),
+  useCurrentClimb: () => ({
+    currentClimbQueueItem: null,
+    currentClimb: null,
+  }),
+}));
+
 import StartSeshDrawer from '../start-sesh-drawer';
 
 // --- Helpers ---
@@ -404,7 +424,7 @@ describe('StartSeshDrawer', () => {
       expect(mockActivateSession).toHaveBeenCalledWith({
         sessionId: 'new-session-id',
         sessionName: undefined,
-        boardPath: '/b/kilter-original-12x12/40/list',
+        boardPath: '/b/kilter-original-12x12',
         boardDetails: mockLocalBoardDetails,
         parsedParams: {
           board_name: 'kilter',
