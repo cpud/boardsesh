@@ -7,6 +7,8 @@ import InputAdornment from '@mui/material/InputAdornment';
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import ClearOutlined from '@mui/icons-material/ClearOutlined';
 import FilterListOutlined from '@mui/icons-material/FilterListOutlined';
+import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
+import Link from 'next/link';
 import UnifiedSearchDrawer from '@/app/components/search-drawer/unified-search-drawer';
 import { useSearchDrawerBridge } from '@/app/components/search-drawer/search-drawer-bridge-context';
 import UserDrawer from '@/app/components/user-drawer/user-drawer';
@@ -52,6 +54,19 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
   // On board create routes, hide the header entirely
   if (isBoardCreatePath(pathname)) {
     return null;
+  }
+
+  // On /you pages, show user drawer + settings cog, no search bar
+  if (pathname.startsWith('/you')) {
+    return (
+      <header className={styles.header}>
+        <UserDrawer boardConfigs={boardConfigs} />
+        <div style={{ flex: 1 }} />
+        <IconButton component={Link} href="/settings" aria-label="Settings" size="small">
+          <SettingsOutlined />
+        </IconButton>
+      </header>
+    );
   }
 
   // On hidden-header pages, show only the avatar in a transparent bar
