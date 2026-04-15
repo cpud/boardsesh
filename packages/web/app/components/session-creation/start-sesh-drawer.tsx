@@ -206,13 +206,16 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
     try {
       const sessionId = await createSession(formData, boardPath);
 
-      // Effective values: prefer local state, fall back to bridge context
-      // (local state may be empty when the bridge injector is active on a board route)
+      // Effective values: prefer local state, fall back to bridge context.
+      // Local state may be empty when the QueueBridgeInjector is active on a
+      // board route — it only syncs to local state on cleanup (navigating away).
       const effectiveBoardDetails = localBoardDetails ?? bridgeBoardDetails;
-      const effectiveBoardPath = localBoardPath ?? (bridgeBoardDetails && pathname ? getBaseBoardPath(pathname) : null);
+      const effectiveBaseBoardPath = localBoardPath
+        ? getBaseBoardPath(localBoardPath)
+        : (bridgeBoardDetails && pathname ? getBaseBoardPath(pathname) : null);
       const effectiveQueue = localQueue.length > 0 ? localQueue : bridgeQueue;
       const effectiveCurrentClimb = localCurrentClimbQueueItem ?? bridgeCurrentClimbQueueItem;
-      const boardsMatch = effectiveBoardPath != null && getBaseBoardPath(effectiveBoardPath) === getBaseBoardPath(boardPath);
+      const boardsMatch = effectiveBaseBoardPath != null && effectiveBaseBoardPath === getBaseBoardPath(boardPath);
 
       // Transfer existing queue to the new session if on the same board
       if (boardsMatch && (effectiveQueue.length > 0 || effectiveCurrentClimb)) {
@@ -221,7 +224,10 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
 
       setClimbSessionCookie(sessionId);
 
-      // Activate the session immediately so the UI updates without needing a reload
+      // Activate the session immediately so the UI updates without needing a reload.
+      // We pass boardPath (the form-derived base path, e.g. /b/slug) rather than
+      // the full route pathname — this is the canonical path for the session and
+      // matches what BoardSessionBridge compares against.
       if (effectiveBoardDetails && boardsMatch) {
         const angle = selectedBoard?.angle ?? selectedCustomConfig?.angle ?? bridgeAngle ?? 0;
         activateSession({

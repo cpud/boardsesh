@@ -46,9 +46,10 @@ vi.mock('@/app/hooks/use-create-session', () => ({
 }));
 
 const mockRouterPush = vi.fn();
+let mockPathname: string | null = null;
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockRouterPush }),
-  usePathname: () => null,
+  usePathname: () => mockPathname,
 }));
 
 vi.mock('next-auth/react', () => ({
@@ -135,10 +136,21 @@ vi.mock('@/app/components/board-selector-drawer/board-selector-drawer', () => ({
   default: () => null,
 }));
 
+let mockBridgeBoardDetails: {
+  board_name: string;
+  layout_id: number;
+  size_id: number;
+  set_ids: number[];
+  angle?: number;
+} | null = null;
+let mockBridgeAngle = 0;
+let mockBridgeQueue: unknown[] = [];
+let mockBridgeCurrentClimbQueueItem: unknown = null;
+
 vi.mock('@/app/components/queue-control/queue-bridge-context', () => ({
   useQueueBridgeBoardInfo: () => ({
-    boardDetails: null,
-    angle: 0,
+    boardDetails: mockBridgeBoardDetails,
+    angle: mockBridgeAngle,
     hasActiveQueue: false,
     isHydrated: false,
   }),
@@ -146,11 +158,11 @@ vi.mock('@/app/components/queue-control/queue-bridge-context', () => ({
 
 vi.mock('@/app/components/graphql-queue', () => ({
   useQueueList: () => ({
-    queue: [],
+    queue: mockBridgeQueue,
     suggestedClimbs: [],
   }),
   useCurrentClimb: () => ({
-    currentClimbQueueItem: null,
+    currentClimbQueueItem: mockBridgeCurrentClimbQueueItem,
     currentClimb: null,
   }),
 }));
@@ -177,6 +189,11 @@ describe('StartSeshDrawer', () => {
     mockLocalCurrentClimbQueueItem = null;
     mockLocalBoardPath = null;
     mockLocalBoardDetails = null;
+    mockBridgeBoardDetails = null;
+    mockBridgeAngle = 0;
+    mockBridgeQueue = [];
+    mockBridgeCurrentClimbQueueItem = null;
+    mockPathname = null;
     mockCreateSession.mockResolvedValue('new-session-id');
   });
 
@@ -455,9 +472,10 @@ describe('StartSeshDrawer', () => {
     expect(mockActivateSession).not.toHaveBeenCalled();
   });
 
-  it('does not call activateSession when localBoardPath is null', async () => {
+  it('does not call activateSession when local and bridge state are both null', async () => {
     mockLocalBoardPath = null;
     mockLocalBoardDetails = null;
+    mockBridgeBoardDetails = null;
 
     render(<StartSeshDrawer open onClose={vi.fn()} />);
 
@@ -468,6 +486,55 @@ describe('StartSeshDrawer', () => {
     });
 
     expect(mockActivateSession).not.toHaveBeenCalled();
+  });
+
+  it('activates session via bridge fallback when local state is null (board route injector active)', async () => {
+    // This is the core bug scenario: user is on a board route, the bridge injector
+    // is active so localBoardPath/localBoardDetails are null, but the bridge context
+    // has valid board details and queue data.
+    mockLocalBoardPath = null;
+    mockLocalBoardDetails = null;
+    mockPathname = '/b/kilter-original-12x12/40/list';
+    mockBridgeBoardDetails = { board_name: 'kilter', layout_id: 1, size_id: 10, set_ids: [1, 2] };
+    mockBridgeAngle = 40;
+
+    const bridgeItem = makeQueueItem('bq1', 'Bridge Climb');
+    mockBridgeQueue = [bridgeItem];
+    mockBridgeCurrentClimbQueueItem = bridgeItem;
+
+    render(<StartSeshDrawer open onClose={vi.fn()} />);
+
+    // Board is auto-selected via pathname match, just submit
+    await submitSesh();
+
+    await waitFor(() => {
+      expect(mockCreateSession).toHaveBeenCalled();
+    });
+
+    // Queue should be transferred from bridge state
+    expect(mockSetInitialQueueForSession).toHaveBeenCalledWith(
+      'new-session-id',
+      [bridgeItem],
+      bridgeItem,
+      undefined,
+    );
+
+    // activateSession should fire using bridge board details
+    expect(mockActivateSession).toHaveBeenCalledWith({
+      sessionId: 'new-session-id',
+      sessionName: undefined,
+      boardPath: '/b/kilter-original-12x12',
+      boardDetails: mockBridgeBoardDetails,
+      parsedParams: {
+        board_name: 'kilter',
+        layout_id: 1,
+        size_id: 10,
+        set_ids: [1, 2],
+        angle: 40,
+      },
+      namedBoardName: 'Kilter',
+      namedBoardUuid: 'board-1',
+    });
   });
 
   it('renders with bottom placement', () => {
