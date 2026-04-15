@@ -377,6 +377,51 @@ describe('useSaveTick', () => {
     });
   });
 
+  it('does not recreate cleared logbook cache on late success', async () => {
+    let resolveRequest: (value: unknown) => void;
+    mockRequest.mockReturnValue(
+      new Promise((resolve) => { resolveRequest = resolve; }),
+    );
+
+    const { wrapper, queryClient } = createTestWrapper();
+
+    queryClient.setQueryData(accumulatedLogbookQueryKey('kilter'), []);
+
+    const { result } = renderHook(() => useSaveTick('kilter'), { wrapper });
+
+    act(() => {
+      result.current.mutate(createTickOptions({ status: 'flash', attemptCount: 1 }));
+    });
+
+    await waitFor(() => {
+      const data = queryClient.getQueryData(accumulatedLogbookQueryKey('kilter')) as LogbookEntry[] | undefined;
+      expect(data?.length).toBe(1);
+      expect(data?.[0].uuid).toMatch(/^temp-/);
+    });
+
+    act(() => {
+      queryClient.removeQueries({ queryKey: ['logbook', 'kilter'] });
+    });
+
+    expect(queryClient.getQueryData(accumulatedLogbookQueryKey('kilter'))).toBeUndefined();
+
+    await act(async () => {
+      resolveRequest!({
+        saveTick: createSavedTick({
+          uuid: 'real-after-clear',
+          status: 'flash',
+          attemptCount: 1,
+        }),
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(queryClient.getQueryData(accumulatedLogbookQueryKey('kilter'))).toBeUndefined();
+  });
+
   it('propagates GraphQL errors to the caller', async () => {
     const graphqlError: Error & { response?: { errors: { message: string }[] } } = new Error('GraphQL error');
     graphqlError.response = {

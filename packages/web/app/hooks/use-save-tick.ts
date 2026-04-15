@@ -110,8 +110,8 @@ export function useSaveTick(boardName: BoardName) {
     },
     onSuccess: (savedTick, options, context) => {
       const savedEntry = toLogbookEntry(savedTick);
-      queryClient.setQueryData<LogbookEntry[]>(
-        accumulatedKey,
+      queryClient.setQueriesData<LogbookEntry[]>(
+        { queryKey: accumulatedKey, exact: true },
         (existing = []) => {
           if (!context?.tempUuid) {
             return existing.some((entry) => entry.uuid === savedEntry.uuid)
@@ -148,8 +148,8 @@ export function useSaveTick(boardName: BoardName) {
       // the caller (e.g. QuickTickBar's .catch → onError callback) to avoid
       // duplicate snackbars.
       if (context?.tempUuid) {
-        queryClient.setQueryData<LogbookEntry[]>(
-          accumulatedKey,
+        queryClient.setQueriesData<LogbookEntry[]>(
+          { queryKey: accumulatedKey, exact: true },
           (existing = []) => existing.filter((entry) => entry.uuid !== context.tempUuid),
         );
       }
