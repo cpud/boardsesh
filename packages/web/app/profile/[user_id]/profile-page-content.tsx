@@ -172,23 +172,6 @@ export default function ProfilePageContent({
       </Box>
 
       <Box component="main" className={styles.content}>
-        {profile && (
-          <ProfileHeader
-            userId={userId}
-            profile={profile}
-            isOwnProfile={isOwnProfile}
-            statisticsSummary={statisticsSummary}
-            loadingProfileStats={loadingProfileStats}
-            onProfileUpdate={setProfile}
-            aggregatedTimeframe={aggregatedTimeframe}
-            onAggregatedTimeframeChange={setAggregatedTimeframe}
-            loadingAggregated={loadingAggregated}
-            aggregatedStackedBars={aggregatedStackedBars}
-            aggregatedFlashRedpointBars={aggregatedFlashRedpointBars}
-            vPointsTimeline={vPointsTimeline}
-          />
-        )}
-
         <Tabs
           value={effectiveTab}
           onChange={handleTabChange}
@@ -201,7 +184,24 @@ export default function ProfilePageContent({
         </Tabs>
 
         {effectiveTab === 'progress' && (
-          <BoardStatsSection
+          <>
+            {profile && (
+              <ProfileHeader
+                userId={userId}
+                profile={profile}
+                isOwnProfile={isOwnProfile}
+                statisticsSummary={statisticsSummary}
+                loadingProfileStats={loadingProfileStats}
+                onProfileUpdate={setProfile}
+                aggregatedTimeframe={aggregatedTimeframe}
+                onAggregatedTimeframeChange={setAggregatedTimeframe}
+                loadingAggregated={loadingAggregated}
+                aggregatedStackedBars={aggregatedStackedBars}
+                aggregatedFlashRedpointBars={aggregatedFlashRedpointBars}
+                vPointsTimeline={vPointsTimeline}
+              />
+            )}
+            <BoardStatsSection
             selectedBoard={selectedBoard}
             onBoardChange={setSelectedBoard}
             timeframe={timeframe}
@@ -219,6 +219,7 @@ export default function ProfilePageContent({
             weeklyToDate={weeklyToDate}
             onWeeklyToDateChange={setWeeklyToDate}
           />
+          </>
         )}
 
         {effectiveTab === 'sessions' && (
