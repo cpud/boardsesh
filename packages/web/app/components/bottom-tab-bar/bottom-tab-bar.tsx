@@ -209,7 +209,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
   };
 
   // Whether we're currently on a board page (URL derived from pathname is reliable)
-  const isOnBoardPage = pathname.startsWith('/b/') || (!!effectiveBoardDetails && pathname !== '/' && !pathname.startsWith('/profile') && !pathname.startsWith('/you') && !pathname.startsWith('/playlists'));
+  const isOnBoardPage = pathname.startsWith('/b/') || (!!effectiveBoardDetails && pathname !== '/' && !pathname.startsWith('/profile') && !pathname.startsWith('/you') && !pathname.startsWith('/playlists') && !pathname.startsWith('/notifications'));
 
   const handleClimbsTab = async () => {
         setIsCreatePlaylistOpen(false);

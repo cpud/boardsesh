@@ -43,7 +43,7 @@ vi.mock('../db/queries/util/hold-state', () => ({
 }));
 
 import type { ConnectionContext } from '@boardsesh/shared-schema';
-import { setterFollowMutations } from '../graphql/resolvers/social/setter-follows';
+import { setterFollowMutations, setterFollowQueries } from '../graphql/resolvers/social/setter-follows';
 
 function makeCtx(overrides: Partial<ConnectionContext> = {}): ConnectionContext {
   return {
@@ -241,5 +241,173 @@ describe('unfollowSetter mutation', () => {
     expect(result).toBe(true);
     // Delete called twice: setter_follows and user_follows
     expect(mockDb.delete).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('userClimbs query', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should reject empty userId', async () => {
+    const ctx = makeCtx();
+    await expect(
+      setterFollowQueries.userClimbs(null, { input: { userId: '' } }, ctx),
+    ).rejects.toThrow();
+  });
+
+  it('should return climbs for user with no linked usernames', async () => {
+    const ctx = makeCtx();
+
+    // 1. userBoardMappings lookup → no mappings
+    const mappingsChain = createMockChain([]);
+    mockDb.select.mockReturnValueOnce(mappingsChain);
+
+    // 2. Count query → 1 climb
+    const countChain = createMockChain([{ count: 1 }]);
+    mockDb.select.mockReturnValueOnce(countChain);
+
+    // 3. Climbs query → one result
+    const climbsChain = createMockChain([{
+      uuid: 'climb-1',
+      layoutId: 1,
+      boardType: 'kilter',
+      setter_username: 'setter1',
+      name: 'Test Climb',
+      description: '',
+      frames: 'abc',
+      statsAngle: 40,
+      ascensionist_count: 10,
+      difficulty_id: 20,
+      quality_average: 3.5,
+      difficulty_error: 0.1,
+      benchmark_difficulty: null,
+    }]);
+    mockDb.select.mockReturnValueOnce(climbsChain);
+
+    const result = await setterFollowQueries.userClimbs(
+      null,
+      { input: { userId: 'user-123' } },
+      ctx,
+    );
+
+    expect(result.totalCount).toBe(1);
+    expect(result.hasMore).toBe(false);
+    expect(result.climbs).toHaveLength(1);
+    expect(result.climbs[0].uuid).toBe('climb-1');
+    expect(result.climbs[0].name).toBe('Test Climb');
+  });
+
+  it('should include Aurora-linked climbs via board mappings', async () => {
+    const ctx = makeCtx();
+
+    // 1. userBoardMappings → linked username
+    const mappingsChain = createMockChain([{ boardUsername: 'aurora-setter' }]);
+    mockDb.select.mockReturnValueOnce(mappingsChain);
+
+    // 2. Count query → 2 climbs
+    const countChain = createMockChain([{ count: 2 }]);
+    mockDb.select.mockReturnValueOnce(countChain);
+
+    // 3. Climbs query → two results
+    const climbsChain = createMockChain([
+      {
+        uuid: 'climb-direct',
+        layoutId: 1,
+        boardType: 'kilter',
+        setter_username: 'user-123',
+        name: 'Direct Climb',
+        description: '',
+        frames: '',
+        statsAngle: 40,
+        ascensionist_count: 5,
+        difficulty_id: 18,
+        quality_average: 4,
+        difficulty_error: 0,
+        benchmark_difficulty: null,
+      },
+      {
+        uuid: 'climb-aurora',
+        layoutId: 1,
+        boardType: 'kilter',
+        setter_username: 'aurora-setter',
+        name: 'Aurora Climb',
+        description: '',
+        frames: '',
+        statsAngle: 40,
+        ascensionist_count: 20,
+        difficulty_id: 22,
+        quality_average: 3,
+        difficulty_error: 0.2,
+        benchmark_difficulty: null,
+      },
+    ]);
+    mockDb.select.mockReturnValueOnce(climbsChain);
+
+    const result = await setterFollowQueries.userClimbs(
+      null,
+      { input: { userId: 'user-123' } },
+      ctx,
+    );
+
+    expect(result.totalCount).toBe(2);
+    expect(result.climbs).toHaveLength(2);
+    expect(result.climbs.map(c => c.uuid)).toEqual(['climb-direct', 'climb-aurora']);
+  });
+
+  it('should handle pagination with hasMore', async () => {
+    const ctx = makeCtx();
+
+    // 1. Mappings → none
+    const mappingsChain = createMockChain([]);
+    mockDb.select.mockReturnValueOnce(mappingsChain);
+
+    // 2. Count → 3
+    const countChain = createMockChain([{ count: 3 }]);
+    mockDb.select.mockReturnValueOnce(countChain);
+
+    // 3. Climbs → limit+1 results (3 results for limit=2, indicating hasMore)
+    const climbsChain = createMockChain([
+      { uuid: 'c1', layoutId: 1, boardType: 'kilter', setter_username: '', name: 'A', description: '', frames: '', statsAngle: 40, ascensionist_count: 0, difficulty_id: null, quality_average: 0, difficulty_error: 0, benchmark_difficulty: null },
+      { uuid: 'c2', layoutId: 1, boardType: 'kilter', setter_username: '', name: 'B', description: '', frames: '', statsAngle: 40, ascensionist_count: 0, difficulty_id: null, quality_average: 0, difficulty_error: 0, benchmark_difficulty: null },
+      { uuid: 'c3', layoutId: 1, boardType: 'kilter', setter_username: '', name: 'C', description: '', frames: '', statsAngle: 40, ascensionist_count: 0, difficulty_id: null, quality_average: 0, difficulty_error: 0, benchmark_difficulty: null },
+    ]);
+    mockDb.select.mockReturnValueOnce(climbsChain);
+
+    const result = await setterFollowQueries.userClimbs(
+      null,
+      { input: { userId: 'user-123', limit: 2 } },
+      ctx,
+    );
+
+    expect(result.hasMore).toBe(true);
+    expect(result.climbs).toHaveLength(2);
+    expect(result.totalCount).toBe(3);
+  });
+
+  it('should return empty climbs for user with no climbs', async () => {
+    const ctx = makeCtx();
+
+    // 1. Mappings → none
+    const mappingsChain = createMockChain([]);
+    mockDb.select.mockReturnValueOnce(mappingsChain);
+
+    // 2. Count → 0
+    const countChain = createMockChain([{ count: 0 }]);
+    mockDb.select.mockReturnValueOnce(countChain);
+
+    // 3. Climbs → empty
+    const climbsChain = createMockChain([]);
+    mockDb.select.mockReturnValueOnce(climbsChain);
+
+    const result = await setterFollowQueries.userClimbs(
+      null,
+      { input: { userId: 'user-123' } },
+      ctx,
+    );
+
+    expect(result.totalCount).toBe(0);
+    expect(result.hasMore).toBe(false);
+    expect(result.climbs).toHaveLength(0);
   });
 });

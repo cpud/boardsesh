@@ -169,6 +169,11 @@ export const queriesTypeDefs = /* GraphQL */ `
     """
     userProfileStats(userId: ID!): ProfileStats!
 
+    """
+    Get a user's percentile ranking based on distinct climbs ascended.
+    """
+    userClimbPercentile(userId: ID!): UserClimbPercentile!
+
     # ============================================
     # Playlist Queries (require auth)
     # ============================================

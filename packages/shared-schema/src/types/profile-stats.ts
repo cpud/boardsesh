@@ -17,3 +17,9 @@ export type ProfileStats = {
   totalDistinctClimbs: number;
   layoutStats: LayoutStats[];
 };
+
+export type UserClimbPercentile = {
+  totalDistinctClimbs: number;
+  percentile: number;
+  totalActiveUsers: number;
+};

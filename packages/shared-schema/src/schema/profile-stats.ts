@@ -38,4 +38,16 @@ export const profileStatsTypeDefs = /* GraphQL */ `
     "Per-layout statistics"
     layoutStats: [LayoutStats!]!
   }
+
+  """
+  A user's percentile ranking based on distinct climbs ascended.
+  """
+  type UserClimbPercentile {
+    "Number of distinct climbs the user has sent or flashed"
+    totalDistinctClimbs: Int!
+    "Percentile ranking (0-100). 95 means top 5%."
+    percentile: Float!
+    "Total number of users with at least one ascent"
+    totalActiveUsers: Int!
+  }
 `;

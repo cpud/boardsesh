@@ -64,6 +64,7 @@ export default function YouPageContent({
     statisticsSummary,
     hardestSend,
     hardestFlash,
+    percentile,
   } = useProfileData(userId, {
     initialProfile: initialProfile ?? undefined,
     initialProfileStats: initialProfileStats ?? undefined,
@@ -124,6 +125,7 @@ export default function YouPageContent({
               aggregatedStackedBars={aggregatedStackedBars}
               aggregatedFlashRedpointBars={aggregatedFlashRedpointBars}
               vPointsTimeline={vPointsTimeline}
+              percentile={percentile}
             />
             <BoardStatsSection
               selectedBoard={selectedBoard}

@@ -38,6 +38,7 @@ export interface StatsSummaryProps {
   aggregatedStackedBars: { bars: CssBarChartBar[]; legendEntries: LayoutLegendEntry[] } | null;
   aggregatedFlashRedpointBars: GroupedBar[] | null;
   vPointsTimeline: VPointsTimelineData | null;
+  percentile?: { totalDistinctClimbs: number; percentile: number; totalActiveUsers: number } | null;
 }
 
 export default function StatsSummary({
@@ -51,6 +52,7 @@ export default function StatsSummary({
   aggregatedStackedBars,
   aggregatedFlashRedpointBars,
   vPointsTimeline,
+  percentile,
 }: StatsSummaryProps) {
   if (loadingProfileStats || statisticsSummary.totalAscents === 0) {
     return null;
@@ -108,6 +110,36 @@ export default function StatsSummary({
           </Box>
         )}
       </Box>
+
+      {percentile && percentile.percentile > 0 && (
+        <Box sx={{ mb: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+            <Typography variant="caption" color="text.secondary">
+              Percentile
+            </Typography>
+            <Typography variant="caption" fontWeight={600}>
+              Top {Math.max(0.1, 100 - percentile.percentile).toFixed(percentile.percentile >= 99 ? 1 : 0)}%
+            </Typography>
+          </Box>
+          <Box sx={{
+            height: 8,
+            borderRadius: 4,
+            bgcolor: 'var(--neutral-100)',
+            overflow: 'hidden',
+          }}>
+            <Box sx={{
+              height: '100%',
+              width: `${percentile.percentile}%`,
+              borderRadius: 4,
+              bgcolor: themeTokens.colors.primary,
+              transition: 'width 0.5s ease',
+            }} />
+          </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+            More problems sent than {percentile.percentile.toFixed(0)}% of climbers
+          </Typography>
+        </Box>
+      )}
 
       {statisticsSummary.layoutPercentages.length > 1 && (
         <div className={styles.percentageBarContainer}>

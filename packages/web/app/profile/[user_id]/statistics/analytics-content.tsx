@@ -50,6 +50,7 @@ export default function AnalyticsContent({
     statisticsSummary,
     hardestSend,
     hardestFlash,
+    percentile,
   } = useProfileData(userId, {
     initialProfileStats: initialProfileStats ?? undefined,
     initialAllBoardsTicks,
@@ -70,6 +71,7 @@ export default function AnalyticsContent({
         aggregatedStackedBars={aggregatedStackedBars}
         aggregatedFlashRedpointBars={aggregatedFlashRedpointBars}
         vPointsTimeline={vPointsTimeline}
+        percentile={percentile}
       />
       <BoardStatsSection
         selectedBoard={selectedBoard}

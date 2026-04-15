@@ -107,6 +107,7 @@ function mockProfileDataReturn(overrides?: Partial<ReturnType<typeof useProfileD
     statisticsSummary: { totalAscents: 0, layoutPercentages: [] },
     hardestSend: null,
     hardestFlash: null,
+    percentile: null,
     ...overrides,
   };
 }
@@ -171,7 +172,7 @@ describe('ProfilePageContent', () => {
     expect(screen.getByTestId('nav-card-statistics')).toBeTruthy();
   });
 
-  it('always shows "Setting" nav card', () => {
+  it('always shows "Created Climbs" nav card', () => {
     const profile = makeProfile();
     mockUseProfileData.mockReturnValue(mockProfileDataReturn({ profile }));
 

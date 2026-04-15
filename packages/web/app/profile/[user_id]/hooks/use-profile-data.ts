@@ -10,6 +10,8 @@ import {
   GET_USER_PROFILE_STATS,
   type GetUserProfileStatsQueryVariables,
   type GetUserProfileStatsQueryResponse,
+  GET_USER_CLIMB_PERCENTILE,
+  type GetUserClimbPercentileQueryResponse,
 } from '@/app/lib/graphql/operations';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { useGradeFormat } from '@/app/hooks/use-grade-format';
@@ -65,6 +67,11 @@ export function useProfileData(userId: string, initialData?: InitialData) {
   const [loadingProfileStats, setLoadingProfileStats] = useState(!initialData?.initialProfileStats);
   const [weeklyFromDate, setWeeklyFromDate] = useState<string>('');
   const [weeklyToDate, setWeeklyToDate] = useState<string>('');
+  const [percentile, setPercentile] = useState<{
+    totalDistinctClimbs: number;
+    percentile: number;
+    totalActiveUsers: number;
+  } | null>(null);
 
   const isOwnProfile = session?.user?.id ? session.user.id === userId : (initialData?.initialIsOwnProfile ?? false);
   const hasCredentials = (profile?.credentials?.length ?? 0) > 0;
@@ -167,6 +174,19 @@ export function useProfileData(userId: string, initialData?: InitialData) {
     }
   }, [userId]);
 
+  const fetchPercentile = useCallback(async () => {
+    try {
+      const client = createGraphQLHttpClient(null);
+      const response = await client.request<GetUserClimbPercentileQueryResponse>(
+        GET_USER_CLIMB_PERCENTILE,
+        { userId },
+      );
+      setPercentile(response.userClimbPercentile);
+    } catch {
+      // Percentile is not critical — silently fail
+    }
+  }, [userId]);
+
   useEffect(() => {
     if (!initialData?.initialProfile && !initialData?.initialNotFound) fetchProfile();
   }, [fetchProfile, initialData?.initialProfile, initialData?.initialNotFound]);
@@ -178,6 +198,10 @@ export function useProfileData(userId: string, initialData?: InitialData) {
   useEffect(() => {
     if (!initialData?.initialProfileStats) fetchProfileStats();
   }, [fetchProfileStats, initialData?.initialProfileStats]);
+
+  useEffect(() => {
+    fetchPercentile();
+  }, [fetchPercentile]);
 
   const [hasChangedBoard, setHasChangedBoard] = useState(false);
   const handleBoardChange = useCallback((board: string) => {
@@ -301,5 +325,8 @@ export function useProfileData(userId: string, initialData?: InitialData) {
 
     // V-Points timeline
     vPointsTimeline,
+
+    // Percentile ranking
+    percentile,
   };
 }

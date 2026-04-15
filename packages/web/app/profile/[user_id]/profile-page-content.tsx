@@ -177,7 +177,7 @@ export default function ProfilePageContent({
           />
           <ProfileNavCard
             title="Created Climbs"
-            subtitle="Climbs they created"
+            subtitle={isOwnProfile ? "Climbs you created" : "Climbs they created"}
             href={`/profile/${userId}/climbs`}
             icon={<FitnessCenterOutlined />}
           />

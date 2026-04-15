@@ -328,6 +328,32 @@ export interface GetUserProfileStatsQueryResponse {
 }
 
 // ============================================
+// Climb Percentile Operations
+// ============================================
+
+export const GET_USER_CLIMB_PERCENTILE = gql`
+  query GetUserClimbPercentile($userId: ID!) {
+    userClimbPercentile(userId: $userId) {
+      totalDistinctClimbs
+      percentile
+      totalActiveUsers
+    }
+  }
+`;
+
+export interface GetUserClimbPercentileQueryVariables {
+  userId: string;
+}
+
+export interface GetUserClimbPercentileQueryResponse {
+  userClimbPercentile: {
+    totalDistinctClimbs: number;
+    percentile: number;
+    totalActiveUsers: number;
+  };
+}
+
+// ============================================
 // Tick Mutation Operations
 // ============================================
 
