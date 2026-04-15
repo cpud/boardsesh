@@ -59,7 +59,7 @@ export default function VPointsChart({ data }: VPointsChartProps) {
           },
         }]}
         height={160}
-        margin={{ top: 5, bottom: 30, left: 28, right: 5 }}
+        margin={{ top: 5, bottom: 30, left: 20, right: 2 }}
         hideLegend
       />
     </Box>
