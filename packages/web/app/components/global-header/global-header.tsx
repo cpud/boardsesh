@@ -10,7 +10,10 @@ import ClearOutlined from '@mui/icons-material/ClearOutlined';
 import FilterListOutlined from '@mui/icons-material/FilterListOutlined';
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
 import IosShareOutlined from '@mui/icons-material/IosShare';
+import NotificationsOutlined from '@mui/icons-material/NotificationsOutlined';
+import Badge from '@mui/material/Badge';
 import Link from 'next/link';
+import { useUnreadNotificationCount } from '@/app/hooks/use-unread-notification-count';
 import { useSession } from 'next-auth/react';
 import UnifiedSearchDrawer from '@/app/components/search-drawer/unified-search-drawer';
 import { shareWithFallback } from '@/app/lib/share-utils';
@@ -43,6 +46,7 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
   const { data: session } = useSession();
 
   const isOnBoardRoute = useIsOnBoardRoute();
+  const notificationUnreadCount = useUnreadNotificationCount();
   const { openClimbSearchDrawer, nameFilter, setNameFilter, hasActiveNonNameFilters: nonNameFiltersActive } = useSearchDrawerBridge();
   const pathname = usePathname();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -84,6 +88,16 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
             <IosShareOutlined />
           </IconButton>
         )}
+        <IconButton component={Link} href="/notifications" aria-label="Notifications" size="small">
+          <Badge
+            badgeContent={notificationUnreadCount}
+            color="error"
+            max={99}
+            sx={{ '& .MuiBadge-badge': { fontSize: 10, height: 16, minWidth: 16 } }}
+          >
+            <NotificationsOutlined />
+          </Badge>
+        </IconButton>
         <IconButton component={Link} href="/settings" aria-label="Settings" size="small">
           <SettingsOutlined />
         </IconButton>

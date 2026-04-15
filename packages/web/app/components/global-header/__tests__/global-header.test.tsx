@@ -89,6 +89,10 @@ vi.mock('@/app/lib/share-utils', () => ({
   shareWithFallback: (...args: unknown[]) => mockShareWithFallback(...args),
 }));
 
+vi.mock('@/app/hooks/use-unread-notification-count', () => ({
+  useUnreadNotificationCount: () => 3,
+}));
+
 import GlobalHeader from '../global-header';
 
 const mockBoardConfigs = {} as Parameters<typeof GlobalHeader>[0]['boardConfigs'];

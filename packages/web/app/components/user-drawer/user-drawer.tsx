@@ -7,7 +7,6 @@ import MuiButton from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import PersonOutlined from '@mui/icons-material/PersonOutlined';
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
-import ShowChartOutlined from '@mui/icons-material/ShowChartOutlined';
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
 import LoginOutlined from '@mui/icons-material/LoginOutlined';
 import HelpOutlineOutlined from '@mui/icons-material/HelpOutlineOutlined';
@@ -20,8 +19,6 @@ import PlayCircleOutlineOutlined from '@mui/icons-material/PlayCircleOutlineOutl
 import GroupOutlined from '@mui/icons-material/GroupOutlined';
 import LightModeOutlined from '@mui/icons-material/LightModeOutlined';
 import DarkModeOutlined from '@mui/icons-material/DarkModeOutlined';
-import NotificationsOutlined from '@mui/icons-material/NotificationsOutlined';
-import Badge from '@mui/material/Badge';
 
 import { useSession, signOut } from 'next-auth/react';
 import { useColorMode } from '@/app/hooks/use-color-mode';
@@ -48,7 +45,6 @@ import {
   formatRelativeTime,
   extractBoardName,
 } from '@/app/lib/session-history-db';
-import { useUnreadNotificationCount } from '@/app/hooks/use-unread-notification-count';
 import styles from './user-drawer.module.css';
 
 function asBoardName(value: string): BoardName | null {
@@ -80,7 +76,6 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
   const { mode, toggleMode } = useColorMode();
   const isMoonboard = boardDetails?.board_name === 'moonboard';
   const guardBoardSwitch = useBoardSwitchGuard();
-  const notificationUnreadCount = useUnreadNotificationCount();
 
   // Load recent sessions when drawer opens
   useEffect(() => {
@@ -206,15 +201,18 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
         <div className={styles.drawerBody}>
           {/* Profile section */}
           <div className={styles.profileSection}>
-            <MuiAvatar
-              sx={{ width: 64, height: 64 }}
-              src={userAvatar}
-              className={avatarClass}
-            >
-              {!userAvatar ? <PersonOutlined /> : null}
-            </MuiAvatar>
             {session?.user ? (
               <>
+                <MuiAvatar
+                  component="a"
+                  href={`/profile/${session.user.id}`}
+                  onClick={handleClose}
+                  sx={{ width: 64, height: 64, cursor: 'pointer' }}
+                  src={userAvatar}
+                  className={avatarClass}
+                >
+                  {!userAvatar ? <PersonOutlined /> : null}
+                </MuiAvatar>
                 {userName && (
                   <MuiTypography variant="body2" component="span" fontWeight={600} className={styles.userName}>
                     {userName}
@@ -227,6 +225,14 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
                 )}
               </>
             ) : (
+              <>
+              <MuiAvatar
+                sx={{ width: 64, height: 64 }}
+                src={userAvatar}
+                className={avatarClass}
+              >
+                {!userAvatar ? <PersonOutlined /> : null}
+              </MuiAvatar>
               <MuiButton
                 variant="contained"
                 startIcon={<LoginOutlined />}
@@ -237,6 +243,7 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
               >
                 Sign in
               </MuiButton>
+              </>
             )}
           </div>
 
@@ -270,37 +277,6 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
                 <span className={styles.menuItemIcon}><DashboardOutlined /></span>
                 <span className={styles.menuItemLabel}>My Boards</span>
               </button>
-            )}
-
-            {session?.user && (
-              <Link
-                href="/notifications"
-                className={styles.menuItem}
-                onClick={handleClose}
-              >
-                <span className={styles.menuItemIcon}>
-                  <Badge
-                    badgeContent={notificationUnreadCount}
-                    color="error"
-                    max={99}
-                    sx={{ '& .MuiBadge-badge': { fontSize: 10, height: 16, minWidth: 16 } }}
-                  >
-                    <NotificationsOutlined />
-                  </Badge>
-                </span>
-                <span className={styles.menuItemLabel}>Notifications</span>
-              </Link>
-            )}
-
-            {session?.user && (
-              <Link
-                href={`/profile/${session.user.id}`}
-                className={styles.menuItem}
-                onClick={handleClose}
-              >
-                <span className={styles.menuItemIcon}><ShowChartOutlined /></span>
-                <span className={styles.menuItemLabel}>Profile</span>
-              </Link>
             )}
 
             <Link
