@@ -57,6 +57,7 @@ const getActiveTab = (pathname: string): Tab => {
   if (pathname === '/') return 'home';
   if (pathname.endsWith('/create')) return 'create';
   if (pathname.startsWith('/feed')) return 'feed';
+  if (pathname.startsWith('/you')) return 'you';
   if (pathname.startsWith('/profile')) return 'you';
   if (pathname.startsWith('/playlists') || pathname.includes('/playlists')) return 'library';
   return 'climbs';
@@ -301,7 +302,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
       });
       return;
     }
-    router.push(`/profile/${session.user.id}`);
+    router.push('/you');
     track('Bottom Tab Bar', { tab: 'you' });
   };
 

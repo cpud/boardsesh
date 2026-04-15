@@ -1,31 +1,30 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
+import MuiCard from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 import { IosShare } from '@mui/icons-material';
+import TimelineOutlined from '@mui/icons-material/TimelineOutlined';
+import FitnessCenterOutlined from '@mui/icons-material/FitnessCenterOutlined';
+import ShowChartOutlined from '@mui/icons-material/ShowChartOutlined';
 import { EmptyState } from '@/app/components/ui/empty-state';
 import Logo from '@/app/components/brand/logo';
 import BackButton from '@/app/components/back-button';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { shareWithFallback } from '@/app/lib/share-utils';
-import ActivityFeed from '@/app/components/activity-feed/activity-feed';
-import LogbookFeed from '@/app/components/library/logbook-feed';
-import { useSession } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { CssBarChart } from '@/app/components/charts/css-bar-chart';
+import { useGradeFormat } from '@/app/hooks/use-grade-format';
 import type { GetUserProfileStatsQueryResponse } from '@/app/lib/graphql/operations/ticks';
 import styles from './profile-page.module.css';
 import { useProfileData } from './hooks/use-profile-data';
-import ProfileHeader from './components/profile-header';
-import BoardStatsSection from './components/board-stats-section';
+import { buildWeeklyBars } from './utils/chart-data-builders';
+import UserCard from './components/user-card';
+import ProfileNavCard from './components/profile-nav-card';
 import type { UserProfile, LogbookEntry } from './utils/profile-constants';
-
-type ProfileTab = 'progress' | 'sessions' | 'logbook';
-const VALID_TABS: ProfileTab[] = ['progress', 'sessions', 'logbook'];
 
 interface ProfilePageContentProps {
   userId: string;
@@ -47,9 +46,7 @@ export default function ProfilePageContent({
   initialNotFound,
 }: ProfilePageContentProps) {
   const { showMessage } = useSnackbar();
-  const { data: authSession, status: sessionStatus } = useSession();
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { gradeFormat } = useGradeFormat();
 
   const {
     loading,
@@ -57,28 +54,6 @@ export default function ProfilePageContent({
     profile,
     setProfile,
     isOwnProfile,
-    selectedBoard,
-    setSelectedBoard,
-    loadingStats,
-    filteredLogbook,
-    timeframe,
-    setTimeframe,
-    fromDate,
-    setFromDate,
-    toDate,
-    setToDate,
-    weeklyBars,
-    aggregatedFlashRedpointBars,
-    vPointsTimeline,
-    weeklyFromDate,
-    setWeeklyFromDate,
-    weeklyToDate,
-    setWeeklyToDate,
-    aggregatedTimeframe,
-    setAggregatedTimeframe,
-    loadingAggregated,
-    aggregatedStackedBars,
-    loadingProfileStats,
     statisticsSummary,
   } = useProfileData(userId, {
     initialProfile: initialProfile ?? undefined,
@@ -89,30 +64,17 @@ export default function ProfilePageContent({
     initialNotFound,
   });
 
-  // Tab state from URL search params
-  const tabParam = searchParams.get('tab');
-  const activeProfileTab: ProfileTab = VALID_TABS.includes(tabParam as ProfileTab)
-    ? (tabParam as ProfileTab)
-    : 'progress';
-
-  // Only allow logbook tab on own profile
-  const effectiveTab = activeProfileTab === 'logbook' && !isOwnProfile
-    ? 'progress'
-    : activeProfileTab;
-
-  const handleTabChange = useCallback((_: React.SyntheticEvent, value: ProfileTab) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value === 'progress') {
-      params.delete('tab');
-    } else {
-      params.set('tab', value);
-    }
-    const qs = params.toString();
-    router.push(qs ? `/profile/${userId}?${qs}` : `/profile/${userId}`, { scroll: false });
-  }, [router, searchParams, userId]);
-
-  // Determine if user is authenticated (for ActivityFeed)
-  const isAuthenticated = sessionStatus === 'authenticated';
+  // Build overview bars: last 3 months across all boards
+  const overviewBars = useMemo(() => {
+    if (!initialAllBoardsTicks) return null;
+    const allTicks = Object.values(initialAllBoardsTicks).flat();
+    if (allTicks.length === 0) return null;
+    const now = new Date();
+    const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+    const fromDate = threeMonthsAgo.toISOString().split('T')[0];
+    const toDate = now.toISOString().split('T')[0];
+    return buildWeeklyBars(allTicks, fromDate, toDate, gradeFormat);
+  }, [initialAllBoardsTicks, gradeFormat]);
 
   const handleShare = useCallback(async () => {
     const displayName = profile?.profile?.displayName || profile?.name || 'Climber';
@@ -162,7 +124,7 @@ export default function ProfilePageContent({
         <BackButton fallbackUrl="/" />
         <Logo size="sm" showText={false} />
         <Typography variant="h6" component="h4" className={styles.headerTitle}>
-          {isOwnProfile ? 'You' : 'Profile'}
+          Profile
         </Typography>
         {profile && (
           <IconButton onClick={handleShare} aria-label="Share profile">
@@ -172,66 +134,56 @@ export default function ProfilePageContent({
       </Box>
 
       <Box component="main" className={styles.content}>
-        <Tabs
-          value={effectiveTab}
-          onChange={handleTabChange}
-          variant="fullWidth"
-          sx={{ mb: 2 }}
-        >
-          <Tab label="Progress" value="progress" />
-          <Tab label="Sessions" value="sessions" />
-          {isOwnProfile && <Tab label="Logbook" value="logbook" />}
-        </Tabs>
-
-        {effectiveTab === 'progress' && (
-          <>
-            {profile && (
-              <ProfileHeader
-                userId={userId}
-                profile={profile}
-                isOwnProfile={isOwnProfile}
-                statisticsSummary={statisticsSummary}
-                loadingProfileStats={loadingProfileStats}
-                onProfileUpdate={setProfile}
-                aggregatedTimeframe={aggregatedTimeframe}
-                onAggregatedTimeframeChange={setAggregatedTimeframe}
-                loadingAggregated={loadingAggregated}
-                aggregatedStackedBars={aggregatedStackedBars}
-                aggregatedFlashRedpointBars={aggregatedFlashRedpointBars}
-                vPointsTimeline={vPointsTimeline}
-              />
-            )}
-            <BoardStatsSection
-            selectedBoard={selectedBoard}
-            onBoardChange={setSelectedBoard}
-            timeframe={timeframe}
-            onTimeframeChange={setTimeframe}
-            fromDate={fromDate}
-            onFromDateChange={setFromDate}
-            toDate={toDate}
-            onToDateChange={setToDate}
-            loadingStats={loadingStats}
-            filteredLogbook={filteredLogbook}
-            weeklyBars={weeklyBars}
-            isOwnProfile={isOwnProfile}
-            weeklyFromDate={weeklyFromDate}
-            onWeeklyFromDateChange={setWeeklyFromDate}
-            weeklyToDate={weeklyToDate}
-            onWeeklyToDateChange={setWeeklyToDate}
-          />
-          </>
-        )}
-
-        {effectiveTab === 'sessions' && (
-          <ActivityFeed
-            isAuthenticated={isAuthenticated}
+        {profile && (
+          <UserCard
             userId={userId}
+            profile={profile}
+            isOwnProfile={isOwnProfile}
+            onProfileUpdate={setProfile}
           />
         )}
 
-        {effectiveTab === 'logbook' && isOwnProfile && (
-          <LogbookFeed />
+        {/* Overview: last 3 months activity */}
+        {overviewBars && overviewBars.length > 0 && (
+          <MuiCard className={styles.statsCard}>
+            <CardContent>
+              <Typography variant="body2" component="span" fontWeight={600} sx={{ mb: 1, display: 'block' }}>
+                Last 3 months
+              </Typography>
+              <CssBarChart
+                bars={overviewBars}
+                height={100}
+                mobileHeight={80}
+                showLegend={false}
+                ariaLabel="Activity over the last 3 months"
+              />
+            </CardContent>
+          </MuiCard>
         )}
+
+        {/* Navigation cards */}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <ProfileNavCard
+            title="Sessions"
+            subtitle="Climbing sessions and activity"
+            href={`/profile/${userId}/sessions`}
+            icon={<TimelineOutlined />}
+          />
+          <ProfileNavCard
+            title="Analytics"
+            subtitle={statisticsSummary.totalAscents > 0 ? `${statisticsSummary.totalAscents} distinct climbs` : 'Grades, progression, and more'}
+            href={`/profile/${userId}/analytics`}
+            icon={<ShowChartOutlined />}
+          />
+          {profile?.credentials && profile.credentials.length > 0 && (
+            <ProfileNavCard
+              title="Their Climbs"
+              subtitle="Problems they created"
+              href={`/profile/${userId}/climbs`}
+              icon={<FitnessCenterOutlined />}
+            />
+          )}
+        </Box>
       </Box>
     </Box>
   );
