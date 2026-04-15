@@ -389,18 +389,42 @@ export async function runInferredSessionBuilderBatched(options?: {
 const ADOPT_WINDOW_MS = 2 * 60 * 60 * 1000;
 
 /**
+ * Extract board type from a boardPath string.
+ * Returns null for slug-based paths (/b/...) where the type isn't in the URL.
+ */
+export function extractBoardType(boardPath: string): string | null {
+  if (boardPath.startsWith('/b/')) return null;
+  const segments = boardPath.split('/').filter(Boolean);
+  return segments[0] || null;
+}
+
+/**
  * When a user starts a party session, adopt any recent solo ticks (within 2 hours)
  * that don't already belong to a party session. This prevents the common case where
  * a user logs a few climbs, then starts a party session, and ends up with two
  * separate sessions for what was clearly one climbing session.
+ *
+ * @param boardType - When provided, only adopts ticks matching this board type
+ *                    to avoid pulling e.g. Kilter ticks into a Tension session.
  */
 export async function adoptRecentTicksForSession(
   userId: string,
   sessionId: string,
+  boardType?: string | null,
 ): Promise<number> {
   const cutoff = new Date(Date.now() - ADOPT_WINDOW_MS).toISOString();
 
   return db.transaction(async (tx) => {
+    // Build WHERE conditions
+    const conditions = [
+      eq(dbSchema.boardseshTicks.userId, userId),
+      isNull(dbSchema.boardseshTicks.sessionId),
+      gte(dbSchema.boardseshTicks.climbedAt, cutoff),
+    ];
+    if (boardType) {
+      conditions.push(eq(dbSchema.boardseshTicks.boardType, boardType));
+    }
+
     // Find recent ticks with no party session assignment
     const recentTicks = await tx
       .select({
@@ -408,13 +432,7 @@ export async function adoptRecentTicksForSession(
         inferredSessionId: dbSchema.boardseshTicks.inferredSessionId,
       })
       .from(dbSchema.boardseshTicks)
-      .where(
-        and(
-          eq(dbSchema.boardseshTicks.userId, userId),
-          isNull(dbSchema.boardseshTicks.sessionId),
-          gte(dbSchema.boardseshTicks.climbedAt, cutoff),
-        ),
-      );
+      .where(and(...conditions));
 
     if (recentTicks.length === 0) return 0;
 
@@ -442,7 +460,7 @@ export async function adoptRecentTicksForSession(
         .from(dbSchema.boardseshTicks)
         .where(eq(dbSchema.boardseshTicks.inferredSessionId, inferredId));
 
-      if (remaining.count === 0) {
+      if (!remaining || remaining.count === 0) {
         await tx
           .delete(dbSchema.inferredSessions)
           .where(eq(dbSchema.inferredSessions.id, inferredId));

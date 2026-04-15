@@ -21,7 +21,7 @@ import { esp32Controllers, userBoards } from '@boardsesh/db/schema/app';
 import { sessionBoards, sessions } from '../../../db/schema';
 import { eq, inArray } from 'drizzle-orm';
 import { generateSessionSummary } from './session-summary';
-import { adoptRecentTicksForSession } from '../../../jobs/inferred-session-builder';
+import { adoptRecentTicksForSession, extractBoardType } from '../../../jobs/inferred-session-builder';
 
 /**
  * Auto-authorize all controllers owned by a user for a session.
@@ -101,7 +101,8 @@ export const sessionMutations = {
       authorizeUserControllersForSession(ctx.userId, sessionId);
       // Adopt recent solo ticks into this session. The session row exists at
       // this point (ensureSessionRecordExists ran inside roomManager.joinSession).
-      adoptRecentTicksForSession(ctx.userId, sessionId).catch((err) => {
+      const boardTypeFromPath = extractBoardType(boardPath);
+      adoptRecentTicksForSession(ctx.userId, sessionId, boardTypeFromPath).catch((err) => {
         console.error(`[joinSession] Failed to adopt recent ticks for session ${sessionId}:`, err);
       });
     }
@@ -234,7 +235,8 @@ export const sessionMutations = {
       // Adopt recent solo ticks now that the session row exists in board_sessions
       // (boardsesh_ticks.session_id is a FK to board_sessions.id)
       if (ctx.isAuthenticated && ctx.userId) {
-        adoptRecentTicksForSession(ctx.userId, sessionId).catch((err) => {
+        const boardTypeFromPath = extractBoardType(input.boardPath);
+        adoptRecentTicksForSession(ctx.userId, sessionId, boardTypeFromPath).catch((err) => {
           console.error(`[createSession] Failed to adopt recent ticks for session ${sessionId}:`, err);
         });
       }
@@ -261,15 +263,8 @@ export const sessionMutations = {
       };
     }
 
-    // HTTP + discoverable: session row was already created by createDiscoverableSession above.
-    // Adopt recent solo ticks into it.
-    if (input.discoverable && ctx.isAuthenticated && ctx.userId) {
-      adoptRecentTicksForSession(ctx.userId, sessionId).catch((err) => {
-        console.error(`[createSession] Failed to adopt recent ticks for session ${sessionId}:`, err);
-      });
-    }
-    // HTTP + non-discoverable: no board_sessions row exists yet (created when
-    // the client joins via WebSocket). Adoption is handled by joinSession below.
+    // HTTP path: adoption is handled by joinSession when the client connects
+    // via WebSocket (avoids double invocation for HTTP + discoverable sessions).
 
     // HTTP path: return session metadata only; client joins via WebSocket later
     if (DEBUG) console.log(`[createSession] HTTP request - returning session metadata without joining`);
