@@ -6,7 +6,7 @@ import * as dbSchema from '@boardsesh/db/schema';
 import { getGradeLabel } from '@boardsesh/db/queries';
 import { validateInput } from '../../shared/helpers';
 import { GetPlaylistClimbsInputSchema } from '../../../../validation/schemas';
-import { getBoardTables, isValidBoardName } from '../../../../db/queries/util/table-select';
+import { UNIFIED_TABLES, isValidBoardName } from '../../../../db/queries/util/table-select';
 import { verifyPlaylistAccess } from '../helpers/enrichment';
 
 export interface PlaylistClimbsInput {
@@ -39,7 +39,7 @@ async function fetchSpecificBoardClimbs(
     throw new Error(`Invalid board name: ${boardName}. Must be one of: ${SUPPORTED_BOARDS.join(', ')}`);
   }
 
-  const tables = getBoardTables(boardName);
+  const tables = UNIFIED_TABLES;
 
   // Build climb join conditions
   const climbJoinConditions = [
@@ -122,7 +122,7 @@ async function fetchAllBoardsClimbs(
   pageSize: number,
 ): Promise<{ climbs: Climb[]; hasMore: boolean }> {
   const DEFAULT_ANGLE = 40;
-  const tables = getBoardTables('kilter'); // All unified — just need table refs
+  const tables = UNIFIED_TABLES;
 
   const results = await db
     .select({

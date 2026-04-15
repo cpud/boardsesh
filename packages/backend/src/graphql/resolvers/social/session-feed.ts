@@ -256,6 +256,7 @@ export const sessionFeedQueries = {
         layoutId: dbSchema.boardClimbs.layoutId,
         frames: dbSchema.boardClimbs.frames,
         difficultyName: dbSchema.boardDifficultyGrades.boulderName,
+        consensusDifficulty: dbSchema.boardClimbStats.displayDifficulty,
       })
       .from(dbSchema.boardseshTicks)
       .leftJoin(
@@ -270,6 +271,14 @@ export const sessionFeedQueries = {
         and(
           eq(dbSchema.boardseshTicks.difficulty, dbSchema.boardDifficultyGrades.difficulty),
           eq(dbSchema.boardseshTicks.boardType, dbSchema.boardDifficultyGrades.boardType),
+        ),
+      )
+      .leftJoin(
+        dbSchema.boardClimbStats,
+        and(
+          eq(dbSchema.boardseshTicks.climbUuid, dbSchema.boardClimbStats.climbUuid),
+          eq(dbSchema.boardseshTicks.boardType, dbSchema.boardClimbStats.boardType),
+          eq(dbSchema.boardseshTicks.angle, dbSchema.boardClimbStats.angle),
         ),
       )
       .where(tickCondition)
@@ -296,7 +305,10 @@ export const sessionFeedQueries = {
     const tickVoteMap = new Map(tickVoteCounts.map((v) => [v.entityId, Number(v.upvotes)]));
 
     // Build ticks (totalAttempts added below)
-    const ticks: SessionDetailTick[] = tickRows.map((row) => ({
+    const ticks: SessionDetailTick[] = tickRows.map((row) => {
+      const effectiveDifficulty = row.tick.difficulty ?? (row.consensusDifficulty != null ? Math.round(row.consensusDifficulty) : null);
+      const effectiveDifficultyName = row.difficultyName || (effectiveDifficulty != null ? getGradeLabel(effectiveDifficulty) : null) || null;
+      return {
       uuid: row.tick.uuid,
       userId: row.tick.userId,
       climbUuid: row.tick.climbUuid,
@@ -306,8 +318,8 @@ export const sessionFeedQueries = {
       angle: row.tick.angle,
       status: row.tick.status,
       attemptCount: row.tick.attemptCount,
-      difficulty: row.tick.difficulty,
-      difficultyName: row.difficultyName || null,
+      difficulty: effectiveDifficulty,
+      difficultyName: effectiveDifficultyName,
       quality: row.tick.quality,
       isMirror: row.tick.isMirror ?? false,
       isBenchmark: row.tick.isBenchmark ?? false,
@@ -317,7 +329,7 @@ export const sessionFeedQueries = {
       climbedAt: row.tick.climbedAt,
       upvotes: tickVoteMap.get(row.tick.uuid) ?? 0,
       totalAttempts: null,
-    }));
+    };});
 
     // Compute totalAttempts for each tick: sum of attemptCount since last
     // successful ascent (flash/send) by the same user on the same climb.
@@ -432,11 +444,16 @@ export const sessionFeedQueries = {
       (new Date(lastTickAt).getTime() - new Date(firstTickAt).getTime()) / 60000,
     ) || null;
 
-    // Hardest grade
+    // Hardest grade (use effective difficulty with consensus fallback)
     const gradesSorted = tickRows
-      .filter((r) => r.difficultyName && (r.tick.status === 'flash' || r.tick.status === 'send'))
-      .sort((a, b) => (b.tick.difficulty ?? 0) - (a.tick.difficulty ?? 0));
-    const hardestGrade = gradesSorted.length > 0 ? gradesSorted[0].difficultyName : null;
+      .map((r) => {
+        const effDiff = r.tick.difficulty ?? (r.consensusDifficulty != null ? Math.round(r.consensusDifficulty) : null);
+        const effName = r.difficultyName || (effDiff != null ? getGradeLabel(effDiff) : null) || null;
+        return { ...r, effDiff, effName };
+      })
+      .filter((r) => r.effName && (r.tick.status === 'flash' || r.tick.status === 'send'))
+      .sort((a, b) => (b.effDiff ?? 0) - (a.effDiff ?? 0));
+    const hardestGrade = gradesSorted.length > 0 ? gradesSorted[0].effName : null;
 
     // Vote/comment counts
     const [voteData] = await db
@@ -635,7 +652,7 @@ async function fetchGradeDistributionBatch(
   const result = await db.execute(sql`
     SELECT
       COALESCE(t.session_id, t.inferred_session_id) AS effective_session_id,
-      t.difficulty AS diff_num,
+      COALESCE(t.difficulty, ROUND(bcs.display_difficulty)::int) AS diff_num,
       COUNT(*) FILTER (WHERE t.status = 'flash')::int AS flash,
       COUNT(*) FILTER (WHERE t.status = 'send')::int AS send,
       (
@@ -643,10 +660,11 @@ async function fetchGradeDistributionBatch(
         + COALESCE(SUM(t.attempt_count) FILTER (WHERE t.status = 'attempt'), 0)
       )::int AS attempt
     FROM boardsesh_ticks t
+    LEFT JOIN board_climb_stats bcs ON bcs.climb_uuid = t.climb_uuid AND bcs.board_type = t.board_type AND bcs.angle = t.angle
     WHERE COALESCE(t.session_id, t.inferred_session_id) IN ${sql`(${sql.join(sessionIds.map(id => sql`${id}`), sql`, `)})`}
-      AND t.difficulty IS NOT NULL
-    GROUP BY effective_session_id, t.difficulty
-    ORDER BY t.difficulty DESC
+      AND COALESCE(t.difficulty, ROUND(bcs.display_difficulty)::int) IS NOT NULL
+    GROUP BY effective_session_id, diff_num
+    ORDER BY diff_num DESC
   `);
 
   const rows = (result as unknown as { rows: Array<{

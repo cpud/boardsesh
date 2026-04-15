@@ -1,4 +1,5 @@
 import type { SessionGradeDistributionItem } from '@boardsesh/shared-schema';
+import { getGradeLabel } from '@boardsesh/db/queries';
 
 /**
  * Compute session aggregate stats from tick rows.
@@ -31,14 +32,18 @@ export function buildGradeDistributionFromTicks(
   tickRows: Array<{
     tick: { status: string; difficulty: number | null; boardType: string; attemptCount: number };
     difficultyName: string | null;
+    consensusDifficulty?: number | null;
   }>,
 ): SessionGradeDistributionItem[] {
   const gradeMap = new Map<string, { grade: string; difficulty: number; flash: number; send: number; attempt: number }>();
 
   for (const row of tickRows) {
-    if (row.tick.difficulty == null || !row.difficultyName) continue;
-    const key = `${row.difficultyName}:${row.tick.difficulty}`;
-    const existing = gradeMap.get(key) ?? { grade: row.difficultyName, difficulty: row.tick.difficulty, flash: 0, send: 0, attempt: 0 };
+    const effectiveDifficulty = row.tick.difficulty ?? (row.consensusDifficulty != null ? Math.round(row.consensusDifficulty) : null);
+    if (effectiveDifficulty == null) continue;
+    const effectiveGradeName = row.difficultyName || getGradeLabel(effectiveDifficulty) || null;
+    if (!effectiveGradeName) continue;
+    const key = `${effectiveGradeName}:${effectiveDifficulty}`;
+    const existing = gradeMap.get(key) ?? { grade: effectiveGradeName, difficulty: effectiveDifficulty, flash: 0, send: 0, attempt: 0 };
 
     if (row.tick.status === 'flash') existing.flash++;
     else if (row.tick.status === 'send') {

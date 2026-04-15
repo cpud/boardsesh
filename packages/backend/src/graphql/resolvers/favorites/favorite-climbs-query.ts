@@ -6,7 +6,7 @@ import * as dbSchema from '@boardsesh/db/schema';
 import { getGradeLabel } from '@boardsesh/db/queries';
 import { requireAuthenticated, validateInput } from '../shared/helpers';
 import { GetUserFavoriteClimbsInputSchema } from '../../../validation/schemas';
-import { getBoardTables, isValidBoardName } from '../../../db/queries/util/table-select';
+import { UNIFIED_TABLES, isValidBoardName } from '../../../db/queries/util/table-select';
 
 export const favoriteClimbsQuery = {
   userFavoriteClimbs: async (
@@ -34,7 +34,7 @@ export const favoriteClimbsQuery = {
 
     const page = input.page ?? 0;
     const pageSize = input.pageSize ?? 20;
-    const tables = getBoardTables(boardName);
+    const tables = UNIFIED_TABLES;
 
     // Get total count of user's favorites for this board
     const countResult = await db

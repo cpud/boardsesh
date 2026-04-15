@@ -14,7 +14,7 @@ import {
   UserClimbsInputSchema,
 } from '../../../validation/schemas';
 import { publishSocialEvent } from '../../../events/index';
-import { getBoardTables, isValidBoardName } from '../../../db/queries/util/table-select';
+import { UNIFIED_TABLES, isValidBoardName } from '../../../db/queries/util/table-select';
 
 /** Default angle fallback when no angle specified or no stats exist. 40 is the most common training angle. */
 const DEFAULT_ANGLE = 40;
@@ -213,7 +213,7 @@ export const setterFollowQueries = {
 
       const angle = validatedInput.angle ?? DEFAULT_ANGLE;
       const { layoutId, sizeId } = validatedInput;
-      const tables = getBoardTables(boardName);
+      const tables = UNIFIED_TABLES;
 
       // Build WHERE conditions for board filter
       const filterConditions: ReturnType<typeof eq>[] = [
@@ -323,7 +323,7 @@ export const setterFollowQueries = {
       const totalCount = Number(countResult?.count ?? 0);
 
       // Query climbs across all board types using most popular angle
-      const tables = getBoardTables('kilter'); // All unified - just need the table refs
+      const tables = UNIFIED_TABLES;
       const results = await db
         .select({
           uuid: tables.climbs.uuid,
@@ -414,7 +414,7 @@ export const setterFollowQueries = {
       .filter((u): u is string => u !== null && u.length > 0);
 
     // 2. Build WHERE condition: userId match OR setterUsername in linked usernames, AND not draft
-    const tables = getBoardTables('kilter'); // All unified
+    const tables = UNIFIED_TABLES;
 
     const ownershipCondition = linkedUsernames.length > 0
       ? sql`(${tables.climbs.userId} = ${userId} OR ${tables.climbs.setterUsername} IN (${sql.join(linkedUsernames.map(u => sql`${u}`), sql`, `)}))`

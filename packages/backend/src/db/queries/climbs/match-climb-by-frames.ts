@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { db } from '../../client';
-import { getBoardTables, type BoardName } from '../util/table-select';
+import { UNIFIED_TABLES, type BoardName } from '../util/table-select';
 
 interface MatchedClimb {
   uuid: string;
@@ -23,7 +23,7 @@ export async function matchClimbByFrames(
   frames: string,
   angle?: number
 ): Promise<MatchedClimb | null> {
-  const tables = getBoardTables(boardName);
+  const tables = UNIFIED_TABLES;
 
   try {
     // Query for exact frames match, prioritizing by popularity (ascensionist count)
