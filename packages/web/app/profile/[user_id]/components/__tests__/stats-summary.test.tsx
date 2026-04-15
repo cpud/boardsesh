@@ -110,8 +110,9 @@ describe('StatsSummary', () => {
 
   it('renders layout percentage bar when multiple layouts', () => {
     render(<StatsSummary {...createDefaultProps()} />);
-    expect(screen.getByText(/Kilter Original \(71%\)/)).toBeTruthy();
-    expect(screen.getByText(/Tension Classic \(29%\)/)).toBeTruthy();
+    // Inline labels show last word of display name + percentage when >= 15%
+    expect(screen.getByText('Original 71%')).toBeTruthy();
+    expect(screen.getByText('Classic 29%')).toBeTruthy();
   });
 
   it('does not render percentage bar with single layout', () => {

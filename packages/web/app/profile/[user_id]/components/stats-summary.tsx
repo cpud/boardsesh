@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React from 'react';
 import MuiTooltip from '@mui/material/Tooltip';
 import MuiCard from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -9,7 +9,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import CircularProgress from '@mui/material/CircularProgress';
 import { CssBarChart, GroupedBarChart } from '@/app/components/charts/css-bar-chart';
-import type { CssBarChartBar, BarSegment, GroupedBar } from '@/app/components/charts/css-bar-chart';
+import type { CssBarChartBar, GroupedBar } from '@/app/components/charts/css-bar-chart';
 import { EmptyState } from '@/app/components/ui/empty-state';
 import { type AggregatedTimeframeType, aggregatedTimeframeOptions } from '../utils/profile-constants';
 import type { LayoutPercentage, LayoutLegendEntry, VPointsTimelineData } from '../utils/chart-data-builders';
@@ -40,30 +40,6 @@ export default function StatsSummary({
   aggregatedFlashRedpointBars,
   vPointsTimeline,
 }: StatsSummaryProps) {
-  const [hiddenLayouts, setHiddenLayouts] = useState<Set<string>>(new Set());
-
-  const toggleLayout = useCallback((label: string) => {
-    setHiddenLayouts((prev) => {
-      const next = new Set(prev);
-      if (next.has(label)) {
-        next.delete(label);
-      } else {
-        next.add(label);
-      }
-      return next;
-    });
-  }, []);
-
-  const filteredBars = useMemo(() => {
-    if (!aggregatedStackedBars || hiddenLayouts.size === 0) return aggregatedStackedBars?.bars ?? null;
-    return aggregatedStackedBars.bars.map((bar) => ({
-      ...bar,
-      segments: bar.segments.map((seg: BarSegment) =>
-        seg.label && hiddenLayouts.has(seg.label) ? { ...seg, value: 0 } : seg,
-      ),
-    }));
-  }, [aggregatedStackedBars, hiddenLayouts]);
-
   if (loadingProfileStats || statisticsSummary.totalAscents === 0) {
     return null;
   }
@@ -125,50 +101,14 @@ export default function StatsSummary({
           <div className={styles.loadingStats}>
             <CircularProgress size={24} />
           </div>
-        ) : filteredBars ? (
-          <>
+        ) : aggregatedStackedBars?.bars ? (
             <CssBarChart
-              bars={filteredBars}
+              bars={aggregatedStackedBars.bars}
               height={160}
               mobileHeight={120}
+              showLegend={false}
               ariaLabel="Grade distribution across boards"
             />
-            {aggregatedStackedBars && aggregatedStackedBars.legendEntries.length > 1 && (
-              <div className={styles.stackedChartLegend}>
-                {aggregatedStackedBars.legendEntries.map((entry) => {
-                  const isHidden = hiddenLayouts.has(entry.label);
-                  return (
-                    <button
-                      key={entry.label}
-                      type="button"
-                      className={styles.legendButton}
-                      onClick={() => toggleLayout(entry.label)}
-                      aria-pressed={!isHidden}
-                    >
-                      <div
-                        className={styles.legendColor}
-                        style={{
-                          backgroundColor: entry.color,
-                          opacity: isHidden ? 0.3 : 1,
-                        }}
-                      />
-                      <Typography
-                        variant="body2"
-                        component="span"
-                        className={styles.legendText}
-                        style={{
-                          opacity: isHidden ? 0.4 : 1,
-                          textDecoration: isHidden ? 'line-through' : 'none',
-                        }}
-                      >
-                        {entry.label}
-                      </Typography>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </>
         ) : (
           <EmptyState description="No ascent data for this period" />
         )}
@@ -184,6 +124,7 @@ export default function StatsSummary({
             height={140}
             mobileHeight={100}
             gap={2}
+            showLegend={false}
             ariaLabel="Flash vs redpoint by grade"
           />
         </div>

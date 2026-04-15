@@ -44,15 +44,15 @@ export default function VPointsChart({ data }: VPointsChartProps) {
         }]}
         yAxis={[{
           tickLabelStyle: { fontSize: 10 },
+          valueFormatter: (value: number | null) => {
+            if (value == null) return '';
+            if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
+            return value.toString();
+          },
         }]}
         height={200}
-        margin={{ top: 10, bottom: 30, left: 35, right: 10 }}
-        hideLegend={series.length <= 1}
-        slotProps={{
-          legend: {
-            sx: { fontSize: 11 },
-          },
-        }}
+        margin={{ top: 10, bottom: 30, left: 30, right: 10 }}
+        hideLegend
       />
     </Box>
   );
