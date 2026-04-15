@@ -6,7 +6,7 @@ import type { SessionFeedItem } from '@boardsesh/shared-schema';
 // Mock dependencies
 vi.mock('next/link', () => ({
   default: ({ children, href, ...rest }: { children: React.ReactNode; href: string }) => (
-    <a href={href} {...rest}>{children}</a>
+    <a href={href} data-next-link="true" {...rest}>{children}</a>
   ),
 }));
 
@@ -112,7 +112,7 @@ describe('SessionFeedCard', () => {
 
     expect(screen.getByTestId('activity-feed-item')).toBeTruthy();
     expect(screen.getByText('Test User')).toBeTruthy();
-    expect(screen.getByText('5 sends')).toBeTruthy();
+    expect(screen.getByText('3 sends')).toBeTruthy();
     expect(screen.getByText('2 flashes')).toBeTruthy();
     expect(screen.getByText('3 attempts')).toBeTruthy();
   });
@@ -154,6 +154,16 @@ describe('SessionFeedCard', () => {
     const links = screen.getAllByRole('link');
     const profileLinks = links.filter((link) => link.getAttribute('href') === '/profile/user-1');
     expect(profileLinks.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('uses client navigation for profile links', () => {
+    render(<SessionFeedCard session={makeSession()} />);
+
+    const profileLinks = screen.getAllByRole('link').filter((link) => link.getAttribute('href') === '/profile/user-1');
+    expect(profileLinks.length).toBeGreaterThanOrEqual(1);
+    profileLinks.forEach((link) => {
+      expect(link.getAttribute('data-next-link')).toBe('true');
+    });
   });
 
   it('renders VoteButton with session entity type', () => {

@@ -11,6 +11,7 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import CircularProgress from '@mui/material/CircularProgress';
 import { PersonOutlined } from '@mui/icons-material';
+import Link from 'next/link';
 import SwipeableDrawer from '@/app/components/swipeable-drawer/swipeable-drawer';
 import FollowButton from '@/app/components/ui/follow-button';
 import { FOLLOW_USER, UNFOLLOW_USER } from '@/app/lib/graphql/operations';
@@ -153,7 +154,7 @@ export default function FollowerCount({ userId, followerCount, followingCount }:
               {users.map((user) => (
                 <ListItem
                   key={user.id}
-                  component="a"
+                  component={Link}
                   href={`/profile/${user.id}`}
                   sx={{
                     textDecoration: 'none',

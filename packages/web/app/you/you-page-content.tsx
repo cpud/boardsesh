@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -15,6 +15,8 @@ import { useProfileData } from '@/app/profile/[user_id]/hooks/use-profile-data';
 import StatsSummary from '@/app/profile/[user_id]/components/stats-summary';
 import BoardStatsSection from '@/app/profile/[user_id]/components/board-stats-section';
 import type { UserProfile, LogbookEntry } from '@/app/profile/[user_id]/utils/profile-constants';
+import { StatsFilterBridgeInjector } from '@/app/components/stats-filter-bridge/stats-filter-bridge-context';
+import StatsFilterDrawer from '@/app/components/stats-filter-drawer/stats-filter-drawer';
 
 type YouTab = 'progress' | 'sessions' | 'logbook';
 
@@ -41,10 +43,9 @@ export default function YouPageContent({
     loading,
     selectedBoard,
     setSelectedBoard,
-    loadingStats,
     filteredLogbook,
-    timeframe,
-    setTimeframe,
+    unifiedTimeframe,
+    setUnifiedTimeframe,
     fromDate,
     setFromDate,
     toDate,
@@ -56,8 +57,6 @@ export default function YouPageContent({
     setWeeklyFromDate,
     weeklyToDate,
     setWeeklyToDate,
-    aggregatedTimeframe,
-    setAggregatedTimeframe,
     loadingAggregated,
     aggregatedStackedBars,
     loadingProfileStats,
@@ -85,6 +84,26 @@ export default function YouPageContent({
     router.push(path, { scroll: false });
   }, [router]);
 
+  // Filter drawer state
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerRendered, setDrawerRendered] = useState(false);
+
+  const openDrawer = useCallback(() => {
+    setDrawerRendered(true);
+    setDrawerOpen(true);
+  }, []);
+
+  const closeDrawer = useCallback(() => {
+    setDrawerOpen(false);
+  }, []);
+
+  const handleDrawerTransitionEnd = useCallback((open: boolean) => {
+    if (!open) setDrawerRendered(false);
+  }, []);
+
+  const hasActiveFilters = unifiedTimeframe !== 'all' || selectedBoard !== 'all';
+  const isOnProgressTab = activeTab === 'progress';
+
   // Determine if user is authenticated (for ActivityFeed)
   const isAuthenticated = sessionStatus === 'authenticated';
 
@@ -100,6 +119,13 @@ export default function YouPageContent({
 
   return (
     <Box className={styles.layout}>
+      <StatsFilterBridgeInjector
+        openDrawer={openDrawer}
+        pageTitle="Progress"
+        backUrl={null}
+        hasActiveFilters={hasActiveFilters}
+        isActive={isOnProgressTab}
+      />
       <Box component="main" className={styles.content}>
         <Tabs
           value={activeTab}
@@ -119,8 +145,6 @@ export default function YouPageContent({
               hardestSend={hardestSend}
               hardestFlash={hardestFlash}
               loadingProfileStats={loadingProfileStats}
-              aggregatedTimeframe={aggregatedTimeframe}
-              onAggregatedTimeframeChange={setAggregatedTimeframe}
               loadingAggregated={loadingAggregated}
               aggregatedStackedBars={aggregatedStackedBars}
               aggregatedFlashRedpointBars={aggregatedFlashRedpointBars}
@@ -129,14 +153,7 @@ export default function YouPageContent({
             />
             <BoardStatsSection
               selectedBoard={selectedBoard}
-              onBoardChange={setSelectedBoard}
-              timeframe={timeframe}
-              onTimeframeChange={setTimeframe}
-              fromDate={fromDate}
-              onFromDateChange={setFromDate}
-              toDate={toDate}
-              onToDateChange={setToDate}
-              loadingStats={loadingStats}
+              loading={loadingAggregated}
               filteredLogbook={filteredLogbook}
               weeklyBars={weeklyBars}
               isOwnProfile={true}
@@ -159,6 +176,21 @@ export default function YouPageContent({
           <LogbookFeed />
         )}
       </Box>
+      {drawerRendered && (
+        <StatsFilterDrawer
+          open={drawerOpen}
+          onClose={closeDrawer}
+          selectedBoard={selectedBoard}
+          onBoardChange={setSelectedBoard}
+          timeframe={unifiedTimeframe}
+          onTimeframeChange={setUnifiedTimeframe}
+          fromDate={fromDate}
+          onFromDateChange={setFromDate}
+          toDate={toDate}
+          onToDateChange={setToDate}
+          onTransitionEnd={handleDrawerTransitionEnd}
+        />
+      )}
     </Box>
   );
 }

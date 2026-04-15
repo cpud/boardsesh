@@ -18,8 +18,7 @@ import { useGradeFormat } from '@/app/hooks/use-grade-format';
 import {
   type UserProfile,
   type LogbookEntry,
-  type TimeframeType,
-  type AggregatedTimeframeType,
+  type UnifiedTimeframeType,
   BOARD_TYPES,
   getDifficultyMapping,
 } from '../utils/profile-constants';
@@ -50,13 +49,10 @@ export function useProfileData(userId: string, initialData?: InitialData) {
   const [loading, setLoading] = useState(!initialData?.initialProfile && !initialData?.initialNotFound);
   const [notFound, setNotFound] = useState(initialData?.initialNotFound ?? false);
   const [profile, setProfile] = useState<UserProfile | null>(initialData?.initialProfile ?? null);
-  const [selectedBoard, setSelectedBoard] = useState<string>('kilter');
-  const [logbook, setLogbook] = useState<LogbookEntry[]>(initialData?.initialLogbook ?? []);
-  const [loadingStats, setLoadingStats] = useState(false);
-  const [timeframe, setTimeframe] = useState<TimeframeType>('all');
+  const [selectedBoard, setSelectedBoard] = useState<string>('all');
+  const [unifiedTimeframe, setUnifiedTimeframe] = useState<UnifiedTimeframeType>('all');
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
-  const [aggregatedTimeframe, setAggregatedTimeframe] = useState<AggregatedTimeframeType>('all');
   const [allBoardsTicks, setAllBoardsTicks] = useState<Record<string, LogbookEntry[]>>(
     initialData?.initialAllBoardsTicks ?? {},
   );
@@ -102,30 +98,6 @@ export function useProfileData(userId: string, initialData?: InitialData) {
       showMessage('Failed to load profile data', 'error');
     } finally {
       setLoading(false);
-    }
-  }, [userId, showMessage]);
-
-  const fetchLogbook = useCallback(async (boardType: string) => {
-    setLoadingStats(true);
-    try {
-      const client = createGraphQLHttpClient(null);
-      const variables: GetUserTicksQueryVariables = { userId, boardType };
-      const response = await client.request<GetUserTicksQueryResponse>(GET_USER_TICKS, variables);
-      const entries: LogbookEntry[] = response.userTicks.map((tick) => ({
-        climbed_at: tick.climbedAt,
-        difficulty: tick.difficulty,
-        tries: tick.attemptCount,
-        angle: tick.angle,
-        status: tick.status,
-        climbUuid: tick.climbUuid,
-      }));
-      setLogbook(entries);
-    } catch (error) {
-      console.error('Error fetching ticks:', error);
-      showMessage('Failed to load climbing stats', 'error');
-      setLogbook([]);
-    } finally {
-      setLoadingStats(false);
     }
   }, [userId, showMessage]);
 
@@ -203,34 +175,21 @@ export function useProfileData(userId: string, initialData?: InitialData) {
     fetchPercentile();
   }, [fetchPercentile]);
 
-  const [hasChangedBoard, setHasChangedBoard] = useState(false);
-  const handleBoardChange = useCallback((board: string) => {
-    setSelectedBoard(board);
-    setHasChangedBoard(true);
-  }, []);
+  // Filter allBoardsTicks by selected board
+  const filteredBoardsTicks = useMemo<Record<string, LogbookEntry[]>>(() => {
+    if (selectedBoard === 'all') return allBoardsTicks;
+    return { [selectedBoard]: allBoardsTicks[selectedBoard] || [] };
+  }, [allBoardsTicks, selectedBoard]);
 
-  useEffect(() => {
-    if (hasChangedBoard && selectedBoard) {
-      // Check if we already have ticks for this board from server data
-      if (initialData?.initialAllBoardsTicks?.[selectedBoard]) {
-        setLogbook(initialData.initialAllBoardsTicks[selectedBoard]);
-        setLoadingStats(false);
-      } else {
-        fetchLogbook(selectedBoard);
-      }
-    } else if (!initialData?.initialLogbook && selectedBoard) {
-      fetchLogbook(selectedBoard);
-    }
-  }, [selectedBoard, hasChangedBoard, fetchLogbook, initialData?.initialAllBoardsTicks, initialData?.initialLogbook]);
-
-  const filteredLogbook = useMemo(
-    () => filterLogbookByTimeframe(logbook, timeframe, fromDate, toDate),
-    [logbook, timeframe, fromDate, toDate],
-  );
+  // Flat logbook from filtered boards, with timeframe applied
+  const filteredLogbook = useMemo(() => {
+    const flat = Object.values(filteredBoardsTicks).flat();
+    return filterLogbookByTimeframe(flat, unifiedTimeframe, fromDate, toDate);
+  }, [filteredBoardsTicks, unifiedTimeframe, fromDate, toDate]);
 
   const aggregatedStackedBars = useMemo(
-    () => buildAggregatedStackedBars(allBoardsTicks, aggregatedTimeframe, gradeFormat),
-    [allBoardsTicks, aggregatedTimeframe, gradeFormat],
+    () => buildAggregatedStackedBars(filteredBoardsTicks, unifiedTimeframe, gradeFormat, fromDate, toDate),
+    [filteredBoardsTicks, unifiedTimeframe, gradeFormat, fromDate, toDate],
   );
 
   const weeklyBars = useMemo(
@@ -239,8 +198,8 @@ export function useProfileData(userId: string, initialData?: InitialData) {
   );
 
   const aggregatedFlashRedpointBars = useMemo(
-    () => buildAggregatedFlashRedpointBars(allBoardsTicks, aggregatedTimeframe, gradeFormat),
-    [allBoardsTicks, aggregatedTimeframe, gradeFormat],
+    () => buildAggregatedFlashRedpointBars(filteredBoardsTicks, unifiedTimeframe, gradeFormat, fromDate, toDate),
+    [filteredBoardsTicks, unifiedTimeframe, gradeFormat, fromDate, toDate],
   );
 
   const statisticsSummary = useMemo(
@@ -249,13 +208,13 @@ export function useProfileData(userId: string, initialData?: InitialData) {
   );
 
   const vPointsTimeline = useMemo(
-    () => buildVPointsTimeline(allBoardsTicks, aggregatedTimeframe),
-    [allBoardsTicks, aggregatedTimeframe],
+    () => buildVPointsTimeline(filteredBoardsTicks, unifiedTimeframe, fromDate, toDate),
+    [filteredBoardsTicks, unifiedTimeframe, fromDate, toDate],
   );
 
-  // Compute hardest send and hardest flash from all ticks
+  // Compute hardest send and hardest flash from filtered ticks
   const { hardestSend, hardestFlash } = useMemo(() => {
-    const allTicks = Object.values(allBoardsTicks).flat();
+    const allTicks = Object.values(filteredBoardsTicks).flat();
     const mapping = getDifficultyMapping(gradeFormat);
     let maxSendDifficulty = -1;
     let maxFlashDifficulty = -1;
@@ -281,7 +240,7 @@ export function useProfileData(userId: string, initialData?: InitialData) {
       hardestSend: maxSendDifficulty >= 0 ? makeHighlight(maxSendDifficulty) : null,
       hardestFlash: maxFlashDifficulty >= 0 ? makeHighlight(maxFlashDifficulty) : null,
     };
-  }, [allBoardsTicks, gradeFormat]);
+  }, [filteredBoardsTicks, gradeFormat]);
 
   return {
     // Profile state
@@ -293,17 +252,18 @@ export function useProfileData(userId: string, initialData?: InitialData) {
 
     // Board selection
     selectedBoard,
-    setSelectedBoard: handleBoardChange,
+    setSelectedBoard,
 
-    // Board stats
-    loadingStats,
-    filteredLogbook,
-    timeframe,
-    setTimeframe,
+    // Unified filters
+    unifiedTimeframe,
+    setUnifiedTimeframe,
     fromDate,
     setFromDate,
     toDate,
     setToDate,
+
+    // Board stats
+    filteredLogbook,
     weeklyBars,
     weeklyFromDate,
     setWeeklyFromDate,
@@ -311,8 +271,6 @@ export function useProfileData(userId: string, initialData?: InitialData) {
     setWeeklyToDate,
 
     // Aggregated stats
-    aggregatedTimeframe,
-    setAggregatedTimeframe,
     loadingAggregated,
     aggregatedStackedBars,
     aggregatedFlashRedpointBars,

@@ -204,7 +204,7 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
             {session?.user ? (
               <>
                 <MuiAvatar
-                  component="a"
+                  component={Link}
                   href={`/profile/${session.user.id}`}
                   onClick={handleClose}
                   sx={{ width: 64, height: 64, cursor: 'pointer' }}

@@ -12,6 +12,7 @@ import IconButton from '@mui/material/IconButton';
 import PersonOutlined from '@mui/icons-material/PersonOutlined';
 import LocationOnOutlined from '@mui/icons-material/LocationOnOutlined';
 import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import Link from 'next/link';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import type { ActivityFeedItem } from '@boardsesh/shared-schema';
@@ -30,6 +31,7 @@ interface FeedItemNewClimbProps {
 export default function FeedItemNewClimb({ item }: FeedItemNewClimbProps) {
   const [commentsOpen, setCommentsOpen] = useState(false);
   const timeAgo = dayjs(item.createdAt).fromNow();
+  const actorProfileHref = item.actorId ? `/profile/${item.actorId}` : null;
 
   return (
     <MuiCard className={styles.feedItem} data-testid="activity-feed-item">
@@ -39,8 +41,7 @@ export default function FeedItemNewClimb({ item }: FeedItemNewClimbProps) {
           <MuiAvatar
             src={item.actorAvatarUrl ?? undefined}
             sx={{ width: 32, height: 32 }}
-            component="a"
-            href={item.actorId ? `/profile/${item.actorId}` : undefined}
+            {...(actorProfileHref ? { component: Link, href: actorProfileHref } : {})}
           >
             {!item.actorAvatarUrl && <PersonOutlined sx={{ fontSize: 16 }} />}
           </MuiAvatar>
@@ -48,8 +49,7 @@ export default function FeedItemNewClimb({ item }: FeedItemNewClimbProps) {
             <MuiTypography
               variant="body2"
               fontWeight={600}
-              component="a"
-              href={item.actorId ? `/profile/${item.actorId}` : undefined}
+              {...(actorProfileHref ? { component: Link, href: actorProfileHref } : {})}
               sx={{ textDecoration: 'none', color: 'text.primary' }}
             >
               {item.actorDisplayName || 'User'}

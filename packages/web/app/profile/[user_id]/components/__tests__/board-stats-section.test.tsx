@@ -32,14 +32,7 @@ import BoardStatsSection from '../board-stats-section';
 
 const defaultProps = {
   selectedBoard: 'kilter',
-  onBoardChange: vi.fn(),
-  timeframe: 'all' as const,
-  onTimeframeChange: vi.fn(),
-  fromDate: '',
-  onFromDateChange: vi.fn(),
-  toDate: '',
-  onToDateChange: vi.fn(),
-  loadingStats: false,
+  loading: false,
   filteredLogbook: [],
   weeklyBars: null,
   isOwnProfile: false,

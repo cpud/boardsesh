@@ -5,15 +5,12 @@ import MuiTooltip from '@mui/material/Tooltip';
 import MuiCard from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import ToggleButton from '@mui/material/ToggleButton';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import { CssBarChart, GroupedBarChart } from '@/app/components/charts/css-bar-chart';
 import type { CssBarChartBar, GroupedBar } from '@/app/components/charts/css-bar-chart';
 import { EmptyState } from '@/app/components/ui/empty-state';
 import { themeTokens } from '@/app/theme/theme-config';
-import { type AggregatedTimeframeType, aggregatedTimeframeOptions } from '../utils/profile-constants';
 import type { LayoutPercentage, LayoutLegendEntry, VPointsTimelineData } from '../utils/chart-data-builders';
 import VPointsChart from './v-points-chart';
 import styles from '../profile-page.module.css';
@@ -32,8 +29,6 @@ export interface StatsSummaryProps {
   hardestSend?: GradeHighlight | null;
   hardestFlash?: GradeHighlight | null;
   loadingProfileStats: boolean;
-  aggregatedTimeframe: AggregatedTimeframeType;
-  onAggregatedTimeframeChange: (value: AggregatedTimeframeType) => void;
   loadingAggregated: boolean;
   aggregatedStackedBars: { bars: CssBarChartBar[]; legendEntries: LayoutLegendEntry[] } | null;
   aggregatedFlashRedpointBars: GroupedBar[] | null;
@@ -46,8 +41,6 @@ export default function StatsSummary({
   hardestSend,
   hardestFlash,
   loadingProfileStats,
-  aggregatedTimeframe,
-  onAggregatedTimeframeChange,
   loadingAggregated,
   aggregatedStackedBars,
   aggregatedFlashRedpointBars,
@@ -166,22 +159,9 @@ export default function StatsSummary({
       )}
 
       <div className={styles.gradeDistributionSection}>
-        <div className={styles.gradeDistributionHeader}>
-          <Typography variant="body2" component="span" fontWeight={600} className={styles.gradeDistributionTitle}>
-            Grade Distribution
-          </Typography>
-          <ToggleButtonGroup
-            exclusive
-            size="small"
-            value={aggregatedTimeframe}
-            onChange={(_, val) => { if (val) onAggregatedTimeframeChange(val as AggregatedTimeframeType); }}
-            className={styles.gradeDistributionToggle}
-          >
-            {aggregatedTimeframeOptions.map((opt) => (
-              <ToggleButton key={opt.value} value={opt.value}>{opt.label}</ToggleButton>
-            ))}
-          </ToggleButtonGroup>
-        </div>
+        <Typography variant="body2" component="span" fontWeight={600} className={styles.gradeDistributionTitle}>
+          Grade Distribution
+        </Typography>
 
         {loadingAggregated ? (
           <div className={styles.loadingStats}>

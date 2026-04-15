@@ -31,8 +31,7 @@ export interface LogbookEntry {
   climbUuid?: string;
 }
 
-export type TimeframeType = 'all' | 'lastYear' | 'lastMonth' | 'lastWeek' | 'custom';
-export type AggregatedTimeframeType = 'today' | 'lastWeek' | 'lastMonth' | 'lastYear' | 'all';
+export type UnifiedTimeframeType = 'all' | 'lastYear' | 'lastMonth' | 'lastWeek' | 'today' | 'custom';
 
 export const BOARD_TYPES = SUPPORTED_BOARDS;
 
@@ -159,23 +158,19 @@ export const getGradeChartColor = (grade: string): string => {
   return `hsla(${hDeg}, ${sMuted}%, ${lMuted}%, 0.75)`;
 };
 
-export const boardOptions = BOARD_TYPES.map((boardType) => ({
-  label: boardType.charAt(0).toUpperCase() + boardType.slice(1),
-  value: boardType,
-}));
-
-export const timeframeOptions = [
+export const boardOptions = [
   { label: 'All', value: 'all' },
-  { label: 'Year', value: 'lastYear' },
-  { label: 'Month', value: 'lastMonth' },
-  { label: 'Week', value: 'lastWeek' },
-  { label: 'Custom', value: 'custom' },
+  ...BOARD_TYPES.map((boardType) => ({
+    label: boardType.charAt(0).toUpperCase() + boardType.slice(1),
+    value: boardType,
+  })),
 ];
 
-export const aggregatedTimeframeOptions = [
+export const unifiedTimeframeOptions: { label: string; value: UnifiedTimeframeType }[] = [
   { label: 'All', value: 'all' },
   { label: 'Year', value: 'lastYear' },
   { label: 'Month', value: 'lastMonth' },
   { label: 'Week', value: 'lastWeek' },
   { label: 'Today', value: 'today' },
+  { label: 'Custom', value: 'custom' },
 ];

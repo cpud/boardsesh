@@ -1,12 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useCallback } from 'react';
+import Box from '@mui/material/Box';
 import type { GetUserProfileStatsQueryResponse } from '@/app/lib/graphql/operations/ticks';
-import ProfileSubPageLayout from '../components/profile-sub-page-layout';
 import StatsSummary from '../components/stats-summary';
 import BoardStatsSection from '../components/board-stats-section';
 import { useProfileData } from '../hooks/use-profile-data';
 import type { LogbookEntry } from '../utils/profile-constants';
+import { StatsFilterBridgeInjector } from '@/app/components/stats-filter-bridge/stats-filter-bridge-context';
+import StatsFilterDrawer from '@/app/components/stats-filter-drawer/stats-filter-drawer';
+import styles from '../profile-page.module.css';
 
 interface AnalyticsContentProps {
   userId: string;
@@ -27,10 +30,9 @@ export default function AnalyticsContent({
     isOwnProfile,
     selectedBoard,
     setSelectedBoard,
-    loadingStats,
     filteredLogbook,
-    timeframe,
-    setTimeframe,
+    unifiedTimeframe,
+    setUnifiedTimeframe,
     fromDate,
     setFromDate,
     toDate,
@@ -42,8 +44,6 @@ export default function AnalyticsContent({
     setWeeklyFromDate,
     weeklyToDate,
     setWeeklyToDate,
-    aggregatedTimeframe,
-    setAggregatedTimeframe,
     loadingAggregated,
     aggregatedStackedBars,
     loadingProfileStats,
@@ -58,39 +58,72 @@ export default function AnalyticsContent({
     initialIsOwnProfile,
   });
 
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerRendered, setDrawerRendered] = useState(false);
+
+  const openDrawer = useCallback(() => {
+    setDrawerRendered(true);
+    setDrawerOpen(true);
+  }, []);
+
+  const closeDrawer = useCallback(() => {
+    setDrawerOpen(false);
+  }, []);
+
+  const handleDrawerTransitionEnd = useCallback((open: boolean) => {
+    if (!open) setDrawerRendered(false);
+  }, []);
+
+  const hasActiveFilters = unifiedTimeframe !== 'all' || selectedBoard !== 'all';
+
   return (
-    <ProfileSubPageLayout userId={userId} title="Statistics">
-      <StatsSummary
-        statisticsSummary={statisticsSummary}
-        hardestSend={hardestSend}
-        hardestFlash={hardestFlash}
-        loadingProfileStats={loadingProfileStats}
-        aggregatedTimeframe={aggregatedTimeframe}
-        onAggregatedTimeframeChange={setAggregatedTimeframe}
-        loadingAggregated={loadingAggregated}
-        aggregatedStackedBars={aggregatedStackedBars}
-        aggregatedFlashRedpointBars={aggregatedFlashRedpointBars}
-        vPointsTimeline={vPointsTimeline}
-        percentile={percentile}
+    <Box className={styles.layout}>
+      <StatsFilterBridgeInjector
+        openDrawer={openDrawer}
+        pageTitle="Statistics"
+        backUrl={`/profile/${userId}`}
+        hasActiveFilters={hasActiveFilters}
+        isActive={true}
       />
-      <BoardStatsSection
-        selectedBoard={selectedBoard}
-        onBoardChange={setSelectedBoard}
-        timeframe={timeframe}
-        onTimeframeChange={setTimeframe}
-        fromDate={fromDate}
-        onFromDateChange={setFromDate}
-        toDate={toDate}
-        onToDateChange={setToDate}
-        loadingStats={loadingStats}
-        filteredLogbook={filteredLogbook}
-        weeklyBars={weeklyBars}
-        isOwnProfile={isOwnProfile}
-        weeklyFromDate={weeklyFromDate}
-        onWeeklyFromDateChange={setWeeklyFromDate}
-        weeklyToDate={weeklyToDate}
-        onWeeklyToDateChange={setWeeklyToDate}
-      />
-    </ProfileSubPageLayout>
+      <Box component="main" className={styles.content}>
+        <StatsSummary
+          statisticsSummary={statisticsSummary}
+          hardestSend={hardestSend}
+          hardestFlash={hardestFlash}
+          loadingProfileStats={loadingProfileStats}
+          loadingAggregated={loadingAggregated}
+          aggregatedStackedBars={aggregatedStackedBars}
+          aggregatedFlashRedpointBars={aggregatedFlashRedpointBars}
+          vPointsTimeline={vPointsTimeline}
+          percentile={percentile}
+        />
+        <BoardStatsSection
+          selectedBoard={selectedBoard}
+          loading={loadingAggregated}
+          filteredLogbook={filteredLogbook}
+          weeklyBars={weeklyBars}
+          isOwnProfile={isOwnProfile}
+          weeklyFromDate={weeklyFromDate}
+          onWeeklyFromDateChange={setWeeklyFromDate}
+          weeklyToDate={weeklyToDate}
+          onWeeklyToDateChange={setWeeklyToDate}
+        />
+      </Box>
+      {drawerRendered && (
+        <StatsFilterDrawer
+          open={drawerOpen}
+          onClose={closeDrawer}
+          selectedBoard={selectedBoard}
+          onBoardChange={setSelectedBoard}
+          timeframe={unifiedTimeframe}
+          onTimeframeChange={setUnifiedTimeframe}
+          fromDate={fromDate}
+          onFromDateChange={setFromDate}
+          toDate={toDate}
+          onToDateChange={setToDate}
+          onTransitionEnd={handleDrawerTransitionEnd}
+        />
+      )}
+    </Box>
   );
 }

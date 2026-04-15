@@ -159,6 +159,26 @@ describe('RootBottomBar', () => {
     expect(screen.queryByTestId('queue-control-bar-shell')).toBeNull();
   });
 
+  it('renders the real queue control bar on profile routes when a session is active', () => {
+    mockPathname = '/profile/test-user';
+    mockQueueBridgeBoardInfo = {
+      boardDetails: {
+        board_name: 'kilter',
+        layout_id: 1,
+        size_id: 1,
+        set_ids: [1],
+      },
+      angle: 40,
+      hasActiveQueue: true,
+    };
+
+    render(<RootBottomBar boardConfigs={mockBoardConfigs} />);
+
+    expect(screen.getByTestId('queue-control-bar')).toBeTruthy();
+    expect(screen.queryByTestId('queue-control-bar-shell')).toBeNull();
+    expect(screen.getByTestId('bottom-tab-bar')).toBeTruthy();
+  });
+
   it('does not render the queue shell once board details are available but the queue is empty', () => {
     mockPathname = '/b/test-board/40/list';
     mockQueueBridgeBoardInfo = {

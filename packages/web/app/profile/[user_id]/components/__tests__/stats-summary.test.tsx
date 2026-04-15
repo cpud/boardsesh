@@ -63,8 +63,6 @@ function createDefaultProps(overrides: Partial<StatsSummaryProps> = {}): StatsSu
       ],
     },
     loadingProfileStats: false,
-    aggregatedTimeframe: 'all',
-    onAggregatedTimeframeChange: vi.fn(),
     loadingAggregated: false,
     aggregatedStackedBars: {
       bars: [

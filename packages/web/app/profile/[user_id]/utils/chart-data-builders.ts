@@ -9,8 +9,7 @@ import { themeTokens } from '@/app/theme/theme-config';
 import { type GradeDisplayFormat } from '@/app/lib/grade-colors';
 import {
   type LogbookEntry,
-  type TimeframeType,
-  type AggregatedTimeframeType,
+  type UnifiedTimeframeType,
   difficultyMapping,
   getDifficultyMapping,
   sortGrades,
@@ -36,12 +35,14 @@ const GRADE_ORDER = [...new Set(Object.values(difficultyMapping))];
 
 export function filterLogbookByTimeframe(
   logbook: LogbookEntry[],
-  timeframe: TimeframeType,
+  timeframe: UnifiedTimeframeType,
   fromDate: string,
   toDate: string,
 ): LogbookEntry[] {
   const now = dayjs();
   switch (timeframe) {
+    case 'today':
+      return logbook.filter((entry) => dayjs(entry.climbed_at).isSame(now, 'day'));
     case 'lastWeek':
       return logbook.filter((entry) => dayjs(entry.climbed_at).isAfter(now.subtract(1, 'week')));
     case 'lastMonth':
@@ -65,23 +66,28 @@ export function filterLogbookByTimeframe(
 
 // ── Shared timeframe filter ─────────────────────────────────────────
 
-function filterByAggregatedTimeframe(
+function filterByUnifiedTimeframe(
   entries: LogbookEntry[],
-  timeframe: AggregatedTimeframeType,
+  timeframe: UnifiedTimeframeType,
+  fromDate?: string,
+  toDate?: string,
 ): LogbookEntry[] {
   if (timeframe === 'all') return entries;
   const now = dayjs();
   return entries.filter((entry) => {
-    const climbedAt = dayjs(entry.climbed_at);
     switch (timeframe) {
       case 'today':
-        return climbedAt.isSame(now, 'day');
+        return dayjs(entry.climbed_at).isSame(now, 'day');
       case 'lastWeek':
-        return climbedAt.isAfter(now.subtract(1, 'week'));
+        return dayjs(entry.climbed_at).isAfter(now.subtract(1, 'week'));
       case 'lastMonth':
-        return climbedAt.isAfter(now.subtract(1, 'month'));
+        return dayjs(entry.climbed_at).isAfter(now.subtract(1, 'month'));
       case 'lastYear':
-        return climbedAt.isAfter(now.subtract(1, 'year'));
+        return dayjs(entry.climbed_at).isAfter(now.subtract(1, 'year'));
+      case 'custom': {
+        const dateStr = entry.climbed_at.slice(0, 10);
+        return (!fromDate || dateStr >= fromDate) && (!toDate || dateStr <= toDate);
+      }
       default:
         return true;
     }
@@ -97,8 +103,10 @@ export interface LayoutLegendEntry {
 
 export function buildAggregatedStackedBars(
   allBoardsTicks: Record<string, LogbookEntry[]>,
-  aggregatedTimeframe: AggregatedTimeframeType,
+  timeframe: UnifiedTimeframeType,
   gradeFormat: GradeDisplayFormat = 'v-grade',
+  fromDate?: string,
+  toDate?: string,
 ): { bars: CssBarChartBar[]; legendEntries: LayoutLegendEntry[] } | null {
   const mapping = getDifficultyMapping(gradeFormat);
   const layoutGradeClimbs: Record<string, Record<string, Set<string>>> = {};
@@ -107,7 +115,7 @@ export function buildAggregatedStackedBars(
 
   BOARD_TYPES.forEach((boardType) => {
     const ticks = allBoardsTicks[boardType] || [];
-    const filteredTicks = filterByAggregatedTimeframe(ticks, aggregatedTimeframe);
+    const filteredTicks = filterByUnifiedTimeframe(ticks, timeframe, fromDate, toDate);
 
     filteredTicks.forEach((entry) => {
       if (entry.difficulty === null || entry.status === 'attempt' || !entry.climbUuid) return;
@@ -294,11 +302,13 @@ export function buildFlashRedpointBars(
 
 export function buildAggregatedFlashRedpointBars(
   allBoardsTicks: Record<string, LogbookEntry[]>,
-  aggregatedTimeframe: AggregatedTimeframeType,
+  timeframe: UnifiedTimeframeType,
   gradeFormat: GradeDisplayFormat = 'v-grade',
+  fromDate?: string,
+  toDate?: string,
 ): GroupedBar[] | null {
   const allEntries = BOARD_TYPES.flatMap((boardType) =>
-    filterByAggregatedTimeframe(allBoardsTicks[boardType] || [], aggregatedTimeframe),
+    filterByUnifiedTimeframe(allBoardsTicks[boardType] || [], timeframe, fromDate, toDate),
   );
 
   return buildFlashRedpointBars(allEntries, gradeFormat);
@@ -338,14 +348,16 @@ const LAYOUT_ORDER = [
 
 export function buildVPointsTimeline(
   allBoardsTicks: Record<string, LogbookEntry[]>,
-  aggregatedTimeframe: AggregatedTimeframeType,
+  timeframe: UnifiedTimeframeType,
+  fromDate?: string,
+  toDate?: string,
 ): VPointsTimelineData | null {
   // Collect entries per layout, filter by timeframe, exclude attempts
   const entriesByLayout: Record<string, LogbookEntry[]> = {};
 
   BOARD_TYPES.forEach((boardType) => {
     const ticks = allBoardsTicks[boardType] || [];
-    const filtered = filterByAggregatedTimeframe(ticks, aggregatedTimeframe)
+    const filtered = filterByUnifiedTimeframe(ticks, timeframe, fromDate, toDate)
       .filter((e) => e.difficulty !== null && e.status !== 'attempt');
 
     for (const entry of filtered) {
