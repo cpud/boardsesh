@@ -33,35 +33,37 @@ export default function VPointsChart({ data }: VPointsChartProps) {
           {totalPoints.toLocaleString()} total
         </Typography>
       </Box>
-      <LineChart
-        series={series.map((s) => ({
-          data: s.data,
-          label: s.displayName,
-          color: s.color,
-          area: true,
-          stack: 'vpoints',
-          curve: 'linear' as const,
-          showMark: false,
-        }))}
-        xAxis={[{
-          data: weekLabels,
-          scaleType: 'band' as const,
-          tickLabelStyle: { fontSize: 10 },
-          tickInterval: (_value: string, index: number) => index % labelInterval === 0,
-        }]}
-        yAxis={[{
-          max: yMax,
-          tickLabelStyle: { fontSize: 10 },
-          valueFormatter: (value: number | null) => {
-            if (value == null) return '';
-            if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
-            return value.toString();
-          },
-        }]}
-        height={160}
-        margin={{ top: 5, bottom: 30, left: 20, right: 2 }}
-        hideLegend
-      />
+      <Box sx={{ mx: -2 }}>
+        <LineChart
+          series={series.map((s) => ({
+            data: s.data,
+            label: s.displayName,
+            color: s.color,
+            area: true,
+            stack: 'vpoints',
+            curve: 'linear' as const,
+            showMark: false,
+          }))}
+          xAxis={[{
+            data: weekLabels,
+            scaleType: 'band' as const,
+            tickLabelStyle: { fontSize: 10 },
+            tickInterval: (_value: string, index: number) => index % labelInterval === 0,
+          }]}
+          yAxis={[{
+            max: yMax,
+            tickLabelStyle: { fontSize: 10 },
+            valueFormatter: (value: number | null) => {
+              if (value == null) return '';
+              if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
+              return value.toString();
+            },
+          }]}
+          height={160}
+          margin={{ top: 5, bottom: 30, left: 30, right: 10 }}
+          hideLegend
+        />
+      </Box>
     </Box>
   );
 }
