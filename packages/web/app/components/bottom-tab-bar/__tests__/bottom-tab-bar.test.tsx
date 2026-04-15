@@ -311,12 +311,12 @@ describe('BottomTabBar You tab', () => {
     expect(youTab.classList.contains('Mui-selected')).toBe(true);
   });
 
-  it('You tab is selected when on /profile/some-id path', () => {
+  it('You tab is NOT selected when on /profile/some-id path (other user)', () => {
     mockPathname = '/profile/some-id';
     render(<BottomTabBar boardConfigs={boardConfigs} />);
 
     const youTab = screen.getByRole('button', { name: 'You' });
-    expect(youTab.classList.contains('Mui-selected')).toBe(true);
+    expect(youTab.classList.contains('Mui-selected')).toBe(false);
   });
 
   it('Feed tab is selected when on /feed path', () => {

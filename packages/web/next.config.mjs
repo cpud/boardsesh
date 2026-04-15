@@ -82,7 +82,7 @@ const nextConfig = {
       {
         source: '/logbook',
         destination: '/playlists',
-        permanent: false,
+        permanent: true,
       },
     ];
   },

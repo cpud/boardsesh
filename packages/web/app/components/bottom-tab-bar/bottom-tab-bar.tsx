@@ -58,7 +58,6 @@ const getActiveTab = (pathname: string): Tab => {
   if (pathname.endsWith('/create')) return 'create';
   if (pathname.startsWith('/feed')) return 'feed';
   if (pathname.startsWith('/you')) return 'you';
-  if (pathname.startsWith('/profile')) return 'you';
   if (pathname.startsWith('/playlists') || pathname.includes('/playlists')) return 'library';
   return 'climbs';
 };
@@ -210,7 +209,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
   };
 
   // Whether we're currently on a board page (URL derived from pathname is reliable)
-  const isOnBoardPage = pathname.startsWith('/b/') || (!!effectiveBoardDetails && pathname !== '/' && !pathname.startsWith('/profile') && !pathname.startsWith('/playlists'));
+  const isOnBoardPage = pathname.startsWith('/b/') || (!!effectiveBoardDetails && pathname !== '/' && !pathname.startsWith('/profile') && !pathname.startsWith('/you') && !pathname.startsWith('/playlists'));
 
   const handleClimbsTab = async () => {
         setIsCreatePlaylistOpen(false);
@@ -297,7 +296,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
         title: 'Sign in to see your progress',
         description: 'Sign in to track your climbing stats, sessions, and logbook.',
         onSuccess: () => {
-          // Session will refresh after sign-in
+          router.push('/you');
         },
       });
       return;
