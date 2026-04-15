@@ -50,6 +50,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title: `${displayName} | Boardsesh`,
       description,
+      alternates: { canonical: `/profile/${user_id}` },
       openGraph: {
         title: `${displayName} | Boardsesh`,
         description,
@@ -75,6 +76,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title: 'Profile | Boardsesh',
       description: 'View climbing profile and stats',
+      alternates: { canonical: `/profile/${user_id}` },
     };
   }
 }

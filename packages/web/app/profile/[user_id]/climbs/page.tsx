@@ -5,7 +5,7 @@ import ClimbsContent from './climbs-content';
 type PageProps = { params: Promise<{ user_id: string }> };
 
 export const metadata: Metadata = {
-  title: 'Setting | Boardsesh',
+  title: 'Created Climbs | Boardsesh',
   robots: { index: false, follow: true },
 };
 

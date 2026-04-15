@@ -17,7 +17,6 @@ import BoardStatsSection from '@/app/profile/[user_id]/components/board-stats-se
 import type { UserProfile, LogbookEntry } from '@/app/profile/[user_id]/utils/profile-constants';
 
 type YouTab = 'progress' | 'sessions' | 'logbook';
-const VALID_TABS: YouTab[] = ['progress', 'sessions', 'logbook'];
 
 export interface YouPageContentProps {
   userId: string;

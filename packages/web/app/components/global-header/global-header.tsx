@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useRef } from 'react';
+import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -59,8 +60,8 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
     return null;
   }
 
-  // On /you and /settings pages, show user drawer + share + settings cog, no search bar
-  if (pathname.startsWith('/you') || pathname.startsWith('/settings') || pathname.startsWith('/profile')) {
+  // On /you pages, show user drawer + share + settings cog, no search bar
+  if (pathname.startsWith('/you')) {
     const handleShareProfile = () => {
       if (!session?.user?.id) return;
       const shareUrl = `${window.location.origin}/profile/${session.user.id}`;
@@ -77,7 +78,7 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
     return (
       <header className={styles.header}>
         <UserDrawer boardConfigs={boardConfigs} />
-        <div style={{ flex: 1 }} />
+        <Box sx={{ flex: 1 }} />
         {session?.user?.id && (
           <IconButton onClick={handleShareProfile} aria-label="Share profile" size="small">
             <IosShareOutlined />
@@ -86,6 +87,29 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
         <IconButton component={Link} href="/settings" aria-label="Settings" size="small">
           <SettingsOutlined />
         </IconButton>
+      </header>
+    );
+  }
+
+  // On /settings pages, show user drawer + settings cog, no search bar or share
+  if (pathname.startsWith('/settings')) {
+    return (
+      <header className={styles.header}>
+        <UserDrawer boardConfigs={boardConfigs} />
+        <Box sx={{ flex: 1 }} />
+        <IconButton component={Link} href="/settings" aria-label="Settings" size="small">
+          <SettingsOutlined />
+        </IconButton>
+      </header>
+    );
+  }
+
+  // On /profile pages, show minimal header (profile page has its own share button)
+  if (pathname.startsWith('/profile')) {
+    return (
+      <header className={styles.header}>
+        <UserDrawer boardConfigs={boardConfigs} />
+        <Box sx={{ flex: 1 }} />
       </header>
     );
   }

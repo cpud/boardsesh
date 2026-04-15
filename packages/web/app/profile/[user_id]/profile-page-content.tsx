@@ -166,7 +166,7 @@ export default function ProfilePageContent({
           <ProfileNavCard
             title="Statistics"
             subtitle={statisticsSummary.totalAscents > 0 ? `${statisticsSummary.totalAscents} distinct climbs` : 'Grades, progression, and more'}
-            href={`/profile/${userId}/analytics`}
+            href={`/profile/${userId}/statistics`}
             icon={<ShowChartOutlined />}
           />
           <ProfileNavCard
@@ -176,7 +176,7 @@ export default function ProfilePageContent({
             icon={<TimelineOutlined />}
           />
           <ProfileNavCard
-            title="Setting"
+            title="Created Climbs"
             subtitle="Climbs they created"
             href={`/profile/${userId}/climbs`}
             icon={<FitnessCenterOutlined />}

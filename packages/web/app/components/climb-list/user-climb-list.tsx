@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
-import type { UserBoard } from '@boardsesh/shared-schema';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
@@ -18,12 +17,11 @@ interface UserClimbListProps {
 }
 
 export default function UserClimbList({ userId }: UserClimbListProps) {
-  const [selectedBoard, setSelectedBoard] = useState<UserBoard | null>(null);
   const [sortBy, setSortBy] = useState<SortBy>('popular');
   const { token } = useWsAuthToken();
 
   const { data, fetchNextPage, hasNextPage, isFetching, isLoading } = useInfiniteQuery({
-    queryKey: ['userClimbs', userId, selectedBoard?.uuid ?? 'all', sortBy],
+    queryKey: ['userClimbs', userId, sortBy],
     queryFn: async ({ pageParam }) => {
       const client = createGraphQLHttpClient(token ?? null);
       const variables: GetUserClimbsQueryVariables = {
@@ -61,10 +59,6 @@ export default function UserClimbList({ userId }: UserClimbListProps) {
     }
   }, [hasNextPage, fetchNextPage]);
 
-  const handleBoardSelect = useCallback((board: UserBoard | null) => {
-    setSelectedBoard(board);
-  }, []);
-
   return (
     <MultiboardClimbList
       climbs={climbs}
@@ -72,9 +66,9 @@ export default function UserClimbList({ userId }: UserClimbListProps) {
       isLoading={isLoading}
       hasMore={hasNextPage ?? false}
       onLoadMore={handleLoadMore}
-      showBoardFilter
-      selectedBoard={selectedBoard}
-      onBoardSelect={handleBoardSelect}
+      showBoardFilter={false}
+      selectedBoard={null}
+      onBoardSelect={() => {}}
       showSortToggle
       sortBy={sortBy}
       onSortChange={setSortBy}

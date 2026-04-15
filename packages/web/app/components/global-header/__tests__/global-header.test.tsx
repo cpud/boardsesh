@@ -368,12 +368,12 @@ describe('GlobalHeader', () => {
   });
 
   describe('on /settings page', () => {
-    it('renders settings cog and share button, no search bar', () => {
+    it('renders settings cog but no share button or search bar', () => {
       mockPathname = '/settings';
       render(<GlobalHeader boardConfigs={mockBoardConfigs} />);
 
       expect(screen.getByLabelText('Settings')).toBeTruthy();
-      expect(screen.getByLabelText('Share profile')).toBeTruthy();
+      expect(screen.queryByLabelText('Share profile')).toBeNull();
       expect(screen.queryByPlaceholderText('What do you want to climb?')).toBeNull();
     });
   });

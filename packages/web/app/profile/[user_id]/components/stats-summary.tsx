@@ -100,16 +100,6 @@ export default function StatsSummary({
               </MuiTooltip>
             ))}
           </div>
-          <div className={styles.percentageLegend}>
-            {statisticsSummary.layoutPercentages.map((layout) => (
-              <div key={layout.layoutKey} className={styles.legendItem}>
-                <div className={styles.legendColor} style={{ backgroundColor: layout.color }} />
-                <Typography variant="body2" component="span" className={styles.legendText}>
-                  {layout.displayName} ({layout.percentage}%)
-                </Typography>
-              </div>
-            ))}
-          </div>
         </div>
       )}
 

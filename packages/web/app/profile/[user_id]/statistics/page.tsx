@@ -11,7 +11,7 @@ import type { LogbookEntry } from '../utils/profile-constants';
 type PageProps = { params: Promise<{ user_id: string }> };
 
 export const metadata: Metadata = {
-  title: 'Analytics | Boardsesh',
+  title: 'Statistics | Boardsesh',
   robots: { index: false, follow: true },
 };
 

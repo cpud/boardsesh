@@ -175,7 +175,7 @@ describe('ProfilePageContent', () => {
 
     render(<ProfilePageContent userId="user-2" />);
 
-    expect(screen.getByTestId('nav-card-setting')).toBeTruthy();
+    expect(screen.getByTestId('nav-card-created-climbs')).toBeTruthy();
   });
 
   it('nav cards link to correct sub-pages', () => {
@@ -185,8 +185,8 @@ describe('ProfilePageContent', () => {
     render(<ProfilePageContent userId="user-2" />);
 
     expect(screen.getByTestId('nav-card-sessions').getAttribute('data-href')).toBe('/profile/user-2/sessions');
-    expect(screen.getByTestId('nav-card-statistics').getAttribute('data-href')).toBe('/profile/user-2/analytics');
-    expect(screen.getByTestId('nav-card-setting').getAttribute('data-href')).toBe('/profile/user-2/climbs');
+    expect(screen.getByTestId('nav-card-statistics').getAttribute('data-href')).toBe('/profile/user-2/statistics');
+    expect(screen.getByTestId('nav-card-created-climbs').getAttribute('data-href')).toBe('/profile/user-2/climbs');
   });
 
   it('renders overview chart when tick data is available', () => {
