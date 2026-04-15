@@ -93,15 +93,21 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         working-directory: mobile/android
         env:
+          ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/mobile/android/app/release.keystore
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: |
-          ./gradlew assembleRelease --stacktrace \
-            -Pandroid.injected.signing.store.file=$PWD/app/release.keystore \
-            -Pandroid.injected.signing.store.password="$ANDROID_KEYSTORE_PASSWORD" \
-            -Pandroid.injected.signing.key.alias="$ANDROID_KEY_ALIAS" \
-            -Pandroid.injected.signing.key.password="$ANDROID_KEY_PASSWORD"
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Build signed AAB (Play Store)
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        working-directory: mobile/android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/mobile/android/app/release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew bundleRelease --stacktrace
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
@@ -118,6 +124,37 @@ jobs:
           path: mobile/android/app/build/outputs/apk/release/*.apk
           retention-days: 30
 
+      - name: Upload release AAB
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: boardsesh-android-aab-${{ github.run_number }}
+          path: mobile/android/app/build/outputs/bundle/release/*.aab
+          retention-days: 30
+
+      - name: Check for Play Store credentials
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        id: play-store-check
+        run: |
+          if [ -n "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo "has_key=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_key=false" >> "$GITHUB_OUTPUT"
+            echo "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON secret not set, skipping Play Store upload"
+          fi
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+
+      - name: Upload to Google Play (internal track)
+        if: steps.play-store-check.outputs.has_key == 'true'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.boardsesh.app
+          releaseFiles: mobile/android/app/build/outputs/bundle/release/*.aab
+          track: internal
+          status: completed
+
       - name: Create GitHub Release
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
@@ -125,12 +162,13 @@ jobs:
           tag_name: android-build-${{ github.run_number }}
           name: Android Build ${{ github.run_number }}
           body: |
-            Android APK build from commit ${{ github.sha }}.
+            Android build from commit ${{ github.sha }}.
 
             **Build number:** ${{ github.run_number }}
             **Minimum Android version:** 13 (API 33)
 
-            Download the APK below and sideload on your Android device.
+            The AAB has been uploaded to Google Play internal testing track.
+            Download the APK below to sideload on your Android device.
           files: mobile/android/app/build/outputs/apk/release/*.apk
           draft: false
           prerelease: false
