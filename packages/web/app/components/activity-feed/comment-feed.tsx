@@ -151,7 +151,7 @@ function CommentFeedCard({ comment }: { comment: CommentType }) {
             src={comment.userAvatarUrl ?? undefined}
             sx={{ width: 32, height: 32 }}
             component="a"
-            href={`/crusher/${comment.userId}`}
+            href={`/profile/${comment.userId}`}
           >
             {!comment.userAvatarUrl && <PersonOutlined sx={{ fontSize: 16 }} />}
           </Avatar>
@@ -160,7 +160,7 @@ function CommentFeedCard({ comment }: { comment: CommentType }) {
               variant="body2"
               fontWeight={600}
               component="a"
-              href={`/crusher/${comment.userId}`}
+              href={`/profile/${comment.userId}`}
               sx={{ textDecoration: 'none', color: 'text.primary' }}
             >
               {comment.userDisplayName || 'User'}

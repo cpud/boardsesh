@@ -144,7 +144,7 @@ describe('SessionFeedCard', () => {
     const hrefs = links.map((link) => link.getAttribute('href'));
 
     // Should have links to profile (avatar + name) and session detail (body)
-    expect(hrefs).toContain('/crusher/user-1');
+    expect(hrefs).toContain('/profile/user-1');
     expect(hrefs).toContain('/session/session-1');
   });
 
@@ -152,7 +152,7 @@ describe('SessionFeedCard', () => {
     render(<SessionFeedCard session={makeSession()} />);
 
     const links = screen.getAllByRole('link');
-    const profileLinks = links.filter((link) => link.getAttribute('href') === '/crusher/user-1');
+    const profileLinks = links.filter((link) => link.getAttribute('href') === '/profile/user-1');
     expect(profileLinks.length).toBeGreaterThanOrEqual(1);
   });
 

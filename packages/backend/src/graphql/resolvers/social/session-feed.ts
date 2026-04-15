@@ -21,6 +21,7 @@ export const sessionFeedQueries = {
   ) => {
     const validatedInput = validateInput(ActivityFeedInputSchema, input || {}, 'input');
     const limit = validatedInput.limit ?? 20;
+    const userId = validatedInput.userId || null;
 
     const offset = validatedInput.cursor
       ? (decodeOffsetCursor(validatedInput.cursor) ?? 0)
@@ -84,6 +85,7 @@ export const sessionFeedQueries = {
             s.total_attempts::int AS total_attempts
           FROM inferred_sessions s
           WHERE s.tick_count > 0
+            ${userId ? sql`AND s.user_id = ${userId}` : sql``}
             ${inferredBoardFilter}
 
           UNION ALL
@@ -104,6 +106,7 @@ export const sessionFeedQueries = {
           FROM boardsesh_ticks t
           ${partyLayoutJoin}
           WHERE t.session_id IS NOT NULL
+            ${userId ? sql`AND t.user_id = ${userId}` : sql``}
             ${partyBoardFilter}
             ${partyLayoutFilter}
           GROUP BY t.session_id

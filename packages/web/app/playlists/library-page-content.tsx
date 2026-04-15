@@ -3,8 +3,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import MuiButton from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import {
   LabelOutlined,
   LoginOutlined,
@@ -34,25 +32,8 @@ import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 import PlaylistCardGrid from '@/app/components/library/playlist-card-grid';
 import PlaylistScrollSection from '@/app/components/library/playlist-scroll-section';
 import PlaylistCard from '@/app/components/library/playlist-card';
-import dynamic from 'next/dynamic';
-import Skeleton from '@mui/material/Skeleton';
 import BoardFilterStrip from '@/app/components/board-scroll/board-filter-strip';
-import { getPreference, setPreference } from '@/app/lib/user-preferences-db';
 import styles from '@/app/components/library/library.module.css';
-
-const LogbookFeed = dynamic(
-  () => import('@/app/components/library/logbook-feed'),
-  {
-    ssr: false,
-    loading: () => (
-      <div className={styles.tabSkeletonContainer}>
-        <Skeleton variant="rounded" height={80} sx={{ mb: 1 }} />
-        <Skeleton variant="rounded" height={80} sx={{ mb: 1 }} />
-        <Skeleton variant="rounded" height={80} />
-      </div>
-    ),
-  },
-);
 
 type LibraryPageContentProps = {
   /** When set, the page was rendered from a board route and this board is pre-selected. */
@@ -84,7 +65,6 @@ export default function LibraryPageContent({
 
   const hasServerUserData = hasInitialPlaylistData || hasInitialBoardData;
   const isAuthenticated = deriveIsAuthenticated(sessionStatus, hasServerUserData);
-  const [activeTab, setActiveTab] = useState<'playlists' | 'logbook'>('playlists');
   // Initialize selectedBoard from SSR data immediately when boardSlug is provided
   const [selectedBoard, setSelectedBoard] = useState<UserBoard | null>(
     () => findMatchingBoard(initialMyBoards, boardSlug),
@@ -101,17 +81,6 @@ export default function LibraryPageContent({
 
   // Get current session/queue board info to use as default selection (global route only)
   const { boardDetails: currentBoardDetails, hasActiveQueue } = useQueueBridgeBoardInfo();
-
-  useEffect(() => {
-    getPreference<'playlists' | 'logbook'>('libraryTab').then((saved) => {
-      if (saved) setActiveTab(saved);
-    });
-  }, []);
-
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    document.title = activeTab === 'playlists' ? 'Playlists | Boardsesh' : 'Logbook | Boardsesh';
-  }, [activeTab]);
 
   // Auto-select the matching board once boards finish loading (fallback for non-SSR paths)
   useEffect(() => {
@@ -246,10 +215,6 @@ export default function LibraryPageContent({
     return `${playlistsBasePath}/${playlistUuid}`;
   }, [playlistsBasePath]);
 
-  const logbookBasePath = playlistsBasePath === '/playlists'
-    ? '/logbook'
-    : playlistsBasePath.replace(/\/playlists$/, '/logbook');
-
   // Filter discover playlists to exclude user's own
   const getDiscoverPlaylists = useCallback(() => {
     const userId = session?.user?.id;
@@ -277,19 +242,12 @@ export default function LibraryPageContent({
     if (boardSlug || playlistsBasePath !== '/playlists') {
       if (board) {
         const nextPlaylistsPath = constructBoardSlugPlaylistsUrl(board.slug, board.angle);
-        router.push(activeTab === 'logbook' ? nextPlaylistsPath.replace(/\/playlists$/, '/logbook') : nextPlaylistsPath);
+        router.push(nextPlaylistsPath);
       } else {
-        router.push(activeTab === 'logbook' ? '/logbook' : '/playlists');
+        router.push('/playlists');
       }
     }
-  }, [activeTab, boardSlug, playlistsBasePath, router]);
-
-  const handleTabChange = useCallback((_: React.SyntheticEvent, newValue: 'playlists' | 'logbook') => {
-    setActiveTab(newValue);
-    setPreference('libraryTab', newValue);
-    router.replace(newValue === 'logbook' ? logbookBasePath : playlistsBasePath);
-  }, [logbookBasePath, playlistsBasePath, router]);
-
+  }, [boardSlug, playlistsBasePath, router]);
 
   // Error state (only for authenticated users with fetch errors)
   if (isAuthenticated && error) {
@@ -317,16 +275,6 @@ export default function LibraryPageContent({
 
   return (
     <>
-      {/* Playlists / Logbook tabs */}
-      <Tabs
-        value={activeTab}
-        onChange={handleTabChange}
-        sx={{ mb: 2, minHeight: 36, '& .MuiTab-root': { minHeight: 36, textTransform: 'none', fontWeight: 500 } }}
-      >
-        <Tab value="playlists" label="Playlists" />
-        <Tab value="logbook" label="Logbook" />
-      </Tabs>
-
       {/* Board Selector */}
       <BoardFilterStrip
         boards={myBoards}
@@ -362,73 +310,67 @@ export default function LibraryPageContent({
         </div>
       )}
 
-      {activeTab === 'logbook' ? (
-        <LogbookFeed />
-      ) : (
-        <>
-          {/* Authenticated: Recent Playlists Grid */}
-          {isAuthenticated && (
-            <PlaylistCardGrid
-              playlists={filteredPlaylists}
-              getPlaylistUrl={getPlaylistUrl}
-              loading={isLoading}
+      {/* Authenticated: Recent Playlists Grid */}
+      {isAuthenticated && (
+        <PlaylistCardGrid
+          playlists={filteredPlaylists}
+          getPlaylistUrl={getPlaylistUrl}
+          loading={isLoading}
+        />
+      )}
+
+      {/* Empty state if no playlists (authenticated only) */}
+      {isAuthenticated && !isLoading && playlists.length === 0 && (
+        <div className={styles.emptyContainer}>
+          <LabelOutlined className={styles.emptyIcon} />
+          <Typography variant="h6" component="h4" sx={{ mb: 1 }}>
+            No playlists yet
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 300, mb: 2 }}>
+            Create your first playlist by adding climbs from the climb list.
+          </Typography>
+        </div>
+      )}
+
+      {/* Jump Back In (authenticated only) */}
+      {isAuthenticated && (isLoading || filteredPlaylists.length > 0) && (
+        <PlaylistScrollSection title="Jump Back In" loading={isLoading}>
+          {filteredPlaylists.slice(0, 10).map((p, i) => (
+            <PlaylistCard
+              key={p.uuid}
+              name={p.name}
+              climbCount={p.climbCount}
+              boardType={p.boardType}
+              layoutId={p.layoutId}
+              color={p.color}
+              icon={p.icon}
+              href={getPlaylistUrl(p.uuid)}
+              variant="scroll"
+              index={i}
             />
-          )}
+          ))}
+        </PlaylistScrollSection>
+      )}
 
-          {/* Empty state if no playlists (authenticated only) */}
-          {isAuthenticated && !isLoading && playlists.length === 0 && (
-            <div className={styles.emptyContainer}>
-              <LabelOutlined className={styles.emptyIcon} />
-              <Typography variant="h6" component="h4" sx={{ mb: 1 }}>
-                No playlists yet
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 300, mb: 2 }}>
-                Create your first playlist by adding climbs from the climb list.
-              </Typography>
-            </div>
-          )}
-
-          {/* Jump Back In (authenticated only) */}
-          {isAuthenticated && (isLoading || filteredPlaylists.length > 0) && (
-            <PlaylistScrollSection title="Jump Back In" loading={isLoading}>
-              {filteredPlaylists.slice(0, 10).map((p, i) => (
-                <PlaylistCard
-                  key={p.uuid}
-                  name={p.name}
-                  climbCount={p.climbCount}
-                  boardType={p.boardType}
-                  layoutId={p.layoutId}
-                  color={p.color}
-                  icon={p.icon}
-                  href={getPlaylistUrl(p.uuid)}
-                  variant="scroll"
-                  index={i}
-                />
-              ))}
-            </PlaylistScrollSection>
-          )}
-
-          {/* Discover */}
-          {(discoverLoading || discoverItems.length > 0) && (
-            <PlaylistScrollSection title="Discover" loading={discoverLoading}>
-              {discoverItems.map((p, i) => (
-                <PlaylistCard
-                  key={p.uuid}
-                  name={p.name}
-                  climbCount={p.climbCount}
-                  boardType={p.boardType}
-                  layoutId={p.layoutId}
-                  color={p.color}
-                  icon={p.icon}
-                  href={getPlaylistUrl(p.uuid)}
-                  variant="scroll"
-                  index={i}
-                  fetchPriority={i === 0 ? 'high' : undefined}
-                />
-              ))}
-            </PlaylistScrollSection>
-          )}
-        </>
+      {/* Discover */}
+      {(discoverLoading || discoverItems.length > 0) && (
+        <PlaylistScrollSection title="Discover" loading={discoverLoading}>
+          {discoverItems.map((p, i) => (
+            <PlaylistCard
+              key={p.uuid}
+              name={p.name}
+              climbCount={p.climbCount}
+              boardType={p.boardType}
+              layoutId={p.layoutId}
+              color={p.color}
+              icon={p.icon}
+              href={getPlaylistUrl(p.uuid)}
+              variant="scroll"
+              index={i}
+              fetchPriority={i === 0 ? 'high' : undefined}
+            />
+          ))}
+        </PlaylistScrollSection>
       )}
 
     </>

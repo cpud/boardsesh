@@ -20,6 +20,8 @@ import PlayCircleOutlineOutlined from '@mui/icons-material/PlayCircleOutlineOutl
 import GroupOutlined from '@mui/icons-material/GroupOutlined';
 import LightModeOutlined from '@mui/icons-material/LightModeOutlined';
 import DarkModeOutlined from '@mui/icons-material/DarkModeOutlined';
+import NotificationsOutlined from '@mui/icons-material/NotificationsOutlined';
+import Badge from '@mui/material/Badge';
 
 import { useSession, signOut } from 'next-auth/react';
 import { useColorMode } from '@/app/hooks/use-color-mode';
@@ -46,6 +48,7 @@ import {
   formatRelativeTime,
   extractBoardName,
 } from '@/app/lib/session-history-db';
+import { useUnreadNotificationCount } from '@/app/hooks/use-unread-notification-count';
 import styles from './user-drawer.module.css';
 
 function asBoardName(value: string): BoardName | null {
@@ -77,6 +80,7 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
   const { mode, toggleMode } = useColorMode();
   const isMoonboard = boardDetails?.board_name === 'moonboard';
   const guardBoardSwitch = useBoardSwitchGuard();
+  const notificationUnreadCount = useUnreadNotificationCount();
 
   // Load recent sessions when drawer opens
   useEffect(() => {
@@ -270,7 +274,27 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
 
             {session?.user && (
               <Link
-                href={`/crusher/${session.user.id}`}
+                href="/notifications"
+                className={styles.menuItem}
+                onClick={handleClose}
+              >
+                <span className={styles.menuItemIcon}>
+                  <Badge
+                    badgeContent={notificationUnreadCount}
+                    color="error"
+                    max={99}
+                    sx={{ '& .MuiBadge-badge': { fontSize: 10, height: 16, minWidth: 16 } }}
+                  >
+                    <NotificationsOutlined />
+                  </Badge>
+                </span>
+                <span className={styles.menuItemLabel}>Notifications</span>
+              </Link>
+            )}
+
+            {session?.user && (
+              <Link
+                href={`/profile/${session.user.id}`}
                 className={styles.menuItem}
                 onClick={handleClose}
               >

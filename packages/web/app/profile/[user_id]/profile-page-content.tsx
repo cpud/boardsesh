@@ -4,27 +4,28 @@ import React, { useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import MuiCard from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
-import MuiButton from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import { HistoryOutlined, IosShare } from '@mui/icons-material';
-import Link from 'next/link';
+import { IosShare } from '@mui/icons-material';
 import { EmptyState } from '@/app/components/ui/empty-state';
 import Logo from '@/app/components/brand/logo';
 import BackButton from '@/app/components/back-button';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { shareWithFallback } from '@/app/lib/share-utils';
-import AscentsFeed from '@/app/components/activity-feed';
-import SetterClimbList from '@/app/components/climb-list/setter-climb-list';
+import ActivityFeed from '@/app/components/activity-feed/activity-feed';
+import LogbookFeed from '@/app/components/library/logbook-feed';
+import { useSession } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { GetUserProfileStatsQueryResponse } from '@/app/lib/graphql/operations/ticks';
 import styles from './profile-page.module.css';
 import { useProfileData } from './hooks/use-profile-data';
 import ProfileHeader from './components/profile-header';
 import BoardStatsSection from './components/board-stats-section';
 import type { UserProfile, LogbookEntry } from './utils/profile-constants';
+
+type ProfileTab = 'progress' | 'sessions' | 'logbook';
+const VALID_TABS: ProfileTab[] = ['progress', 'sessions', 'logbook'];
 
 interface ProfilePageContentProps {
   userId: string;
@@ -46,14 +47,16 @@ export default function ProfilePageContent({
   initialNotFound,
 }: ProfilePageContentProps) {
   const { showMessage } = useSnackbar();
+  const { data: authSession, status: sessionStatus } = useSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const {
     loading,
     notFound,
     profile,
     setProfile,
     isOwnProfile,
-    hasCredentials,
-    authToken,
     selectedBoard,
     setSelectedBoard,
     loadingStats,
@@ -77,8 +80,6 @@ export default function ProfilePageContent({
     aggregatedStackedBars,
     loadingProfileStats,
     statisticsSummary,
-    activeTab,
-    setActiveTab,
   } = useProfileData(userId, {
     initialProfile: initialProfile ?? undefined,
     initialProfileStats: initialProfileStats ?? undefined,
@@ -88,9 +89,34 @@ export default function ProfilePageContent({
     initialNotFound,
   });
 
+  // Tab state from URL search params
+  const tabParam = searchParams.get('tab');
+  const activeProfileTab: ProfileTab = VALID_TABS.includes(tabParam as ProfileTab)
+    ? (tabParam as ProfileTab)
+    : 'progress';
+
+  // Only allow logbook tab on own profile
+  const effectiveTab = activeProfileTab === 'logbook' && !isOwnProfile
+    ? 'progress'
+    : activeProfileTab;
+
+  const handleTabChange = useCallback((_: React.SyntheticEvent, value: ProfileTab) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value === 'progress') {
+      params.delete('tab');
+    } else {
+      params.set('tab', value);
+    }
+    const qs = params.toString();
+    router.push(qs ? `/profile/${userId}?${qs}` : `/profile/${userId}`, { scroll: false });
+  }, [router, searchParams, userId]);
+
+  // Determine if user is authenticated (for ActivityFeed)
+  const isAuthenticated = sessionStatus === 'authenticated';
+
   const handleShare = useCallback(async () => {
-    const displayName = profile?.profile?.displayName || profile?.name || 'Crusher';
-    const shareUrl = `${window.location.origin}/crusher/${userId}`;
+    const displayName = profile?.profile?.displayName || profile?.name || 'Climber';
+    const shareUrl = `${window.location.origin}/profile/${userId}`;
 
     await shareWithFallback({
       url: shareUrl,
@@ -136,7 +162,7 @@ export default function ProfilePageContent({
         <BackButton fallbackUrl="/" />
         <Logo size="sm" showText={false} />
         <Typography variant="h6" component="h4" className={styles.headerTitle}>
-          Profile
+          {isOwnProfile ? 'You' : 'Profile'}
         </Typography>
         {profile && (
           <IconButton onClick={handleShare} aria-label="Share profile">
@@ -163,91 +189,48 @@ export default function ProfilePageContent({
           />
         )}
 
-        <BoardStatsSection
-          selectedBoard={selectedBoard}
-          onBoardChange={setSelectedBoard}
-          timeframe={timeframe}
-          onTimeframeChange={setTimeframe}
-          fromDate={fromDate}
-          onFromDateChange={setFromDate}
-          toDate={toDate}
-          onToDateChange={setToDate}
-          loadingStats={loadingStats}
-          filteredLogbook={filteredLogbook}
-          weeklyBars={weeklyBars}
-          isOwnProfile={isOwnProfile}
-          weeklyFromDate={weeklyFromDate}
-          onWeeklyFromDateChange={setWeeklyFromDate}
-          weeklyToDate={weeklyToDate}
-          onWeeklyToDateChange={setWeeklyToDate}
-        />
+        <Tabs
+          value={effectiveTab}
+          onChange={handleTabChange}
+          variant="fullWidth"
+          sx={{ mb: 2 }}
+        >
+          <Tab label="Progress" value="progress" />
+          <Tab label="Sessions" value="sessions" />
+          {isOwnProfile && <Tab label="Logbook" value="logbook" />}
+        </Tabs>
 
-        {hasCredentials && (
-          <Tabs
-            value={activeTab}
-            onChange={(_, val) => setActiveTab(val)}
-            variant="fullWidth"
-            sx={{ mb: 2 }}
-          >
-            <Tab label="Activity" value="activity" />
-            <Tab label="Created Climbs" value="createdClimbs" />
-          </Tabs>
+        {effectiveTab === 'progress' && (
+          <BoardStatsSection
+            selectedBoard={selectedBoard}
+            onBoardChange={setSelectedBoard}
+            timeframe={timeframe}
+            onTimeframeChange={setTimeframe}
+            fromDate={fromDate}
+            onFromDateChange={setFromDate}
+            toDate={toDate}
+            onToDateChange={setToDate}
+            loadingStats={loadingStats}
+            filteredLogbook={filteredLogbook}
+            weeklyBars={weeklyBars}
+            isOwnProfile={isOwnProfile}
+            weeklyFromDate={weeklyFromDate}
+            onWeeklyFromDateChange={setWeeklyFromDate}
+            weeklyToDate={weeklyToDate}
+            onWeeklyToDateChange={setWeeklyToDate}
+          />
         )}
 
-        {(!hasCredentials || activeTab === 'activity') && (
-          <MuiCard className={styles.statsCard}>
-            <CardContent>
-              <Typography variant="h6" component="h5">
-                Recent Activity
-              </Typography>
-              <Typography variant="body2" component="span" color="text.secondary" className={styles.chartDescription}>
-                Latest ascents and attempts
-              </Typography>
-              <AscentsFeed userId={userId} pageSize={10} isOwnProfile={isOwnProfile} />
-              {isOwnProfile && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                  <MuiButton
-                    component={Link}
-                    href="/playlists"
-                    startIcon={<HistoryOutlined />}
-                    variant="text"
-                    size="small"
-                    sx={{ textTransform: 'none' }}
-                  >
-                    View full logbook
-                  </MuiButton>
-                </Box>
-              )}
-            </CardContent>
-          </MuiCard>
+        {effectiveTab === 'sessions' && (
+          <ActivityFeed
+            isAuthenticated={isAuthenticated}
+            userId={userId}
+          />
         )}
 
-        {activeTab === 'createdClimbs' &&
-          profile?.credentials &&
-          (() => {
-            const uniqueSetters = Array.from(
-              new Map(profile.credentials.map((c) => [c.auroraUsername, c])).values(),
-            );
-            return uniqueSetters.map((cred) => (
-              <MuiCard key={cred.auroraUsername} className={styles.statsCard}>
-                <CardContent>
-                  <Typography variant="h6" component="h5">
-                    Created Climbs
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    component="span"
-                    color="text.secondary"
-                    className={styles.chartDescription}
-                  >
-                    Climbs set by {cred.auroraUsername} on{' '}
-                    {cred.boardType.charAt(0).toUpperCase() + cred.boardType.slice(1)}
-                  </Typography>
-                  <SetterClimbList username={cred.auroraUsername} authToken={authToken} />
-                </CardContent>
-              </MuiCard>
-            ));
-          })()}
+        {effectiveTab === 'logbook' && isOwnProfile && (
+          <LogbookFeed />
+        )}
       </Box>
     </Box>
   );

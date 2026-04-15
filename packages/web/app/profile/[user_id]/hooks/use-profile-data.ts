@@ -61,7 +61,6 @@ export function useProfileData(userId: string, initialData?: InitialData) {
     initialData?.initialProfileStats ?? null,
   );
   const [loadingProfileStats, setLoadingProfileStats] = useState(!initialData?.initialProfileStats);
-  const [activeTab, setActiveTab] = useState<'activity' | 'createdClimbs'>('activity');
   const [weeklyFromDate, setWeeklyFromDate] = useState<string>('');
   const [weeklyToDate, setWeeklyToDate] = useState<string>('');
 
@@ -235,8 +234,6 @@ export function useProfileData(userId: string, initialData?: InitialData) {
     profile,
     setProfile,
     isOwnProfile,
-    hasCredentials,
-    authToken,
 
     // Board selection
     selectedBoard,
@@ -270,9 +267,5 @@ export function useProfileData(userId: string, initialData?: InitialData) {
 
     // V-Points timeline
     vPointsTimeline,
-
-    // Tabs
-    activeTab,
-    setActiveTab,
   };
 }

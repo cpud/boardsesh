@@ -80,7 +80,7 @@ const SocialFeedItem: React.FC<SocialFeedItemProps> = ({ item, showUserHeader = 
               src={item.userAvatarUrl ?? undefined}
               sx={{ width: 32, height: 32 }}
               component="a"
-              href={`/crusher/${item.userId}`}
+              href={`/profile/${item.userId}`}
             >
               {!item.userAvatarUrl && <PersonOutlined sx={{ fontSize: 16 }} />}
             </MuiAvatar>
@@ -89,7 +89,7 @@ const SocialFeedItem: React.FC<SocialFeedItemProps> = ({ item, showUserHeader = 
                 variant="body2"
                 fontWeight={600}
                 component="a"
-                href={`/crusher/${item.userId}`}
+                href={`/profile/${item.userId}`}
                 sx={{ textDecoration: 'none', color: 'text.primary' }}
               >
                 {item.userDisplayName || 'User'}

@@ -40,7 +40,7 @@ export default function FeedItemNewClimb({ item }: FeedItemNewClimbProps) {
             src={item.actorAvatarUrl ?? undefined}
             sx={{ width: 32, height: 32 }}
             component="a"
-            href={item.actorId ? `/crusher/${item.actorId}` : undefined}
+            href={item.actorId ? `/profile/${item.actorId}` : undefined}
           >
             {!item.actorAvatarUrl && <PersonOutlined sx={{ fontSize: 16 }} />}
           </MuiAvatar>
@@ -49,7 +49,7 @@ export default function FeedItemNewClimb({ item }: FeedItemNewClimbProps) {
               variant="body2"
               fontWeight={600}
               component="a"
-              href={item.actorId ? `/crusher/${item.actorId}` : undefined}
+              href={item.actorId ? `/profile/${item.actorId}` : undefined}
               sx={{ textDecoration: 'none', color: 'text.primary' }}
             >
               {item.actorDisplayName || 'User'}

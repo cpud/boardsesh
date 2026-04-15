@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
 
     const row = rows[0];
-    const displayName = row.displayName || row.name || 'Crusher';
+    const displayName = row.displayName || row.name || 'Climber';
     const description = `${displayName}'s climbing profile on Boardsesh`;
 
     const ogParams = new URLSearchParams();
@@ -54,7 +54,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         title: `${displayName} | Boardsesh`,
         description,
         type: 'profile',
-        url: `/crusher/${user_id}`,
+        url: `/profile/${user_id}`,
         images: [
           {
             url: ogImagePath,

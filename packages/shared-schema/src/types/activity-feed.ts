@@ -126,6 +126,7 @@ export type ActivityFeedInput = {
   cursor?: string | null;
   limit?: number;
   boardUuid?: string | null;
+  userId?: string | null;
 };
 
 export type GlobalCommentFeedInput = {

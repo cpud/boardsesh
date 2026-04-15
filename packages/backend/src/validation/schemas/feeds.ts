@@ -7,6 +7,7 @@ export const ActivityFeedInputSchema = z.object({
   cursor: z.string().max(500).optional().nullable(),
   limit: z.number().int().min(1).max(50).optional().default(20),
   boardUuid: z.string().max(100).optional().nullable(),
+  userId: z.string().max(100).optional().nullable(),
 });
 
 /**

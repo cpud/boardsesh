@@ -14,8 +14,7 @@ import FormatListBulletedOutlined from '@mui/icons-material/FormatListBulletedOu
 import AddOutlined from '@mui/icons-material/AddOutlined';
 import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
 import DynamicFeedOutlined from '@mui/icons-material/DynamicFeedOutlined';
-import NotificationsOutlined from '@mui/icons-material/NotificationsOutlined';
-import Badge from '@mui/material/Badge';
+import PersonOutlined from '@mui/icons-material/PersonOutlined';
 import { usePathname, useRouter } from 'next/navigation';
 import { track } from '@vercel/analytics';
 import { BoardDetails, BoardName } from '@/app/lib/types';
@@ -31,7 +30,7 @@ import BoardDiscoveryScroll from '../board-scroll/board-discovery-scroll';
 import BoardSelectorDrawer from '../board-selector-drawer/board-selector-drawer';
 import { BoardConfigData } from '@/app/lib/server-board-configs';
 import { getDefaultAngleForBoard } from '@/app/lib/board-config-for-playlist';
-import { useUnreadNotificationCount } from '@/app/hooks/use-unread-notification-count';
+import { useSession } from 'next-auth/react';
 import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
 import { useClimbActionsData } from '@/app/hooks/use-climb-actions-data';
 import type { StoredBoardConfig } from '@/app/lib/saved-boards-db';
@@ -39,7 +38,7 @@ import { isValidHexColor } from '@/app/lib/color-utils';
 import { useBoardSwitchGuard } from '@/app/components/board-lock/use-board-switch-guard';
 import type { BoardRouteIdentity } from '@/app/lib/types';
 
-type Tab = 'home' | 'climbs' | 'library' | 'feed' | 'create' | 'notifications';
+type Tab = 'home' | 'climbs' | 'library' | 'feed' | 'create' | 'you';
 type PendingCreateAction = 'climb' | 'playlist' | null;
 
 interface BottomTabBarProps {
@@ -58,8 +57,8 @@ const getActiveTab = (pathname: string): Tab => {
   if (pathname === '/') return 'home';
   if (pathname.endsWith('/create')) return 'create';
   if (pathname.startsWith('/feed')) return 'feed';
-  if (pathname.startsWith('/notifications')) return 'notifications';
-  if (pathname.startsWith('/playlists') || pathname.includes('/playlists') || pathname.startsWith('/logbook') || pathname.includes('/logbook')) return 'library';
+  if (pathname.startsWith('/profile')) return 'you';
+  if (pathname.startsWith('/playlists') || pathname.includes('/playlists')) return 'library';
   return 'climbs';
 };
 
@@ -123,7 +122,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
   const router = useRouter();
   const guardBoardSwitch = useBoardSwitchGuard();
 
-  const notificationUnreadCount = useUnreadNotificationCount();
+  const { data: session } = useSession();
 
   // Playlist context may be absent at root-level routes; use a local fallback for create flow.
   const playlistsContext = useContext(PlaylistsContext);
@@ -210,7 +209,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
   };
 
   // Whether we're currently on a board page (URL derived from pathname is reliable)
-  const isOnBoardPage = pathname.startsWith('/b/') || (!!effectiveBoardDetails && pathname !== '/' && !pathname.startsWith('/notifications') && !pathname.startsWith('/playlists'));
+  const isOnBoardPage = pathname.startsWith('/b/') || (!!effectiveBoardDetails && pathname !== '/' && !pathname.startsWith('/profile') && !pathname.startsWith('/playlists'));
 
   const handleClimbsTab = async () => {
         setIsCreatePlaylistOpen(false);
@@ -290,10 +289,20 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
     track('Bottom Tab Bar', { tab: 'feed' });
   };
 
-  const handleNotificationsTab = () => {
-        setIsCreatePlaylistOpen(false);
-    router.push('/notifications');
-    track('Bottom Tab Bar', { tab: 'notifications' });
+  const handleYouTab = () => {
+    setIsCreatePlaylistOpen(false);
+    if (!isAuthenticated || !session?.user?.id) {
+      openAuthModal({
+        title: 'Sign in to see your progress',
+        description: 'Sign in to track your climbing stats, sessions, and logbook.',
+        onSuccess: () => {
+          // Session will refresh after sign-in
+        },
+      });
+      return;
+    }
+    router.push(`/profile/${session.user.id}`);
+    track('Bottom Tab Bar', { tab: 'you' });
   };
 
   const handleCreateTab = () => {
@@ -327,8 +336,8 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
       case 'create':
         handleCreateTab();
         break;
-      case 'notifications':
-        handleNotificationsTab();
+      case 'you':
+        handleYouTab();
         break;
     }
   };
@@ -560,18 +569,9 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
           sx={actionSx}
         />
         <BottomNavigationAction
-          label="Notifications"
-          icon={
-            <Badge
-              badgeContent={notificationUnreadCount}
-              color="error"
-              max={99}
-              sx={{ '& .MuiBadge-badge': { fontSize: 10, height: 16, minWidth: 16 } }}
-            >
-              <NotificationsOutlined sx={{ fontSize: 20 }} />
-            </Badge>
-          }
-          value="notifications"
+          label="You"
+          icon={<PersonOutlined sx={{ fontSize: 20 }} />}
+          value="you"
           sx={actionSx}
         />
       </BottomNavigation>

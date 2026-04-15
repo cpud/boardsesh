@@ -154,7 +154,7 @@ export default function FollowerCount({ userId, followerCount, followingCount }:
                 <ListItem
                   key={user.id}
                   component="a"
-                  href={`/crusher/${user.id}`}
+                  href={`/profile/${user.id}`}
                   sx={{
                     textDecoration: 'none',
                     color: 'inherit',

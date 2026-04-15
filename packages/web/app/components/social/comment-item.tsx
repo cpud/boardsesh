@@ -206,7 +206,7 @@ export default function CommentItem({
           src={comment.userAvatarUrl ?? undefined}
           sx={{ width: 28, height: 28, mt: 0.25 }}
           component="a"
-          href={`/crusher/${comment.userId}`}
+          href={`/profile/${comment.userId}`}
         >
           {!comment.userAvatarUrl && <PersonOutlined sx={{ fontSize: 16 }} />}
         </MuiAvatar>
@@ -218,7 +218,7 @@ export default function CommentItem({
               variant="body2"
               fontWeight={600}
               component="a"
-              href={`/crusher/${comment.userId}`}
+              href={`/profile/${comment.userId}`}
               sx={{ textDecoration: 'none', color: 'text.primary' }}
             >
               {comment.userDisplayName || 'User'}

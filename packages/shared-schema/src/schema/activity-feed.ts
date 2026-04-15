@@ -320,6 +320,8 @@ export const activityFeedTypeDefs = /* GraphQL */ `
     limit: Int
     "Filter by board UUID"
     boardUuid: String
+    "Filter sessions where this user is a participant"
+    userId: String
   }
 
   """

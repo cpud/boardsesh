@@ -107,7 +107,7 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
               <ListItem
                 key={`user-${result.user.id}`}
                 component="a"
-                href={`/crusher/${result.user.id}`}
+                href={`/profile/${result.user.id}`}
                 sx={{
                   textDecoration: 'none',
                   color: 'inherit',
