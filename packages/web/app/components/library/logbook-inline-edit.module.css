@@ -1,15 +1,11 @@
-.drawerBody {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-width: 720px;
-  margin: 0 auto;
+.editWrapper {
+  display: grid;
+  grid-template-rows: 1fr;
 }
 
-.summary {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.editInner {
+  overflow: hidden;
+  min-height: 0;
 }
 
 .pickerPanel {
@@ -27,25 +23,20 @@
   min-height: 0;
 }
 
-.editorCard {
-  overflow: hidden;
-  border: 1px solid var(--neutral-200);
-  border-radius: 16px;
-  background-color: var(--semantic-surface);
-}
-
 .controlsRow {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 10px 10px;
+  padding: 4px 8px;
+  gap: 4px;
+  background-color: var(--semantic-surface);
+  border-bottom: 1px solid var(--neutral-200);
 }
 
 .leftSection {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -54,15 +45,9 @@
   min-width: 0;
 }
 
-.rightControls {
+.rightButtons {
   flex: none;
   display: flex;
   align-items: center;
-}
-
-.actionsRow {
-  display: flex;
-  justify-content: flex-end;
   gap: 8px;
-  padding: 0 10px 10px;
 }

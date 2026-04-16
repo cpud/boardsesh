@@ -5,8 +5,6 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
-import MuiCard from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Chip from '@mui/material/Chip';
@@ -97,23 +95,14 @@ const SORT_FIELD_OPTIONS: { value: SortField; label: string }[] = [
 
 function LogbookItemSkeleton() {
   return (
-    <MuiCard className={feedStyles.feedItem}>
-      <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
-        <Box sx={{ display: 'flex', gap: 1.5 }}>
-          <Skeleton variant="rounded" width={64} height={64} animation="wave" sx={{ flexShrink: 0 }} />
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1, minWidth: 0 }}>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <Skeleton variant="rounded" width={80} height={24} animation="wave" />
-              <Skeleton variant="rounded" width={100} height={16} animation="wave" />
-            </Box>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <Skeleton variant="rounded" width={40} height={24} animation="wave" />
-              <Skeleton variant="rounded" width={48} height={24} animation="wave" />
-            </Box>
-          </Box>
-        </Box>
-      </CardContent>
-    </MuiCard>
+    <Box sx={{ display: 'flex', alignItems: 'center', p: 1, gap: 1.5, borderBottom: '1px solid var(--neutral-200)' }}>
+      <Skeleton variant="rounded" width={64} height={64} animation="wave" sx={{ flexShrink: 0 }} />
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, flex: 1, minWidth: 0 }}>
+        <Skeleton variant="rounded" width={120} height={18} animation="wave" />
+        <Skeleton variant="rounded" width={180} height={14} animation="wave" />
+      </Box>
+      <Skeleton variant="rounded" width={40} height={18} animation="wave" sx={{ flexShrink: 0 }} />
+    </Box>
   );
 }
 
@@ -183,7 +172,7 @@ export default function LogbookFeed() {
   const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(null);
   const [sortAnchorEl, setSortAnchorEl] = useState<HTMLElement | null>(null);
   const [boardAnchorEl, setBoardAnchorEl] = useState<HTMLElement | null>(null);
-  const [editingItem, setEditingItem] = useState<AscentFeedItem | null>(null);
+  const [editingItemUuid, setEditingItemUuid] = useState<string | null>(null);
   const [layoutSelections, setLayoutSelections] = useState<Record<Exclude<BoardFilter, 'all'>, number[]>>({
     ...ALL_LAYOUT_SELECTIONS,
   });
@@ -427,11 +416,11 @@ export default function LogbookFeed() {
   }, [token, queryClient, showMessage]);
 
   const handleEdit = useCallback((item: AscentFeedItem) => {
-    setEditingItem(item);
+    setEditingItemUuid(item.uuid);
   }, []);
 
-  const handleCloseEditDrawer = useCallback(() => {
-    setEditingItem(null);
+  const handleCloseEdit = useCallback(() => {
+    setEditingItemUuid(null);
   }, []);
 
   const showBoardType = boardFilter === 'all';
@@ -586,14 +575,16 @@ export default function LogbookFeed() {
     <>
       {filterBar}
       <div className={feedStyles.feed}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           {items.map((item) => (
             <LogbookFeedItem
               key={item.uuid}
               item={item}
               showBoardType={showBoardType}
+              isEditing={editingItemUuid === item.uuid}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onCancelEdit={handleCloseEdit}
               allowInstagramPosting={enableInstagramPosting}
               allowInstagramLinking={enableInstagramLinking && !enableInstagramPosting}
             />

@@ -1,0 +1,65 @@
+/* Logbook feed item — standalone component with swipe gestures */
+
+.container {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Swipe action layers */
+.leftActionLayer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 16px;
+  background-color: var(--color-primary);
+  opacity: 0;
+  will-change: opacity;
+}
+
+.rightActionLayer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 16px;
+  background-color: var(--color-error);
+  opacity: 0;
+  will-change: opacity;
+}
+
+/* Main content row */
+.content {
+  display: flex;
+  align-items: center;
+  padding: 12px 8px;
+  gap: 12px;
+  background-color: var(--semantic-surface, transparent);
+  border-bottom: 1px solid var(--neutral-200);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Center section between thumbnail and menu */
+.center {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Title area: name+subtitle on left, grade grid on right */
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Name and subtitle stacked */
+.nameColumn {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}

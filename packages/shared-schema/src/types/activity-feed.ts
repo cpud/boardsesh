@@ -41,6 +41,7 @@ export type AscentFeedItem = {
   difficultyName?: string | null;
   consensusDifficulty?: number | null;
   consensusDifficultyName?: string | null;
+  qualityAverage?: number | null;
   isBenchmark: boolean;
   comment: string;
   climbedAt: string;

@@ -50,6 +50,9 @@ export type ClimbTitleProps = {
   favorited?: boolean;
   /** When true, shows a "no matching" icon next to the climb name */
   isNoMatch?: boolean;
+  /** When provided, replaces the computed subtitle in `gradePosition='right'` mode.
+   *  Used by logbook items to show ascent-specific info (time ago, status, etc.). */
+  subtitleOverride?: React.ReactNode;
 };
 
 // --- Static sx objects hoisted to module scope (no reactive deps) ---
@@ -178,6 +181,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
   gradePosition = 'inline',
   favorited = false,
   isNoMatch = false,
+  subtitleOverride,
 }) => {
   const isDark = useIsDarkMode();
   const { formatGrade, getGradeColor, loaded: gradeFormatLoaded } = useGradeFormat();
@@ -287,9 +291,10 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
       subtitleParts.push('\u2665');
     }
 
-    const subtitleContent = subtitleParts.length > 0
-      ? subtitleParts.join(' \u00b7 ')
-      : <Box component="span" sx={italicSx}>project</Box>;
+    const subtitleContent = subtitleOverride
+      ?? (subtitleParts.length > 0
+        ? subtitleParts.join(' \u00b7 ')
+        : <Box component="span" sx={italicSx}>project</Box>);
 
     return (
       <Box sx={rightContainerSx} className={className}>
@@ -392,7 +397,8 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
       prev.titleFontSize === next.titleFontSize &&
       prev.gradePosition === next.gradePosition &&
       prev.favorited === next.favorited &&
-      prev.isNoMatch === next.isNoMatch
+      prev.isNoMatch === next.isNoMatch &&
+      prev.subtitleOverride === next.subtitleOverride
     );
   }
 
@@ -424,7 +430,8 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(({
     prev.titleFontSize === next.titleFontSize &&
     prev.gradePosition === next.gradePosition &&
     prev.favorited === next.favorited &&
-    prev.isNoMatch === next.isNoMatch
+    prev.isNoMatch === next.isNoMatch &&
+    prev.subtitleOverride === next.subtitleOverride
   );
 });
 
