@@ -270,10 +270,9 @@ export async function GET(request: NextRequest) {
                 <div
                   style={{
                     display: 'flex',
-                    alignItems: 'flex-end',
                     gap: '6px',
                     width: '100%',
-                    height: '156px',
+                    height: '190px',
                   }}
                 >
                   {gradeBars.map((bar) => (
@@ -281,44 +280,47 @@ export async function GET(request: NextRequest) {
                       key={bar.grade}
                       style={{
                         display: 'flex',
+                        flexDirection: 'column',
                         flex: 1,
                         height: '100%',
-                        alignItems: 'flex-end',
+                        justifyContent: 'flex-end',
+                        alignItems: 'stretch',
                       }}
                     >
                       <div
                         style={{
+                          display: 'flex',
+                          alignItems: 'flex-end',
                           width: '100%',
-                          height: `${Math.max((bar.count / maxCount) * 100, 7)}%`,
-                          backgroundColor: bar.color,
-                          borderRadius: '10px 10px 0 0',
+                          height: '156px',
+                          borderBottom: `1px solid ${darkTokens.neutral[300]}`,
+                          paddingBottom: '10px',
                         }}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: '6px',
-                    width: '100%',
-                    alignItems: 'flex-start',
-                    borderTop: `1px solid ${darkTokens.neutral[300]}`,
-                    paddingTop: '10px',
-                  }}
-                >
-                  {gradeBars.map((bar) => (
-                    <div
-                      key={bar.grade}
-                      style={{
-                        flex: 1,
-                        fontSize: '17px',
-                        fontWeight: 700,
-                        textAlign: 'center',
-                        color: darkTokens.neutral[700],
-                      }}
-                    >
-                      {bar.grade}
+                      >
+                        <div
+                          style={{
+                            width: '100%',
+                            height: `${Math.max((bar.count / maxCount) * 100, 7)}%`,
+                            backgroundColor: bar.color,
+                            borderRadius: '10px 10px 0 0',
+                          }}
+                        />
+                      </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          width: '100%',
+                          paddingTop: '10px',
+                          fontSize: '17px',
+                          fontWeight: 700,
+                          textAlign: 'center',
+                          color: darkTokens.neutral[700],
+                        }}
+                      >
+                        {bar.grade}
+                      </div>
                     </div>
                   ))}
                 </div>
