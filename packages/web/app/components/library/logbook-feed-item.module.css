@@ -3,6 +3,7 @@
 .container {
   position: relative;
   overflow: hidden;
+  border-bottom: 1px solid var(--neutral-200);
 }
 
 /* Swipe action layers */
@@ -33,33 +34,58 @@
 /* Main content row */
 .content {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   padding: 12px 8px;
   gap: 12px;
   background-color: var(--semantic-surface, transparent);
-  border-bottom: 1px solid var(--neutral-200);
   cursor: pointer;
   user-select: none;
+}
+
+
+/* Thumbnail — 50% larger than the standard 64px via scale transform.
+   The wrapper reserves 96px of space while the inner 64px content scales up to fill it. */
+.thumbnail {
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thumbnail > * {
+  transform: scale(1.5);
+  transform-origin: center center;
 }
 
 /* Center section between thumbnail and menu */
 .center {
   flex: 1;
   min-width: 0;
-}
-
-/* Title area: name+subtitle on left, grade grid on right */
-.titleRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Name and subtitle stacked */
-.nameColumn {
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+/* Picker panel — animated expand/collapse */
+.pickerPanel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms ease-out;
+}
+
+.pickerPanelExpanded {
+  grid-template-rows: 1fr;
+}
+
+.pickerPanelContent {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Full-width comment row below the content row */
+.commentRow {
+  padding: 0 8px 8px;
 }
