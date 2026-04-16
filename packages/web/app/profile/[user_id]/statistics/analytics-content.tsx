@@ -40,10 +40,6 @@ export default function AnalyticsContent({
     weeklyBars,
     aggregatedFlashRedpointBars,
     vPointsTimeline,
-    weeklyFromDate,
-    setWeeklyFromDate,
-    weeklyToDate,
-    setWeeklyToDate,
     loadingAggregated,
     aggregatedStackedBars,
     loadingProfileStats,
@@ -92,6 +88,7 @@ export default function AnalyticsContent({
           hardestFlash={hardestFlash}
           loadingProfileStats={loadingProfileStats}
           loadingAggregated={loadingAggregated}
+          weeklyBars={weeklyBars}
           aggregatedStackedBars={aggregatedStackedBars}
           aggregatedFlashRedpointBars={aggregatedFlashRedpointBars}
           vPointsTimeline={vPointsTimeline}
@@ -101,12 +98,7 @@ export default function AnalyticsContent({
           selectedBoard={selectedBoard}
           loading={loadingAggregated}
           filteredLogbook={filteredLogbook}
-          weeklyBars={weeklyBars}
           isOwnProfile={isOwnProfile}
-          weeklyFromDate={weeklyFromDate}
-          onWeeklyFromDateChange={setWeeklyFromDate}
-          weeklyToDate={weeklyToDate}
-          onWeeklyToDateChange={setWeeklyToDate}
         />
       </Box>
       {drawerRendered && (

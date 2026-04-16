@@ -61,8 +61,6 @@ export function useProfileData(userId: string, initialData?: InitialData) {
     initialData?.initialProfileStats ?? null,
   );
   const [loadingProfileStats, setLoadingProfileStats] = useState(!initialData?.initialProfileStats);
-  const [weeklyFromDate, setWeeklyFromDate] = useState<string>('');
-  const [weeklyToDate, setWeeklyToDate] = useState<string>('');
   const [percentile, setPercentile] = useState<{
     totalDistinctClimbs: number;
     percentile: number;
@@ -193,8 +191,8 @@ export function useProfileData(userId: string, initialData?: InitialData) {
   );
 
   const weeklyBars = useMemo(
-    () => buildWeeklyBars(filteredLogbook, weeklyFromDate || undefined, weeklyToDate || undefined, gradeFormat),
-    [filteredLogbook, weeklyFromDate, weeklyToDate, gradeFormat],
+    () => buildWeeklyBars(filteredLogbook, undefined, undefined, gradeFormat),
+    [filteredLogbook, gradeFormat],
   );
 
   const aggregatedFlashRedpointBars = useMemo(
@@ -265,10 +263,6 @@ export function useProfileData(userId: string, initialData?: InitialData) {
     // Board stats
     filteredLogbook,
     weeklyBars,
-    weeklyFromDate,
-    setWeeklyFromDate,
-    weeklyToDate,
-    setWeeklyToDate,
 
     // Aggregated stats
     loadingAggregated,

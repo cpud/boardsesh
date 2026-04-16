@@ -18,11 +18,21 @@ vi.mock('@/app/profile/[user_id]/hooks/use-profile-data', () => ({
 }));
 
 vi.mock('@/app/profile/[user_id]/components/stats-summary', () => ({
-  default: () => <div data-testid="stats-summary" />,
+  default: (props: { weeklyBars?: unknown[] | null }) => (
+    <div
+      data-testid="stats-summary"
+      data-has-weekly-bars={props.weeklyBars ? 'true' : 'false'}
+    />
+  ),
 }));
 
 vi.mock('@/app/profile/[user_id]/components/board-stats-section', () => ({
-  default: () => <div data-testid="board-stats-section" />,
+  default: (props: Record<string, unknown>) => (
+    <div
+      data-testid="board-stats-section"
+      data-has-weekly-bars-prop={Object.prototype.hasOwnProperty.call(props, 'weeklyBars') ? 'true' : 'false'}
+    />
+  ),
 }));
 
 vi.mock('@/app/components/activity-feed/activity-feed', () => ({
@@ -65,10 +75,6 @@ function mockProfileDataReturn(overrides?: Partial<ReturnType<typeof useProfileD
     weeklyBars: null,
     aggregatedFlashRedpointBars: null,
     vPointsTimeline: null,
-    weeklyFromDate: '',
-    setWeeklyFromDate: vi.fn(),
-    weeklyToDate: '',
-    setWeeklyToDate: vi.fn(),
     loadingAggregated: false,
     aggregatedStackedBars: null,
     loadingProfileStats: false,
@@ -114,6 +120,27 @@ describe('YouPageContent', () => {
     expect(screen.getByTestId('board-stats-section')).toBeTruthy();
     expect(screen.queryByTestId('activity-feed')).toBeNull();
     expect(screen.queryByTestId('logbook-feed')).toBeNull();
+  });
+
+  it('passes weekly bars into StatsSummary and keeps BoardStatsSection fallback-only', () => {
+    mockUseProfileData.mockReturnValue(mockProfileDataReturn({
+      filteredLogbook: [{
+        climbed_at: new Date().toISOString(),
+        difficulty: 12,
+        tries: 2,
+        angle: 40,
+        status: 'send',
+        climbUuid: 'climb-1',
+      }],
+      weeklyBars: [
+        { key: '2026-W1', label: 'W1', segments: [{ value: 3, color: '#ccc', label: 'V4' }] },
+      ],
+    }));
+
+    render(<YouPageContent userId="user-1" />);
+
+    expect(screen.getByTestId('stats-summary').getAttribute('data-has-weekly-bars')).toBe('true');
+    expect(screen.getByTestId('board-stats-section').getAttribute('data-has-weekly-bars-prop')).toBe('false');
   });
 
   it('renders Sessions tab content on /you/sessions path', () => {

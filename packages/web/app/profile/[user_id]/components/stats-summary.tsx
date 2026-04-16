@@ -55,7 +55,7 @@ export default function StatsSummary({
     return null;
   }
 
-  const renderHighlightCard = (statusTestId: string, highlight: GradeHighlight) => (
+  const renderHighlightCard = (statusTestId: string, subtitle: string, highlight: GradeHighlight) => (
     <Box sx={{
       flex: 1,
       position: 'relative',
@@ -63,13 +63,21 @@ export default function StatsSummary({
       bgcolor: highlight.color,
       color: highlight.textColor,
       p: 1.5,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 0.125,
       textAlign: 'center',
       overflow: 'hidden',
     }}>
-      <Typography variant="h5" component="span" fontWeight={700}>
+      <Typography variant="h5" component="span" fontWeight={700} sx={{ display: 'block', lineHeight: 1 }}>
         {highlight.label}
       </Typography>
-      <Box sx={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', lineHeight: 0 }}>
+      <Typography variant="caption" sx={{ display: 'block', lineHeight: 1, opacity: 0.8 }}>
+        {subtitle}
+      </Typography>
+      <Box sx={{ position: 'absolute', right: 8, top: 'calc(50% + 4px)', transform: 'translateY(-50%)', lineHeight: 0 }}>
         <AscentStatusIcon
           status={highlight.status}
           variant="badge"
@@ -103,8 +111,8 @@ export default function StatsSummary({
             problems
           </Typography>
         </Box>
-        {hardestSend && renderHighlightCard('hardest-send-status', hardestSend)}
-        {hardestFlash && renderHighlightCard('hardest-flash-status', hardestFlash)}
+        {hardestSend && renderHighlightCard('hardest-send-status', 'send', hardestSend)}
+        {hardestFlash && renderHighlightCard('hardest-flash-status', 'flash', hardestFlash)}
       </Box>
 
       {percentile && percentile.percentile > 0 && (
@@ -164,7 +172,7 @@ export default function StatsSummary({
       {weeklyBars && (
         <div className={styles.gradeDistributionSection}>
           <Typography variant="body2" component="span" fontWeight={600} className={styles.gradeDistributionTitle}>
-            Weekly Attempts
+            Activity
           </Typography>
           <CssBarChart
             bars={weeklyBars}

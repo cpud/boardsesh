@@ -74,11 +74,9 @@ describe('buildWeeklyBars with font format', () => {
     const result = buildWeeklyBars(entries, undefined, undefined, 'font');
     expect(result).not.toBeNull();
 
-    // All segments across all bars should use Font labels
     const segmentLabels = new Set(result!.flatMap((bar) => bar.segments.map((s) => s.label)));
     expect(segmentLabels.has('6A')).toBe(true);
     expect(segmentLabels.has('7A')).toBe(true);
-    // V-grade labels must not appear
     expect(segmentLabels.has('V3')).toBe(false);
     expect(segmentLabels.has('V6')).toBe(false);
   });
@@ -87,10 +85,8 @@ describe('buildWeeklyBars with font format', () => {
     const result = buildWeeklyBars(entries, undefined, undefined, 'font');
     expect(result).not.toBeNull();
 
-    // Pick the first bar and verify its segment labels are in Font order
     const bar = result![0];
     const segmentLabels = bar.segments.map((s) => s.label);
-    // 6A should come before 6A+ which should come before 7A
     const idx6A = segmentLabels.indexOf('6A');
     const idx6APlus = segmentLabels.indexOf('6A+');
     const idx7A = segmentLabels.indexOf('7A');

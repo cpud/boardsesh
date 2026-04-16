@@ -17,32 +17,22 @@ vi.mock('../../profile-page.module.css', () => ({
   default: {},
 }));
 
-// Mock CssBarChart components
-vi.mock('@/app/components/charts/css-bar-chart', () => ({
-  CssBarChart: () => <div data-testid="css-bar-chart" />,
-  GroupedBarChart: () => <div data-testid="grouped-bar-chart" />,
-}));
-
-// Mock MUI DatePicker to avoid LocalizationProvider requirement
-vi.mock('@mui/x-date-pickers/DatePicker', () => ({
-  DatePicker: () => <input data-testid="date-picker" />,
-}));
-
 import BoardStatsSection from '../board-stats-section';
 
 const defaultProps = {
   selectedBoard: 'kilter',
   loading: false,
   filteredLogbook: [],
-  weeklyBars: null,
   isOwnProfile: false,
-  weeklyFromDate: '',
-  onWeeklyFromDateChange: vi.fn(),
-  weeklyToDate: '',
-  onWeeklyToDateChange: vi.fn(),
 };
 
 describe('BoardStatsSection empty state conditional rendering', () => {
+  it('shows loading spinner while aggregated data is loading', () => {
+    render(<BoardStatsSection {...defaultProps} loading={true} />);
+
+    expect(screen.getByRole('progressbar')).toBeTruthy();
+  });
+
   it('shows EmptyState for other users profile with no data on kilter', () => {
     render(<BoardStatsSection {...defaultProps} isOwnProfile={false} selectedBoard="kilter" />);
 
@@ -82,7 +72,7 @@ describe('BoardStatsSection empty state conditional rendering', () => {
     expect(screen.queryByTestId('board-import-prompt')).toBeNull();
   });
 
-  it('shows charts when logbook has data regardless of isOwnProfile', () => {
+  it('renders nothing when filtered logbook has data', () => {
     const logbookEntry = {
       climbed_at: '2024-01-01',
       difficulty: 10,
@@ -92,25 +82,16 @@ describe('BoardStatsSection empty state conditional rendering', () => {
       climbUuid: 'uuid-1',
     };
 
-    const weeklyBars = [
-      {
-        key: 'W1',
-        label: 'W1',
-        segments: [{ value: 1, color: 'rgba(255,235,59,0.8)', label: '4a' }],
-      },
-    ];
-
-    render(
+    const { container } = render(
       <BoardStatsSection
         {...defaultProps}
         isOwnProfile={true}
         selectedBoard="kilter"
         filteredLogbook={[logbookEntry]}
-        weeklyBars={weeklyBars}
       />,
     );
 
-    expect(screen.getByTestId('css-bar-chart')).toBeTruthy();
+    expect(container.innerHTML).toBe('');
     expect(screen.queryByTestId('board-import-prompt')).toBeNull();
     expect(screen.queryByText('No climbing data for this period')).toBeNull();
   });

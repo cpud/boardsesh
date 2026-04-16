@@ -53,10 +53,6 @@ export default function YouPageContent({
     weeklyBars,
     aggregatedFlashRedpointBars,
     vPointsTimeline,
-    weeklyFromDate,
-    setWeeklyFromDate,
-    weeklyToDate,
-    setWeeklyToDate,
     loadingAggregated,
     aggregatedStackedBars,
     loadingProfileStats,
@@ -146,6 +142,7 @@ export default function YouPageContent({
               hardestFlash={hardestFlash}
               loadingProfileStats={loadingProfileStats}
               loadingAggregated={loadingAggregated}
+              weeklyBars={weeklyBars}
               aggregatedStackedBars={aggregatedStackedBars}
               aggregatedFlashRedpointBars={aggregatedFlashRedpointBars}
               vPointsTimeline={vPointsTimeline}
@@ -155,12 +152,7 @@ export default function YouPageContent({
               selectedBoard={selectedBoard}
               loading={loadingAggregated}
               filteredLogbook={filteredLogbook}
-              weeklyBars={weeklyBars}
               isOwnProfile={true}
-              weeklyFromDate={weeklyFromDate}
-              onWeeklyFromDateChange={setWeeklyFromDate}
-              weeklyToDate={weeklyToDate}
-              onWeeklyToDateChange={setWeeklyToDate}
             />
           </>
         )}

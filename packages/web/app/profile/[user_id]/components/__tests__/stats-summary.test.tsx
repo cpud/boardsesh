@@ -134,6 +134,8 @@ describe('StatsSummary', () => {
 
     expect(screen.getByText('V8')).toBeTruthy();
     expect(screen.getByText('V7')).toBeTruthy();
+    expect(screen.getByText('send')).toBeTruthy();
+    expect(screen.getByText('flash')).toBeTruthy();
     expect(screen.queryByText('Hardest Send')).toBeNull();
     expect(screen.queryByText('Hardest Flash')).toBeNull();
     expect(screen.getByTestId('hardest-send-status').getAttribute('data-status')).toBe('send');
@@ -177,14 +179,21 @@ describe('StatsSummary', () => {
     ).toBe(true);
   });
 
-  it('renders weekly attempts before grade distribution when weekly bars are available', () => {
+  it('renders activity before grade distribution when weekly bars are available', () => {
     const weeklyBars: CssBarChartBar[] = [
-      { key: '2026-W1', label: 'W1', segments: [{ value: 2, color: '#00ff00', label: 'V3' }] },
+      {
+        key: '2026-W1',
+        label: 'W1',
+        segments: [
+          { value: 2, color: '#ff0000', label: 'V3' },
+          { value: 1, color: '#00ff00', label: 'V4' },
+        ],
+      },
     ];
 
     render(<StatsSummary {...createDefaultProps({ weeklyBars })} />);
 
-    expect(screen.getByText('Weekly Attempts')).toBeTruthy();
+    expect(screen.getByText('Activity')).toBeTruthy();
 
     const chartLabels = screen.getAllByTestId('css-bar-chart').map((chart) => chart.textContent);
     expect(chartLabels).toEqual([
@@ -193,10 +202,10 @@ describe('StatsSummary', () => {
     ]);
   });
 
-  it('omits weekly attempts when no weekly bars are available', () => {
+  it('omits activity when no weekly bars are available', () => {
     render(<StatsSummary {...createDefaultProps({ weeklyBars: null })} />);
 
-    expect(screen.queryByText('Weekly Attempts')).toBeNull();
+    expect(screen.queryByText('Activity')).toBeNull();
     expect(screen.getAllByTestId('css-bar-chart')).toHaveLength(1);
   });
 

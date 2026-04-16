@@ -302,19 +302,16 @@ describe('buildWeeklyBars', () => {
   });
 
   it('groups entries by ISO week', () => {
-    // Two entries in the same week, one in a different week
-    const week1Date = '2024-01-08T12:00:00Z'; // W2 2024
-    const week2Date = '2024-01-15T12:00:00Z'; // W3 2024
+    const week1Date = '2024-01-08T12:00:00Z';
+    const week2Date = '2024-01-15T12:00:00Z';
     const logbook = [
-      // Most-recent first (assumed order)
-      makeEntry({ climbed_at: week2Date, difficulty: 22 }), // V6 W3
-      makeEntry({ climbed_at: week1Date, difficulty: 22 }), // V6 W2
-      makeEntry({ climbed_at: week1Date, difficulty: 22 }), // V6 W2
+      makeEntry({ climbed_at: week2Date, difficulty: 22 }),
+      makeEntry({ climbed_at: week1Date, difficulty: 22 }),
+      makeEntry({ climbed_at: week1Date, difficulty: 22 }),
     ];
     const result = buildWeeklyBars(logbook);
     expect(result).not.toBeNull();
 
-    // Keys now include ISO year: "2024-W2", "2024-W3"
     const w2Key = `${dayjs(week1Date).isoWeekYear()}-W${dayjs(week1Date).isoWeek()}`;
     const w3Key = `${dayjs(week2Date).isoWeekYear()}-W${dayjs(week2Date).isoWeek()}`;
     const w2 = result!.find((b) => b.key === w2Key);
@@ -323,26 +320,22 @@ describe('buildWeeklyBars', () => {
     expect(w2).toBeDefined();
     expect(w3).toBeDefined();
 
-    const w2GradeSegment = w2!.segments.find((s) => s.label === 'V6');
-    const w3GradeSegment = w3!.segments.find((s) => s.label === 'V6');
-
-    expect(w2GradeSegment?.value).toBe(2);
-    expect(w3GradeSegment?.value).toBe(1);
+    expect(w2!.segments.find((s) => s.label === 'V6')?.value).toBe(2);
+    expect(w3!.segments.find((s) => s.label === 'V6')?.value).toBe(1);
   });
 
   it('only includes grades that actually appear in the data', () => {
-    const logbook = [makeEntry({ climbed_at: '2024-01-15T12:00:00Z', difficulty: 22 })]; // only V6
+    const logbook = [makeEntry({ climbed_at: '2024-01-15T12:00:00Z', difficulty: 22 })];
     const result = buildWeeklyBars(logbook);
     expect(result).not.toBeNull();
     const grades = result![0].segments.map((s) => s.label);
     expect(grades).toEqual(['V6']);
-    // Must not include grades like V3 that have no data
     expect(grades).not.toContain('V3');
   });
 
   it('ignores entries with null difficulty', () => {
     const logbook = [
-      makeEntry({ climbed_at: '2024-01-15T12:00:00Z', difficulty: 22 }), // V6
+      makeEntry({ climbed_at: '2024-01-15T12:00:00Z', difficulty: 22 }),
       makeEntry({ climbed_at: '2024-01-15T12:00:00Z', difficulty: null }),
     ];
     const result = buildWeeklyBars(logbook);
@@ -350,11 +343,10 @@ describe('buildWeeklyBars', () => {
     const d = dayjs('2024-01-15T12:00:00Z');
     const w3 = result!.find((b) => b.key === `${d.isoWeekYear()}-W${d.isoWeek()}`);
     const totalValue = w3!.segments.reduce((sum, s) => sum + s.value, 0);
-    expect(totalValue).toBe(1); // null entry not counted
+    expect(totalValue).toBe(1);
   });
 
   it('caps output at DEFAULT_MAX_WEEKS=52 (keeps most recent weeks)', () => {
-    // Create 60 entries each in a distinct week to exceed the 52-week cap
     const entries: LogbookEntry[] = [];
     for (let w = 0; w < 60; w++) {
       entries.push(
@@ -368,19 +360,15 @@ describe('buildWeeklyBars', () => {
 
     const result = buildWeeklyBars(entries);
     expect(result).not.toBeNull();
-    // 60 weeks of data gets capped to the most recent 52
     expect(result!.length).toBe(52);
   });
 
   it('does not collide week numbers across year boundaries', () => {
-    // 2024-12-23 = ISO W52 of 2024, 2024-12-30 = ISO W1 of 2025
-    // Adjacent weeks that cross the year boundary should be separate bars
     const logbook = [
-      makeEntry({ climbed_at: '2025-01-06T12:00:00Z', difficulty: 22 }), // 2025-W2: V6
-      makeEntry({ climbed_at: '2024-12-30T12:00:00Z', difficulty: 16 }), // 2025-W1: V3
-      makeEntry({ climbed_at: '2024-12-23T12:00:00Z', difficulty: 22 }), // 2024-W52: V6
+      makeEntry({ climbed_at: '2025-01-06T12:00:00Z', difficulty: 22 }),
+      makeEntry({ climbed_at: '2024-12-30T12:00:00Z', difficulty: 16 }),
+      makeEntry({ climbed_at: '2024-12-23T12:00:00Z', difficulty: 22 }),
     ];
-
     const result = buildWeeklyBars(logbook);
     expect(result).not.toBeNull();
 
@@ -392,13 +380,8 @@ describe('buildWeeklyBars', () => {
     const w52_2024 = result!.find((b) => b.key === '2024-W52')!;
     const w1_2025 = result!.find((b) => b.key === '2025-W1')!;
 
-    // Check they have different data
-    const w52_7a = w52_2024.segments.find((s) => s.label === 'V6');
-    const w1_6a = w1_2025.segments.find((s) => s.label === 'V3');
-    expect(w52_7a?.value).toBe(1);
-    expect(w1_6a?.value).toBe(1);
-
-    // Labels should include year since data spans years
+    expect(w52_2024.segments.find((s) => s.label === 'V6')?.value).toBe(1);
+    expect(w1_2025.segments.find((s) => s.label === 'V3')?.value).toBe(1);
     expect(w52_2024.label).toContain("'24");
     expect(w1_2025.label).toContain("'25");
   });

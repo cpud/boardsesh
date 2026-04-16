@@ -178,20 +178,19 @@ export function buildAggregatedStackedBars(
 
 export function buildWeeklyBars(
   filteredLogbook: LogbookEntry[],
-  weeklyFromDate?: string,
-  weeklyToDate?: string,
+  fromDate?: string,
+  toDate?: string,
   gradeFormat: GradeDisplayFormat = 'v-grade',
 ): CssBarChartBar[] | null {
   if (filteredLogbook.length === 0) return null;
 
   const mapping = getDifficultyMapping(gradeFormat);
 
-  // Apply weekly date filter if provided
-  const entries = (weeklyFromDate || weeklyToDate)
+  const entries = (fromDate || toDate)
     ? filteredLogbook.filter((entry) => {
         const d = dayjs(entry.climbed_at);
-        if (weeklyFromDate && d.isBefore(dayjs(weeklyFromDate), 'day')) return false;
-        if (weeklyToDate && d.isAfter(dayjs(weeklyToDate), 'day')) return false;
+        if (fromDate && d.isBefore(dayjs(fromDate), 'day')) return false;
+        if (toDate && d.isAfter(dayjs(toDate), 'day')) return false;
         return true;
       })
     : filteredLogbook;
@@ -204,26 +203,22 @@ export function buildWeeklyBars(
   const last = dayjs(entries[0]?.climbed_at).endOf('isoWeek');
   let current = first;
   while (current.isBefore(last) || current.isSame(last)) {
-    // Include ISO year in the key to avoid collisions across year boundaries
     allWeekKeys.push(`${current.isoWeekYear()}-W${current.isoWeek()}`);
     current = current.add(1, 'week');
   }
-  // Cap at default max to keep the chart readable when no date range is set
   const weekKeys = allWeekKeys.length > DEFAULT_MAX_WEEKS ? allWeekKeys.slice(-DEFAULT_MAX_WEEKS) : allWeekKeys;
 
   const weeklyData: Record<string, Record<string, number>> = {};
   entries.forEach((entry) => {
     if (entry.difficulty === null) return;
+    const grade = mapping[entry.difficulty];
+    if (!grade) return;
     const d = dayjs(entry.climbed_at);
     const weekKey = `${d.isoWeekYear()}-W${d.isoWeek()}`;
-    const difficulty = mapping[entry.difficulty];
-    if (difficulty) {
-      if (!weeklyData[weekKey]) weeklyData[weekKey] = {};
-      weeklyData[weekKey][difficulty] = (weeklyData[weekKey][difficulty] || 0) + 1;
-    }
+    if (!weeklyData[weekKey]) weeklyData[weekKey] = {};
+    weeklyData[weekKey][grade] = (weeklyData[weekKey][grade] || 0) + 1;
   });
 
-  // Find which grades actually appear
   const usedGrades = new Set<string>();
   Object.values(weeklyData).forEach((weekGrades) => {
     Object.keys(weekGrades).forEach((grade) => usedGrades.add(grade));
@@ -237,7 +232,6 @@ export function buildWeeklyBars(
 
   if (activeGrades.length === 0) return null;
 
-  // Build display labels: show "W3" normally, but "W52 '24" at year boundaries
   const spansYears = weekKeys.length > 1 &&
     weekKeys[0].split('-')[0] !== weekKeys[weekKeys.length - 1].split('-')[0];
 
