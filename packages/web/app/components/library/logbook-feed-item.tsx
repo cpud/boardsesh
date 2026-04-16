@@ -20,12 +20,14 @@ import MoreVertOutlined from '@mui/icons-material/MoreVertOutlined';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import utc from 'dayjs/plugin/utc'
 import AscentThumbnail from '@/app/components/activity-feed/ascent-thumbnail';
 import type { AscentFeedItem } from '@/app/lib/graphql/operations/ticks';
 import { themeTokens } from '@/app/theme/theme-config';
 import styles from '@/app/components/activity-feed/ascents-feed.module.css';
 
 dayjs.extend(relativeTime);
+dayjs.extend(utc)
 
 // Layout name mapping (same as ascents-feed.tsx)
 const layoutNames: Record<string, string> = {
@@ -82,7 +84,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = ({ item, showBoardType, 
     onDelete?.(item.uuid);
   }, [onDelete, item.uuid, handleMenuClose]);
 
-  const timeAgo = dayjs(item.climbedAt).fromNow();
+  const timeAgo = dayjs(item.climbedAt).utc(true).fromNow();
   const statusDisplay = getStatusDisplay(item.status, item.attemptCount);
   const boardDisplay = getLayoutDisplayName(item.boardType, item.layoutId);
   const hasSuccess = item.status === 'flash' || item.status === 'send';
