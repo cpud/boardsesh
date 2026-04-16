@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
@@ -26,10 +27,17 @@ vi.mock('@/app/components/ui/empty-state', () => ({
 
 vi.mock('@/app/theme/theme-config', () => ({
   themeTokens: {
+    colors: { primary: '#8C4A52' },
     transitions: { normal: '200ms ease' },
     shadows: { md: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' },
     borderRadius: { md: 8, lg: 12, xl: 16, full: 9999 },
   },
+}));
+
+vi.mock('@/app/components/ascent-status/ascent-status-icon', () => ({
+  AscentStatusIcon: (props: { status: string; testId?: string }) => (
+    <div data-testid={props.testId ?? 'ascent-status-icon'} data-status={props.status} />
+  ),
 }));
 
 import StatsSummary from '../stats-summary';
@@ -61,6 +69,18 @@ function createDefaultProps(overrides: Partial<StatsSummaryProps> = {}): StatsSu
           grades: { V3: 5, V5: 7 },
         },
       ],
+    },
+    hardestSend: {
+      label: 'V8',
+      color: '#123456',
+      textColor: '#ffffff',
+      status: 'send',
+    },
+    hardestFlash: {
+      label: 'V7',
+      color: '#654321',
+      textColor: '#ffffff',
+      status: 'flash',
     },
     loadingProfileStats: false,
     loadingAggregated: false,
@@ -104,7 +124,18 @@ describe('StatsSummary', () => {
   it('renders total ascents count', () => {
     render(<StatsSummary {...createDefaultProps()} />);
     expect(screen.getByText('42')).toBeTruthy();
-    expect(screen.getByText('Problems Sent')).toBeTruthy();
+    expect(screen.getByText('Problems')).toBeTruthy();
+  });
+
+  it('renders hardest send and flash grades with status badges', () => {
+    render(<StatsSummary {...createDefaultProps()} />);
+
+    expect(screen.getByText('V8')).toBeTruthy();
+    expect(screen.getByText('V7')).toBeTruthy();
+    expect(screen.queryByText('Hardest Send')).toBeNull();
+    expect(screen.queryByText('Hardest Flash')).toBeNull();
+    expect(screen.getByTestId('hardest-send-status').getAttribute('data-status')).toBe('send');
+    expect(screen.getByTestId('hardest-flash-status').getAttribute('data-status')).toBe('flash');
   });
 
   it('renders layout percentage bar when multiple layouts', () => {
@@ -136,14 +167,10 @@ describe('StatsSummary', () => {
     expect(screen.queryByText(/Kilter Original \(100%\)/)).toBeNull();
   });
 
-  it('renders grade distribution section with timeframe toggle', () => {
+  it('renders grade distribution section', () => {
     render(<StatsSummary {...createDefaultProps()} />);
     expect(screen.getByText('Grade Distribution')).toBeTruthy();
-    expect(screen.getByText('All')).toBeTruthy();
-    expect(screen.getByText('Year')).toBeTruthy();
-    expect(screen.getByText('Month')).toBeTruthy();
-    expect(screen.getByText('Week')).toBeTruthy();
-    expect(screen.getByText('Today')).toBeTruthy();
+    expect(screen.getByTestId('css-bar-chart')).toBeTruthy();
   });
 
   it('shows loading spinner when loadingAggregated is true', () => {

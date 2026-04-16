@@ -229,16 +229,16 @@ export function useProfileData(userId: string, initialData?: InitialData) {
       }
     }
 
-    const makeHighlight = (difficulty: number) => {
+    const makeHighlight = (difficulty: number, status: 'send' | 'flash') => {
       const label = mapping[difficulty] ?? `${difficulty}`;
       const color = getGradeColor(label) ?? 'var(--neutral-200)';
       const textColor = getGradeTextColor(color);
-      return { label, color, textColor };
+      return { label, color, textColor, status };
     };
 
     return {
-      hardestSend: maxSendDifficulty >= 0 ? makeHighlight(maxSendDifficulty) : null,
-      hardestFlash: maxFlashDifficulty >= 0 ? makeHighlight(maxFlashDifficulty) : null,
+      hardestSend: maxSendDifficulty >= 0 ? makeHighlight(maxSendDifficulty, 'send') : null,
+      hardestFlash: maxFlashDifficulty >= 0 ? makeHighlight(maxFlashDifficulty, 'flash') : null,
     };
   }, [filteredBoardsTicks, gradeFormat]);
 

@@ -1,6 +1,7 @@
+// @vitest-environment jsdom
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { createTestQueryClient } from '@/app/test-utils/test-providers';
 
@@ -23,18 +24,26 @@ vi.mock('@/app/lib/graphql/operations', () => ({
 
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { useSession } from 'next-auth/react';
-import { useLogbook, accumulatedLogbookQueryKey, type LogbookEntry } from '@/app/hooks/use-logbook';
+import {
+  useLogbook,
+  accumulatedLogbookQueryKey,
+  type LogbookEntry,
+} from '@/app/hooks/use-logbook';
 import { AscentStatus } from '../ascent-status';
 import { BoardContext, type BoardContextType } from '../../board-provider/board-provider-context';
 
 const mockUseWsAuthToken = vi.mocked(useWsAuthToken);
 const mockUseSession = vi.mocked(useSession);
 
-function AscentStatusHarness() {
-  const { logbook } = useLogbook('kilter', ['climb-1']);
-
-  const contextValue: BoardContextType = {
-    boardName: 'kilter',
+function createBoardContextValue({
+  boardName = 'kilter',
+  logbook = [],
+}: {
+  boardName?: BoardContextType['boardName'];
+  logbook?: LogbookEntry[];
+} = {}): BoardContextType {
+  return {
+    boardName,
     isAuthenticated: true,
     isLoading: false,
     error: null,
@@ -49,9 +58,21 @@ function AscentStatusHarness() {
       throw new Error('unused in test');
     },
   };
+}
+
+function renderWithBoardContext(contextValue: BoardContextType) {
+  return render(
+    <BoardContext.Provider value={contextValue}>
+      <AscentStatus climbUuid="climb-1" />
+    </BoardContext.Provider>,
+  );
+}
+
+function AscentStatusHarness() {
+  const { logbook } = useLogbook('kilter', ['climb-1']);
 
   return (
-    <BoardContext.Provider value={contextValue}>
+    <BoardContext.Provider value={createBoardContextValue({ logbook })}>
       <AscentStatus climbUuid="climb-1" />
     </BoardContext.Provider>
   );
@@ -74,11 +95,106 @@ describe('AscentStatus', () => {
     });
   });
 
+  it('renders nothing when the climb has no logbook entries', () => {
+    const { container } = render(<AscentStatus climbUuid="climb-1" />);
+    expect(container.innerHTML).toBe('');
+  });
+
+  it('prefers flash over send and attempt for the same climb', () => {
+    renderWithBoardContext(
+      createBoardContextValue({
+        boardName: 'kilter',
+        logbook: [
+          {
+            uuid: '1',
+            climb_uuid: 'climb-1',
+            angle: 40,
+            is_mirror: false,
+            tries: 3,
+            quality: null,
+            difficulty: null,
+            comment: '',
+            climbed_at: '2025-01-01T00:00:00.000Z',
+            is_ascent: true,
+            status: 'send',
+          },
+          {
+            uuid: '2',
+            climb_uuid: 'climb-1',
+            angle: 40,
+            is_mirror: false,
+            tries: 1,
+            quality: null,
+            difficulty: null,
+            comment: '',
+            climbed_at: '2025-01-02T00:00:00.000Z',
+            is_ascent: true,
+            status: 'flash',
+          },
+          {
+            uuid: '3',
+            climb_uuid: 'climb-1',
+            angle: 40,
+            is_mirror: false,
+            tries: 2,
+            quality: null,
+            difficulty: null,
+            comment: '',
+            climbed_at: '2025-01-03T00:00:00.000Z',
+            is_ascent: false,
+            status: 'attempt',
+          },
+        ],
+      }),
+    );
+
+    expect(screen.getByTestId('ascent-badge').getAttribute('data-status')).toBe('flash');
+  });
+
+  it('renders separate mirrored and regular statuses on mirroring boards', () => {
+    renderWithBoardContext(
+      createBoardContextValue({
+        boardName: 'tension',
+        logbook: [
+          {
+            uuid: '1',
+            climb_uuid: 'climb-1',
+            angle: 40,
+            is_mirror: false,
+            tries: 2,
+            quality: null,
+            difficulty: null,
+            comment: '',
+            climbed_at: '2025-01-01T00:00:00.000Z',
+            is_ascent: true,
+            status: 'send',
+          },
+          {
+            uuid: '2',
+            climb_uuid: 'climb-1',
+            angle: 40,
+            is_mirror: true,
+            tries: 1,
+            quality: null,
+            difficulty: null,
+            comment: '',
+            climbed_at: '2025-01-02T00:00:00.000Z',
+            is_ascent: true,
+            status: 'flash',
+          },
+        ],
+      }),
+    );
+
+    expect(screen.getByTestId('ascent-badge').getAttribute('data-status')).toBe('send');
+    expect(screen.getByTestId('ascent-badge-mirrored').getAttribute('data-status')).toBe('flash');
+  });
+
   it('renders the badge immediately from accumulated logbook cache updates without a refetch', async () => {
     mockRequest.mockResolvedValue({ ticks: [] });
 
     const queryClient = createTestQueryClient();
-    const { container } = render(
+    render(
       <QueryClientProvider client={queryClient}>
         <AscentStatusHarness />
       </QueryClientProvider>,
@@ -87,7 +203,7 @@ describe('AscentStatus', () => {
     await waitFor(() => {
       expect(mockRequest).toHaveBeenCalledTimes(1);
     });
-    expect(container.querySelector('span')).toBeNull();
+    expect(screen.queryByTestId('ascent-badge')).toBeNull();
 
     const optimisticEntry: LogbookEntry = {
       uuid: 'temp-1',
@@ -104,15 +220,13 @@ describe('AscentStatus', () => {
     };
 
     act(() => {
-      queryClient.setQueryData<LogbookEntry[]>(
-        accumulatedLogbookQueryKey('kilter'),
-        [optimisticEntry],
-      );
+      queryClient.setQueryData<LogbookEntry[]>(accumulatedLogbookQueryKey('kilter'), [optimisticEntry]);
     });
 
     await waitFor(() => {
-      expect(container.querySelector('span')).not.toBeNull();
+      expect(screen.getByTestId('ascent-badge')).not.toBeNull();
     });
+    expect(screen.getByTestId('ascent-badge').getAttribute('data-status')).toBe('flash');
     expect(mockRequest).toHaveBeenCalledTimes(1);
   });
 });

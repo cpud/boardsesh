@@ -11,6 +11,7 @@ import { CssBarChart, GroupedBarChart } from '@/app/components/charts/css-bar-ch
 import type { CssBarChartBar, GroupedBar } from '@/app/components/charts/css-bar-chart';
 import { EmptyState } from '@/app/components/ui/empty-state';
 import { themeTokens } from '@/app/theme/theme-config';
+import { AscentStatusIcon } from '@/app/components/ascent-status/ascent-status-icon';
 import type { LayoutPercentage, LayoutLegendEntry, VPointsTimelineData } from '../utils/chart-data-builders';
 import VPointsChart from './v-points-chart';
 import styles from '../profile-page.module.css';
@@ -19,6 +20,7 @@ interface GradeHighlight {
   label: string;
   color: string;
   textColor: string;
+  status: 'send' | 'flash';
 }
 
 export interface StatsSummaryProps {
@@ -51,6 +53,32 @@ export default function StatsSummary({
     return null;
   }
 
+  const renderHighlightCard = (statusTestId: string, highlight: GradeHighlight) => (
+    <Box sx={{
+      flex: 1,
+      position: 'relative',
+      borderRadius: `${themeTokens.borderRadius.md}px`,
+      bgcolor: highlight.color,
+      color: highlight.textColor,
+      p: 1.5,
+      textAlign: 'center',
+      overflow: 'hidden',
+    }}>
+      <Typography variant="h5" component="span" fontWeight={700}>
+        {highlight.label}
+      </Typography>
+      <Box sx={{ position: 'absolute', right: 8, bottom: 8, lineHeight: 0 }}>
+        <AscentStatusIcon
+          status={highlight.status}
+          variant="badge"
+          fontSize={12}
+          badgeSize={20}
+          testId={statusTestId}
+        />
+      </Box>
+    </Box>
+  );
+
   return (
     <MuiCard className={styles.statsCard}><CardContent>
       <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
@@ -62,46 +90,14 @@ export default function StatsSummary({
           textAlign: 'center',
         }}>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-            Problems Sent
+            Problems
           </Typography>
           <Typography variant="h5" component="span" fontWeight={700}>
             {statisticsSummary.totalAscents}
           </Typography>
         </Box>
-        {hardestSend && (
-          <Box sx={{
-            flex: 1,
-            borderRadius: `${themeTokens.borderRadius.md}px`,
-            bgcolor: hardestSend.color,
-            color: hardestSend.textColor,
-            p: 1.5,
-            textAlign: 'center',
-          }}>
-            <Typography variant="caption" sx={{ display: 'block', mb: 0.5, opacity: 0.85 }}>
-              Hardest Send
-            </Typography>
-            <Typography variant="h5" component="span" fontWeight={700}>
-              {hardestSend.label}
-            </Typography>
-          </Box>
-        )}
-        {hardestFlash && (
-          <Box sx={{
-            flex: 1,
-            borderRadius: `${themeTokens.borderRadius.md}px`,
-            bgcolor: hardestFlash.color,
-            color: hardestFlash.textColor,
-            p: 1.5,
-            textAlign: 'center',
-          }}>
-            <Typography variant="caption" sx={{ display: 'block', mb: 0.5, opacity: 0.85 }}>
-              Hardest Flash
-            </Typography>
-            <Typography variant="h5" component="span" fontWeight={700}>
-              {hardestFlash.label}
-            </Typography>
-          </Box>
-        )}
+        {hardestSend && renderHighlightCard('hardest-send-status', hardestSend)}
+        {hardestFlash && renderHighlightCard('hardest-flash-status', hardestFlash)}
       </Box>
 
       {percentile && percentile.percentile > 0 && (
