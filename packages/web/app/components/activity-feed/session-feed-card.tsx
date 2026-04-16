@@ -111,8 +111,8 @@ export default function SessionFeedCard({ session }: SessionFeedCardProps) {
                 <Avatar
                   key={p.userId}
                   src={p.avatarUrl ?? undefined}
-                  component="a"
-                  href={`/crusher/${p.userId}`}
+                  component={Link}
+                  href={`/profile/${p.userId}`}
                   onClick={(e: React.MouseEvent) => e.stopPropagation()}
                   sx={{ width: 28, height: 28, cursor: 'pointer' }}
                 >
@@ -123,7 +123,7 @@ export default function SessionFeedCard({ session }: SessionFeedCardProps) {
           ) : (
             <Avatar
               src={primaryParticipant?.avatarUrl ?? undefined}
-              {...(primaryParticipant ? { component: 'a', href: `/crusher/${primaryParticipant.userId}` } : {})}
+              {...(primaryParticipant ? { component: Link, href: `/profile/${primaryParticipant.userId}` } : {})}
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
               sx={{ width: 32, height: 32, cursor: primaryParticipant ? 'pointer' : 'default' }}
             >
@@ -136,7 +136,7 @@ export default function SessionFeedCard({ session }: SessionFeedCardProps) {
               variant="body2"
               fontWeight={600}
               noWrap
-              {...(primaryParticipant ? { component: 'a', href: `/crusher/${primaryParticipant.userId}` } : {})}
+              {...(primaryParticipant ? { component: Link, href: `/profile/${primaryParticipant.userId}` } : {})}
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
               sx={{ textDecoration: 'none', color: 'text.primary', cursor: primaryParticipant ? 'pointer' : 'default' }}
             >

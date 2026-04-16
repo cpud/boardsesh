@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/app/lib/auth/auth-options";
-import { getProfileData } from "@/app/crusher/[user_id]/server-profile-data";
+import { getProfileData } from "@/app/profile/[user_id]/server-profile-data";
 
 type RouteParams = {
   params: Promise<{ userId: string }>;

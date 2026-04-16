@@ -17,7 +17,7 @@ import {
   type GetUserProfileStatsQueryVariables,
   type GetUserProfileStatsQueryResponse,
 } from '@/app/lib/graphql/operations';
-import { getDifficultyMapping, sortGrades } from '@/app/crusher/[user_id]/utils/profile-constants';
+import { getDifficultyMapping, sortGrades } from '@/app/profile/[user_id]/utils/profile-constants';
 import { V_GRADE_COLORS, FONT_GRADE_COLORS, getGradeColorWithOpacity } from '@/app/lib/grade-colors';
 import { useGradeFormat } from '@/app/hooks/use-grade-format';
 import styles from './user-smart-card.module.css';
@@ -121,7 +121,7 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
 
   const maxCount = useMemo(() => Math.max(...gradeBars.map((b: GradeBar) => b.count), 1), [gradeBars]);
 
-  const displayName = profile?.profile?.displayName || profile?.name || 'Crusher';
+  const displayName = profile?.profile?.displayName || profile?.name || 'Climber';
   const avatarUrl = profile?.profile?.avatarUrl || profile?.image;
 
   if (loading) {
@@ -145,7 +145,7 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
 
   return (
     <MuiCard variant="outlined" className={styles.card}>
-      <CardActionArea onClick={() => router.push(`/crusher/${userId}`)}>
+      <CardActionArea onClick={() => router.push(`/profile/${userId}`)}>
         <CardContent>
           <div className={styles.cardInner}>
             <MuiAvatar src={avatarUrl ?? undefined} sx={{ width: 48, height: 48 }}>

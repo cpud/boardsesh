@@ -28,11 +28,11 @@ vi.mock('../utils/redis-rate-limiter', () => ({
 }));
 
 vi.mock('../db/queries/util/table-select', () => ({
-  getBoardTables: vi.fn().mockReturnValue({
+  UNIFIED_TABLES: {
     climbs: { uuid: 'uuid', layoutId: 'layoutId', boardType: 'boardType', setterUsername: 'setterUsername', name: 'name', description: 'description', frames: 'frames', createdAt: 'createdAt', edgeLeft: 'edgeLeft', edgeRight: 'edgeRight', edgeBottom: 'edgeBottom', edgeTop: 'edgeTop' },
     climbStats: { climbUuid: 'climbUuid', boardType: 'boardType', angle: 'angle', ascensionistCount: 'ascensionistCount', qualityAverage: 'qualityAverage', difficultyAverage: 'difficultyAverage', displayDifficulty: 'displayDifficulty', benchmarkDifficulty: 'benchmarkDifficulty' },
     difficultyGrades: { boardType: 'boardType', difficulty: 'difficulty', boulderName: 'boulderName' },
-  }),
+  },
   isValidBoardName: vi.fn().mockReturnValue(true),
 }));
 

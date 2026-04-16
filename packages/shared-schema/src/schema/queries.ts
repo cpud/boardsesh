@@ -169,6 +169,11 @@ export const queriesTypeDefs = /* GraphQL */ `
     """
     userProfileStats(userId: ID!): ProfileStats!
 
+    """
+    Get a user's percentile ranking based on distinct climbs ascended.
+    """
+    userClimbPercentile(userId: ID!): UserClimbPercentile!
+
     # ============================================
     # Playlist Queries (require auth)
     # ============================================
@@ -283,6 +288,12 @@ export const queriesTypeDefs = /* GraphQL */ `
     Supports multi-board mode when boardType is omitted.
     """
     setterClimbsFull(input: SetterClimbsFullInput!): PlaylistClimbsResult!
+
+    """
+    Get all non-draft climbs created by a user.
+    Includes both directly created climbs and Aurora-imported climbs linked via board credentials.
+    """
+    userClimbs(input: UserClimbsInput!): PlaylistClimbsResult!
 
     """
     Get activity feed of ascents from followed users.

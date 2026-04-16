@@ -7,7 +7,6 @@ import MuiButton from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import PersonOutlined from '@mui/icons-material/PersonOutlined';
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
-import ShowChartOutlined from '@mui/icons-material/ShowChartOutlined';
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
 import LoginOutlined from '@mui/icons-material/LoginOutlined';
 import HelpOutlineOutlined from '@mui/icons-material/HelpOutlineOutlined';
@@ -202,15 +201,18 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
         <div className={styles.drawerBody}>
           {/* Profile section */}
           <div className={styles.profileSection}>
-            <MuiAvatar
-              sx={{ width: 64, height: 64 }}
-              src={userAvatar}
-              className={avatarClass}
-            >
-              {!userAvatar ? <PersonOutlined /> : null}
-            </MuiAvatar>
             {session?.user ? (
               <>
+                <MuiAvatar
+                  component={Link}
+                  href={`/profile/${session.user.id}`}
+                  onClick={handleClose}
+                  sx={{ width: 64, height: 64, cursor: 'pointer' }}
+                  src={userAvatar}
+                  className={avatarClass}
+                >
+                  {!userAvatar ? <PersonOutlined /> : null}
+                </MuiAvatar>
                 {userName && (
                   <MuiTypography variant="body2" component="span" fontWeight={600} className={styles.userName}>
                     {userName}
@@ -223,6 +225,14 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
                 )}
               </>
             ) : (
+              <>
+              <MuiAvatar
+                sx={{ width: 64, height: 64 }}
+                src={userAvatar}
+                className={avatarClass}
+              >
+                {!userAvatar ? <PersonOutlined /> : null}
+              </MuiAvatar>
               <MuiButton
                 variant="contained"
                 startIcon={<LoginOutlined />}
@@ -233,6 +243,7 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
               >
                 Sign in
               </MuiButton>
+              </>
             )}
           </div>
 
@@ -266,17 +277,6 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
                 <span className={styles.menuItemIcon}><DashboardOutlined /></span>
                 <span className={styles.menuItemLabel}>My Boards</span>
               </button>
-            )}
-
-            {session?.user && (
-              <Link
-                href={`/crusher/${session.user.id}`}
-                className={styles.menuItem}
-                onClick={handleClose}
-              >
-                <span className={styles.menuItemIcon}><ShowChartOutlined /></span>
-                <span className={styles.menuItemLabel}>Profile</span>
-              </Link>
             )}
 
             <Link

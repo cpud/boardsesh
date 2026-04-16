@@ -1,57 +1,70 @@
 import React from 'react';
 import { ImageResponse } from '@vercel/og';
 import { NextRequest } from 'next/server';
-import { dbz } from '@/app/lib/db/db';
-import { sql } from 'drizzle-orm';
 import { themeTokens } from '@/app/theme/theme-config';
 import { formatBoardDisplayName } from '@/app/lib/string-utils';
+import { createOgImageHeaders, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from '@/app/lib/seo/og';
+import { getPlaylistOgSummary } from '@/app/lib/seo/dynamic-og-data';
 
 export const runtime = 'edge';
 
+const PLAYLIST_NAME_MAX_LENGTH = 34;
+const PLAYLIST_DESCRIPTION_MAX_LENGTH = 120;
+
+function truncateOgText(value: string, maxLength: number): string {
+  const normalized = value.trim();
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, maxLength - 3).trimEnd()}...`;
+}
+
+function getPlaylistFallbackMark(icon: string | null, name: string, boardLabel: string): string {
+  const normalizedIcon = icon?.trim() || '';
+  const safeIcon = normalizedIcon.replace(/[^A-Za-z0-9!?#+&]/g, '').toUpperCase();
+  if (safeIcon) {
+    return safeIcon.slice(0, 2);
+  }
+
+  const fallbackSource = `${name} ${boardLabel}`.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  return fallbackSource.slice(0, 2) || 'PL';
+}
+
 export async function GET(request: NextRequest) {
+  const routeT0 = performance.now();
+
   try {
     const { searchParams } = new URL(request.url);
     const uuid = searchParams.get('uuid');
+    const version = searchParams.get('v');
 
     if (!uuid) {
       return new Response('Missing uuid parameter', { status: 400 });
     }
 
-    const result = await dbz.execute<{
-      name: string | null;
-      description: string | null;
-      color: string | null;
-      icon: string | null;
-      is_public: boolean;
-      board_type: string;
-      climb_count: number;
-    }>(sql`
-      SELECT p.name, p.description, p.color, p.icon, p.is_public,
-             p.board_type,
-             (SELECT COUNT(*) FROM playlist_climbs pc WHERE pc.playlist_id = p.id) as climb_count
-      FROM playlists p
-      WHERE p.uuid = ${uuid}
-      LIMIT 1
-    `);
-    const rows = result.rows;
+    const dbT0 = performance.now();
+    const playlist = await getPlaylistOgSummary(uuid);
+    const dbMs = performance.now() - dbT0;
 
-    if (rows.length === 0) {
+    if (!playlist) {
       return new Response('Playlist not found', { status: 404 });
     }
 
-    const playlist = rows[0];
-
-    if (!playlist.is_public) {
+    if (!playlist.isPublic) {
       return new Response('Playlist is private', { status: 404 });
     }
 
     const name = playlist.name || 'Playlist';
-    const description = playlist.description;
-    const color = playlist.color || themeTokens.colors.primary;
-    const icon = playlist.icon || null;
-    const boardType = playlist.board_type;
-    const climbCount = Number(playlist.climb_count);
+    const description = playlist.description?.trim() || null;
+    const color = playlist.color?.trim() || themeTokens.colors.primary;
+    const icon = playlist.icon?.trim() || null;
+    const boardType = playlist.boardType;
+    const climbCount = playlist.climbCount;
     const boardLabel = formatBoardDisplayName(boardType);
+    const displayName = truncateOgText(name, PLAYLIST_NAME_MAX_LENGTH);
+    const displayDescription = description ? truncateOgText(description, PLAYLIST_DESCRIPTION_MAX_LENGTH) : null;
+    const displayMark = getPlaylistFallbackMark(icon, name, boardLabel);
 
     return new ImageResponse(
       (
@@ -86,7 +99,7 @@ export async function GET(request: NextRequest) {
                 color: '#FFFFFF',
               }}
             >
-              {icon || '\u{1F3B5}'}
+              {displayMark}
             </div>
           </div>
 
@@ -106,24 +119,20 @@ export async function GET(request: NextRequest) {
                 fontWeight: 'bold',
                 color: themeTokens.neutral[900],
                 lineHeight: 1.2,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
               }}
             >
-              {name}
+              {displayName}
             </div>
 
-            {description && (
+            {displayDescription && (
               <div
                 style={{
                   fontSize: '24px',
                   color: themeTokens.neutral[500],
                   lineHeight: 1.4,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
                 }}
               >
-                {description.length > 120 ? `${description.slice(0, 120)}...` : description}
+                {displayDescription}
               </div>
             )}
 
@@ -141,7 +150,7 @@ export async function GET(request: NextRequest) {
                   fontWeight: 600,
                 }}
               >
-                {climbCount} {climbCount === 1 ? 'climb' : 'climbs'}
+                {`${climbCount} ${climbCount === 1 ? 'climb' : 'climbs'}`}
               </div>
               <div
                 style={{
@@ -170,8 +179,13 @@ export async function GET(request: NextRequest) {
         </div>
       ),
       {
-        width: 1200,
-        height: 630,
+        width: OG_IMAGE_WIDTH,
+        height: OG_IMAGE_HEIGHT,
+        headers: createOgImageHeaders({
+          contentType: 'image/png',
+          version,
+          serverTiming: `db;dur=${dbMs.toFixed(1)}, render;dur=${(performance.now() - routeT0 - dbMs).toFixed(1)}, route;dur=${(performance.now() - routeT0).toFixed(1)}`,
+        }),
       },
     );
   } catch (error) {

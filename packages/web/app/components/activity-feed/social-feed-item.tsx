@@ -15,6 +15,7 @@ import ElectricBoltOutlined from '@mui/icons-material/ElectricBoltOutlined';
 import CancelOutlined from '@mui/icons-material/CancelOutlined';
 import LocationOnOutlined from '@mui/icons-material/LocationOnOutlined';
 import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import Link from 'next/link';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import type { FollowingAscentFeedItem } from '@boardsesh/shared-schema';
@@ -79,8 +80,8 @@ const SocialFeedItem: React.FC<SocialFeedItemProps> = ({ item, showUserHeader = 
             <MuiAvatar
               src={item.userAvatarUrl ?? undefined}
               sx={{ width: 32, height: 32 }}
-              component="a"
-              href={`/crusher/${item.userId}`}
+              component={Link}
+              href={`/profile/${item.userId}`}
             >
               {!item.userAvatarUrl && <PersonOutlined sx={{ fontSize: 16 }} />}
             </MuiAvatar>
@@ -88,8 +89,8 @@ const SocialFeedItem: React.FC<SocialFeedItemProps> = ({ item, showUserHeader = 
               <MuiTypography
                 variant="body2"
                 fontWeight={600}
-                component="a"
-                href={`/crusher/${item.userId}`}
+                component={Link}
+                href={`/profile/${item.userId}`}
                 sx={{ textDecoration: 'none', color: 'text.primary' }}
               >
                 {item.userDisplayName || 'User'}

@@ -3,7 +3,7 @@ import type { ConnectionContext, BoardName } from '@boardsesh/shared-schema';
 import { SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
-import { requireAuthenticated, validateInput } from '../shared/helpers';
+import { requireAuthenticated, applyRateLimit, validateInput } from '../shared/helpers';
 import { consensusDifficultyNameExpr, consensusDifficultyExpr, difficultyNameWithFallbackExpr, consensusGradeTable, consensusGradeJoinCondition } from '../shared/sql-expressions';
 import { GetTicksInputSchema, BoardNameSchema, AscentFeedInputSchema } from '../../../validation/schemas';
 
@@ -626,6 +626,61 @@ export const tickQueries = {
       groups,
       totalCount,
       hasMore: offset + groups.length < totalCount,
+    };
+  },
+
+  /**
+   * Get a user's percentile ranking based on distinct climbs ascended (sends + flashes only).
+   */
+  userClimbPercentile: async (
+    _: unknown,
+    { userId }: { userId: string },
+    ctx: ConnectionContext,
+  ) => {
+    await applyRateLimit(ctx, 10, 'userClimbPercentile');
+
+    if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+      return { totalDistinctClimbs: 0, percentile: 0, totalActiveUsers: 0 };
+    }
+
+    // 1. Get user's distinct climb count (sends + flashes only)
+    const [userResult] = await db
+      .select({ count: sql<number>`COUNT(DISTINCT ${dbSchema.boardseshTicks.climbUuid})::int` })
+      .from(dbSchema.boardseshTicks)
+      .where(
+        and(
+          eq(dbSchema.boardseshTicks.userId, userId),
+          sql`${dbSchema.boardseshTicks.status} != 'attempt'`,
+        ),
+      );
+    const userClimbCount = Number(userResult?.count ?? 0);
+
+    // 2. Count all active users and how many have fewer distinct climbs
+    const rankingResult = await db.execute(sql`
+      WITH user_counts AS (
+        SELECT user_id, COUNT(DISTINCT climb_uuid)::int AS distinct_climbs
+        FROM boardsesh_ticks
+        WHERE status != 'attempt'
+        GROUP BY user_id
+      )
+      SELECT
+        COUNT(*)::int AS total_active_users,
+        COUNT(*) FILTER (WHERE distinct_climbs < ${userClimbCount})::int AS users_with_fewer
+      FROM user_counts
+    `);
+
+    const rows = (rankingResult as unknown as { rows: Array<{ total_active_users: number; users_with_fewer: number }> }).rows;
+    const totalActiveUsers = Number(rows[0]?.total_active_users ?? 0);
+    const usersWithFewer = Number(rows[0]?.users_with_fewer ?? 0);
+
+    const percentile = totalActiveUsers > 0
+      ? Math.round((usersWithFewer / totalActiveUsers) * 1000) / 10
+      : 0;
+
+    return {
+      totalDistinctClimbs: userClimbCount,
+      percentile,
+      totalActiveUsers,
     };
   },
 

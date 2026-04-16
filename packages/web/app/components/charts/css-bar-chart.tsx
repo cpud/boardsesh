@@ -114,12 +114,7 @@ export const CssBarChart = React.memo(function CssBarChart({
         margin={{ top: 4, bottom: bottomMargin, left: 0, right: 0 }}
         yAxis={[{ position: 'none' }]}
         hideLegend
-        slotProps={{
-          bar: {
-            rx: 2,
-            ry: 2,
-          },
-        }}
+        borderRadius={4}
       />
     </Box>
   );
@@ -202,12 +197,7 @@ export const GroupedBarChart = React.memo(function GroupedBarChart({
         margin={{ top: 4, bottom: 24, left: 0, right: 0 }}
         yAxis={[{ position: 'none' }]}
         hideLegend
-        slotProps={{
-          bar: {
-            rx: 2,
-            ry: 2,
-          },
-        }}
+        borderRadius={4}
       />
       {showLegend && legendEntries.length > 1 && (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>

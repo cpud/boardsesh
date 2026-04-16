@@ -23,6 +23,8 @@ import { isBoardRoutePath } from '@/app/lib/board-route-paths';
 import GlobalHeader from '../global-header/global-header';
 import SessionSummaryDialog from '../session-summary/session-summary-dialog';
 import { SearchDrawerBridgeProvider } from '../search-drawer/search-drawer-bridge-context';
+import { StatsFilterBridgeProvider } from '../stats-filter-bridge/stats-filter-bridge-context';
+import { ProfileHeaderShareProvider } from '../profile-header-bridge/profile-header-bridge-context';
 import { isNativeApp } from '@/app/lib/ble/capacitor-utils';
 import dynamic from 'next/dynamic';
 import { SESH_SETTINGS_DRAWER_EVENT } from '../sesh-settings/sesh-settings-drawer-event';
@@ -49,11 +51,15 @@ export default function PersistentSessionWrapper({ children, boardConfigs }: Per
         <QueueBridgeProvider>
           <BoardSwitchConfirmProvider>
             <SearchDrawerBridgeProvider>
-              <GlobalHeader boardConfigs={boardConfigs} />
-              {children}
-              <RootBottomBar boardConfigs={boardConfigs} />
-              <RootSessionSummaryDialog />
-              <RootSeshSettingsDrawer />
+              <StatsFilterBridgeProvider>
+                <ProfileHeaderShareProvider>
+                  <GlobalHeader boardConfigs={boardConfigs} />
+                  {children}
+                  <RootBottomBar boardConfigs={boardConfigs} />
+                  <RootSessionSummaryDialog />
+                  <RootSeshSettingsDrawer />
+                </ProfileHeaderShareProvider>
+              </StatsFilterBridgeProvider>
             </SearchDrawerBridgeProvider>
           </BoardSwitchConfirmProvider>
         </QueueBridgeProvider>

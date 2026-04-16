@@ -27,6 +27,8 @@ export type SessionFeedPage = SessionFeedResult;
 interface ActivityFeedProps {
   isAuthenticated: boolean;
   boardUuid?: string | null;
+  /** Filter sessions by a specific user */
+  userId?: string | null;
   onFindClimbers?: () => void;
   /** SSR-provided initial session feed result */
   initialFeedResult?: SessionFeedResult | null;
@@ -35,6 +37,7 @@ interface ActivityFeedProps {
 export default function ActivityFeed({
   isAuthenticated,
   boardUuid,
+  userId,
   onFindClimbers,
   initialFeedResult,
 }: ActivityFeedProps) {
@@ -42,7 +45,7 @@ export default function ActivityFeed({
 
   const hasInitialData = !!initialFeedResult && initialFeedResult.sessions.length > 0;
 
-  const queryKey = ['sessionFeed', boardUuid] as const;
+  const queryKey = ['sessionFeed', boardUuid, userId] as const;
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } = useInfiniteQuery<
     SessionFeedPage,
@@ -55,6 +58,7 @@ export default function ActivityFeed({
         limit: 20,
         cursor: pageParam as string | null,
         boardUuid: boardUuid || undefined,
+        userId: userId || undefined,
       };
 
       const response = await client.request<GetSessionGroupedFeedQueryResponse>(

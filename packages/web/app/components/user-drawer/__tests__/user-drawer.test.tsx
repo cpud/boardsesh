@@ -12,6 +12,7 @@ const mockGuardBoardSwitch = vi.fn();
 const mockConstructBoardSlugListUrl = vi.fn();
 const mockConstructClimbListWithSlugs = vi.fn();
 const mockTryConstructSlugListUrl = vi.fn();
+let mockSessionData: { user: { id: string; name?: string | null; email?: string | null; image?: string | null } } | null = null;
 
 // Callbacks captured by the BoardDiscoveryScroll stub on each render
 const captured = {
@@ -23,7 +24,7 @@ const captured = {
 // Module mocks
 // -------------------------------------------------------------------------
 vi.mock('next-auth/react', () => ({
-  useSession: () => ({ data: null }),
+  useSession: () => ({ data: mockSessionData }),
   signOut: vi.fn(),
 }));
 
@@ -43,7 +44,7 @@ vi.mock('next/link', () => ({
     children: React.ReactNode;
     className?: string;
     onClick?: () => void;
-  }) => React.createElement('a', { href, className, onClick }, children),
+  }) => React.createElement('a', { href, className, onClick, 'data-next-link': 'true' }, children),
 }));
 
 vi.mock('@/app/hooks/use-color-mode', () => ({
@@ -52,6 +53,10 @@ vi.mock('@/app/hooks/use-color-mode', () => ({
 
 vi.mock('@/app/components/providers/auth-modal-provider', () => ({
   useAuthModal: () => ({ openAuthModal: vi.fn() }),
+}));
+
+vi.mock('@/app/hooks/use-unread-notification-count', () => ({
+  useUnreadNotificationCount: () => 0,
 }));
 
 vi.mock('@/app/components/board-lock/use-board-switch-guard', () => ({
@@ -189,11 +194,34 @@ describe('UserDrawer', () => {
     vi.clearAllMocks();
     captured.onBoardClick = null;
     captured.onConfigClick = null;
+    mockSessionData = null;
     mockConstructBoardSlugListUrl.mockImplementation(
       (slug: string, angle: number) => `/b/${slug}/${angle}/list`,
     );
     mockConstructClimbListWithSlugs.mockReturnValue('/slug-based-url');
     mockTryConstructSlugListUrl.mockReturnValue('/try-slug-url');
+  });
+
+  it('uses client navigation for the signed-in profile link', async () => {
+    mockSessionData = {
+      user: {
+        id: 'user-123',
+        name: 'Test User',
+        email: 'test@example.com',
+        image: null,
+      },
+    };
+
+    render(<UserDrawer />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /user menu/i }));
+    });
+
+    const profileLinks = screen.getAllByRole('link').filter((link) => link.getAttribute('href') === '/profile/user-123');
+    expect(profileLinks.length).toBeGreaterThan(0);
+    profileLinks.forEach((link) => {
+      expect(link.getAttribute('data-next-link')).toBe('true');
+    });
   });
 
   // -----------------------------------------------------------------------

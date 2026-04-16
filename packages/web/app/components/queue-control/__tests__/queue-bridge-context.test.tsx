@@ -396,6 +396,27 @@ describe('queue-bridge-context', () => {
       expect(result.current.boardInfo.hasActiveQueue).toBe(true);
     });
 
+    it('uses active session board details on non-board routes even before queue items load', () => {
+      const bd = createTestBoardDetails();
+      mockPersistentSession = createDefaultPersistentSession({
+        activeSession: {
+          sessionId: 'party-1',
+          boardPath: '/kilter/1/10/1,2/40/list',
+          boardDetails: bd,
+          parsedParams: { board_name: 'kilter', layout_id: 1, size_id: 10, set_ids: [1, 2], angle: 40 },
+        },
+        queue: [],
+        currentClimbQueueItem: null,
+        isLocalQueueLoaded: true,
+      });
+
+      const { result } = renderBridgeHook();
+
+      expect(result.current.boardInfo.boardDetails).toEqual(bd);
+      expect(result.current.boardInfo.angle).toBe(40);
+      expect(result.current.boardInfo.hasActiveQueue).toBe(true);
+    });
+
     it('provides current climb uuid in adapter mode', () => {
       const item = createTestQueueItem(createTestClimb({ uuid: 'c1' }), 'u1');
       mockPersistentSession = createDefaultPersistentSession({

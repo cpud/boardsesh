@@ -74,6 +74,16 @@ const nextConfig = {
         destination: '/playlists/:uuid',
         permanent: true,
       },
+      {
+        source: '/crusher/:user_id',
+        destination: '/profile/:user_id',
+        permanent: true,
+      },
+      {
+        source: '/logbook',
+        destination: '/playlists',
+        permanent: true,
+      },
     ];
   },
 };

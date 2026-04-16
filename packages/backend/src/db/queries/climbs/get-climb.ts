@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { db } from '../../client';
-import { getBoardTables, type BoardName } from '../util/table-select';
+import { UNIFIED_TABLES, type BoardName } from '../util/table-select';
 import { getGradeLabel } from '@boardsesh/db/queries';
 import type { Climb } from '@boardsesh/shared-schema';
 
@@ -13,7 +13,7 @@ interface GetClimbParams {
 }
 
 export const getClimbByUuid = async (params: GetClimbParams): Promise<Climb | null> => {
-  const tables = getBoardTables(params.board_name);
+  const tables = UNIFIED_TABLES;
 
   try {
     const result = await db

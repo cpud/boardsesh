@@ -1,11 +1,11 @@
 import React from 'react';
 import { ImageResponse } from '@vercel/og';
 import { NextRequest } from 'next/server';
-import { dbz } from '@/app/lib/db/db';
-import { sql } from 'drizzle-orm';
-import { themeTokens } from '@/app/theme/theme-config';
+import { darkTokens, themeTokens } from '@/app/theme/theme-config';
 import { FONT_GRADE_COLORS, getGradeColorWithOpacity } from '@/app/lib/grade-colors';
 import { BOULDER_GRADES } from '@/app/lib/board-data';
+import { createOgImageHeaders, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from '@/app/lib/seo/og';
+import { getSessionOgSummary } from '@/app/lib/seo/dynamic-og-data';
 
 export const runtime = 'edge';
 
@@ -15,233 +15,476 @@ const DIFFICULTY_TO_GRADE: Record<number, string> = Object.fromEntries(
 
 const GRADE_ORDER: string[] = BOULDER_GRADES.map((g) => g.font_grade);
 
+function buildGradeBars(gradeRows: Array<{ difficulty: number; count: number }>) {
+  const gradeBars: Array<{ grade: string; count: number; color: string }> = [];
+
+  for (const row of gradeRows) {
+    const grade = DIFFICULTY_TO_GRADE[row.difficulty];
+    if (!grade) continue;
+
+    const hex = FONT_GRADE_COLORS[grade.toLowerCase()];
+    const color = hex ? getGradeColorWithOpacity(hex, 0.72) : 'rgba(209, 213, 219, 0.65)';
+    gradeBars.push({ grade, count: row.count, color });
+  }
+
+  gradeBars.sort((a, b) => GRADE_ORDER.indexOf(a.grade) - GRADE_ORDER.indexOf(b.grade));
+  return gradeBars;
+}
+
+function buildJoinHeadline(leaderName: string | null) {
+  return leaderName ? `Join ${leaderName} on the wall` : 'Join the crew on the wall';
+}
+
 export async function GET(request: NextRequest) {
+  const routeT0 = performance.now();
+
   try {
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get('sessionId');
     const variant = searchParams.get('variant');
+    const version = searchParams.get('v');
 
     if (!sessionId) {
       return new Response('Missing sessionId parameter', { status: 400 });
     }
 
-    // Fetch session info, participants, and grade distribution in parallel
-    const [sessionResult, participantResult, gradeResult] = await Promise.all([
-      dbz.execute<{
-        id: string;
-        session_name: string | null;
-        board_path: string | null;
-      }>(sql`
-        SELECT bs.id, bs.session_name, bs.board_path
-        FROM board_sessions bs
-        WHERE bs.id = ${sessionId}
-        LIMIT 1
-      `),
-      dbz.execute<{
-        display_name: string;
-      }>(sql`
-        SELECT DISTINCT
-          COALESCE(up.display_name, u.name, 'Climber') as display_name
-        FROM boardsesh_ticks bt
-        JOIN users u ON u.id = bt.user_id
-        LEFT JOIN user_profiles up ON up.user_id = bt.user_id
-        WHERE bt.session_id = ${sessionId}
-        LIMIT 6
-      `),
-      dbz.execute<{
-        difficulty: number;
-        cnt: number;
-      }>(sql`
-        SELECT bt.difficulty, COUNT(*) as cnt
-        FROM boardsesh_ticks bt
-        WHERE bt.session_id = ${sessionId}
-          AND bt.status IN ('flash', 'send')
-          AND bt.difficulty IS NOT NULL
-        GROUP BY bt.difficulty
-        ORDER BY bt.difficulty
-      `),
-    ]);
-    const sessionRows = sessionResult.rows;
-    const participantRows = participantResult.rows;
-    const gradeRows = gradeResult.rows;
+    const dbT0 = performance.now();
+    const summary = await getSessionOgSummary(sessionId);
+    const dbMs = performance.now() - dbT0;
 
-    if (sessionRows.length === 0) {
+    if (!summary.found) {
       return new Response('Session not found', { status: 404 });
     }
 
-    const session = sessionRows[0];
-    const sessionName = (session.session_name as string) || 'Climbing Session';
-    const participantNames = participantRows
-      .map((r) => r.display_name as string)
-      .join(', ');
-
-    // Build grade bars
-    const gradeBars: Array<{ grade: string; count: number; color: string }> = [];
-    let totalSends = 0;
-
-    for (const row of gradeRows) {
-      const difficulty = Number(row.difficulty);
-      const count = Number(row.cnt);
-      const grade = DIFFICULTY_TO_GRADE[difficulty];
-      if (!grade) continue;
-
-      totalSends += count;
-      const hex = FONT_GRADE_COLORS[grade.toLowerCase()];
-      const color = hex ? getGradeColorWithOpacity(hex, 0.5) : 'rgba(200, 200, 200, 0.5)';
-      gradeBars.push({ grade, count, color });
-    }
-
-    // Sort by grade order
-    gradeBars.sort((a, b) => GRADE_ORDER.indexOf(a.grade) - GRADE_ORDER.indexOf(b.grade));
-
+    const sessionName = summary.sessionName;
+    const participantNames = summary.participantNames.join(', ');
+    const gradeBars = buildGradeBars(summary.gradeRows);
     const maxCount = Math.max(...gradeBars.map((b) => b.count), 1);
     const isJoinVariant = variant === 'join';
+    const renderMs = performance.now() - routeT0 - dbMs;
+    const joinHeadline = buildJoinHeadline(summary.leaderName);
+    const boardInfoLine = summary.boardLabel
+      ? `${summary.boardLabel}${summary.boardAngle != null ? ` • ${summary.boardAngle}°` : ''}`
+      : 'Boardsesh session';
+    const statsLine = summary.participantCount > 0
+      ? `${summary.participantCount} climber${summary.participantCount !== 1 ? 's' : ''} • ${summary.totalSends} send${summary.totalSends !== 1 ? 's' : ''} so far`
+      : 'No one is here yet';
+    const previewUrl = summary.boardPreviewPath
+      ? new URL(summary.boardPreviewPath, request.nextUrl.origin).toString()
+      : null;
 
-    return new ImageResponse(
-      (
+    const image = isJoinVariant ? (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          position: 'relative',
+          overflow: 'hidden',
+          background: darkTokens.semantic.background,
+          color: darkTokens.neutral[900],
+          padding: '42px',
+          gap: '34px',
+        }}
+      >
         <div
           style={{
-            width: '100%',
-            height: '100%',
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              top: '-110px',
+              left: '-70px',
+              width: '310px',
+              height: '310px',
+              borderRadius: '999px',
+              background: themeTokens.colors.logoGreen,
+              opacity: 0.18,
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              right: '-100px',
+              bottom: '-120px',
+              width: '360px',
+              height: '360px',
+              borderRadius: '999px',
+              background: themeTokens.colors.logoRose,
+              opacity: 0.18,
+            }}
+          />
+        </div>
+
+        <div
+          style={{
+            width: '366px',
+            height: '546px',
+            borderRadius: '28px',
+            background: darkTokens.semantic.surfaceElevated,
+            border: `1px solid ${darkTokens.neutral[300]}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative',
+            overflow: 'hidden',
+            boxShadow: darkTokens.shadows.lg,
+            flexShrink: 0,
+          }}
+        >
+          {previewUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={previewUrl}
+              alt=""
+              width={366}
+              height={546}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '32px',
+                color: darkTokens.neutral[600],
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ fontSize: '22px', fontWeight: 700 }}>
+                {summary.boardLabel || 'Board ready'}
+              </div>
+              <div style={{ fontSize: '18px' }}>
+                {summary.boardAngle != null ? `${summary.boardAngle}°` : 'Session invite'}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div
+          style={{
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            alignItems: 'center',
-            background: '#FFFFFF',
-            padding: '60px 80px',
-            gap: '32px',
+            flex: 1,
+            minWidth: 0,
+            gap: '22px',
+            position: 'relative',
           }}
         >
-          {/* Top section: Session name + participants */}
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
               gap: '12px',
-              width: '100%',
             }}
           >
             <div
               style={{
-                fontSize: '48px',
-                fontWeight: 'bold',
-                color: themeTokens.neutral[900],
-                lineHeight: 1.2,
+                fontSize: '20px',
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: darkTokens.neutral[500],
               }}
             >
-              {sessionName}
+              {boardInfoLine}
             </div>
+            <div
+              style={{
+                fontSize: '62px',
+                fontWeight: 700,
+                lineHeight: 1.04,
+                color: darkTokens.neutral[900],
+              }}
+            >
+              {joinHeadline}
+            </div>
+            <div
+              style={{
+                fontSize: '27px',
+                color: darkTokens.neutral[700],
+                lineHeight: 1.35,
+              }}
+            >
+              {sessionName && sessionName !== 'Climbing Session' ? sessionName : statsLine}
+            </div>
+            {sessionName && sessionName !== 'Climbing Session' && (
+              <div
+                style={{
+                  fontSize: '22px',
+                  color: darkTokens.neutral[600],
+                }}
+              >
+                {statsLine}
+              </div>
+            )}
             {participantNames && (
               <div
                 style={{
-                  fontSize: '24px',
-                  color: themeTokens.neutral[500],
+                  fontSize: '19px',
+                  color: darkTokens.neutral[500],
                 }}
               >
                 {participantNames}
               </div>
             )}
-            <div
-              style={{
-                fontSize: '20px',
-                color: themeTokens.neutral[400],
-              }}
-            >
-              {totalSends > 0
-                ? `${totalSends} send${totalSends !== 1 ? 's' : ''}`
-                : 'No sends yet'}
-            </div>
           </div>
 
-          {/* Grade chart */}
-          {gradeBars.length > 0 && (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px',
+              borderRadius: '24px',
+              padding: '24px 26px',
+              background: darkTokens.semantic.surface,
+              border: `1px solid ${darkTokens.neutral[300]}`,
+              boxShadow: darkTokens.shadows.md,
+            }}
+          >
+            <div
+              style={{
+                fontSize: '22px',
+                fontWeight: 700,
+                color: darkTokens.neutral[900],
+              }}
+            >
+              Grades climbed so far
+            </div>
+
+            {gradeBars.length > 0 ? (
+              <>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '6px',
+                    width: '100%',
+                    height: '190px',
+                  }}
+                >
+                  {gradeBars.map((bar) => (
+                    <div
+                      key={bar.grade}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        flex: 1,
+                        height: '100%',
+                        justifyContent: 'flex-end',
+                        alignItems: 'stretch',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'flex-end',
+                          width: '100%',
+                          height: '156px',
+                          borderBottom: `1px solid ${darkTokens.neutral[300]}`,
+                          paddingBottom: '10px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '100%',
+                            height: `${Math.max((bar.count / maxCount) * 100, 7)}%`,
+                            backgroundColor: bar.color,
+                            borderRadius: '10px 10px 0 0',
+                          }}
+                        />
+                      </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          width: '100%',
+                          paddingTop: '10px',
+                          fontSize: '17px',
+                          fontWeight: 700,
+                          textAlign: 'center',
+                          color: darkTokens.neutral[700],
+                        }}
+                      >
+                        {bar.grade}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div
+                style={{
+                  fontSize: '20px',
+                  color: darkTokens.neutral[600],
+                }}
+              >
+                No sends yet.
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '24px',
+            right: '34px',
+            fontSize: '18px',
+            color: darkTokens.neutral[500],
+            fontWeight: 700,
+            letterSpacing: '0.04em',
+          }}
+        >
+          boardsesh.com
+        </div>
+      </div>
+    ) : (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          background: '#FFFFFF',
+          padding: '60px 80px',
+          gap: '32px',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            width: '100%',
+          }}
+        >
+          <div
+            style={{
+              fontSize: '48px',
+              fontWeight: 'bold',
+              color: themeTokens.neutral[900],
+              lineHeight: 1.2,
+            }}
+          >
+            {sessionName}
+          </div>
+          {participantNames && (
+            <div
+              style={{
+                fontSize: '24px',
+                color: themeTokens.neutral[500],
+              }}
+            >
+              {participantNames}
+            </div>
+          )}
+          <div
+            style={{
+              fontSize: '20px',
+              color: themeTokens.neutral[400],
+            }}
+          >
+            {summary.totalSends > 0
+              ? `${summary.totalSends} send${summary.totalSends !== 1 ? 's' : ''}`
+              : 'No sends yet'}
+          </div>
+        </div>
+
+        {gradeBars.length > 0 && (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              width: '100%',
+              gap: '8px',
+            }}
+          >
             <div
               style={{
                 display: 'flex',
-                flexDirection: 'column',
+                alignItems: 'flex-end',
+                gap: '4px',
+                height: '180px',
                 width: '100%',
-                gap: '8px',
               }}
             >
-              {/* Bars */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-end',
-                  gap: '4px',
-                  height: '180px',
-                  width: '100%',
-                }}
-              >
-                {gradeBars.map((bar) => (
-                  <div
-                    key={bar.grade}
-                    style={{
-                      flex: 1,
-                      height: `${Math.max((bar.count / maxCount) * 100, 5)}%`,
-                      backgroundColor: bar.color,
-                      borderRadius: '3px 3px 0 0',
-                    }}
-                  />
-                ))}
-              </div>
-              {/* Labels */}
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '4px',
-                  width: '100%',
-                }}
-              >
-                {gradeBars.map((bar) => (
-                  <div
-                    key={bar.grade}
-                    style={{
-                      flex: 1,
-                      fontSize: '14px',
-                      textAlign: 'center',
-                      color: themeTokens.neutral[400],
-                    }}
-                  >
-                    {bar.grade}
-                  </div>
-                ))}
-              </div>
+              {gradeBars.map((bar) => (
+                <div
+                  key={bar.grade}
+                  style={{
+                    flex: 1,
+                    height: `${Math.max((bar.count / maxCount) * 100, 5)}%`,
+                    backgroundColor: bar.color,
+                    borderRadius: '3px 3px 0 0',
+                  }}
+                />
+              ))}
             </div>
-          )}
-
-          {/* Join CTA */}
-          {isJoinVariant && (
             <div
               style={{
-                fontSize: '36px',
-                fontWeight: 'bold',
-                color: themeTokens.colors.primary,
-                marginTop: '8px',
+                display: 'flex',
+                gap: '4px',
+                width: '100%',
               }}
             >
-              Get on the wall
+              {gradeBars.map((bar) => (
+                <div
+                  key={bar.grade}
+                  style={{
+                    flex: 1,
+                    fontSize: '14px',
+                    textAlign: 'center',
+                    color: themeTokens.neutral[400],
+                  }}
+                >
+                  {bar.grade}
+                </div>
+              ))}
             </div>
-          )}
-
-          {/* Branding */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '24px',
-              right: '40px',
-              fontSize: '20px',
-              color: themeTokens.neutral[300],
-              fontWeight: 600,
-            }}
-          >
-            boardsesh.com
           </div>
+        )}
+
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '24px',
+            right: '40px',
+            fontSize: '20px',
+            color: themeTokens.neutral[300],
+            fontWeight: 600,
+          }}
+        >
+          boardsesh.com
         </div>
-      ),
+      </div>
+    );
+
+    return new ImageResponse(
+      image,
       {
-        width: 1200,
-        height: 630,
+        width: OG_IMAGE_WIDTH,
+        height: OG_IMAGE_HEIGHT,
+        headers: createOgImageHeaders({
+          contentType: 'image/png',
+          version,
+          serverTiming: `db;dur=${dbMs.toFixed(1)}, render;dur=${renderMs.toFixed(1)}, route;dur=${(performance.now() - routeT0).toFixed(1)}`,
+        }),
       },
     );
   } catch (error) {

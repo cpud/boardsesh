@@ -7,6 +7,7 @@ import CardContent from '@mui/material/CardContent';
 import MuiTypography from '@mui/material/Typography';
 import MuiAvatar from '@mui/material/Avatar';
 import PersonOutlined from '@mui/icons-material/PersonOutlined';
+import Link from 'next/link';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import type { ActivityFeedItem } from '@boardsesh/shared-schema';
@@ -21,6 +22,7 @@ interface FeedItemCommentProps {
 
 export default function FeedItemComment({ item }: FeedItemCommentProps) {
   const timeAgo = dayjs(item.createdAt).fromNow();
+  const actorProfileHref = item.actorId ? `/profile/${item.actorId}` : null;
 
   return (
     <MuiCard className={styles.feedItem} data-testid="activity-feed-item">
@@ -30,8 +32,7 @@ export default function FeedItemComment({ item }: FeedItemCommentProps) {
           <MuiAvatar
             src={item.actorAvatarUrl ?? undefined}
             sx={{ width: 32, height: 32 }}
-            component="a"
-            href={item.actorId ? `/crusher/${item.actorId}` : undefined}
+            {...(actorProfileHref ? { component: Link, href: actorProfileHref } : {})}
           >
             {!item.actorAvatarUrl && <PersonOutlined sx={{ fontSize: 16 }} />}
           </MuiAvatar>
@@ -39,8 +40,7 @@ export default function FeedItemComment({ item }: FeedItemCommentProps) {
             <MuiTypography
               variant="body2"
               fontWeight={600}
-              component="a"
-              href={item.actorId ? `/crusher/${item.actorId}` : undefined}
+              {...(actorProfileHref ? { component: Link, href: actorProfileHref } : {})}
               sx={{ textDecoration: 'none', color: 'text.primary' }}
             >
               {item.actorDisplayName || 'User'}
