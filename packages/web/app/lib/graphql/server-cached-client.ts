@@ -132,6 +132,23 @@ export async function cachedSessionGroupedFeed(
 }
 
 /**
+ * Cached server-side session feed for a specific user.
+ * Used for SSR on the /you/sessions page.
+ * Cache is per-user (tag includes userId) with a conservative 2-minute TTL.
+ */
+export async function cachedUserSessionGroupedFeed(userId: string) {
+  const { GET_SESSION_GROUPED_FEED } = await import('@/app/lib/graphql/operations/activity-feed');
+
+  const tag = `user-session-feed-${userId}`;
+  const query = createCachedGraphQLQuery<{
+    sessionGroupedFeed: import('@boardsesh/shared-schema').SessionFeedResult;
+  }>(GET_SESSION_GROUPED_FEED, tag, 120);
+
+  const result = await query({ input: { userId, limit: 20 } });
+  return result.sessionGroupedFeed;
+}
+
+/**
  * Server-side fetch of the user's playlists (authenticated, not cached).
  */
 export async function serverUserPlaylists(
