@@ -77,7 +77,7 @@ const getLayoutDisplayName = (boardType: string, layoutId: number | null): strin
 const SWIPE_THRESHOLD = 60;
 const LONG_SWIPE_THRESHOLD = 150;
 const MAX_SWIPE = 180;
-const LEFT_ACTION_WIDTH = 120;
+const LEFT_ACTION_WIDTH = 180;
 const RIGHT_ACTION_WIDTH = 120;
 
 // Static styles
@@ -555,6 +555,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
         <div
           {...swipeHandlers}
           ref={contentCombinedRef}
+          className={styles.swipeableContent}
           data-swipe-content=""
         >
         <div className={styles.content}>
@@ -778,13 +779,13 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
           {onEdit && (
             <MenuItem onClick={handleDrawerEdit}>
               <ListItemIcon><EditOutlined fontSize="small" /></ListItemIcon>
-              <ListItemText>Edit</ListItemText>
+              <ListItemText>Edit log</ListItemText>
             </MenuItem>
           )}
           {onDelete && (
             <MenuItem onClick={handleDrawerDelete} sx={{ color: 'error.main' }}>
               <ListItemIcon><DeleteOutlined sx={{ color: 'error.main' }} fontSize="small" /></ListItemIcon>
-              <ListItemText>Delete</ListItemText>
+              <ListItemText>Delete log</ListItemText>
             </MenuItem>
           )}
           {(onEdit || onDelete) && <Divider />}

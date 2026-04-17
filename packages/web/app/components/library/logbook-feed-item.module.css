@@ -31,15 +31,20 @@
   will-change: opacity;
 }
 
+/* Swipeable wrapper — covers entire item so swipe gesture works everywhere */
+.swipeableContent {
+  position: relative;
+  background-color: var(--semantic-surface, #fff);
+  cursor: pointer;
+  user-select: none;
+}
+
 /* Main content row */
 .content {
   display: flex;
   align-items: flex-start;
   padding: 12px 8px;
   gap: 12px;
-  background-color: var(--semantic-surface, transparent);
-  cursor: pointer;
-  user-select: none;
 }
 
 
