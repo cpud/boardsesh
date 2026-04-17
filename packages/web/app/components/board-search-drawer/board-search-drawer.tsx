@@ -50,6 +50,10 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
 
   const carouselRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  // Mirrors locationResolved state so the geolocation effect can guard against
+  // re-running without adding locationResolved to its dep array (which would
+  // cause a second no-op run every time the effect sets it to true).
+  const locationResolvedRef = useRef(false);
 
   // Ask for the user's location on first open. If granted we'll recenter to ~20km view.
   useEffect(() => {
@@ -62,11 +66,14 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
     // !open guard: the close-effect sets locationResolved=false which re-triggers
     // this effect while the drawer is still closed. Bail out then; the dep change
     // on open=true when the drawer reopens will run the effect at the right time.
-    if (!userCoords || !open || locationResolved) return;
+    // locationResolvedRef (not state) is used here so adding it to deps doesn't
+    // cause a second no-op run after this effect sets locationResolved=true.
+    if (!userCoords || !open || locationResolvedRef.current) return;
     setCenter({ lat: userCoords.latitude, lng: userCoords.longitude });
     setZoom((prev) => (prev === DEFAULT_ZOOM ? NEARBY_ZOOM : prev));
+    locationResolvedRef.current = true;
     setLocationResolved(true);
-  }, [userCoords, open, locationResolved]);
+  }, [userCoords, open]);
 
   // Reset transient drawer state each time the drawer is closed. Clearing
   // requestedGeo lets us retry the permission prompt if the user denied it
@@ -81,6 +88,7 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
       setRequestedGeo(false);
       setCenter(DEFAULT_CENTER);
       setZoom(DEFAULT_ZOOM);
+      locationResolvedRef.current = false;
       setLocationResolved(false);
     }
   }, [open]);
@@ -114,6 +122,7 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
     ({ lat, lng, zoom: z }: { lat: number; lng: number; zoom: number }) => {
       setCenter({ lat, lng });
       setZoom(z);
+      locationResolvedRef.current = true;
       setLocationResolved(true);
     },
     [],
@@ -138,6 +147,7 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
     setSelectedBoardUuid(board.uuid);
     if (board.latitude != null && board.longitude != null) {
       setCenter({ lat: board.latitude, lng: board.longitude });
+      locationResolvedRef.current = true;
       setLocationResolved(true);
       // Keep zoom — user's spatial context shouldn't jump
     }
