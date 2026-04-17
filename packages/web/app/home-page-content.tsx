@@ -17,7 +17,7 @@ import AppleOutlined from '@mui/icons-material/Apple';
 import AndroidOutlined from '@mui/icons-material/Android';
 import Skeleton from '@mui/material/Skeleton';
 import SvgIcon from '@mui/material/SvgIcon';
-import { isNativeApp } from '@/app/lib/ble/capacitor-utils';
+import { isNativeApp, isCapacitorWebView, waitForCapacitor } from '@/app/lib/ble/capacitor-utils';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { themeTokens } from '@/app/theme/theme-config';
@@ -118,6 +118,7 @@ function OnboardingCard({ icon, title, description, onClick }: OnboardingCardPro
 
 const IOS_APP_STORE_URL = 'https://apps.apple.com/app/boardsesh/id6761350784';
 const ANDROID_PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.boardsesh.app';
+const ANDROID_SIDELOAD_URL = 'https://github.com/boardsesh/boardsesh/releases/tag/android-build-138';
 const ANDROID_LAUNCH_DATE = new Date('2026-04-29T00:00:00Z');
 
 type InstallPlatform = 'unknown' | 'native' | 'android-web' | 'other-web';
@@ -191,8 +192,8 @@ function InstallAppCard({ platform }: { platform: InstallPlatform }) {
       <OnboardingCard
         icon={<AndroidOutlined />}
         title="Android app is almost here"
-        description={`Landing in ${days}d ${hours}h ${minutes}m ${seconds}s`}
-        onClick={() => {}}
+        description={`Landing in ${days}d ${hours}h ${minutes}m ${seconds}s. Tap to sideload the preview build.`}
+        onClick={() => window.open(ANDROID_SIDELOAD_URL, '_blank', 'noopener,noreferrer')}
       />
     );
   }
@@ -220,11 +221,28 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
   const [installPlatform, setInstallPlatform] = useState<InstallPlatform>('unknown');
 
   useEffect(() => {
+    let cancelled = false;
+    const classifyWeb = () => /Android/i.test(navigator.userAgent) ? 'android-web' : 'other-web';
+
     if (isNativeApp()) {
       setInstallPlatform('native');
       return;
     }
-    setInstallPlatform(/Android/i.test(navigator.userAgent) ? 'android-web' : 'other-web');
+
+    // UA heuristic says we're in a Capacitor WebView but the bridge hasn't
+    // injected window.Capacitor yet. Wait for it before classifying as web,
+    // otherwise native users get stuck with install CTAs.
+    if (isCapacitorWebView()) {
+      waitForCapacitor().then((appeared) => {
+        if (cancelled) return;
+        setInstallPlatform(appeared && isNativeApp() ? 'native' : classifyWeb());
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setInstallPlatform(classifyWeb());
   }, []);
 
   useEffect(() => {
