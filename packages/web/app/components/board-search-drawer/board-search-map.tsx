@@ -228,13 +228,23 @@ export default function BoardSearchMap({
     (coords: { latitude: number; longitude: number }) => {
       const map = mapRef.current;
       if (!map) return;
-      // Suppress the regular fireViewport debounce for this animation so the
-      // parent's center/zoom isn't updated mid-flight — that would re-render
-      // and trigger the pan effect's setView, racing the flyTo.
       // Register the one-shot listener BEFORE setting programmaticMoveRef and
-      // calling flyTo. In environments where flyTo fires moveend synchronously
-      // (e.g. test mocks), the listener must already be attached or the
-      // viewport callback is silently dropped.
+      // calling flyTo. If flyTo fires moveend synchronously (e.g. in test mocks),
+      // the listener must already be attached or the viewport callback is dropped.
+      //
+      // Listener-ordering note: Leaflet fires 'moveend' handlers in registration
+      // order. The persistent fireViewport handler (registered at map init) runs
+      // first, sees programmaticMoveRef=true, clears the flag and returns without
+      // debouncing. This once() callback then fires unconditionally and reports
+      // the final viewport. This relies on Leaflet's stable (but undocumented)
+      // FIFO ordering — if that ever changes, fireViewport must not clear the flag
+      // before the once() handler has read it.
+      //
+      // Edge case: if the map is already at the destination, Leaflet may skip the
+      // animation and not emit moveend at all. In that scenario the once() handler
+      // is never called, so onViewportChangeRef is not invoked and locationResolved
+      // stays false for the session. Pre-existing limitation; fixing it would
+      // require an at-destination guard or a fallback timeout.
       map.once('moveend', () => {
         const c = map.getCenter();
         onViewportChangeRef.current({
@@ -243,9 +253,9 @@ export default function BoardSearchMap({
           zoom: map.getZoom(),
         });
       });
-      // Suppress the regular fireViewport debounce for this animation so the
-      // parent's center/zoom isn't updated mid-flight — that would re-render
-      // and trigger the pan effect's setView, racing the flyTo.
+      // Suppress the regular fireViewport debounce so the parent's center/zoom
+      // isn't updated mid-flight — that would trigger the pan effect's setView,
+      // racing the flyTo.
       programmaticMoveRef.current = true;
       map.flyTo([coords.latitude, coords.longitude], 13);
     },

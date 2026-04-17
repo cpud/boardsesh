@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, act, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import type { UserBoard } from '@boardsesh/shared-schema';
 
@@ -176,9 +176,7 @@ describe('BoardSearchDrawer', () => {
     const input = container.querySelector('input') as HTMLInputElement;
     expect(input).toBeTruthy();
 
-    act(() => {
-      fireEvent.change(input, { target: { value: 'kilter' } });
-    });
+    fireEvent.change(input, { target: { value: 'kilter' } });
     expect(lastSearchInput!.query).toBe('kilter');
 
     // Close and reopen — query should be empty
