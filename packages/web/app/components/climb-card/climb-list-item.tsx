@@ -80,7 +80,7 @@ const longSwipeLayerInitialStyle: React.CSSProperties = {
 
 const rightActionLayerDefaultStyle: React.CSSProperties = {
   ...rightSwipeActionLayerBaseStyle,
-  backgroundColor: themeTokens.colors.primary,
+  backgroundColor: themeTokens.colors.success,
   opacity: 0,
   transition: 'opacity 120ms ease-out',
 };

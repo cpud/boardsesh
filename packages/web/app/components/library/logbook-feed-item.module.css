@@ -14,7 +14,7 @@
   align-items: center;
   justify-content: flex-start;
   padding-left: 16px;
-  background-color: var(--color-error);
+  background-color: #8C4A52; /* themeTokens.colors.primary — rose red for delete */
   opacity: 0;
   will-change: opacity;
 }
@@ -26,7 +26,7 @@
   align-items: center;
   justify-content: flex-end;
   padding-right: 16px;
-  background-color: var(--color-primary);
+  background-color: #6B9080; /* themeTokens.colors.success — sage green for edit */
   opacity: 0;
   will-change: opacity;
 }
@@ -55,7 +55,7 @@
   justify-content: center;
 }
 
-.thumbnail > * {
+.thumbnail > :first-child {
   transform: scale(1.5);
   transform-origin: center center;
 }
@@ -83,6 +83,17 @@
 .pickerPanelContent {
   overflow: hidden;
   min-height: 0;
+}
+
+/* Compact star picker — smaller items to fit on one row */
+.compactStarPicker button {
+  min-width: 28px;
+  min-height: 28px;
+  padding: 2px 4px;
+}
+
+.compactStarPicker svg {
+  font-size: 18px !important;
 }
 
 /* Full-width comment row below the content row */

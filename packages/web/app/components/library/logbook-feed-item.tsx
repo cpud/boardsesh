@@ -10,11 +10,14 @@ import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import ButtonBase from '@mui/material/ButtonBase';
+import Popover from '@mui/material/Popover';
+import ElectricBoltOutlined from '@mui/icons-material/ElectricBoltOutlined';
 import MoreHorizOutlined from '@mui/icons-material/MoreHorizOutlined';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
+import SaveOutlined from '@mui/icons-material/SaveOutlined';
 import CloseOutlined from '@mui/icons-material/CloseOutlined';
 import dynamic from 'next/dynamic';
 import dayjs from 'dayjs';
@@ -162,17 +165,6 @@ const actionsDrawerStyles = {
 } as const;
 
 const dimmedStyle: React.CSSProperties = { opacity: 0.4 };
-
-function getEditedAscentStatus(item: AscentFeedItem, attemptCount: number): 'flash' | 'send' {
-  if (attemptCount > 1) {
-    return 'send';
-  }
-  // Preserve one-try sends (don't auto-promote to flash)
-  if (item.status === 'send' && item.attemptCount === 1) {
-    return 'send';
-  }
-  return 'flash';
-}
 
 // --- Sub-components ---
 
@@ -337,6 +329,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
   const updateTick = useUpdateTick();
   const grades = TENSION_KILTER_GRADES;
 
+  const [editStatus, setEditStatus] = useState<'flash' | 'send' | 'attempt'>('send');
   const [editComment, setEditComment] = useState('');
   const [commentFocused, setCommentFocused] = useState(false);
   const [editQuality, setEditQuality] = useState<number | null>(null);
@@ -345,6 +338,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
   const [expandedControl, setExpandedControl] = useState<ExpandedControl>(null);
   const [lastExpandedControl, setLastExpandedControl] = useState<ExpandedControl>(null);
   const [pickerVisible, setPickerVisible] = useState(false);
+  const [statusAnchorEl, setStatusAnchorEl] = useState<HTMLElement | null>(null);
 
   const gradeButtonRef = useRef<HTMLButtonElement>(null);
   const triesButtonRef = useRef<HTMLButtonElement>(null);
@@ -352,6 +346,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
   // Initialize edit state from item when editing starts
   useEffect(() => {
     if (isEditing) {
+      setEditStatus(item.status);
       setEditComment(item.comment);
       setCommentFocused(false);
       setEditQuality(item.quality ?? null);
@@ -360,6 +355,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
       setExpandedControl(null);
       setLastExpandedControl(null);
       setPickerVisible(false);
+      setStatusAnchorEl(null);
     }
   }, [isEditing, item]);
 
@@ -403,14 +399,14 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
     setCommentFocused(false);
   }, []);
 
-  const handleSaveAttempt = useCallback(async () => {
+  const handleSave = useCallback(async () => {
     try {
       await updateTick.mutateAsync({
         uuid: item.uuid,
         input: {
-          status: 'attempt',
+          status: editStatus,
           attemptCount: editAttemptCount,
-          quality: null,
+          quality: editStatus === 'attempt' ? null : (editQuality ?? null),
           difficulty: editDifficulty ?? null,
           comment: editComment,
         },
@@ -419,25 +415,22 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
     } catch {
       // The mutation hook surfaces the error via snackbar; keep edit open.
     }
-  }, [editAttemptCount, editComment, editDifficulty, item.uuid, onCancelEdit, updateTick]);
+  }, [editStatus, editAttemptCount, editComment, editDifficulty, editQuality, item.uuid, onCancelEdit, updateTick]);
 
-  const handleSaveAscent = useCallback(async () => {
-    try {
-      await updateTick.mutateAsync({
-        uuid: item.uuid,
-        input: {
-          status: getEditedAscentStatus(item, editAttemptCount),
-          attemptCount: editAttemptCount,
-          quality: editQuality ?? null,
-          difficulty: editDifficulty ?? null,
-          comment: editComment,
-        },
-      });
-      onCancelEdit?.();
-    } catch {
-      // The mutation hook surfaces the error via snackbar; keep edit open.
-    }
-  }, [editAttemptCount, editComment, editDifficulty, editQuality, item, onCancelEdit, updateTick]);
+  // Status picker popover
+  const handleStatusBadgeClick = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    setStatusAnchorEl(e.currentTarget);
+  }, []);
+
+  const handleStatusClose = useCallback(() => {
+    setStatusAnchorEl(null);
+  }, []);
+
+  const handleStatusSelect = useCallback((status: 'flash' | 'send' | 'attempt') => {
+    setEditStatus(status);
+    setStatusAnchorEl(null);
+  }, []);
 
   // Map ascent to Climb for ClimbActions
   const climb = useMemo(() => ascentFeedItemToClimb(item), [item]);
@@ -558,13 +551,13 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
           <EditOutlined style={iconStyle} />
         </div>
 
-        {/* Swipeable content */}
+        {/* Swipeable wrapper — covers entire item including comment row */}
         <div
           {...swipeHandlers}
           ref={contentCombinedRef}
-          className={styles.content}
           data-swipe-content=""
         >
+        <div className={styles.content}>
           {/* Thumbnail with ascent status badge */}
           <div className={styles.thumbnail}>
             {item.frames && item.layoutId && (
@@ -578,12 +571,21 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
                 isMirror={item.isMirror}
               />
             )}
-            <AscentStatusIcon
-              status={item.status}
-              variant="badge"
-              fontSize={12}
+            {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+            <div
               className={ascentStyles.badge}
-            />
+              onClick={isEditing ? handleStatusBadgeClick : undefined}
+              style={{ bottom: 6, cursor: isEditing ? 'pointer' : undefined }}
+            >
+              <AscentStatusIcon
+                status={isEditing ? editStatus : item.status}
+                variant="badge"
+                fontSize={12}
+              />
+            </div>
+            {isEditing && (
+              <span style={{ position: 'absolute', bottom: -8, right: 2, width: 18, textAlign: 'center', ...statLabelStyle }}>edit</span>
+            )}
           </div>
 
           {/* Center section */}
@@ -600,7 +602,9 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
               <div className={styles.pickerPanel + (expandedControl ? ' ' + styles.pickerPanelExpanded : '')}>
                 <div className={styles.pickerPanelContent}>
                   {renderedControl === 'stars' && (
-                    <InlineStarPicker quality={editQuality} onSelect={handleStarSelect} />
+                    <div className={styles.compactStarPicker}>
+                      <InlineStarPicker quality={editQuality} onSelect={handleStarSelect} />
+                    </div>
                   )}
                   {renderedControl === 'grade' && (
                     <InlineGradePicker
@@ -645,36 +649,6 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
             <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
               <IconButton
                 size="small"
-                onClick={handleSaveAscent}
-                disabled={updateTick.isPending}
-                aria-label="Save as ascent"
-                sx={{
-                  width: 36,
-                  height: 36,
-                  backgroundColor: themeTokens.colors.success,
-                  color: 'common.white',
-                  '&:hover': { backgroundColor: themeTokens.colors.success },
-                }}
-              >
-                <CheckOutlined sx={{ fontSize: 18 }} />
-              </IconButton>
-              <IconButton
-                size="small"
-                onClick={handleSaveAttempt}
-                disabled={updateTick.isPending}
-                aria-label="Save as attempt"
-                sx={{
-                  width: 36,
-                  height: 36,
-                  backgroundColor: themeTokens.colors.error,
-                  color: 'common.white',
-                  '&:hover': { backgroundColor: themeTokens.colors.error },
-                }}
-              >
-                <CloseOutlined sx={{ fontSize: 18 }} />
-              </IconButton>
-              <IconButton
-                size="small"
                 onClick={onCancelEdit}
                 aria-label="Cancel editing"
                 sx={{
@@ -684,6 +658,21 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
                 }}
               >
                 <CloseOutlined sx={{ fontSize: 16 }} />
+              </IconButton>
+              <IconButton
+                size="small"
+                onClick={handleSave}
+                disabled={updateTick.isPending}
+                aria-label="Save"
+                sx={{
+                  width: 36,
+                  height: 36,
+                  backgroundColor: themeTokens.colors.success,
+                  color: 'common.white',
+                  '&:hover': { backgroundColor: themeTokens.colors.success },
+                }}
+              >
+                <SaveOutlined sx={{ fontSize: 18 }} />
               </IconButton>
             </div>
           ) : (
@@ -744,7 +733,30 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
             </div>
           )
         )}
+        </div>
       </div>
+
+      {/* Status picker popover */}
+      <Popover
+        open={Boolean(statusAnchorEl)}
+        anchorEl={statusAnchorEl}
+        onClose={handleStatusClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <MenuItem onClick={() => handleStatusSelect('flash')}>
+          <ListItemIcon><ElectricBoltOutlined sx={{ color: themeTokens.colors.amber }} /></ListItemIcon>
+          <ListItemText>Flash</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => handleStatusSelect('send')}>
+          <ListItemIcon><CheckOutlined sx={{ color: themeTokens.colors.success }} /></ListItemIcon>
+          <ListItemText>Send</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => handleStatusSelect('attempt')}>
+          <ListItemIcon><CloseOutlined sx={{ color: themeTokens.colors.error }} /></ListItemIcon>
+          <ListItemText>Attempt</ListItemText>
+        </MenuItem>
+      </Popover>
 
       {/* Actions drawer */}
       {boardDetails && (
