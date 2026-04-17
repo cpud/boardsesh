@@ -268,6 +268,8 @@ interface LogbookFeedItemProps {
   allowInstagramPosting?: boolean;
   /** When true, show "Link Instagram post" option in the actions menu. */
   allowInstagramLinking?: boolean;
+  /** When true, tag this item so the first-visit swipe-hint animation can target it. */
+  isSwipeHintTarget?: boolean;
 }
 
 const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
@@ -279,6 +281,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
   onCancelEdit,
   allowInstagramPosting,
   allowInstagramLinking,
+  isSwipeHintTarget,
 }) => {
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [instagramDialogOpen, setInstagramDialogOpen] = useState(false);
@@ -525,15 +528,22 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
 
   return (
     <>
-      <div className={styles.container}>
-        {/* Left action layer — Delete (revealed on long swipe right) */}
-        <div ref={leftActionCombinedRef} className={styles.leftActionLayer}>
+      <div className={styles.container} id={isSwipeHintTarget ? 'onboarding-logbook-card' : undefined}>
+        {/* Left action layer — Delete (revealed on long swipe right).
+            Decorative; the three-dot menu exposes Delete to assistive tech. */}
+        <div ref={leftActionCombinedRef} className={styles.leftActionLayer} aria-hidden="true">
           <DeleteOutlined className={styles.swipeIcon} />
           <span className={styles.deleteLabel}>Delete</span>
         </div>
 
-        {/* Right action layer — Edit (revealed on swipe left) */}
-        <div ref={rightActionRef} className={styles.rightActionLayer}>
+        {/* Right action layer — Edit (revealed on swipe left).
+            Decorative; the three-dot menu exposes Edit to assistive tech. */}
+        <div
+          ref={rightActionRef}
+          className={styles.rightActionLayer}
+          aria-hidden="true"
+          data-swipe-right-action=""
+        >
           <EditOutlined className={styles.swipeIcon} />
         </div>
 
@@ -685,9 +695,17 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
           )}
         </div>
 
-        {/* Comment area — full width below the content row */}
-        {isEditing ? (
-          <div className={styles.commentRow}>
+        {/* Comment area — full width below the content row.
+            Container is always rendered so edit-mode toggling transitions
+            smoothly rather than popping the row in and out. */}
+        <div
+          className={
+            !isEditing && !item.comment
+              ? `${styles.commentRow} ${styles.commentRowEmpty}`
+              : styles.commentRow
+          }
+        >
+          {isEditing ? (
             <TextField
               fullWidth
               size="small"
@@ -720,16 +738,14 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
                 },
               }}
             />
-          </div>
-        ) : (
-          item.comment && (
-            <div className={styles.commentRow}>
+          ) : (
+            item.comment && (
               <Typography sx={commentBoxSx}>
                 {item.comment}
               </Typography>
-            </div>
-          )
-        )}
+            )
+          )}
+        </div>
         </div>
       </div>
 

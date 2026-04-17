@@ -170,6 +170,9 @@ export function useSwipeActions({
       contentEl.current.style.transition = 'transform 120ms ease-out';
       contentEl.current.style.transform = `translateX(${-confirmationPeekOffset}px)`;
     }
+    // Keep offsetRef in sync with the visual peek state so gesture handlers
+    // (e.g. onTouchEndOrOnMouseUp) read the true position if a new gesture lands.
+    offsetRef.current = -confirmationPeekOffset;
 
     // Keep the right action layer fully visible during confirmation
     if (rightActionEl.current) {
@@ -180,15 +183,18 @@ export function useSwipeActions({
     // After the confirmation display, snap back
     confirmationTimerRef.current = setTimeout(() => {
       confirmationTimerRef.current = null;
+      // If the element has unmounted (e.g. list virtualization), skip DOM work.
+      if (!contentEl.current) {
+        setSwipeLeftConfirmed(false);
+        return;
+      }
       // Set transition on right action before applyOffset changes values so it fades out smoothly
       if (rightActionEl.current) {
         rightActionEl.current.style.transition = 'opacity 200ms ease-out, visibility 0s 200ms';
       }
       applyOffset(0);
       // Override content transition with a gentler one for the confirmation snap-back
-      if (contentEl.current) {
-        contentEl.current.style.transition = 'transform 200ms ease-out';
-      }
+      contentEl.current.style.transition = 'transform 200ms ease-out';
       updateSwipeZone('none');
       setSwipeLeftConfirmed(false);
     }, CONFIRMATION_DISPLAY_MS);
