@@ -1,0 +1,277 @@
+'use client';
+
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import Button from '@mui/material/Button';
+import SearchOutlined from '@mui/icons-material/SearchOutlined';
+import CloseOutlined from '@mui/icons-material/CloseOutlined';
+import OpenInNewOutlined from '@mui/icons-material/OpenInNewOutlined';
+import SwipeableDrawer from '@/app/components/swipeable-drawer/swipeable-drawer';
+import BoardCard from '@/app/components/board-entity/board-card';
+import FollowButton from '@/app/components/ui/follow-button';
+import { useGeolocation } from '@/app/hooks/use-geolocation';
+import { useSearchBoardsMap } from '@/app/hooks/use-search-boards-map';
+import { FOLLOW_BOARD, UNFOLLOW_BOARD } from '@/app/lib/graphql/operations';
+import { themeTokens } from '@/app/theme/theme-config';
+import type { UserBoard } from '@boardsesh/shared-schema';
+import BoardSearchMap from './board-search-map';
+
+const DEFAULT_CENTER = { lat: 40, lng: -95 };
+const DEFAULT_ZOOM = 3;
+const NEARBY_ZOOM = 11; // ~20 km radius via the zoomToRadiusKm table
+
+interface BoardSearchDrawerProps {
+  open: boolean;
+  onClose: () => void;
+  onBoardOpen: (board: UserBoard) => void;
+}
+
+export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardSearchDrawerProps) {
+  const { coordinates: userCoords, requestPermission } = useGeolocation();
+
+  const [query, setQuery] = useState('');
+  const [center, setCenter] = useState(DEFAULT_CENTER);
+  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
+  const [selectedBoardUuid, setSelectedBoardUuid] = useState<string | null>(null);
+  const [requestedGeo, setRequestedGeo] = useState(false);
+
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
+  // Ask for the user's location on first open. If granted we'll recenter to ~20km view.
+  useEffect(() => {
+    if (!open || requestedGeo) return;
+    setRequestedGeo(true);
+    requestPermission();
+  }, [open, requestedGeo, requestPermission]);
+
+  useEffect(() => {
+    if (!userCoords) return;
+    setCenter((prev) => {
+      // Only auto-center if we're still at the default world view
+      if (prev.lat !== DEFAULT_CENTER.lat || prev.lng !== DEFAULT_CENTER.lng) return prev;
+      return { lat: userCoords.latitude, lng: userCoords.longitude };
+    });
+    setZoom((prev) => (prev === DEFAULT_ZOOM ? NEARBY_ZOOM : prev));
+  }, [userCoords]);
+
+  // Reset selection + query each time the drawer is closed
+  useEffect(() => {
+    if (!open) {
+      setSelectedBoardUuid(null);
+      setQuery('');
+    }
+  }, [open]);
+
+  const { boards, isLoading, isFetching, radiusKm } = useSearchBoardsMap({
+    query,
+    latitude: center.lat,
+    longitude: center.lng,
+    zoom,
+    enabled: open,
+  });
+
+  const handleViewportChange = useCallback(
+    ({ lat, lng, zoom: z }: { lat: number; lng: number; zoom: number }) => {
+      setCenter({ lat, lng });
+      setZoom(z);
+    },
+    [],
+  );
+
+  const scrollCardIntoView = useCallback((uuid: string) => {
+    const node = cardRefs.current.get(uuid);
+    if (!node) return;
+    node.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, []);
+
+  const handleMarkerClick = useCallback(
+    (board: UserBoard) => {
+      setSelectedBoardUuid(board.uuid);
+      // Defer scroll so the new layout (if expanded) settles first
+      requestAnimationFrame(() => scrollCardIntoView(board.uuid));
+    },
+    [scrollCardIntoView],
+  );
+
+  const handleCardClick = useCallback((board: UserBoard) => {
+    setSelectedBoardUuid(board.uuid);
+    if (board.latitude != null && board.longitude != null) {
+      setCenter({ lat: board.latitude, lng: board.longitude });
+      // Keep zoom — user's spatial context shouldn't jump
+    }
+  }, []);
+
+  const handleOpenBoard = useCallback(
+    (board: UserBoard) => {
+      onBoardOpen(board);
+    },
+    [onBoardOpen],
+  );
+
+  const setCardRef = useCallback(
+    (uuid: string) => (node: HTMLDivElement | null) => {
+      if (node) cardRefs.current.set(uuid, node);
+      else cardRefs.current.delete(uuid);
+    },
+    [],
+  );
+
+  const radiusLabel = useMemo(() => `${radiusKm} km`, [radiusKm]);
+  const showSpinner = isLoading || (isFetching && boards.length === 0);
+
+  return (
+    <SwipeableDrawer
+      placement="bottom"
+      open={open}
+      onClose={onClose}
+      title="Find a board"
+      fullHeight
+      height="100dvh"
+      showCloseButton
+      showCloseButtonOnMobile
+      styles={{ body: { padding: 0 } }}
+    >
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        {/* Search bar */}
+        <Box sx={{ px: 2, pt: 1.5, pb: 1, borderBottom: '1px solid var(--neutral-200)' }}>
+          <TextField
+            fullWidth
+            size="small"
+            autoFocus
+            placeholder="Search boards by name or location"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchOutlined fontSize="small" color="action" />
+                  </InputAdornment>
+                ),
+                endAdornment: query ? (
+                  <InputAdornment position="end">
+                    <IconButton size="small" onClick={() => setQuery('')} aria-label="Clear">
+                      <CloseOutlined fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ) : undefined,
+              },
+            }}
+          />
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 0.75 }}>
+            <Typography variant="caption" color="text.secondary">
+              Showing boards within {radiusLabel} of map center
+            </Typography>
+            {isFetching && boards.length > 0 && <CircularProgress size={14} />}
+          </Box>
+        </Box>
+
+        {/* Map */}
+        <Box sx={{ flex: 1, minHeight: 0, position: 'relative' }}>
+          <BoardSearchMap
+            center={center}
+            zoom={zoom}
+            boards={boards}
+            selectedBoardUuid={selectedBoardUuid}
+            onBoardClick={handleMarkerClick}
+            onViewportChange={handleViewportChange}
+          />
+        </Box>
+
+        {/* Results carousel */}
+        <Box
+          sx={{
+            borderTop: '1px solid var(--neutral-200)',
+            backgroundColor: 'var(--semantic-background)',
+            flexShrink: 0,
+          }}
+        >
+          {showSpinner ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 3 }}>
+              <CircularProgress size={20} />
+            </Box>
+          ) : boards.length === 0 ? (
+            <Box sx={{ py: 3, textAlign: 'center', px: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                {query.trim().length >= 2
+                  ? `No boards match "${query.trim()}" here. Try zooming out or searching elsewhere.`
+                  : 'No boards in this area. Pan or zoom out to find more.'}
+              </Typography>
+            </Box>
+          ) : (
+            <Box
+              ref={carouselRef}
+              sx={{
+                display: 'flex',
+                gap: 1.5,
+                overflowX: 'auto',
+                px: 2,
+                py: 1.5,
+                scrollSnapType: 'x proximity',
+                WebkitOverflowScrolling: 'touch',
+                scrollbarWidth: 'none',
+                '&::-webkit-scrollbar': { display: 'none' },
+              }}
+            >
+              {boards.map((board) => {
+                const isSelected = board.uuid === selectedBoardUuid;
+                return (
+                  <Box
+                    key={board.uuid}
+                    ref={setCardRef(board.uuid)}
+                    sx={{
+                      width: 280,
+                      flexShrink: 0,
+                      scrollSnapAlign: 'start',
+                      outline: isSelected ? `2px solid var(--color-primary)` : 'none',
+                      borderRadius: `${themeTokens.borderRadius.lg}px`,
+                      transition: themeTokens.transitions.fast,
+                    }}
+                  >
+                    <BoardCard
+                      board={board}
+                      onClick={handleCardClick}
+                      trailingAction={
+                        isSelected ? (
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <FollowButton
+                              entityId={board.uuid}
+                              initialIsFollowing={board.isFollowedByMe}
+                              followMutation={FOLLOW_BOARD}
+                              unfollowMutation={UNFOLLOW_BOARD}
+                              entityLabel="board"
+                              getFollowVariables={(id) => ({ input: { boardUuid: id } })}
+                            />
+                            <Button
+                              variant="contained"
+                              size="small"
+                              startIcon={<OpenInNewOutlined />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenBoard(board);
+                              }}
+                              sx={{ textTransform: 'none' }}
+                            >
+                              Open
+                            </Button>
+                          </Stack>
+                        ) : undefined
+                      }
+                    />
+                  </Box>
+                );
+              })}
+            </Box>
+          )}
+        </Box>
+      </Box>
+    </SwipeableDrawer>
+  );
+}

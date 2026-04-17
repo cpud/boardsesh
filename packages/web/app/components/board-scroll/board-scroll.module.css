@@ -191,6 +191,29 @@
   height: calc(182px + 8px + 18px + 16px);
 }
 
+/* Two-column variant: 4 cards in a 2x2 cluster */
+.stackedCardsDouble {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  height: calc(182px + 8px + 18px + 16px);
+}
+
+.stackedCardsDouble .stackedCards {
+  height: 100%;
+}
+
+/* Disabled card (Bluetooth coming soon) */
+.cardScrollDisabled {
+  cursor: default;
+}
+
+.cardScrollDisabled:active .cardSquare::after {
+  display: none;
+}
+
 .stackedCards .cardScroll {
   width: 100%;
   flex: 1;
@@ -227,6 +250,10 @@
 @media (min-width: 768px) {
   .stackedCards {
     width: 120px;
+    height: calc(208px + 8px + 18px + 16px);
+  }
+
+  .stackedCardsDouble {
     height: calc(208px + 8px + 18px + 16px);
   }
 }

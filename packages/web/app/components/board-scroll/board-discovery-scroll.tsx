@@ -6,6 +6,9 @@ import BoardScrollSection from './board-scroll-section';
 import BoardScrollCard from './board-scroll-card';
 import FindNearbyCard, { type FindNearbyStatus } from './find-nearby-card';
 import CustomBoardCard from './custom-board-card';
+import SearchBoardsCard from './search-boards-card';
+import BluetoothQuickStartCard from './bluetooth-quick-start-card';
+import BoardSearchDrawer from '../board-search-drawer/board-search-drawer';
 import { useDiscoverBoards } from '@/app/hooks/use-discover-boards';
 import { usePopularBoardConfigs } from '@/app/hooks/use-popular-board-configs';
 import { useMyBoards } from '@/app/hooks/use-my-boards';
@@ -52,6 +55,7 @@ export default function BoardDiscoveryScroll({
   const isAuthenticated = status === 'authenticated';
 
   const [locationEnabled, setLocationEnabled] = useState(false);
+  const [searchDrawerOpen, setSearchDrawerOpen] = useState(false);
   const {
     boards: discoverBoards,
     isLoading: isBoardsLoading,
@@ -61,7 +65,6 @@ export default function BoardDiscoveryScroll({
 
   const {
     configs: popularConfigs,
-    isLoading: isConfigsLoading,
     isLoadingMore,
     hasMore,
     loadMore,
@@ -84,66 +87,90 @@ export default function BoardDiscoveryScroll({
     setLocationEnabled(true);
   }, []);
 
-  const showSection = isBoardsLoading || isConfigsLoading || discoverBoards.length > 0 || popularConfigs.length > 0 || myBoards.length > 0;
+  const handleSearchClick = useCallback(() => {
+    setSearchDrawerOpen(true);
+  }, []);
 
-  if (!showSection) return null;
+  const handleSearchDrawerClose = useCallback(() => {
+    setSearchDrawerOpen(false);
+  }, []);
+
+  const handleSearchDrawerBoardClick = useCallback(
+    (board: UserBoard) => {
+      setSearchDrawerOpen(false);
+      onBoardClick(board);
+    },
+    [onBoardClick],
+  );
 
   return (
-    <BoardScrollSection
-      title="Boards near you"
-      loading={isBoardsLoading && popularConfigs.length === 0 && myBoards.length === 0}
-      onLoadMore={loadMore}
-      hasMore={hasMore}
-      isLoadingMore={isLoadingMore}
-    >
-      {/* Find Nearby + Custom stacked vertically as half-height cards */}
-      {discoverBoards.length === 0 && (
-        <div className={styles.stackedCards}>
-          <FindNearbyCard
-            onClick={handleFindNearbyClick}
-            status={deriveFindNearbyStatus({
-              locationEnabled,
-              isLoading: isBoardsLoading,
-              error: discoverError,
-              hasLocation,
-            })}
-          />
-          <CustomBoardCard onClick={onCustomClick} />
-        </div>
-      )}
-      {discoverBoards.length > 0 && (
-        <>
-          {discoverBoards.map((board) => (
-            <BoardScrollCard
-              key={board.uuid}
-              userBoard={board}
-              selected={selectedBoardUuid === board.uuid}
-              onClick={() => onBoardClick(board)}
+    <>
+      <BoardScrollSection
+        title="Boards near you"
+        loading={isBoardsLoading && popularConfigs.length === 0 && myBoards.length === 0}
+        onLoadMore={loadMore}
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
+      >
+        {/* Always-visible 2x2 mini-card cluster: Find Nearby + Search / Custom + Bluetooth */}
+        <div className={styles.stackedCardsDouble}>
+          <div className={styles.stackedCards}>
+            <FindNearbyCard
+              onClick={handleFindNearbyClick}
+              status={deriveFindNearbyStatus({
+                locationEnabled,
+                isLoading: isBoardsLoading,
+                error: discoverError,
+                hasLocation,
+              })}
+              size="small"
             />
-          ))}
-          <CustomBoardCard onClick={onCustomClick} />
-        </>
-      )}
-      {/* My boards - animate in between Custom and Popular */}
-      {myBoards.map((board) => (
-        <div
-          key={board.uuid}
-          className={`${styles.myBoardCardFadeIn} ${myBoardsVisible ? styles.myBoardCardFadeInVisible : ''}`}
-        >
+            <CustomBoardCard onClick={onCustomClick} size="small" />
+          </div>
+          <div className={styles.stackedCards}>
+            <SearchBoardsCard onClick={handleSearchClick} size="small" />
+            <BluetoothQuickStartCard size="small" />
+          </div>
+        </div>
+
+        {/* Nearby boards (if any) */}
+        {discoverBoards.map((board) => (
           <BoardScrollCard
+            key={board.uuid}
             userBoard={board}
             selected={selectedBoardUuid === board.uuid}
             onClick={() => onBoardClick(board)}
           />
-        </div>
-      ))}
-      {popularConfigs.map((config) => (
-        <BoardScrollCard
-          key={`${config.boardType}-${config.layoutId}-${config.sizeId}`}
-          popularConfig={config}
-          onClick={() => onConfigClick(config)}
-        />
-      ))}
-    </BoardScrollSection>
+        ))}
+
+        {/* My boards - animate in between cluster and popular */}
+        {myBoards.map((board) => (
+          <div
+            key={board.uuid}
+            className={`${styles.myBoardCardFadeIn} ${myBoardsVisible ? styles.myBoardCardFadeInVisible : ''}`}
+          >
+            <BoardScrollCard
+              userBoard={board}
+              selected={selectedBoardUuid === board.uuid}
+              onClick={() => onBoardClick(board)}
+            />
+          </div>
+        ))}
+
+        {popularConfigs.map((config) => (
+          <BoardScrollCard
+            key={`${config.boardType}-${config.layoutId}-${config.sizeId}`}
+            popularConfig={config}
+            onClick={() => onConfigClick(config)}
+          />
+        ))}
+      </BoardScrollSection>
+
+      <BoardSearchDrawer
+        open={searchDrawerOpen}
+        onClose={handleSearchDrawerClose}
+        onBoardOpen={handleSearchDrawerBoardClick}
+      />
+    </>
   );
 }
