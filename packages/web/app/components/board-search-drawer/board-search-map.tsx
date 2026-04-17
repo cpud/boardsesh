@@ -22,7 +22,7 @@ interface BoardSearchMapProps {
 function buildMarkerHtml(selected: boolean): string {
   const size = selected ? 22 : 16;
   const ring = selected ? '4px solid #fff' : '3px solid #fff';
-  return `<div style="width:${size}px;height:${size}px;background:#8C4A52;border:${ring};border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>`;
+  return `<div style="width:${size}px;height:${size}px;background:var(--color-primary);border:${ring};border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>`;
 }
 
 export default function BoardSearchMap({
@@ -55,6 +55,7 @@ export default function BoardSearchMap({
     if (!container) return;
 
     let cancelled = false;
+    let resizeObserver: ResizeObserver | null = null;
 
     // @ts-expect-error — CSS dynamic import handled by Next.js bundler
     Promise.all([import('leaflet'), import('leaflet/dist/leaflet.css')]).then(([L]) => {
@@ -62,11 +63,12 @@ export default function BoardSearchMap({
 
       const map = L.map(containerRef.current, {
         zoomControl: true,
-        attributionControl: false,
+        attributionControl: true,
       }).setView([center.lat, center.lng], zoom);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       }).addTo(map);
 
       const markersLayer = L.layerGroup().addTo(map);
@@ -95,13 +97,24 @@ export default function BoardSearchMap({
       map.on('moveend', fireViewport);
       map.on('zoomend', fireViewport);
 
-      // Fix sizing after the drawer slide-in animation
-      setTimeout(() => map.invalidateSize(), 250);
+      // Observe container size so we can correct Leaflet's internal size whenever
+      // the parent (e.g. bottom-sheet drawer) finishes animating in, rotates, or
+      // otherwise resizes. Replaces a flakey setTimeout(250) after mount.
+      if (typeof ResizeObserver !== 'undefined' && containerRef.current) {
+        resizeObserver = new ResizeObserver(() => {
+          map.invalidateSize();
+        });
+        resizeObserver.observe(containerRef.current);
+      }
     });
 
     return () => {
       cancelled = true;
       if (viewportTimerRef.current) clearTimeout(viewportTimerRef.current);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+        resizeObserver = null;
+      }
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
@@ -195,7 +208,10 @@ export default function BoardSearchMap({
   }, [userCoords, requestPermission]);
 
   return (
-    <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
+    <Box
+      data-swipe-blocked="true"
+      sx={{ position: 'relative', width: '100%', height: '100%' }}
+    >
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
       {mapReady && (
         <MuiButton

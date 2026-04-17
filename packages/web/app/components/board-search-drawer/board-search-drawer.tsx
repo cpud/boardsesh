@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -69,13 +69,27 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
     }
   }, [open]);
 
-  const { boards, isLoading, isFetching, radiusKm } = useSearchBoardsMap({
+  const { boards, isLoading, isFetching, radiusKm, hasMore, isFetchingNextPage, fetchNextPage } = useSearchBoardsMap({
     query,
     latitude: center.lat,
     longitude: center.lng,
     zoom,
     enabled: open,
   });
+
+  // Infinite scroll inside the horizontal carousel: load the next page when the
+  // user scrolls within 300px of the right edge. We can't reuse the shared
+  // `useInfiniteScroll` hook here because it observes against the viewport,
+  // whereas the sentinel lives inside an overflow:auto horizontal container.
+  const handleCarouselScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      if (!hasMore || isFetchingNextPage) return;
+      const el = e.currentTarget;
+      const remaining = el.scrollWidth - (el.scrollLeft + el.clientWidth);
+      if (remaining < 300) fetchNextPage();
+    },
+    [hasMore, isFetchingNextPage, fetchNextPage],
+  );
 
   const handleViewportChange = useCallback(
     ({ lat, lng, zoom: z }: { lat: number; lng: number; zoom: number }) => {
@@ -108,13 +122,6 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
     }
   }, []);
 
-  const handleOpenBoard = useCallback(
-    (board: UserBoard) => {
-      onBoardOpen(board);
-    },
-    [onBoardOpen],
-  );
-
   const setCardRef = useCallback(
     (uuid: string) => (node: HTMLDivElement | null) => {
       if (node) cardRefs.current.set(uuid, node);
@@ -123,7 +130,6 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
     [],
   );
 
-  const radiusLabel = useMemo(() => `${radiusKm} km`, [radiusKm]);
   const showSpinner = isLoading || (isFetching && boards.length === 0);
 
   return (
@@ -167,7 +173,7 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
           />
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 0.75 }}>
             <Typography variant="caption" color="text.secondary">
-              Showing boards within {radiusLabel} of map center
+              Showing boards within {radiusKm} km of map center
             </Typography>
             {isFetching && boards.length > 0 && <CircularProgress size={14} />}
           </Box>
@@ -208,6 +214,7 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
           ) : (
             <Box
               ref={carouselRef}
+              onScroll={handleCarouselScroll}
               sx={{
                 display: 'flex',
                 gap: 1.5,
@@ -255,7 +262,7 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
                               startIcon={<OpenInNewOutlined />}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleOpenBoard(board);
+                                onBoardOpen(board);
                               }}
                               sx={{ textTransform: 'none' }}
                             >
@@ -268,6 +275,19 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
                   </Box>
                 );
               })}
+              {isFetchingNextPage && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 80,
+                    flexShrink: 0,
+                  }}
+                >
+                  <CircularProgress size={20} />
+                </Box>
+              )}
             </Box>
           )}
         </Box>

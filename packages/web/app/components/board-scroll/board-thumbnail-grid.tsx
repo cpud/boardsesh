@@ -16,10 +16,11 @@ export default function BoardThumbnailGrid() {
   const boardDetailsList = useMemo(
     () =>
       GRID_CONFIGS.map((config) => {
+        const key = `${config.board_name}-${config.layout_id}-${config.size_id}`;
         try {
-          return getBoardDetails(config);
+          return { key, details: getBoardDetails(config) };
         } catch {
-          return null;
+          return { key, details: null };
         }
       }),
     [],
@@ -27,8 +28,8 @@ export default function BoardThumbnailGrid() {
 
   return (
     <div className={styles.customBoardGrid}>
-      {boardDetailsList.map((details, i) => (
-        <div key={i} className={styles.customBoardGridCell}>
+      {boardDetailsList.map(({ key, details }) => (
+        <div key={key} className={styles.customBoardGridCell}>
           {details && <BoardRenderer mirrored={false} boardDetails={details} thumbnail fillHeight />}
         </div>
       ))}
