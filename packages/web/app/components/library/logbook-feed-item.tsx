@@ -19,6 +19,8 @@ import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutl
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
 import SaveOutlined from '@mui/icons-material/SaveOutlined';
 import CloseOutlined from '@mui/icons-material/CloseOutlined';
+import InstagramIcon from '@mui/icons-material/Instagram';
+import LinkOutlined from '@mui/icons-material/LinkOutlined';
 import dynamic from 'next/dynamic';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -50,6 +52,7 @@ import drawerCss from '@/app/components/swipeable-drawer/swipeable-drawer.module
 import styles from './logbook-feed-item.module.css';
 
 const SwipeableDrawer = dynamic(() => import('../swipeable-drawer/swipeable-drawer'), { ssr: false });
+const PostToInstagramDialog = dynamic(() => import('./post-to-instagram-dialog'), { ssr: false });
 
 dayjs.extend(relativeTime);
 
@@ -79,52 +82,6 @@ const LONG_SWIPE_THRESHOLD = 150;
 const MAX_SWIPE = 180;
 const LEFT_ACTION_WIDTH = 180;
 const RIGHT_ACTION_WIDTH = 120;
-
-// Static styles
-const iconStyle: React.CSSProperties = { color: 'white', fontSize: 20 };
-// ~30% larger than the standard 64px thumbnail
-// Thumbnail wrapper — size set via CSS class that also overrides the inner 64px container
-const menuButtonStyle: React.CSSProperties = { flexShrink: 0, color: 'var(--neutral-400)' };
-
-// Uniform stat cell — consistent height and alignment for all items
-const statCellStyle: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: 1,
-  minWidth: 28,
-};
-
-// Fixed-width grade cell so 2-char (V5) and 3-char (V10) grades take the same space
-const gradeCellStyle: React.CSSProperties = {
-  ...statCellStyle,
-  minWidth: 32,
-};
-
-// Single row: c-stars, u-stars, c-grade, u-grade, tries
-const gradeRowStyle: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'flex-start',
-  gap: 6,
-  marginTop: 4,
-  paddingBottom: 8,
-};
-
-const statValueStyle: React.CSSProperties = {
-  fontSize: 14,
-  fontWeight: 700,
-  lineHeight: 1,
-};
-
-const statLabelStyle: React.CSSProperties = {
-  fontSize: 8,
-  fontWeight: 500,
-  lineHeight: 1,
-  letterSpacing: '0.02em',
-  opacity: 0.55,
-  whiteSpace: 'nowrap',
-  textTransform: 'lowercase',
-};
 
 const commentBoxSx = {
   fontSize: themeTokens.typography.fontSize.xs,
@@ -163,8 +120,6 @@ const actionsDrawerStyles = {
   body: { padding: `${themeTokens.spacing[2]}px 0` },
   header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
 } as const;
-
-const dimmedStyle: React.CSSProperties = { opacity: 0.4 };
 
 // --- Sub-components ---
 
@@ -227,33 +182,33 @@ function LogbookGradeRow({
   }, [onExpandControl, expandedControl]);
 
   return (
-    <div style={gradeRowStyle}>
+    <div className={styles.gradeRow}>
       {/* Consensus stars */}
-      <div style={{ ...statCellStyle, ...(isEditing ? dimmedStyle : undefined) }}>
-        <span style={{ ...statValueStyle, color: themeTokens.colors.amber }}>{`\u2605${consensusStarsLabel}`}</span>
-        <span style={statLabelStyle}>stars</span>
+      <div className={`${styles.statCell} ${isEditing ? styles.dimmed : ''}`}>
+        <span className={styles.statValue} style={{ color: themeTokens.colors.amber }}>{`\u2605${consensusStarsLabel}`}</span>
+        <span className={styles.statLabel}>stars</span>
       </div>
       {/* User stars */}
       {isEditing ? (
         <ButtonBase
           onClick={() => handleToggle('stars')}
           aria-label={`Quality: ${editQuality ?? 'none'}`}
-          style={{ ...statCellStyle, padding: 0 }}
+          className={styles.statCell}
           disableRipple={false}
         >
-          <span style={{ ...statValueStyle, color: themeTokens.colors.amber }}>{`\u2605${editQuality ?? '\u2014'}`}</span>
-          <span style={statLabelStyle}>user</span>
+          <span className={styles.statValue} style={{ color: themeTokens.colors.amber }}>{`\u2605${editQuality ?? '\u2014'}`}</span>
+          <span className={styles.statLabel}>user</span>
         </ButtonBase>
       ) : (
-        <div style={statCellStyle}>
-          <span style={{ ...statValueStyle, color: themeTokens.colors.amber }}>{`\u2605${quality ?? '\u2014'}`}</span>
-          <span style={statLabelStyle}>user</span>
+        <div className={styles.statCell}>
+          <span className={styles.statValue} style={{ color: themeTokens.colors.amber }}>{`\u2605${quality ?? '\u2014'}`}</span>
+          <span className={styles.statLabel}>user</span>
         </div>
       )}
       {/* Consensus grade */}
-      <div style={{ ...gradeCellStyle, ...(isEditing ? dimmedStyle : undefined) }}>
-        <span style={{ ...statValueStyle, color: consensusColor }}>{consensusLabel}</span>
-        <span style={statLabelStyle}>grade</span>
+      <div className={`${styles.gradeCell} ${isEditing ? styles.dimmed : ''}`}>
+        <span className={styles.statValue} style={{ color: consensusColor }}>{consensusLabel}</span>
+        <span className={styles.statLabel}>grade</span>
       </div>
       {/* User grade */}
       {isEditing ? (
@@ -261,16 +216,16 @@ function LogbookGradeRow({
           ref={gradeButtonRef}
           onClick={() => handleToggle('grade')}
           aria-label="Select logged grade"
-          style={{ ...gradeCellStyle, padding: 0 }}
+          className={styles.gradeCell}
           disableRipple={false}
         >
-          <span style={{ ...statValueStyle, color: editGradeColor }}>{editGradeLabel}</span>
-          <span style={statLabelStyle}>user</span>
+          <span className={styles.statValue} style={{ color: editGradeColor }}>{editGradeLabel}</span>
+          <span className={styles.statLabel}>user</span>
         </ButtonBase>
       ) : (
-        <div style={gradeCellStyle}>
-          <span style={{ ...statValueStyle, color: userColor }}>{userLabel}</span>
-          <span style={statLabelStyle}>user</span>
+        <div className={styles.gradeCell}>
+          <span className={styles.statValue} style={{ color: userColor }}>{userLabel}</span>
+          <span className={styles.statLabel}>user</span>
         </div>
       )}
       {/* Tries */}
@@ -279,16 +234,16 @@ function LogbookGradeRow({
           ref={triesButtonRef}
           onClick={() => handleToggle('tries')}
           aria-label={`Tries: ${editAttemptCount}`}
-          style={{ ...statCellStyle, padding: 0 }}
+          className={styles.statCell}
           disableRipple={false}
         >
-          <span style={statValueStyle}>{editAttemptCount}</span>
-          <span style={statLabelStyle}>tries</span>
+          <span className={styles.statValue}>{editAttemptCount}</span>
+          <span className={styles.statLabel}>tries</span>
         </ButtonBase>
       ) : (
-        <div style={statCellStyle}>
-          <span style={statValueStyle}>{attemptCount}</span>
-          <span style={statLabelStyle}>tries</span>
+        <div className={styles.statCell}>
+          <span className={styles.statValue}>{attemptCount}</span>
+          <span className={styles.statLabel}>tries</span>
         </div>
       )}
     </div>
@@ -317,16 +272,14 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
   onEdit,
   onDelete,
   onCancelEdit,
-  // Instagram props accepted but not yet integrated into the new standalone layout
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  allowInstagramPosting: _allowInstagramPosting,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  allowInstagramLinking: _allowInstagramLinking,
+  allowInstagramPosting,
+  allowInstagramLinking,
 }) => {
   const [isActionsOpen, setIsActionsOpen] = useState(false);
+  const [instagramDialogOpen, setInstagramDialogOpen] = useState(false);
 
   // --- Edit state ---
-  const updateTick = useUpdateTick();
+  const { mutateAsync: updateTickAsync, isPending: isSaving } = useUpdateTick();
   const grades = TENSION_KILTER_GRADES;
 
   const [editStatus, setEditStatus] = useState<'flash' | 'send' | 'attempt'>('send');
@@ -343,9 +296,10 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
   const gradeButtonRef = useRef<HTMLButtonElement>(null);
   const triesButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Initialize edit state from item when editing starts
+  // Initialize edit state from item only when transitioning into edit mode
+  const wasEditingRef = useRef(false);
   useEffect(() => {
-    if (isEditing) {
+    if (isEditing && !wasEditingRef.current) {
       setEditStatus(item.status);
       setEditComment(item.comment);
       setCommentFocused(false);
@@ -357,6 +311,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
       setPickerVisible(false);
       setStatusAnchorEl(null);
     }
+    wasEditingRef.current = !!isEditing;
   }, [isEditing, item]);
 
   // Track picker visibility for collapse animation
@@ -401,7 +356,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
 
   const handleSave = useCallback(async () => {
     try {
-      await updateTick.mutateAsync({
+      await updateTickAsync({
         uuid: item.uuid,
         input: {
           status: editStatus,
@@ -415,7 +370,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
     } catch {
       // The mutation hook surfaces the error via snackbar; keep edit open.
     }
-  }, [editStatus, editAttemptCount, editComment, editDifficulty, editQuality, item.uuid, onCancelEdit, updateTick]);
+  }, [editStatus, editAttemptCount, editComment, editDifficulty, editQuality, item.uuid, onCancelEdit, updateTickAsync]);
 
   // Status picker popover
   const handleStatusBadgeClick = useCallback((e: React.MouseEvent<HTMLElement>) => {
@@ -470,9 +425,6 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
   }, [item.climbedAt, item.angle, showBoardType, item.boardType, item.layoutId]);
 
   // --- Swipe actions ---
-  const leftSwipeLayerRef = useRef<HTMLDivElement>(null);
-  const rightSwipeLayerRef = useRef<HTMLDivElement>(null);
-
   const handleSwipeLeft = useCallback(() => {
     onEdit?.(item);
   }, [onEdit, item]);
@@ -481,20 +433,12 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
     onDelete?.(item.uuid);
   }, [onDelete, item.uuid]);
 
-  const handleSwipeOffset = useCallback((offset: number) => {
-    if (leftSwipeLayerRef.current) {
-      leftSwipeLayerRef.current.style.opacity = String(Math.min(1, Math.max(0, offset) / SWIPE_THRESHOLD));
-    }
-    if (rightSwipeLayerRef.current) {
-      rightSwipeLayerRef.current.style.opacity = String(Math.min(1, Math.max(0, -offset) / SWIPE_THRESHOLD));
-    }
-  }, []);
+  const noop = useCallback(() => {}, []);
 
   const { swipeHandlers, contentRef, leftActionRef, rightActionRef } = useSwipeActions({
     onSwipeLeft: handleSwipeLeft,
-    onSwipeRight: handleSwipeRightLong,
+    onSwipeRight: noop,
     onSwipeRightLong: handleSwipeRightLong,
-    onSwipeOffsetChange: handleSwipeOffset,
     swipeThreshold: SWIPE_THRESHOLD,
     longSwipeRightThreshold: LONG_SWIPE_THRESHOLD,
     maxSwipe: MAX_SWIPE,
@@ -503,15 +447,12 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
     disabled: isEditing,
   });
 
-  const leftActionCombinedRef = useCallback((node: HTMLDivElement | null) => {
-    leftActionRef(node);
-    leftSwipeLayerRef.current = node;
-  }, [leftActionRef]);
-
+  // Extract stable ref from swipeHandlers to avoid re-creating the callback on every render
+  const swipeRef = swipeHandlers.ref;
   const contentCombinedRef = useCallback((node: HTMLDivElement | null) => {
-    swipeHandlers.ref(node);
+    swipeRef(node);
     contentRef(node);
-  }, [swipeHandlers, contentRef]);
+  }, [swipeRef, contentRef]);
 
   // --- Actions drawer ---
   const handleOpenActions = useCallback((e: React.MouseEvent) => {
@@ -538,17 +479,26 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
     onDelete?.(item.uuid);
   }, [handleCloseActions, onDelete, item.uuid]);
 
+  const handleOpenInstagram = useCallback(() => {
+    handleCloseActions();
+    setInstagramDialogOpen(true);
+  }, [handleCloseActions]);
+
+  const handleCloseInstagram = useCallback(() => {
+    setInstagramDialogOpen(false);
+  }, []);
+
   return (
     <>
       <div className={styles.container}>
         {/* Left action layer — Delete (revealed on long swipe right) */}
-        <div ref={leftActionCombinedRef} className={styles.leftActionLayer}>
-          <DeleteOutlined style={iconStyle} />
+        <div ref={leftActionRef} className={styles.leftActionLayer}>
+          <DeleteOutlined className={styles.swipeIcon} />
         </div>
 
         {/* Right action layer — Edit (revealed on swipe left) */}
         <div ref={rightActionRef} className={styles.rightActionLayer}>
-          <EditOutlined style={iconStyle} />
+          <EditOutlined className={styles.swipeIcon} />
         </div>
 
         {/* Swipeable wrapper — covers entire item including comment row */}
@@ -585,7 +535,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
               />
             </div>
             {isEditing && (
-              <span style={{ position: 'absolute', bottom: -8, right: 2, width: 18, textAlign: 'center', ...statLabelStyle }}>edit</span>
+              <span className={`${styles.statLabel} ${styles.badgeEditLabel}`}>edit</span>
             )}
           </div>
 
@@ -647,7 +597,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
 
           {/* Menu / save-cancel buttons */}
           {isEditing ? (
-            <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            <div className={styles.editControls}>
               <IconButton
                 size="small"
                 onClick={onCancelEdit}
@@ -663,7 +613,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
               <IconButton
                 size="small"
                 onClick={handleSave}
-                disabled={updateTick.isPending}
+                disabled={isSaving}
                 aria-label="Save"
                 sx={{
                   width: 36,
@@ -681,7 +631,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
               size="small"
               aria-label="More actions"
               onClick={handleOpenActions}
-              style={menuButtonStyle}
+              className={styles.menuButton}
               disableRipple
             >
               <MoreHorizOutlined />
@@ -788,7 +738,19 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
               <ListItemText>Delete log</ListItemText>
             </MenuItem>
           )}
-          {(onEdit || onDelete) && <Divider />}
+          {allowInstagramPosting && (
+            <MenuItem onClick={handleOpenInstagram}>
+              <ListItemIcon><InstagramIcon fontSize="small" /></ListItemIcon>
+              <ListItemText>Post to Instagram</ListItemText>
+            </MenuItem>
+          )}
+          {allowInstagramLinking && (
+            <MenuItem onClick={handleOpenInstagram}>
+              <ListItemIcon><LinkOutlined fontSize="small" /></ListItemIcon>
+              <ListItemText>Link Instagram post</ListItemText>
+            </MenuItem>
+          )}
+          {(onEdit || onDelete || allowInstagramPosting || allowInstagramLinking) && <Divider />}
           {/* Standard climb actions */}
           <ClimbActions
             climb={climb}
@@ -799,6 +761,19 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
             onActionComplete={handleCloseActions}
           />
         </SwipeableDrawer>
+      )}
+
+      {(allowInstagramPosting || allowInstagramLinking) && (
+        <PostToInstagramDialog
+          open={instagramDialogOpen}
+          onClose={handleCloseInstagram}
+          item={instagramDialogOpen ? {
+            boardType: item.boardType,
+            climbUuid: item.climbUuid,
+            climbName: item.climbName,
+            angle: item.angle,
+          } : null}
+        />
       )}
     </>
   );

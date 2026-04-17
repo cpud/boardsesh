@@ -14,7 +14,7 @@
   align-items: center;
   justify-content: flex-start;
   padding-left: 16px;
-  background-color: #8C4A52; /* themeTokens.colors.primary — rose red for delete */
+  background-color: var(--color-primary);
   opacity: 0;
   will-change: opacity;
 }
@@ -26,9 +26,15 @@
   align-items: center;
   justify-content: flex-end;
   padding-right: 16px;
-  background-color: #6B9080; /* themeTokens.colors.success — sage green for edit */
+  background-color: var(--color-success);
   opacity: 0;
   will-change: opacity;
+}
+
+/* Swipe action icons */
+.swipeIcon {
+  color: white;
+  font-size: 20px;
 }
 
 /* Swipeable wrapper — covers entire item so swipe gesture works everywhere */
@@ -46,7 +52,6 @@
   padding: 12px 8px;
   gap: 12px;
 }
-
 
 /* Thumbnail — 50% larger than the standard 64px via scale transform.
    The wrapper reserves 96px of space while the inner 64px content scales up to fill it. */
@@ -72,6 +77,74 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+/* Grade row — horizontal bar of stat cells */
+.gradeRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 4px;
+  padding-bottom: 8px;
+}
+
+/* Uniform stat cell — consistent height and alignment */
+.statCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 28px;
+}
+
+/* Fixed-width grade cell so 2-char and 3-char grades take the same space */
+.gradeCell {
+  composes: statCell;
+  min-width: 32px;
+}
+
+.statValue {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 8px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  opacity: 0.55;
+  white-space: nowrap;
+  text-transform: lowercase;
+}
+
+.dimmed {
+  opacity: 0.4;
+}
+
+/* Menu button */
+.menuButton {
+  flex-shrink: 0;
+  color: var(--neutral-400);
+}
+
+/* Edit mode controls wrapper */
+.editControls {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Badge edit label */
+.badgeEditLabel {
+  position: absolute;
+  bottom: -8px;
+  right: 2px;
+  width: 18px;
+  text-align: center;
 }
 
 /* Picker panel — animated expand/collapse */
