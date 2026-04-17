@@ -33,6 +33,13 @@ describe('instagram-url', () => {
       expect(isInstagramUrl('https://www.instagram.com/p/DEdQNTzScjp/')).toBe(true);
       expect(isInstagramUrl('https://instagram.com/reel/DJ5Cw5OIS82/')).toBe(true);
       expect(isInstagramUrl('https://instagr.am/p/DEdQNTzScjp/')).toBe(true);
+      expect(isInstagramUrl('https://www.instagram.com/p/DEdQNTzScjp/?img_index=1')).toBe(true);
+      expect(isInstagramUrl('HTTPS://WWW.INSTAGRAM.COM/reel/DJ5Cw5OIS82/')).toBe(true);
+    });
+
+    it('rejects URLs with extra path segments after the media ID', () => {
+      expect(isInstagramUrl('https://instagram.com/reel/ABC/extra-garbage')).toBe(false);
+      expect(isInstagramUrl('https://www.instagram.com/p/ABC/comments')).toBe(false);
     });
 
     it('rejects URLs that contain instagram.com as a path or query parameter', () => {
