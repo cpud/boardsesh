@@ -60,8 +60,24 @@ export default function FindNearbyCard({ onClick, status = 'idle', size = 'defau
       break;
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (isError) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
-    <div className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ''}`} onClick={isError ? undefined : onClick}>
+    <div
+      className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ''}`}
+      onClick={isError ? undefined : onClick}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={isError ? -1 : 0}
+      aria-label={label}
+      aria-disabled={isError || undefined}
+    >
       <div className={`${styles.cardSquare} ${isError ? styles.cardSquareDisabled : ''}`}>
         <div className={styles.findNearbyBoard}>
           <BoardRenderer

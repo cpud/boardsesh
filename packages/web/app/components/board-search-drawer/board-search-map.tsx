@@ -47,6 +47,7 @@ export default function BoardSearchMap({
   // values that were current at first render.
   const centerRef = useRef(center);
   const zoomRef = useRef(zoom);
+  const selectedBoardUuidRef = useRef(selectedBoardUuid);
   const [mapReady, setMapReady] = useState(false);
   const [pendingMyLocation, setPendingMyLocation] = useState(false);
 
@@ -54,6 +55,7 @@ export default function BoardSearchMap({
   onBoardClickRef.current = onBoardClick;
   centerRef.current = center;
   zoomRef.current = zoom;
+  selectedBoardUuidRef.current = selectedBoardUuid;
 
   const { coordinates: userCoords, requestPermission } = useGeolocation();
 
@@ -150,7 +152,11 @@ export default function BoardSearchMap({
     map.setView([center.lat, center.lng], zoom, { animate: true });
   }, [center.lat, center.lng, zoom]);
 
-  // Sync markers whenever boards change.
+  // Sync markers whenever boards change. The selection-to-icon mapping is
+  // handled by the separate "Update marker icons when selection changes"
+  // effect below, so this effect only adds/removes markers. We read the
+  // current selection through a ref to pick the correct initial icon for
+  // newly-added markers without re-running on every selection change.
   useEffect(() => {
     const L = leafletRef.current;
     const layer = markersLayerRef.current;
@@ -171,7 +177,7 @@ export default function BoardSearchMap({
       if (board.latitude == null || board.longitude == null) continue;
       if (markersByUuidRef.current.has(board.uuid)) continue;
 
-      const isSelected = board.uuid === selectedBoardUuid;
+      const isSelected = board.uuid === selectedBoardUuidRef.current;
       const icon = L.divIcon({
         className: '',
         html: buildMarkerHtml(isSelected),
@@ -183,7 +189,7 @@ export default function BoardSearchMap({
       marker.addTo(layer);
       markersByUuidRef.current.set(board.uuid, marker);
     }
-  }, [boards, selectedBoardUuid]);
+  }, [boards]);
 
   // Update marker icons when selection changes (without recreating all markers).
   useEffect(() => {
@@ -205,13 +211,13 @@ export default function BoardSearchMap({
     (coords: { latitude: number; longitude: number }) => {
       const map = mapRef.current;
       if (!map) return;
-      programmaticMoveRef.current = true;
+      // Leaflet's own `moveend` event — fired when the flyTo animation
+      // finishes — propagates the new viewport back to the parent through
+      // `fireViewport`. We deliberately don't set `programmaticMoveRef` or
+      // call `onViewportChangeRef` directly here: doing both would update
+      // parent state during the animation and trigger the pan effect's
+      // `map.setView`, running a second animation that interrupts the flyTo.
       map.flyTo([coords.latitude, coords.longitude], 13);
-      onViewportChangeRef.current({
-        lat: Math.round(coords.latitude * 1000000) / 1000000,
-        lng: Math.round(coords.longitude * 1000000) / 1000000,
-        zoom: 13,
-      });
     },
     [],
   );

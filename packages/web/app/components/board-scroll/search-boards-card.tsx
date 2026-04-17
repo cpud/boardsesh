@@ -14,8 +14,22 @@ export default function SearchBoardsCard({ onClick, size = 'default' }: SearchBo
   const isSmall = size === 'small';
   const iconSize = isSmall ? 28 : 36;
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
-    <div className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ''}`} onClick={onClick}>
+    <div
+      className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ''}`}
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label="Search for a board"
+    >
       <div className={styles.cardSquare}>
         <BoardThumbnailGrid />
         <div className={styles.findNearbyOverlay}>

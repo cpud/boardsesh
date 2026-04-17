@@ -1,21 +1,62 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { renderHook, waitFor } from '@testing-library/react';
+import type { UserBoard, UserBoardConnection } from '@boardsesh/shared-schema';
 
-// The hook module also pulls in auth + GraphQL client modules via path aliases.
-// We only exercise the pure `zoomToRadiusKm` helper here, so stub its peers.
-vi.mock('@/app/hooks/use-ws-auth-token', () => ({
-  useWsAuthToken: () => ({ token: null, isAuthenticated: false }),
+// --- Mocks (declared before importing the hook) ---
+
+const mockRequest = vi.fn();
+
+vi.mock('@/app/lib/graphql/client', () => ({
+  createGraphQLHttpClient: () => ({ request: mockRequest }),
 }));
+
+vi.mock('@/app/hooks/use-ws-auth-token', () => ({
+  useWsAuthToken: () => ({ token: 'test-token', isAuthenticated: true, isLoading: false, error: null }),
+}));
+
 vi.mock('@/app/hooks/use-debounced-value', () => ({
   useDebouncedValue: <T>(v: T) => v,
 }));
-vi.mock('@/app/lib/graphql/client', () => ({
-  createGraphQLHttpClient: () => ({ request: vi.fn() }),
-}));
+
 vi.mock('@/app/lib/graphql/operations', () => ({
   SEARCH_BOARDS: 'SEARCH_BOARDS_QUERY',
 }));
 
-import { zoomToRadiusKm } from '../use-search-boards-map';
+import { createQueryWrapper } from '@/app/test-utils/test-providers';
+import { useSearchBoardsMap, zoomToRadiusKm } from '../use-search-boards-map';
+
+// --- Helpers ---
+
+function makeBoard(uuid: string, overrides?: Partial<UserBoard>): UserBoard {
+  return {
+    uuid,
+    name: `Board ${uuid}`,
+    boardType: 'kilter',
+    layoutId: 8,
+    sizeId: 25,
+    setIds: '26,27',
+    angle: 40,
+    totalAscents: 0,
+    slug: `kilter/8/25/26,27`,
+    locationName: null,
+    latitude: null,
+    longitude: null,
+    isFollowedByMe: false,
+    ownerId: 'owner-1',
+    isPublic: true,
+    isOwned: false,
+    isAngleAdjustable: false,
+    createdAt: '2025-01-01T00:00:00Z',
+    uniqueClimbers: 0,
+    followerCount: 0,
+    commentCount: 0,
+    ...overrides,
+  } as UserBoard;
+}
+
+function makeSearchResponse(boards: UserBoard[], hasMore = false): { searchBoards: UserBoardConnection } {
+  return { searchBoards: { boards, totalCount: boards.length + (hasMore ? 100 : 0), hasMore } };
+}
 
 describe('zoomToRadiusKm', () => {
   it('returns 5 km at high zoom levels (14+)', () => {
@@ -55,5 +96,182 @@ describe('zoomToRadiusKm', () => {
       expect(next).toBeGreaterThanOrEqual(prev);
       prev = next;
     }
+  });
+});
+
+describe('useSearchBoardsMap query gating', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('does not call SEARCH_BOARDS when enabled is false', async () => {
+    const { result } = renderHook(
+      () =>
+        useSearchBoardsMap({
+          query: '',
+          latitude: 40.7,
+          longitude: -74.0,
+          zoom: 11,
+          enabled: false,
+        }),
+      { wrapper: createQueryWrapper() },
+    );
+
+    // Give react-query a chance to settle
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(mockRequest).not.toHaveBeenCalled();
+    expect(result.current.boards).toEqual([]);
+  });
+
+  it('does not call SEARCH_BOARDS without coords and with a short query', async () => {
+    const { result } = renderHook(
+      () =>
+        useSearchBoardsMap({
+          query: 'a', // below the 2-char threshold
+          latitude: null,
+          longitude: null,
+          zoom: 11,
+          enabled: true,
+        }),
+      { wrapper: createQueryWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(mockRequest).not.toHaveBeenCalled();
+    expect(result.current.boards).toEqual([]);
+  });
+
+  it('fires the query when coords are present even with no query text', async () => {
+    mockRequest.mockResolvedValueOnce(makeSearchResponse([makeBoard('b1')]));
+
+    const { result } = renderHook(
+      () =>
+        useSearchBoardsMap({
+          query: '',
+          latitude: 40.7,
+          longitude: -74.0,
+          zoom: 11,
+          enabled: true,
+        }),
+      { wrapper: createQueryWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.boards).toHaveLength(1);
+    });
+
+    expect(mockRequest).toHaveBeenCalledTimes(1);
+    expect(mockRequest).toHaveBeenCalledWith(
+      'SEARCH_BOARDS_QUERY',
+      expect.objectContaining({
+        input: expect.objectContaining({
+          latitude: 40.7,
+          longitude: -74.0,
+          radiusKm: 20,
+          offset: 0,
+        }),
+      }),
+    );
+  });
+
+  it('fires the query when only a >= 2-char text query is provided', async () => {
+    mockRequest.mockResolvedValueOnce(makeSearchResponse([makeBoard('b1')]));
+
+    const { result } = renderHook(
+      () =>
+        useSearchBoardsMap({
+          query: 'kilter',
+          latitude: null,
+          longitude: null,
+          zoom: 11,
+          enabled: true,
+        }),
+      { wrapper: createQueryWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.boards).toHaveLength(1);
+    });
+
+    expect(mockRequest).toHaveBeenCalledTimes(1);
+    const calledWith = mockRequest.mock.calls[0][1] as { input: Record<string, unknown> };
+    expect(calledWith.input.query).toBe('kilter');
+    expect(calledWith.input.latitude).toBeUndefined();
+    expect(calledWith.input.longitude).toBeUndefined();
+    expect(calledWith.input.radiusKm).toBeUndefined();
+  });
+});
+
+describe('useSearchBoardsMap pagination', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('reports hasMore=false when the server has no more pages', async () => {
+    mockRequest.mockResolvedValueOnce(makeSearchResponse([makeBoard('b1')], false));
+
+    const { result } = renderHook(
+      () =>
+        useSearchBoardsMap({
+          query: '',
+          latitude: 40.7,
+          longitude: -74.0,
+          zoom: 11,
+          enabled: true,
+        }),
+      { wrapper: createQueryWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.boards).toHaveLength(1);
+    });
+
+    expect(result.current.hasMore).toBe(false);
+  });
+
+  it('fetches the next page with offset = sum of boards seen so far', async () => {
+    const firstPage = [makeBoard('a1'), makeBoard('a2'), makeBoard('a3')];
+    const secondPage = [makeBoard('b1'), makeBoard('b2')];
+
+    mockRequest
+      .mockResolvedValueOnce(makeSearchResponse(firstPage, true))
+      .mockResolvedValueOnce(makeSearchResponse(secondPage, false));
+
+    const { result } = renderHook(
+      () =>
+        useSearchBoardsMap({
+          query: '',
+          latitude: 40.7,
+          longitude: -74.0,
+          zoom: 11,
+          enabled: true,
+        }),
+      { wrapper: createQueryWrapper() },
+    );
+
+    await waitFor(() => {
+      expect(result.current.boards).toHaveLength(3);
+    });
+
+    expect(result.current.hasMore).toBe(true);
+    // First fetch at offset 0
+    expect((mockRequest.mock.calls[0][1] as { input: { offset: number } }).input.offset).toBe(0);
+
+    result.current.fetchNextPage();
+
+    await waitFor(() => {
+      expect(result.current.boards).toHaveLength(5);
+    });
+
+    // Second fetch at offset 3 (size of first page)
+    expect(mockRequest).toHaveBeenCalledTimes(2);
+    expect((mockRequest.mock.calls[1][1] as { input: { offset: number } }).input.offset).toBe(3);
+    expect(result.current.hasMore).toBe(false);
   });
 });
