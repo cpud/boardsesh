@@ -1,16 +1,16 @@
 'use client';
 
 import React from 'react';
-import AddOutlined from '@mui/icons-material/AddOutlined';
+import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import BoardThumbnailGrid from './board-thumbnail-grid';
 import styles from './board-scroll.module.css';
 
-interface CustomBoardCardProps {
+interface SearchBoardsCardProps {
   onClick: () => void;
   size?: 'default' | 'small';
 }
 
-export default function CustomBoardCard({ onClick, size = 'default' }: CustomBoardCardProps) {
+export default function SearchBoardsCard({ onClick, size = 'default' }: SearchBoardsCardProps) {
   const isSmall = size === 'small';
   const iconSize = isSmall ? 28 : 36;
 
@@ -28,15 +28,15 @@ export default function CustomBoardCard({ onClick, size = 'default' }: CustomBoa
       onKeyDown={handleKeyDown}
       role="button"
       tabIndex={0}
-      aria-label="Build a custom board"
+      aria-label="Search for a board"
     >
       <div className={styles.cardSquare}>
         <BoardThumbnailGrid />
         <div className={styles.findNearbyOverlay}>
-          <AddOutlined sx={{ fontSize: iconSize, color: 'var(--color-primary)' }} />
+          <SearchOutlined sx={{ fontSize: iconSize, color: 'var(--color-primary)' }} />
         </div>
       </div>
-      <div className={styles.cardName}>Custom board</div>
+      <div className={styles.cardName}>Search</div>
     </div>
   );
 }

@@ -1,0 +1,205 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, act, fireEvent } from '@testing-library/react';
+import React from 'react';
+import type { UserBoard } from '@boardsesh/shared-schema';
+
+// --- Mocks (declared before the import that pulls them in) ---
+
+const mockRequestPermission = vi.fn();
+let mockUserCoords: { latitude: number; longitude: number; accuracy: number } | null = null;
+
+vi.mock('@/app/hooks/use-geolocation', () => ({
+  useGeolocation: () => ({
+    coordinates: mockUserCoords,
+    error: null,
+    loading: false,
+    permissionState: null,
+    requestPermission: mockRequestPermission,
+    refresh: vi.fn(),
+  }),
+}));
+
+interface SearchBoardsMapInputCapture {
+  query: string;
+  latitude: number | null;
+  longitude: number | null;
+  zoom: number;
+  enabled: boolean;
+}
+let lastSearchInput: SearchBoardsMapInputCapture | null = null;
+let mockBoards: UserBoard[] = [];
+const mockFetchNextPage = vi.fn();
+
+vi.mock('@/app/hooks/use-search-boards-map', () => ({
+  useSearchBoardsMap: (input: SearchBoardsMapInputCapture) => {
+    lastSearchInput = input;
+    return {
+      boards: mockBoards,
+      isLoading: false,
+      isFetching: false,
+      hasMore: false,
+      isFetchingNextPage: false,
+      fetchNextPage: mockFetchNextPage,
+      radiusKm: 20,
+    };
+  },
+}));
+
+vi.mock('@/app/components/swipeable-drawer/swipeable-drawer', () => ({
+  default: ({ open, children }: { open?: boolean; children?: React.ReactNode }) =>
+    open ? <div data-testid="drawer">{children}</div> : null,
+}));
+
+vi.mock('@/app/components/board-entity/board-card', () => ({
+  default: ({ board, onClick, trailingAction }: {
+    board: UserBoard;
+    onClick?: (b: UserBoard) => void;
+    trailingAction?: React.ReactNode;
+  }) => (
+    <div data-testid={`board-card-${board.uuid}`} onClick={() => onClick?.(board)}>
+      <div>{board.name}</div>
+      {trailingAction}
+    </div>
+  ),
+}));
+
+vi.mock('@/app/components/ui/follow-button', () => ({
+  default: () => <div data-testid="follow-button" />,
+}));
+
+vi.mock('../board-search-map', () => ({
+  default: ({ onViewportChange }: {
+    onViewportChange: (v: { lat: number; lng: number; zoom: number }) => void;
+  }) => (
+    <div
+      data-testid="board-search-map"
+      onClick={() => onViewportChange({ lat: 51.5, lng: -0.1, zoom: 12 })}
+    />
+  ),
+}));
+
+vi.mock('@/app/lib/graphql/operations', () => ({
+  FOLLOW_BOARD: 'FOLLOW_BOARD',
+  UNFOLLOW_BOARD: 'UNFOLLOW_BOARD',
+}));
+
+// --- Import under test ---
+
+import BoardSearchDrawer from '../board-search-drawer';
+
+function makeBoard(uuid: string, overrides: Partial<UserBoard> = {}): UserBoard {
+  return {
+    uuid,
+    name: `Board ${uuid}`,
+    boardType: 'kilter',
+    layoutId: 1,
+    sizeId: 1,
+    setIds: '1',
+    angle: 40,
+    totalAscents: 0,
+    slug: `kilter/1/1/1`,
+    locationName: null,
+    latitude: 51.5,
+    longitude: -0.1,
+    isFollowedByMe: false,
+    ownerId: 'owner-1',
+    isPublic: true,
+    isOwned: false,
+    isAngleAdjustable: false,
+    createdAt: '2025-01-01T00:00:00Z',
+    uniqueClimbers: 0,
+    followerCount: 0,
+    commentCount: 0,
+    ...overrides,
+  } as UserBoard;
+}
+
+describe('BoardSearchDrawer', () => {
+  beforeEach(() => {
+    mockRequestPermission.mockReset();
+    mockFetchNextPage.mockReset();
+    mockUserCoords = null;
+    mockBoards = [];
+    lastSearchInput = null;
+  });
+
+  it('does not request geolocation while the drawer is closed', () => {
+    render(<BoardSearchDrawer open={false} onClose={vi.fn()} onBoardOpen={vi.fn()} />);
+    expect(mockRequestPermission).not.toHaveBeenCalled();
+  });
+
+  it('requests geolocation exactly once on the first open', () => {
+    const { rerender } = render(
+      <BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />,
+    );
+    expect(mockRequestPermission).toHaveBeenCalledTimes(1);
+
+    // Re-rendering while still open must not re-fire the prompt
+    rerender(<BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />);
+    expect(mockRequestPermission).toHaveBeenCalledTimes(1);
+  });
+
+  it('re-requests geolocation when the drawer is reopened (requestedGeo resets on close)', () => {
+    const { rerender } = render(
+      <BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />,
+    );
+    expect(mockRequestPermission).toHaveBeenCalledTimes(1);
+
+    rerender(<BoardSearchDrawer open={false} onClose={vi.fn()} onBoardOpen={vi.fn()} />);
+    rerender(<BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />);
+
+    expect(mockRequestPermission).toHaveBeenCalledTimes(2);
+  });
+
+  it('passes null coords to the hook until the user pans or geolocation resolves', () => {
+    render(<BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />);
+    expect(lastSearchInput).not.toBeNull();
+    expect(lastSearchInput!.latitude).toBeNull();
+    expect(lastSearchInput!.longitude).toBeNull();
+    expect(lastSearchInput!.enabled).toBe(true);
+  });
+
+  it('forwards real coords once the map reports a viewport change', () => {
+    render(<BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />);
+    fireEvent.click(screen.getByTestId('board-search-map'));
+    expect(lastSearchInput!.latitude).toBe(51.5);
+    expect(lastSearchInput!.longitude).toBe(-0.1);
+    expect(lastSearchInput!.zoom).toBe(12);
+  });
+
+  it('clears the typed query when the drawer closes', () => {
+    mockBoards = [makeBoard('b1')];
+
+    const { rerender, container } = render(
+      <BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />,
+    );
+    const input = container.querySelector('input') as HTMLInputElement;
+    expect(input).toBeTruthy();
+
+    act(() => {
+      fireEvent.change(input, { target: { value: 'kilter' } });
+    });
+    expect(lastSearchInput!.query).toBe('kilter');
+
+    // Close and reopen — query should be empty
+    rerender(<BoardSearchDrawer open={false} onClose={vi.fn()} onBoardOpen={vi.fn()} />);
+    rerender(<BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />);
+
+    expect(lastSearchInput!.query).toBe('');
+  });
+
+  it('invokes onBoardOpen when the Open button on a selected board is clicked', () => {
+    mockBoards = [makeBoard('b1')];
+    const onBoardOpen = vi.fn();
+
+    render(<BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={onBoardOpen} />);
+
+    // Click the card to select it
+    fireEvent.click(screen.getByTestId('board-card-b1'));
+
+    // The Open button is rendered for the selected board
+    fireEvent.click(screen.getByRole('button', { name: /open/i }));
+
+    expect(onBoardOpen).toHaveBeenCalledWith(expect.objectContaining({ uuid: 'b1' }));
+  });
+});
