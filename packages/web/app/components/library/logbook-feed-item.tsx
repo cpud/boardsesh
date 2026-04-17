@@ -19,6 +19,7 @@ import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutl
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
 import SaveOutlined from '@mui/icons-material/SaveOutlined';
 import CloseOutlined from '@mui/icons-material/CloseOutlined';
+import CircularProgress from '@mui/material/CircularProgress';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import LinkOutlined from '@mui/icons-material/LinkOutlined';
 import dynamic from 'next/dynamic';
@@ -38,7 +39,7 @@ import { themeTokens } from '@/app/theme/theme-config';
 import { getDefaultBoardConfig } from '@/app/lib/default-board-configs';
 import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import { getExcludedClimbActions } from '@/app/lib/climb-action-utils';
-import { TENSION_KILTER_GRADES } from '@/app/lib/board-data';
+import { TENSION_KILTER_GRADES, getGradesForBoard } from '@/app/lib/board-data';
 import AscentThumbnail from '@/app/components/activity-feed/ascent-thumbnail';
 import {
   InlineStarPicker,
@@ -280,7 +281,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
 
   // --- Edit state ---
   const { mutateAsync: updateTickAsync, isPending: isSaving } = useUpdateTick();
-  const grades = TENSION_KILTER_GRADES;
+  const grades = useMemo(() => getGradesForBoard(item.boardType as BoardName), [item.boardType]);
 
   const [editStatus, setEditStatus] = useState<'flash' | 'send' | 'attempt'>('send');
   const [editComment, setEditComment] = useState('');
@@ -435,6 +436,19 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
 
   const noop = useCallback(() => {}, []);
 
+  // Separate ref for the left action layer DOM element so we can manipulate it directly
+  const leftLayerElRef = useRef<HTMLDivElement | null>(null);
+
+  const handleSwipeZoneChange = useCallback((zone: import('@/app/hooks/use-swipe-actions').SwipeZone) => {
+    const el = leftLayerElRef.current;
+    if (!el) return;
+    if (zone === 'right-long') {
+      el.classList.add(styles.deleteReady);
+    } else {
+      el.classList.remove(styles.deleteReady);
+    }
+  }, []);
+
   const { swipeHandlers, contentRef, leftActionRef, rightActionRef } = useSwipeActions({
     onSwipeLeft: handleSwipeLeft,
     onSwipeRight: noop,
@@ -445,7 +459,14 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
     maxSwipeLeft: RIGHT_ACTION_WIDTH,
     maxSwipeRight: LEFT_ACTION_WIDTH,
     disabled: isEditing,
+    onSwipeZoneChange: handleSwipeZoneChange,
   });
+
+  // Combined ref for the left action layer: hook's leftActionRef + our direct manipulation ref
+  const leftActionCombinedRef = useCallback((node: HTMLDivElement | null) => {
+    leftLayerElRef.current = node;
+    leftActionRef(node);
+  }, [leftActionRef]);
 
   // Extract stable ref from swipeHandlers to avoid re-creating the callback on every render
   const swipeRef = swipeHandlers.ref;
@@ -492,8 +513,9 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
     <>
       <div className={styles.container}>
         {/* Left action layer — Delete (revealed on long swipe right) */}
-        <div ref={leftActionRef} className={styles.leftActionLayer}>
+        <div ref={leftActionCombinedRef} className={styles.leftActionLayer}>
           <DeleteOutlined className={styles.swipeIcon} />
+          <span className={styles.deleteLabel}>Delete</span>
         </div>
 
         {/* Right action layer — Edit (revealed on swipe left) */}
@@ -522,20 +544,27 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
                 isMirror={item.isMirror}
               />
             )}
-            {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
-            <div
-              className={ascentStyles.badge}
-              onClick={isEditing ? handleStatusBadgeClick : undefined}
-              style={{ bottom: 6, cursor: isEditing ? 'pointer' : undefined }}
-            >
-              <AscentStatusIcon
-                status={isEditing ? editStatus : item.status}
-                variant="badge"
-                fontSize={12}
-              />
-            </div>
-            {isEditing && (
-              <span className={`${styles.statLabel} ${styles.badgeEditLabel}`}>edit</span>
+            {isEditing ? (
+              <ButtonBase
+                className={`${ascentStyles.badge} ${styles.statusBadgeButton}`}
+                onClick={handleStatusBadgeClick}
+                aria-label={`Change ascent status, currently ${editStatus}`}
+              >
+                <AscentStatusIcon
+                  status={editStatus}
+                  variant="badge"
+                  fontSize={12}
+                />
+                <span className={`${styles.statLabel} ${styles.badgeEditLabel}`}>edit</span>
+              </ButtonBase>
+            ) : (
+              <div className={ascentStyles.badge} style={{ bottom: 6 }}>
+                <AscentStatusIcon
+                  status={item.status}
+                  variant="badge"
+                  fontSize={12}
+                />
+              </div>
             )}
           </div>
 
@@ -603,12 +632,12 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
                 onClick={onCancelEdit}
                 aria-label="Cancel editing"
                 sx={{
-                  width: 28,
-                  height: 28,
+                  width: 44,
+                  height: 44,
                   color: 'text.disabled',
                 }}
               >
-                <CloseOutlined sx={{ fontSize: 16 }} />
+                <CloseOutlined sx={{ fontSize: 18 }} />
               </IconButton>
               <IconButton
                 size="small"
@@ -616,14 +645,18 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
                 disabled={isSaving}
                 aria-label="Save"
                 sx={{
-                  width: 36,
-                  height: 36,
+                  width: 44,
+                  height: 44,
                   backgroundColor: themeTokens.colors.success,
                   color: 'common.white',
                   '&:hover': { backgroundColor: themeTokens.colors.success },
                 }}
               >
-                <SaveOutlined sx={{ fontSize: 18 }} />
+                {isSaving ? (
+                  <CircularProgress size={18} color="inherit" />
+                ) : (
+                  <SaveOutlined sx={{ fontSize: 18 }} />
+                )}
               </IconButton>
             </div>
           ) : (

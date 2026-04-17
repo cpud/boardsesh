@@ -404,16 +404,80 @@ export default function LogbookFeed() {
     isFetching: isFetchingNextPage,
   });
 
-  const handleDelete = useCallback(async (uuid: string) => {
-    try {
+  const pendingDeleteRef = useRef<{ uuid: string; item: AscentFeedItem; timerId: ReturnType<typeof setTimeout> } | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pendingDeleteRef.current) {
+        clearTimeout(pendingDeleteRef.current.timerId);
+      }
+    };
+  }, []);
+
+  const handleDelete = useCallback((uuid: string) => {
+    // If there's already a pending delete for a different item, flush it immediately
+    if (pendingDeleteRef.current && pendingDeleteRef.current.uuid !== uuid) {
+      const { uuid: prevUuid, timerId } = pendingDeleteRef.current;
+      clearTimeout(timerId);
+      pendingDeleteRef.current = null;
       const client = createGraphQLHttpClient(token ?? null);
-      await client.request<{ deleteTick: boolean }, DeleteTickMutationVariables>(DELETE_TICK, { uuid });
-      queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
-      showMessage('Tick deleted', 'success');
-    } catch {
-      showMessage('Failed to delete tick', 'error');
+      client.request<{ deleteTick: boolean }, DeleteTickMutationVariables>(DELETE_TICK, { uuid: prevUuid }).catch(() => {
+        showMessage('Failed to delete tick', 'error');
+      });
     }
-  }, [token, queryClient, showMessage]);
+
+    // Find and capture the item before removing it from the cache
+    const currentData = queryClient.getQueryData<{ pages: { items: AscentFeedItem[]; hasMore: boolean }[] }>(
+      ['logbookFeed', userId, boardTypeParam ?? 'all', selectedLayoutIds?.join(',') ?? 'all-layouts', climbNameParam ?? '', JSON.stringify(activeFilters), JSON.stringify(sortParams)]
+    );
+    const itemToDelete = currentData?.pages.flatMap((p) => p.items).find((i) => i.uuid === uuid);
+
+    // Optimistically remove the item from the cache
+    queryClient.setQueryData(
+      ['logbookFeed', userId, boardTypeParam ?? 'all', selectedLayoutIds?.join(',') ?? 'all-layouts', climbNameParam ?? '', JSON.stringify(activeFilters), JSON.stringify(sortParams)],
+      (old: { pages: { items: AscentFeedItem[]; hasMore: boolean }[]; pageParams: number[] } | undefined) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            items: page.items.filter((i) => i.uuid !== uuid),
+          })),
+        };
+      }
+    );
+
+    const timerId = setTimeout(() => {
+      pendingDeleteRef.current = null;
+      const client = createGraphQLHttpClient(token ?? null);
+      client
+        .request<{ deleteTick: boolean }, DeleteTickMutationVariables>(DELETE_TICK, { uuid })
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
+        })
+        .catch(() => {
+          // Restore the item on failure
+          if (itemToDelete) {
+            queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
+          }
+          showMessage('Failed to delete tick', 'error');
+        });
+    }, 5000);
+
+    pendingDeleteRef.current = { uuid, item: itemToDelete ?? ({ uuid } as AscentFeedItem), timerId };
+
+    showMessage('Tick deleted', 'success', {
+      label: 'Undo',
+      onClick: () => {
+        if (pendingDeleteRef.current?.uuid === uuid) {
+          clearTimeout(pendingDeleteRef.current.timerId);
+          pendingDeleteRef.current = null;
+          // Restore the item by refreshing from server
+          queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
+        }
+      },
+    }, 5000);
+  }, [token, queryClient, showMessage, userId, boardTypeParam, selectedLayoutIds, climbNameParam, activeFilters, sortParams]);
 
   const handleEdit = useCallback((item: AscentFeedItem) => {
     setEditingItemUuid(item.uuid);
