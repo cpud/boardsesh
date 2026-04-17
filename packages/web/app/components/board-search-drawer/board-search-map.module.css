@@ -1,0 +1,17 @@
+/* Map markers — sized inline by Leaflet's iconSize prop, but coloured /
+   bordered / shadowed via design-token-driven CSS variables. */
+
+.marker {
+  width: 16px;
+  height: 16px;
+  background: var(--color-primary);
+  border: 3px solid var(--semantic-surface);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+}
+
+.markerSelected {
+  width: 22px;
+  height: 22px;
+  border-width: 4px;
+}

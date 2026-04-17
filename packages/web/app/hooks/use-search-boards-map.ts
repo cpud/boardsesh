@@ -75,11 +75,15 @@ export function useSearchBoardsMap({
   const hasQuery = debouncedQuery.trim().length >= 2;
   const queryEnabled = enabled && (hasCoords || hasQuery);
 
+  // Construct a single GraphQL client per token; reused across every page
+  // fetch. Without this we'd allocate a new client object on every queryFn
+  // invocation (every page, every refetch) for no benefit.
+  const client = useMemo(() => createGraphQLHttpClient(token ?? undefined), [token]);
+
   const { data, isLoading, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery<UserBoardConnection, Error>({
       queryKey: ['searchBoardsMap', debouncedQuery, lat, lon, radiusKm, token],
       queryFn: async ({ pageParam }) => {
-        const client = createGraphQLHttpClient(token ?? undefined);
         const input: SearchBoardsQueryVariables['input'] = {
           query: hasQuery ? debouncedQuery.trim() : undefined,
           latitude: hasCoords ? lat : undefined,

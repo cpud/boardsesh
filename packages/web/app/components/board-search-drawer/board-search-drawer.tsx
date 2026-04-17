@@ -22,9 +22,12 @@ import { themeTokens } from '@/app/theme/theme-config';
 import type { UserBoard } from '@boardsesh/shared-schema';
 import BoardSearchMap from './board-search-map';
 
-const DEFAULT_CENTER = { lat: 40, lng: -95 };
+const DEFAULT_CENTER = { lat: 20, lng: 0 }; // World view — neutral starting point until geolocation resolves
 const DEFAULT_ZOOM = 3;
 const NEARBY_ZOOM = 11; // ~20 km radius via the zoomToRadiusKm table
+const CAROUSEL_CARD_WIDTH = 280; // Empirically picked to fit the BoardCard layout without truncation
+const CAROUSEL_LOAD_INDICATOR_WIDTH = 80;
+const INFINITE_SCROLL_THRESHOLD = 300; // Trigger fetchNextPage when within this many px of the right edge
 
 interface BoardSearchDrawerProps {
   open: boolean;
@@ -94,7 +97,7 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
       if (!hasMore || isFetchingNextPage) return;
       const el = e.currentTarget;
       const remaining = el.scrollWidth - (el.scrollLeft + el.clientWidth);
-      if (remaining < 300) fetchNextPage();
+      if (remaining < INFINITE_SCROLL_THRESHOLD) fetchNextPage();
     },
     [hasMore, isFetchingNextPage, fetchNextPage],
   );
@@ -240,7 +243,7 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
                     key={board.uuid}
                     ref={setCardRef(board.uuid)}
                     sx={{
-                      width: 280,
+                      width: CAROUSEL_CARD_WIDTH,
                       flexShrink: 0,
                       scrollSnapAlign: 'start',
                       outline: isSelected ? `2px solid var(--color-primary)` : 'none',
@@ -287,7 +290,7 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    width: 80,
+                    width: CAROUSEL_LOAD_INDICATOR_WIDTH,
                     flexShrink: 0,
                   }}
                 >

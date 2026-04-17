@@ -16,7 +16,10 @@ export default function BluetoothQuickStartCard({ size = 'default' }: BluetoothQ
   return (
     <div
       className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ''} ${styles.cardScrollDisabled}`}
+      role="button"
+      tabIndex={-1}
       aria-disabled="true"
+      aria-label="Bluetooth quick start (coming soon)"
     >
       <div className={`${styles.cardSquare} ${styles.cardSquareDisabled}`}>
         <BoardThumbnailGrid />

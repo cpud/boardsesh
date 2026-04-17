@@ -7,8 +7,12 @@ import MyLocationOutlined from '@mui/icons-material/MyLocationOutlined';
 import type { Map as LeafletMap, Marker as LeafletMarker, LayerGroup as LeafletLayerGroup } from 'leaflet';
 import type { UserBoard } from '@boardsesh/shared-schema';
 import { useGeolocation } from '@/app/hooks/use-geolocation';
+import { themeTokens } from '@/app/theme/theme-config';
+import markerStyles from './board-search-map.module.css';
 
 const VIEWPORT_DEBOUNCE_MS = 250;
+const MARKER_SIZE = 16;
+const MARKER_SIZE_SELECTED = 22;
 
 interface BoardSearchMapProps {
   center: { lat: number; lng: number };
@@ -19,10 +23,12 @@ interface BoardSearchMapProps {
   onViewportChange: (viewport: { lat: number; lng: number; zoom: number }) => void;
 }
 
-function buildMarkerHtml(selected: boolean): string {
-  const size = selected ? 22 : 16;
-  const ring = selected ? '4px solid #fff' : '3px solid #fff';
-  return `<div style="width:${size}px;height:${size}px;background:var(--color-primary);border:${ring};border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>`;
+function markerClassName(selected: boolean): string {
+  return selected ? `${markerStyles.marker} ${markerStyles.markerSelected}` : markerStyles.marker;
+}
+
+function markerSize(selected: boolean): number {
+  return selected ? MARKER_SIZE_SELECTED : MARKER_SIZE;
 }
 
 export default function BoardSearchMap({
@@ -178,11 +184,12 @@ export default function BoardSearchMap({
       if (markersByUuidRef.current.has(board.uuid)) continue;
 
       const isSelected = board.uuid === selectedBoardUuidRef.current;
+      const size = markerSize(isSelected);
       const icon = L.divIcon({
-        className: '',
-        html: buildMarkerHtml(isSelected),
-        iconSize: [isSelected ? 22 : 16, isSelected ? 22 : 16],
-        iconAnchor: [isSelected ? 11 : 8, isSelected ? 11 : 8],
+        className: markerClassName(isSelected),
+        html: '',
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
       });
       const marker = L.marker([board.latitude, board.longitude], { icon });
       marker.on('click', () => onBoardClickRef.current(board));
@@ -197,11 +204,12 @@ export default function BoardSearchMap({
     if (!L) return;
     for (const [uuid, marker] of markersByUuidRef.current.entries()) {
       const isSelected = uuid === selectedBoardUuid;
+      const size = markerSize(isSelected);
       const icon = L.divIcon({
-        className: '',
-        html: buildMarkerHtml(isSelected),
-        iconSize: [isSelected ? 22 : 16, isSelected ? 22 : 16],
-        iconAnchor: [isSelected ? 11 : 8, isSelected ? 11 : 8],
+        className: markerClassName(isSelected),
+        html: '',
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
       });
       marker.setIcon(icon);
     }
@@ -211,12 +219,22 @@ export default function BoardSearchMap({
     (coords: { latitude: number; longitude: number }) => {
       const map = mapRef.current;
       if (!map) return;
-      // Leaflet's own `moveend` event — fired when the flyTo animation
-      // finishes — propagates the new viewport back to the parent through
-      // `fireViewport`. We deliberately don't set `programmaticMoveRef` or
-      // call `onViewportChangeRef` directly here: doing both would update
-      // parent state during the animation and trigger the pan effect's
-      // `map.setView`, running a second animation that interrupts the flyTo.
+      // Suppress the regular fireViewport debounce for this animation so the
+      // parent's center/zoom isn't updated mid-flight — that would re-render
+      // and trigger the pan effect's setView, racing the flyTo.
+      programmaticMoveRef.current = true;
+      // Once the animation finishes (or the user interrupts it), report the
+      // actual final viewport directly. By that point map.getCenter() matches
+      // the target, so the pan effect's distance guard short-circuits and no
+      // second animation runs.
+      map.once('moveend', () => {
+        const c = map.getCenter();
+        onViewportChangeRef.current({
+          lat: Math.round(c.lat * 1000000) / 1000000,
+          lng: Math.round(c.lng * 1000000) / 1000000,
+          zoom: map.getZoom(),
+        });
+      });
       map.flyTo([coords.latitude, coords.longitude], 13);
     },
     [],
@@ -255,10 +273,10 @@ export default function BoardSearchMap({
           onClick={handleUseMyLocation}
           sx={{
             position: 'absolute',
-            bottom: 8,
-            right: 8,
-            zIndex: 1000,
-            fontSize: '0.75rem',
+            bottom: themeTokens.spacing[2],
+            right: themeTokens.spacing[2],
+            zIndex: themeTokens.zIndex.dropdown,
+            fontSize: `${themeTokens.typography.fontSize.xs}px`,
             textTransform: 'none',
           }}
         >
