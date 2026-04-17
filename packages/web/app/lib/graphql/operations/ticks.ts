@@ -131,6 +131,7 @@ export const GET_USER_ASCENTS_FEED = gql`
         difficultyName
         consensusDifficulty
         consensusDifficultyName
+        qualityAverage
         isBenchmark
         comment
         climbedAt
@@ -159,6 +160,7 @@ export interface AscentFeedItem {
   difficultyName: string | null;
   consensusDifficulty: number | null;
   consensusDifficultyName: string | null;
+  qualityAverage: number | null;
   isBenchmark: boolean;
   comment: string;
   climbedAt: string;

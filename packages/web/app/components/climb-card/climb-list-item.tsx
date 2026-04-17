@@ -80,7 +80,7 @@ const longSwipeLayerInitialStyle: React.CSSProperties = {
 
 const rightActionLayerDefaultStyle: React.CSSProperties = {
   ...rightSwipeActionLayerBaseStyle,
-  backgroundColor: themeTokens.colors.primary,
+  backgroundColor: themeTokens.colors.success,
   opacity: 0,
   transition: 'opacity 120ms ease-out',
 };
@@ -154,7 +154,8 @@ export type SwipeActionOverride = {
 
 type ClimbListItemProps = {
   climb: Climb;
-  boardDetails: BoardDetails;
+  /** Board details for thumbnail and actions rendering. Required unless thumbnailSlot + menuSlot are both provided. */
+  boardDetails?: BoardDetails;
   /** Current pathname — passed from parent to avoid per-instance usePathname() context lookups. */
   pathname: string;
   /** Whether the app is in dark mode — passed from parent to avoid per-instance context lookups. */
@@ -194,6 +195,20 @@ type ClimbListItemProps = {
   /** Optional callback to add the climb to the queue (default swipe-left action).
    *  When not provided, swipe-left is a no-op. Pass from a parent that subscribes to QueueContext. */
   addToQueue?: (climb: Climb) => void;
+  /** Replaces the default ClimbThumbnail + heart overlay + AscentStatus badge with custom content. */
+  thumbnailSlot?: React.ReactNode;
+  /** Renders below the swipeable row (e.g., inline edit controls). */
+  belowContentSlot?: React.ReactNode;
+  /** Replaces the default ellipsis menu button and its associated drawers with custom content. */
+  menuSlot?: React.ReactNode;
+  /** When true, disables the double-tap-to-favorite gesture on the thumbnail. */
+  disableFavorite?: boolean;
+  /** When true, skips subscribing to the climb selection store. */
+  disableSelection?: boolean;
+  /** Renders below ClimbTitle inside the center section (e.g., comment + user tick info row). */
+  centerBottomSlot?: React.ReactNode;
+  /** Override the default content padding (default: `${spacing[2]}px ${spacing[2]}px`). */
+  contentPadding?: string;
 };
 
 const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
@@ -219,16 +234,22 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     onOpenActions,
     onOpenPlaylistSelector,
     addToQueue,
+    thumbnailSlot,
+    belowContentSlot,
+    menuSlot,
+    disableFavorite,
+    disableSelection,
+    centerBottomSlot,
+    contentPadding,
   }) => {
     // Subscribe to selection store — only re-renders when THIS item's selected state changes.
-    // When `selectedOverride` is provided (e.g. queue drawer), use that instead.
+    // When `selectedOverride` or `disableSelection` is provided, ignore the store value.
     const storeSelected = useIsClimbSelected(climb.uuid);
-    const selected = selectedOverride ?? storeSelected;
+    const selected = selectedOverride ?? (disableSelection ? false : storeSelected);
     // Check if we're inside a BoardProvider — needed for inline tick bar
     const boardProvider = useOptionalBoardProvider();
-    // When parent provides both drawer callbacks, skip local drawers entirely.
-    // Both must be present to ensure the parent handles all drawer interactions.
-    const hasParentDrawers = Boolean(onOpenActions && onOpenPlaylistSelector);
+    // When parent provides both drawer callbacks or a custom menuSlot, skip local drawers entirely.
+    const hasParentDrawers = Boolean(menuSlot || (onOpenActions && onOpenPlaylistSelector));
     const [isActionsOpen, setIsActionsOpen] = useState(false);
     const [isPlaylistSelectorOpen, setIsPlaylistSelectorOpen] = useState(false);
     const [isInlineTickOpen, setIsInlineTickOpen] = useState(false);
@@ -432,8 +453,8 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     }, [onOpenActions, climb]);
 
     const excludeActions = useMemo(
-      () => getExcludedClimbActions(boardDetails.board_name, 'list'),
-      [boardDetails.board_name],
+      () => boardDetails ? getExcludedClimbActions(boardDetails.board_name, 'list') : [],
+      [boardDetails],
     );
 
     // Memoize style objects to prevent recreation on every render
@@ -475,7 +496,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       () => ({
         display: 'flex' as const,
         alignItems: 'center' as const,
-        padding: `${themeTokens.spacing[2]}px ${themeTokens.spacing[2]}px`,
+        padding: contentPadding ?? `${themeTokens.spacing[2]}px ${themeTokens.spacing[2]}px`,
         gap: themeTokens.spacing[3],
         backgroundColor: resolvedBg,
         borderBottom: '1px solid var(--neutral-200)',
@@ -483,7 +504,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
         userSelect: 'none' as const,
         opacity: contentOpacity ?? 1,
       }),
-      [resolvedBg, contentOpacity],
+      [resolvedBg, contentOpacity, contentPadding],
     );
 
     // Default ClimbTitle props when no override is provided
@@ -556,47 +577,61 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
             data-swipe-content=""
           >
             {/* Thumbnail with ascent status badge */}
-            <div
-              ref={doubleTapRef}
-              style={thumbnailStyle}
-              data-testid="climb-thumbnail"
-              onClick={handleThumbnailClick}
-              onDoubleClick={handleDoubleTapClick}
-            >
-              <ClimbThumbnail
-                boardDetails={boardDetails}
-                currentClimb={climb}
-                pathname={pathname}
-                preferImageLayers={preferImageLayers}
-                fetchPriority={fetchPriority}
-              />
-              <HeartAnimationOverlay visible={showHeart} onAnimationEnd={dismissHeart} size={32} />
-              <AscentStatus climbUuid={climb.uuid} fontSize={12} className={ascentStyles.badge} mirroredClassName={ascentStyles.badgeMirrored} />
-            </div>
+            {thumbnailSlot ? (
+              <div style={thumbnailStyle} data-testid="climb-thumbnail" onClick={handleThumbnailClick}>
+                {thumbnailSlot}
+              </div>
+            ) : (
+              <div
+                ref={disableFavorite ? undefined : doubleTapRef}
+                style={thumbnailStyle}
+                data-testid="climb-thumbnail"
+                onClick={handleThumbnailClick}
+                onDoubleClick={disableFavorite ? undefined : handleDoubleTapClick}
+              >
+                {boardDetails && (
+                  <ClimbThumbnail
+                    boardDetails={boardDetails}
+                    currentClimb={climb}
+                    pathname={pathname}
+                    preferImageLayers={preferImageLayers}
+                    fetchPriority={fetchPriority}
+                  />
+                )}
+                {!disableFavorite && <HeartAnimationOverlay visible={showHeart} onAnimationEnd={dismissHeart} size={32} />}
+                <AscentStatus climbUuid={climb.uuid} fontSize={12} className={ascentStyles.badge} mirroredClassName={ascentStyles.badgeMirrored} />
+              </div>
+            )}
 
             {/* Center: Name, stars, setter, colorized grade */}
             <div style={centerStyle}>
               <ClimbTitle climb={climb} {...resolvedTitleProps} />
+              {centerBottomSlot}
             </div>
 
             {/* After-title slot (e.g., avatar) */}
             {afterTitleSlot}
 
-            {/* Ellipsis button — always visible */}
-            <IconButton
-              size="small"
-              aria-label="More actions"
-              onClick={handleMenuClick}
-              style={iconButtonStyle}
-              disableRipple
-            >
-              <MoreHorizOutlined />
-            </IconButton>
+            {/* Menu button — custom slot or default ellipsis */}
+            {menuSlot ?? (
+              <IconButton
+                size="small"
+                aria-label="More actions"
+                onClick={handleMenuClick}
+                style={iconButtonStyle}
+                disableRipple
+              >
+                <MoreHorizOutlined />
+              </IconButton>
+            )}
           </div>
         </div>
 
-        {/* Default actions drawers - only rendered when no parent drawer callbacks */}
-        {!hasParentDrawers && (
+        {/* Below-content slot (e.g., inline edit controls) */}
+        {belowContentSlot}
+
+        {/* Default actions drawers - only rendered when no parent drawer callbacks and boardDetails is available */}
+        {!hasParentDrawers && boardDetails && (
           <>
             <SwipeableDrawer
               title={
@@ -652,7 +687,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
         )}
 
         {/* Inline tick bar — only mounted when open and inside a BoardProvider */}
-        {isInlineTickOpen && boardProvider && (
+        {isInlineTickOpen && boardProvider && boardDetails && (
           <InlineListTickBar
             climb={climb}
             angle={climb.angle}
@@ -684,7 +719,14 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       prev.contentOpacity === next.contentOpacity &&
       prev.preferImageLayers === next.preferImageLayers &&
       prev.onOpenActions === next.onOpenActions &&
-      prev.onOpenPlaylistSelector === next.onOpenPlaylistSelector
+      prev.onOpenPlaylistSelector === next.onOpenPlaylistSelector &&
+      prev.thumbnailSlot === next.thumbnailSlot &&
+      prev.belowContentSlot === next.belowContentSlot &&
+      prev.menuSlot === next.menuSlot &&
+      prev.disableFavorite === next.disableFavorite &&
+      prev.disableSelection === next.disableSelection &&
+      prev.centerBottomSlot === next.centerBottomSlot &&
+      prev.contentPadding === next.contentPadding
     );
   },
 );

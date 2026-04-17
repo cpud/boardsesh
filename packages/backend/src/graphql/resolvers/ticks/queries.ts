@@ -232,6 +232,7 @@ export const tickQueries = {
         consensusDifficulty: consensusDifficultyExpr,
         consensusDifficultyName: consensusDifficultyNameExpr,
         resolvedIsBenchmark: resolvedBenchmarkExpr,
+        qualityAverage: dbSchema.boardClimbStats.qualityAverage,
       })
       .from(dbSchema.boardseshTicks)
       .leftJoin(
@@ -347,7 +348,7 @@ export const tickQueries = {
       .offset(offset);
 
     // Map results to response format
-    const items = results.map(({ tick, climbName, setterUsername, layoutId, frames, difficultyName, consensusDifficulty, consensusDifficultyName, resolvedIsBenchmark }) => ({
+    const items = results.map(({ tick, climbName, setterUsername, layoutId, frames, difficultyName, consensusDifficulty, consensusDifficultyName, resolvedIsBenchmark, qualityAverage }) => ({
       uuid: tick.uuid,
       climbUuid: tick.climbUuid,
       climbName: climbName || 'Unknown Climb',
@@ -364,6 +365,7 @@ export const tickQueries = {
       consensusDifficulty: consensusDifficulty !== null && consensusDifficulty !== undefined ? Number(consensusDifficulty) : null,
       consensusDifficultyName,
       isBenchmark: Boolean(resolvedIsBenchmark),
+      qualityAverage: qualityAverage != null ? Number(qualityAverage) : null,
       comment: tick.comment || '',
       climbedAt: tick.climbedAt,
       frames,

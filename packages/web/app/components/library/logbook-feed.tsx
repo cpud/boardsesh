@@ -5,8 +5,6 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
-import MuiCard from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Chip from '@mui/material/Chip';
@@ -97,23 +95,14 @@ const SORT_FIELD_OPTIONS: { value: SortField; label: string }[] = [
 
 function LogbookItemSkeleton() {
   return (
-    <MuiCard className={feedStyles.feedItem}>
-      <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
-        <Box sx={{ display: 'flex', gap: 1.5 }}>
-          <Skeleton variant="rounded" width={64} height={64} animation="wave" sx={{ flexShrink: 0 }} />
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1, minWidth: 0 }}>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <Skeleton variant="rounded" width={80} height={24} animation="wave" />
-              <Skeleton variant="rounded" width={100} height={16} animation="wave" />
-            </Box>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <Skeleton variant="rounded" width={40} height={24} animation="wave" />
-              <Skeleton variant="rounded" width={48} height={24} animation="wave" />
-            </Box>
-          </Box>
-        </Box>
-      </CardContent>
-    </MuiCard>
+    <Box sx={{ display: 'flex', alignItems: 'center', p: 1, gap: 1.5, borderBottom: '1px solid var(--neutral-200)' }}>
+      <Skeleton variant="rounded" width={64} height={64} animation="wave" sx={{ flexShrink: 0 }} />
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, flex: 1, minWidth: 0 }}>
+        <Skeleton variant="rounded" width={120} height={18} animation="wave" />
+        <Skeleton variant="rounded" width={180} height={14} animation="wave" />
+      </Box>
+      <Skeleton variant="rounded" width={40} height={18} animation="wave" sx={{ flexShrink: 0 }} />
+    </Box>
   );
 }
 
@@ -183,6 +172,7 @@ export default function LogbookFeed() {
   const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(null);
   const [sortAnchorEl, setSortAnchorEl] = useState<HTMLElement | null>(null);
   const [boardAnchorEl, setBoardAnchorEl] = useState<HTMLElement | null>(null);
+  const [editingItemUuid, setEditingItemUuid] = useState<string | null>(null);
   const [layoutSelections, setLayoutSelections] = useState<Record<Exclude<BoardFilter, 'all'>, number[]>>({
     ...ALL_LAYOUT_SELECTIONS,
   });
@@ -414,16 +404,88 @@ export default function LogbookFeed() {
     isFetching: isFetchingNextPage,
   });
 
-  const handleDelete = useCallback(async (uuid: string) => {
-    try {
+  const pendingDeleteRef = useRef<{ uuid: string; item: AscentFeedItem; timerId: ReturnType<typeof setTimeout> } | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pendingDeleteRef.current) {
+        clearTimeout(pendingDeleteRef.current.timerId);
+      }
+    };
+  }, []);
+
+  const handleDelete = useCallback((uuid: string) => {
+    // If there's already a pending delete for a different item, flush it immediately
+    if (pendingDeleteRef.current && pendingDeleteRef.current.uuid !== uuid) {
+      const { uuid: prevUuid, timerId } = pendingDeleteRef.current;
+      clearTimeout(timerId);
+      pendingDeleteRef.current = null;
       const client = createGraphQLHttpClient(token ?? null);
-      await client.request<{ deleteTick: boolean }, DeleteTickMutationVariables>(DELETE_TICK, { uuid });
-      queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
-      showMessage('Tick deleted', 'success');
-    } catch {
-      showMessage('Failed to delete tick', 'error');
+      client.request<{ deleteTick: boolean }, DeleteTickMutationVariables>(DELETE_TICK, { uuid: prevUuid }).catch(() => {
+        showMessage('Failed to delete tick', 'error');
+      });
     }
-  }, [token, queryClient, showMessage]);
+
+    // Find and capture the item before removing it from the cache
+    const currentData = queryClient.getQueryData<{ pages: { items: AscentFeedItem[]; hasMore: boolean }[] }>(
+      ['logbookFeed', userId, boardTypeParam ?? 'all', selectedLayoutIds?.join(',') ?? 'all-layouts', climbNameParam ?? '', JSON.stringify(activeFilters), JSON.stringify(sortParams)]
+    );
+    const itemToDelete = currentData?.pages.flatMap((p) => p.items).find((i) => i.uuid === uuid);
+
+    // Optimistically remove the item from the cache
+    queryClient.setQueryData(
+      ['logbookFeed', userId, boardTypeParam ?? 'all', selectedLayoutIds?.join(',') ?? 'all-layouts', climbNameParam ?? '', JSON.stringify(activeFilters), JSON.stringify(sortParams)],
+      (old: { pages: { items: AscentFeedItem[]; hasMore: boolean }[]; pageParams: number[] } | undefined) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            items: page.items.filter((i) => i.uuid !== uuid),
+          })),
+        };
+      }
+    );
+
+    const timerId = setTimeout(() => {
+      pendingDeleteRef.current = null;
+      const client = createGraphQLHttpClient(token ?? null);
+      client
+        .request<{ deleteTick: boolean }, DeleteTickMutationVariables>(DELETE_TICK, { uuid })
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
+        })
+        .catch(() => {
+          // Restore the item on failure
+          if (itemToDelete) {
+            queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
+          }
+          showMessage('Failed to delete tick', 'error');
+        });
+    }, 5000);
+
+    pendingDeleteRef.current = { uuid, item: itemToDelete ?? ({ uuid } as AscentFeedItem), timerId };
+
+    showMessage('Tick deleted', 'success', {
+      label: 'Undo',
+      onClick: () => {
+        if (pendingDeleteRef.current?.uuid === uuid) {
+          clearTimeout(pendingDeleteRef.current.timerId);
+          pendingDeleteRef.current = null;
+          // Restore the item by refreshing from server
+          queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
+        }
+      },
+    }, 5000);
+  }, [token, queryClient, showMessage, userId, boardTypeParam, selectedLayoutIds, climbNameParam, activeFilters, sortParams]);
+
+  const handleEdit = useCallback((item: AscentFeedItem) => {
+    setEditingItemUuid(item.uuid);
+  }, []);
+
+  const handleCloseEdit = useCallback(() => {
+    setEditingItemUuid(null);
+  }, []);
 
   const showBoardType = boardFilter === 'all';
   const hasFilters = boardFilter !== 'all' || debouncedSearch.length > 0 || !isDefaultFilters(filters);
@@ -577,13 +639,16 @@ export default function LogbookFeed() {
     <>
       {filterBar}
       <div className={feedStyles.feed}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           {items.map((item) => (
             <LogbookFeedItem
               key={item.uuid}
               item={item}
               showBoardType={showBoardType}
+              isEditing={editingItemUuid === item.uuid}
+              onEdit={handleEdit}
               onDelete={handleDelete}
+              onCancelEdit={handleCloseEdit}
               allowInstagramPosting={enableInstagramPosting}
               allowInstagramLinking={enableInstagramLinking && !enableInstagramPosting}
             />

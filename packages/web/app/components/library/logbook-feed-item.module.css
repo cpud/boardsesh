@@ -1,0 +1,220 @@
+/* Logbook feed item — standalone component with swipe gestures */
+
+.container {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--neutral-200);
+}
+
+/* Swipe action layers */
+.leftActionLayer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 16px;
+  gap: 8px;
+  background-color: var(--color-primary);
+  opacity: 0;
+  will-change: opacity;
+  transition: background-color 120ms ease-out;
+}
+
+/* Delete-ready state: swipe has crossed the long-right threshold */
+.leftActionLayer.deleteReady {
+  background-color: var(--color-error, #B8524C);
+}
+
+.leftActionLayer.deleteReady .swipeIcon {
+  transform: scale(1.2);
+}
+
+.leftActionLayer.deleteReady .deleteLabel {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* "Delete" label — hidden by default, slides in when deleteReady */
+.deleteLabel {
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 120ms ease-out, transform 120ms ease-out;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.rightActionLayer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 16px;
+  background-color: var(--color-success);
+  opacity: 0;
+  will-change: opacity;
+}
+
+/* Swipe action icons */
+.swipeIcon {
+  color: white;
+  font-size: 20px;
+  transition: transform 120ms ease-out;
+}
+
+/* Swipeable wrapper — covers entire item so swipe gesture works everywhere */
+.swipeableContent {
+  position: relative;
+  background-color: var(--semantic-surface, #fff);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Main content row */
+.content {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 8px;
+  gap: 12px;
+}
+
+/* Thumbnail — 50% larger than the standard 64px via scale transform.
+   The wrapper reserves 96px of space while the inner 64px content scales up to fill it. */
+.thumbnail {
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thumbnail > :first-child {
+  transform: scale(1.5);
+  transform-origin: center center;
+}
+
+/* Center section between thumbnail and menu */
+.center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Grade row — horizontal bar of stat cells */
+.gradeRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 4px;
+  padding-bottom: 8px;
+}
+
+/* Uniform stat cell — consistent height and alignment */
+.statCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 28px;
+}
+
+/* Fixed-width grade cell so 2-char and 3-char grades take the same space */
+.gradeCell {
+  composes: statCell;
+  min-width: 32px;
+}
+
+.statValue {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 8px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  opacity: 0.55;
+  white-space: nowrap;
+  text-transform: lowercase;
+}
+
+.dimmed {
+  opacity: 0.4;
+}
+
+/* Menu button */
+.menuButton {
+  flex-shrink: 0;
+  color: var(--neutral-400);
+}
+
+/* Edit mode controls wrapper */
+.editControls {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Status badge button — 44x44 touch target in edit mode */
+.statusBadgeButton {
+  bottom: 6px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Badge edit label */
+.badgeEditLabel {
+  margin-top: 2px;
+  width: 18px;
+  text-align: center;
+}
+
+/* Picker panel — animated expand/collapse */
+.pickerPanel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms ease-out;
+}
+
+.pickerPanelExpanded {
+  grid-template-rows: 1fr;
+}
+
+.pickerPanelContent {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Compact star picker — smaller items to fit on one row */
+.compactStarPicker button {
+  min-width: 28px;
+  min-height: 28px;
+  padding: 2px 4px;
+}
+
+.compactStarPicker svg {
+  font-size: 18px !important;
+}
+
+/* Full-width comment row below the content row */
+.commentRow {
+  padding: 0 8px 8px;
+}

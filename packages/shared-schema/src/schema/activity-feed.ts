@@ -37,6 +37,8 @@ export const activityFeedTypeDefs = /* GraphQL */ `
     consensusDifficulty: Int
     "Human-readable consensus difficulty name"
     consensusDifficultyName: String
+    "Average quality rating from all users"
+    qualityAverage: Float
     "Whether this is a benchmark climb"
     isBenchmark: Boolean!
     "Comment"

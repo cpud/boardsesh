@@ -1,37 +1,63 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import MuiCard from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import MuiTypography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import Rating from '@mui/material/Rating';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MuiMenuItem from '@mui/material/MenuItem';
+import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
+import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import ButtonBase from '@mui/material/ButtonBase';
+import Popover from '@mui/material/Popover';
 import ElectricBoltOutlined from '@mui/icons-material/ElectricBoltOutlined';
-import CancelOutlined from '@mui/icons-material/CancelOutlined';
-import LocationOnOutlined from '@mui/icons-material/LocationOnOutlined';
-import MoreVertOutlined from '@mui/icons-material/MoreVertOutlined';
+import MoreHorizOutlined from '@mui/icons-material/MoreHorizOutlined';
+import EditOutlined from '@mui/icons-material/EditOutlined';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
+import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import CheckOutlined from '@mui/icons-material/CheckOutlined';
+import SaveOutlined from '@mui/icons-material/SaveOutlined';
+import CloseOutlined from '@mui/icons-material/CloseOutlined';
+import CircularProgress from '@mui/material/CircularProgress';
 import InstagramIcon from '@mui/icons-material/Instagram';
+import LinkOutlined from '@mui/icons-material/LinkOutlined';
+import dynamic from 'next/dynamic';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import AscentThumbnail from '@/app/components/activity-feed/ascent-thumbnail';
-import AttachBetaLinkDialog from '@/app/components/beta-videos/attach-beta-link-dialog';
-import PostToInstagramDialog from './post-to-instagram-dialog';
 import type { AscentFeedItem } from '@/app/lib/graphql/operations/ticks';
+import type { BoardDetails, BoardName } from '@/app/lib/types';
+import { AscentStatusIcon } from '@/app/components/ascent-status/ascent-status-icon';
+import { ClimbActions } from '@/app/components/climb-actions';
+import DrawerClimbHeader from '@/app/components/climb-card/drawer-climb-header';
+import { useSwipeActions } from '@/app/hooks/use-swipe-actions';
+import { useDrawerDragResize } from '@/app/hooks/use-drawer-drag-resize';
+import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
+import { useGradeFormat } from '@/app/hooks/use-grade-format';
+import { useUpdateTick } from '@/app/hooks/use-update-tick';
 import { themeTokens } from '@/app/theme/theme-config';
-import styles from '@/app/components/activity-feed/ascents-feed.module.css';
+import { getDefaultBoardConfig } from '@/app/lib/default-board-configs';
+import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
+import { getExcludedClimbActions } from '@/app/lib/climb-action-utils';
+import { TENSION_KILTER_GRADES, getGradesForBoard } from '@/app/lib/board-data';
+import AscentThumbnail from '@/app/components/activity-feed/ascent-thumbnail';
+import {
+  InlineStarPicker,
+  InlineGradePicker,
+  InlineTriesPicker,
+  type ExpandedControl,
+} from '../logbook/tick-controls';
+import { ascentFeedItemToClimb } from './ascent-to-climb';
+import ascentStyles from '@/app/components/climb-card/ascent-status.module.css';
+import drawerCss from '@/app/components/swipeable-drawer/swipeable-drawer.module.css';
+import styles from './logbook-feed-item.module.css';
+
+const SwipeableDrawer = dynamic(() => import('../swipeable-drawer/swipeable-drawer'), { ssr: false });
+const PostToInstagramDialog = dynamic(() => import('./post-to-instagram-dialog'), { ssr: false });
 
 dayjs.extend(relativeTime);
 
-// Layout name mapping (same as ascents-feed.tsx)
+// Layout name mapping
 const layoutNames: Record<string, string> = {
   'kilter-1': 'Kilter Original',
   'kilter-8': 'Kilter Homewall',
@@ -51,234 +77,741 @@ const getLayoutDisplayName = (boardType: string, layoutId: number | null): strin
   return layoutNames[key] || boardType.charAt(0).toUpperCase() + boardType.slice(1);
 };
 
-const getStatusDisplay = (status: AscentFeedItem['status'], attemptCount: number) => {
-  switch (status) {
-    case 'flash':
-      return { label: 'Flashed', icon: <ElectricBoltOutlined />, color: 'gold' as const };
-    case 'send':
-      return { label: attemptCount > 1 ? `Sent in ${attemptCount}` : 'Sent', icon: <CheckCircleOutlined />, color: 'green' as const };
-    case 'attempt':
-      return { label: attemptCount === 1 ? '1 attempt' : `${attemptCount} attempts`, icon: <CancelOutlined />, color: 'default' as const };
-  }
-};
+// Swipe thresholds
+const SWIPE_THRESHOLD = 60;
+const LONG_SWIPE_THRESHOLD = 150;
+const MAX_SWIPE = 180;
+const LEFT_ACTION_WIDTH = 180;
+const RIGHT_ACTION_WIDTH = 120;
 
-const getCompactStatusDisplay = (status: AscentFeedItem['status'], attemptCount: number) => {
-  switch (status) {
-    case 'flash':
-      return { label: '', icon: <ElectricBoltOutlined />, color: 'gold' as const };
-    case 'send':
-      return { label: `${attemptCount}`, icon: <CheckCircleOutlined />, color: 'green' as const };
-    case 'attempt':
-      return { label: `${attemptCount}`, icon: <CancelOutlined />, color: 'default' as const };
-  }
-};
+const commentBoxSx = {
+  fontSize: themeTokens.typography.fontSize.xs,
+  whiteSpace: 'pre-wrap',
+  overflowWrap: 'anywhere',
+  wordBreak: 'break-word',
+  color: 'text.primary',
+  backgroundColor: 'var(--neutral-100)',
+  borderRadius: `${themeTokens.borderRadius.sm}px`,
+  padding: `${themeTokens.spacing[1]}px ${themeTokens.spacing[2]}px`,
+  marginTop: `${themeTokens.spacing[1]}px`,
+} as const;
 
-const getCompactRelativeTime = (isoDate: string) =>
-  dayjs(isoDate)
-    .fromNow()
-    .replace(/\ba year ago\b/i, '1y ago')
-    .replace(/\byears ago\b/i, 'y ago')
-    .replace(/\ba month ago\b/i, '1mo ago')
-    .replace(/\bmonths ago\b/i, 'mo ago')
-    .replace(/\ba day ago\b/i, '1d ago')
-    .replace(/\bdays ago\b/i, 'd ago')
-    .replace(/\ban hour ago\b/i, '1h ago')
-    .replace(/\bhours ago\b/i, 'h ago')
-    .replace(/\ba minute ago\b/i, '1m ago')
-    .replace(/\bminutes ago\b/i, 'm ago')
-    .replace(/\ba second ago\b/i, '1s ago')
-    .replace(/\bseconds ago\b/i, 's ago');
+const nameSx = {
+  fontSize: themeTokens.typography.fontSize.xl,
+  fontWeight: themeTokens.typography.fontWeight.bold,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+} as const;
+
+const subtitleSx = {
+  fontSize: themeTokens.typography.fontSize.xs,
+  fontWeight: themeTokens.typography.fontWeight.normal,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+} as const;
+
+const actionsDrawerStyles = {
+  wrapper: {
+    width: '100%',
+    touchAction: 'pan-y' as const,
+    transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  },
+  body: { padding: `${themeTokens.spacing[2]}px 0` },
+  header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
+} as const;
+
+// --- Sub-components ---
+
+function LogbookGradeRow({
+  consensusDifficultyName,
+  qualityAverage,
+  difficultyName,
+  quality,
+  attemptCount,
+  isEditing,
+  editQuality,
+  editDifficulty,
+  editAttemptCount,
+  expandedControl,
+  onExpandControl,
+  gradeButtonRef,
+  triesButtonRef,
+}: {
+  consensusDifficultyName: string | null;
+  qualityAverage: number | null;
+  difficultyName: string | null;
+  quality: number | null;
+  attemptCount: number;
+  isEditing?: boolean;
+  editQuality?: number | null;
+  editDifficulty?: number | undefined;
+  editAttemptCount?: number;
+  expandedControl?: ExpandedControl;
+  onExpandControl?: (control: ExpandedControl) => void;
+  gradeButtonRef?: React.RefObject<HTMLButtonElement | null>;
+  triesButtonRef?: React.RefObject<HTMLButtonElement | null>;
+}) {
+  const isDark = useIsDarkMode();
+  const { formatGrade, getGradeColor } = useGradeFormat();
+
+  const consensusFormatted = consensusDifficultyName ? formatGrade(consensusDifficultyName) : null;
+  const consensusColor = consensusDifficultyName ? getGradeColor(consensusDifficultyName, isDark) : undefined;
+  const consensusLabel = consensusFormatted ?? consensusDifficultyName ?? '\u2014';
+  const consensusStarsLabel = qualityAverage != null ? Math.round(qualityAverage).toString() : '\u2014';
+
+  // For non-editing mode, use item values directly
+  const userFormatted = difficultyName ? formatGrade(difficultyName) : null;
+  const userColor = difficultyName ? getGradeColor(difficultyName, isDark) : undefined;
+  const userLabel = userFormatted ?? (difficultyName || '\u2014');
+
+  // For editing mode, look up the editDifficulty in TENSION_KILTER_GRADES
+  const editGradeName = useMemo(() => {
+    if (!isEditing || editDifficulty === undefined) return undefined;
+    const grade = TENSION_KILTER_GRADES.find((g) => g.difficulty_id === editDifficulty);
+    return grade?.difficulty_name;
+  }, [isEditing, editDifficulty]);
+
+  const editGradeFormatted = editGradeName ? formatGrade(editGradeName) : null;
+  const editGradeColor = editGradeName ? getGradeColor(editGradeName, isDark) : undefined;
+  const editGradeLabel = editGradeFormatted ?? (editGradeName || '\u2014');
+
+  const handleToggle = useCallback((control: ExpandedControl) => {
+    if (!onExpandControl) return;
+    onExpandControl(expandedControl === control ? null : control);
+  }, [onExpandControl, expandedControl]);
+
+  return (
+    <div className={styles.gradeRow}>
+      {/* Consensus stars */}
+      <div className={`${styles.statCell} ${isEditing ? styles.dimmed : ''}`}>
+        <span className={styles.statValue} style={{ color: themeTokens.colors.amber }}>{`\u2605${consensusStarsLabel}`}</span>
+        <span className={styles.statLabel}>stars</span>
+      </div>
+      {/* User stars */}
+      {isEditing ? (
+        <ButtonBase
+          onClick={() => handleToggle('stars')}
+          aria-label={`Quality: ${editQuality ?? 'none'}`}
+          className={styles.statCell}
+          disableRipple={false}
+        >
+          <span className={styles.statValue} style={{ color: themeTokens.colors.amber }}>{`\u2605${editQuality ?? '\u2014'}`}</span>
+          <span className={styles.statLabel}>user</span>
+        </ButtonBase>
+      ) : (
+        <div className={styles.statCell}>
+          <span className={styles.statValue} style={{ color: themeTokens.colors.amber }}>{`\u2605${quality ?? '\u2014'}`}</span>
+          <span className={styles.statLabel}>user</span>
+        </div>
+      )}
+      {/* Consensus grade */}
+      <div className={`${styles.gradeCell} ${isEditing ? styles.dimmed : ''}`}>
+        <span className={styles.statValue} style={{ color: consensusColor }}>{consensusLabel}</span>
+        <span className={styles.statLabel}>grade</span>
+      </div>
+      {/* User grade */}
+      {isEditing ? (
+        <ButtonBase
+          ref={gradeButtonRef}
+          onClick={() => handleToggle('grade')}
+          aria-label="Select logged grade"
+          className={styles.gradeCell}
+          disableRipple={false}
+        >
+          <span className={styles.statValue} style={{ color: editGradeColor }}>{editGradeLabel}</span>
+          <span className={styles.statLabel}>user</span>
+        </ButtonBase>
+      ) : (
+        <div className={styles.gradeCell}>
+          <span className={styles.statValue} style={{ color: userColor }}>{userLabel}</span>
+          <span className={styles.statLabel}>user</span>
+        </div>
+      )}
+      {/* Tries */}
+      {isEditing ? (
+        <ButtonBase
+          ref={triesButtonRef}
+          onClick={() => handleToggle('tries')}
+          aria-label={`Tries: ${editAttemptCount}`}
+          className={styles.statCell}
+          disableRipple={false}
+        >
+          <span className={styles.statValue}>{editAttemptCount}</span>
+          <span className={styles.statLabel}>tries</span>
+        </ButtonBase>
+      ) : (
+        <div className={styles.statCell}>
+          <span className={styles.statValue}>{attemptCount}</span>
+          <span className={styles.statLabel}>tries</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- Main component ---
 
 interface LogbookFeedItemProps {
   item: AscentFeedItem;
   showBoardType?: boolean;
+  isEditing?: boolean;
+  onEdit?: (item: AscentFeedItem) => void;
   onDelete?: (uuid: string) => void;
+  onCancelEdit?: () => void;
+  /** When true, show "Post to Instagram" option in the actions menu. */
   allowInstagramPosting?: boolean;
+  /** When true, show "Link Instagram post" option in the actions menu. */
   allowInstagramLinking?: boolean;
 }
 
-const LogbookFeedItem: React.FC<LogbookFeedItemProps> = ({
+const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
   item,
   showBoardType,
+  isEditing,
+  onEdit,
   onDelete,
-  allowInstagramPosting = false,
-  allowInstagramLinking = false,
+  onCancelEdit,
+  allowInstagramPosting,
+  allowInstagramLinking,
 }) => {
-  const isMobile = useMediaQuery('(max-width: 768px)', { noSsr: true });
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [postDialogOpen, setPostDialogOpen] = useState(false);
-  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
-  const menuOpen = Boolean(anchorEl);
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
+  const [instagramDialogOpen, setInstagramDialogOpen] = useState(false);
 
-  const handleMenuOpen = useCallback((e: React.MouseEvent<HTMLElement>) => {
+  // --- Edit state ---
+  const { mutateAsync: updateTickAsync, isPending: isSaving } = useUpdateTick();
+  const grades = useMemo(() => getGradesForBoard(item.boardType as BoardName), [item.boardType]);
+
+  const [editStatus, setEditStatus] = useState<'flash' | 'send' | 'attempt'>('send');
+  const [editComment, setEditComment] = useState('');
+  const [commentFocused, setCommentFocused] = useState(false);
+  const [editQuality, setEditQuality] = useState<number | null>(null);
+  const [editDifficulty, setEditDifficulty] = useState<number | undefined>(undefined);
+  const [editAttemptCount, setEditAttemptCount] = useState(1);
+  const [expandedControl, setExpandedControl] = useState<ExpandedControl>(null);
+  const [lastExpandedControl, setLastExpandedControl] = useState<ExpandedControl>(null);
+  const [pickerVisible, setPickerVisible] = useState(false);
+  const [statusAnchorEl, setStatusAnchorEl] = useState<HTMLElement | null>(null);
+
+  const gradeButtonRef = useRef<HTMLButtonElement>(null);
+  const triesButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Initialize edit state from item only when transitioning into edit mode
+  const wasEditingRef = useRef(false);
+  useEffect(() => {
+    if (isEditing && !wasEditingRef.current) {
+      setEditStatus(item.status);
+      setEditComment(item.comment);
+      setCommentFocused(false);
+      setEditQuality(item.quality ?? null);
+      setEditDifficulty(item.difficulty ?? undefined);
+      setEditAttemptCount(item.attemptCount);
+      setExpandedControl(null);
+      setLastExpandedControl(null);
+      setPickerVisible(false);
+      setStatusAnchorEl(null);
+    }
+    wasEditingRef.current = !!isEditing;
+  }, [isEditing, item]);
+
+  // Track picker visibility for collapse animation
+  useEffect(() => {
+    if (expandedControl) {
+      setLastExpandedControl(expandedControl);
+      setPickerVisible(true);
+      return;
+    }
+
+    const timer = window.setTimeout(() => setPickerVisible(false), 200);
+    return () => window.clearTimeout(timer);
+  }, [expandedControl]);
+
+  const renderedControl = expandedControl ?? (pickerVisible ? lastExpandedControl : null);
+  const focusGradeId = editDifficulty ?? item.consensusDifficulty ?? undefined;
+
+  // Edit handlers
+  const handleStarSelect = useCallback((value: number | null) => {
+    setEditQuality(value);
+    setExpandedControl(null);
+  }, []);
+
+  const handleGradeSelect = useCallback((value: number | undefined) => {
+    setEditDifficulty(value);
+    setExpandedControl(null);
+  }, []);
+
+  const handleTriesSelect = useCallback((value: number) => {
+    setEditAttemptCount(value);
+    setExpandedControl(null);
+  }, []);
+
+  const handleCommentFocus = useCallback(() => {
+    setExpandedControl(null);
+    setCommentFocused(true);
+  }, []);
+
+  const handleCommentBlur = useCallback(() => {
+    setCommentFocused(false);
+  }, []);
+
+  const handleSave = useCallback(async () => {
+    try {
+      await updateTickAsync({
+        uuid: item.uuid,
+        input: {
+          status: editStatus,
+          attemptCount: editAttemptCount,
+          quality: editStatus === 'attempt' ? null : (editQuality ?? null),
+          difficulty: editDifficulty ?? null,
+          comment: editComment,
+        },
+      });
+      onCancelEdit?.();
+    } catch {
+      // The mutation hook surfaces the error via snackbar; keep edit open.
+    }
+  }, [editStatus, editAttemptCount, editComment, editDifficulty, editQuality, item.uuid, onCancelEdit, updateTickAsync]);
+
+  // Status picker popover
+  const handleStatusBadgeClick = useCallback((e: React.MouseEvent<HTMLElement>) => {
     e.stopPropagation();
-    setAnchorEl(e.currentTarget);
+    setStatusAnchorEl(e.currentTarget);
   }, []);
 
-  const handleMenuClose = useCallback(() => {
-    setAnchorEl(null);
+  const handleStatusClose = useCallback(() => {
+    setStatusAnchorEl(null);
   }, []);
 
-  const handleDelete = useCallback(() => {
-    handleMenuClose();
+  const handleStatusSelect = useCallback((status: 'flash' | 'send' | 'attempt') => {
+    setEditStatus(status);
+    setStatusAnchorEl(null);
+  }, []);
+
+  // Map ascent to Climb for ClimbActions
+  const climb = useMemo(() => ascentFeedItemToClimb(item), [item]);
+
+  // Build BoardDetails for ClimbActions (same pattern as AscentThumbnail)
+  const boardDetails = useMemo<BoardDetails | null>(() => {
+    if (!item.layoutId) return null;
+    const boardName = item.boardType as BoardName;
+    const config = getDefaultBoardConfig(boardName, item.layoutId);
+    if (!config) return null;
+    try {
+      return getBoardDetailsForBoard({
+        board_name: boardName,
+        layout_id: item.layoutId,
+        size_id: config.sizeId,
+        set_ids: config.setIds,
+      });
+    } catch {
+      return null;
+    }
+  }, [item.boardType, item.layoutId]);
+
+  const excludeActions = useMemo(
+    () => boardDetails ? getExcludedClimbActions(boardDetails.board_name, 'list') : [],
+    [boardDetails],
+  );
+
+  // Subtitle: "2h ago . 40deg . Kilter Original"
+  const subtitle = useMemo(() => {
+    const parts: string[] = [];
+    parts.push(dayjs(item.climbedAt).fromNow());
+    parts.push(`${item.angle}\u00B0`);
+    if (showBoardType) {
+      parts.push(getLayoutDisplayName(item.boardType, item.layoutId));
+    }
+    return parts.join(' \u00b7 ');
+  }, [item.climbedAt, item.angle, showBoardType, item.boardType, item.layoutId]);
+
+  // --- Swipe actions ---
+  const handleSwipeLeft = useCallback(() => {
+    onEdit?.(item);
+  }, [onEdit, item]);
+
+  const handleSwipeRightLong = useCallback(() => {
     onDelete?.(item.uuid);
-  }, [onDelete, item.uuid, handleMenuClose]);
+  }, [onDelete, item.uuid]);
 
-  const handlePostToInstagram = useCallback(() => {
-    handleMenuClose();
-    setPostDialogOpen(true);
-  }, [handleMenuClose]);
+  const noop = useCallback(() => {}, []);
 
-  const handleLinkInstagram = useCallback(() => {
-    handleMenuClose();
-    setLinkDialogOpen(true);
-  }, [handleMenuClose]);
+  // Separate ref for the left action layer DOM element so we can manipulate it directly
+  const leftLayerElRef = useRef<HTMLDivElement | null>(null);
 
-  const timeAgo = isMobile ? getCompactRelativeTime(item.climbedAt) : dayjs(item.climbedAt).fromNow();
-  const statusDisplay = isMobile
-    ? getCompactStatusDisplay(item.status, item.attemptCount)
-    : getStatusDisplay(item.status, item.attemptCount);
-  const boardDisplay = getLayoutDisplayName(item.boardType, item.layoutId);
-  const hasSuccess = item.status === 'flash' || item.status === 'send';
-  const canPostToInstagram = allowInstagramPosting && item.boardType === 'kilter';
-  const canLinkInstagram = allowInstagramLinking && hasSuccess;
+  const handleSwipeZoneChange = useCallback((zone: import('@/app/hooks/use-swipe-actions').SwipeZone) => {
+    const el = leftLayerElRef.current;
+    if (!el) return;
+    if (zone === 'right-long') {
+      el.classList.add(styles.deleteReady);
+    } else {
+      el.classList.remove(styles.deleteReady);
+    }
+  }, []);
+
+  const { swipeHandlers, contentRef, leftActionRef, rightActionRef } = useSwipeActions({
+    onSwipeLeft: handleSwipeLeft,
+    onSwipeRight: noop,
+    onSwipeRightLong: handleSwipeRightLong,
+    swipeThreshold: SWIPE_THRESHOLD,
+    longSwipeRightThreshold: LONG_SWIPE_THRESHOLD,
+    maxSwipe: MAX_SWIPE,
+    maxSwipeLeft: RIGHT_ACTION_WIDTH,
+    maxSwipeRight: LEFT_ACTION_WIDTH,
+    disabled: isEditing,
+    onSwipeZoneChange: handleSwipeZoneChange,
+  });
+
+  // Combined ref for the left action layer: hook's leftActionRef + our direct manipulation ref
+  const leftActionCombinedRef = useCallback((node: HTMLDivElement | null) => {
+    leftLayerElRef.current = node;
+    leftActionRef(node);
+  }, [leftActionRef]);
+
+  // Extract stable ref from swipeHandlers to avoid re-creating the callback on every render
+  const swipeRef = swipeHandlers.ref;
+  const contentCombinedRef = useCallback((node: HTMLDivElement | null) => {
+    swipeRef(node);
+    contentRef(node);
+  }, [swipeRef, contentRef]);
+
+  // --- Actions drawer ---
+  const handleOpenActions = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsActionsOpen(true);
+  }, []);
+
+  const handleCloseActions = useCallback(() => {
+    setIsActionsOpen(false);
+  }, []);
+
+  const { paperRef: actionsPaperRef, dragHandlers: actionsDragHandlers } = useDrawerDragResize({
+    open: isActionsOpen,
+    onClose: handleCloseActions,
+  });
+
+  const handleDrawerEdit = useCallback(() => {
+    handleCloseActions();
+    onEdit?.(item);
+  }, [handleCloseActions, onEdit, item]);
+
+  const handleDrawerDelete = useCallback(() => {
+    handleCloseActions();
+    onDelete?.(item.uuid);
+  }, [handleCloseActions, onDelete, item.uuid]);
+
+  const handleOpenInstagram = useCallback(() => {
+    handleCloseActions();
+    setInstagramDialogOpen(true);
+  }, [handleCloseActions]);
+
+  const handleCloseInstagram = useCallback(() => {
+    setInstagramDialogOpen(false);
+  }, []);
 
   return (
-    <MuiCard className={styles.feedItem}>
-      <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
-        <Box sx={{ display: 'flex', gap: 1.5 }}>
-          {item.frames && item.layoutId && (
-            <AscentThumbnail
-              boardType={item.boardType}
-              layoutId={item.layoutId}
-              angle={item.angle}
-              climbUuid={item.climbUuid}
-              climbName={item.climbName}
-              frames={item.frames}
-              isMirror={item.isMirror}
-            />
-          )}
+    <>
+      <div className={styles.container}>
+        {/* Left action layer — Delete (revealed on long swipe right) */}
+        <div ref={leftActionCombinedRef} className={styles.leftActionLayer}>
+          <DeleteOutlined className={styles.swipeIcon} />
+          <span className={styles.deleteLabel}>Delete</span>
+        </div>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1, minWidth: 0 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 0.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, minWidth: 0 }}>
-                <Chip
-                  icon={statusDisplay.icon as React.ReactElement}
-                  label={statusDisplay.label}
-                  size="small"
-                  color={statusDisplay.color === 'green' ? 'success' : undefined}
-                  sx={{
-                    ...(statusDisplay.color === 'gold'
-                      ? { bgcolor: themeTokens.colors.amber, color: 'var(--neutral-900)' }
-                      : {}),
-                    ...(isMobile
-                      ? {
-                          minWidth: 0,
-                          '& .MuiChip-label': {
-                            px: statusDisplay.label ? 0.75 : 0.25,
-                          },
-                          '& .MuiChip-icon': {
-                            mx: statusDisplay.label ? 0 : '4px',
-                          },
-                        }
-                      : {}),
-                  }}
-                  className={styles.statusTag}
+        {/* Right action layer — Edit (revealed on swipe left) */}
+        <div ref={rightActionRef} className={styles.rightActionLayer}>
+          <EditOutlined className={styles.swipeIcon} />
+        </div>
+
+        {/* Swipeable wrapper — covers entire item including comment row */}
+        <div
+          {...swipeHandlers}
+          ref={contentCombinedRef}
+          className={styles.swipeableContent}
+          data-swipe-content=""
+        >
+        <div className={styles.content}>
+          {/* Thumbnail with ascent status badge */}
+          <div className={styles.thumbnail}>
+            {item.frames && item.layoutId && (
+              <AscentThumbnail
+                boardType={item.boardType}
+                layoutId={item.layoutId}
+                angle={item.angle}
+                climbUuid={item.climbUuid}
+                climbName={item.climbName}
+                frames={item.frames}
+                isMirror={item.isMirror}
+              />
+            )}
+            {isEditing ? (
+              <ButtonBase
+                className={`${ascentStyles.badge} ${styles.statusBadgeButton}`}
+                onClick={handleStatusBadgeClick}
+                aria-label={`Change ascent status, currently ${editStatus}`}
+              >
+                <AscentStatusIcon
+                  status={editStatus}
+                  variant="badge"
+                  fontSize={12}
                 />
-                <MuiTypography variant="body2" component="span" fontWeight={600} className={styles.climbName}>
-                  {item.climbName}
-                </MuiTypography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, flexShrink: 0 }}>
-                <MuiTypography variant="body2" component="span" color="text.secondary" className={styles.timeAgo}>
-                  {timeAgo}
-                </MuiTypography>
-                {(canPostToInstagram || canLinkInstagram || onDelete) && (
-                  <>
-                    <IconButton size="small" onClick={handleMenuOpen} sx={{ ml: 0.25, p: 0.5 }} aria-label="Open climb actions">
-                      <MoreVertOutlined sx={{ fontSize: 18 }} />
-                    </IconButton>
-                    <Menu
-                      anchorEl={anchorEl}
-                      open={menuOpen}
-                      onClose={handleMenuClose}
-                      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                      transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                    >
-                      {canPostToInstagram && (
-                        <MuiMenuItem onClick={handlePostToInstagram}>
-                          <ListItemIcon><InstagramIcon fontSize="small" /></ListItemIcon>
-                          <ListItemText>Post to Instagram</ListItemText>
-                        </MuiMenuItem>
-                      )}
-                      {canLinkInstagram && (
-                        <MuiMenuItem onClick={handleLinkInstagram}>
-                          <ListItemIcon><InstagramIcon fontSize="small" /></ListItemIcon>
-                          <ListItemText>Link Instagram video</ListItemText>
-                        </MuiMenuItem>
-                      )}
-                      {onDelete && (
-                        <MuiMenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-                          <ListItemIcon><DeleteOutlined sx={{ color: 'error.main' }} /></ListItemIcon>
-                          <ListItemText>Delete</ListItemText>
-                        </MuiMenuItem>
-                      )}
-                    </Menu>
-                  </>
+                <span className={`${styles.statLabel} ${styles.badgeEditLabel}`}>edit</span>
+              </ButtonBase>
+            ) : (
+              <div className={ascentStyles.badge} style={{ bottom: 6 }}>
+                <AscentStatusIcon
+                  status={item.status}
+                  variant="badge"
+                  fontSize={12}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Center section */}
+          <div className={styles.center}>
+            <Typography variant="body2" component="div" sx={nameSx}>
+              {item.climbName}
+            </Typography>
+            <Typography variant="body2" component="div" color="text.secondary" sx={subtitleSx}>
+              {subtitle}
+            </Typography>
+
+            {/* Picker panel (edit mode only) */}
+            {isEditing && (
+              <div className={styles.pickerPanel + (expandedControl ? ' ' + styles.pickerPanelExpanded : '')}>
+                <div className={styles.pickerPanelContent}>
+                  {renderedControl === 'stars' && (
+                    <div className={styles.compactStarPicker}>
+                      <InlineStarPicker quality={editQuality} onSelect={handleStarSelect} />
+                    </div>
+                  )}
+                  {renderedControl === 'grade' && (
+                    <InlineGradePicker
+                      grades={grades}
+                      currentGradeId={editDifficulty}
+                      focusGradeId={focusGradeId}
+                      onSelect={handleGradeSelect}
+                      gradeButtonRef={gradeButtonRef}
+                    />
+                  )}
+                  {renderedControl === 'tries' && (
+                    <InlineTriesPicker
+                      attemptCount={editAttemptCount}
+                      onSelect={handleTriesSelect}
+                      triesButtonRef={triesButtonRef}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+
+            <LogbookGradeRow
+              consensusDifficultyName={item.consensusDifficultyName}
+              qualityAverage={item.qualityAverage}
+              difficultyName={item.difficultyName}
+              quality={item.quality}
+              attemptCount={item.attemptCount}
+              isEditing={isEditing}
+              editQuality={editQuality}
+              editDifficulty={editDifficulty}
+              editAttemptCount={editAttemptCount}
+              expandedControl={expandedControl}
+              onExpandControl={setExpandedControl}
+              gradeButtonRef={gradeButtonRef}
+              triesButtonRef={triesButtonRef}
+            />
+
+          </div>
+
+          {/* Menu / save-cancel buttons */}
+          {isEditing ? (
+            <div className={styles.editControls}>
+              <IconButton
+                size="small"
+                onClick={onCancelEdit}
+                aria-label="Cancel editing"
+                sx={{
+                  width: 44,
+                  height: 44,
+                  color: 'text.disabled',
+                }}
+              >
+                <CloseOutlined sx={{ fontSize: 18 }} />
+              </IconButton>
+              <IconButton
+                size="small"
+                onClick={handleSave}
+                disabled={isSaving}
+                aria-label="Save"
+                sx={{
+                  width: 44,
+                  height: 44,
+                  backgroundColor: themeTokens.colors.success,
+                  color: 'common.white',
+                  '&:hover': { backgroundColor: themeTokens.colors.success },
+                }}
+              >
+                {isSaving ? (
+                  <CircularProgress size={18} color="inherit" />
+                ) : (
+                  <SaveOutlined sx={{ fontSize: 18 }} />
                 )}
-              </Box>
-            </Box>
+              </IconButton>
+            </div>
+          ) : (
+            <IconButton
+              size="small"
+              aria-label="More actions"
+              onClick={handleOpenActions}
+              className={styles.menuButton}
+              disableRipple
+            >
+              <MoreHorizOutlined />
+            </IconButton>
+          )}
+        </div>
 
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
-              {item.consensusDifficultyName && (
-                <Chip label={`Consensus ${item.consensusDifficultyName}`} size="small" variant="outlined" />
-              )}
-              {item.difficultyName && (
-                <Chip label={`Logged ${item.difficultyName}`} size="small" color="primary" />
-              )}
-              <Chip icon={<LocationOnOutlined />} label={`${item.angle}\u00B0`} size="small" />
-              {showBoardType && (
-                <MuiTypography variant="body2" component="span" color="text.secondary" className={styles.boardType}>
-                  {boardDisplay}
-                </MuiTypography>
-              )}
-              {item.isMirror && <Chip label="Mirrored" size="small" color="secondary" />}
-              {item.isBenchmark && <Chip label="Benchmark" size="small" />}
-            </Box>
-
-            {(item.status === 'flash' || item.status === 'send') && item.quality && (
-              <Rating readOnly value={item.quality} max={5} className={styles.rating} />
-            )}
-
-            {item.setterUsername && (
-              <MuiTypography variant="body2" component="span" color="text.secondary" className={styles.setter}>
-                Set by {item.setterUsername}
-              </MuiTypography>
-            )}
-
-            {item.comment && (
-              <MuiTypography variant="body2" component="span" className={styles.comment}>
+        {/* Comment area — full width below the content row */}
+        {isEditing ? (
+          <div className={styles.commentRow}>
+            <TextField
+              fullWidth
+              size="small"
+              variant="outlined"
+              placeholder="Comment..."
+              multiline
+              minRows={1}
+              maxRows={commentFocused ? 4 : 1}
+              value={editComment}
+              onChange={(event) => setEditComment(event.target.value)}
+              onFocus={handleCommentFocus}
+              onBlur={handleCommentBlur}
+              slotProps={{
+                htmlInput: { maxLength: 2000, 'aria-label': 'Edit tick comment' },
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <ChatBubbleOutlineOutlined sx={{ fontSize: 16, opacity: 0.5 }} />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--input-bg)',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'var(--neutral-200)',
+                  },
+                },
+              }}
+            />
+          </div>
+        ) : (
+          item.comment && (
+            <div className={styles.commentRow}>
+              <Typography sx={commentBoxSx}>
                 {item.comment}
-              </MuiTypography>
-            )}
-          </Box>
-        </Box>
-      </CardContent>
-      <PostToInstagramDialog
-        open={postDialogOpen}
-        onClose={() => setPostDialogOpen(false)}
-        item={item}
-      />
-      <AttachBetaLinkDialog
-        open={linkDialogOpen}
-        onClose={() => setLinkDialogOpen(false)}
-        boardType={item.boardType}
-        climbUuid={item.climbUuid}
-        climbName={item.climbName}
-        angle={item.angle}
-      />
-    </MuiCard>
-  );
-};
+              </Typography>
+            </div>
+          )
+        )}
+        </div>
+      </div>
 
-export default React.memo(LogbookFeedItem);
+      {/* Status picker popover */}
+      <Popover
+        open={Boolean(statusAnchorEl)}
+        anchorEl={statusAnchorEl}
+        onClose={handleStatusClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <MenuItem onClick={() => handleStatusSelect('flash')}>
+          <ListItemIcon><ElectricBoltOutlined sx={{ color: themeTokens.colors.amber }} /></ListItemIcon>
+          <ListItemText>Flash</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => handleStatusSelect('send')}>
+          <ListItemIcon><CheckOutlined sx={{ color: themeTokens.colors.success }} /></ListItemIcon>
+          <ListItemText>Send</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => handleStatusSelect('attempt')}>
+          <ListItemIcon><CloseOutlined sx={{ color: themeTokens.colors.error }} /></ListItemIcon>
+          <ListItemText>Attempt</ListItemText>
+        </MenuItem>
+      </Popover>
+
+      {/* Actions drawer */}
+      {boardDetails && (
+        <SwipeableDrawer
+          title={
+            <div data-swipe-blocked="" {...actionsDragHandlers} className={drawerCss.dragHeaderWrapper}>
+              <DrawerClimbHeader climb={climb} boardDetails={boardDetails} />
+            </div>
+          }
+          placement="bottom"
+          height="60%"
+          paperRef={actionsPaperRef}
+          open={isActionsOpen}
+          onClose={handleCloseActions}
+          swipeEnabled={false}
+          styles={actionsDrawerStyles}
+        >
+          {/* Edit + Delete at top */}
+          {onEdit && (
+            <MenuItem onClick={handleDrawerEdit}>
+              <ListItemIcon><EditOutlined fontSize="small" /></ListItemIcon>
+              <ListItemText>Edit log</ListItemText>
+            </MenuItem>
+          )}
+          {onDelete && (
+            <MenuItem onClick={handleDrawerDelete} sx={{ color: 'error.main' }}>
+              <ListItemIcon><DeleteOutlined sx={{ color: 'error.main' }} fontSize="small" /></ListItemIcon>
+              <ListItemText>Delete log</ListItemText>
+            </MenuItem>
+          )}
+          {allowInstagramPosting && (
+            <MenuItem onClick={handleOpenInstagram}>
+              <ListItemIcon><InstagramIcon fontSize="small" /></ListItemIcon>
+              <ListItemText>Post to Instagram</ListItemText>
+            </MenuItem>
+          )}
+          {allowInstagramLinking && (
+            <MenuItem onClick={handleOpenInstagram}>
+              <ListItemIcon><LinkOutlined fontSize="small" /></ListItemIcon>
+              <ListItemText>Link Instagram post</ListItemText>
+            </MenuItem>
+          )}
+          {(onEdit || onDelete || allowInstagramPosting || allowInstagramLinking) && <Divider />}
+          {/* Standard climb actions */}
+          <ClimbActions
+            climb={climb}
+            boardDetails={boardDetails}
+            angle={item.angle}
+            viewMode="list"
+            exclude={excludeActions}
+            onActionComplete={handleCloseActions}
+          />
+        </SwipeableDrawer>
+      )}
+
+      {(allowInstagramPosting || allowInstagramLinking) && (
+        <PostToInstagramDialog
+          open={instagramDialogOpen}
+          onClose={handleCloseInstagram}
+          item={instagramDialogOpen ? {
+            boardType: item.boardType,
+            climbUuid: item.climbUuid,
+            climbName: item.climbName,
+            angle: item.angle,
+          } : null}
+        />
+      )}
+    </>
+  );
+});
+
+LogbookFeedItem.displayName = 'LogbookFeedItem';
+
+export default LogbookFeedItem;
