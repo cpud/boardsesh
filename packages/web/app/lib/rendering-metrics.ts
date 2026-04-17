@@ -2,11 +2,11 @@ import { track } from '@vercel/analytics';
 
 export type RenderContext = 'thumbnail' | 'card' | 'full-board' | 'feed';
 
-const MAX_RENDER_EVENTS = 5;
+const MAX_ERROR_EVENTS = 5;
 let errorEventCount = 0;
 
 export function trackRenderError(context: RenderContext, renderer: 'svg' | 'wasm') {
-  if (errorEventCount >= MAX_RENDER_EVENTS) return;
+  if (errorEventCount >= MAX_ERROR_EVENTS) return;
   errorEventCount++;
   track('Board Render Error', { context, renderer });
 }
