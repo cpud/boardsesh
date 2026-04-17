@@ -13,7 +13,11 @@ import PeopleOutlined from '@mui/icons-material/PeopleOutlined';
 import BluetoothOutlined from '@mui/icons-material/BluetoothOutlined';
 import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
 import WarningAmberOutlined from '@mui/icons-material/WarningAmberOutlined';
+import AppleOutlined from '@mui/icons-material/Apple';
+import AndroidOutlined from '@mui/icons-material/Android';
+import Skeleton from '@mui/material/Skeleton';
 import SvgIcon from '@mui/material/SvgIcon';
+import { isNativeApp } from '@/app/lib/ble/capacitor-utils';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { themeTokens } from '@/app/theme/theme-config';
@@ -112,6 +116,88 @@ function OnboardingCard({ icon, title, description, onClick }: OnboardingCardPro
   );
 }
 
+const IOS_APP_STORE_URL = 'https://apps.apple.com/au/app/boardsesh/id6761350784';
+const ANDROID_LAUNCH_DATE = new Date('2026-04-29T00:00:00Z');
+
+type InstallPlatform = 'unknown' | 'native' | 'android-web' | 'other-web';
+
+function InstallAppShadowCard() {
+  return (
+    <Card
+      variant="outlined"
+      aria-hidden
+      sx={{
+        borderRadius: `${themeTokens.borderRadius.lg}px`,
+        border: '1px solid var(--neutral-200)',
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 2, px: 2.5 }}>
+        <Skeleton
+          variant="rounded"
+          width={44}
+          height={44}
+          sx={{ borderRadius: `${themeTokens.borderRadius.md}px`, flexShrink: 0 }}
+        />
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Skeleton variant="text" width="60%" height={20} />
+          <Skeleton variant="text" width="85%" height={18} />
+        </Box>
+      </Box>
+    </Card>
+  );
+}
+
+function useCountdown(target: Date, active: boolean) {
+  const [remaining, setRemaining] = useState(() => Math.max(0, target.getTime() - Date.now()));
+
+  useEffect(() => {
+    if (!active) return;
+    setRemaining(Math.max(0, target.getTime() - Date.now()));
+    const id = setInterval(() => {
+      setRemaining(Math.max(0, target.getTime() - Date.now()));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [active, target]);
+
+  const totalSeconds = Math.floor(remaining / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return { days, hours, minutes, seconds, done: remaining <= 0 };
+}
+
+function InstallAppCard({ platform }: { platform: InstallPlatform }) {
+  const isAndroid = platform === 'android-web';
+  const { days, hours, minutes, seconds, done } = useCountdown(ANDROID_LAUNCH_DATE, isAndroid);
+
+  if (platform === 'unknown') return <InstallAppShadowCard />;
+  if (platform === 'native') return null;
+
+  if (isAndroid) {
+    const description = done
+      ? 'The Android app is live — check Google Play.'
+      : `Landing in ${days}d ${hours}h ${minutes}m ${seconds}s`;
+    return (
+      <OnboardingCard
+        icon={<AndroidOutlined />}
+        title="Android app is almost here"
+        description={description}
+        onClick={() => {}}
+      />
+    );
+  }
+
+  return (
+    <OnboardingCard
+      icon={<AppleOutlined />}
+      title="Get the Boardsesh app"
+      description="Lights up holds on your board straight from your phone"
+      onClick={() => window.open(IOS_APP_STORE_URL, '_blank', 'noopener,noreferrer')}
+    />
+  );
+}
+
 export default function HomePageContent({ boardConfigs, initialPopularConfigs }: HomePageContentProps) {
   const { status } = useSession();
   const router = useRouter();
@@ -122,6 +208,16 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
   const [seshDrawerMounted, setSeshDrawerMounted] = useState(false);
   const [findClimbersMounted, setFindClimbersMounted] = useState(false);
   const [createBoardMounted, setCreateBoardMounted] = useState(false);
+  const [installPlatform, setInstallPlatform] = useState<InstallPlatform>('unknown');
+
+  useEffect(() => {
+    if (isNativeApp()) {
+      setInstallPlatform('native');
+      return;
+    }
+    const ua = typeof navigator === 'undefined' ? '' : navigator.userAgent;
+    setInstallPlatform(/Android/i.test(ua) ? 'android-web' : 'other-web');
+  }, []);
 
   useEffect(() => {
     if (seshDrawerOpen) setSeshDrawerMounted(true);
@@ -277,6 +373,8 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
           >
             Make it yours
           </Typography>
+
+          <InstallAppCard platform={installPlatform} />
 
           <OnboardingCard
             icon={<WarningAmberOutlined />}
