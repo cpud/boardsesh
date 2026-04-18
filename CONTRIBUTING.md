@@ -6,9 +6,9 @@
 
 ## How to get everything going
 
-If you want to fix bugs, build features, or make this app even better, follow the instructions described in this [blogpost](https://www.linkedin.com/pulse/git-github-demystified-guide-open-source-contribution-nishan-baral-i4ndc).
+If you want to fix bugs, build features, or make this app even better, follow the instructions described in this [blogpost](https://www.linkedin.com/pulse/git-github-demystified-guide-open-source-contribution-nishan-baral-i4ndc), take into account that the blogpost is generic and it's not specifically targeted to boardeash contributions.
 
-You can also check out this [video](https://www.youtube.com/watch?v=dSl_qnWO104) with the full explanation (yes, it is super old, but the concepts are still valid).
+You can also check out this [video](https://www.youtube.com/watch?v=dSl_qnWO104) which explains the procedure (yes, it is super old, but the concepts are still valid).
 
 ## One-Command Setup
 
