@@ -352,15 +352,31 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
               </div>
             </div>
 
-            <BoardFilterStrip
-              multiSelect
-              boards={boards}
-              loading={boardsLoading}
-              selectedBoards={selectedBoards}
-              onBoardToggle={onBoardToggle}
-            />
           </div>
         </div>
+        <CollapsibleSection
+          sections={[{
+            key: 'boards',
+            label: 'Boards',
+            title: 'Filter by Board',
+            defaultSummary: 'All boards',
+            getSummary: () => {
+              if (selectedBoards.length === 0) return [];
+              const names = selectedBoards.map((b) => b.name);
+              if (names.length <= 2) return names;
+              return [`${names[0]}, ${names[1]}`, `+${names.length - 2} more`];
+            },
+            content: (
+              <BoardFilterStrip
+                multiSelect
+                boards={boards}
+                loading={boardsLoading}
+                selectedBoards={selectedBoards}
+                onBoardToggle={onBoardToggle}
+              />
+            ),
+          }]}
+        />
       </div>
 
       {/* Filter drawer — matches climb list UnifiedSearchDrawer in climb mode */}

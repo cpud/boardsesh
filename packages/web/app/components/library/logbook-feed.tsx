@@ -34,6 +34,7 @@ import {
 } from '@/app/lib/graphql/operations/ticks';
 import { getLayoutDisplayName } from '@/app/profile/[user_id]/utils/profile-constants';
 import { getDefaultSizeForLayout, getSetsForLayoutAndSize } from '@boardsesh/board-constants/product-sizes';
+import { getLayoutById, MOONBOARD_SETS, type MoonBoardLayoutKey } from '@/app/lib/moonboard-config';
 import type { BoardName } from '@/app/lib/types';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { isInstagramPostingSupported } from '@/app/lib/instagram-posting';
@@ -178,9 +179,41 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
     layoutStats.map((ls) => {
       const layoutId = ls.layoutId ?? 0;
       const boardName = ls.boardType as BoardName;
-      const sizeId = getDefaultSizeForLayout(boardName, layoutId) ?? 0;
-      const sets = getSetsForLayoutAndSize(boardName, layoutId, sizeId);
-      const setIds = sets.map((s) => s.id).join(',');
+
+      let sizeId = 0;
+      let setIds = '';
+
+      if (boardName === 'moonboard') {
+        // MoonBoard uses its own set system, not Aurora's
+        const layoutEntry = getLayoutById(layoutId);
+        if (layoutEntry) {
+          const [layoutKey] = layoutEntry;
+          const moonSets = MOONBOARD_SETS[layoutKey as MoonBoardLayoutKey] ?? [];
+          setIds = moonSets.map((s) => s.id).join(',');
+        }
+      } else {
+        const defaultSize = getDefaultSizeForLayout(boardName, layoutId);
+        if (defaultSize !== null) {
+          sizeId = defaultSize;
+          const sets = getSetsForLayoutAndSize(boardName, layoutId, sizeId);
+          setIds = sets.map((s) => s.id).join(',');
+        } else {
+          // Orphaned layouts not in LAYOUTS config but with valid sets data
+          const ORPHANED_KILTER_DEFAULTS: Record<number, { sizeId: number; setIds: string }> = {
+            2: { sizeId: 11, setIds: '21' },   // JUUL Full Wall
+            3: { sizeId: 12, setIds: '22' },   // Demo
+            4: { sizeId: 13, setIds: '23' },   // BKB
+            5: { sizeId: 15, setIds: '24' },   // Spire
+            6: { sizeId: 16, setIds: '25' },   // Orbit
+            7: { sizeId: 16, setIds: '25' },   // Orbit
+          };
+          const fallback = boardName === 'kilter' ? ORPHANED_KILTER_DEFAULTS[layoutId] : undefined;
+          if (fallback) {
+            sizeId = fallback.sizeId;
+            setIds = fallback.setIds;
+          }
+        }
+      }
 
       return {
         uuid: `logbook-${ls.boardType}-${layoutId}`,

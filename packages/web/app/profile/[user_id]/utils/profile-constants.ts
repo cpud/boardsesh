@@ -81,6 +81,12 @@ export const sortGrades = (grades: string[], format: GradeDisplayFormat): string
 // Layout name mapping: boardType-layoutId -> display name
 const layoutNames: Record<string, string> = {
   'kilter-1': 'Kilter Original',
+  'kilter-2': 'Kilter JUUL',
+  'kilter-3': 'Kilter Demo',
+  'kilter-4': 'Kilter BKB',
+  'kilter-5': 'Kilter Spire',
+  'kilter-6': 'Kilter Orbit',
+  'kilter-7': 'Kilter Orbit',
   'kilter-8': 'Kilter Homewall',
   'tension-9': 'Tension Classic',
   'tension-10': 'Tension 2 Mirror',
