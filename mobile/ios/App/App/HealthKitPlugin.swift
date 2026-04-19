@@ -59,7 +59,7 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
             return
         }
 
-        guard let startDate = parseISO8601(startIso), let endDate = parseISO8601(endIso), endDate > startDate else {
+        guard let startDate = parseISO8601(startIso), let endDate = parseISO8601(endIso), endDate >= startDate else {
             logger.error("Invalid dates: startDate=\(startIso, privacy: .public) endDate=\(endIso, privacy: .public)")
             call.reject("Invalid startDate/endDate: start=\(startIso), end=\(endIso)")
             return
@@ -123,7 +123,7 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         let df = DateFormatter()
         df.locale = Locale(identifier: "en_US_POSIX")
         df.timeZone = TimeZone(secondsFromGMT: 0)
-        for fmt in ["yyyy-MM-dd'T'HH:mm:ss.SSSZ", "yyyy-MM-dd'T'HH:mm:ssZ", "yyyy-MM-dd HH:mm:ss"] {
+        for fmt in ["yyyy-MM-dd'T'HH:mm:ss.SSSZ", "yyyy-MM-dd'T'HH:mm:ssZ", "yyyy-MM-dd HH:mm:ss.SSS", "yyyy-MM-dd HH:mm:ss"] {
             df.dateFormat = fmt
             if let date = df.date(from: string) { return date }
         }
