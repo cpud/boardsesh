@@ -200,12 +200,14 @@ describe('SwipeableDrawer', () => {
       expect(dispatchAndReadFlagPostReact(screen.getByTestId('inner'))).toBe(true);
     });
 
-    it('leaves defaultMuiPrevented unset when touchstart target has no [data-swipe-blocked] ancestor', () => {
+    it('does not set defaultMuiPrevented when touchstart target has no [data-swipe-blocked] ancestor', () => {
       // The target still sits inside the drawer paper; what matters is that
       // no ancestor in its chain carries the swipe-blocked attribute, so our
       // handler should not claim the touch. (MUI's own document listener
       // will set the flag later — our helper reads it at document.body,
-      // before that listener runs.)
+      // before that listener runs.) The assertion is Boolean-coerced in the
+      // helper, so "unset" (undefined) and "explicit false" both satisfy it —
+      // we only care that our handler didn't set it to a truthy value.
       render(
         <SwipeableDrawer {...baseProps} disablePortal={false} placement="bottom">
           <div data-testid="unblocked">regular content</div>
@@ -226,14 +228,33 @@ describe('SwipeableDrawer', () => {
       expect(dispatchAndReadFlagPostReact(screen.getByTestId('anywhere'))).toBe(true);
     });
 
-    // Regression test for #1621: a touchstart inside a [data-swipe-blocked]
-    // zone must not trigger the swipe-to-close flow. We can't simulate a full
-    // touchmove/touchend swipe gesture under jsdom (no TouchEvent
-    // constructor), but we can verify the upstream guard: because our handler
-    // sets defaultMuiPrevented on touchstart, MUI's handleBodyTouchStart
-    // returns early (SwipeableDrawer.js:398-400) without calling
-    // startMaybeSwiping, so the subsequent touchend will not dispatch onClose.
-    it('does not call onClose from a touchstart originating in a [data-swipe-blocked] zone', () => {
+    it('does not set defaultMuiPrevented when open=false (handler early-returns)', () => {
+      // Even with both conditions that would otherwise trigger the flag
+      // (disablePortal + a [data-swipe-blocked] ancestor), the handler's
+      // first line bails out when the drawer is closed, so neither branch
+      // runs. keepMounted keeps the inner Box in the DOM so we can dispatch
+      // a touchstart against it.
+      render(
+        <SwipeableDrawer {...baseProps} open={false} keepMounted placement="bottom">
+          <div data-swipe-blocked="true">
+            <div data-testid="closed-inner">content while closed</div>
+          </div>
+        </SwipeableDrawer>,
+      );
+
+      expect(dispatchAndReadFlagPostReact(screen.getByTestId('closed-inner'))).toBe(false);
+    });
+
+    // Partial regression coverage for #1621: a full pan-north swipe inside a
+    // [data-swipe-blocked] zone must not close the drawer. jsdom has no
+    // TouchEvent constructor, so we can't dispatch a touchmove/touchend
+    // sequence here — instead we verify the upstream guard that gates the
+    // whole flow. Our handler sets defaultMuiPrevented on touchstart, which
+    // makes MUI's handleBodyTouchStart return early (SwipeableDrawer.js:398-400)
+    // without calling startMaybeSwiping, so no subsequent touchend would reach
+    // onClose either. This asserts only the synchronous touchstart → onClose
+    // path; end-to-end swipe-gesture coverage lives in the Playwright suite.
+    it('(#1621, partial) touchstart in a [data-swipe-blocked] zone does not synchronously call onClose — full gesture not simulable in jsdom', () => {
       const onClose = vi.fn();
       render(
         <SwipeableDrawer {...baseProps} disablePortal={false} placement="bottom" onClose={onClose}>
