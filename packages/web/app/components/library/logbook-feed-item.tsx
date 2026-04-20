@@ -25,8 +25,11 @@ import LinkOutlined from '@mui/icons-material/LinkOutlined';
 import dynamic from 'next/dynamic';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { track } from '@vercel/analytics';
 import type { AscentFeedItem } from '@/app/lib/graphql/operations/ticks';
 import type { BoardDetails, BoardName } from '@/app/lib/types';
+import { useOptionalQueueActions } from '@/app/components/graphql-queue';
+import { dispatchOpenPlayDrawer } from '@/app/components/queue-control/play-drawer-event';
 import { AscentStatusIcon } from '@/app/components/ascent-status/ascent-status-icon';
 import { ClimbActions } from '@/app/components/climb-actions';
 import DrawerClimbHeader from '@/app/components/climb-card/drawer-climb-header';
@@ -287,6 +290,8 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
   const [instagramDialogOpen, setInstagramDialogOpen] = useState(false);
   const [betaLinkDialogOpen, setBetaLinkDialogOpen] = useState(false);
 
+  const queueActions = useOptionalQueueActions();
+
   // --- Edit state ---
   const { mutateAsync: updateTickAsync, isPending: isSaving } = useUpdateTick();
   const grades = useMemo(() => getGradesForBoard(item.boardType as BoardName), [item.boardType]);
@@ -396,8 +401,30 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
     setStatusAnchorEl(null);
   }, []);
 
-  // Map ascent to Climb for ClimbActions
+  // Map ascent to Climb for ClimbActions + set-active handlers
   const climb = useMemo(() => ascentFeedItemToClimb(item), [item]);
+
+  const handleRowClick = useCallback(async () => {
+    if (isEditing || !queueActions) return;
+    await queueActions.setCurrentClimb(climb);
+    track('Logbook Row Clicked', { climbUuid: climb.uuid });
+  }, [isEditing, queueActions, climb]);
+
+  const handleRowKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (isEditing || !queueActions) return;
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    if (e.target !== e.currentTarget) return;
+    e.preventDefault();
+    void handleRowClick();
+  }, [isEditing, queueActions, handleRowClick]);
+
+  const handleThumbnailClick = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isEditing || !queueActions) return;
+    await queueActions.setCurrentClimb(climb);
+    dispatchOpenPlayDrawer();
+    track('Logbook Thumbnail Clicked', { climbUuid: climb.uuid });
+  }, [isEditing, queueActions, climb]);
 
   // Build BoardDetails for ClimbActions (same pattern as AscentThumbnail)
   const boardDetails = useMemo<BoardDetails | null>(() => {
@@ -529,15 +556,13 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
   return (
     <>
       <div className={styles.container} id={isSwipeHintTarget ? 'onboarding-logbook-card' : undefined}>
-        {/* Left action layer — Delete (revealed on long swipe right).
-            Decorative; the three-dot menu exposes Delete to assistive tech. */}
+        {/* aria-hidden: the 3-dot menu exposes Delete to assistive tech. */}
         <div ref={leftActionCombinedRef} className={styles.leftActionLayer} aria-hidden="true">
           <DeleteOutlined className={styles.swipeIcon} />
           <span className={styles.deleteLabel}>Delete</span>
         </div>
 
-        {/* Right action layer — Edit (revealed on swipe left).
-            Decorative; the three-dot menu exposes Edit to assistive tech. */}
+        {/* aria-hidden: the 3-dot menu exposes Edit to assistive tech. */}
         <div
           ref={rightActionRef}
           className={styles.rightActionLayer}
@@ -547,12 +572,16 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
           <EditOutlined className={styles.swipeIcon} />
         </div>
 
-        {/* Swipeable wrapper — covers entire item including comment row */}
         <div
           {...swipeHandlers}
           ref={contentCombinedRef}
           className={styles.swipeableContent}
           data-swipe-content=""
+          role={!isEditing && queueActions ? 'button' : undefined}
+          tabIndex={!isEditing && queueActions ? 0 : undefined}
+          aria-label={!isEditing && queueActions ? `Set ${item.climbName} as active climb` : undefined}
+          onClick={handleRowClick}
+          onKeyDown={handleRowKeyDown}
         >
           <div className={styles.content}>
             {/* Thumbnail with ascent status badge */}
@@ -566,6 +595,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
                   climbName={item.climbName}
                   frames={item.frames}
                   isMirror={item.isMirror}
+                  onClick={queueActions && !isEditing ? handleThumbnailClick : undefined}
                 />
               )}
               {isEditing ? (

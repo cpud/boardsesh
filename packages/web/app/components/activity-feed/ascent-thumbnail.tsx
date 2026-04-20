@@ -20,6 +20,8 @@ interface AscentThumbnailProps {
   climbName: string;
   frames: string | null;
   isMirror: boolean;
+  /** When provided, renders as a <button> instead of the climb-view <Link>. */
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 const AscentThumbnail: React.FC<AscentThumbnailProps> = ({
@@ -30,6 +32,7 @@ const AscentThumbnail: React.FC<AscentThumbnailProps> = ({
   climbName,
   frames,
   isMirror,
+  onClick,
 }) => {
   const canvasReady = useCanvasRendererReady();
   // Memoize board details to avoid recomputing on every render
@@ -85,7 +88,7 @@ const AscentThumbnail: React.FC<AscentThumbnailProps> = ({
   }, [boardDetails, boardType, layoutId, angle, climbUuid, climbName]);
 
   // If we can't render the thumbnail, don't show anything
-  if (!boardDetails || !climbViewPath) {
+  if (!boardDetails || (!onClick && !climbViewPath)) {
     return null;
   }
 
@@ -121,8 +124,22 @@ const AscentThumbnail: React.FC<AscentThumbnailProps> = ({
     );
   }
 
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={styles.thumbnailLink}
+        title={`Set ${climbName} as active climb`}
+        aria-label={`Set ${climbName} as active climb`}
+      >
+        <div className={styles.thumbnailContainer}>{thumbnailContent}</div>
+      </button>
+    );
+  }
+
   return (
-    <Link href={climbViewPath} className={styles.thumbnailLink} title={`View ${climbName}`}>
+    <Link href={climbViewPath!} className={styles.thumbnailLink} title={`View ${climbName}`}>
       <div className={styles.thumbnailContainer}>{thumbnailContent}</div>
     </Link>
   );
