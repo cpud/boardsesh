@@ -94,7 +94,7 @@ export function useTickSave(options: UseTickSaveOptions): {
       const draftValues = { climbUuid: climb.uuid, angle: Number(targetAngle), quality, difficulty, attemptCount, comment, status };
 
       // Fire confetti and close the bar immediately -- don't wait for the network.
-      fireConfetti(confettiOrigin ?? null);
+      fireConfetti(confettiOrigin ?? null, isAscent ? 'ascent' : 'attempt');
       onSave();
 
       // Fire-and-forget: the logbook cache updates optimistically via useSaveTick's onMutate.
