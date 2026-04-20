@@ -44,24 +44,36 @@ export async function autoSaveToHealthKit(
   boardType: string,
   authToken: string | null,
 ): Promise<string | null> {
+  // Claim the guard synchronously at entry — prevents concurrent duplicate
+  // saves even when multiple end-session code paths fire simultaneously.
+  if (savedOrInFlight.has(summary.sessionId)) return null;
+  savedOrInFlight.add(summary.sessionId);
+
   try {
     const autoSyncEnabled = await getHealthKitAutoSync();
-    if (!autoSyncEnabled) return null;
+    if (!autoSyncEnabled) {
+      // Release guard so the manual save button still works
+      savedOrInFlight.delete(summary.sessionId);
+      return null;
+    }
 
     const available = await isHealthKitAvailable();
-    if (!available) return null;
-
-    // Only claim the guard once we know we'll actually attempt the save.
-    // Earlier returns (auto-sync off, unavailable) must not block the
-    // manual save button.
-    if (savedOrInFlight.has(summary.sessionId)) return null;
-    savedOrInFlight.add(summary.sessionId);
+    if (!available) {
+      savedOrInFlight.delete(summary.sessionId);
+      return null;
+    }
 
     const granted = await requestHealthKitAuthorization();
-    if (!granted) return null;
+    if (!granted) {
+      savedOrInFlight.delete(summary.sessionId);
+      return null;
+    }
 
     const result = await saveSessionToHealthKit(summary, boardType);
-    if (!result) return null;
+    if (!result) {
+      savedOrInFlight.delete(summary.sessionId);
+      return null;
+    }
 
     // Persist the workoutId to the backend for deduplication.
     // If this fails the HealthKit workout still exists — return the

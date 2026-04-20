@@ -106,28 +106,28 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
             metadata["BoardseshHardestGrade"] = hardestGrade
         }
 
-        let workout = HKWorkout(
-            activityType: .climbing,
-            start: startDate,
-            end: endDate,
-            duration: endDate.timeIntervalSince(startDate),
-            totalEnergyBurned: nil,
-            totalDistance: nil,
-            metadata: metadata
-        )
+        // Use HKWorkoutBuilder (modern API, replaces deprecated HKWorkout initializer)
+        Task {
+            do {
+                let config = HKWorkoutConfiguration()
+                config.activityType = .climbing
 
-        healthStore.save(workout) { [weak self] success, error in
-            if let error = error {
-                self?.logger.error("Failed to save workout: \(error.localizedDescription, privacy: .public)")
+                let builder = HKWorkoutBuilder(healthStore: healthStore, configuration: config, device: nil)
+                try await builder.beginCollection(at: startDate)
+                try await builder.addMetadata(metadata)
+                try await builder.endCollection(at: endDate)
+
+                guard let workout = try await builder.finishWorkout() else {
+                    call.reject("Failed to finish workout")
+                    return
+                }
+
+                logger.info("Saved climbing workout for session \(sessionId, privacy: .public)")
+                call.resolve(["workoutId": workout.uuid.uuidString])
+            } catch {
+                logger.error("Failed to save workout: \(error.localizedDescription, privacy: .public)")
                 call.reject("Failed to save workout: \(error.localizedDescription)")
-                return
             }
-            if !success {
-                call.reject("Failed to save workout")
-                return
-            }
-            self?.logger.info("Saved climbing workout for session \(sessionId, privacy: .public)")
-            call.resolve(["workoutId": workout.uuid.uuidString])
         }
     }
 
@@ -138,7 +138,6 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         if let date = Self.isoPlain.date(from: string) { return date }
 
         // Fallback: try common non-ISO formats (e.g. SQL timestamp).
-        // Allocate per call — DateFormatter is not thread-safe.
         let df = DateFormatter()
         df.locale = Locale(identifier: "en_US_POSIX")
         df.timeZone = TimeZone(secondsFromGMT: 0)

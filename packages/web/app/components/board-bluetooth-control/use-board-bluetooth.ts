@@ -250,14 +250,16 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
     [handleDisconnection, boardDetails, onConnectionChange, sendFramesToBoard, showMessage, devicePicker],
   );
 
-  // Disconnect from the board
-  const disconnect = useCallback(() => {
+  // Disconnect from the board — update state synchronously for immediate UI
+  // feedback, then await the native BLE disconnect in the background.
+  const disconnect = useCallback(async () => {
     unsubDisconnectRef.current?.();
     unsubDisconnectRef.current = null;
-    adapterRef.current?.disconnect();
+    const adapter = adapterRef.current;
     adapterRef.current = null;
     setIsConnected(false);
     onConnectionChange?.(false);
+    await adapter?.disconnect();
   }, [onConnectionChange]);
 
   // Clean up on unmount — reject any pending picker promise so the adapter's

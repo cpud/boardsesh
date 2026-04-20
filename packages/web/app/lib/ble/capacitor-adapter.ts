@@ -21,6 +21,10 @@ const DEFAULT_MTU = MAX_BLUETOOTH_MESSAGE_SIZE;
 // Gives CoreBluetooth breathing room when sending many small chunks.
 const INTER_CHUNK_DELAY_MS = 5;
 
+// Auto-stop BLE scan after this duration to prevent indefinite battery drain
+// if the user walks away from the picker dialog.
+const SCAN_TIMEOUT_MS = 30_000;
+
 /** Scan result from the Capacitor BLE plugin's requestLEScan callback. */
 interface CapacitorScanResult {
   device: { deviceId: string; name?: string };
@@ -175,9 +179,15 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
         pushDevices();
       });
 
+      // Auto-stop scan after timeout to prevent indefinite battery drain
+      const scanTimeoutId = setTimeout(() => {
+        stopScanQuietly(ble);
+      }, SCAN_TIMEOUT_MS);
+
       try {
         selectedDeviceId = await selectionPromise;
       } finally {
+        clearTimeout(scanTimeoutId);
         await stopScanQuietly(ble);
       }
 
