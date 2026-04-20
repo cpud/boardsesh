@@ -126,9 +126,11 @@ describe('readSortFromQuery', () => {
     expect(result.primaryField).toBe('climbName');
   });
 
-  it('parses sort direction', () => {
+  it('parses sort direction with implicit default field', () => {
     const params = new URLSearchParams('order=asc');
     const result = readSortFromQuery(params);
+    expect(result.mode).toBe('custom');
+    expect(result.primaryField).toBe('date');
     expect(result.primaryDirection).toBe('asc');
   });
 
@@ -217,6 +219,13 @@ describe('filtersToQueryParams', () => {
     const sort = { ...DEFAULT_SORT, mode: 'custom' as const, primaryField: 'climbName' as const, primaryDirection: 'asc' as const };
     const result = filtersToQueryParams('', DEFAULT_FILTERS, sort, []);
     expect(result.sort).toBe('climbName');
+    expect(result.order).toBe('asc');
+  });
+
+  it('always emits sort field in custom mode even when default', () => {
+    const sort = { ...DEFAULT_SORT, mode: 'custom' as const, primaryField: 'date' as const, primaryDirection: 'asc' as const };
+    const result = filtersToQueryParams('', DEFAULT_FILTERS, sort, []);
+    expect(result.sort).toBe('date');
     expect(result.order).toBe('asc');
   });
 

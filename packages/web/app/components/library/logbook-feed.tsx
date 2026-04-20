@@ -353,7 +353,7 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
       if (!lastPage.hasMore) return undefined;
       return lastPageParam + lastPage.items.length;
     },
-    enabled: !!userId && !!token,
+    enabled: !!userId && !!token && preferencesLoaded && boardsInitialized,
     staleTime: 60 * 1000,
   });
 
@@ -422,9 +422,7 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
           queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
         })
         .catch(() => {
-          if (itemToDelete) {
-            queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
-          }
+          queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
           showMessage('Failed to delete tick', 'error');
         });
     }, 5000);
@@ -468,8 +466,16 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
       onSearchChange={handleSearchChange}
       minGrade={filters.minGrade}
       maxGrade={filters.maxGrade}
-      onMinGradeChange={(value) => setFilters((prev) => ({ ...prev, minGrade: value }))}
-      onMaxGradeChange={(value) => setFilters((prev) => ({ ...prev, maxGrade: value }))}
+      onMinGradeChange={(value) => setFilters((prev) => ({
+        ...prev,
+        minGrade: value,
+        maxGrade: value !== '' && prev.maxGrade !== '' && value > prev.maxGrade ? value : prev.maxGrade,
+      }))}
+      onMaxGradeChange={(value) => setFilters((prev) => ({
+        ...prev,
+        maxGrade: value,
+        minGrade: value !== '' && prev.minGrade !== '' && value < prev.minGrade ? value : prev.minGrade,
+      }))}
       sortState={sortState}
       onSortChange={setSortState}
       boards={logbookBoards}

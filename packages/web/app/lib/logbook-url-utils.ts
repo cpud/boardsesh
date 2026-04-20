@@ -62,7 +62,16 @@ export function readSortFromQuery(params: URLSearchParams): Partial<LogbookSortS
   }
   const order = params.get('order');
   if (order === 'asc' || order === 'desc') {
-    partial.primaryDirection = order;
+    // Only apply direction when a sort field is also present (explicitly or
+    // via the 'mode' flag below) to avoid corrupting the persisted default.
+    if (partial.primaryField || sort === null) {
+      // sort param absent but order present → custom mode with default field
+      if (!partial.primaryField) {
+        partial.mode = 'custom';
+        partial.primaryField = DEFAULT_SORT.primaryField;
+      }
+      partial.primaryDirection = order;
+    }
   }
   const sort2 = params.get('sort2');
   if (sort2 && isValidSortField(sort2)) partial.secondaryField = sort2;
@@ -95,7 +104,8 @@ export function filtersToQueryParams(
   if (filters.angleRange[1] !== DEFAULT_ANGLE_RANGE[1]) params.maxAngle = String(filters.angleRange[1]);
 
   if (sortState.mode === 'custom') {
-    if (sortState.primaryField !== DEFAULT_SORT.primaryField) params.sort = sortState.primaryField;
+    // Always emit the sort field so direction-only URLs don't occur
+    params.sort = sortState.primaryField;
     if (sortState.primaryDirection !== DEFAULT_SORT.primaryDirection) params.order = sortState.primaryDirection;
     if (sortState.secondaryField) params.sort2 = sortState.secondaryField;
     if (sortState.secondaryField && sortState.secondaryDirection !== 'desc') params.order2 = sortState.secondaryDirection;

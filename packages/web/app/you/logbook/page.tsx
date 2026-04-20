@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { Metadata } from 'next';
 import LogbookFeed from '@/app/components/library/logbook-feed';
+import LogbookLoading from './loading';
 import { cachedUserProfileStats } from '@/app/lib/graphql/server-cached-client';
 import { getYouSession } from '../you-auth';
 
@@ -16,7 +17,7 @@ export default async function YouLogbookPage() {
   const layoutStats = profileStats?.layoutStats ?? [];
 
   return (
-    <Suspense>
+    <Suspense fallback={<LogbookLoading />}>
       <LogbookFeed layoutStats={layoutStats} loadingLayoutStats={false} />
     </Suspense>
   );
