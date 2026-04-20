@@ -406,8 +406,12 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
 
   const handleRowClick = useCallback(async () => {
     if (isEditing || !queueActions) return;
-    await queueActions.setCurrentClimb(climb);
-    track('Logbook Row Clicked', { climbUuid: climb.uuid });
+    try {
+      await queueActions.setCurrentClimb(climb);
+      track('Logbook Row Clicked', { climbUuid: climb.uuid });
+    } catch {
+      // ignore – UI stays in its current state
+    }
   }, [isEditing, queueActions, climb]);
 
   const handleRowKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -421,9 +425,13 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
   const handleThumbnailClick = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isEditing || !queueActions) return;
-    await queueActions.setCurrentClimb(climb);
-    dispatchOpenPlayDrawer();
-    track('Logbook Thumbnail Clicked', { climbUuid: climb.uuid });
+    try {
+      await queueActions.setCurrentClimb(climb);
+      dispatchOpenPlayDrawer();
+      track('Logbook Thumbnail Clicked', { climbUuid: climb.uuid });
+    } catch {
+      // ignore – UI stays in its current state
+    }
   }, [isEditing, queueActions, climb]);
 
   // Build BoardDetails for ClimbActions (same pattern as AscentThumbnail)
