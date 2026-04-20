@@ -15,6 +15,33 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
     private let logger = Logger(subsystem: "com.boardsesh.app", category: "HealthKitPlugin")
     private let healthStore = HKHealthStore()
 
+    // Static date formatters — allocated once, reused across calls.
+    private static let isoWithFrac: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
+
+    private static let isoPlain: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f
+    }()
+
+    private static let fallbackFormatter: DateFormatter = {
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "en_US_POSIX")
+        df.timeZone = TimeZone(secondsFromGMT: 0)
+        return df
+    }()
+
+    private static let fallbackFormats = [
+        "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+        "yyyy-MM-dd'T'HH:mm:ssZ",
+        "yyyy-MM-dd HH:mm:ss.SSS",
+        "yyyy-MM-dd HH:mm:ss",
+    ]
+
     // MARK: - isAvailable
 
     @objc func isAvailable(_ call: CAPPluginCall) {
@@ -109,21 +136,12 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
     // MARK: - Helpers
 
     private func parseISO8601(_ string: String) -> Date? {
-        // Try with fractional seconds first (e.g. 2026-04-20T12:00:00.000Z)
-        let withFrac = ISO8601DateFormatter()
-        withFrac.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        if let date = withFrac.date(from: string) { return date }
+        if let date = Self.isoWithFrac.date(from: string) { return date }
+        if let date = Self.isoPlain.date(from: string) { return date }
 
-        // Without fractional seconds (e.g. 2026-04-20T12:00:00Z)
-        let plain = ISO8601DateFormatter()
-        plain.formatOptions = [.withInternetDateTime]
-        if let date = plain.date(from: string) { return date }
-
-        // Fallback: DateFormatter for other common formats
-        let df = DateFormatter()
-        df.locale = Locale(identifier: "en_US_POSIX")
-        df.timeZone = TimeZone(secondsFromGMT: 0)
-        for fmt in ["yyyy-MM-dd'T'HH:mm:ss.SSSZ", "yyyy-MM-dd'T'HH:mm:ssZ", "yyyy-MM-dd HH:mm:ss.SSS", "yyyy-MM-dd HH:mm:ss"] {
+        // Fallback: try common non-ISO formats (e.g. SQL timestamp)
+        let df = Self.fallbackFormatter
+        for fmt in Self.fallbackFormats {
             df.dateFormat = fmt
             if let date = df.date(from: string) { return date }
         }

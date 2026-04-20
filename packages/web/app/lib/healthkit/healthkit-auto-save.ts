@@ -8,6 +8,16 @@ import {
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import { SET_SESSION_HEALTHKIT_WORKOUT_ID } from '@/app/lib/graphql/operations/activity-feed';
 
+// Guards against duplicate saves when both end-session paths fire for the
+// same session. Stores sessionIds that are currently being saved or have
+// already been saved.
+const savedOrInFlight = new Set<string>();
+
+/** Reset the dedup guard (for testing). */
+export function _resetAutoSaveGuard() {
+  savedOrInFlight.clear();
+}
+
 /**
  * Standalone async function that auto-saves a session to HealthKit.
  * No React dependencies — can be called from any context.
@@ -15,12 +25,18 @@ import { SET_SESSION_HEALTHKIT_WORKOUT_ID } from '@/app/lib/graphql/operations/a
  * Returns the workoutId if the HealthKit write succeeded (even if the
  * backend persist of the workoutId fails), or null if skipped/failed
  * before reaching HealthKit.
+ *
+ * Uses a module-level guard to prevent duplicate saves when multiple
+ * end-session code paths fire for the same session.
  */
 export async function autoSaveToHealthKit(
   summary: SessionSummary,
   boardType: string,
   authToken: string | null,
 ): Promise<string | null> {
+  if (savedOrInFlight.has(summary.sessionId)) return null;
+  savedOrInFlight.add(summary.sessionId);
+
   try {
     const autoSyncEnabled = await getHealthKitAutoSync();
     if (!autoSyncEnabled) return null;
@@ -51,6 +67,8 @@ export async function autoSaveToHealthKit(
 
     return result.workoutId;
   } catch (e) {
+    // Remove from guard so a retry is possible after a genuine failure
+    savedOrInFlight.delete(summary.sessionId);
     console.warn('[HealthKit] Auto-save failed:', e);
     return null;
   }

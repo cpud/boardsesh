@@ -23,7 +23,8 @@ const createRequestLEScanMock = () =>
 
 const createStopLEScanMock = () => vi.fn().mockResolvedValue(undefined);
 
-const mockBlePlugin: Record<string, any> = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- vi.fn() mock record needs any for dynamic key access + mock methods + undefined assignment
+const mockBlePlugin: Record<string, any> = { // NOSONAR
   initialize: vi.fn().mockResolvedValue(undefined),
   isEnabled: vi.fn().mockResolvedValue({ value: true }),
   requestDevice: vi.fn().mockResolvedValue({ deviceId: 'dev-1', name: 'Kilter Board' }),
