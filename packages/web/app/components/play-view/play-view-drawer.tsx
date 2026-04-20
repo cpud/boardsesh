@@ -16,6 +16,7 @@ import CloseOutlined from '@mui/icons-material/CloseOutlined';
 import FormatListBulletedOutlined from '@mui/icons-material/FormatListBulletedOutlined';
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
 import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import { TickIcon, TickButtonWithLabel } from '../logbook/tick-icon';
 import { usePathname } from 'next/navigation';
 import { useQueueActions, useCurrentClimb, useQueueList, useSessionData } from '../graphql-queue';
 import { ClimbActions } from '../climb-actions';
@@ -172,6 +173,7 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
 }) {
   const [tickComment, setTickComment] = useState('');
   const [commentFocused, setCommentFocused] = useState(false);
+  const [isFlash, setIsFlash] = useState(false);
   const quickTickBarRef = useRef<QuickTickBarHandle>(null);
   const isDark = useIsDarkMode();
   // Match queue control bar tint — 'default' variant.
@@ -190,6 +192,7 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
   const handleClose = useCallback(() => {
     setTickComment('');
     setCommentFocused(false);
+    setIsFlash(false);
     onClose();
   }, [onClose]);
 
@@ -197,6 +200,7 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
   useEffect(() => {
     setTickComment('');
     setCommentFocused(false);
+    setIsFlash(false);
   }, [currentClimb.uuid]);
 
   return (
@@ -240,6 +244,7 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
               onSave={handleClose}
               onError={onError}
               onDraftRestored={(draftComment) => setTickComment(draftComment)}
+              onIsFlashChange={setIsFlash}
               comment={tickComment}
               commentSlot={
                 <div className={`${styles.tickBarComment} ${commentFocused ? styles.tickBarCommentExpanded : ''}`}>
@@ -278,31 +283,35 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
                 </div>
               }
             />
-            {/* Action buttons — attempt (X) + save (check), both fire confetti from click target */}
+            {/* Action buttons — attempt (X) + save (check/flash), both fire confetti from click target */}
             <div className={styles.tickBarButtons}>
-              <IconButton
-                onClick={(e) => quickTickBarRef.current?.saveAttempt(e.currentTarget)}
-                sx={{
-                  color: themeTokens.colors.error,
-                  opacity: themeTokens.opacity.subtle,
-                  '&:hover': { color: themeTokens.colors.error, opacity: 1 },
-                }}
-                aria-label="Log attempt"
-              >
-                <CloseOutlined />
-              </IconButton>
-              <IconButton
-                id="button-tick"
-                onClick={(e) => quickTickBarRef.current?.save(e.currentTarget)}
-                sx={{
-                  backgroundColor: themeTokens.colors.success,
-                  color: 'common.white',
-                  '&:hover': { backgroundColor: themeTokens.colors.success },
-                }}
-                aria-label="Log ascent"
-              >
-                <CheckOutlined />
-              </IconButton>
+              <TickButtonWithLabel label="attempt">
+                <IconButton
+                  onClick={(e) => quickTickBarRef.current?.saveAttempt(e.currentTarget)}
+                  sx={{
+                    backgroundColor: themeTokens.colors.error,
+                    color: 'common.white',
+                    '&:hover': { backgroundColor: themeTokens.colors.error },
+                  }}
+                  aria-label="Log attempt"
+                >
+                  <CloseOutlined />
+                </IconButton>
+              </TickButtonWithLabel>
+              <TickButtonWithLabel label={isFlash ? 'flash' : 'tick'}>
+                <IconButton
+                  id="button-tick"
+                  onClick={(e) => quickTickBarRef.current?.save(e.currentTarget)}
+                  sx={{
+                    backgroundColor: isFlash ? themeTokens.colors.amber : themeTokens.colors.success,
+                    color: isFlash ? themeTokens.neutral[900] : 'common.white',
+                    '&:hover': { backgroundColor: isFlash ? themeTokens.colors.amber : themeTokens.colors.success },
+                  }}
+                  aria-label={isFlash ? "Log flash" : "Log ascent"}
+                >
+                  <TickIcon isFlash={isFlash} />
+                </IconButton>
+              </TickButtonWithLabel>
             </div>
           </>
         )}

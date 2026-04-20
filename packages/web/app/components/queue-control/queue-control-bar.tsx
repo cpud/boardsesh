@@ -23,6 +23,7 @@ import PreviousClimbButton from './previous-climb-button';
 import QueueList, { QueueListHandle } from './queue-list';
 import { useSwipeable } from 'react-swipeable';
 import { TickButton } from '../logbook/tick-button';
+import { TickButtonWithLabel } from '../logbook/tick-icon';
 import { QuickTickBar, type QuickTickBarHandle } from '../logbook/quick-tick-bar';
 import ClimbThumbnail from '../climb-card/climb-thumbnail';
 import ClimbTitle from '../climb-card/climb-title';
@@ -194,6 +195,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
   // QuickTickBar reads the value back out via props when saving the tick.
   const [tickComment, setTickComment] = useState('');
   const [tickCommentFocused, setTickCommentFocused] = useState(false);
+  const [isFlash, setIsFlash] = useState(false);
   const quickTickBarRef = useRef<QuickTickBarHandle>(null);
 
   // Swipe-to-dismiss state — tracks vertical offset during down-swipe gesture.
@@ -473,6 +475,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
       setTickRowVisible(true);
     } else {
       setTickSwipeOffset(0);
+      setIsFlash(false);
       const timer = setTimeout(() => {
         setTickRowVisible(false);
         setTickComment('');
@@ -904,6 +907,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                   }}
                   onError={() => showMessage('Couldn\u2019t save your tick. Give it another go.', 'error')}
                   onDraftRestored={(draftComment) => setTickComment(draftComment)}
+                  onIsFlashChange={setIsFlash}
                   comment={tickComment}
                   commentSlot={
                     <div className={`${styles.tickComment} ${tickCommentFocused ? styles.tickCommentExpanded : ''}`}>
@@ -1060,17 +1064,19 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                   </span>
                   {/* Party / Cancel button — swaps to X when tick mode is active */}
                   {tickBarActive ? (
-                    <IconButton
-                      onClick={(e) => quickTickBarRef.current?.saveAttempt(e.currentTarget)}
-                      sx={{
-                        color: themeTokens.colors.error,
-                        opacity: themeTokens.opacity.subtle,
-                        '&:hover': { color: themeTokens.colors.error, opacity: 1 },
-                      }}
-                      aria-label="Log attempt"
-                    >
-                      <CloseOutlined />
-                    </IconButton>
+                    <TickButtonWithLabel label="attempt">
+                      <IconButton
+                        onClick={(e) => quickTickBarRef.current?.saveAttempt(e.currentTarget)}
+                        sx={{
+                          backgroundColor: themeTokens.colors.error,
+                          color: 'common.white',
+                          '&:hover': { backgroundColor: themeTokens.colors.error },
+                        }}
+                        aria-label="Log attempt"
+                      >
+                        <CloseOutlined />
+                      </IconButton>
+                    </TickButtonWithLabel>
                   ) : (
                     <ShareBoardButton />
                   )}
@@ -1082,6 +1088,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                     onActivateTickBar={() => setActiveDrawer('tick')}
                     onTickSave={() => quickTickBarRef.current?.save()}
                     tickBarActive={tickBarActive}
+                    isFlash={isFlash}
                   />
                 </Stack>
               </Box>
