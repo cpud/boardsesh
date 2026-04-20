@@ -13,6 +13,16 @@ import { SET_SESSION_HEALTHKIT_WORKOUT_ID } from '@/app/lib/graphql/operations/a
 // already been saved.
 const savedOrInFlight = new Set<string>();
 
+/** Check if a session has already been saved or is currently being saved. */
+export function isSessionSavedOrInFlight(sessionId: string): boolean {
+  return savedOrInFlight.has(sessionId);
+}
+
+/** Mark a session as saved (used by manual save path to share the guard). */
+export function markSessionSaved(sessionId: string): void {
+  savedOrInFlight.add(sessionId);
+}
+
 /** Reset the dedup guard (for testing). */
 export function _resetAutoSaveGuard() {
   savedOrInFlight.clear();

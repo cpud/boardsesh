@@ -87,10 +87,15 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         }
 
         guard let startDate = parseISO8601(startIso), let endDate = parseISO8601(endIso), endDate > startDate else {
-            logger.error("Invalid dates: startDate=\(startIso, privacy: .public) endDate=\(endIso, privacy: .public)")
+            let parsedStart = parseISO8601(startIso)
+            let parsedEnd = parseISO8601(endIso)
+            logger.error("Invalid dates: startDate=\(startIso, privacy: .public) endDate=\(endIso, privacy: .public) parsedStart=\(String(describing: parsedStart), privacy: .public) parsedEnd=\(String(describing: parsedEnd), privacy: .public)")
             call.reject("Invalid startDate/endDate: start=\(startIso), end=\(endIso)")
             return
         }
+
+        let durationSeconds = endDate.timeIntervalSince(startDate)
+        logger.info("Workout dates: start=\(startIso, privacy: .public) end=\(endIso, privacy: .public) duration=\(Int(durationSeconds))s")
 
         let totalSends = call.getInt("totalSends") ?? 0
         let totalAttempts = call.getInt("totalAttempts") ?? 0
