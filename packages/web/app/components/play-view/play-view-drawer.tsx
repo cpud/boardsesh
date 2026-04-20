@@ -33,6 +33,7 @@ import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
 import AngleSelector from '../board-page/angle-selector';
 import ClimbDetailHeader from '@/app/components/climb-detail/climb-detail-header';
 import { QuickTickBar, type QuickTickBarHandle } from '../logbook/quick-tick-bar';
+import { hasPriorHistoryForClimb } from '@/app/hooks/use-tick-save';
 import type { ActiveDrawer } from '../queue-control/queue-control-bar';
 import { PLAY_DRAWER_EVENT } from '../queue-control/play-drawer-event';
 import type { BoardDetails, Angle, Climb } from '@/app/lib/types';
@@ -171,9 +172,10 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
   onClose,
   onError,
 }) {
+  const { logbook } = useBoardProvider();
   const [tickComment, setTickComment] = useState('');
   const [commentFocused, setCommentFocused] = useState(false);
-  const [isFlash, setIsFlash] = useState(false);
+  const [isFlash, setIsFlash] = useState(() => !hasPriorHistoryForClimb(currentClimb, logbook));
   const quickTickBarRef = useRef<QuickTickBarHandle>(null);
   const isDark = useIsDarkMode();
   // Match queue control bar tint — 'default' variant.
@@ -196,11 +198,12 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
     onClose();
   }, [onClose]);
 
-  // Reset comment when the climb changes
+  // Reset comment when the climb changes.
+  // Note: isFlash is not reset here — QuickTickBar is the sole authority
+  // and will fire onIsFlashChange with the correct value when its tickTarget updates.
   useEffect(() => {
     setTickComment('');
     setCommentFocused(false);
-    setIsFlash(false);
   }, [currentClimb.uuid]);
 
   return (
@@ -289,9 +292,9 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
                 <IconButton
                   onClick={(e) => quickTickBarRef.current?.saveAttempt(e.currentTarget)}
                   sx={{
-                    backgroundColor: themeTokens.colors.error,
-                    color: 'common.white',
-                    '&:hover': { backgroundColor: themeTokens.colors.error },
+                    backgroundColor: 'rgba(184, 82, 76, 0.18)',
+                    color: themeTokens.colors.error,
+                    '&:hover': { backgroundColor: 'rgba(184, 82, 76, 0.28)' },
                   }}
                   aria-label="Log attempt"
                 >
@@ -305,6 +308,7 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
                   sx={{
                     backgroundColor: isFlash ? themeTokens.colors.amber : themeTokens.colors.success,
                     color: isFlash ? themeTokens.neutral[900] : 'common.white',
+                    transition: 'background-color 150ms ease, color 150ms ease',
                     '&:hover': { backgroundColor: isFlash ? themeTokens.colors.amber : themeTokens.colors.success },
                   }}
                   aria-label={isFlash ? "Log flash" : "Log ascent"}

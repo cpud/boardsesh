@@ -100,10 +100,12 @@ export const TickButton: React.FC<TickButtonProps> = ({ currentClimb, angle, boa
       <IconButton
         id="button-tick"
         onClick={showDrawer}
+        aria-label={tickBarActive ? (isFlash ? 'Log flash' : 'Log ascent') : 'Log ascent'}
         sx={tickBarActive
           ? {
               backgroundColor: isFlash ? themeTokens.colors.amber : themeTokens.colors.success,
               color: isFlash ? themeTokens.neutral[900] : 'common.white',
+              transition: 'background-color 150ms ease, color 150ms ease',
               '&:hover': { backgroundColor: isFlash ? themeTokens.colors.amber : themeTokens.colors.successHover },
             }
           : { opacity: themeTokens.opacity.subtle }

@@ -26,7 +26,7 @@ export const TickButtonWithLabel: React.FC<TickButtonWithLabelProps> = ({ label,
   return (
     <div className={styles.tickButtonWrapper}>
       {children}
-      <span className={styles.tickButtonLabel}>{label}</span>
+      <span className={styles.tickButtonLabel} aria-hidden="true">{label}</span>
     </div>
   );
 };

@@ -25,6 +25,8 @@ import { useSwipeable } from 'react-swipeable';
 import { TickButton } from '../logbook/tick-button';
 import { TickButtonWithLabel } from '../logbook/tick-icon';
 import { QuickTickBar, type QuickTickBarHandle } from '../logbook/quick-tick-bar';
+import { hasPriorHistoryForClimb } from '@/app/hooks/use-tick-save';
+import { useBoardProvider } from '../board-provider/board-provider-context';
 import ClimbThumbnail from '../climb-card/climb-thumbnail';
 import ClimbTitle from '../climb-card/climb-title';
 import { themeTokens } from '@/app/theme/theme-config';
@@ -190,12 +192,16 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [dismissedDisconnect, setDismissedDisconnect] = useState(false);
 
+  const { logbook } = useBoardProvider();
+
   // Tick-bar comment state lives here so the comment field can render in a
   // separate bar *above* the queue control bar without reflowing the main bar.
   // QuickTickBar reads the value back out via props when saving the tick.
   const [tickComment, setTickComment] = useState('');
   const [tickCommentFocused, setTickCommentFocused] = useState(false);
-  const [isFlash, setIsFlash] = useState(false);
+  const [isFlash, setIsFlash] = useState(
+    () => !!currentClimb && !hasPriorHistoryForClimb(currentClimb, logbook),
+  );
   const quickTickBarRef = useRef<QuickTickBarHandle>(null);
 
   // Swipe-to-dismiss state — tracks vertical offset during down-swipe gesture.
@@ -1068,9 +1074,9 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                       <IconButton
                         onClick={(e) => quickTickBarRef.current?.saveAttempt(e.currentTarget)}
                         sx={{
-                          backgroundColor: themeTokens.colors.error,
-                          color: 'common.white',
-                          '&:hover': { backgroundColor: themeTokens.colors.error },
+                          backgroundColor: 'rgba(184, 82, 76, 0.18)',
+                          color: themeTokens.colors.error,
+                          '&:hover': { backgroundColor: 'rgba(184, 82, 76, 0.28)' },
                         }}
                         aria-label="Log attempt"
                       >
