@@ -88,6 +88,35 @@ describe('readFiltersFromQuery', () => {
     expect(result.toDate).toBe('2024-12-31');
   });
 
+  it('ignores non-ISO date strings', () => {
+    const params = new URLSearchParams('from=abc&to=2024/12/31');
+    const result = readFiltersFromQuery(params);
+    expect(result.fromDate).toBeUndefined();
+    expect(result.toDate).toBeUndefined();
+  });
+
+  it('ignores empty date params', () => {
+    const params = new URLSearchParams('from=&to=');
+    const result = readFiltersFromQuery(params);
+    expect(result.fromDate).toBeUndefined();
+    expect(result.toDate).toBeUndefined();
+  });
+
+  it('ignores partial date formats', () => {
+    const params = new URLSearchParams('from=2024-01&to=2024');
+    const result = readFiltersFromQuery(params);
+    expect(result.fromDate).toBeUndefined();
+    expect(result.toDate).toBeUndefined();
+  });
+
+  it('accepts ISO date that regex allows even if month/day are out of range', () => {
+    // Regex-only validation (per review) — month/day range checking is left
+    // to downstream consumers. Documents current behaviour.
+    const params = new URLSearchParams('from=2024-13-40');
+    const result = readFiltersFromQuery(params);
+    expect(result.fromDate).toBe('2024-13-40');
+  });
+
   it('parses angle range with both params', () => {
     const params = new URLSearchParams('minAngle=10&maxAngle=50');
     const result = readFiltersFromQuery(params);
