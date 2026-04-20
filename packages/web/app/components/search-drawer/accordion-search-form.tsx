@@ -292,6 +292,7 @@ const AccordionSearchForm: React.FC<AccordionSearchFormProps> = ({
                 updateFilters({
                   onlyDrafts: false,
                   projectsOnly: false,
+                  minAscents: 0,
                 });
               }
             }}

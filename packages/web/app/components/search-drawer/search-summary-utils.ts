@@ -57,8 +57,8 @@ export function getClimbPanelSummary(params: SearchRequestPagination): string[] 
 export function getQualityPanelSummary(params: SearchRequestPagination): string[] {
   const parts: string[] = [];
 
-  // minAscents === 2 is reflected by the Ascent Status "Established" chip; avoid dup.
-  if (params.minAscents && params.minAscents !== 2) {
+  // minAscents >= 2 is reflected by the Ascent Status "Established" chip; avoid dup.
+  if (params.minAscents && params.minAscents < 2) {
     parts.push(`${params.minAscents}+ ascents`);
   }
   if (params.minRating) {

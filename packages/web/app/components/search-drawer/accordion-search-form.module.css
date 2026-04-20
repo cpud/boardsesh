@@ -185,12 +185,6 @@
   font-size: 14px;
 }
 
-.radioHint {
-  font-size: 12px;
-  color: var(--neutral-500, #6B7280);
-  padding: 8px 16px 4px;
-}
-
 /* Sort toggle */
 .sortToggle {
   font-size: 13px;
