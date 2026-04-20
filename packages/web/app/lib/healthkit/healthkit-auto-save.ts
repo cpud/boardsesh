@@ -12,7 +12,9 @@ import { SET_SESSION_HEALTHKIT_WORKOUT_ID } from '@/app/lib/graphql/operations/a
  * Standalone async function that auto-saves a session to HealthKit.
  * No React dependencies — can be called from any context.
  *
- * Returns the workoutId if save succeeded, or null if skipped/failed.
+ * Returns the workoutId if the HealthKit write succeeded (even if the
+ * backend persist of the workoutId fails), or null if skipped/failed
+ * before reaching HealthKit.
  */
 export async function autoSaveToHealthKit(
   summary: SessionSummary,
@@ -32,7 +34,9 @@ export async function autoSaveToHealthKit(
     const result = await saveSessionToHealthKit(summary, boardType);
     if (!result) return null;
 
-    // Persist the workoutId to the backend for deduplication
+    // Persist the workoutId to the backend for deduplication.
+    // If this fails the HealthKit workout still exists — return the
+    // workoutId so the caller knows the save succeeded and won't retry.
     if (authToken) {
       try {
         const client = createGraphQLHttpClient(authToken);
@@ -41,7 +45,6 @@ export async function autoSaveToHealthKit(
           workoutId: result.workoutId,
         });
       } catch (e) {
-        // HealthKit workout exists; backend persist failing is non-critical
         console.warn('[HealthKit] Failed to persist workout id:', e);
       }
     }

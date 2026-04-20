@@ -59,7 +59,7 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
             return
         }
 
-        guard let startDate = parseISO8601(startIso), let endDate = parseISO8601(endIso), endDate >= startDate else {
+        guard let startDate = parseISO8601(startIso), let endDate = parseISO8601(endIso), endDate > startDate else {
             logger.error("Invalid dates: startDate=\(startIso, privacy: .public) endDate=\(endIso, privacy: .public)")
             call.reject("Invalid startDate/endDate: start=\(startIso), end=\(endIso)")
             return
