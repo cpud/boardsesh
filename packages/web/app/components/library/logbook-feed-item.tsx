@@ -404,24 +404,15 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
   // Map ascent to Climb for ClimbActions + set-active handlers
   const climb = useMemo(() => ascentFeedItemToClimb(item), [item]);
 
-  // Row tap: set active (no drawer). Mirrors climbs-list.handleClimbClickByIndex.
+  // Row tap: set active (no drawer). Mirrors climb-list-item.handleRowClick.
   const handleRowClick = useCallback(() => {
     if (isEditing || !queueActions) return;
     queueActions.setCurrentClimb(climb);
     track('Logbook Row Clicked', { climbUuid: climb.uuid });
   }, [isEditing, queueActions, climb]);
 
-  // Row keyboard activation (Enter/Space) to match role=button semantics.
-  const handleRowKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (isEditing || !queueActions) return;
-    if (e.key !== 'Enter' && e.key !== ' ') return;
-    if (e.target !== e.currentTarget) return;
-    e.preventDefault();
-    handleRowClick();
-  }, [isEditing, queueActions, handleRowClick]);
-
   // Thumbnail tap: set active + open play drawer. Mirrors
-  // climbs-list.handleClimbThumbnailClickByIndex.
+  // climb-list-item.handleThumbnailClick.
   const handleThumbnailClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     if (isEditing || !queueActions) return;
@@ -586,11 +577,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
           ref={contentCombinedRef}
           className={styles.swipeableContent}
           data-swipe-content=""
-          role={!isEditing && queueActions ? 'button' : undefined}
-          tabIndex={!isEditing && queueActions ? 0 : undefined}
           onClick={handleRowClick}
-          onKeyDown={handleRowKeyDown}
-          aria-label={!isEditing && queueActions ? `Set ${item.climbName} as active climb` : undefined}
         >
           <div className={styles.content}>
             {/* Thumbnail with ascent status badge */}
