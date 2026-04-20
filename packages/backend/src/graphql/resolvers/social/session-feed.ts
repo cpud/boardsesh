@@ -530,6 +530,9 @@ export const sessionFeedQueries = {
       downvotes: voteData ? Number(voteData.downvotes) : 0,
       voteScore: voteData ? Number(voteData.score) : 0,
       commentCount: commentData ? Number(commentData.count) : 0,
+      healthKitWorkoutId: isParty
+        ? partySession?.healthKitWorkoutId || null
+        : inferredSession?.healthKitWorkoutId || null,
     };
   },
 };
