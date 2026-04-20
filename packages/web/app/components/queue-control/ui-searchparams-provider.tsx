@@ -60,7 +60,7 @@ export const UISearchParamsProvider: React.FC<{ children: React.ReactNode }> = (
         gradeAccuracy: uiSearchParams.gradeAccuracy,
         onlyClassics: uiSearchParams.onlyClassics,
         projectsOnly: uiSearchParams.projectsOnly,
-        establishedOnly: uiSearchParams.minAscents >= 2,
+        establishedOnly: uiSearchParams.minAscents >= 2 && !uiSearchParams.projectsOnly,
         onlyTallClimbs: uiSearchParams.onlyTallClimbs,
         onlyDrafts: uiSearchParams.onlyDrafts,
         hideAttempted: uiSearchParams.hideAttempted,

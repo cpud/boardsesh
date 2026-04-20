@@ -261,13 +261,6 @@ const AccordionSearchForm: React.FC<AccordionSearchFormProps> = ({
             value={statusValue}
             onChange={(e) => {
               const value = e.target.value as 'any' | 'drafts' | 'established' | 'projects';
-              if (value === 'drafts' && !isAuthenticated) {
-                openAuthModal({
-                  title: 'Sign in to Boardsesh',
-                  description: 'Sign in to browse your draft climbs.',
-                });
-                return;
-              }
               if (value === 'drafts') {
                 updateFilters({
                   onlyDrafts: true,
@@ -318,7 +311,7 @@ const AccordionSearchForm: React.FC<AccordionSearchFormProps> = ({
               value="projects"
               control={<Radio size="small" color="primary" />}
               label={
-                <MuiTooltip title="Unclimbed — zero recorded ascents">
+                <MuiTooltip title="Climbs with zero recorded ascents">
                   <MuiTypography variant="body2" component="span">Projects</MuiTypography>
                 </MuiTooltip>
               }
