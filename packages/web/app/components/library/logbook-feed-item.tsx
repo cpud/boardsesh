@@ -409,8 +409,8 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
     try {
       await queueActions.setCurrentClimb(climb);
       track('Logbook Row Clicked', { climbUuid: climb.uuid });
-    } catch {
-      // ignore – UI stays in its current state
+    } catch (err) {
+      console.error('Failed to set active climb from logbook row', err);
     }
   }, [isEditing, queueActions, climb]);
 
@@ -429,8 +429,8 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
       await queueActions.setCurrentClimb(climb);
       dispatchOpenPlayDrawer();
       track('Logbook Thumbnail Clicked', { climbUuid: climb.uuid });
-    } catch {
-      // ignore – UI stays in its current state
+    } catch (err) {
+      console.error('Failed to set active climb from logbook thumbnail', err);
     }
   }, [isEditing, queueActions, climb]);
 
