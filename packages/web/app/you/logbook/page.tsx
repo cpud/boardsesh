@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import LogbookFeed from '@/app/components/library/logbook-feed';
 import LogbookLoading from './loading';
 import { cachedUserProfileStats } from '@/app/lib/graphql/server-cached-client';
@@ -12,7 +13,10 @@ export const metadata: Metadata = {
 
 export default async function YouLogbookPage() {
   const session = await getYouSession();
-  const userId = session!.user!.id;
+  if (!session?.user?.id) {
+    redirect('/');
+  }
+  const userId = session.user.id;
   const profileStats = await cachedUserProfileStats(userId);
   const layoutStats = profileStats?.layoutStats ?? [];
 

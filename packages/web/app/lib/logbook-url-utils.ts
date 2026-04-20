@@ -14,6 +14,17 @@ function isValidSortField(value: string): value is SortField {
   return VALID_SORT_FIELDS.has(value as SortField);
 }
 
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function isIsoDate(value: string | null): value is string {
+  if (!value || !ISO_DATE_RE.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime())) return false;
+  // Round-trip check catches values Date silently coerces (e.g. '2024-13-40'
+  // would become '2025-02-09' on some runtimes, or NaN on others).
+  return parsed.toISOString().slice(0, 10) === value;
+}
+
 export function readFiltersFromQuery(params: URLSearchParams): Partial<LogbookFilterState> {
   const partial: Partial<LogbookFilterState> = {};
 
@@ -36,10 +47,10 @@ export function readFiltersFromQuery(params: URLSearchParams): Partial<LogbookFi
   if (maxGrade !== undefined) partial.maxGrade = maxGrade;
 
   const from = params.get('from');
-  if (from) partial.fromDate = from;
+  if (isIsoDate(from)) partial.fromDate = from;
 
   const to = params.get('to');
-  if (to) partial.toDate = to;
+  if (isIsoDate(to)) partial.toDate = to;
 
   const minAngle = parseQueryParamInt(params, 'minAngle');
   const maxAngle = parseQueryParamInt(params, 'maxAngle');
@@ -62,10 +73,11 @@ export function readSortFromQuery(params: URLSearchParams): Partial<LogbookSortS
   }
   const order = params.get('order');
   if (order === 'asc' || order === 'desc') {
-    // Only apply direction when a sort field is also present (explicitly or
-    // via the 'mode' flag below) to avoid corrupting the persisted default.
-    if (partial.primaryField || sort === null) {
-      // sort param absent but order present → custom mode with default field
+    // Apply direction when the sort field was parsed above OR when 'sort'
+    // was absent and we fall back to the default field in custom mode. The
+    // only case we skip is an invalid 'sort' value (present but rejected),
+    // to avoid fabricating a field the user did not ask for.
+    if (partial.primaryField || !sort) {
       if (!partial.primaryField) {
         partial.mode = 'custom';
         partial.primaryField = DEFAULT_SORT.primaryField;

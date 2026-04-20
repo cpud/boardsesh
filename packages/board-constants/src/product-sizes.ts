@@ -107,14 +107,19 @@ export const getDefaultSizeForLayout = (boardName: BoardName, layoutId: number):
  * LAYOUTS config but still have valid product-size associations. These layouts
  * appear in historical user data (logbook ticks, stats) even though they are
  * no longer sold or listed in the Aurora API product-sizes endpoint.
+ *
+ * Layouts 6 and 7 both correspond to "Orbit" in Aurora's data with identical
+ * product-size and set associations. The real distinction between them has
+ * not been confirmed (possibly mirror vs spray, or a legacy duplicate); the
+ * suffixes exist only to avoid a duplicate label in the UI.
  */
 export const ORPHANED_KILTER_LAYOUT_DEFAULTS: Record<number, { name: string; sizeId: number; setIds: string }> = {
   2: { name: 'Kilter JUUL', sizeId: 11, setIds: '21' },
   3: { name: 'Kilter Demo', sizeId: 12, setIds: '22' },
   4: { name: 'Kilter BKB', sizeId: 13, setIds: '23' },
   5: { name: 'Kilter Spire', sizeId: 15, setIds: '24' },
-  6: { name: 'Kilter Orbit', sizeId: 16, setIds: '25' },
-  7: { name: 'Kilter Orbit', sizeId: 16, setIds: '25' },
+  6: { name: 'Kilter Orbit (v1)', sizeId: 16, setIds: '25' },
+  7: { name: 'Kilter Orbit (v2)', sizeId: 16, setIds: '25' },
 };
 
 export const getBoardSelectorOptions = () => {
