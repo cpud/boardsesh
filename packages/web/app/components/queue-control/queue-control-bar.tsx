@@ -1281,8 +1281,8 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                         <NextClimbButton navigate={isViewPage || isPlayPage} boardDetails={boardDetails} />
                       </Stack>
                     </span>
-                    {/* Attempt button — only visible in tick mode (collapsed) */}
-                    {tickBarActive && !tickBarExpanded && (
+                    {/* Attempt button — visible whenever tick mode is active */}
+                    {tickBarActive && (
                       <TickButtonWithLabel label="attempt">
                         <IconButton
                           onClick={(e) => quickTickBarRef.current?.saveAttempt(e.currentTarget)}

@@ -363,9 +363,22 @@ export const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayVie
                 />
               }
             />
-            {/* Action buttons — save + attempt */}
+            {/* Action buttons — attempt + tick (order matches queue control bar) */}
             {
               <div className={styles.tickBarButtons}>
+                <TickButtonWithLabel label="attempt">
+                  <IconButton
+                    onClick={(e) => quickTickBarRef.current?.saveAttempt(e.currentTarget)}
+                    sx={{
+                      backgroundColor: themeTokens.colors.errorMuted,
+                      color: themeTokens.colors.error,
+                      '&:hover': { backgroundColor: themeTokens.colors.errorMutedHover },
+                    }}
+                    aria-label="Log attempt"
+                  >
+                    <PersonFallingIcon />
+                  </IconButton>
+                </TickButtonWithLabel>
                 <TickButtonWithLabel label={isFlash ? 'flash' : 'tick'}>
                   <IconButton
                     id="button-tick"
@@ -381,19 +394,6 @@ export const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayVie
                     aria-label="Save tick"
                   >
                     <TickIcon isFlash={!!isFlash} />
-                  </IconButton>
-                </TickButtonWithLabel>
-                <TickButtonWithLabel label="attempt">
-                  <IconButton
-                    onClick={(e) => quickTickBarRef.current?.saveAttempt(e.currentTarget)}
-                    sx={{
-                      backgroundColor: themeTokens.colors.errorMuted,
-                      color: themeTokens.colors.error,
-                      '&:hover': { backgroundColor: themeTokens.colors.errorMutedHover },
-                    }}
-                    aria-label="Log attempt"
-                  >
-                    <PersonFallingIcon />
                   </IconButton>
                 </TickButtonWithLabel>
               </div>

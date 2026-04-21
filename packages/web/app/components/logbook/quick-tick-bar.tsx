@@ -4,7 +4,6 @@ import React, { useState, useCallback, useEffect, useMemo, useImperativeHandle, 
 import Stack from '@mui/material/Stack';
 import KeyboardArrowUpOutlined from '@mui/icons-material/KeyboardArrowUpOutlined';
 import KeyboardArrowDownOutlined from '@mui/icons-material/KeyboardArrowDownOutlined';
-import ElectricBoltOutlined from '@mui/icons-material/ElectricBoltOutlined';
 import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import { Angle, Climb, BoardDetails } from '@/app/lib/types';
 import { useBoardProvider } from '../board-provider/board-provider-context';
@@ -19,7 +18,6 @@ import {
   InlineStarPicker,
   InlineGradePicker,
   InlineTriesPicker,
-  InlineAscentTypePicker,
   type ExpandedControl,
 } from './tick-controls';
 import styles from './quick-tick-bar.module.css';
@@ -108,32 +106,13 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(
     const [attemptCount, setAttemptCount] = useState<number>(1);
     const [expandedControl, setExpandedControl] = useState<ExpandedControl>(null);
 
-    // Explicit ascent type — initialized from inferred value, auto-updated on state changes.
+    // Ascent type is always inferred from state: flash on 1st try with no prior history, else send.
     const inferredType: TickStatus = tickTarget && !tickTarget.hasPriorHistory && attemptCount === 1 ? 'flash' : 'send';
     const [ascentType, setAscentType] = useState<TickStatus>(inferredType);
-    const userOverrodeType = useRef(false);
 
-    // Reset userOverrodeType when the tick target (climb) changes so auto-inference works for new climbs.
     useEffect(() => {
-      userOverrodeType.current = false;
-    }, [tickTarget]);
-
-    // Auto-update ascent type when tries or prior history changes (unless user explicitly chose).
-    useEffect(() => {
-      if (userOverrodeType.current) {
-        // If user manually selected flash but now tries > 1, correct to send.
-        if (ascentType === 'flash' && (attemptCount > 1 || tickTarget?.hasPriorHistory)) {
-          setAscentType('send');
-        }
-        return;
-      }
       setAscentType(inferredType);
-    }, [inferredType, attemptCount, tickTarget?.hasPriorHistory, ascentType]);
-
-    const handleAscentTypeSelect = useCallback((value: TickStatus) => {
-      userOverrodeType.current = true;
-      setAscentType(value);
-    }, []);
+    }, [inferredType]);
 
     // Report ascent type to the parent so tick buttons can update their appearance.
     const isFlash = ascentType === 'flash';
@@ -276,21 +255,6 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(
         {expanded && (
           <div className={`${styles.expandedPanel} ${styles.expandedPanelOpen}`}>
             <div className={styles.expandedPanelContent}>
-              {/* Ascent type row */}
-              <div className={styles.labeledRow}>
-                <span className={styles.labeledRowLabel}>
-                  <ElectricBoltOutlined sx={{ fontSize: 14 }} />
-                  type
-                </span>
-                <div className={styles.labeledRowPicker}>
-                  <InlineAscentTypePicker
-                    ascentType={ascentType}
-                    onSelect={handleAscentTypeSelect}
-                    canFlash={!tickTarget?.hasPriorHistory && attemptCount === 1}
-                  />
-                </div>
-              </div>
-
               {/* Grade row */}
               <div className={styles.labeledRow}>
                 <span className={styles.labeledRowLabel}>grade</span>
