@@ -48,12 +48,6 @@ The development database uses a **pre-built Docker image** (`ghcr.io/boardsesh/b
 # Install Vite+ CLI (one-time, manages Node.js, linting, formatting, testing)
 curl -fsSL https://vite.plus | bash
 
-# Start development databases (PostgreSQL, Neon proxy, Redis)
-# First run pulls the pre-built image (~1GB) with all board data included.
-# Subsequent runs start in seconds.
-# Test user: test@boardsesh.com / test
-bun run db:up
-
 # Environment files are in packages/web/:
 # .env.local contains generic config (tracked in git)
 # .env.development.local contains secrets (NOT tracked in git)
@@ -68,11 +62,11 @@ TENSION_SYNC_TOKEN=your_tension_token_here
 # Install all dependencies (from root)
 bun install
 
-# Start web development server
-bun run dev
-
-# Start backend development server
-bun run backend:dev
+# Start everything (databases, backend, web)
+# First run pulls the pre-built image (~1GB) with all board data included.
+# Subsequent runs start in seconds.
+# Test user: test@boardsesh.com / test
+vp run dev
 ```
 
 #### Pre-built database image
@@ -92,7 +86,10 @@ This project uses [Vite+](https://viteplus.dev) (`vp`) as its unified toolchain 
 - `vp test run` - Run tests once without watch mode (or `bun run test:run`)
 - `vp lint` - Lint all packages (or `bun run lint`)
 - `vp fmt` - Format all files with Oxfmt (or `bun run format`)
-- `bun run dev` - Start web development server with Turbopack
+- `vp run dev` - Start development databases, backend, and web server (or `bun run dev`)
+- `vp run dev:backend` - Start database and backend only (or `bun run dev:backend`)
+- `vp run dev:web` - Start database and web server only (or `bun run dev:web`)
+- `vp run db:up` - Start development databases and run migrations only (or `bun run db:up`)
 - `bun run build` - Build all packages
 - `bun run build:web` - Build web package only
 - `bun run build:backend` - Build backend package only
@@ -101,9 +98,8 @@ This project uses [Vite+](https://viteplus.dev) (`vp`) as its unified toolchain 
 - `bun run typecheck:backend` - Type check backend package only
 - `bun run typecheck:db` - Type check db package only
 - `bun run typecheck:shared` - Type check shared-schema package only
-- `bun run backend:dev` - Start backend in development mode
+- `bun run backend:dev` - Start backend directly without database setup
 - `bun run backend:start` - Start backend in production mode
-- `bun run db:up` - Start development databases, run migrations, and import MoonBoard data (uses pre-built image with Kilter/Tension data)
 
 ### Running E2E Tests
 

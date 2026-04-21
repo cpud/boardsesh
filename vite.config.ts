@@ -18,6 +18,26 @@ export default defineConfig({
     '*.{ts,tsx,js,mjs,cjs}': 'vp check --fix',
   },
   run: {
-    cache: true,
+    tasks: {
+      'db:up': {
+        command: 'sh scripts/dev-db-up.sh',
+        cache: false,
+      },
+      'dev:backend': {
+        command: 'bun run --filter=boardsesh-backend dev',
+        dependsOn: ['db:up'],
+        cache: false,
+      },
+      'dev:web': {
+        command: 'bun run --filter=@boardsesh/web dev',
+        dependsOn: ['db:up'],
+        cache: false,
+      },
+      dev: {
+        command: 'tsx scripts/dev-orchestrator.ts',
+        dependsOn: ['db:up'],
+        cache: false,
+      },
+    },
   },
 });
