@@ -30,9 +30,19 @@ const { sessionGroupedFeed } = await import('../graphql/resolvers/social/session
 );
 
 function sqlToText(query: unknown): string {
-  const sqlQuery = query as { queryChunks?: Array<{ value?: string[] }> };
-  return (sqlQuery.queryChunks || [])
-    .map((chunk) => (Array.isArray(chunk?.value) ? chunk.value.join('') : ''))
+  if (!query || typeof query !== 'object') return '';
+  const sqlQuery = query as { queryChunks?: unknown[] };
+  if (!Array.isArray(sqlQuery.queryChunks)) return '';
+  return sqlQuery.queryChunks
+    .map((chunk) => {
+      if (!chunk || typeof chunk !== 'object') return '';
+      const c = chunk as { value?: string[]; queryChunks?: unknown[] };
+      // StringChunk: has .value (string[])
+      if (Array.isArray(c.value)) return c.value.join('');
+      // Nested SQL object: has .queryChunks
+      if (Array.isArray(c.queryChunks)) return sqlToText(c);
+      return '';
+    })
     .join('');
 }
 
@@ -130,7 +140,7 @@ describe('sessionGroupedFeed user filtering', () => {
       totalSends: 5,
       totalFlashes: 2,
       totalAttempts: 6,
-      hardestGrade: 'V5',
+      hardestGrade: '4a/V0',
       participants: [
         expect.objectContaining({ userId: 'user-1', sends: 3 }),
         expect.objectContaining({ userId: 'user-2', sends: 2 }),

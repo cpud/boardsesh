@@ -268,6 +268,8 @@ const createTablesSQL = `
   ON CONFLICT (id) DO NOTHING;
 `;
 
+let dbAvailable = false;
+
 beforeAll(async () => {
   // First, connect to postgres database to create test database if needed
   // Suppress PostgreSQL NOTICE messages in test output
@@ -285,10 +287,20 @@ beforeAll(async () => {
       console.log(`Created test database: ${TEST_DB_NAME}`);
     }
   } catch (error) {
-    // Database might already exist, that's okay
+    // Database might not be available — mock-based tests can still run
     console.log('Test database check:', error);
+    try {
+      await adminClient.end();
+    } catch (_) {
+      // ignore cleanup errors
+    }
+    return;
   } finally {
-    await adminClient.end();
+    try {
+      await adminClient.end();
+    } catch (_) {
+      // ignore cleanup errors
+    }
   }
 
   // Now connect to the test database
@@ -297,6 +309,7 @@ beforeAll(async () => {
 
   // Create tables directly (backend tests only need session tables)
   await migrationClient.unsafe(createTablesSQL);
+  dbAvailable = true;
 });
 
 beforeEach(async () => {
@@ -306,16 +319,19 @@ beforeEach(async () => {
   // Reset rate limiter to prevent state leaking between tests
   resetAllRateLimits();
 
-  // Clear all tables in correct order (respect foreign keys)
-  await db.execute(sql`TRUNCATE TABLE board_session_queues CASCADE`);
-  await db.execute(sql`TRUNCATE TABLE board_session_clients CASCADE`);
-  await db.execute(sql`TRUNCATE TABLE board_session_participants CASCADE`);
-  await db.execute(sql`TRUNCATE TABLE board_sessions CASCADE`);
+  // Only clear tables if the database is available
+  if (dbAvailable && db) {
+    // Clear all tables in correct order (respect foreign keys)
+    await db.execute(sql`TRUNCATE TABLE board_session_queues CASCADE`);
+    await db.execute(sql`TRUNCATE TABLE board_session_clients CASCADE`);
+    await db.execute(sql`TRUNCATE TABLE board_session_participants CASCADE`);
+    await db.execute(sql`TRUNCATE TABLE board_sessions CASCADE`);
+  }
 });
 
 afterAll(async () => {
-  // Close database connection
-  if (migrationClient) {
+  // Close database connection if it was opened
+  if (dbAvailable && migrationClient) {
     await migrationClient.end();
   }
 });
