@@ -12,6 +12,15 @@ import {
   CAPACITOR_BRIDGE_TIMEOUT_MS,
 } from '@/app/lib/ble/capacitor-utils';
 import { registerBluetoothConnection } from './bluetooth-status-store';
+import { DevicePickerDialog } from './device-picker-dialog';
+import { parseSerialNumber } from './bluetooth-aurora';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
+import {
+  GET_BOARDS_BY_SERIAL_NUMBERS,
+  type GetBoardsBySerialNumbersQueryResponse,
+} from '@/app/lib/graphql/operations';
+import type { UserBoard } from '@boardsesh/shared-schema';
 
 type BluetoothContextValue = {
   isConnected: boolean;
@@ -108,12 +117,55 @@ export function BluetoothProvider({
   boardDetails: BoardDetails;
   children: React.ReactNode;
 }) {
-  const { isConnected, loading, connect, disconnect, sendFramesToBoard } = useBoardBluetooth({
+  const { isConnected, loading, connect, disconnect, sendFramesToBoard, pickerState } = useBoardBluetooth({
     boardDetails,
   });
+  const { token } = useWsAuthToken();
 
   const [isBluetoothSupported, setIsBluetoothSupported] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+
+  // Resolve BLE device serial numbers to known boards
+  const [resolvedBoards, setResolvedBoards] = useState<Map<string, UserBoard>>(new Map());
+  const resolvedSerialsRef = useRef<string>('');
+
+  useEffect(() => {
+    if (!pickerState || pickerState.devices.length === 0 || !token) {
+      return;
+    }
+
+    const serials: string[] = [];
+    for (const device of pickerState.devices) {
+      const serial = parseSerialNumber(device.name);
+      if (serial) serials.push(serial);
+    }
+
+    if (serials.length === 0) return;
+
+    // Deduplicate and check if we already resolved these serials
+    const uniqueSerials = [...new Set(serials)].sort();
+    const serialsKey = uniqueSerials.join(',');
+    if (serialsKey === resolvedSerialsRef.current) return;
+    resolvedSerialsRef.current = serialsKey;
+
+    const client = createGraphQLHttpClient(token);
+    client
+      .request<GetBoardsBySerialNumbersQueryResponse>(GET_BOARDS_BY_SERIAL_NUMBERS, {
+        serialNumbers: uniqueSerials,
+      })
+      .then((data) => {
+        const boardMap = new Map<string, UserBoard>();
+        for (const board of data.boardsBySerialNumbers) {
+          if (board.serialNumber) {
+            boardMap.set(board.serialNumber, board);
+          }
+        }
+        setResolvedBoards(boardMap);
+      })
+      .catch((err) => {
+        console.error('[BLE] Failed to resolve serial numbers:', err);
+      });
+  }, [pickerState, token]);
 
   useEffect(() => {
     let cancelPolling: (() => void) | undefined;
@@ -174,6 +226,14 @@ export function BluetoothProvider({
     <BluetoothContext.Provider value={value}>
       {isConnected && (
         <BluetoothAutoSender sendFramesToBoard={sendFramesToBoard} layoutName={boardDetails.layout_name ?? ''} />
+      )}
+      {pickerState && (
+        <DevicePickerDialog
+          devices={pickerState.devices}
+          onSelect={pickerState.onSelect}
+          onCancel={pickerState.onCancel}
+          resolvedBoards={resolvedBoards}
+        />
       )}
       {children}
     </BluetoothContext.Provider>

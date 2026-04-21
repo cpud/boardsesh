@@ -1,7 +1,8 @@
 'use client';
 
+import { useMemo } from 'react';
 import BluetoothSearching from '@mui/icons-material/BluetoothSearching';
-import Bluetooth from '@mui/icons-material/Bluetooth';
+import HelpOutline from '@mui/icons-material/HelpOutline';
 import SignalCellularAlt from '@mui/icons-material/SignalCellularAlt';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -9,18 +10,21 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { DiscoveredDevice } from '@/app/lib/ble/types';
+import type { UserBoard } from '@boardsesh/shared-schema';
+import { parseSerialNumber, parseBoardTypeFromDeviceName } from './bluetooth-aurora';
+import BoardRenderer from '../board-renderer/board-renderer';
+import { getBoardDetails } from '@/app/lib/board-constants';
+import type { BoardName } from '@boardsesh/shared-schema';
+import BoardThumbnail from '../board-scroll/board-thumbnail';
 
 type DevicePickerDialogProps = {
   devices: DiscoveredDevice[];
   onSelect: (deviceId: string) => void;
   onCancel: () => void;
+  resolvedBoards?: Map<string, UserBoard>;
 };
 
 function signalLabel(rssi: number): string {
@@ -30,45 +34,176 @@ function signalLabel(rssi: number): string {
   return 'Very weak';
 }
 
-export function DevicePickerDialog({ devices, onSelect, onCancel }: DevicePickerDialogProps) {
-  // Sort by signal strength (strongest first)
+// Default board configs for shaded preview when serial is unknown
+const FALLBACK_BOARD_CONFIGS: Record<string, { layout_id: number; size_id: number; set_ids: number[] }> = {
+  kilter: { layout_id: 1, size_id: 10, set_ids: [1, 20] },
+  tension: { layout_id: 1, size_id: 10, set_ids: [1] },
+};
+
+function UnknownBoardPreview({ boardType }: { boardType?: BoardName }) {
+  const boardDetails = useMemo(() => {
+    const type = boardType || 'kilter';
+    const config = FALLBACK_BOARD_CONFIGS[type] || FALLBACK_BOARD_CONFIGS.kilter;
+    try {
+      return getBoardDetails({
+        board_name: type,
+        layout_id: config.layout_id,
+        size_id: config.size_id,
+        set_ids: config.set_ids,
+      });
+    } catch {
+      return null;
+    }
+  }, [boardType]);
+
+  return (
+    <>
+      <div style={{ filter: 'grayscale(100%)', opacity: 0.35, width: '100%', height: '100%' }}>
+        {boardDetails && (
+          <BoardRenderer
+            mirrored={false}
+            boardDetails={boardDetails}
+            thumbnail
+            fillHeight
+          />
+        )}
+      </div>
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1,
+      }}>
+        <HelpOutline sx={{ fontSize: 36, color: 'var(--neutral-400)' }} />
+      </div>
+    </>
+  );
+}
+
+function SignalBadge({ rssi }: { rssi: number }) {
+  return (
+    <div style={{
+      position: 'absolute',
+      bottom: 4,
+      right: 4,
+      background: 'rgba(0, 0, 0, 0.7)',
+      color: '#fff',
+      fontSize: 11,
+      fontWeight: 600,
+      padding: '2px 6px',
+      borderRadius: 4,
+      lineHeight: 1.2,
+      pointerEvents: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 2,
+      zIndex: 2,
+    }}>
+      <SignalCellularAlt sx={{ fontSize: 12 }} />
+      {signalLabel(rssi)}
+    </div>
+  );
+}
+
+export function DevicePickerDialog({ devices, onSelect, onCancel, resolvedBoards }: DevicePickerDialogProps) {
   const sorted = [...devices].sort((a, b) => b.rssi - a.rssi);
 
   return (
-    <Dialog open onClose={onCancel} fullWidth maxWidth="xs">
+    <Dialog open onClose={onCancel} fullWidth maxWidth="sm">
       <DialogTitle>
         <Stack direction="row" alignItems="center" spacing={1}>
           <BluetoothSearching />
           <span>Select your board</span>
         </Stack>
       </DialogTitle>
-      <DialogContent sx={{ minHeight: 120 }}>
+      <DialogContent sx={{ minHeight: 160, px: 1 }}>
         {sorted.length === 0 ? (
-          <Stack direction="row" alignItems="center" spacing={2} sx={{ py: 3, justifyContent: 'center' }}>
+          <Stack direction="row" alignItems="center" spacing={2} sx={{ py: 4, justifyContent: 'center' }}>
             <CircularProgress size={20} />
             <Typography variant="body2" color="text.secondary">
               Scanning for boards nearby&hellip;
             </Typography>
           </Stack>
         ) : (
-          <List disablePadding>
-            {sorted.map((device) => (
-              <ListItemButton key={device.deviceId} onClick={() => onSelect(device.deviceId)}>
-                <ListItemIcon sx={{ minWidth: 40 }}>
-                  <Bluetooth />
-                </ListItemIcon>
-                <ListItemText
-                  primary={device.name || 'Unknown device'}
-                  secondary={
-                    <Stack direction="row" alignItems="center" spacing={0.5} component="span">
-                      <SignalCellularAlt sx={{ fontSize: 14 }} />
-                      <span>{signalLabel(device.rssi)}</span>
-                    </Stack>
-                  }
-                />
-              </ListItemButton>
-            ))}
-          </List>
+          <div style={{
+            display: 'flex',
+            overflowX: 'auto',
+            gap: 12,
+            padding: '8px 4px',
+            WebkitOverflowScrolling: 'touch',
+            scrollSnapType: 'x proximity',
+          }}>
+            {sorted.map((device) => {
+              const serial = parseSerialNumber(device.name);
+              const matchedBoard = serial ? resolvedBoards?.get(serial) : undefined;
+              const inferredType = parseBoardTypeFromDeviceName(device.name);
+
+              return (
+                <div
+                  key={device.deviceId}
+                  onClick={() => onSelect(device.deviceId)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelect(device.deviceId);
+                    }
+                  }}
+                  style={{
+                    width: 140,
+                    flexShrink: 0,
+                    cursor: 'pointer',
+                    scrollSnapAlign: 'start',
+                  }}
+                >
+                  <div style={{
+                    aspectRatio: '1',
+                    borderRadius: 8,
+                    overflow: 'hidden',
+                    marginBottom: 4,
+                    boxShadow: 'var(--shadow-xs)',
+                    background: 'var(--neutral-100)',
+                    position: 'relative',
+                  }}>
+                    {matchedBoard ? (
+                      <BoardThumbnail userBoard={matchedBoard} />
+                    ) : (
+                      <UnknownBoardPreview boardType={inferredType} />
+                    )}
+                    <SignalBadge rssi={device.rssi} />
+                  </div>
+                  <div style={{
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: 'var(--neutral-900)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    textAlign: 'center',
+                    lineHeight: 1.15,
+                  }}>
+                    {matchedBoard?.name || device.name || 'Unknown device'}
+                  </div>
+                  {matchedBoard && device.name && (
+                    <div style={{
+                      fontSize: 11,
+                      color: 'var(--neutral-500)',
+                      textAlign: 'center',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      lineHeight: 1.15,
+                    }}>
+                      {device.name}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
       </DialogContent>
       <DialogActions>

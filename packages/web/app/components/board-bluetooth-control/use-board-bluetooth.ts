@@ -4,14 +4,21 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { track } from '@vercel/analytics';
 import * as Sentry from '@sentry/nextjs';
-import type { BoardDetails } from '@/app/lib/types';
+import { BoardDetails } from '@/app/lib/types';
 import { getAuroraBluetoothPacket, parseApiLevel } from './bluetooth-aurora';
 import { getMoonboardBluetoothPacket } from './bluetooth-moonboard';
-import type { HoldRenderData } from '../board-renderer/types';
+import { HoldRenderData } from '../board-renderer/types';
 import { useWakeLock } from './use-wake-lock';
-import type { BluetoothAdapter } from '@/app/lib/ble/types';
+import type { BluetoothAdapter, DevicePickerFn, DiscoveredDevice } from '@/app/lib/ble/types';
 import { createBluetoothAdapter } from '@/app/lib/ble/adapter-factory';
 import { incrementBluetoothSends, maybeFireFeedbackPromptEvent } from '@/app/lib/feedback-prompt-db';
+import { supportsCapacitorBleManualScan } from '@/app/lib/ble/capacitor-utils';
+
+export type PickerState = {
+  devices: DiscoveredDevice[];
+  onSelect: (deviceId: string) => void;
+  onCancel: () => void;
+};
 
 // Module-level cache for Aurora LED placements loader to avoid repeated dynamic import overhead
 type GetLedPlacementsFn = (boardName: string, layoutId: number, sizeId: number) => Record<number, number>;
@@ -60,6 +67,40 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
   const adapterRef = useRef<BluetoothAdapter | null>(null);
   const apiLevelRef = useRef<number>(3);
   const unsubDisconnectRef = useRef<(() => void) | null>(null);
+
+  // Device picker state for custom Capacitor scanning.
+  // pickerRejectRef holds the pending promise's reject so unmount cleanup
+  // can drain it, which causes the adapter's finally block to call stopLEScan.
+  const [pickerState, setPickerState] = useState<PickerState | null>(null);
+  const pickerRejectRef = useRef<((error: Error) => void) | null>(null);
+
+  // Stable device picker function for the Capacitor adapter
+  const devicePicker = useCallback<DevicePickerFn>((subscribe) => {
+    return new Promise<string>((resolve, reject) => {
+      pickerRejectRef.current = reject;
+
+      const cleanup = () => {
+        pickerRejectRef.current = null;
+        setPickerState(null);
+      };
+
+      const handleSelect = (deviceId: string) => {
+        cleanup();
+        resolve(deviceId);
+      };
+
+      const handleCancel = () => {
+        cleanup();
+        reject(new Error('Device selection cancelled'));
+      };
+
+      setPickerState({ devices: [], onSelect: handleSelect, onCancel: handleCancel });
+
+      subscribe((devices) => {
+        setPickerState((prev) => (prev ? { ...prev, devices } : null));
+      });
+    });
+  }, []);
 
   // Handler for device disconnection
   const handleDisconnection = useCallback(() => {
@@ -186,8 +227,13 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
       setLoading(true);
 
       try {
-        // Create a fresh adapter for each connection attempt
-        const adapter = await createBluetoothAdapter(boardDetails.board_name);
+        // Create a fresh adapter for each connection attempt.
+        // Only inject our custom picker when the native BLE bridge supports
+        // manual scan APIs. Older app installs stay on requestDevice().
+        const adapter = await createBluetoothAdapter(
+          boardDetails.board_name,
+          supportsCapacitorBleManualScan() ? devicePicker : undefined,
+        );
 
         const available = await adapter.isAvailable();
         if (!available) {
@@ -233,24 +279,29 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
 
       return false;
     },
-    [handleDisconnection, boardDetails, onConnectionChange, sendFramesToBoard, showMessage],
+    [handleDisconnection, boardDetails, onConnectionChange, sendFramesToBoard, showMessage, devicePicker],
   );
 
-  // Disconnect from the board
-  const disconnect = useCallback(() => {
+  // Disconnect from the board — update state synchronously for immediate UI
+  // feedback, then await the native BLE disconnect in the background.
+  const disconnect = useCallback(async () => {
     unsubDisconnectRef.current?.();
     unsubDisconnectRef.current = null;
-    void adapterRef.current?.disconnect();
+    const adapter = adapterRef.current;
     adapterRef.current = null;
     setIsConnected(false);
     onConnectionChange?.(false);
+    await adapter?.disconnect();
   }, [onConnectionChange]);
 
-  // Clean up on unmount
+  // Clean up on unmount — reject any pending picker promise so the adapter's
+  // finally block calls stopLEScan, then tear down the BLE connection.
   useEffect(() => {
     return () => {
+      pickerRejectRef.current?.(new Error('Component unmounted'));
+      pickerRejectRef.current = null;
       unsubDisconnectRef.current?.();
-      void adapterRef.current?.disconnect();
+      adapterRef.current?.disconnect();
     };
   }, []);
 
@@ -260,5 +311,6 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
     connect,
     disconnect,
     sendFramesToBoard,
+    pickerState,
   };
 }

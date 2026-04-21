@@ -12,6 +12,8 @@ import BoardSearchDrawer from '../board-search-drawer/board-search-drawer';
 import { useDiscoverBoards } from '@/app/hooks/use-discover-boards';
 import { usePopularBoardConfigs } from '@/app/hooks/use-popular-board-configs';
 import { useMyBoards } from '@/app/hooks/use-my-boards';
+import { useBluetoothScan } from '@/app/hooks/use-bluetooth-scan';
+import { parseSerialNumber } from '../board-bluetooth-control/bluetooth-aurora';
 import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
 import styles from './board-scroll.module.css';
 
@@ -75,6 +77,29 @@ export default function BoardDiscoveryScroll({
   const myBoards = externalMyBoards ?? internalMyBoards;
   const [myBoardsVisible, setMyBoardsVisible] = useState(false);
 
+  // Bluetooth scan for quick start
+  const { devices: bleDevices, resolvedBoards: bleResolvedBoards, status: bleStatus, startScan } = useBluetoothScan();
+
+  // Build a set of serial numbers found nearby via BLE
+  const bleSerialSet = new Set<string>();
+  for (const device of bleDevices) {
+    const serial = parseSerialNumber(device.name);
+    if (serial) bleSerialSet.add(serial);
+  }
+
+  // Set of myBoard serial numbers so we can detect overlap
+  const myBoardSerialSet = new Set<string>();
+  for (const board of myBoards) {
+    if (board.serialNumber) myBoardSerialSet.add(board.serialNumber);
+  }
+
+  // BLE-resolved boards that are NOT already in myBoards — show as separate cards
+  const bleOnlyBoards = Array.from(bleResolvedBoards.values()).filter(
+    (board) => !board.serialNumber || !myBoardSerialSet.has(board.serialNumber),
+  );
+
+  const [bleBoardsVisible, setBleBoardsVisible] = useState(false);
+
   useEffect(() => {
     if (myBoards.length > 0) {
       requestAnimationFrame(() => setMyBoardsVisible(true));
@@ -82,6 +107,14 @@ export default function BoardDiscoveryScroll({
       setMyBoardsVisible(false);
     }
   }, [myBoards.length]);
+
+  useEffect(() => {
+    if (bleOnlyBoards.length > 0) {
+      requestAnimationFrame(() => setBleBoardsVisible(true));
+    } else {
+      setBleBoardsVisible(false);
+    }
+  }, [bleOnlyBoards.length]);
 
   const handleFindNearbyClick = useCallback(() => {
     setLocationEnabled(true);
@@ -102,6 +135,10 @@ export default function BoardDiscoveryScroll({
     },
     [onBoardClick],
   );
+
+  const handleBluetoothClick = useCallback(() => {
+    startScan();
+  }, [startScan]);
 
   return (
     <>
@@ -129,7 +166,12 @@ export default function BoardDiscoveryScroll({
           </div>
           <div className={styles.stackedCards}>
             <SearchBoardsCard onClick={handleSearchClick} size="small" />
-            <BluetoothQuickStartCard size="small" />
+            <BluetoothQuickStartCard
+              onClick={handleBluetoothClick}
+              status={bleStatus}
+              hasResults={bleDevices.length > 0}
+              size="small"
+            />
           </div>
         </div>
 
@@ -143,7 +185,22 @@ export default function BoardDiscoveryScroll({
           />
         ))}
 
-        {/* My boards - animate in between cluster and popular */}
+        {/* BLE-discovered boards NOT already in myBoards - animate in */}
+        {bleOnlyBoards.map((board) => (
+          <div
+            key={`ble-${board.uuid}`}
+            className={`${styles.myBoardCardFadeIn} ${bleBoardsVisible ? styles.myBoardCardFadeInVisible : ''}`}
+          >
+            <BoardScrollCard
+              userBoard={board}
+              selected={selectedBoardUuid === board.uuid}
+              onClick={() => onBoardClick(board)}
+              bluetoothNearby
+            />
+          </div>
+        ))}
+
+        {/* My boards - animate in, show bluetooth badge if found nearby */}
         {myBoards.map((board) => (
           <div
             key={board.uuid}
@@ -153,6 +210,7 @@ export default function BoardDiscoveryScroll({
               userBoard={board}
               selected={selectedBoardUuid === board.uuid}
               onClick={() => onBoardClick(board)}
+              bluetoothNearby={!!board.serialNumber && bleSerialSet.has(board.serialNumber)}
             />
           </div>
         ))}

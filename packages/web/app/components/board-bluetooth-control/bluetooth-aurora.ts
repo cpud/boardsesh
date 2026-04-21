@@ -54,6 +54,29 @@ export const parseApiLevel = (deviceName?: string): number => {
   return match ? parseInt(match[1], 10) : 2;
 };
 
+/**
+ * Parse Aurora BLE device name to extract the serial number.
+ * Format: {DisplayName}#{SerialNumber}@{APILevel}
+ * Returns undefined if no serial found.
+ */
+export const parseSerialNumber = (deviceName?: string): string | undefined => {
+  if (!deviceName) return undefined;
+  const match = deviceName.match(/#([^@]+)/);
+  return match ? match[1] : undefined;
+};
+
+/**
+ * Infer the board type from a BLE device name.
+ * e.g. "Kilter Board#751737@3" → 'kilter', "Tension Board#123@2" → 'tension'
+ */
+export const parseBoardTypeFromDeviceName = (deviceName?: string): BoardName | undefined => {
+  if (!deviceName) return undefined;
+  const lower = deviceName.toLowerCase();
+  if (lower.startsWith('kilter')) return 'kilter';
+  if (lower.startsWith('tension')) return 'tension';
+  return undefined;
+};
+
 // --- v3 encoding (API level >= 3) ---
 
 export const encodePositionV3 = (position: number) => [position & 255, (position >> 8) & 255];

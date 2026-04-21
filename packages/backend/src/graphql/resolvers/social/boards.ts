@@ -645,6 +645,34 @@ export const socialBoardQueries = {
   },
 
   /**
+   * Look up boards by controller serial numbers.
+   * Searches all boards (including unlisted/non-public) so BLE device
+   * discovery can resolve any board regardless of visibility.
+   */
+  boardsBySerialNumbers: async (
+    _: unknown,
+    { serialNumbers }: { serialNumbers: string[] },
+    ctx: ConnectionContext,
+  ) => {
+    // Filter out empty strings and limit to 20 to prevent abuse
+    const cleaned = serialNumbers.filter((s) => s.trim().length > 0).slice(0, 20);
+    if (cleaned.length === 0) return [];
+
+    const boards = await db
+      .select()
+      .from(dbSchema.userBoards)
+      .where(
+        and(
+          inArray(dbSchema.userBoards.serialNumber, cleaned),
+          isNull(dbSchema.userBoards.deletedAt),
+        ),
+      );
+
+    const userId = ctx.isAuthenticated ? ctx.userId : undefined;
+    return Promise.all(boards.map((board) => enrichBoard(board, userId)));
+  },
+
+  /**
    * Get current user's boards (owned + followed)
    */
   myBoards: async (_: unknown, { input }: { input?: { limit?: number; offset?: number } }, ctx: ConnectionContext) => {
