@@ -364,7 +364,7 @@ export const InlineGradePicker: React.FC<{
               onClick={() => onSelect(grade.difficulty_id)}
               className={`${styles.pickerItem} ${isSelected ? styles.pickerItemSelected : ''} ${isFocused ? styles.pickerItemFocused : ''}`}
               aria-label={isFocused ? `${formatted} (consensus)` : formatted}
-              aria-selected={isSelected || isFocused}
+              aria-selected={isSelected}
               role="option"
             >
               <span className={styles.pickerGrade} {...(color ? { style: { '--grade-color': color } as React.CSSProperties } : {})}>
