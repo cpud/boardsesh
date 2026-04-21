@@ -72,18 +72,20 @@ export function coordinateToHoldId(coord: string): number {
  * Format: p{holdId}r{roleCode}
  */
 export function movesToFrames(moves: MoonBoardMove[]): string {
-  return moves.map((move) => {
-    const holdId = coordinateToHoldId(move.description);
-    let role: number;
-    if (move.isStart) {
-      role = HOLD_STATE_CODES.start;
-    } else if (move.isEnd) {
-      role = HOLD_STATE_CODES.finish;
-    } else {
-      role = HOLD_STATE_CODES.hand;
-    }
-    return `p${holdId}r${role}`;
-  }).join('');
+  return moves
+    .map((move) => {
+      const holdId = coordinateToHoldId(move.description);
+      let role: number;
+      if (move.isStart) {
+        role = HOLD_STATE_CODES.start;
+      } else if (move.isEnd) {
+        role = HOLD_STATE_CODES.finish;
+      } else {
+        role = HOLD_STATE_CODES.hand;
+      }
+      return `p${holdId}r${role}`;
+    })
+    .join('');
 }
 
 /**

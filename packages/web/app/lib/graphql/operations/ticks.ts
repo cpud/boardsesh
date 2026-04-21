@@ -51,9 +51,37 @@ export const SAVE_TICK = gql`
 `;
 
 // Partial types matching the fields each query actually requests
-type TickFromGetTicks = Pick<Tick, 'uuid' | 'climbUuid' | 'angle' | 'isMirror' | 'status' | 'attemptCount' | 'quality' | 'difficulty' | 'isBenchmark' | 'comment' | 'climbedAt'>;
-type TickFromGetUserTicks = Pick<Tick, 'climbUuid' | 'angle' | 'status' | 'attemptCount' | 'difficulty' | 'climbedAt' | 'layoutId'>;
-type TickFromSaveTick = Pick<Tick, 'uuid' | 'climbUuid' | 'angle' | 'isMirror' | 'status' | 'attemptCount' | 'quality' | 'difficulty' | 'comment' | 'climbedAt'>;
+type TickFromGetTicks = Pick<
+  Tick,
+  | 'uuid'
+  | 'climbUuid'
+  | 'angle'
+  | 'isMirror'
+  | 'status'
+  | 'attemptCount'
+  | 'quality'
+  | 'difficulty'
+  | 'isBenchmark'
+  | 'comment'
+  | 'climbedAt'
+>;
+type TickFromGetUserTicks = Pick<
+  Tick,
+  'climbUuid' | 'angle' | 'status' | 'attemptCount' | 'difficulty' | 'climbedAt' | 'layoutId'
+>;
+type TickFromSaveTick = Pick<
+  Tick,
+  | 'uuid'
+  | 'climbUuid'
+  | 'angle'
+  | 'isMirror'
+  | 'status'
+  | 'attemptCount'
+  | 'quality'
+  | 'difficulty'
+  | 'comment'
+  | 'climbedAt'
+>;
 
 export interface GetTicksQueryVariables {
   input: GetTicksInput;
@@ -180,7 +208,16 @@ export interface GetUserAscentsFeedQueryVariables {
     statusMode?: 'both' | 'send' | 'attempt';
     flashOnly?: boolean;
     climbName?: string;
-    sortBy?: 'recent' | 'hardest' | 'easiest' | 'mostAttempts' | 'climbName' | 'loggedGrade' | 'consensusGrade' | 'date' | 'attemptCount';
+    sortBy?:
+      | 'recent'
+      | 'hardest'
+      | 'easiest'
+      | 'mostAttempts'
+      | 'climbName'
+      | 'loggedGrade'
+      | 'consensusGrade'
+      | 'date'
+      | 'attemptCount';
     sortOrder?: 'asc' | 'desc';
     secondarySortBy?: 'climbName' | 'loggedGrade' | 'consensusGrade' | 'date' | 'attemptCount';
     secondarySortOrder?: 'asc' | 'desc';

@@ -51,31 +51,43 @@ export function FavoriteAction({
     }
   }, [boardDetails.board_name, climb.uuid, angle]);
 
-  const handleClick = useCallback(async (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    e?.preventDefault();
+  const handleClick = useCallback(
+    async (e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      e?.preventDefault();
 
-    if (!isAuthenticated) {
-      openAuthModal({
-        title: "Sign in to save favorites",
-        description: `Sign in to save "${climb.name}" to your favorites.`,
-        onSuccess: handleAuthSuccess,
-      });
-      return;
-    }
+      if (!isAuthenticated) {
+        openAuthModal({
+          title: 'Sign in to save favorites',
+          description: `Sign in to save "${climb.name}" to your favorites.`,
+          onSuccess: handleAuthSuccess,
+        });
+        return;
+      }
 
-    try {
-      const newState = await toggleFavorite();
-      track('Favorite Toggle', {
-        boardName: boardDetails.board_name,
-        climbUuid: climb.uuid,
-        action: newState ? 'favorited' : 'unfavorited',
-      });
-      onComplete?.();
-    } catch {
-      // Silently fail
-    }
-  }, [isAuthenticated, toggleFavorite, boardDetails.board_name, climb.uuid, climb.name, onComplete, openAuthModal, handleAuthSuccess]);
+      try {
+        const newState = await toggleFavorite();
+        track('Favorite Toggle', {
+          boardName: boardDetails.board_name,
+          climbUuid: climb.uuid,
+          action: newState ? 'favorited' : 'unfavorited',
+        });
+        onComplete?.();
+      } catch {
+        // Silently fail
+      }
+    },
+    [
+      isAuthenticated,
+      toggleFavorite,
+      boardDetails.board_name,
+      climb.uuid,
+      climb.name,
+      onComplete,
+      openAuthModal,
+      handleAuthSuccess,
+    ],
+  );
 
   const label = isFavorited ? 'Favorited' : 'Favorite';
   const HeartIcon = isFavorited ? Favorite : FavoriteBorderOutlined;

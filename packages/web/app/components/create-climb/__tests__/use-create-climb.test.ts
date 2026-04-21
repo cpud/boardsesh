@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 
 vi.mock('../../board-renderer/types', () => ({
@@ -20,6 +20,11 @@ vi.mock('../../board-renderer/types', () => ({
       2: { name: 'HAND', color: '#00FFFF', displayColor: '#00FFFF' },
       3: { name: 'FINISH', color: '#FF00FF', displayColor: '#FF00FF' },
     },
+  },
+  STATE_TO_PRIMARY_CODE: {
+    kilter: { STARTING: 42, HAND: 43, FINISH: 44, FOOT: 45 },
+    tension: { STARTING: 1, HAND: 2, FINISH: 3, FOOT: 4 },
+    moonboard: { STARTING: 42, HAND: 43, FINISH: 44 },
   },
 }));
 
@@ -292,9 +297,7 @@ describe('useCreateClimb', () => {
         200: { state: 'HAND' as const, color: '#00FFFF', displayColor: '#00FFFF' },
       };
 
-      const { result } = renderHook(() =>
-        useCreateClimb('kilter', { initialHoldsMap }),
-      );
+      const { result } = renderHook(() => useCreateClimb('kilter', { initialHoldsMap }));
 
       expect(result.current.litUpHoldsMap).toEqual(initialHoldsMap);
       expect(result.current.totalHolds).toBe(2);

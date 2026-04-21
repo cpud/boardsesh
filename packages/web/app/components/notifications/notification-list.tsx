@@ -21,7 +21,9 @@ interface NotificationListProps {
 
 export default function NotificationList({ initialData }: NotificationListProps) {
   const unreadCount = useUnreadNotificationCount();
-  const { groupedNotifications, isLoading, hasMore, isFetchingMore, fetchMore } = useGroupedNotifications(initialData ?? undefined);
+  const { groupedNotifications, isLoading, hasMore, isFetchingMore, fetchMore } = useGroupedNotifications(
+    initialData ?? undefined,
+  );
   const markGroupAsReadMutation = useMarkGroupAsRead();
   const markAllAsReadMutation = useMarkAllAsRead();
   const router = useRouter();
@@ -83,11 +85,7 @@ export default function NotificationList({ initialData }: NotificationListProps)
           {/* Header with mark all as read */}
           {groupedNotifications.length > 0 && unreadCount > 0 && (
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, py: 1 }}>
-              <MuiButton
-                onClick={() => markAllAsReadMutation.mutate()}
-                size="small"
-                sx={{ textTransform: 'none' }}
-              >
+              <MuiButton onClick={() => markAllAsReadMutation.mutate()} size="small" sx={{ textTransform: 'none' }}>
                 Mark all as read
               </MuiButton>
             </Box>

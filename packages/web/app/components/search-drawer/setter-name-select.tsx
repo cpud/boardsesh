@@ -35,9 +35,7 @@ const SetterNameSelect = () => {
   const isSearching = searchValue.length >= MIN_SEARCH_LENGTH;
 
   // Build API URL - with search query if searching, without if just showing top setters
-  const apiUrl = shouldFetch
-    ? constructSetterStatsUrl(parsedParams, isSearching ? searchValue : undefined)
-    : null;
+  const apiUrl = shouldFetch ? constructSetterStatsUrl(parsedParams, isSearching ? searchValue : undefined) : null;
 
   // Fetch setter stats from the API
   const { data: setterStats, isLoading } = useQuery<SetterStat[]>({
@@ -52,7 +50,7 @@ const SetterNameSelect = () => {
   const options: SetterOption[] = React.useMemo(() => {
     if (!setterStats) return [];
 
-    return setterStats.map(stat => ({
+    return setterStats.map((stat) => ({
       value: stat.setter_username,
       label: `${stat.setter_username} (${stat.climb_count})`,
       count: stat.climb_count,
@@ -61,8 +59,8 @@ const SetterNameSelect = () => {
 
   // Convert selected values (string[]) to option objects for Autocomplete
   const selectedOptions: SetterOption[] = React.useMemo(() => {
-    return (uiSearchParams.settername || []).map(name => {
-      const found = options.find(o => o.value === name);
+    return (uiSearchParams.settername || []).map((name) => {
+      const found = options.find((o) => o.value === name);
       return found || { value: name, label: name, count: 0 };
     });
   }, [uiSearchParams.settername, options]);
@@ -75,7 +73,7 @@ const SetterNameSelect = () => {
       onClose={() => setIsOpen(false)}
       options={options}
       value={selectedOptions}
-      onChange={(_, newValue) => updateFilters({ settername: newValue.map(v => v.value) })}
+      onChange={(_, newValue) => updateFilters({ settername: newValue.map((v) => v.value) })}
       onInputChange={(_, value, reason) => {
         if (reason !== 'reset') {
           setSearchValue(value);
@@ -91,8 +89,8 @@ const SetterNameSelect = () => {
         isLoading
           ? 'Loading...'
           : !isOpen && searchValue.length === 0
-          ? 'Open dropdown to see setters'
-          : 'No setters found'
+            ? 'Open dropdown to see setters'
+            : 'No setters found'
       }
       sx={{ width: '100%' }}
       size="small"

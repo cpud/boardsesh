@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { createTestQueryClient } from '@/app/test-utils/test-providers';
@@ -24,11 +24,7 @@ vi.mock('@/app/lib/graphql/operations', () => ({
 
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { useSession } from 'next-auth/react';
-import {
-  useLogbook,
-  accumulatedLogbookQueryKey,
-  type LogbookEntry,
-} from '@/app/hooks/use-logbook';
+import { useLogbook, accumulatedLogbookQueryKey, type LogbookEntry } from '@/app/hooks/use-logbook';
 import { AscentStatus } from '../ascent-status';
 import { BoardContext, type BoardContextType } from '../../board-provider/board-provider-context';
 

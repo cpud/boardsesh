@@ -142,7 +142,14 @@ export function convertLitUpHoldsStringToMap(litUpHolds: string, board: BoardNam
                     `HOLD_STATE_MAP is missing values for ${board} status code: ${stateCode} (this warning is only shown once per status code)`,
                   );
                 }
-                return [holdId || 0, { state: `${holdId}=${stateCode}` as HoldState, color: '#FFF', displayColor: '#FFF' }];
+                return [
+                  holdId || 0,
+                  {
+                    state: `${holdId}=${stateCode}` as HoldState,
+                    color: '#FFF',
+                    displayColor: '#FFF',
+                  },
+                ];
               }
               const { name, color, displayColor } = stateInfo;
               return [holdId, { state: name, color, displayColor: displayColor || color }];

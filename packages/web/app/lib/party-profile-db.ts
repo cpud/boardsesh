@@ -75,12 +75,9 @@ const migrateFromLegacyStorage = async (): Promise<boolean> => {
       return false;
     }
 
-    const migrated = await migrateFromLocalStorage<string>(
-      LEGACY_USER_ID_KEY,
-      async (legacyUserId) => {
-        await savePartyProfile({ id: legacyUserId });
-      },
-    );
+    const migrated = await migrateFromLocalStorage<string>(LEGACY_USER_ID_KEY, async (legacyUserId) => {
+      await savePartyProfile({ id: legacyUserId });
+    });
 
     if (migrated) {
       // Also clean up legacy username key if present

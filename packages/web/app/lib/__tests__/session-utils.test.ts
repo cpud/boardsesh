@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { generateSessionName } from '../session-utils';
 
 describe('generateSessionName', () => {
@@ -8,9 +8,7 @@ describe('generateSessionName', () => {
   });
 
   it('joins multiple board types with &', () => {
-    expect(generateSessionName('2024-06-03T10:00:00Z', ['kilter', 'tension'])).toBe(
-      'Monday Kilter & Tension Session',
-    );
+    expect(generateSessionName('2024-06-03T10:00:00Z', ['kilter', 'tension'])).toBe('Monday Kilter & Tension Session');
   });
 
   it('capitalizes first letter of each board type', () => {

@@ -17,10 +17,7 @@ function isImageFile(filePath: string): boolean {
 
 const program = new Command();
 
-program
-  .name('moonboard-ocr')
-  .description('Extract MoonBoard climb data from screenshots using OCR')
-  .version('0.1.0');
+program.name('moonboard-ocr').description('Extract MoonBoard climb data from screenshots using OCR').version('0.1.0');
 
 // Parse command - main entry point
 program

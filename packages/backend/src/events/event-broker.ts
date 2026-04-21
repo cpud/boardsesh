@@ -55,14 +55,22 @@ export class EventBroker {
     try {
       await this.publisher.xadd(
         STREAM_KEY,
-        'MAXLEN', '~', String(MAX_STREAM_LEN),
+        'MAXLEN',
+        '~',
+        String(MAX_STREAM_LEN),
         '*',
-        'type', event.type,
-        'actorId', event.actorId,
-        'entityType', event.entityType,
-        'entityId', event.entityId,
-        'timestamp', String(event.timestamp),
-        'metadata', JSON.stringify(event.metadata),
+        'type',
+        event.type,
+        'actorId',
+        event.actorId,
+        'entityType',
+        event.entityType,
+        'entityId',
+        event.entityId,
+        'timestamp',
+        String(event.timestamp),
+        'metadata',
+        JSON.stringify(event.metadata),
       );
     } catch (error) {
       console.error('[EventBroker] Failed to publish event:', error);
@@ -100,8 +108,11 @@ export class EventBroker {
         } catch (error) {
           consecutiveErrors++;
           const delay = Math.min(1000 * Math.pow(2, consecutiveErrors - 1), 30000);
-          console.error(`[EventBroker] Consumer loop error (attempt ${consecutiveErrors}, retry in ${delay}ms):`, error);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          console.error(
+            `[EventBroker] Consumer loop error (attempt ${consecutiveErrors}, retry in ${delay}ms):`,
+            error,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     };
@@ -119,7 +130,8 @@ export class EventBroker {
         this.consumerName,
         CLAIM_IDLE_MS,
         '0-0',
-        'COUNT', 10,
+        'COUNT',
+        10,
       );
 
       // xautoclaim returns [nextStartId, claimedEntries, ...]
@@ -159,10 +171,16 @@ export class EventBroker {
     if (!this.consumer || !this.publisher) return;
 
     const result = await this.consumer.xreadgroup(
-      'GROUP', CONSUMER_GROUP, this.consumerName,
-      'COUNT', BATCH_SIZE,
-      'BLOCK', BLOCK_MS,
-      'STREAMS', STREAM_KEY, '>',
+      'GROUP',
+      CONSUMER_GROUP,
+      this.consumerName,
+      'COUNT',
+      BATCH_SIZE,
+      'BLOCK',
+      BLOCK_MS,
+      'STREAMS',
+      STREAM_KEY,
+      '>',
     );
 
     if (!result) return; // Timed out with no new events

@@ -23,11 +23,7 @@ export const setterFollowQueries = {
   /**
    * Get a setter profile by username
    */
-  setterProfile: async (
-    _: unknown,
-    { input }: { input: { username: string } },
-    ctx: ConnectionContext
-  ) => {
+  setterProfile: async (_: unknown, { input }: { input: { username: string } }, ctx: ConnectionContext) => {
     const validatedInput = validateInput(SetterProfileInputSchema, input, 'input');
     const username = validatedInput.username;
 
@@ -63,10 +59,7 @@ export const setterFollowQueries = {
         .select({ count: count() })
         .from(dbSchema.setterFollows)
         .where(
-          and(
-            eq(dbSchema.setterFollows.followerId, ctx.userId),
-            eq(dbSchema.setterFollows.setterUsername, username)
-          )
+          and(eq(dbSchema.setterFollows.followerId, ctx.userId), eq(dbSchema.setterFollows.setterUsername, username)),
         );
       isFollowedByMe = Number(followCheck?.count ?? 0) > 0;
     }
@@ -105,8 +98,19 @@ export const setterFollowQueries = {
    */
   setterClimbs: async (
     _: unknown,
-    { input }: { input: { username: string; boardType?: string; layoutId?: number; sortBy?: string; limit?: number; offset?: number } },
-    _ctx: ConnectionContext
+    {
+      input,
+    }: {
+      input: {
+        username: string;
+        boardType?: string;
+        layoutId?: number;
+        sortBy?: string;
+        limit?: number;
+        offset?: number;
+      };
+    },
+    _ctx: ConnectionContext,
   ) => {
     const validatedInput = validateInput(SetterClimbsInputSchema, input, 'input');
     const { username, boardType, layoutId, sortBy = 'popular', limit = 20, offset = 0 } = validatedInput;
@@ -147,20 +151,23 @@ export const setterFollowQueries = {
         and(
           eq(dbSchema.boardClimbStats.boardType, dbSchema.boardClimbs.boardType),
           eq(dbSchema.boardClimbStats.climbUuid, dbSchema.boardClimbs.uuid),
-          eq(dbSchema.boardClimbStats.angle, sql`(
+          eq(
+            dbSchema.boardClimbStats.angle,
+            sql`(
             SELECT s.angle FROM board_climb_stats s
             WHERE s.board_type = ${dbSchema.boardClimbs.boardType}
               AND s.climb_uuid = ${dbSchema.boardClimbs.uuid}
             ORDER BY s.ascensionist_count DESC NULLS LAST
             LIMIT 1
-          )`),
-        )
+          )`,
+          ),
+        ),
       )
       .where(and(...conditions))
       .orderBy(
         sortBy === 'popular'
           ? sql`COALESCE(${dbSchema.boardClimbStats.ascensionistCount}, 0) DESC`
-          : sql`${dbSchema.boardClimbs.createdAt} DESC NULLS LAST`
+          : sql`${dbSchema.boardClimbs.createdAt} DESC NULLS LAST`,
       )
       .limit(limit)
       .offset(offset);
@@ -188,18 +195,22 @@ export const setterFollowQueries = {
    */
   setterClimbsFull: async (
     _: unknown,
-    { input }: { input: {
-      username: string;
-      boardType?: string;
-      layoutId?: number;
-      sizeId?: number;
-      setIds?: string;
-      angle?: number;
-      sortBy?: string;
-      limit?: number;
-      offset?: number;
-    } },
-    _ctx: ConnectionContext
+    {
+      input,
+    }: {
+      input: {
+        username: string;
+        boardType?: string;
+        layoutId?: number;
+        sizeId?: number;
+        setIds?: string;
+        angle?: number;
+        sortBy?: string;
+        limit?: number;
+        offset?: number;
+      };
+    },
+    _ctx: ConnectionContext,
   ): Promise<{ climbs: Climb[]; totalCount: number; hasMore: boolean }> => {
     const validatedInput = validateInput(SetterClimbsFullInputSchema, input, 'input');
     const { username, boardType, sortBy = 'popular', limit = 20, offset = 0 } = validatedInput;
@@ -228,9 +239,7 @@ export const setterFollowQueries = {
 
       // Filter by compatible size if sizeId is provided
       if (sizeId != null) {
-        filterConditions.push(
-          sql`${sizeId} = ANY(${tables.climbs.compatibleSizeIds})`,
-        );
+        filterConditions.push(sql`${sizeId} = ANY(${tables.climbs.compatibleSizeIds})`);
       }
 
       // Get total count
@@ -262,14 +271,14 @@ export const setterFollowQueries = {
           and(
             eq(tables.climbStats.climbUuid, tables.climbs.uuid),
             eq(tables.climbStats.boardType, boardName),
-            eq(tables.climbStats.angle, angle)
-          )
+            eq(tables.climbStats.angle, angle),
+          ),
         )
         .where(and(...filterConditions))
         .orderBy(
           sortBy === 'popular'
             ? sql`COALESCE(${tables.climbStats.ascensionistCount}, 0) DESC`
-            : sql`${tables.climbs.createdAt} DESC NULLS LAST`
+            : sql`${tables.climbs.createdAt} DESC NULLS LAST`,
         )
         .limit(limit + 1)
         .offset(offset);
@@ -290,7 +299,10 @@ export const setterFollowQueries = {
         quality_average: result.quality_average?.toString() || '0',
         stars: Math.round((Number(result.quality_average) || 0) * 5),
         difficulty_error: result.difficulty_error?.toString() || '0',
-        benchmark_difficulty: result.benchmark_difficulty && result.benchmark_difficulty > 0 ? result.benchmark_difficulty.toString() : null,
+        benchmark_difficulty:
+          result.benchmark_difficulty && result.benchmark_difficulty > 0
+            ? result.benchmark_difficulty.toString()
+            : null,
         boardType: boardName,
       }));
 
@@ -346,20 +358,23 @@ export const setterFollowQueries = {
           and(
             eq(tables.climbStats.boardType, tables.climbs.boardType),
             eq(tables.climbStats.climbUuid, tables.climbs.uuid),
-            eq(tables.climbStats.angle, sql`(
+            eq(
+              tables.climbStats.angle,
+              sql`(
               SELECT s.angle FROM board_climb_stats s
               WHERE s.board_type = ${tables.climbs.boardType}
                 AND s.climb_uuid = ${tables.climbs.uuid}
               ORDER BY s.ascensionist_count DESC NULLS LAST
               LIMIT 1
-            )`),
-          )
+            )`,
+            ),
+          ),
         )
         .where(eq(tables.climbs.setterUsername, username))
         .orderBy(
           sortBy === 'popular'
             ? sql`COALESCE(${tables.climbStats.ascensionistCount}, 0) DESC`
-            : sql`${tables.climbs.createdAt} DESC NULLS LAST`
+            : sql`${tables.climbs.createdAt} DESC NULLS LAST`,
         )
         .limit(limit + 1)
         .offset(offset);
@@ -382,7 +397,10 @@ export const setterFollowQueries = {
           quality_average: result.quality_average?.toString() || '0',
           stars: Math.round((Number(result.quality_average) || 0) * 5),
           difficulty_error: result.difficulty_error?.toString() || '0',
-          benchmark_difficulty: result.benchmark_difficulty && result.benchmark_difficulty > 0 ? result.benchmark_difficulty.toString() : null,
+          benchmark_difficulty:
+            result.benchmark_difficulty && result.benchmark_difficulty > 0
+              ? result.benchmark_difficulty.toString()
+              : null,
           boardType: bt,
         };
       });
@@ -398,7 +416,7 @@ export const setterFollowQueries = {
   userClimbs: async (
     _: unknown,
     { input }: { input: { userId: string; sortBy?: string; limit?: number; offset?: number } },
-    _ctx: ConnectionContext
+    _ctx: ConnectionContext,
   ): Promise<{ climbs: Climb[]; totalCount: number; hasMore: boolean }> => {
     const validatedInput = validateInput(UserClimbsInputSchema, input, 'input');
     const { userId, sortBy = 'popular', limit = 20, offset = 0 } = validatedInput;
@@ -409,21 +427,20 @@ export const setterFollowQueries = {
       .from(dbSchema.userBoardMappings)
       .where(eq(dbSchema.userBoardMappings.userId, userId));
 
-    const linkedUsernames = mappings
-      .map(m => m.boardUsername)
-      .filter((u): u is string => u !== null && u.length > 0);
+    const linkedUsernames = mappings.map((m) => m.boardUsername).filter((u): u is string => u !== null && u.length > 0);
 
     // 2. Build WHERE condition: userId match OR setterUsername in linked usernames, AND not draft
     const tables = UNIFIED_TABLES;
 
-    const ownershipCondition = linkedUsernames.length > 0
-      ? sql`(${tables.climbs.userId} = ${userId} OR ${tables.climbs.setterUsername} IN (${sql.join(linkedUsernames.map(u => sql`${u}`), sql`, `)}))`
-      : eq(tables.climbs.userId, userId);
+    const ownershipCondition =
+      linkedUsernames.length > 0
+        ? sql`(${tables.climbs.userId} = ${userId} OR ${tables.climbs.setterUsername} IN (${sql.join(
+            linkedUsernames.map((u) => sql`${u}`),
+            sql`, `,
+          )}))`
+        : eq(tables.climbs.userId, userId);
 
-    const whereCondition = and(
-      ownershipCondition,
-      eq(tables.climbs.isDraft, false),
-    );
+    const whereCondition = and(ownershipCondition, eq(tables.climbs.isDraft, false));
 
     // 3. Get total count
     const [countResult] = await db
@@ -436,13 +453,16 @@ export const setterFollowQueries = {
     // 4. Get climbs with stats at the most popular angle.
     // Uses DISTINCT ON to pick the best angle per (board_type, climb_uuid)
     // instead of a correlated subquery per row.
-    const ownershipSql = linkedUsernames.length > 0
-      ? sql`(c.user_id = ${userId} OR c.setter_username IN (${sql.join(linkedUsernames.map(u => sql`${u}`), sql`, `)}))`
-      : sql`c.user_id = ${userId}`;
+    const ownershipSql =
+      linkedUsernames.length > 0
+        ? sql`(c.user_id = ${userId} OR c.setter_username IN (${sql.join(
+            linkedUsernames.map((u) => sql`${u}`),
+            sql`, `,
+          )}))`
+        : sql`c.user_id = ${userId}`;
 
-    const orderSql = sortBy === 'popular'
-      ? sql`COALESCE(best.ascensionist_count, 0) DESC`
-      : sql`c.created_at DESC NULLS LAST`;
+    const orderSql =
+      sortBy === 'popular' ? sql`COALESCE(best.ascensionist_count, 0) DESC` : sql`c.created_at DESC NULLS LAST`;
 
     const rawResult = await db.execute(sql`
       WITH best_angle AS (
@@ -476,21 +496,25 @@ export const setterFollowQueries = {
       OFFSET ${offset}
     `);
 
-    const rawRows = (rawResult as unknown as { rows: Array<{
-      uuid: string;
-      layout_id: number | null;
-      board_type: string;
-      setter_username: string | null;
-      name: string | null;
-      description: string | null;
-      frames: string | null;
-      stats_angle: number | null;
-      ascensionist_count: number | null;
-      difficulty_id: number | null;
-      quality_average: number | null;
-      difficulty_error: number | null;
-      benchmark_difficulty: number | null;
-    }> }).rows;
+    const rawRows = (
+      rawResult as unknown as {
+        rows: Array<{
+          uuid: string;
+          layout_id: number | null;
+          board_type: string;
+          setter_username: string | null;
+          name: string | null;
+          description: string | null;
+          frames: string | null;
+          stats_angle: number | null;
+          ascensionist_count: number | null;
+          difficulty_id: number | null;
+          quality_average: number | null;
+          difficulty_error: number | null;
+          benchmark_difficulty: number | null;
+        }>;
+      }
+    ).rows;
 
     const hasMore = rawRows.length > limit;
     const trimmedResults = hasMore ? rawRows.slice(0, limit) : rawRows;
@@ -510,7 +534,10 @@ export const setterFollowQueries = {
         quality_average: result.quality_average?.toString() || '0',
         stars: Math.round((Number(result.quality_average) || 0) * 5),
         difficulty_error: result.difficulty_error?.toString() || '0',
-        benchmark_difficulty: result.benchmark_difficulty && result.benchmark_difficulty > 0 ? result.benchmark_difficulty.toString() : null,
+        benchmark_difficulty:
+          result.benchmark_difficulty && result.benchmark_difficulty > 0
+            ? result.benchmark_difficulty.toString()
+            : null,
         boardType: bt,
       };
     });
@@ -524,7 +551,7 @@ export const setterFollowQueries = {
   searchUsersAndSetters: async (
     _: unknown,
     { input }: { input: { query: string; boardType?: string; limit?: number; offset?: number } },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ) => {
     await applyRateLimit(ctx, 20);
 
@@ -552,14 +579,15 @@ export const setterFollowQueries = {
         followerCount: sql<number>`(select count(*)::int from user_follows where following_id = ${dbSchema.users.id})`,
         followingCount: sql<number>`(select count(*)::int from user_follows where follower_id = ${dbSchema.users.id})`,
         recentAscentCount: sql<number>`(select count(*)::int from boardsesh_ticks where user_id = ${dbSchema.users.id} and created_at > ${thirtyDaysAgoIso})`,
-        isFollowedByMe: (ctx.isAuthenticated && ctx.userId)
-          ? sql<boolean>`exists(select 1 from user_follows where follower_id = ${ctx.userId} and following_id = ${dbSchema.users.id})`
-          : sql<boolean>`false`,
+        isFollowedByMe:
+          ctx.isAuthenticated && ctx.userId
+            ? sql<boolean>`exists(select 1 from user_follows where follower_id = ${ctx.userId} and following_id = ${dbSchema.users.id})`
+            : sql<boolean>`false`,
       })
       .from(dbSchema.users)
       .leftJoin(dbSchema.userProfiles, eq(dbSchema.users.id, dbSchema.userProfiles.userId))
       .where(
-        sql`(${dbSchema.userProfiles.displayName} ILIKE ${searchPattern} OR ${dbSchema.users.name} ILIKE ${searchPattern})`
+        sql`(${dbSchema.userProfiles.displayName} ILIKE ${searchPattern} OR ${dbSchema.users.name} ILIKE ${searchPattern})`,
       )
       .orderBy(
         sql`case when ${dbSchema.userProfiles.displayName} ilike ${prefixPattern} or ${dbSchema.users.name} ilike ${prefixPattern} then 0 else 1 end`,
@@ -579,7 +607,7 @@ export const setterFollowQueries = {
         and(
           ilike(dbSchema.boardClimbs.setterUsername, searchPattern),
           sql`${dbSchema.boardClimbs.setterUsername} IS NOT NULL`,
-        )
+        ),
       )
       .groupBy(dbSchema.boardClimbs.setterUsername)
       .orderBy(sql`count(DISTINCT ${dbSchema.boardClimbs.uuid}) DESC`)
@@ -607,9 +635,7 @@ export const setterFollowQueries = {
     // 4. Check isFollowedByMe for setter results
     let setterFollowedSet = new Set<string>();
     if (ctx.isAuthenticated && ctx.userId && setterResults.length > 0) {
-      const setterUsernames = setterResults
-        .map((r) => r.setterUsername)
-        .filter((u): u is string => u !== null);
+      const setterUsernames = setterResults.map((r) => r.setterUsername).filter((u): u is string => u !== null);
       if (setterUsernames.length > 0) {
         const followedSetters = await db
           .select({ setterUsername: dbSchema.setterFollows.setterUsername })
@@ -617,8 +643,8 @@ export const setterFollowQueries = {
           .where(
             and(
               eq(dbSchema.setterFollows.followerId, ctx.userId),
-              inArray(dbSchema.setterFollows.setterUsername, setterUsernames)
-            )
+              inArray(dbSchema.setterFollows.setterUsername, setterUsernames),
+            ),
           );
         setterFollowedSet = new Set(followedSetters.map((f) => f.setterUsername));
       }
@@ -703,7 +729,7 @@ export const setterFollowMutations = {
   followSetter: async (
     _: unknown,
     { input }: { input: { setterUsername: string } },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ): Promise<boolean> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 30, 'follow');
@@ -771,7 +797,7 @@ export const setterFollowMutations = {
   unfollowSetter: async (
     _: unknown,
     { input }: { input: { setterUsername: string } },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ): Promise<boolean> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 30, 'follow');
@@ -783,10 +809,7 @@ export const setterFollowMutations = {
     await db
       .delete(dbSchema.setterFollows)
       .where(
-        and(
-          eq(dbSchema.setterFollows.followerId, myUserId),
-          eq(dbSchema.setterFollows.setterUsername, setterUsername)
-        )
+        and(eq(dbSchema.setterFollows.followerId, myUserId), eq(dbSchema.setterFollows.setterUsername, setterUsername)),
       );
 
     // Also remove user_follows if linked
@@ -802,8 +825,8 @@ export const setterFollowMutations = {
         .where(
           and(
             eq(dbSchema.userFollows.followerId, myUserId),
-            eq(dbSchema.userFollows.followingId, linkedUsers[0].userId)
-          )
+            eq(dbSchema.userFollows.followingId, linkedUsers[0].userId),
+          ),
         );
     }
 

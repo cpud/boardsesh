@@ -17,9 +17,7 @@ type PlaylistDetailRouteParams = BoardRouteParameters & {
   playlist_uuid: string;
 };
 
-export default async function PlaylistDetailPage(props: {
-  params: Promise<PlaylistDetailRouteParams>;
-}) {
+export default async function PlaylistDetailPage(props: { params: Promise<PlaylistDetailRouteParams> }) {
   const params = await props.params;
 
   try {

@@ -23,23 +23,16 @@ interface CollapsibleSectionProps {
   defaultActiveKey?: string;
 }
 
-const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
-  sections,
-  defaultActiveKey,
-}) => {
+const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({ sections, defaultActiveKey }) => {
   const sectionDefaultActive = sections.find((s) => s.defaultActive);
-  const [activeKey, setActiveKey] = useState<string | null>(
-    sectionDefaultActive?.key ?? defaultActiveKey ?? null,
-  );
+  const [activeKey, setActiveKey] = useState<string | null>(sectionDefaultActive?.key ?? defaultActiveKey ?? null);
 
   return (
     <div className={styles.steppedContainer}>
       {sections.map((section) => {
         const isActive = activeKey === section.key;
         const summaryParts = section.getSummary();
-        const summaryText = summaryParts.length > 0
-          ? summaryParts.join(' \u00B7 ')
-          : section.defaultSummary;
+        const summaryText = summaryParts.length > 0 ? summaryParts.join(' \u00B7 ') : section.defaultSummary;
 
         const shouldRenderContent = section.lazy ? isActive : true;
 

@@ -16,12 +16,15 @@ interface AscentStatusIconProps extends NormalizeAscentStatusInput {
   testId?: string;
 }
 
-const STATUS_CONFIG: Record<AscentStatusValue, {
-  Icon: typeof CheckOutlined;
-  iconColor: string;
-  badgeBackgroundColor: string;
-  badgeIconColor: string;
-}> = {
+const STATUS_CONFIG: Record<
+  AscentStatusValue,
+  {
+    Icon: typeof CheckOutlined;
+    iconColor: string;
+    badgeBackgroundColor: string;
+    badgeIconColor: string;
+  }
+> = {
   flash: {
     Icon: ElectricBoltOutlined,
     iconColor: themeTokens.colors.amber,

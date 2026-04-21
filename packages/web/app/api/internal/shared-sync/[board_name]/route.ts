@@ -76,10 +76,7 @@ const internalSyncSharedData = async (
 /**
  * Create batched notifications for setter followers when new climbs are synced.
  */
-async function createSetterSyncNotifications(
-  boardName: AuroraBoardName,
-  newClimbs: NewClimbInfo[],
-): Promise<void> {
+async function createSetterSyncNotifications(boardName: AuroraBoardName, newClimbs: NewClimbInfo[]): Promise<void> {
   if (newClimbs.length === 0) return;
 
   try {

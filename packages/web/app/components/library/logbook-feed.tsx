@@ -33,7 +33,11 @@ import {
   type LayoutStats,
 } from '@/app/lib/graphql/operations/ticks';
 import { getLayoutDisplayName } from '@/app/profile/[user_id]/utils/profile-constants';
-import { getDefaultSizeForLayout, getSetsForLayoutAndSize, ORPHANED_KILTER_LAYOUT_DEFAULTS } from '@boardsesh/board-constants/product-sizes';
+import {
+  getDefaultSizeForLayout,
+  getSetsForLayoutAndSize,
+  ORPHANED_KILTER_LAYOUT_DEFAULTS,
+} from '@boardsesh/board-constants/product-sizes';
 import { getLayoutById, MOONBOARD_SETS, type MoonBoardLayoutKey } from '@/app/lib/moonboard-config';
 import type { BoardName } from '@/app/lib/types';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -70,65 +74,67 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
   const { showMessage } = useSnackbar();
 
   // Build board list from layout stats (boards the user has ticks for)
-  const logbookBoards: UserBoard[] = useMemo(() =>
-    layoutStats.map((ls) => {
-      const layoutId = ls.layoutId ?? 0;
-      const boardName = ls.boardType as BoardName;
+  const logbookBoards: UserBoard[] = useMemo(
+    () =>
+      layoutStats.map((ls) => {
+        const layoutId = ls.layoutId ?? 0;
+        const boardName = ls.boardType as BoardName;
 
-      let sizeId = 0;
-      let setIds = '';
+        let sizeId = 0;
+        let setIds = '';
 
-      if (boardName === 'moonboard') {
-        // MoonBoard uses its own set system, not Aurora's
-        const layoutEntry = getLayoutById(layoutId);
-        if (layoutEntry) {
-          const [layoutKey] = layoutEntry;
-          const moonSets = MOONBOARD_SETS[layoutKey as MoonBoardLayoutKey] ?? [];
-          setIds = moonSets.map((s) => s.id).join(',');
-        }
-      } else {
-        const defaultSize = getDefaultSizeForLayout(boardName, layoutId);
-        if (defaultSize !== null) {
-          sizeId = defaultSize;
-          const sets = getSetsForLayoutAndSize(boardName, layoutId, sizeId);
-          setIds = sets.map((s) => s.id).join(',');
-        } else {
-          const fallback = boardName === 'kilter' ? ORPHANED_KILTER_LAYOUT_DEFAULTS[layoutId] : undefined;
-          if (fallback) {
-            sizeId = fallback.sizeId;
-            setIds = fallback.setIds;
+        if (boardName === 'moonboard') {
+          // MoonBoard uses its own set system, not Aurora's
+          const layoutEntry = getLayoutById(layoutId);
+          if (layoutEntry) {
+            const [layoutKey] = layoutEntry;
+            const moonSets = MOONBOARD_SETS[layoutKey as MoonBoardLayoutKey] ?? [];
+            setIds = moonSets.map((s) => s.id).join(',');
           }
-          // Non-Kilter orphaned layouts (sizeId=0, setIds='') will render with
-          // the fallback icon in BoardScrollCard since useBoardDetails returns
-          // null when board config can't be resolved. The card still works for
-          // filtering by boardType/layoutId.
+        } else {
+          const defaultSize = getDefaultSizeForLayout(boardName, layoutId);
+          if (defaultSize !== null) {
+            sizeId = defaultSize;
+            const sets = getSetsForLayoutAndSize(boardName, layoutId, sizeId);
+            setIds = sets.map((s) => s.id).join(',');
+          } else {
+            const fallback = boardName === 'kilter' ? ORPHANED_KILTER_LAYOUT_DEFAULTS[layoutId] : undefined;
+            if (fallback) {
+              sizeId = fallback.sizeId;
+              setIds = fallback.setIds;
+            }
+            // Non-Kilter orphaned layouts (sizeId=0, setIds='') will render with
+            // the fallback icon in BoardScrollCard since useBoardDetails returns
+            // null when board config can't be resolved. The card still works for
+            // filtering by boardType/layoutId.
+          }
         }
-      }
 
-      return {
-        uuid: `logbook-${ls.boardType}-${layoutId}`,
-        slug: '',
-        ownerId: '',
-        boardType: ls.boardType,
-        layoutId,
-        sizeId,
-        setIds,
-        name: getLayoutDisplayName(ls.boardType, ls.layoutId),
-        isPublic: false,
-        isUnlisted: false,
-        hideLocation: false,
-        isOwned: false,
-        angle: 0,
-        isAngleAdjustable: false,
-        createdAt: '',
-        totalAscents: ls.distinctClimbCount,
-        uniqueClimbers: 0,
-        followerCount: 0,
-        commentCount: 0,
-        isFollowedByMe: false,
-      };
-    }),
-  [layoutStats]);
+        return {
+          uuid: `logbook-${ls.boardType}-${layoutId}`,
+          slug: '',
+          ownerId: '',
+          boardType: ls.boardType,
+          layoutId,
+          sizeId,
+          setIds,
+          name: getLayoutDisplayName(ls.boardType, ls.layoutId),
+          isPublic: false,
+          isUnlisted: false,
+          hideLocation: false,
+          isOwned: false,
+          angle: 0,
+          isAngleAdjustable: false,
+          createdAt: '',
+          totalAscents: ls.distinctClimbCount,
+          uniqueClimbers: 0,
+          followerCount: 0,
+          commentCount: 0,
+          isFollowedByMe: false,
+        };
+      }),
+    [layoutStats],
+  );
 
   // State
   const [searchText, setSearchText] = useState(() => searchParams.get('q') || '');
@@ -187,10 +193,10 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
     return () => {
       isCancelled = true;
     };
-  // Intentionally run-once on mount: loads persisted preferences from IndexedDB
-  // and overlays URL query params. searchParams is read once and should not
-  // re-trigger this effect when Next.js re-renders with the same URL.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Intentionally run-once on mount: loads persisted preferences from IndexedDB
+    // and overlays URL query params. searchParams is read once and should not
+    // re-trigger this effect when Next.js re-renders with the same URL.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Resolve selected boards from URL param after boards load
@@ -208,10 +214,10 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
       }
     }
     setBoardsInitialized(true);
-  // Omits searchParams from deps: the boards param is read once after layout
-  // stats load, not re-evaluated on every URL change (URL is output, not input
-  // for this effect).
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Omits searchParams from deps: the boards param is read once after layout
+    // stats load, not re-evaluated on every URL change (URL is output, not input
+    // for this effect).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingLayoutStats, logbookBoards, showMessage]);
 
   // Update URL query params when state changes
@@ -238,10 +244,10 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
     }, 300);
 
     return () => clearTimeout(updateUrlRef.current);
-  // Omits router, pathname, searchParams: these are output targets, not inputs.
-  // Including them would cause an infinite loop (effect writes URL → URL changes
-  // → effect re-runs).
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Omits router, pathname, searchParams: these are output targets, not inputs.
+    // Including them would cause an infinite loop (effect writes URL → URL changes
+    // → effect re-runs).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch, filters, sortState, selectedBoards, preferencesLoaded, boardsInitialized]);
 
   // Persist to IndexedDB
@@ -301,32 +307,45 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
       sortBy: sortState.primaryField,
       sortOrder: sortState.primaryDirection,
       ...(sortState.secondaryField
-        ? { secondarySortBy: sortState.secondaryField, secondarySortOrder: sortState.secondaryDirection }
+        ? {
+            secondarySortBy: sortState.secondaryField,
+            secondarySortOrder: sortState.secondaryDirection,
+          }
         : {}),
     };
   }, [sortState]);
 
-  const activeFilters = useMemo(() => ({
-    statusMode: (filters.includeSends && filters.includeAttempts ? 'both' : filters.includeSends ? 'send' : 'attempt') as StatusMode,
-    flashOnly: filters.includeSends ? filters.flashOnly : false,
-    minDifficulty: filters.minGrade !== '' ? filters.minGrade : undefined,
-    maxDifficulty: filters.maxGrade !== '' ? filters.maxGrade : undefined,
-    fromDate: filters.fromDate || undefined,
-    toDate: filters.toDate || undefined,
-    minAngle: filters.angleRange[0] !== DEFAULT_ANGLE_RANGE[0] ? filters.angleRange[0] : undefined,
-    maxAngle: filters.angleRange[1] !== DEFAULT_ANGLE_RANGE[1] ? filters.angleRange[1] : undefined,
-    benchmarkOnly: filters.benchmarkOnly || undefined,
-  }), [filters]);
+  const activeFilters = useMemo(
+    () => ({
+      statusMode: (filters.includeSends && filters.includeAttempts
+        ? 'both'
+        : filters.includeSends
+          ? 'send'
+          : 'attempt') as StatusMode,
+      flashOnly: filters.includeSends ? filters.flashOnly : false,
+      minDifficulty: filters.minGrade !== '' ? filters.minGrade : undefined,
+      maxDifficulty: filters.maxGrade !== '' ? filters.maxGrade : undefined,
+      fromDate: filters.fromDate || undefined,
+      toDate: filters.toDate || undefined,
+      minAngle: filters.angleRange[0] !== DEFAULT_ANGLE_RANGE[0] ? filters.angleRange[0] : undefined,
+      maxAngle: filters.angleRange[1] !== DEFAULT_ANGLE_RANGE[1] ? filters.angleRange[1] : undefined,
+      benchmarkOnly: filters.benchmarkOnly || undefined,
+    }),
+    [filters],
+  );
 
-  const feedQueryKey = useMemo(() => [
-    'logbookFeed',
-    userId,
-    selectedBoardTypes?.join(',') ?? 'all',
-    selectedLayoutIds?.join(',') ?? 'all-layouts',
-    climbNameParam ?? '',
-    JSON.stringify(activeFilters),
-    JSON.stringify(sortParams),
-  ], [userId, selectedBoardTypes, selectedLayoutIds, climbNameParam, activeFilters, sortParams]);
+  const feedQueryKey = useMemo(
+    () => [
+      'logbookFeed',
+      userId,
+      selectedBoardTypes?.join(',') ?? 'all',
+      selectedLayoutIds?.join(',') ?? 'all-layouts',
+      climbNameParam ?? '',
+      JSON.stringify(activeFilters),
+      JSON.stringify(sortParams),
+    ],
+    [userId, selectedBoardTypes, selectedLayoutIds, climbNameParam, activeFilters, sortParams],
+  );
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
     queryKey: feedQueryKey,
@@ -334,11 +353,12 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
       const client = createGraphQLHttpClient(token ?? null);
 
       // For single board type, use boardType; for multiple, use boardTypes
-      const boardTypeFilter = selectedBoardTypes?.length === 1
-        ? { boardType: selectedBoardTypes[0] }
-        : selectedBoardTypes && selectedBoardTypes.length > 1
-          ? { boardTypes: selectedBoardTypes }
-          : {};
+      const boardTypeFilter =
+        selectedBoardTypes?.length === 1
+          ? { boardType: selectedBoardTypes[0] }
+          : selectedBoardTypes && selectedBoardTypes.length > 1
+            ? { boardTypes: selectedBoardTypes }
+            : {};
 
       const variables: GetUserAscentsFeedQueryVariables = {
         userId: userId!,
@@ -380,7 +400,11 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
     isFetching: isFetchingNextPage,
   });
 
-  const pendingDeleteRef = useRef<{ uuid: string; item: AscentFeedItem; timerId: ReturnType<typeof setTimeout> } | null>(null);
+  const pendingDeleteRef = useRef<{
+    uuid: string;
+    item: AscentFeedItem;
+    timerId: ReturnType<typeof setTimeout>;
+  } | null>(null);
 
   useEffect(() => {
     return () => {
@@ -397,64 +421,82 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
     tokenRef.current = token;
   }, [token]);
 
-  const handleDelete = useCallback((uuid: string) => {
-    // If there's already a pending delete for a different item, flush it immediately
-    if (pendingDeleteRef.current && pendingDeleteRef.current.uuid !== uuid) {
-      const { uuid: prevUuid, timerId } = pendingDeleteRef.current;
-      clearTimeout(timerId);
-      pendingDeleteRef.current = null;
-      const client = createGraphQLHttpClient(tokenRef.current ?? null);
-      client.request<{ deleteTick: boolean }, DeleteTickMutationVariables>(DELETE_TICK, { uuid: prevUuid }).catch(() => {
-        showMessage('Failed to delete tick', 'error');
-      });
-    }
-
-    // Find and capture the item before removing it from the cache
-    const currentData = queryClient.getQueryData<{ pages: { items: AscentFeedItem[]; hasMore: boolean }[] }>(feedQueryKey);
-    const itemToDelete = currentData?.pages.flatMap((p) => p.items).find((i) => i.uuid === uuid);
-
-    // Optimistically remove the item from the cache
-    queryClient.setQueryData(
-      feedQueryKey,
-      (old: { pages: { items: AscentFeedItem[]; hasMore: boolean }[]; pageParams: number[] } | undefined) => {
-        if (!old) return old;
-        return {
-          ...old,
-          pages: old.pages.map((page) => ({
-            ...page,
-            items: page.items.filter((i) => i.uuid !== uuid),
-          })),
-        };
+  const handleDelete = useCallback(
+    (uuid: string) => {
+      // If there's already a pending delete for a different item, flush it immediately
+      if (pendingDeleteRef.current && pendingDeleteRef.current.uuid !== uuid) {
+        const { uuid: prevUuid, timerId } = pendingDeleteRef.current;
+        clearTimeout(timerId);
+        pendingDeleteRef.current = null;
+        const client = createGraphQLHttpClient(tokenRef.current ?? null);
+        client
+          .request<{ deleteTick: boolean }, DeleteTickMutationVariables>(DELETE_TICK, {
+            uuid: prevUuid,
+          })
+          .catch(() => {
+            showMessage('Failed to delete tick', 'error');
+          });
       }
-    );
 
-    const timerId = setTimeout(() => {
-      pendingDeleteRef.current = null;
-      const client = createGraphQLHttpClient(tokenRef.current ?? null);
-      client
-        .request<{ deleteTick: boolean }, DeleteTickMutationVariables>(DELETE_TICK, { uuid })
-        .then(() => {
-          queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
-        })
-        .catch(() => {
-          queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
-          showMessage('Failed to delete tick', 'error');
-        });
-    }, 5000);
+      // Find and capture the item before removing it from the cache
+      const currentData = queryClient.getQueryData<{
+        pages: { items: AscentFeedItem[]; hasMore: boolean }[];
+      }>(feedQueryKey);
+      const itemToDelete = currentData?.pages.flatMap((p) => p.items).find((i) => i.uuid === uuid);
 
-    pendingDeleteRef.current = { uuid, item: itemToDelete ?? ({ uuid } as AscentFeedItem), timerId };
+      // Optimistically remove the item from the cache
+      queryClient.setQueryData(
+        feedQueryKey,
+        (old: { pages: { items: AscentFeedItem[]; hasMore: boolean }[]; pageParams: number[] } | undefined) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              items: page.items.filter((i) => i.uuid !== uuid),
+            })),
+          };
+        },
+      );
 
-    showMessage('Tick deleted', 'success', {
-      label: 'Undo',
-      onClick: () => {
-        if (pendingDeleteRef.current?.uuid === uuid) {
-          clearTimeout(pendingDeleteRef.current.timerId);
-          pendingDeleteRef.current = null;
-          queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
-        }
-      },
-    }, 5000);
-  }, [queryClient, showMessage, feedQueryKey]);
+      const timerId = setTimeout(() => {
+        pendingDeleteRef.current = null;
+        const client = createGraphQLHttpClient(tokenRef.current ?? null);
+        client
+          .request<{ deleteTick: boolean }, DeleteTickMutationVariables>(DELETE_TICK, { uuid })
+          .then(() => {
+            queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
+          })
+          .catch(() => {
+            queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
+            showMessage('Failed to delete tick', 'error');
+          });
+      }, 5000);
+
+      pendingDeleteRef.current = {
+        uuid,
+        item: itemToDelete ?? ({ uuid } as AscentFeedItem),
+        timerId,
+      };
+
+      showMessage(
+        'Tick deleted',
+        'success',
+        {
+          label: 'Undo',
+          onClick: () => {
+            if (pendingDeleteRef.current?.uuid === uuid) {
+              clearTimeout(pendingDeleteRef.current.timerId);
+              pendingDeleteRef.current = null;
+              queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
+            }
+          },
+        },
+        5000,
+      );
+    },
+    [queryClient, showMessage, feedQueryKey],
+  );
 
   const handleEdit = useCallback((item: AscentFeedItem) => {
     setEditingItemUuid(item.uuid);
@@ -465,12 +507,19 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
   }, []);
 
   const showBoardType = selectedBoards.length === 0 || selectedBoards.length > 1;
-  const hasFilters = selectedBoards.length > 0 || debouncedSearch.length > 0 ||
-    filters.minGrade !== '' || filters.maxGrade !== '' ||
-    filters.flashOnly || filters.benchmarkOnly ||
-    !filters.includeSends || !filters.includeAttempts ||
-    filters.fromDate !== '' || filters.toDate !== '' ||
-    filters.angleRange[0] !== DEFAULT_ANGLE_RANGE[0] || filters.angleRange[1] !== DEFAULT_ANGLE_RANGE[1];
+  const hasFilters =
+    selectedBoards.length > 0 ||
+    debouncedSearch.length > 0 ||
+    filters.minGrade !== '' ||
+    filters.maxGrade !== '' ||
+    filters.flashOnly ||
+    filters.benchmarkOnly ||
+    !filters.includeSends ||
+    !filters.includeAttempts ||
+    filters.fromDate !== '' ||
+    filters.toDate !== '' ||
+    filters.angleRange[0] !== DEFAULT_ANGLE_RANGE[0] ||
+    filters.angleRange[1] !== DEFAULT_ANGLE_RANGE[1];
   // Posting and linking are mutually exclusive — see `allowInstagramLinking` below.
   const enableInstagramPosting = pathname === '/you/logbook' && isNarrowViewport && isInstagramPostingSupported();
   const enableInstagramLinking = pathname === '/you/logbook';
@@ -481,16 +530,20 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
       onSearchChange={handleSearchChange}
       minGrade={filters.minGrade}
       maxGrade={filters.maxGrade}
-      onMinGradeChange={(value) => setFilters((prev) => ({
-        ...prev,
-        minGrade: value,
-        maxGrade: value !== '' && prev.maxGrade !== '' && value > prev.maxGrade ? value : prev.maxGrade,
-      }))}
-      onMaxGradeChange={(value) => setFilters((prev) => ({
-        ...prev,
-        maxGrade: value,
-        minGrade: value !== '' && prev.minGrade !== '' && value < prev.minGrade ? value : prev.minGrade,
-      }))}
+      onMinGradeChange={(value) =>
+        setFilters((prev) => ({
+          ...prev,
+          minGrade: value,
+          maxGrade: value !== '' && prev.maxGrade !== '' && value > prev.maxGrade ? value : prev.maxGrade,
+        }))
+      }
+      onMaxGradeChange={(value) =>
+        setFilters((prev) => ({
+          ...prev,
+          maxGrade: value,
+          minGrade: value !== '' && prev.minGrade !== '' && value < prev.minGrade ? value : prev.minGrade,
+        }))
+      }
       sortState={sortState}
       onSortChange={setSortState}
       boards={logbookBoards}

@@ -27,9 +27,12 @@ export const CreateProposalInputSchema = z.object({
 
 export const VoteOnProposalInputSchema = z.object({
   proposalUuid: UUIDSchema,
-  value: z.number().int().refine((v) => v === 1 || v === -1, {
-    message: 'Vote value must be +1 or -1',
-  }),
+  value: z
+    .number()
+    .int()
+    .refine((v) => v === 1 || v === -1, {
+      message: 'Vote value must be +1 or -1',
+    }),
 });
 
 export const ResolveProposalInputSchema = z.object({

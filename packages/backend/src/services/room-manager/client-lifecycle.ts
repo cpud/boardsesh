@@ -17,7 +17,7 @@ export async function registerClient(
   distributedState: DistributedStateManager | null,
   username?: string,
   userId?: string,
-  avatarUrl?: string
+  avatarUrl?: string,
 ): Promise<string> {
   const defaultUsername = username || `User-${connectionId.substring(0, 6)}`;
   clients.set(connectionId, {
@@ -58,17 +58,28 @@ export async function joinSession(
   writeScheduler: WriteScheduler,
   sessionGraceTimers: Map<string, NodeJS.Timeout>,
   pendingJoinPersists: Map<string, Promise<void>>,
-  getQueueStateFn: (sessionId: string) => Promise<{ queue: ClimbQueueItem[]; currentClimbQueueItem: ClimbQueueItem | null; version: number; sequence: number; stateHash: string }>,
+  getQueueStateFn: (sessionId: string) => Promise<{
+    queue: ClimbQueueItem[];
+    currentClimbQueueItem: ClimbQueueItem | null;
+    version: number;
+    sequence: number;
+    stateHash: string;
+  }>,
   getSessionUsers: (sessionId: string) => Promise<SessionUser[]>,
   getSessionUsersLocal: (sessionId: string) => SessionUser[],
   getSessionById: (sessionId: string) => Promise<Session | null>,
-  updateQueueStateImmediate: (sessionId: string, queue: ClimbQueueItem[], currentClimbQueueItem: ClimbQueueItem | null, expectedVersion?: number) => Promise<number>,
+  updateQueueStateImmediate: (
+    sessionId: string,
+    queue: ClimbQueueItem[],
+    currentClimbQueueItem: ClimbQueueItem | null,
+    expectedVersion?: number,
+  ) => Promise<number>,
   leaveSessionFn: (connectionId: string) => Promise<{ sessionId: string; newLeaderId?: string } | null>,
   username?: string,
   avatarUrl?: string,
   initialQueue?: ClimbQueueItem[],
   initialCurrentClimb?: ClimbQueueItem | null,
-  sessionName?: string
+  sessionName?: string,
 ): Promise<{
   clientId: string;
   users: SessionUser[];
@@ -112,21 +123,20 @@ export async function joinSession(
   // Create or get session in memory - with lazy restore
   if (!sessionsMap.has(sessionId)) {
     if (redisStore) {
-      isNewSession = await restoreSessionWithLock(
-        sessionId,
-        sessionsMap,
-        redisStore,
-        getSessionById
-      );
+      isNewSession = await restoreSessionWithLock(sessionId, sessionsMap, redisStore, getSessionById);
       if (isNewSession) {
-        console.log(`[RoomManager] Creating new session ${sessionId} with ${initialQueue?.length || 0} initial queue items`);
+        console.log(
+          `[RoomManager] Creating new session ${sessionId} with ${initialQueue?.length || 0} initial queue items`,
+        );
       }
     } else {
       // No Redis, check Postgres directly for session existence
       const pgSession = await getSessionById(sessionId);
       if (!pgSession || pgSession.status === 'ended') {
         isNewSession = true;
-        console.log(`[RoomManager] Creating new session ${sessionId} with ${initialQueue?.length || 0} initial queue items`);
+        console.log(
+          `[RoomManager] Creating new session ${sessionId} with ${initialQueue?.length || 0} initial queue items`,
+        );
       }
       sessionsMap.set(sessionId, new Set());
     }
@@ -137,12 +147,7 @@ export async function joinSession(
   let isLeader: boolean;
 
   if (distributedState) {
-    const result = await distributedState.joinSession(
-      connectionId,
-      sessionId,
-      client.username,
-      client.avatarUrl
-    );
+    const result = await distributedState.joinSession(connectionId, sessionId, client.username, client.avatarUrl);
     isLeader = result.isLeader;
   } else {
     isLeader = sessionClientIds.size === 0;
@@ -155,9 +160,7 @@ export async function joinSession(
   // Existing sessions stay Redis-only for join/leave activity.
   if (isNewSession) {
     const previous = pendingJoinPersists.get(sessionId) ?? Promise.resolve();
-    const chained = previous.then(() =>
-      ensureSessionRecordExists(sessionId, boardPath, client.userId, sessionName)
-    );
+    const chained = previous.then(() => ensureSessionRecordExists(sessionId, boardPath, client.userId, sessionName));
 
     pendingJoinPersists.set(sessionId, chained);
     try {
@@ -172,20 +175,12 @@ export async function joinSession(
   // Initialize queue state for new sessions with provided initial queue
   if (isNewSession && initialQueue && initialQueue.length > 0) {
     console.log(`[RoomManager] Initializing queue for new session ${sessionId} with ${initialQueue.length} items`);
-    await updateQueueStateImmediate(
-      sessionId,
-      initialQueue,
-      initialCurrentClimb || null,
-      0
-    );
+    await updateQueueStateImmediate(sessionId, initialQueue, initialCurrentClimb || null, 0);
   }
 
   // Update Redis session state
   if (redisStore) {
-    await Promise.all([
-      redisStore.markActive(sessionId),
-      redisStore.refreshTTL(sessionId),
-    ]);
+    await Promise.all([redisStore.markActive(sessionId), redisStore.refreshTTL(sessionId)]);
 
     if (!distributedState) {
       const users = getSessionUsersLocal(sessionId);
@@ -225,7 +220,7 @@ export async function leaveSession(
   writeScheduler: WriteScheduler,
   sessionGraceTimers: Map<string, NodeJS.Timeout>,
   pendingJoinPersists: Map<string, Promise<void>>,
-  SESSION_GRACE_PERIOD_MS: number
+  SESSION_GRACE_PERIOD_MS: number,
 ): Promise<{ sessionId: string; newLeaderId?: string } | null> {
   const client = clients.get(connectionId);
   if (!client || !client.sessionId) {
@@ -310,7 +305,7 @@ export async function removeClient(
   connectionId: string,
   clients: Map<string, ConnectedClient>,
   sessionsMap: Map<string, Set<string>>,
-  distributedState: DistributedStateManager | null
+  distributedState: DistributedStateManager | null,
 ): Promise<{ distributedStateCleanedUp: boolean }> {
   let distributedStateCleanedUp = true;
 
@@ -324,7 +319,7 @@ export async function removeClient(
       distributedStateCleanedUp = false;
       console.error(
         `[RoomManager] Failed to remove connection ${connectionId.slice(0, 8)} from distributed state. ` +
-        `Redis data may remain until TTL expires. Error: ${err}`
+          `Redis data may remain until TTL expires. Error: ${err}`,
       );
     }
   }
@@ -351,7 +346,7 @@ async function ensureSessionRecordExists(
   sessionId: string,
   boardPath: string,
   userId: string | null,
-  sessionName?: string
+  sessionName?: string,
 ): Promise<void> {
   const now = new Date();
   await db

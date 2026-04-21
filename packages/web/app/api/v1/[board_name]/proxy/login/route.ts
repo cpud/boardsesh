@@ -34,7 +34,9 @@ async function login(boardName: AuroraBoardName, username: string, password: str
 
   if (loginResponse.user_id) {
     // Insert/update user in our database - handle missing user object
-    const createdAt = loginResponse.user?.created_at ? new Date(loginResponse.user.created_at).toISOString() : new Date().toISOString();
+    const createdAt = loginResponse.user?.created_at
+      ? new Date(loginResponse.user.created_at).toISOString()
+      : new Date().toISOString();
 
     await dbz
       .insert(boardUsers)

@@ -1,6 +1,15 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useMemo, useRef, useLayoutEffect, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useLayoutEffect,
+  useEffect,
+} from 'react';
 
 // useLayoutEffect emits SSR warnings in Next.js; fall back to useEffect on the server.
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
@@ -42,7 +51,14 @@ export function useSearchDrawerBridge() {
 // -------------------------------------------------------------------
 
 interface SearchDrawerBridgeSetters {
-  register: (openDrawer: () => void, summary: string, active: boolean, nameFilter: string, setNameFilter: (name: string) => void, nonNameActive: boolean) => void;
+  register: (
+    openDrawer: () => void,
+    summary: string,
+    active: boolean,
+    nameFilter: string,
+    setNameFilter: (name: string) => void,
+    nonNameActive: boolean,
+  ) => void;
   update: (summary: string, active: boolean, nameFilter: string, nonNameActive: boolean) => void;
   deregister: () => void;
 }
@@ -66,15 +82,18 @@ export function SearchDrawerBridgeProvider({ children }: { children: React.React
   const openDrawerRef = useRef<(() => void) | null>(null);
   const setNameFilterRef = useRef<((name: string) => void) | null>(null);
 
-  const register = useCallback((openDrawer: () => void, s: string, a: boolean, nf: string, snf: (name: string) => void, nna: boolean) => {
-    openDrawerRef.current = openDrawer;
-    setNameFilterRef.current = snf;
-    setSummary(s);
-    setActive(a);
-    setNameFilterState(nf);
-    setNonNameActive(nna);
-    setIsRegistered(true);
-  }, []);
+  const register = useCallback(
+    (openDrawer: () => void, s: string, a: boolean, nf: string, snf: (name: string) => void, nna: boolean) => {
+      openDrawerRef.current = openDrawer;
+      setNameFilterRef.current = snf;
+      setSummary(s);
+      setActive(a);
+      setNameFilterState(nf);
+      setNonNameActive(nna);
+      setIsRegistered(true);
+    },
+    [],
+  );
 
   const update = useCallback((s: string, a: boolean, nf: string, nna: boolean) => {
     setSummary(s);
@@ -101,14 +120,17 @@ export function SearchDrawerBridgeProvider({ children }: { children: React.React
     setNameFilterRef.current?.(name);
   }, []);
 
-  const state = useMemo<SearchDrawerBridgeState>(() => ({
-    openClimbSearchDrawer: isRegistered ? stableOpenDrawer : null,
-    searchPillSummary: summary,
-    hasActiveFilters: active,
-    nameFilter,
-    setNameFilter: isRegistered ? stableSetNameFilter : null,
-    hasActiveNonNameFilters: nonNameActive,
-  }), [isRegistered, stableOpenDrawer, stableSetNameFilter, summary, active, nameFilter, nonNameActive]);
+  const state = useMemo<SearchDrawerBridgeState>(
+    () => ({
+      openClimbSearchDrawer: isRegistered ? stableOpenDrawer : null,
+      searchPillSummary: summary,
+      hasActiveFilters: active,
+      nameFilter,
+      setNameFilter: isRegistered ? stableSetNameFilter : null,
+      hasActiveNonNameFilters: nonNameActive,
+    }),
+    [isRegistered, stableOpenDrawer, stableSetNameFilter, summary, active, nameFilter, nonNameActive],
+  );
 
   const setters = useMemo<SearchDrawerBridgeSetters>(
     () => ({ register, update, deregister }),
@@ -117,9 +139,7 @@ export function SearchDrawerBridgeProvider({ children }: { children: React.React
 
   return (
     <SearchDrawerBridgeSetterContext.Provider value={setters}>
-      <SearchDrawerBridgeContext.Provider value={state}>
-        {children}
-      </SearchDrawerBridgeContext.Provider>
+      <SearchDrawerBridgeContext.Provider value={state}>{children}</SearchDrawerBridgeContext.Provider>
     </SearchDrawerBridgeSetterContext.Provider>
   );
 }
@@ -177,7 +197,9 @@ export function SearchDrawerBridgeInjector({
     } else {
       deregister();
     }
-    return () => { deregister(); };
+    return () => {
+      deregister();
+    };
   }, [isOnListPage, register, deregister]);
 
   // Update summary, active filters, and name filter when they change (while on list page)

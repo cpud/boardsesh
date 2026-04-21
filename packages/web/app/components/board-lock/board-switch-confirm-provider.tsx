@@ -81,13 +81,9 @@ export function BoardSwitchConfirmProvider({ children }: { children: React.React
     setState(null);
   }, []);
 
-  const value = useMemo<BoardSwitchConfirmContextValue>(
-    () => ({ confirmBoardSwitch }),
-    [confirmBoardSwitch],
-  );
+  const value = useMemo<BoardSwitchConfirmContextValue>(() => ({ confirmBoardSwitch }), [confirmBoardSwitch]);
 
-  const title =
-    state?.reason === 'session' ? 'Leave your session?' : 'Disconnect your board?';
+  const title = state?.reason === 'session' ? 'Leave your session?' : 'Disconnect your board?';
   const body =
     state?.reason === 'session'
       ? `You're in a session on ${state?.lockedLabel}. Switching to ${state?.targetLabel} disconnects your board but keeps the session running.`

@@ -59,13 +59,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <ColorModeProvider>
                 <SnackbarProvider>
                   <AuthModalProvider>
-                  <FeatureFlagsProvider flags={EMPTY_FEATURE_FLAGS}>
-                    <PersistentSessionWrapper boardConfigs={boardConfigs}>
-                      <NavigationLoadingProvider>
-                        <NotificationSubscriptionManager>{children}</NotificationSubscriptionManager>
-                      </NavigationLoadingProvider>
-                    </PersistentSessionWrapper>
-                  </FeatureFlagsProvider>
+                    <FeatureFlagsProvider flags={EMPTY_FEATURE_FLAGS}>
+                      <PersistentSessionWrapper boardConfigs={boardConfigs}>
+                        <NavigationLoadingProvider>
+                          <NotificationSubscriptionManager>{children}</NotificationSubscriptionManager>
+                        </NavigationLoadingProvider>
+                      </PersistentSessionWrapper>
+                    </FeatureFlagsProvider>
                   </AuthModalProvider>
                 </SnackbarProvider>
               </ColorModeProvider>

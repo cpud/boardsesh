@@ -66,14 +66,7 @@ export const queriesTypeDefs = /* GraphQL */ `
     """
     Get a single climb by its UUID.
     """
-    climb(
-      boardName: String!
-      layoutId: Int!
-      sizeId: Int!
-      setIds: String!
-      angle: Int!
-      climbUuid: ID!
-    ): Climb
+    climb(boardName: String!, layoutId: Int!, sizeId: Int!, setIds: String!, angle: Int!, climbUuid: ID!): Climb
 
     """
     Get climb stats history for a climb over the last 12 months.
@@ -300,14 +293,16 @@ export const queriesTypeDefs = /* GraphQL */ `
     Requires authentication.
     Deprecated: Use activityFeed instead.
     """
-    followingAscentsFeed(input: FollowingAscentsFeedInput): FollowingAscentsFeedResult! @deprecated(reason: "Use activityFeed query instead")
+    followingAscentsFeed(input: FollowingAscentsFeedInput): FollowingAscentsFeedResult!
+      @deprecated(reason: "Use activityFeed query instead")
 
     """
     Get global activity feed of all recent ascents.
     No authentication required.
     Deprecated: Use trendingFeed instead.
     """
-    globalAscentsFeed(input: FollowingAscentsFeedInput): FollowingAscentsFeedResult! @deprecated(reason: "Use trendingFeed query instead")
+    globalAscentsFeed(input: FollowingAscentsFeedInput): FollowingAscentsFeedResult!
+      @deprecated(reason: "Use trendingFeed query instead")
 
     """
     Get materialized activity feed for the authenticated user.

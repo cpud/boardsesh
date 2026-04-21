@@ -158,7 +158,7 @@ export default function AuthModal({
       if (data.requiresVerification) {
         showMessage('Please check your email to verify your account', 'info');
         setActiveTab('login');
-        setLoginValues(prev => ({ ...prev, email: registerValues.email }));
+        setLoginValues((prev) => ({ ...prev, email: registerValues.email }));
         setRegisterValues(initialRegisterValues);
         setRegisterErrors({});
         return;
@@ -180,7 +180,7 @@ export default function AuthModal({
         onSuccess?.();
       } else {
         setActiveTab('login');
-        setLoginValues(prev => ({ ...prev, email: registerValues.email }));
+        setLoginValues((prev) => ({ ...prev, email: registerValues.email }));
         showMessage('Please log in with your account', 'info');
       }
     } catch (error) {
@@ -200,18 +200,17 @@ export default function AuthModal({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleCancel}
-      maxWidth="xs"
-      fullWidth
-    >
+    <Dialog open={open} onClose={handleCancel} maxWidth="xs" fullWidth>
       <DialogContent>
         <Stack spacing={3} sx={{ width: '100%' }}>
           <Stack spacing={1} sx={{ width: '100%', textAlign: 'center' }}>
             <Favorite sx={{ fontSize: 32, color: themeTokens.colors.error, mx: 'auto' }} />
-            <Typography variant="body2" component="span" fontWeight={600} sx={{ fontSize: 18 }}>{title}</Typography>
-            <Typography variant="body2" component="span" color="text.secondary">{description}</Typography>
+            <Typography variant="body2" component="span" fontWeight={600} sx={{ fontSize: 18 }}>
+              {title}
+            </Typography>
+            <Typography variant="body2" component="span" color="text.secondary">
+              {description}
+            </Typography>
           </Stack>
 
           <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} centered>
@@ -222,7 +221,10 @@ export default function AuthModal({
           <TabPanel value={activeTab} index="login">
             <Box
               component="form"
-              onSubmit={(e: React.FormEvent) => { e.preventDefault(); handleLogin(); }}
+              onSubmit={(e: React.FormEvent) => {
+                e.preventDefault();
+                handleLogin();
+              }}
               sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
             >
               <TextField
@@ -233,8 +235,8 @@ export default function AuthModal({
                 fullWidth
                 value={loginValues.email}
                 onChange={(e) => {
-                  setLoginValues(prev => ({ ...prev, email: e.target.value }));
-                  if (loginErrors.email) setLoginErrors(prev => ({ ...prev, email: undefined }));
+                  setLoginValues((prev) => ({ ...prev, email: e.target.value }));
+                  if (loginErrors.email) setLoginErrors((prev) => ({ ...prev, email: undefined }));
                 }}
                 error={!!loginErrors.email}
                 helperText={loginErrors.email}
@@ -260,8 +262,8 @@ export default function AuthModal({
                 fullWidth
                 value={loginValues.password}
                 onChange={(e) => {
-                  setLoginValues(prev => ({ ...prev, password: e.target.value }));
-                  if (loginErrors.password) setLoginErrors(prev => ({ ...prev, password: undefined }));
+                  setLoginValues((prev) => ({ ...prev, password: e.target.value }));
+                  if (loginErrors.password) setLoginErrors((prev) => ({ ...prev, password: undefined }));
                 }}
                 error={!!loginErrors.password}
                 helperText={loginErrors.password}
@@ -305,7 +307,10 @@ export default function AuthModal({
           <TabPanel value={activeTab} index="register">
             <Box
               component="form"
-              onSubmit={(e: React.FormEvent) => { e.preventDefault(); handleRegister(); }}
+              onSubmit={(e: React.FormEvent) => {
+                e.preventDefault();
+                handleRegister();
+              }}
               sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
             >
               <TextField
@@ -315,8 +320,8 @@ export default function AuthModal({
                 fullWidth
                 value={registerValues.name}
                 onChange={(e) => {
-                  setRegisterValues(prev => ({ ...prev, name: e.target.value }));
-                  if (registerErrors.name) setRegisterErrors(prev => ({ ...prev, name: undefined }));
+                  setRegisterValues((prev) => ({ ...prev, name: e.target.value }));
+                  if (registerErrors.name) setRegisterErrors((prev) => ({ ...prev, name: undefined }));
                 }}
                 error={!!registerErrors.name}
                 helperText={registerErrors.name}
@@ -338,8 +343,8 @@ export default function AuthModal({
                 fullWidth
                 value={registerValues.email}
                 onChange={(e) => {
-                  setRegisterValues(prev => ({ ...prev, email: e.target.value }));
-                  if (registerErrors.email) setRegisterErrors(prev => ({ ...prev, email: undefined }));
+                  setRegisterValues((prev) => ({ ...prev, email: e.target.value }));
+                  if (registerErrors.email) setRegisterErrors((prev) => ({ ...prev, email: undefined }));
                 }}
                 error={!!registerErrors.email}
                 helperText={registerErrors.email}
@@ -364,8 +369,8 @@ export default function AuthModal({
                 fullWidth
                 value={registerValues.password}
                 onChange={(e) => {
-                  setRegisterValues(prev => ({ ...prev, password: e.target.value }));
-                  if (registerErrors.password) setRegisterErrors(prev => ({ ...prev, password: undefined }));
+                  setRegisterValues((prev) => ({ ...prev, password: e.target.value }));
+                  if (registerErrors.password) setRegisterErrors((prev) => ({ ...prev, password: undefined }));
                 }}
                 error={!!registerErrors.password}
                 helperText={registerErrors.password}
@@ -445,7 +450,9 @@ export default function AuthModal({
           </TabPanel>
 
           <MuiDivider sx={{ margin: '8px 0' }}>
-            <Typography variant="body2" component="span" color="text.secondary">or</Typography>
+            <Typography variant="body2" component="span" color="text.secondary">
+              or
+            </Typography>
           </MuiDivider>
 
           <SocialLoginButtons />

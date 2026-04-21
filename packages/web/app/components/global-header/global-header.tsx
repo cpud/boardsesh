@@ -162,7 +162,12 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
 
   const isOnBoardRoute = useIsOnBoardRoute();
   const notificationUnreadCount = useUnreadNotificationCount();
-  const { openClimbSearchDrawer, nameFilter, setNameFilter, hasActiveNonNameFilters: nonNameFiltersActive } = useSearchDrawerBridge();
+  const {
+    openClimbSearchDrawer,
+    nameFilter,
+    setNameFilter,
+    hasActiveNonNameFilters: nonNameFiltersActive,
+  } = useSearchDrawerBridge();
   const statsFilterBridge = useStatsFilterBridge();
   const profileHeaderShare = useProfileHeaderShare();
   const pathname = usePathname();
@@ -232,16 +237,16 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
   if (pathname === '/you') {
     return (
       <CenteredHeader
-        left={(
+        left={
           <div className={styles.headerActions}>
             <UserDrawer boardConfigs={boardConfigs} />
             <IconButton component={Link} href="/settings" aria-label="Settings" size="small">
               <SettingsOutlined />
             </IconButton>
           </div>
-        )}
+        }
         title="You"
-        right={(
+        right={
           <div className={styles.headerActions}>
             {statsFilterBridge.isActive && (
               <div className={styles.filterButton}>
@@ -262,7 +267,7 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
             )}
             {notificationButton}
           </div>
-        )}
+        }
       />
     );
   }
@@ -309,7 +314,7 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
       <CenteredHeader
         left={<BackButton fallbackUrl={backUrl} />}
         title={title}
-        right={(
+        right={
           <div className={styles.headerActions}>
             {statsFilterBridge.isActive && (
               <div className={styles.filterButton}>
@@ -329,7 +334,7 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
               </IconButton>
             )}
           </div>
-        )}
+        }
       />
     );
   }
@@ -364,17 +369,11 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
     }
   };
 
-
   const searchPlaceholder = useClimbSearchBridge ? 'Search climbs...' : 'What do you want to climb?';
 
   // Simple title header for specific pages (back button + title, no search/sesh)
   if (titleHeaderPage) {
-    return (
-      <CenteredHeader
-        left={<BackButton fallbackUrl="/" />}
-        title={titleHeaderPage[1]}
-      />
-    );
+    return <CenteredHeader left={<BackButton fallbackUrl="/" />} title={titleHeaderPage[1]} />;
   }
 
   return (
@@ -382,10 +381,7 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
       <header className={styles.header}>
         <UserDrawer boardConfigs={boardConfigs} />
 
-        <div
-          id={useClimbSearchBridge ? 'onboarding-search-button' : undefined}
-          className={styles.searchInput}
-        >
+        <div id={useClimbSearchBridge ? 'onboarding-search-button' : undefined} className={styles.searchInput}>
           <TextField
             inputRef={inputRef}
             placeholder={searchPlaceholder}
@@ -404,19 +400,20 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
                     <SearchOutlined sx={{ fontSize: 18 }} />
                   </InputAdornment>
                 ),
-                endAdornment: useClimbSearchBridge && nameFilter ? (
-                  <InputAdornment position="end">
-                    <IconButton
-                      size="small"
-                      onClick={() => setNameFilter?.('')}
-                      aria-label="Clear search"
-                      edge="end"
-                      sx={{ padding: '2px' }}
-                    >
-                      <ClearOutlined sx={{ fontSize: 16 }} />
-                    </IconButton>
-                  </InputAdornment>
-                ) : undefined,
+                endAdornment:
+                  useClimbSearchBridge && nameFilter ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() => setNameFilter?.('')}
+                        aria-label="Clear search"
+                        edge="end"
+                        sx={{ padding: '2px' }}
+                      >
+                        <ClearOutlined sx={{ fontSize: 16 }} />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : undefined,
               },
             }}
           />
@@ -424,17 +421,12 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
 
         {useClimbSearchBridge && (
           <div className={styles.filterButton}>
-            <IconButton
-              onClick={handleFilterClick}
-              aria-label="Open filters"
-              size="small"
-            >
+            <IconButton onClick={handleFilterClick} aria-label="Open filters" size="small">
               <FilterListOutlined />
             </IconButton>
             {nonNameFiltersActive && <span className={styles.filterActiveIndicator} />}
           </div>
         )}
-
       </header>
 
       {searchRendered && (
@@ -445,7 +437,6 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
           defaultCategory={isOnBoardRoute ? 'climbs' : 'boards'}
         />
       )}
-
     </>
   );
 }

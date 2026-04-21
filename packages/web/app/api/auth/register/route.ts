@@ -1,21 +1,21 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/app/lib/db/db";
-import * as schema from "@/app/lib/db/schema";
-import bcrypt from "bcryptjs";
-import { eq } from "drizzle-orm";
-import { z } from "zod";
-import { sendVerificationEmail } from "@/app/lib/email/email-service";
-import { checkRateLimit, getClientIp } from "@/app/lib/auth/rate-limiter";
+import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '@/app/lib/db/db';
+import * as schema from '@/app/lib/db/schema';
+import bcrypt from 'bcryptjs';
+import { eq } from 'drizzle-orm';
+import { z } from 'zod';
+import { sendVerificationEmail } from '@/app/lib/email/email-service';
+import { checkRateLimit, getClientIp } from '@/app/lib/auth/rate-limiter';
 
-const emailVerificationEnabled = process.env.EMAIL_VERIFICATION_ENABLED === "true";
+const emailVerificationEnabled = process.env.EMAIL_VERIFICATION_ENABLED === 'true';
 
 const registerSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().email('Invalid email address'),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
-    .max(128, "Password must be less than 128 characters"),
-  name: z.string().min(1, "Name is required").max(100, "Name must be less than 100 characters").optional(),
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password must be less than 128 characters'),
+  name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters').optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -26,13 +26,13 @@ export async function POST(request: NextRequest) {
 
     if (rateLimitResult.limited) {
       return NextResponse.json(
-        { error: "Too many requests. Please try again later." },
+        { error: 'Too many requests. Please try again later.' },
         {
           status: 429,
           headers: {
-            "Retry-After": String(rateLimitResult.retryAfterSeconds),
+            'Retry-After': String(rateLimitResult.retryAfterSeconds),
           },
-        }
+        },
       );
     }
 
@@ -41,29 +41,24 @@ export async function POST(request: NextRequest) {
     // Validate input
     const validationResult = registerSchema.safeParse(body);
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: validationResult.error.issues[0].message },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: validationResult.error.issues[0].message }, { status: 400 });
     }
 
     const { email, password, name } = validationResult.data;
     const db = getDb();
 
     // Check if user already exists
-    const existingUser = await db
-      .select()
-      .from(schema.users)
-      .where(eq(schema.users.email, email))
-      .limit(1);
+    const existingUser = await db.select().from(schema.users).where(eq(schema.users.email, email)).limit(1);
 
     if (existingUser.length > 0) {
       // An account with this email already exists
       // Do not allow registering again - user should use their existing authentication method
       // This prevents account takeover attacks where someone registers with an OAuth user's email
       return NextResponse.json(
-        { error: "An account with this email already exists. Please sign in with your existing account." },
-        { status: 409 }
+        {
+          error: 'An account with this email already exists. Please sign in with your existing account.',
+        },
+        { status: 409 },
       );
     }
 
@@ -81,7 +76,7 @@ export async function POST(request: NextRequest) {
         await tx.insert(schema.users).values({
           id: userId,
           email,
-          name: name || email.split("@")[0],
+          name: name || email.split('@')[0],
           emailVerified: emailVerificationEnabled ? null : new Date(),
         });
 
@@ -109,10 +104,7 @@ export async function POST(request: NextRequest) {
       // Handle race condition: another request created this user between our check and insert
       // PostgreSQL unique constraint violation code is '23505'
       if (insertError && typeof insertError === 'object' && 'code' in insertError && insertError.code === '23505') {
-        return NextResponse.json(
-          { error: "An account with this email already exists" },
-          { status: 409 }
-        );
+        return NextResponse.json({ error: 'An account with this email already exists' }, { status: 409 });
       }
       throw insertError;
     }
@@ -125,35 +117,32 @@ export async function POST(request: NextRequest) {
         await sendVerificationEmail(email, verificationToken, baseUrl);
         emailSent = true;
       } catch (emailError) {
-        console.error("Failed to send verification email:", emailError);
+        console.error('Failed to send verification email:', emailError);
         // User is created, they can use resend functionality
       }
 
       return NextResponse.json(
         {
           message: emailSent
-            ? "Account created. Please check your email to verify your account."
-            : "Account created. Please request a new verification email.",
+            ? 'Account created. Please check your email to verify your account.'
+            : 'Account created. Please request a new verification email.',
           requiresVerification: true,
           emailSent,
         },
-        { status: 201 }
+        { status: 201 },
       );
     }
 
     // Email verification disabled - user can log in immediately
     return NextResponse.json(
       {
-        message: "Account created. You can now log in.",
+        message: 'Account created. You can now log in.',
         requiresVerification: false,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
-    console.error("Registration error:", error);
-    return NextResponse.json(
-      { error: "An error occurred during registration" },
-      { status: 500 }
-    );
+    console.error('Registration error:', error);
+    return NextResponse.json({ error: 'An error occurred during registration' }, { status: 500 });
   }
 }

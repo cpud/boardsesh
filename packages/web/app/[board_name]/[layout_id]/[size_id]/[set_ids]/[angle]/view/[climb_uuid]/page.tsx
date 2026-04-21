@@ -23,16 +23,25 @@ export async function generateMetadata(props: { params: Promise<BoardRouteParame
 
   try {
     const { parsedParams } = await parseRouteParams(params);
-    const [boardDetails, currentClimb] = await Promise.all([getBoardDetailsForBoard(parsedParams), getClimb(parsedParams)]);
+    const [boardDetails, currentClimb] = await Promise.all([
+      getBoardDetailsForBoard(parsedParams),
+      getClimb(parsedParams),
+    ]);
 
     const climbName = currentClimb.name || `${boardDetails.board_name} Climb`;
     const climbGrade = currentClimb.difficulty || 'Unknown Grade';
     const setter = currentClimb.setter_username || 'Unknown Setter';
     const description = `${climbName} - ${climbGrade} by ${setter}. Quality: ${currentClimb.quality_average || 0}/5. Ascents: ${currentClimb.ascensionist_count || 0}`;
-    const climbUrl = tryConstructSlugViewUrl(
-      parsedParams.board_name, parsedParams.layout_id, parsedParams.size_id,
-      parsedParams.set_ids, parsedParams.angle, parsedParams.climb_uuid, climbName,
-    ) ?? constructClimbViewUrl(parsedParams, parsedParams.climb_uuid, climbName);
+    const climbUrl =
+      tryConstructSlugViewUrl(
+        parsedParams.board_name,
+        parsedParams.layout_id,
+        parsedParams.size_id,
+        parsedParams.set_ids,
+        parsedParams.angle,
+        parsedParams.climb_uuid,
+        climbName,
+      ) ?? constructClimbViewUrl(parsedParams, parsedParams.climb_uuid, climbName);
 
     const ogImagePath = buildOgBoardRenderUrl(boardDetails, currentClimb.frames);
 

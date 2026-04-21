@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
@@ -39,9 +39,7 @@ describe('shutdown: server resources interface', () => {
   });
 
   it('returns cleanupIntervals and shutdownServices from startServer', () => {
-    expect(serverSource).toContain(
-      'return { wss, httpServer, cleanupIntervals, shutdownServices }',
-    );
+    expect(serverSource).toContain('return { wss, httpServer, cleanupIntervals, shutdownServices }');
   });
 
   it('does not register its own SIGTERM/SIGINT handlers', () => {
@@ -78,20 +76,14 @@ describe('shutdown: ordering', () => {
 
 describe('pool configuration', () => {
   it('idleTimeoutMillis is 30 seconds (not the old 120s)', () => {
-    const neonSource = readFileSync(
-      resolve(ROOT, '../db/src/client/neon.ts'),
-      'utf-8',
-    );
+    const neonSource = readFileSync(resolve(ROOT, '../db/src/client/neon.ts'), 'utf-8');
     expect(neonSource).toContain('idleTimeoutMillis: 30000');
     expect(neonSource).not.toContain('idleTimeoutMillis: 120000');
   });
 });
 
 describe('closePool implementation', () => {
-  const neonSource = readFileSync(
-    resolve(ROOT, '../db/src/client/neon.ts'),
-    'utf-8',
-  );
+  const neonSource = readFileSync(resolve(ROOT, '../db/src/client/neon.ts'), 'utf-8');
 
   it('is exported from neon.ts', () => {
     expect(neonSource).toContain('export async function closePool()');
@@ -121,10 +113,7 @@ describe('closePool implementation', () => {
   });
 
   it('is re-exported from client/index.ts', () => {
-    const indexSource = readFileSync(
-      resolve(ROOT, '../db/src/client/index.ts'),
-      'utf-8',
-    );
+    const indexSource = readFileSync(resolve(ROOT, '../db/src/client/index.ts'), 'utf-8');
     expect(indexSource).toContain('closePool');
   });
 });

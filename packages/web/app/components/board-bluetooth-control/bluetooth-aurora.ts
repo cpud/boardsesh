@@ -1,24 +1,20 @@
 import { LedPlacements } from '@/app/lib/types';
 import { HOLD_STATE_MAP } from '../board-renderer/types';
-import {
-  AURORA_ADVERTISED_SERVICE_UUID,
-  MESSAGE_BODY_MAX_LENGTH,
-  UART_SERVICE_UUID,
-} from './bluetooth-shared';
+import { AURORA_ADVERTISED_SERVICE_UUID, MESSAGE_BODY_MAX_LENGTH, UART_SERVICE_UUID } from './bluetooth-shared';
 import { AuroraBoardName } from '@/app/lib/api-wrappers/aurora/types';
 import { BoardName } from '@boardsesh/shared-schema';
 
 // --- API v3 command bytes (3 bytes per LED, 16-bit positions) ---
 const V3_PACKET_MIDDLE = 81; // 'Q'
-const V3_PACKET_FIRST = 82;  // 'R'
-const V3_PACKET_LAST = 83;   // 'S'
-const V3_PACKET_ONLY = 84;   // 'T'
+const V3_PACKET_FIRST = 82; // 'R'
+const V3_PACKET_LAST = 83; // 'S'
+const V3_PACKET_ONLY = 84; // 'T'
 
 // --- API v2 command bytes (2 bytes per LED, 10-bit positions) ---
 const V2_PACKET_MIDDLE = 77; // 'M'
-const V2_PACKET_FIRST = 78;  // 'N'
-const V2_PACKET_LAST = 79;   // 'O'
-const V2_PACKET_ONLY = 80;   // 'P'
+const V2_PACKET_FIRST = 78; // 'N'
+const V2_PACKET_LAST = 79; // 'O'
+const V2_PACKET_ONLY = 80; // 'P'
 
 // --- v2 power budget constants ---
 const V2_MAX_BOARD_POWER = 18.0;
@@ -81,10 +77,7 @@ export const encodePositionAndColorV3 = (position: number, ledColor: string) => 
  * Compute the brightness scale factor for v2 power budget.
  * Tries progressively lower scales until total power fits within 18W.
  */
-export const computeV2Scale = (
-  ledEntries: Array<{ position: number; color: string }>,
-  ledsPerHold: number,
-): number => {
+export const computeV2Scale = (ledEntries: Array<{ position: number; color: string }>, ledsPerHold: number): number => {
   for (const scale of V2_POWER_SCALES) {
     let totalPower = 0;
     for (const { color } of ledEntries) {
@@ -100,8 +93,7 @@ export const computeV2Scale = (
   return 0;
 };
 
-export const scaledColorV2 = (value8bit: number, scale: number): number =>
-  Math.floor(value8bit * scale) >> 6; // Result: 0-3
+export const scaledColorV2 = (value8bit: number, scale: number): number => Math.floor(value8bit * scale) >> 6; // Result: 0-3
 
 /**
  * Encode a single LED for v2: 2 bytes.
@@ -192,8 +184,8 @@ export const getAuroraBluetoothPacket = (
     const skippedCount = skippedPositionCount + skippedRoleCount;
     throw new Error(
       `[BLE] ${skippedCount} of ${skippedCount + ledEntries.length} placements have no LED mapping ` +
-      `for this board configuration. The climb is incompatible with the connected board — ` +
-      `search filters should have prevented this selection.`,
+        `for this board configuration. The climb is incompatible with the connected board — ` +
+        `search filters should have prevented this selection.`,
     );
   }
 
@@ -213,7 +205,7 @@ export const getAuroraBluetoothPacket = (
       // v2 position > 1023 — should never happen with real Aurora boards (max ~641)
       throw new Error(
         `[BLE v2] LED position ${position} exceeds 10-bit limit (1023). ` +
-        `This board may require API v3 — check the device name for @3.`,
+          `This board may require API v3 — check the device name for @3.`,
       );
     }
 

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import type { Climb, BoardDetails } from '@/app/lib/types';
@@ -33,18 +33,8 @@ vi.mock('../../climb-card/climb-list-item', () => ({
     onThumbnailClick?: () => void;
   }) => (
     <div data-testid="climb-list-item" data-uuid={climb.uuid}>
-      <span
-        data-testid={`row-${climb.uuid}`}
-        role="button"
-        aria-hidden
-        onClick={() => onSelect?.()}
-      />
-      <span
-        data-testid={`thumb-${climb.uuid}`}
-        role="button"
-        aria-hidden
-        onClick={() => onThumbnailClick?.()}
-      />
+      <span data-testid={`row-${climb.uuid}`} role="button" aria-hidden onClick={() => onSelect?.()} />
+      <span data-testid={`thumb-${climb.uuid}`} role="button" aria-hidden onClick={() => onThumbnailClick?.()} />
       {climb.name}
     </div>
   ),
@@ -131,7 +121,12 @@ vi.mock('@/app/theme/theme-config', () => ({
 let lastVirtualizerOpts: { count: number } | null = null;
 
 vi.mock('@tanstack/react-virtual', () => ({
-  useWindowVirtualizer: (opts: { count: number; estimateSize: () => number; overscan: number; getItemKey: (i: number) => string | number }) => {
+  useWindowVirtualizer: (opts: {
+    count: number;
+    estimateSize: () => number;
+    overscan: number;
+    getItemKey: (i: number) => string | number;
+  }) => {
     lastVirtualizerOpts = opts;
     const itemCount = Math.min(opts.overscan + 7, opts.count);
     const estimatedSize = opts.estimateSize();
@@ -149,9 +144,7 @@ vi.mock('@tanstack/react-virtual', () => ({
       measureElement: vi.fn(),
       scrollToIndex: vi.fn(),
       scrollOffset: 0,
-      range: opts.count > 0
-        ? { startIndex: 0, endIndex: Math.min(6, opts.count - 1) }
-        : null,
+      range: opts.count > 0 ? { startIndex: 0, endIndex: Math.min(6, opts.count - 1) } : null,
     };
   },
 }));
@@ -306,9 +299,7 @@ describe('ClimbsList thumbnail vs row click', () => {
 
     fireEvent.click(screen.getByTestId('row-climb-0'));
 
-    expect(onClimbSelect).toHaveBeenCalledWith(
-      expect.objectContaining({ uuid: 'climb-0' }),
-    );
+    expect(onClimbSelect).toHaveBeenCalledWith(expect.objectContaining({ uuid: 'climb-0' }));
     const dispatched = dispatchSpy.mock.calls.some(
       ([event]) => event instanceof CustomEvent && event.type === 'boardsesh:open-play-drawer',
     );
@@ -332,9 +323,7 @@ describe('ClimbsList thumbnail vs row click', () => {
 
     fireEvent.click(screen.getByTestId('thumb-climb-0'));
 
-    expect(onClimbSelect).toHaveBeenCalledWith(
-      expect.objectContaining({ uuid: 'climb-0' }),
-    );
+    expect(onClimbSelect).toHaveBeenCalledWith(expect.objectContaining({ uuid: 'climb-0' }));
     const dispatched = dispatchSpy.mock.calls.some(
       ([event]) => event instanceof CustomEvent && event.type === 'boardsesh:open-play-drawer',
     );

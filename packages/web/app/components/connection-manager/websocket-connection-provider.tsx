@@ -20,19 +20,18 @@ export const WebSocketConnectionProvider: React.FC<{ children: React.ReactNode }
     return connectionManager.subscribe((next) => setSnapshot(next));
   }, []);
 
-  const value = useMemo<ConnectionContextValue>(() => ({
-    state: snapshot.state,
-    lastActivity: snapshot.lastActivity,
-    name: snapshot.name,
-    error: snapshot.error,
-    forceReconnect: () => connectionManager.forceReconnect(snapshot.name ?? undefined),
-  }), [snapshot]);
-
-  return (
-    <WebSocketConnectionContext.Provider value={value}>
-      {children}
-    </WebSocketConnectionContext.Provider>
+  const value = useMemo<ConnectionContextValue>(
+    () => ({
+      state: snapshot.state,
+      lastActivity: snapshot.lastActivity,
+      name: snapshot.name,
+      error: snapshot.error,
+      forceReconnect: () => connectionManager.forceReconnect(snapshot.name ?? undefined),
+    }),
+    [snapshot],
   );
+
+  return <WebSocketConnectionContext.Provider value={value}>{children}</WebSocketConnectionContext.Provider>;
 };
 
 const IDLE_FALLBACK: ConnectionContextValue = {

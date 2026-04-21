@@ -88,10 +88,9 @@ export function BoardDetailContent({
     setIsLoading(true);
     try {
       const client = createGraphQLHttpClient(token);
-      const data = await client.request<GetBoardQueryResponse, GetBoardQueryVariables>(
-        GET_BOARD,
-        { boardUuid },
-      );
+      const data = await client.request<GetBoardQueryResponse, GetBoardQueryVariables>(GET_BOARD, {
+        boardUuid,
+      });
       const fetchedBoard = data.board ?? null;
       if (fetchedBoard && initialIsFollowing !== undefined) {
         fetchedBoard.isFollowedByMe = initialIsFollowing;
@@ -119,10 +118,9 @@ export function BoardDetailContent({
     setIsDeleting(true);
     try {
       const client = createGraphQLHttpClient(token);
-      await client.request<DeleteBoardMutationResponse, DeleteBoardMutationVariables>(
-        DELETE_BOARD,
-        { boardUuid: board.uuid },
-      );
+      await client.request<DeleteBoardMutationResponse, DeleteBoardMutationVariables>(DELETE_BOARD, {
+        boardUuid: board.uuid,
+      });
       showMessage('Board deleted', 'success');
       onDeleted?.();
     } catch (error) {
@@ -142,10 +140,9 @@ export function BoardDetailContent({
     if (!token || !board) return;
     try {
       const client = createGraphQLHttpClient(token);
-      await client.request<LinkBoardToGymMutationResponse, LinkBoardToGymMutationVariables>(
-        LINK_BOARD_TO_GYM,
-        { input: { boardUuid: board.uuid, gymUuid } },
-      );
+      await client.request<LinkBoardToGymMutationResponse, LinkBoardToGymMutationVariables>(LINK_BOARD_TO_GYM, {
+        input: { boardUuid: board.uuid, gymUuid },
+      });
       showMessage(gymUuid ? 'Board linked to gym' : 'Board unlinked from gym', 'success');
       setShowGymSelector(false);
       fetchBoard();
@@ -155,12 +152,15 @@ export function BoardDetailContent({
     }
   };
 
-  const handleFollowChange = useCallback((isFollowing: boolean) => {
-    if (board) {
-      onFollowChange?.(board.uuid, isFollowing);
-    }
-    fetchBoard();
-  }, [board, onFollowChange, fetchBoard]);
+  const handleFollowChange = useCallback(
+    (isFollowing: boolean) => {
+      if (board) {
+        onFollowChange?.(board.uuid, isFollowing);
+      }
+      fetchBoard();
+    },
+    [board, onFollowChange, fetchBoard],
+  );
 
   if (isLoading) {
     return (
@@ -195,12 +195,16 @@ export function BoardDetailContent({
     <>
       {/* Header */}
       <Box sx={{ px: 2, pb: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            gap: 1,
+          }}
+        >
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <MuiTypography
-              variant="h5"
-              sx={{ fontWeight: themeTokens.typography.fontWeight.bold }}
-            >
+            <MuiTypography variant="h5" sx={{ fontWeight: themeTokens.typography.fontWeight.bold }}>
               {board.name}
             </MuiTypography>
             {board.locationName && (
@@ -212,19 +216,12 @@ export function BoardDetailContent({
               </Box>
             )}
           </Box>
-          <Chip
-            label={BOARD_TYPE_LABELS[board.boardType] || board.boardType}
-            size="small"
-            variant="outlined"
-          />
+          <Chip label={BOARD_TYPE_LABELS[board.boardType] || board.boardType} size="small" variant="outlined" />
         </Box>
 
         {/* Owner info */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5 }}>
-          <Avatar
-            src={board.ownerAvatarUrl ?? undefined}
-            sx={{ width: 24, height: 24, fontSize: 11 }}
-          >
+          <Avatar src={board.ownerAvatarUrl ?? undefined} sx={{ width: 24, height: 24, fontSize: 11 }}>
             {board.ownerDisplayName?.[0]?.toUpperCase()}
           </Avatar>
           <MuiTypography variant="body2" color="text.secondary">
@@ -240,12 +237,8 @@ export function BoardDetailContent({
 
         {isOwner && (board.isUnlisted || board.hideLocation) && (
           <Box sx={{ display: 'flex', gap: 1, mt: 1.5, flexWrap: 'wrap' }}>
-            {board.isUnlisted && (
-              <Chip label="Unlisted" size="small" variant="outlined" color="warning" />
-            )}
-            {board.hideLocation && (
-              <Chip label="Location hidden" size="small" variant="outlined" color="warning" />
-            )}
+            {board.isUnlisted && <Chip label="Unlisted" size="small" variant="outlined" color="warning" />}
+            {board.hideLocation && <Chip label="Location hidden" size="small" variant="outlined" color="warning" />}
           </Box>
         )}
 
@@ -281,10 +274,7 @@ export function BoardDetailContent({
         )}
         {showGymSelector && isOwner && (
           <Box sx={{ mt: 1.5 }}>
-            <GymSelector
-              selectedGymUuid={board.gymUuid ?? null}
-              onSelect={(gymUuid) => handleLinkGym(gymUuid)}
-            />
+            <GymSelector selectedGymUuid={board.gymUuid ?? null} onSelect={(gymUuid) => handleLinkGym(gymUuid)} />
           </Box>
         )}
 
@@ -339,11 +329,7 @@ export function BoardDetailContent({
       <Divider />
 
       {/* Tabs */}
-      <Tabs
-        value={activeTab}
-        onChange={(_, v) => setActiveTab(v)}
-        sx={{ px: 2 }}
-      >
+      <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} sx={{ px: 2 }}>
         <Tab label="Leaderboard" sx={{ textTransform: 'none' }} />
         <Tab label="Comments" sx={{ textTransform: 'none' }} />
       </Tabs>
@@ -351,23 +337,12 @@ export function BoardDetailContent({
       {/* Tab content */}
       <Box sx={{ flex: 1, overflow: 'auto', px: 2, py: 2 }}>
         {activeTab === 0 && <BoardLeaderboard boardUuid={board.uuid} />}
-        {activeTab === 1 && (
-          <CommentSection
-            entityType="board"
-            entityId={board.uuid}
-            title="Board Discussion"
-          />
-        )}
+        {activeTab === 1 && <CommentSection entityType="board" entityId={board.uuid} title="Board Discussion" />}
       </Box>
 
       {/* Gym detail drawer */}
       {board.gymUuid && (
-        <GymDetail
-          gymUuid={board.gymUuid}
-          open={showGymDetail}
-          onClose={() => setShowGymDetail(false)}
-          anchor="top"
-        />
+        <GymDetail gymUuid={board.gymUuid} open={showGymDetail} onClose={() => setShowGymDetail(false)} anchor="top" />
       )}
     </>
   );

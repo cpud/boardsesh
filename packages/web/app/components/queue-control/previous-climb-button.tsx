@@ -18,7 +18,9 @@ type PreviousClimbButtonProps = {
 };
 
 const PreviousButton = (props: IconButtonProps) => (
-  <IconButton {...props} aria-label="Previous climb"><FastRewindOutlined /></IconButton>
+  <IconButton {...props} aria-label="Previous climb">
+    <FastRewindOutlined />
+  </IconButton>
 );
 
 export default function PreviousClimbButton({ navigate = false, boardDetails }: PreviousClimbButtonProps) {

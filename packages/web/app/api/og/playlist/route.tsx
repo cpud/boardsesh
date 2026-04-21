@@ -67,117 +67,115 @@ export async function GET(request: NextRequest) {
     const displayMark = getPlaylistFallbackMark(icon, name, boardLabel);
 
     return new ImageResponse(
-      (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          background: '#FFFFFF',
+          padding: '60px 80px',
+          gap: '48px',
+        }}
+      >
+        {/* Left: Colored square with icon */}
         <div
           style={{
-            width: '100%',
-            height: '100%',
+            width: '280px',
+            height: '280px',
+            borderRadius: '32px',
+            backgroundColor: color,
             display: 'flex',
             alignItems: 'center',
-            background: '#FFFFFF',
-            padding: '60px 80px',
-            gap: '48px',
+            justifyContent: 'center',
+            flexShrink: 0,
           }}
         >
-          {/* Left: Colored square with icon */}
           <div
             style={{
-              width: '280px',
-              height: '280px',
-              borderRadius: '32px',
-              backgroundColor: color,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
+              fontSize: '120px',
+              lineHeight: 1,
+              color: '#FFFFFF',
             }}
           >
-            <div
-              style={{
-                fontSize: '120px',
-                lineHeight: 1,
-                color: '#FFFFFF',
-              }}
-            >
-              {displayMark}
-            </div>
-          </div>
-
-          {/* Right: Info */}
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-              flex: 1,
-              minWidth: 0,
-            }}
-          >
-            <div
-              style={{
-                fontSize: '48px',
-                fontWeight: 'bold',
-                color: themeTokens.neutral[900],
-                lineHeight: 1.2,
-              }}
-            >
-              {displayName}
-            </div>
-
-            {displayDescription && (
-              <div
-                style={{
-                  fontSize: '24px',
-                  color: themeTokens.neutral[500],
-                  lineHeight: 1.4,
-                }}
-              >
-                {displayDescription}
-              </div>
-            )}
-
-            <div
-              style={{
-                display: 'flex',
-                gap: '24px',
-                marginTop: '8px',
-              }}
-            >
-              <div
-                style={{
-                  fontSize: '28px',
-                  color: themeTokens.neutral[600],
-                  fontWeight: 600,
-                }}
-              >
-                {`${climbCount} ${climbCount === 1 ? 'climb' : 'climbs'}`}
-              </div>
-              <div
-                style={{
-                  fontSize: '28px',
-                  color: themeTokens.neutral[400],
-                }}
-              >
-                {boardLabel}
-              </div>
-            </div>
-          </div>
-
-          {/* Branding */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '24px',
-              right: '40px',
-              fontSize: '20px',
-              color: themeTokens.neutral[300],
-              fontWeight: 600,
-            }}
-          >
-            boardsesh.com
+            {displayMark}
           </div>
         </div>
-      ),
+
+        {/* Right: Info */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            flex: 1,
+            minWidth: 0,
+          }}
+        >
+          <div
+            style={{
+              fontSize: '48px',
+              fontWeight: 'bold',
+              color: themeTokens.neutral[900],
+              lineHeight: 1.2,
+            }}
+          >
+            {displayName}
+          </div>
+
+          {displayDescription && (
+            <div
+              style={{
+                fontSize: '24px',
+                color: themeTokens.neutral[500],
+                lineHeight: 1.4,
+              }}
+            >
+              {displayDescription}
+            </div>
+          )}
+
+          <div
+            style={{
+              display: 'flex',
+              gap: '24px',
+              marginTop: '8px',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '28px',
+                color: themeTokens.neutral[600],
+                fontWeight: 600,
+              }}
+            >
+              {`${climbCount} ${climbCount === 1 ? 'climb' : 'climbs'}`}
+            </div>
+            <div
+              style={{
+                fontSize: '28px',
+                color: themeTokens.neutral[400],
+              }}
+            >
+              {boardLabel}
+            </div>
+          </div>
+        </div>
+
+        {/* Branding */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '24px',
+            right: '40px',
+            fontSize: '20px',
+            color: themeTokens.neutral[300],
+            fontWeight: 600,
+          }}
+        >
+          boardsesh.com
+        </div>
+      </div>,
       {
         width: OG_IMAGE_WIDTH,
         height: OG_IMAGE_HEIGHT,

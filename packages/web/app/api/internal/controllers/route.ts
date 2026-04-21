@@ -1,15 +1,15 @@
-import { getServerSession } from "next-auth/next";
-import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/app/lib/db/db";
-import { esp32Controllers } from "@boardsesh/db/schema/app";
-import { eq, and } from "drizzle-orm";
-import { z } from "zod";
-import { authOptions } from "@/app/lib/auth/auth-options";
-import { randomBytes } from "crypto";
+import { getServerSession } from 'next-auth/next';
+import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '@/app/lib/db/db';
+import { esp32Controllers } from '@boardsesh/db/schema/app';
+import { eq, and } from 'drizzle-orm';
+import { z } from 'zod';
+import { authOptions } from '@/app/lib/auth/auth-options';
+import { randomBytes } from 'crypto';
 
 const registerControllerSchema = z.object({
   name: z.string().max(100).optional(),
-  boardName: z.enum(["kilter", "tension"]),
+  boardName: z.enum(['kilter', 'tension']),
   layoutId: z.number().int().positive(),
   sizeId: z.number().int().positive(),
   setIds: z.string().min(1),
@@ -49,15 +49,12 @@ export async function GET() {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const db = getDb();
 
-    const controllers = await db
-      .select()
-      .from(esp32Controllers)
-      .where(eq(esp32Controllers.userId, session.user.id));
+    const controllers = await db.select().from(esp32Controllers).where(eq(esp32Controllers.userId, session.user.id));
 
     const now = Date.now();
 
@@ -68,17 +65,15 @@ export async function GET() {
       layoutId: controller.layoutId,
       sizeId: controller.sizeId,
       setIds: controller.setIds,
-      isOnline: controller.lastSeenAt
-        ? now - controller.lastSeenAt.getTime() < ONLINE_THRESHOLD_MS
-        : false,
+      isOnline: controller.lastSeenAt ? now - controller.lastSeenAt.getTime() < ONLINE_THRESHOLD_MS : false,
       lastSeen: controller.lastSeenAt?.toISOString() ?? null,
       createdAt: controller.createdAt.toISOString(),
     }));
 
     return NextResponse.json({ controllers: controllerList });
   } catch (error) {
-    console.error("Failed to get controllers:", error);
-    return NextResponse.json({ error: "Failed to get controllers" }, { status: 500 });
+    console.error('Failed to get controllers:', error);
+    return NextResponse.json({ error: 'Failed to get controllers' }, { status: 500 });
   }
 }
 
@@ -91,17 +86,14 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
 
     const validationResult = registerControllerSchema.safeParse(body);
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: validationResult.error.issues[0].message },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: validationResult.error.issues[0].message }, { status: 400 });
     }
 
     const { name, boardName, layoutId, sizeId, setIds } = validationResult.data;
@@ -139,8 +131,8 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Failed to register controller:", error);
-    return NextResponse.json({ error: "Failed to register controller" }, { status: 500 });
+    console.error('Failed to register controller:', error);
+    return NextResponse.json({ error: 'Failed to register controller' }, { status: 500 });
   }
 }
 
@@ -152,17 +144,14 @@ export async function DELETE(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
 
     const validationResult = deleteControllerSchema.safeParse(body);
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: validationResult.error.issues[0].message },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: validationResult.error.issues[0].message }, { status: 400 });
     }
 
     const { controllerId } = validationResult.data;
@@ -171,16 +160,11 @@ export async function DELETE(request: NextRequest) {
     // Only delete if user owns the controller
     await db
       .delete(esp32Controllers)
-      .where(
-        and(
-          eq(esp32Controllers.id, controllerId),
-          eq(esp32Controllers.userId, session.user.id)
-        )
-      );
+      .where(and(eq(esp32Controllers.id, controllerId), eq(esp32Controllers.userId, session.user.id)));
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to delete controller:", error);
-    return NextResponse.json({ error: "Failed to delete controller" }, { status: 500 });
+    console.error('Failed to delete controller:', error);
+    return NextResponse.json({ error: 'Failed to delete controller' }, { status: 500 });
   }
 }

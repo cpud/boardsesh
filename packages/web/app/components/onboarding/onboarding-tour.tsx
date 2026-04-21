@@ -77,13 +77,27 @@ function CustomTour({
   const stepContent = (
     <>
       {step.cover}
-      <MuiTypography variant="subtitle1" fontWeight={600} sx={{ mb: 1 }}>{step.title}</MuiTypography>
-      <MuiTypography variant="body2" component="div" color="text.secondary">{step.description}</MuiTypography>
+      <MuiTypography variant="subtitle1" fontWeight={600} sx={{ mb: 1 }}>
+        {step.title}
+      </MuiTypography>
+      <MuiTypography variant="body2" component="div" color="text.secondary">
+        {step.description}
+      </MuiTypography>
       <Stack direction="row" spacing={1} justifyContent="flex-end" sx={{ mt: 2 }}>
-        {current > 0 && <MuiButton size="small" onClick={() => onStepChange(current - 1)}>Back</MuiButton>}
-        {current < steps.length - 1
-          ? <MuiButton size="small" variant="contained" onClick={() => onStepChange(current + 1)}>Next</MuiButton>
-          : <MuiButton size="small" variant="contained" onClick={onClose}>Done</MuiButton>}
+        {current > 0 && (
+          <MuiButton size="small" onClick={() => onStepChange(current - 1)}>
+            Back
+          </MuiButton>
+        )}
+        {current < steps.length - 1 ? (
+          <MuiButton size="small" variant="contained" onClick={() => onStepChange(current + 1)}>
+            Next
+          </MuiButton>
+        ) : (
+          <MuiButton size="small" variant="contained" onClick={onClose}>
+            Done
+          </MuiButton>
+        )}
       </Stack>
     </>
   );
@@ -100,21 +114,21 @@ function CustomTour({
           sx={{ zIndex: 1101 }}
           modifiers={[{ name: 'offset', options: { offset: [0, 12] } }]}
         >
-          <Paper sx={{ p: 2, maxWidth: 320, borderRadius: 2 }}>
-            {stepContent}
-          </Paper>
+          <Paper sx={{ p: 2, maxWidth: 320, borderRadius: 2 }}>{stepContent}</Paper>
         </Popper>
       ) : (
-        <Paper sx={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          zIndex: 1101,
-          p: 2,
-          maxWidth: 320,
-          borderRadius: 2,
-        }}>
+        <Paper
+          sx={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 1101,
+            p: 2,
+            maxWidth: 320,
+            borderRadius: 2,
+          }}
+        >
           {stepContent}
         </Paper>
       )}
@@ -265,9 +279,7 @@ const OnboardingTour: React.FC = () => {
     },
     {
       title: 'Queue Item Actions',
-      description: withSkip(
-        'Swipe queue items left to log an ascent, or swipe right to add to a playlist.',
-      ),
+      description: withSkip('Swipe queue items left to log an ascent, or swipe right to add to a playlist.'),
       target: getTarget('[data-testid="queue-item"]'),
       mask: false,
       cover: (
@@ -278,9 +290,7 @@ const OnboardingTour: React.FC = () => {
     },
     {
       title: 'Reorder Your Queue',
-      description: withSkip(
-        'Press and hold a queue item, then drag it up or down to reorder your queue.',
-      ),
+      description: withSkip('Press and hold a queue item, then drag it up or down to reorder your queue.'),
       target: getTarget('[data-testid="queue-item"]'),
       mask: false,
       cover: (
@@ -329,13 +339,7 @@ const OnboardingTour: React.FC = () => {
   if (!isOnboardingTourEnabled || !open) return null;
 
   return (
-    <CustomTour
-      open={open}
-      current={current}
-      steps={tourSteps}
-      onStepChange={handleStepChange}
-      onClose={handleClose}
-    />
+    <CustomTour open={open} current={current} steps={tourSteps} onStepChange={handleStepChange} onClose={handleClose} />
   );
 };
 

@@ -30,19 +30,22 @@ export function InstagramAction({
 
   const label = canPost ? 'Post to Instagram' : 'Link Instagram video';
 
-  const handleClick = useCallback((e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    e?.preventDefault();
+  const handleClick = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      e?.preventDefault();
 
-    if (canPost) {
-      setPostDialogOpen(true);
-      return;
-    }
+      if (canPost) {
+        setPostDialogOpen(true);
+        return;
+      }
 
-    if (canLink) {
-      setLinkDialogOpen(true);
-    }
-  }, [canPost, canLink]);
+      if (canLink) {
+        setLinkDialogOpen(true);
+      }
+    },
+    [canPost, canLink],
+  );
 
   const dialogTarget = useMemo(
     () => ({

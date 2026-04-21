@@ -20,13 +20,10 @@ interface EditGymFormProps {
 export default function EditGymForm({ gym, onSuccess, onCancel }: EditGymFormProps) {
   const { showMessage } = useSnackbar();
 
-  const { execute } = useEntityMutation<UpdateGymMutationResponse, UpdateGymMutationVariables>(
-    UPDATE_GYM,
-    {
-      successMessage: 'Gym updated!',
-      errorMessage: 'Failed to update gym',
-    },
-  );
+  const { execute } = useEntityMutation<UpdateGymMutationResponse, UpdateGymMutationVariables>(UPDATE_GYM, {
+    successMessage: 'Gym updated!',
+    errorMessage: 'Failed to update gym',
+  });
 
   const handleSubmit = useCallback(
     async (values: GymFormFieldValues) => {

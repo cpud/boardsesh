@@ -25,9 +25,13 @@ const isValidHexColor = (color: string): boolean => {
 /** Convert a hex color like "#FF6600" to "255, 102, 0" for use in rgba(). */
 function hexToRgb(hex: string): string {
   const cleaned = hex.replace('#', '');
-  const full = cleaned.length === 3
-    ? cleaned.split('').map((c) => c + c).join('')
-    : cleaned;
+  const full =
+    cleaned.length === 3
+      ? cleaned
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : cleaned;
   const r = parseInt(full.substring(0, 2), 16);
   const g = parseInt(full.substring(2, 4), 16);
   const b = parseInt(full.substring(4, 6), 16);
@@ -55,10 +59,7 @@ export default function PlaylistPreviewSquare({
   className,
   fetchPriority,
 }: PlaylistPreviewSquareProps) {
-  const boardDetails = useMemo(
-    () => getBoardDetailsForPlaylist(boardType, layoutId),
-    [boardType, layoutId],
-  );
+  const boardDetails = useMemo(() => getBoardDetailsForPlaylist(boardType, layoutId), [boardType, layoutId]);
 
   const backgroundColor = isLikedClimbs
     ? undefined
@@ -84,7 +85,9 @@ export default function PlaylistPreviewSquare({
     return (
       <div
         className={`${styles.previewContainer} ${className ?? ''}`}
-        style={{ background: `linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.08) 100%), ${backgroundColor}` }}
+        style={{
+          background: `linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.08) 100%), ${backgroundColor}`,
+        }}
       >
         <div className={styles.previewIconLayer}>
           {icon ? (
@@ -111,16 +114,9 @@ export default function PlaylistPreviewSquare({
           fetchPriority={fetchPriority}
         />
       </div>
-      <div
-        className={styles.previewFrostedOverlay}
-        style={{ background: `rgba(${rgbColor}, 0.45)` }}
-      />
+      <div className={styles.previewFrostedOverlay} style={{ background: `rgba(${rgbColor}, 0.45)` }} />
       <div className={styles.previewIconLayer}>
-        {icon ? (
-          <span className={styles.previewEmoji}>{icon}</span>
-        ) : (
-          <LabelOutlined className={styles.previewIcon} />
-        )}
+        {icon ? <span className={styles.previewEmoji}>{icon}</span> : <LabelOutlined className={styles.previewIcon} />}
       </div>
     </div>
   );

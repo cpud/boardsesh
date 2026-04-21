@@ -2,7 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import HistoryOutlined from '@mui/icons-material/HistoryOutlined';
-import { getRecentSearches, getFilterKey, RecentSearch, RECENT_SEARCHES_CHANGED_EVENT } from './recent-searches-storage';
+import {
+  getRecentSearches,
+  getFilterKey,
+  RecentSearch,
+  RECENT_SEARCHES_CHANGED_EVENT,
+} from './recent-searches-storage';
 import { useUISearchParams } from '@/app/components/queue-control/ui-searchparams-provider';
 import { SearchRequestPagination } from '@/app/lib/types';
 import { DEFAULT_SEARCH_PARAMS } from '@/app/lib/url-utils';
@@ -77,7 +82,10 @@ const RecentSearchPills: React.FC = () => {
         {searches.map((search) => {
           const isActive = getFilterKey(search.filters) === currentFilterKey;
           // Compute full summary for tooltip (shows all filters without truncation)
-          const fullFilters = { ...DEFAULT_SEARCH_PARAMS, ...search.filters } as SearchRequestPagination;
+          const fullFilters = {
+            ...DEFAULT_SEARCH_PARAMS,
+            ...search.filters,
+          } as SearchRequestPagination;
           const tooltipText = getSearchPillFullSummary(fullFilters);
           return (
             <button

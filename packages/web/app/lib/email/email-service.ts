@@ -49,11 +49,7 @@ function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (char) => htmlEscapes[char]);
 }
 
-export async function sendVerificationEmail(
-  email: string,
-  token: string,
-  baseUrl: string
-): Promise<void> {
+export async function sendVerificationEmail(email: string, token: string, baseUrl: string): Promise<void> {
   // Validate email format before using in URL to prevent injection
   const validatedEmail = emailSchema.parse(email);
 

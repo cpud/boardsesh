@@ -2,12 +2,7 @@ import type Redis from 'ioredis';
 import { v4 as uuidv4 } from 'uuid';
 import type { SessionUser } from '@boardsesh/shared-schema';
 import { KEYS, type DistributedConnection } from './constants';
-import {
-  registerConnection,
-  getConnection,
-  removeConnection,
-  updateUsername,
-} from './connection-ops';
+import { registerConnection, getConnection, removeConnection, updateUsername } from './connection-ops';
 import {
   joinSession,
   leaveSession,
@@ -47,7 +42,7 @@ export class DistributedStateManager {
 
   constructor(
     private readonly redis: Redis,
-    instanceId?: string
+    instanceId?: string,
   ) {
     this.instanceId = instanceId || uuidv4();
   }
@@ -108,7 +103,7 @@ export class DistributedStateManager {
     connectionId: string,
     username: string,
     userId?: string | null,
-    avatarUrl?: string | null
+    avatarUrl?: string | null,
   ): Promise<void> {
     return registerConnection(this.redis, this.instanceId, connectionId, username, userId, avatarUrl);
   }
@@ -116,7 +111,7 @@ export class DistributedStateManager {
   /** Remove a connection from distributed state. */
   async removeConnection(
     connectionId: string,
-    electNewLeader: boolean = true
+    electNewLeader: boolean = true,
   ): Promise<{ sessionId: string | null; wasLeader: boolean; newLeaderId: string | null }> {
     return removeConnection(this.redis, this.instanceId, connectionId, electNewLeader);
   }
@@ -136,16 +131,13 @@ export class DistributedStateManager {
     connectionId: string,
     sessionId: string,
     username?: string,
-    avatarUrl?: string | null
+    avatarUrl?: string | null,
   ): Promise<{ isLeader: boolean }> {
     return joinSession(this.redis, connectionId, sessionId, username, avatarUrl);
   }
 
   /** Leave a session. Handles leader election if leaving member was leader. */
-  async leaveSession(
-    connectionId: string,
-    sessionId: string
-  ): Promise<{ newLeaderId: string | null }> {
+  async leaveSession(connectionId: string, sessionId: string): Promise<{ newLeaderId: string | null }> {
     return leaveSession(this.redis, connectionId, sessionId);
   }
 
@@ -244,9 +236,7 @@ export class DistributedStateManager {
 
       // Heartbeat succeeded - reset failure counter and restore health
       if (this.consecutiveHeartbeatFailures > 0) {
-        console.log(
-          `[DistributedState] Heartbeat recovered after ${this.consecutiveHeartbeatFailures} failures`
-        );
+        console.log(`[DistributedState] Heartbeat recovered after ${this.consecutiveHeartbeatFailures} failures`);
         this.consecutiveHeartbeatFailures = 0;
       }
       if (!this.isHealthy) {
@@ -274,13 +264,13 @@ export class DistributedStateManager {
         if (this.isHealthy) {
           console.error(
             `[DistributedState] Heartbeat failed ${this.consecutiveHeartbeatFailures} times, ` +
-              `marking as unhealthy: ${errorMessage}`
+              `marking as unhealthy: ${errorMessage}`,
           );
           this.isHealthy = false;
         }
       } else {
         console.warn(
-          `[DistributedState] Heartbeat failed (${this.consecutiveHeartbeatFailures}/${this.maxHeartbeatFailures}): ${errorMessage}`
+          `[DistributedState] Heartbeat failed (${this.consecutiveHeartbeatFailures}/${this.maxHeartbeatFailures}): ${errorMessage}`,
         );
       }
     }

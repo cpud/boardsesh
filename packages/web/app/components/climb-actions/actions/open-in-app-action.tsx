@@ -31,17 +31,20 @@ export function OpenInAppAction({
   }
   const { iconSize } = computeActionDisplay(viewMode, size, showLabel);
 
-  const handleClick = useCallback((e?: React.MouseEvent) => {
-    e?.stopPropagation();
+  const handleClick = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation();
 
-    track('Open in Aurora App', {
-      boardName: boardDetails.board_name,
-      climbUuid: climb.uuid,
-    });
+      track('Open in Aurora App', {
+        boardName: boardDetails.board_name,
+        climbUuid: climb.uuid,
+      });
 
-    openExternalUrl(url);
-    onComplete?.();
-  }, [boardDetails.board_name, climb.uuid, url, onComplete]);
+      openExternalUrl(url);
+      onComplete?.();
+    },
+    [boardDetails.board_name, climb.uuid, url, onComplete],
+  );
 
   const icon = <AppsOutlined sx={{ fontSize: iconSize }} />;
 

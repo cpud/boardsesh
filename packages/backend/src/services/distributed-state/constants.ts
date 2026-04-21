@@ -93,7 +93,7 @@ export function hashToConnection(hash: Record<string, string>): DistributedConne
   let connectedAt = parseInt(hash.connectedAt, 10);
   if (isNaN(connectedAt)) {
     console.warn(
-      `[DistributedState] Invalid connectedAt value "${hash.connectedAt}" for connection ${hash.connectionId?.slice(0, 8)}, using current time`
+      `[DistributedState] Invalid connectedAt value "${hash.connectedAt}" for connection ${hash.connectionId?.slice(0, 8)}, using current time`,
     );
     connectedAt = Date.now();
   }

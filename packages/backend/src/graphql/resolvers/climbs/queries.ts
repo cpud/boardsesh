@@ -39,7 +39,11 @@ export const climbQueries = {
    * Search for climbs with various filters
    * Returns a context object that field resolvers use to fetch data lazily
    */
-  searchClimbs: async (_: unknown, { input }: { input: ClimbSearchInput }, ctx: ConnectionContext): Promise<ClimbSearchContext> => {
+  searchClimbs: async (
+    _: unknown,
+    { input }: { input: ClimbSearchInput },
+    ctx: ConnectionContext,
+  ): Promise<ClimbSearchContext> => {
     validateInput(ClimbSearchInputSchema, input, 'input');
 
     // Validate board name
@@ -48,7 +52,10 @@ export const climbQueries = {
     }
 
     // Parse setIds from comma-separated string
-    const setIds = input.setIds.split(',').map(id => parseInt(id.trim(), 10)).filter(id => !isNaN(id));
+    const setIds = input.setIds
+      .split(',')
+      .map((id) => parseInt(id.trim(), 10))
+      .filter((id) => !isNaN(id));
 
     // Build route parameters
     const params: ParsedBoardRouteParameters = {
@@ -82,7 +89,12 @@ export const climbQueries = {
     };
 
     if (DEBUG) {
-      console.log('[searchClimbs] onlyDrafts:', input.onlyDrafts, 'userId:', ctx.isAuthenticated ? ctx.userId : 'not authenticated');
+      console.log(
+        '[searchClimbs] onlyDrafts:',
+        input.onlyDrafts,
+        'userId:',
+        ctx.isAuthenticated ? ctx.userId : 'not authenticated',
+      );
     }
 
     // Drafts require authentication — return empty results if not signed in
@@ -107,7 +119,7 @@ export const climbQueries = {
 
     // Only resolve userId when user-specific filters are active — otherwise the query
     // results are identical to anonymous and can be served from Redis cache.
-    const userId = (ctx.isAuthenticated && hasUserSpecificFilters) ? ctx.userId : undefined;
+    const userId = ctx.isAuthenticated && hasUserSpecificFilters ? ctx.userId : undefined;
 
     // Return context for field resolvers - queries are executed lazily per field
     // Personal progress filters now use boardsesh_ticks table with NextAuth user ID
@@ -124,14 +136,21 @@ export const climbQueries = {
    */
   climb: async (
     _: unknown,
-    { boardName, layoutId, sizeId, setIds, angle, climbUuid }: {
+    {
+      boardName,
+      layoutId,
+      sizeId,
+      setIds,
+      angle,
+      climbUuid,
+    }: {
       boardName: string;
       layoutId: number;
       sizeId: number;
       setIds: string;
       angle: number;
-      climbUuid: string
-    }
+      climbUuid: string;
+    },
   ) => {
     // Validate board name
     validateInput(BoardNameSchema, boardName, 'boardName');
@@ -162,10 +181,7 @@ export const climbQueries = {
   /**
    * Get climb stats history for the last 12 months
    */
-  climbStatsHistory: async (
-    _: unknown,
-    { boardName, climbUuid }: { boardName: string; climbUuid: string },
-  ) => {
+  climbStatsHistory: async (_: unknown, { boardName, climbUuid }: { boardName: string; climbUuid: string }) => {
     validateInput(BoardNameSchema, boardName, 'boardName');
     validateInput(ExternalUUIDSchema, climbUuid, 'climbUuid');
 

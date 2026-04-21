@@ -7,10 +7,7 @@ import type { SocialEntityType } from '@boardsesh/shared-schema';
  * Validates that a target entity exists before allowing a comment or vote.
  * Performs minimal SELECT ... LIMIT 1 existence checks.
  */
-export async function validateEntityExists(
-  entityType: SocialEntityType,
-  entityId: string,
-): Promise<void> {
+export async function validateEntityExists(entityType: SocialEntityType, entityId: string): Promise<void> {
   switch (entityType) {
     case 'climb': {
       const [climb] = await db
@@ -60,10 +57,7 @@ export async function validateEntityExists(
           .select({ id: dbSchema.playlistClimbs.id })
           .from(dbSchema.playlistClimbs)
           .where(
-            and(
-              eq(dbSchema.playlistClimbs.playlistId, playlist.id),
-              eq(dbSchema.playlistClimbs.climbUuid, climbUuid),
-            ),
+            and(eq(dbSchema.playlistClimbs.playlistId, playlist.id), eq(dbSchema.playlistClimbs.climbUuid, climbUuid)),
           )
           .limit(1);
 
@@ -78,12 +72,7 @@ export async function validateEntityExists(
       const [comment] = await db
         .select({ id: dbSchema.comments.id })
         .from(dbSchema.comments)
-        .where(
-          and(
-            eq(dbSchema.comments.uuid, entityId),
-            isNull(dbSchema.comments.deletedAt),
-          ),
-        )
+        .where(and(eq(dbSchema.comments.uuid, entityId), isNull(dbSchema.comments.deletedAt)))
         .limit(1);
       if (!comment) {
         throw new Error('Comment not found');
@@ -95,12 +84,7 @@ export async function validateEntityExists(
       const [board] = await db
         .select({ uuid: dbSchema.userBoards.uuid })
         .from(dbSchema.userBoards)
-        .where(
-          and(
-            eq(dbSchema.userBoards.uuid, entityId),
-            isNull(dbSchema.userBoards.deletedAt),
-          ),
-        )
+        .where(and(eq(dbSchema.userBoards.uuid, entityId), isNull(dbSchema.userBoards.deletedAt)))
         .limit(1);
       if (!board) {
         throw new Error('Board not found');
@@ -112,12 +96,7 @@ export async function validateEntityExists(
       const [gym] = await db
         .select({ uuid: dbSchema.gyms.uuid })
         .from(dbSchema.gyms)
-        .where(
-          and(
-            eq(dbSchema.gyms.uuid, entityId),
-            isNull(dbSchema.gyms.deletedAt),
-          ),
-        )
+        .where(and(eq(dbSchema.gyms.uuid, entityId), isNull(dbSchema.gyms.deletedAt)))
         .limit(1);
       if (!gym) {
         throw new Error('Gym not found');

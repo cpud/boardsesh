@@ -15,7 +15,19 @@ import MuiSwitch from '@mui/material/Switch';
 import MuiSelect from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Badge from '@mui/material/Badge';
-import { SettingsOutlined, LocalFireDepartmentOutlined, SaveOutlined, LoginOutlined, CloudUploadOutlined, GetAppOutlined, DraftsOutlined, DeleteOutlined, CheckCircleOutlined, LockOutlined, PlayCircleOutlineOutlined } from '@mui/icons-material';
+import {
+  SettingsOutlined,
+  LocalFireDepartmentOutlined,
+  SaveOutlined,
+  LoginOutlined,
+  CloudUploadOutlined,
+  GetAppOutlined,
+  DraftsOutlined,
+  DeleteOutlined,
+  CheckCircleOutlined,
+  LockOutlined,
+  PlayCircleOutlineOutlined,
+} from '@mui/icons-material';
 import { themeTokens } from '@/app/theme/theme-config';
 import HoldIndicator from './hold-indicator';
 import { usePathname } from 'next/navigation';
@@ -59,10 +71,7 @@ import {
   type ClimbSearchCountResponse,
   type ClimbSearchInputVariables,
 } from '@/app/lib/graphql/operations/climb-search';
-import {
-  convertLitUpHoldsMapToMoonBoardHolds,
-  isMoonBoardDuplicateError,
-} from '@/app/lib/moonboard-climb-helpers';
+import { convertLitUpHoldsMapToMoonBoardHolds, isMoonBoardDuplicateError } from '@/app/lib/moonboard-climb-helpers';
 import styles from './create-climb-form.module.css';
 import {
   CHECK_MOONBOARD_CLIMB_DUPLICATES_QUERY,
@@ -74,12 +83,10 @@ import {
 } from '@/app/lib/graphql/operations/new-climb-feed';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 
-
 const SETTINGS_DRAWER_STYLES = {
   wrapper: { height: 'auto', maxHeight: '70vh' },
   body: { padding: 0 },
 };
-
 
 interface CreateClimbFormValues {
   name: string;
@@ -172,7 +179,7 @@ export default function CreateClimbForm({
 
   // Bluetooth for Aurora boards
   const { isConnected, sendFramesToBoard } = useBoardBluetooth({
-    boardDetails: boardType === 'aurora' ? boardDetails : undefined
+    boardDetails: boardType === 'aurora' ? boardDetails : undefined,
   });
 
   // Refs
@@ -219,9 +226,10 @@ export default function CreateClimbForm({
   const getPreviewUuid = useCallback(() => {
     if (!previewUuidRef.current) {
       // crypto.randomUUID() is unavailable in older Safari / non-secure contexts
-      previewUuidRef.current = typeof crypto.randomUUID === 'function'
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      previewUuidRef.current =
+        typeof crypto.randomUUID === 'function'
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     }
     return previewUuidRef.current;
   }, []);
@@ -302,9 +310,7 @@ export default function CreateClimbForm({
 
   // Common state — in edit mode use the original name, not "{name} fork"
   const isEditMode = !!editClimb;
-  const [climbName, setClimbName] = useState(
-    isEditMode ? (forkName || '') : (forkName ? `${forkName} fork` : ''),
-  );
+  const [climbName, setClimbName] = useState(isEditMode ? forkName || '' : forkName ? `${forkName} fork` : '');
   const [description, setDescription] = useState(forkDescription || '');
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [showDraftsDrawer, setShowDraftsDrawer] = useState(false);
@@ -316,9 +322,10 @@ export default function CreateClimbForm({
 
   // Autosave: persist form state to IndexedDB on every change (debounced).
   // Only one autosave is stored at a time, scoped to the current board.
-  const autosaveBoardKey = boardType === 'aurora' && boardDetails
-    ? `${boardDetails.board_name}:${boardDetails.layout_id}:${boardDetails.size_id}:${angle}`
-    : `moonboard:${layoutId}:${angle}`;
+  const autosaveBoardKey =
+    boardType === 'aurora' && boardDetails
+      ? `${boardDetails.board_name}:${boardDetails.layout_id}:${boardDetails.size_id}:${angle}`
+      : `moonboard:${layoutId}:${angle}`;
   const autosaveRestoredRef = useRef(false);
   const autosaveSuppressedRef = useRef(false);
 
@@ -351,19 +358,24 @@ export default function CreateClimbForm({
       }
       autosaveRestoredRef.current = true;
     });
-    return () => { cancelled = true; };
-  // Only run on mount
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      cancelled = true;
+    };
+    // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Debounced autosave on changes
-  const autosaveData = useMemo(() => ({
-    holdsJson: JSON.stringify(litUpHoldsMap),
-    climbName,
-    description,
-    isDraft,
-    boardKey: autosaveBoardKey,
-  }), [litUpHoldsMap, climbName, description, isDraft, autosaveBoardKey]);
+  const autosaveData = useMemo(
+    () => ({
+      holdsJson: JSON.stringify(litUpHoldsMap),
+      climbName,
+      description,
+      isDraft,
+      boardKey: autosaveBoardKey,
+    }),
+    [litUpHoldsMap, climbName, description, isDraft, autosaveBoardKey],
+  );
   const debouncedAutosave = useDebouncedValue(autosaveData, 500);
   const debouncedTotalHolds = useDebouncedValue(totalHolds, 500);
 
@@ -400,7 +412,6 @@ export default function CreateClimbForm({
     }
   }, [boardType, litUpHoldsMap, isConnected, generateFramesString, sendFramesToBoard]);
 
-
   // As soon as the user edits the climb after a successful save, flip the
   // button back to its normal "Save" state so they can save the revision.
   useEffect(() => {
@@ -415,7 +426,7 @@ export default function CreateClimbForm({
   // Hold-type picker: tracks which hold the user just tapped, anchors the
   // popover against its DOM element, and routes selections back to setHoldState.
   const picker = useHoldTypePicker({ litUpHoldsMap, setHoldState });
-  const pickerBoardName = boardType === 'aurora' ? boardDetails?.board_name ?? 'kilter' : 'moonboard';
+  const pickerBoardName = boardType === 'aurora' ? (boardDetails?.board_name ?? 'kilter') : 'moonboard';
 
   // Wrap resetHolds so Clear starts a brand-new climb: holds wiped, text fields
   // cleared, Bluetooth board blanked, any lingering "Saved" confirmation
@@ -448,88 +459,94 @@ export default function CreateClimbForm({
   }, [boardType, baseResetHolds, isConnected, sendFramesToBoard, clearJustSaved]);
 
   // MoonBoard OCR import
-  const handleOcrImport = useCallback(async (file: File) => {
-    if (boardType !== 'moonboard' || !setLitUpHoldsMap) return;
+  const handleOcrImport = useCallback(
+    async (file: File) => {
+      if (boardType !== 'moonboard' || !setLitUpHoldsMap) return;
 
-    setIsOcrProcessing(true);
-    setOcrError(null);
-    setOcrWarnings([]);
+      setIsOcrProcessing(true);
+      setOcrError(null);
+      setOcrWarnings([]);
 
-    try {
-      const result = await parseScreenshot(file);
+      try {
+        const result = await parseScreenshot(file);
 
-      if (!result.success || !result.climb) {
-        setOcrError(result.error || 'Failed to parse screenshot');
-        return;
+        if (!result.success || !result.climb) {
+          setOcrError(result.error || 'Failed to parse screenshot');
+          return;
+        }
+
+        const climb = result.climb;
+        const warnings = [...result.warnings];
+
+        // Check angle mismatch
+        if (climb.angle !== angle) {
+          warnings.push(`Screenshot is for ${climb.angle}° but current page is ${angle}°. Holds imported anyway.`);
+        }
+
+        setOcrWarnings(warnings);
+
+        // Convert OCR holds to form state
+        const newHoldsMap = convertOcrHoldsToMap(climb.holds);
+        setLitUpHoldsMap(newHoldsMap);
+
+        // Populate fields from OCR
+        if (climb.name) setClimbName(climb.name);
+        if (climb.userGrade) setUserGrade(climb.userGrade);
+        if (climb.isBenchmark) setIsBenchmark(true);
+        if (climb.setter) setDescription(`Setter: ${climb.setter}`);
+      } catch (error) {
+        setOcrError(error instanceof Error ? error.message : 'Unknown error during OCR');
+      } finally {
+        setIsOcrProcessing(false);
       }
+    },
+    [boardType, angle, setLitUpHoldsMap],
+  );
 
-      const climb = result.climb;
-      const warnings = [...result.warnings];
+  const runMoonBoardDuplicateCheck = useCallback(
+    async (holds: NonNullable<typeof moonBoardHolds>) => {
+      if (!layoutId) return null;
 
-      // Check angle mismatch
-      if (climb.angle !== angle) {
-        warnings.push(`Screenshot is for ${climb.angle}° but current page is ${angle}°. Holds imported anyway.`);
+      const requestId = ++duplicateCheckRequestIdRef.current;
+      setIsCheckingMoonBoardDuplicate(true);
+
+      try {
+        const client = createGraphQLHttpClient();
+        const variables: CheckMoonBoardClimbDuplicatesVariables = {
+          input: {
+            layoutId,
+            angle: selectedAngle,
+            climbs: [{ clientKey: 'create-form', holds }],
+          },
+        };
+
+        const response = await client.request<
+          CheckMoonBoardClimbDuplicatesResponse,
+          CheckMoonBoardClimbDuplicatesVariables
+        >(CHECK_MOONBOARD_CLIMB_DUPLICATES_QUERY, variables);
+        const duplicateMatch = response.checkMoonBoardClimbDuplicates[0] ?? null;
+
+        if (requestId === duplicateCheckRequestIdRef.current) {
+          setMoonBoardDuplicateMatch(duplicateMatch?.exists ? duplicateMatch : null);
+        }
+
+        return duplicateMatch?.exists ? duplicateMatch : null;
+      } catch (error) {
+        console.warn('Failed to check MoonBoard climb duplicates:', error);
+
+        if (requestId === duplicateCheckRequestIdRef.current) {
+          setMoonBoardDuplicateMatch(null);
+        }
+
+        return null;
+      } finally {
+        if (requestId === duplicateCheckRequestIdRef.current) {
+          setIsCheckingMoonBoardDuplicate(false);
+        }
       }
-
-      setOcrWarnings(warnings);
-
-      // Convert OCR holds to form state
-      const newHoldsMap = convertOcrHoldsToMap(climb.holds);
-      setLitUpHoldsMap(newHoldsMap);
-
-      // Populate fields from OCR
-      if (climb.name) setClimbName(climb.name);
-      if (climb.userGrade) setUserGrade(climb.userGrade);
-      if (climb.isBenchmark) setIsBenchmark(true);
-      if (climb.setter) setDescription(`Setter: ${climb.setter}`);
-    } catch (error) {
-      setOcrError(error instanceof Error ? error.message : 'Unknown error during OCR');
-    } finally {
-      setIsOcrProcessing(false);
-    }
-  }, [boardType, angle, setLitUpHoldsMap]);
-
-  const runMoonBoardDuplicateCheck = useCallback(async (holds: NonNullable<typeof moonBoardHolds>) => {
-    if (!layoutId) return null;
-
-    const requestId = ++duplicateCheckRequestIdRef.current;
-    setIsCheckingMoonBoardDuplicate(true);
-
-    try {
-      const client = createGraphQLHttpClient();
-      const variables: CheckMoonBoardClimbDuplicatesVariables = {
-        input: {
-          layoutId,
-          angle: selectedAngle,
-          climbs: [{ clientKey: 'create-form', holds }],
-        },
-      };
-
-      const response = await client.request<
-        CheckMoonBoardClimbDuplicatesResponse,
-        CheckMoonBoardClimbDuplicatesVariables
-      >(CHECK_MOONBOARD_CLIMB_DUPLICATES_QUERY, variables);
-      const duplicateMatch = response.checkMoonBoardClimbDuplicates[0] ?? null;
-
-      if (requestId === duplicateCheckRequestIdRef.current) {
-        setMoonBoardDuplicateMatch(duplicateMatch?.exists ? duplicateMatch : null);
-      }
-
-      return duplicateMatch?.exists ? duplicateMatch : null;
-    } catch (error) {
-      console.warn('Failed to check MoonBoard climb duplicates:', error);
-
-      if (requestId === duplicateCheckRequestIdRef.current) {
-        setMoonBoardDuplicateMatch(null);
-      }
-
-      return null;
-    } finally {
-      if (requestId === duplicateCheckRequestIdRef.current) {
-        setIsCheckingMoonBoardDuplicate(false);
-      }
-    }
-  }, [layoutId, selectedAngle]);
+    },
+    [layoutId, selectedAngle],
+  );
 
   useEffect(() => {
     if (boardType !== 'moonboard') {
@@ -582,11 +599,25 @@ export default function CreateClimbForm({
       // Stamp publish time on the first save that flips out of draft. Drafts
       // leave this null; once published it stays stable until the 24h window
       // lapses and the backend refuses further updates.
-      published_at: !isDraft && savedClimb?.publishedAt ? savedClimb.publishedAt : (!isDraft ? new Date().toISOString() : null),
-      layoutId: boardType === 'aurora' ? boardDetails?.layout_id ?? null : layoutId ?? null,
+      published_at:
+        !isDraft && savedClimb?.publishedAt ? savedClimb.publishedAt : !isDraft ? new Date().toISOString() : null,
+      layoutId: boardType === 'aurora' ? (boardDetails?.layout_id ?? null) : (layoutId ?? null),
       boardType: boardType === 'aurora' ? boardDetails?.board_name : 'moonboard',
     }),
-    [climbName, description, angle, selectedAngle, boardType, session?.user?.name, session?.user?.id, isDraft, savedClimb?.publishedAt, boardDetails?.layout_id, boardDetails?.board_name, layoutId],
+    [
+      climbName,
+      description,
+      angle,
+      selectedAngle,
+      boardType,
+      session?.user?.name,
+      session?.user?.id,
+      isDraft,
+      savedClimb?.publishedAt,
+      boardDetails?.layout_id,
+      boardDetails?.board_name,
+      layoutId,
+    ],
   );
 
   // Pushes the just-saved (or just-updated) climb into the live queue so it
@@ -619,9 +650,7 @@ export default function CreateClimbForm({
     if (!queueActions) return;
 
     const uuid = savedClimb?.uuid ?? getPreviewUuid();
-    const frames = boardType === 'aurora' && generateFramesString
-      ? generateFramesString()
-      : '';
+    const frames = boardType === 'aurora' && generateFramesString ? generateFramesString() : '';
 
     const climb = buildClimbFromFormState(uuid, frames);
 
@@ -638,7 +667,15 @@ export default function CreateClimbForm({
       boardType,
       hasBeenSaved: !!savedClimb,
     });
-  }, [queueActions, savedClimb, getPreviewUuid, boardType, generateFramesString, buildClimbFromFormState, queueItemUuid]);
+  }, [
+    queueActions,
+    savedClimb,
+    getPreviewUuid,
+    boardType,
+    generateFramesString,
+    buildClimbFromFormState,
+    queueItemUuid,
+  ]);
 
   // Whether the current WIP climb is already the active climb in the queue.
   const isPreviewActive = useMemo(() => {
@@ -656,12 +693,18 @@ export default function CreateClimbForm({
     const uuid = savedClimb?.uuid ?? previewUuidRef.current;
     if (!uuid) return;
 
-    const frames = boardType === 'aurora' && generateFramesString
-      ? generateFramesString()
-      : '';
+    const frames = boardType === 'aurora' && generateFramesString ? generateFramesString() : '';
     const climb = buildClimbFromFormState(uuid, frames);
     queueActions.replaceQueueItem(queueItemUuid, climb);
-  }, [litUpHoldsMap, queueActions, queueItemUuid, savedClimb?.uuid, boardType, generateFramesString, buildClimbFromFormState]);
+  }, [
+    litUpHoldsMap,
+    queueActions,
+    queueItemUuid,
+    savedClimb?.uuid,
+    boardType,
+    generateFramesString,
+    buildClimbFromFormState,
+  ]);
 
   // Save climb - Aurora
   //
@@ -686,19 +729,22 @@ export default function CreateClimbForm({
       // Invalidation keys used in both branches.
       const invalidateDraftCaches = () =>
         Promise.all([
-          queryClient.invalidateQueries({ queryKey: ['climbDrafts', boardDetails.board_name, boardDetails.layout_id] }),
-          queryClient.invalidateQueries({ queryKey: ['climbDraftsCount', boardDetails.board_name, boardDetails.layout_id] }),
+          queryClient.invalidateQueries({
+            queryKey: ['climbDrafts', boardDetails.board_name, boardDetails.layout_id],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ['climbDraftsCount', boardDetails.board_name, boardDetails.layout_id],
+          }),
         ]);
 
       // Decide create-vs-update. We can only update when we have a savedClimb
       // for the current board type and its edit window is still open (for
       // drafts, the window is effectively infinite).
-      const canUpdate = !!savedClimb
-        && savedClimb.boardType === boardDetails.board_name
-        && (savedClimb.isDraft || (
-          !!savedClimb.publishedAt
-          && Date.now() - Date.parse(savedClimb.publishedAt) <= EDIT_WINDOW_MS
-        ));
+      const canUpdate =
+        !!savedClimb &&
+        savedClimb.boardType === boardDetails.board_name &&
+        (savedClimb.isDraft ||
+          (!!savedClimb.publishedAt && Date.now() - Date.parse(savedClimb.publishedAt) <= EDIT_WINDOW_MS));
 
       if (canUpdate && savedClimb) {
         const updateInput: UpdateClimbInput = {
@@ -806,7 +852,22 @@ export default function CreateClimbForm({
     } finally {
       setIsSaving(false);
     }
-  }, [boardDetails, generateFramesString, saveClimb, updateClimb, climbName, description, isDraft, angle, totalHolds, queryClient, markJustSaved, savedClimb, showMessage, syncSavedClimbToQueue]);
+  }, [
+    boardDetails,
+    generateFramesString,
+    saveClimb,
+    updateClimb,
+    climbName,
+    description,
+    isDraft,
+    angle,
+    totalHolds,
+    queryClient,
+    markJustSaved,
+    savedClimb,
+    showMessage,
+    syncSavedClimbToQueue,
+  ]);
 
   // Save climb - MoonBoard
   //
@@ -845,12 +906,11 @@ export default function CreateClimbForm({
       };
 
       // Update path: we already have a savedClimb and its edit window is open.
-      const canUpdate = !!savedClimb
-        && savedClimb.boardType === 'moonboard'
-        && (savedClimb.isDraft || (
-          !!savedClimb.publishedAt
-          && Date.now() - Date.parse(savedClimb.publishedAt) <= EDIT_WINDOW_MS
-        ));
+      const canUpdate =
+        !!savedClimb &&
+        savedClimb.boardType === 'moonboard' &&
+        (savedClimb.isDraft ||
+          (!!savedClimb.publishedAt && Date.now() - Date.parse(savedClimb.publishedAt) <= EDIT_WINDOW_MS));
 
       if (canUpdate && savedClimb) {
         const updateInput: UpdateClimbInput = {
@@ -1026,10 +1086,11 @@ export default function CreateClimbForm({
     showMessage,
   ]);
 
-  const canSave = isLoggedIn
-    && isValid
-    && climbName.trim().length > 0
-    && (boardType !== 'moonboard' || (!isCheckingMoonBoardDuplicate && !moonBoardDuplicateError));
+  const canSave =
+    isLoggedIn &&
+    isValid &&
+    climbName.trim().length > 0 &&
+    (boardType !== 'moonboard' || (!isCheckingMoonBoardDuplicate && !moonBoardDuplicateError));
 
   const handleToggleSettings = useCallback(() => {
     setShowSettingsPanel((prev) => !prev);
@@ -1093,37 +1154,40 @@ export default function CreateClimbForm({
   // earlier ones for the same hold id — so no holds are silently dropped.
   // Frame separation is lost on re-save, which is acceptable because the
   // editor has no concept of multiple frames.
-  const handleLoadDraft = useCallback((climb: Climb) => {
-    if (boardType !== 'aurora' || !boardDetails || !loadAuroraHolds) return;
+  const handleLoadDraft = useCallback(
+    (climb: Climb) => {
+      if (boardType !== 'aurora' || !boardDetails || !loadAuroraHolds) return;
 
-    const framesMap = convertLitUpHoldsStringToMap(climb.frames, boardDetails.board_name);
-    const frameEntries = Object.entries(framesMap)
-      .sort(([a], [b]) => Number(a) - Number(b))
-      .map(([, frame]) => frame);
-    const mergedHolds = frameEntries.reduce((acc, frame) => ({ ...acc, ...frame }), {} as LitUpHoldsMap);
-    loadAuroraHolds(mergedHolds);
-    setClimbName(climb.name || '');
-    setDescription(climb.description || '');
-    setSavedClimb({
-      uuid: climb.uuid,
-      boardType: boardDetails.board_name,
-      createdAt: climb.created_at ?? null,
-      publishedAt: climb.published_at ?? null,
-      isDraft: climb.is_draft ?? true,
-    });
-    clearJustSaved();
-    // Push the loaded draft into the queue as the current climb so party peers
-    // and any connected Bluetooth board see it. Start from a fresh queue slot
-    // so subsequent saves replace the same item in place.
-    setQueueItemUuid(null);
-    if (queueActions) {
-      void queueActions.setCurrentClimb(climb).then((newItem) => {
-        if (newItem) setQueueItemUuid(newItem.uuid);
+      const framesMap = convertLitUpHoldsStringToMap(climb.frames, boardDetails.board_name);
+      const frameEntries = Object.entries(framesMap)
+        .sort(([a], [b]) => Number(a) - Number(b))
+        .map(([, frame]) => frame);
+      const mergedHolds = frameEntries.reduce((acc, frame) => ({ ...acc, ...frame }), {} as LitUpHoldsMap);
+      loadAuroraHolds(mergedHolds);
+      setClimbName(climb.name || '');
+      setDescription(climb.description || '');
+      setSavedClimb({
+        uuid: climb.uuid,
+        boardType: boardDetails.board_name,
+        createdAt: climb.created_at ?? null,
+        publishedAt: climb.published_at ?? null,
+        isDraft: climb.is_draft ?? true,
       });
-    }
-    // The litUpHoldsMap effect at the top of this component pushes new frames
-    // to a connected Bluetooth board automatically.
-  }, [boardType, boardDetails, loadAuroraHolds, clearJustSaved, queueActions]);
+      clearJustSaved();
+      // Push the loaded draft into the queue as the current climb so party peers
+      // and any connected Bluetooth board see it. Start from a fresh queue slot
+      // so subsequent saves replace the same item in place.
+      setQueueItemUuid(null);
+      if (queueActions) {
+        void queueActions.setCurrentClimb(climb).then((newItem) => {
+          if (newItem) setQueueItemUuid(newItem.uuid);
+        });
+      }
+      // The litUpHoldsMap effect at the top of this component pushes new frames
+      // to a connected Bluetooth board automatically.
+    },
+    [boardType, boardDetails, loadAuroraHolds, clearJustSaved, queueActions],
+  );
 
   // When the parent passes an editClimb (typically from
   // /b/.../create?editClimbUuid=...), seed the form once it has mounted.
@@ -1243,12 +1307,27 @@ export default function CreateClimbForm({
         </span>
       </MuiTooltip>
     );
-  }, [boardType, isAuthenticated, hasMoonBoardSessionUser, editLocked, justSaved, isSaving, canSave, climbName, handlePublish, openAuthModal, handleAuthSuccess]);
+  }, [
+    boardType,
+    isAuthenticated,
+    hasMoonBoardSessionUser,
+    editLocked,
+    justSaved,
+    isSaving,
+    canSave,
+    climbName,
+    handlePublish,
+    openAuthModal,
+    handleAuthSuccess,
+  ]);
 
-  const titleClimb: ClimbTitleData = useMemo(() => ({
-    name: climbName || 'Untitled climb',
-    setter_username: session?.user?.name ?? undefined,
-  }), [climbName, session?.user?.name]);
+  const titleClimb: ClimbTitleData = useMemo(
+    () => ({
+      name: climbName || 'Untitled climb',
+      setter_username: session?.user?.name ?? undefined,
+    }),
+    [climbName, session?.user?.name],
+  );
 
   return (
     <div className={styles.pageContainer} data-testid="climb-setter">
@@ -1256,22 +1335,17 @@ export default function CreateClimbForm({
       <div className={styles.headerSection}>
         {/* MoonBoard OCR errors */}
         {boardType === 'moonboard' && ocrError && (
-          <MuiAlert
-            severity="error"
-            onClose={() => setOcrError(null)}
-            className={styles.alertBanner}
-          >
+          <MuiAlert severity="error" onClose={() => setOcrError(null)} className={styles.alertBanner}>
             Import Failed: {ocrError}
           </MuiAlert>
         )}
 
         {boardType === 'moonboard' && ocrWarnings.length > 0 && (
-          <MuiAlert
-            severity="warning"
-            onClose={() => setOcrWarnings([])}
-            className={styles.alertBanner}
-          >
-            Import Warnings: {ocrWarnings.map((w, i) => <div key={i}>{w}</div>)}
+          <MuiAlert severity="warning" onClose={() => setOcrWarnings([])} className={styles.alertBanner}>
+            Import Warnings:{' '}
+            {ocrWarnings.map((w, i) => (
+              <div key={i}>{w}</div>
+            ))}
           </MuiAlert>
         )}
 
@@ -1300,11 +1374,7 @@ export default function CreateClimbForm({
               titleFontSize={themeTokens.typography.fontSize['2xl']}
             />
             {description && (
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                className={styles.climbTitleDescription}
-              >
+              <Typography variant="body2" color="text.secondary" className={styles.climbTitleDescription}>
                 {description}
               </Typography>
             )}
@@ -1405,7 +1475,11 @@ export default function CreateClimbForm({
                 className={styles.heatmapButton}
                 aria-label={showHeatmap ? 'Hide heatmap' : 'Show heatmap'}
               >
-                {showHeatmap && isHeatmapLoading ? <CircularProgress size={16} /> : <LocalFireDepartmentOutlined fontSize="small" />}
+                {showHeatmap && isHeatmapLoading ? (
+                  <CircularProgress size={16} />
+                ) : (
+                  <LocalFireDepartmentOutlined fontSize="small" />
+                )}
               </IconButton>
             </MuiTooltip>
           </>
@@ -1518,145 +1592,159 @@ export default function CreateClimbForm({
         swipeEnabled={false}
         styles={SETTINGS_DRAWER_STYLES}
       >
-          <div className={styles.settingsDrawerContent}>
-            {/* Name */}
-            <div className={styles.settingsField}>
-              <Typography variant="body2" component="span" color="text.secondary" className={styles.settingsLabel}>
-                Name
-              </Typography>
-              <TextField
-                value={climbName}
-                onChange={(e) => setClimbName(e.target.value)}
-                placeholder="Climb name"
-                inputProps={{ maxLength: 100 }}
-                variant="outlined"
-                size="small"
-                fullWidth
-              />
-            </div>
-
-            {/* Draft toggle */}
-            <div className={styles.settingsField}>
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                <MuiSwitch
-                  size="small"
-                  checked={isDraft}
-                  onChange={(_, checked) => setIsDraft(checked)}
-                />
-                <Typography variant="body2" component="span">Draft</Typography>
-              </Box>
-            </div>
-
-            {/* Hold count indicators */}
-            <div className={styles.settingsField}>
-              <Typography variant="body2" component="span" color="text.secondary" className={styles.settingsLabel}>
-                Holds
-              </Typography>
-              <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
-                {boardType === 'aurora' ? (
-                  <>
-                    <HoldIndicator count={startingCount} max={2} color={themeTokens.colors.success} label="Starting" />
-                    <HoldIndicator count={finishCount} max={2} color={themeTokens.colors.pink} label="Finish" />
-                    <HoldIndicator count={totalHolds} color={themeTokens.colors.primary} label="Total" />
-                  </>
-                ) : (
-                  <>
-                    <HoldIndicator count={startingCount} max={2} color={themeTokens.colors.error} label="Start" />
-                    <HoldIndicator count={handCount} color={themeTokens.colors.primary} label="Hand" />
-                    <HoldIndicator count={finishCount} max={2} color={themeTokens.colors.success} label="Finish" />
-                    <HoldIndicator count={totalHolds} color={themeTokens.colors.secondary} label="Total" />
-                  </>
-                )}
-              </Stack>
-            </div>
-
-            {/* MoonBoard-specific: Angle, Grade and Benchmark */}
-            {boardType === 'moonboard' && (
-              <>
-                <div className={styles.settingsField}>
-                  <Typography variant="body2" component="span" color="text.secondary" className={styles.settingsLabel}>
-                    Angle
-                  </Typography>
-                  <MuiSelect
-                    value={selectedAngle}
-                    onChange={(e) => setSelectedAngle(e.target.value as number)}
-                    className={styles.settingsGradeField}
-                    size="small"
-                  >
-                    {MOONBOARD_ANGLES.map(a => (
-                      <MenuItem key={a} value={a}>{a}&deg;</MenuItem>
-                    ))}
-                  </MuiSelect>
-                </div>
-                <div className={styles.settingsField}>
-                  <Typography variant="body2" component="span" color="text.secondary" className={styles.settingsLabel}>
-                    Grade
-                  </Typography>
-                  <MuiSelect
-                    displayEmpty
-                    value={userGrade ?? ''}
-                    onChange={(e) => setUserGrade(e.target.value === '' ? undefined : (e.target.value as string))}
-                    className={styles.settingsGradeField}
-                    size="small"
-                  >
-                    <MenuItem value=""><em>None</em></MenuItem>
-                    {MOONBOARD_GRADES.map(g => (
-                      <MenuItem key={g.value} value={g.value}>{g.label}</MenuItem>
-                    ))}
-                  </MuiSelect>
-                </div>
-                <div className={styles.settingsField}>
-                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                    <MuiSwitch
-                      size="small"
-                      checked={isBenchmark}
-                      onChange={(_, checked) => setIsBenchmark(checked)}
-                    />
-                    <Typography variant="body2" component="span">Benchmark</Typography>
-                  </Box>
-                </div>
-              </>
-            )}
-            {/* Common: Description */}
-            <div className={styles.settingsField}>
-              <Typography variant="body2" component="span" color="text.secondary" className={styles.settingsLabel}>
-                Description (optional)
-              </Typography>
-              <TextField
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Add beta or notes about your climb..."
-                multiline
-                rows={3}
-                inputProps={{ maxLength: 500 }}
-                variant="outlined"
-                size="small"
-                fullWidth
-              />
-            </div>
-          </div>
-          <Box sx={{ display: 'flex', gap: 1.5, mt: 2 }}>
-            <MuiButton
+        <div className={styles.settingsDrawerContent}>
+          {/* Name */}
+          <div className={styles.settingsField}>
+            <Typography variant="body2" component="span" color="text.secondary" className={styles.settingsLabel}>
+              Name
+            </Typography>
+            <TextField
+              value={climbName}
+              onChange={(e) => setClimbName(e.target.value)}
+              placeholder="Climb name"
+              inputProps={{ maxLength: 100 }}
               variant="outlined"
-              onClick={() => setShowSettingsPanel(false)}
-              sx={{ flex: 1, height: 48, borderRadius: `${themeTokens.borderRadius.md}px`, fontSize: 16, fontWeight: 600 }}
-            >
-              Dismiss
-            </MuiButton>
-            <MuiButton
-              variant="contained"
-              disabled={isSaving || !canSave}
-              onClick={() => {
-                setShowSettingsPanel(false);
-                handlePublish();
-              }}
-              startIcon={isSaving ? <CircularProgress size={16} /> : <SaveOutlined />}
-              sx={{ flex: 1, height: 48, borderRadius: `${themeTokens.borderRadius.md}px`, fontSize: 16, fontWeight: 600 }}
-            >
-              {isSaving ? 'Saving...' : 'Save'}
-            </MuiButton>
-          </Box>
-        </SwipeableDrawer>
+              size="small"
+              fullWidth
+            />
+          </div>
+
+          {/* Draft toggle */}
+          <div className={styles.settingsField}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <MuiSwitch size="small" checked={isDraft} onChange={(_, checked) => setIsDraft(checked)} />
+              <Typography variant="body2" component="span">
+                Draft
+              </Typography>
+            </Box>
+          </div>
+
+          {/* Hold count indicators */}
+          <div className={styles.settingsField}>
+            <Typography variant="body2" component="span" color="text.secondary" className={styles.settingsLabel}>
+              Holds
+            </Typography>
+            <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
+              {boardType === 'aurora' ? (
+                <>
+                  <HoldIndicator count={startingCount} max={2} color={themeTokens.colors.success} label="Starting" />
+                  <HoldIndicator count={finishCount} max={2} color={themeTokens.colors.pink} label="Finish" />
+                  <HoldIndicator count={totalHolds} color={themeTokens.colors.primary} label="Total" />
+                </>
+              ) : (
+                <>
+                  <HoldIndicator count={startingCount} max={2} color={themeTokens.colors.error} label="Start" />
+                  <HoldIndicator count={handCount} color={themeTokens.colors.primary} label="Hand" />
+                  <HoldIndicator count={finishCount} max={2} color={themeTokens.colors.success} label="Finish" />
+                  <HoldIndicator count={totalHolds} color={themeTokens.colors.secondary} label="Total" />
+                </>
+              )}
+            </Stack>
+          </div>
+
+          {/* MoonBoard-specific: Angle, Grade and Benchmark */}
+          {boardType === 'moonboard' && (
+            <>
+              <div className={styles.settingsField}>
+                <Typography variant="body2" component="span" color="text.secondary" className={styles.settingsLabel}>
+                  Angle
+                </Typography>
+                <MuiSelect
+                  value={selectedAngle}
+                  onChange={(e) => setSelectedAngle(e.target.value as number)}
+                  className={styles.settingsGradeField}
+                  size="small"
+                >
+                  {MOONBOARD_ANGLES.map((a) => (
+                    <MenuItem key={a} value={a}>
+                      {a}&deg;
+                    </MenuItem>
+                  ))}
+                </MuiSelect>
+              </div>
+              <div className={styles.settingsField}>
+                <Typography variant="body2" component="span" color="text.secondary" className={styles.settingsLabel}>
+                  Grade
+                </Typography>
+                <MuiSelect
+                  displayEmpty
+                  value={userGrade ?? ''}
+                  onChange={(e) => setUserGrade(e.target.value === '' ? undefined : (e.target.value as string))}
+                  className={styles.settingsGradeField}
+                  size="small"
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  {MOONBOARD_GRADES.map((g) => (
+                    <MenuItem key={g.value} value={g.value}>
+                      {g.label}
+                    </MenuItem>
+                  ))}
+                </MuiSelect>
+              </div>
+              <div className={styles.settingsField}>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <MuiSwitch size="small" checked={isBenchmark} onChange={(_, checked) => setIsBenchmark(checked)} />
+                  <Typography variant="body2" component="span">
+                    Benchmark
+                  </Typography>
+                </Box>
+              </div>
+            </>
+          )}
+          {/* Common: Description */}
+          <div className={styles.settingsField}>
+            <Typography variant="body2" component="span" color="text.secondary" className={styles.settingsLabel}>
+              Description (optional)
+            </Typography>
+            <TextField
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Add beta or notes about your climb..."
+              multiline
+              rows={3}
+              inputProps={{ maxLength: 500 }}
+              variant="outlined"
+              size="small"
+              fullWidth
+            />
+          </div>
+        </div>
+        <Box sx={{ display: 'flex', gap: 1.5, mt: 2 }}>
+          <MuiButton
+            variant="outlined"
+            onClick={() => setShowSettingsPanel(false)}
+            sx={{
+              flex: 1,
+              height: 48,
+              borderRadius: `${themeTokens.borderRadius.md}px`,
+              fontSize: 16,
+              fontWeight: 600,
+            }}
+          >
+            Dismiss
+          </MuiButton>
+          <MuiButton
+            variant="contained"
+            disabled={isSaving || !canSave}
+            onClick={() => {
+              setShowSettingsPanel(false);
+              handlePublish();
+            }}
+            startIcon={isSaving ? <CircularProgress size={16} /> : <SaveOutlined />}
+            sx={{
+              flex: 1,
+              height: 48,
+              borderRadius: `${themeTokens.borderRadius.md}px`,
+              fontSize: 16,
+              fontWeight: 600,
+            }}
+          >
+            {isSaving ? 'Saving...' : 'Save'}
+          </MuiButton>
+        </Box>
+      </SwipeableDrawer>
     </div>
   );
 }

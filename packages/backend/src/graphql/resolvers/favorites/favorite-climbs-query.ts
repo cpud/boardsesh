@@ -11,16 +11,20 @@ import { UNIFIED_TABLES, isValidBoardName } from '../../../db/queries/util/table
 export const favoriteClimbsQuery = {
   userFavoriteClimbs: async (
     _: unknown,
-    { input }: { input: {
-      boardName: string;
-      layoutId: number;
-      sizeId: number;
-      setIds: string;
-      angle: number;
-      page?: number;
-      pageSize?: number;
-    } },
-    ctx: ConnectionContext
+    {
+      input,
+    }: {
+      input: {
+        boardName: string;
+        layoutId: number;
+        sizeId: number;
+        setIds: string;
+        angle: number;
+        page?: number;
+        pageSize?: number;
+      };
+    },
+    ctx: ConnectionContext,
   ): Promise<{ climbs: Climb[]; totalCount: number; hasMore: boolean }> => {
     requireAuthenticated(ctx);
     validateInput(GetUserFavoriteClimbsInputSchema, input, 'input');
@@ -40,12 +44,7 @@ export const favoriteClimbsQuery = {
     const countResult = await db
       .select({ count: sql<number>`count(*)::int` })
       .from(dbSchema.userFavorites)
-      .where(
-        and(
-          eq(dbSchema.userFavorites.userId, userId),
-          eq(dbSchema.userFavorites.boardName, boardName),
-        )
-      );
+      .where(and(eq(dbSchema.userFavorites.userId, userId), eq(dbSchema.userFavorites.boardName, boardName)));
 
     const totalCount = countResult[0]?.count || 0;
 
@@ -71,25 +70,17 @@ export const favoriteClimbsQuery = {
       .from(dbSchema.userFavorites)
       .innerJoin(
         tables.climbs,
-        and(
-          eq(tables.climbs.uuid, dbSchema.userFavorites.climbUuid),
-          eq(tables.climbs.boardType, boardName)
-        )
+        and(eq(tables.climbs.uuid, dbSchema.userFavorites.climbUuid), eq(tables.climbs.boardType, boardName)),
       )
       .leftJoin(
         tables.climbStats,
         and(
           eq(tables.climbStats.climbUuid, dbSchema.userFavorites.climbUuid),
           eq(tables.climbStats.boardType, boardName),
-          eq(tables.climbStats.angle, input.angle)
-        )
+          eq(tables.climbStats.angle, input.angle),
+        ),
       )
-      .where(
-        and(
-          eq(dbSchema.userFavorites.userId, userId),
-          eq(dbSchema.userFavorites.boardName, boardName),
-        )
-      )
+      .where(and(eq(dbSchema.userFavorites.userId, userId), eq(dbSchema.userFavorites.boardName, boardName)))
       .orderBy(desc(dbSchema.userFavorites.createdAt))
       .limit(pageSize + 1)
       .offset(page * pageSize);
@@ -110,7 +101,8 @@ export const favoriteClimbsQuery = {
       quality_average: result.quality_average?.toString() || '0',
       stars: Math.round((Number(result.quality_average) || 0) * 5),
       difficulty_error: result.difficulty_error?.toString() || '0',
-      benchmark_difficulty: result.benchmark_difficulty && result.benchmark_difficulty > 0 ? result.benchmark_difficulty.toString() : null,
+      benchmark_difficulty:
+        result.benchmark_difficulty && result.benchmark_difficulty > 0 ? result.benchmark_difficulty.toString() : null,
     }));
 
     return {

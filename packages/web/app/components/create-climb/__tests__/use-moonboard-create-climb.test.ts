@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 
 vi.mock('@/app/lib/moonboard-config', () => ({
@@ -217,9 +217,7 @@ describe('useMoonBoardCreateClimb', () => {
         200: { state: 'FINISH' as const, color: '#FF00FF', displayColor: '#FF00FF' },
       };
 
-      const { result } = renderHook(() =>
-        useMoonBoardCreateClimb({ initialHoldsMap }),
-      );
+      const { result } = renderHook(() => useMoonBoardCreateClimb({ initialHoldsMap }));
 
       expect(result.current.litUpHoldsMap).toEqual(initialHoldsMap);
       expect(result.current.totalHolds).toBe(2);

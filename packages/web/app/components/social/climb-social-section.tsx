@@ -15,7 +15,14 @@ interface ClimbSocialSectionProps {
   highlightProposalUuid?: string;
 }
 
-export default function ClimbSocialSection({ climbUuid, boardType, angle, currentClimbDifficulty, boardName, highlightProposalUuid }: ClimbSocialSectionProps) {
+export default function ClimbSocialSection({
+  climbUuid,
+  boardType,
+  angle,
+  currentClimbDifficulty,
+  boardName,
+  highlightProposalUuid,
+}: ClimbSocialSectionProps) {
   return (
     <Box>
       {boardType && angle != null && (

@@ -171,16 +171,14 @@ async function createInlineNotification(event: SocialEvent): Promise<void> {
 
         for (const recipient of recipients) {
           const uuid = crypto.randomUUID();
-          await db
-            .insert(dbSchema.notifications)
-            .values({
-              uuid,
-              recipientId: recipient.recipientId,
-              actorId: event.actorId,
-              type: recipient.notificationType,
-              entityType: 'climb',
-              entityId: event.entityId,
-            });
+          await db.insert(dbSchema.notifications).values({
+            uuid,
+            recipientId: recipient.recipientId,
+            actorId: event.actorId,
+            type: recipient.notificationType,
+            entityType: 'climb',
+            entityId: event.entityId,
+          });
 
           pubsub.publishNotificationEvent(recipient.recipientId, {
             notification: {
@@ -232,12 +230,7 @@ async function createInlineNotification(event: SocialEvent): Promise<void> {
               eq(dbSchema.boardDifficultyGrades.difficulty, dbSchema.boardClimbStats.displayDifficulty),
             ),
           )
-          .where(
-            and(
-              eq(dbSchema.boardClimbs.uuid, event.entityId),
-              eq(dbSchema.boardClimbs.boardType, boardType),
-            ),
-          )
+          .where(and(eq(dbSchema.boardClimbs.uuid, event.entityId), eq(dbSchema.boardClimbs.boardType, boardType)))
           .limit(1);
 
         if (climb) {
@@ -285,16 +278,14 @@ async function createInlineNotification(event: SocialEvent): Promise<void> {
     if (existing) return;
 
     const uuid = crypto.randomUUID();
-    await db
-      .insert(dbSchema.notifications)
-      .values({
-        uuid,
-        recipientId,
-        actorId: event.actorId,
-        type: notificationType,
-        entityType: event.entityType as dbSchema.SocialEntityType,
-        entityId: event.entityId,
-      });
+    await db.insert(dbSchema.notifications).values({
+      uuid,
+      recipientId,
+      actorId: event.actorId,
+      type: notificationType,
+      entityType: event.entityType as dbSchema.SocialEntityType,
+      entityId: event.entityId,
+    });
 
     // Enrich and push via PubSub
     const [actor] = await db

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import React from 'react';
 import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
@@ -12,7 +12,9 @@ const mockGuardBoardSwitch = vi.fn();
 const mockConstructBoardSlugListUrl = vi.fn();
 const mockConstructClimbListWithSlugs = vi.fn();
 const mockTryConstructSlugListUrl = vi.fn();
-let mockSessionData: { user: { id: string; name?: string | null; email?: string | null; image?: string | null } } | null = null;
+let mockSessionData: {
+  user: { id: string; name?: string | null; email?: string | null; image?: string | null };
+} | null = null;
 
 // Callbacks captured by the BoardDiscoveryScroll stub on each render
 const captured = {
@@ -81,14 +83,8 @@ vi.mock('@/app/lib/url-utils', () => ({
 }));
 
 vi.mock('@/app/components/swipeable-drawer/swipeable-drawer', () => ({
-  default: ({
-    children,
-    open,
-  }: {
-    children?: React.ReactNode;
-    open: boolean;
-    [key: string]: unknown;
-  }) => (open ? React.createElement('div', { 'data-testid': 'swipeable-drawer' }, children) : null),
+  default: ({ children, open }: { children?: React.ReactNode; open: boolean; [key: string]: unknown }) =>
+    open ? React.createElement('div', { 'data-testid': 'swipeable-drawer' }, children) : null,
 }));
 
 vi.mock('@/app/components/hold-classification', () => ({
@@ -195,9 +191,7 @@ describe('UserDrawer', () => {
     captured.onBoardClick = null;
     captured.onConfigClick = null;
     mockSessionData = null;
-    mockConstructBoardSlugListUrl.mockImplementation(
-      (slug: string, angle: number) => `/b/${slug}/${angle}/list`,
-    );
+    mockConstructBoardSlugListUrl.mockImplementation((slug: string, angle: number) => `/b/${slug}/${angle}/list`);
     mockConstructClimbListWithSlugs.mockReturnValue('/slug-based-url');
     mockTryConstructSlugListUrl.mockReturnValue('/try-slug-url');
   });
@@ -217,7 +211,9 @@ describe('UserDrawer', () => {
       fireEvent.click(screen.getByRole('button', { name: /user menu/i }));
     });
 
-    const profileLinks = screen.getAllByRole('link').filter((link) => link.getAttribute('href') === '/profile/user-123');
+    const profileLinks = screen
+      .getAllByRole('link')
+      .filter((link) => link.getAttribute('href') === '/profile/user-123');
     expect(profileLinks.length).toBeGreaterThan(0);
     profileLinks.forEach((link) => {
       expect(link.getAttribute('data-next-link')).toBe('true');
@@ -243,9 +239,7 @@ describe('UserDrawer', () => {
       await openBoardSelector();
 
       act(() => {
-        captured.onBoardClick!(
-          makeUserBoard({ boardType: 'unsupported-board', slug: 'some-slug', angle: 40 }),
-        );
+        captured.onBoardClick!(makeUserBoard({ boardType: 'unsupported-board', slug: 'some-slug', angle: 40 }));
       });
 
       expect(mockGuardBoardSwitch).not.toHaveBeenCalled();
@@ -287,9 +281,7 @@ describe('UserDrawer', () => {
       mockConstructBoardSlugListUrl.mockReturnValue('/b/kilter-standard-full/40/list');
 
       act(() => {
-        captured.onBoardClick!(
-          makeUserBoard({ boardType: 'kilter', slug: 'kilter-standard-full', angle: 40 }),
-        );
+        captured.onBoardClick!(makeUserBoard({ boardType: 'kilter', slug: 'kilter-standard-full', angle: 40 }));
       });
 
       const [, navigate] = mockGuardBoardSwitch.mock.calls[0] as [unknown, () => void];
@@ -307,10 +299,7 @@ describe('UserDrawer', () => {
         captured.onBoardClick!(makeUserBoard({ boardType: 'kilter', setIds: '5,10,15' }));
       });
 
-      const [target] = mockGuardBoardSwitch.mock.calls[0] as [
-        { set_ids: number[] },
-        () => void,
-      ];
+      const [target] = mockGuardBoardSwitch.mock.calls[0] as [{ set_ids: number[] }, () => void];
       expect(target.set_ids).toEqual([5, 10, 15]);
     });
 
@@ -321,10 +310,7 @@ describe('UserDrawer', () => {
         captured.onBoardClick!(makeUserBoard({ boardType: 'kilter', setIds: '' }));
       });
 
-      const [target] = mockGuardBoardSwitch.mock.calls[0] as [
-        { set_ids: number[] },
-        () => void,
-      ];
+      const [target] = mockGuardBoardSwitch.mock.calls[0] as [{ set_ids: number[] }, () => void];
       expect(target.set_ids).toEqual([]);
     });
 
@@ -335,10 +321,7 @@ describe('UserDrawer', () => {
         captured.onBoardClick!(makeUserBoard({ boardType: 'kilter', setIds: 'a,b,c' }));
       });
 
-      const [target] = mockGuardBoardSwitch.mock.calls[0] as [
-        { set_ids: number[] },
-        () => void,
-      ];
+      const [target] = mockGuardBoardSwitch.mock.calls[0] as [{ set_ids: number[] }, () => void];
       expect(target.set_ids).toEqual([]);
     });
   });
@@ -365,9 +348,7 @@ describe('UserDrawer', () => {
       await openBoardSelector();
 
       act(() => {
-        captured.onConfigClick!(
-          makePopularConfig({ boardType: 'tension', layoutId: 3, sizeId: 4, setIds: [7, 8] }),
-        );
+        captured.onConfigClick!(makePopularConfig({ boardType: 'tension', layoutId: 3, sizeId: 4, setIds: [7, 8] }));
       });
 
       expect(mockGuardBoardSwitch).toHaveBeenCalledOnce();
@@ -412,9 +393,7 @@ describe('UserDrawer', () => {
       mockTryConstructSlugListUrl.mockReturnValue('/kilter/1/2/1,2,3/40/list');
 
       act(() => {
-        captured.onConfigClick!(
-          makePopularConfig({ layoutName: null, sizeName: null, setNames: [] }),
-        );
+        captured.onConfigClick!(makePopularConfig({ layoutName: null, sizeName: null, setNames: [] }));
       });
 
       const [, navigate] = mockGuardBoardSwitch.mock.calls[0] as [unknown, () => void];

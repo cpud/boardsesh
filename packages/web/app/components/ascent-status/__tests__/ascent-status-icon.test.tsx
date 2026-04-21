@@ -1,19 +1,12 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { AscentStatusIcon } from '../ascent-status-icon';
 
 describe('AscentStatusIcon', () => {
   it('renders the flash icon variant with explicit status metadata', () => {
-    render(
-      <AscentStatusIcon
-        status="flash"
-        variant="icon"
-        fontSize={18}
-        testId="flash-status-icon"
-      />,
-    );
+    render(<AscentStatusIcon status="flash" variant="icon" fontSize={18} testId="flash-status-icon" />);
 
     const icon = screen.getByTestId('flash-status-icon');
     expect(icon.getAttribute('data-status')).toBe('flash');
@@ -22,14 +15,7 @@ describe('AscentStatusIcon', () => {
   });
 
   it('normalizes legacy successful ascents to send when tries are greater than 1', () => {
-    render(
-      <AscentStatusIcon
-        isAscent
-        tries={3}
-        variant="icon"
-        testId="legacy-send-status"
-      />,
-    );
+    render(<AscentStatusIcon isAscent tries={3} variant="icon" testId="legacy-send-status" />);
 
     expect(screen.getByTestId('legacy-send-status').getAttribute('data-status')).toBe('send');
   });

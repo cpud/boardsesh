@@ -148,7 +148,11 @@ async function upsertBetaLinks(db: NeonDatabase<Record<string, never>>, board: A
   );
 }
 
-async function upsertClimbs(db: NeonDatabase<Record<string, never>>, board: AuroraBoardName, data: Climb[]): Promise<NewClimbInfo[]> {
+async function upsertClimbs(
+  db: NeonDatabase<Record<string, never>>,
+  board: AuroraBoardName,
+  data: Climb[],
+): Promise<NewClimbInfo[]> {
   const climbsSchema = UNIFIED_TABLES.climbs;
   const climbHoldsSchema = UNIFIED_TABLES.climbHolds;
 
@@ -321,7 +325,11 @@ export async function getLastSharedSyncTimes(boardName: AuroraBoardName) {
 export async function syncSharedData(
   board: AuroraBoardName,
   token: string,
-): Promise<{ complete: boolean; results: Record<string, { synced: number; complete: boolean }>; newClimbs: NewClimbInfo[] }> {
+): Promise<{
+  complete: boolean;
+  results: Record<string, { synced: number; complete: boolean }>;
+  newClimbs: NewClimbInfo[];
+}> {
   try {
     console.log('Entered sync shared data');
 

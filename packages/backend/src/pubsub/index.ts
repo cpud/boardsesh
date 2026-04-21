@@ -1,4 +1,10 @@
-import type { QueueEvent, SessionEvent, NotificationEvent, CommentEvent, NewClimbCreatedEvent } from '@boardsesh/shared-schema';
+import type {
+  QueueEvent,
+  SessionEvent,
+  NotificationEvent,
+  CommentEvent,
+  NewClimbCreatedEvent,
+} from '@boardsesh/shared-schema';
 import { redisClientManager } from '../redis/client';
 import { createRedisPubSubAdapter, type RedisPubSubAdapter } from './redis-adapter';
 
@@ -10,7 +16,7 @@ type NewClimbSubscriber = (event: NewClimbCreatedEvent) => void;
 
 // Event buffer configuration (Phase 2: Delta sync)
 const EVENT_BUFFER_SIZE = 100; // Store last 100 events per session
-const EVENT_BUFFER_TTL = 300;  // 5 minutes
+const EVENT_BUFFER_TTL = 300; // 5 minutes
 
 /**
  * Hybrid PubSub that supports both local-only and Redis-backed modes.

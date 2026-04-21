@@ -54,17 +54,20 @@ export default function BoardLeaderboard({ boardUuid }: BoardLeaderboardProps) {
 
       try {
         const client = createGraphQLHttpClient(token);
-        const data = await client.request<
-          GetBoardLeaderboardQueryResponse,
-          GetBoardLeaderboardQueryVariables
-        >(GET_BOARD_LEADERBOARD, {
-          input: { boardUuid, period, limit: 20, offset },
-        });
+        const data = await client.request<GetBoardLeaderboardQueryResponse, GetBoardLeaderboardQueryVariables>(
+          GET_BOARD_LEADERBOARD,
+          {
+            input: { boardUuid, period, limit: 20, offset },
+          },
+        );
 
         if (append) {
           setLeaderboard((prev) =>
             prev
-              ? { ...data.boardLeaderboard, entries: [...prev.entries, ...data.boardLeaderboard.entries] }
+              ? {
+                  ...data.boardLeaderboard,
+                  entries: [...prev.entries, ...data.boardLeaderboard.entries],
+                }
               : data.boardLeaderboard,
           );
         } else {
@@ -120,16 +123,18 @@ export default function BoardLeaderboard({ boardUuid }: BoardLeaderboardProps) {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: themeTokens.typography.fontWeight.semibold, width: 40 }}>
-                    #
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: themeTokens.typography.fontWeight.semibold }}>
-                    Climber
-                  </TableCell>
+                  <TableCell sx={{ fontWeight: themeTokens.typography.fontWeight.semibold, width: 40 }}>#</TableCell>
+                  <TableCell sx={{ fontWeight: themeTokens.typography.fontWeight.semibold }}>Climber</TableCell>
                   <TableCell align="right" sx={{ fontWeight: themeTokens.typography.fontWeight.semibold }}>
                     Sends
                   </TableCell>
-                  <TableCell align="right" sx={{ fontWeight: themeTokens.typography.fontWeight.semibold, display: { xs: 'none', sm: 'table-cell' } }}>
+                  <TableCell
+                    align="right"
+                    sx={{
+                      fontWeight: themeTokens.typography.fontWeight.semibold,
+                      display: { xs: 'none', sm: 'table-cell' },
+                    }}
+                  >
                     Flashes
                   </TableCell>
                   <TableCell align="right" sx={{ fontWeight: themeTokens.typography.fontWeight.semibold }}>
@@ -144,9 +149,10 @@ export default function BoardLeaderboard({ boardUuid }: BoardLeaderboardProps) {
                       <MuiTypography
                         variant="body2"
                         sx={{
-                          fontWeight: entry.rank <= 3
-                            ? themeTokens.typography.fontWeight.bold
-                            : themeTokens.typography.fontWeight.normal,
+                          fontWeight:
+                            entry.rank <= 3
+                              ? themeTokens.typography.fontWeight.bold
+                              : themeTokens.typography.fontWeight.normal,
                           color: entry.rank <= 3 ? themeTokens.colors.primary : undefined,
                         }}
                       >
@@ -155,13 +161,17 @@ export default function BoardLeaderboard({ boardUuid }: BoardLeaderboardProps) {
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Avatar
-                          src={entry.userAvatarUrl ?? undefined}
-                          sx={{ width: 28, height: 28, fontSize: 12 }}
-                        >
+                        <Avatar src={entry.userAvatarUrl ?? undefined} sx={{ width: 28, height: 28, fontSize: 12 }}>
                           {entry.userDisplayName?.[0]?.toUpperCase()}
                         </Avatar>
-                        <MuiTypography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <MuiTypography
+                          variant="body2"
+                          sx={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
                           {entry.userDisplayName}
                         </MuiTypography>
                       </Box>
@@ -173,9 +183,7 @@ export default function BoardLeaderboard({ boardUuid }: BoardLeaderboardProps) {
                       <MuiTypography variant="body2">{entry.totalFlashes}</MuiTypography>
                     </TableCell>
                     <TableCell align="right">
-                      <MuiTypography variant="body2">
-                        {entry.hardestGradeName || '-'}
-                      </MuiTypography>
+                      <MuiTypography variant="body2">{entry.hardestGradeName || '-'}</MuiTypography>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -185,12 +193,7 @@ export default function BoardLeaderboard({ boardUuid }: BoardLeaderboardProps) {
 
           {leaderboard.hasMore && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-              <MuiButton
-                variant="text"
-                size="small"
-                onClick={handleLoadMore}
-                disabled={isLoadingMore}
-              >
+              <MuiButton variant="text" size="small" onClick={handleLoadMore} disabled={isLoadingMore}>
                 {isLoadingMore ? <CircularProgress size={16} /> : 'Load more'}
               </MuiButton>
             </Box>

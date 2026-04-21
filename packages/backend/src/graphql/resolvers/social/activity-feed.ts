@@ -51,7 +51,18 @@ type TickJoinRow = {
   difficultyName: string | null;
 };
 
-function mapTickRowToFeedItem({ tick, userName, userImage, userDisplayName, userAvatarUrl, climbName, setterUsername, layoutId, frames, difficultyName }: TickJoinRow) {
+function mapTickRowToFeedItem({
+  tick,
+  userName,
+  userImage,
+  userDisplayName,
+  userAvatarUrl,
+  climbName,
+  setterUsername,
+  layoutId,
+  frames,
+  difficultyName,
+}: TickJoinRow) {
   return {
     id: tick.id.toString(),
     type: 'ascent' as const,
@@ -87,11 +98,7 @@ export const activityFeedQueries = {
    * Materialized activity feed for authenticated user (fan-out-on-write).
    * Reads from feed_items table with cursor-based pagination.
    */
-  activityFeed: async (
-    _: unknown,
-    { input }: { input?: Record<string, unknown> },
-    ctx: ConnectionContext
-  ) => {
+  activityFeed: async (_: unknown, { input }: { input?: Record<string, unknown> }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     const myUserId = ctx.userId!;
 
@@ -115,7 +122,7 @@ export const activityFeedQueries = {
         conditions.push(
           sql`(${dbSchema.feedItems.createdAt} < ${cursor.createdAt}::timestamp
             OR (${dbSchema.feedItems.createdAt} = ${cursor.createdAt}::timestamp
-                AND ${dbSchema.feedItems.id} < ${cursor.id}))`
+                AND ${dbSchema.feedItems.id} < ${cursor.id}))`,
         );
       }
     }
@@ -146,27 +153,25 @@ export const activityFeedQueries = {
    * Fan-out-on-read from boardsesh_ticks with JOINs (same pattern as globalAscentsFeed).
    * Returns cursor-based pagination using the ActivityFeedItem shape.
    */
-  trendingFeed: async (
-    _: unknown,
-    { input }: { input?: Record<string, unknown> },
-  ) => {
+  trendingFeed: async (_: unknown, { input }: { input?: Record<string, unknown> }) => {
     const validatedInput = validateInput(ActivityFeedInputSchema, input || {}, 'input');
     const limit = validatedInput.limit ?? 20;
 
     // Build conditions - only successful ascents for trending
-    const conditions = [
-      sql`${dbSchema.boardseshTicks.status} IN ('flash', 'send')`,
-    ];
+    const conditions = [sql`${dbSchema.boardseshTicks.status} IN ('flash', 'send')`];
 
     // Board filter: look up board config and filter by boardType + layoutId
     let layoutIdFilter: number | null = null;
     if (validatedInput.boardUuid) {
       const board = await db
-        .select({ boardType: dbSchema.userBoards.boardType, layoutId: dbSchema.userBoards.layoutId })
+        .select({
+          boardType: dbSchema.userBoards.boardType,
+          layoutId: dbSchema.userBoards.layoutId,
+        })
         .from(dbSchema.userBoards)
         .where(eq(dbSchema.userBoards.uuid, validatedInput.boardUuid))
         .limit(1)
-        .then(rows => rows[0]);
+        .then((rows) => rows[0]);
 
       if (board) {
         conditions.push(eq(dbSchema.boardseshTicks.boardType, board.boardType));
@@ -181,7 +186,7 @@ export const activityFeedQueries = {
         conditions.push(
           sql`(${dbSchema.boardseshTicks.climbedAt} < ${cursor.createdAt}::timestamp
             OR (${dbSchema.boardseshTicks.climbedAt} = ${cursor.createdAt}::timestamp
-                AND ${dbSchema.boardseshTicks.id} < ${cursor.id}))`
+                AND ${dbSchema.boardseshTicks.id} < ${cursor.id}))`,
         );
       }
     }
@@ -212,15 +217,15 @@ export const activityFeedQueries = {
         dbSchema.boardClimbs,
         and(
           eq(dbSchema.boardseshTicks.climbUuid, dbSchema.boardClimbs.uuid),
-          eq(dbSchema.boardseshTicks.boardType, dbSchema.boardClimbs.boardType)
-        )
+          eq(dbSchema.boardseshTicks.boardType, dbSchema.boardClimbs.boardType),
+        ),
       )
       .leftJoin(
         dbSchema.boardDifficultyGrades,
         and(
           eq(dbSchema.boardseshTicks.difficulty, dbSchema.boardDifficultyGrades.difficulty),
-          eq(dbSchema.boardseshTicks.boardType, dbSchema.boardDifficultyGrades.boardType)
-        )
+          eq(dbSchema.boardseshTicks.boardType, dbSchema.boardDifficultyGrades.boardType),
+        ),
       )
       .where(whereClause)
       .orderBy(desc(dbSchema.boardseshTicks.climbedAt), desc(dbSchema.boardseshTicks.id))

@@ -4,8 +4,7 @@ import { authOptions } from '@/app/lib/auth/auth-options';
 import { issueNativeOAuthTransferToken } from '@/app/lib/auth/native-oauth-transfer';
 import { NATIVE_OAUTH_CALLBACK_SCHEME } from '@/app/lib/auth/native-oauth-config';
 
-const sanitizeNextPath = (nextPath: string | null): string =>
-  nextPath && nextPath.startsWith('/') ? nextPath : '/';
+const sanitizeNextPath = (nextPath: string | null): string => (nextPath && nextPath.startsWith('/') ? nextPath : '/');
 
 /**
  * Redirect to a custom URL scheme using an HTML page with JavaScript.

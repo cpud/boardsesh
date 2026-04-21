@@ -57,8 +57,8 @@ async function resolveDifficultyId(boardType: string, grade?: string | null): Pr
     .where(
       and(
         eq(dbSchema.boardDifficultyGrades.boardType, boardType),
-        sql`LOWER(${dbSchema.boardDifficultyGrades.boulderName}) = ${fontPart}`
-      )
+        sql`LOWER(${dbSchema.boardDifficultyGrades.boulderName}) = ${fontPart}`,
+      ),
     )
     .limit(1);
 
@@ -70,11 +70,7 @@ export const climbMutations = {
    * Save a new climb for Aurora-style boards (kilter/tension) via GraphQL.
    * Persists to the unified board_climbs table and publishes a climb.created event.
    */
-  saveClimb: async (
-    _: unknown,
-    { input }: SaveClimbArgs,
-    ctx: ConnectionContext
-  ): Promise<SaveClimbResult> => {
+  saveClimb: async (_: unknown, { input }: SaveClimbArgs, ctx: ConnectionContext): Promise<SaveClimbResult> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 10);
 
@@ -144,7 +140,7 @@ export const climbMutations = {
   saveMoonBoardClimb: async (
     _: unknown,
     { input }: SaveClimbArgs,
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ): Promise<SaveClimbResult> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 10);
@@ -260,7 +256,7 @@ export const climbMutations = {
   updateClimb: async (
     _: unknown,
     { input }: { input: unknown },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ): Promise<UpdateClimbResult> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 20);
@@ -282,10 +278,7 @@ export const climbMutations = {
       })
       .from(dbSchema.boardClimbs)
       .where(
-        and(
-          eq(dbSchema.boardClimbs.uuid, validated.uuid),
-          eq(dbSchema.boardClimbs.boardType, validated.boardType),
-        )
+        and(eq(dbSchema.boardClimbs.uuid, validated.uuid), eq(dbSchema.boardClimbs.boardType, validated.boardType)),
       )
       .limit(1);
 
@@ -313,9 +306,12 @@ export const climbMutations = {
 
     // Decide the next draft/publish state. We only honor a transition from
     // draft → published; a publish → draft attempt is silently ignored.
-    const nextIsDraft = validated.isDraft === undefined
-      ? existing.isDraft ?? false
-      : (currentlyDraft && validated.isDraft === false ? false : existing.isDraft ?? false);
+    const nextIsDraft =
+      validated.isDraft === undefined
+        ? (existing.isDraft ?? false)
+        : currentlyDraft && validated.isDraft === false
+          ? false
+          : (existing.isDraft ?? false);
 
     const transitioningToPublished = currentlyDraft && validated.isDraft === false;
     const now = new Date().toISOString();
@@ -338,10 +334,7 @@ export const climbMutations = {
       .update(dbSchema.boardClimbs)
       .set(updateSet)
       .where(
-        and(
-          eq(dbSchema.boardClimbs.uuid, validated.uuid),
-          eq(dbSchema.boardClimbs.boardType, validated.boardType),
-        )
+        and(eq(dbSchema.boardClimbs.uuid, validated.uuid), eq(dbSchema.boardClimbs.boardType, validated.boardType)),
       );
 
     // If frames changed we need to refresh the denormalized edge/set columns

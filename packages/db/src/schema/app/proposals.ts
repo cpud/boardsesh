@@ -18,23 +18,11 @@ import { users } from '../auth/users';
 // Enums
 // ============================================
 
-export const communityRoleTypeEnum = pgEnum('community_role_type', [
-  'admin',
-  'community_leader',
-]);
+export const communityRoleTypeEnum = pgEnum('community_role_type', ['admin', 'community_leader']);
 
-export const proposalTypeEnum = pgEnum('proposal_type', [
-  'grade',
-  'classic',
-  'benchmark',
-]);
+export const proposalTypeEnum = pgEnum('proposal_type', ['grade', 'classic', 'benchmark']);
 
-export const proposalStatusEnum = pgEnum('proposal_status', [
-  'open',
-  'approved',
-  'rejected',
-  'superseded',
-]);
+export const proposalStatusEnum = pgEnum('proposal_status', ['open', 'approved', 'rejected', 'superseded']);
 
 // ============================================
 // Tables
@@ -49,8 +37,7 @@ export const communityRoles = pgTable(
       .notNull(),
     role: communityRoleTypeEnum('role').notNull(),
     boardType: text('board_type'), // nullable = global role
-    grantedBy: text('granted_by')
-      .references(() => users.id, { onDelete: 'set null' }),
+    grantedBy: text('granted_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => ({
@@ -69,17 +56,12 @@ export const communitySettings = pgTable(
     scopeKey: text('scope_key').notNull(), // '' for global, boardType for board, climbUuid for climb
     key: text('key').notNull(),
     value: text('value').notNull(),
-    setBy: text('set_by')
-      .references(() => users.id, { onDelete: 'set null' }),
+    setBy: text('set_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
   (table) => ({
-    scopeKeyIdx: uniqueIndex('community_settings_scope_key_idx').on(
-      table.scope,
-      table.scopeKey,
-      table.key,
-    ),
+    scopeKeyIdx: uniqueIndex('community_settings_scope_key_idx').on(table.scope, table.scopeKey, table.key),
   }),
 );
 
@@ -100,16 +82,11 @@ export const climbProposals = pgTable(
     status: proposalStatusEnum('status').notNull().default('open'),
     reason: text('reason'),
     resolvedAt: timestamp('resolved_at'),
-    resolvedBy: text('resolved_by')
-      .references(() => users.id, { onDelete: 'set null' }),
+    resolvedBy: text('resolved_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => ({
-    climbAngleTypeIdx: index('climb_proposals_climb_angle_type_idx').on(
-      table.climbUuid,
-      table.angle,
-      table.type,
-    ),
+    climbAngleTypeIdx: index('climb_proposals_climb_angle_type_idx').on(table.climbUuid, table.angle, table.type),
     statusIdx: index('climb_proposals_status_idx').on(table.status),
     proposerIdx: index('climb_proposals_proposer_idx').on(table.proposerId),
     boardTypeIdx: index('climb_proposals_board_type_idx').on(table.boardType),
@@ -132,10 +109,7 @@ export const proposalVotes = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => ({
-    uniqueVote: uniqueIndex('proposal_votes_unique_user_proposal').on(
-      table.proposalId,
-      table.userId,
-    ),
+    uniqueVote: uniqueIndex('proposal_votes_unique_user_proposal').on(table.proposalId, table.userId),
     proposalIdx: index('proposal_votes_proposal_idx').on(table.proposalId),
     valueCheck: check('proposal_vote_value_check', sql`${table.value} IN (1, -1)`),
   }),
@@ -151,8 +125,9 @@ export const climbCommunityStatus = pgTable(
     communityGrade: text('community_grade'), // nullable
     isBenchmark: boolean('is_benchmark').notNull().default(false),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
-    lastProposalId: bigserial('last_proposal_id', { mode: 'number' })
-      .references(() => climbProposals.id, { onDelete: 'set null' }),
+    lastProposalId: bigserial('last_proposal_id', { mode: 'number' }).references(() => climbProposals.id, {
+      onDelete: 'set null',
+    }),
   },
   (table) => ({
     uniqueClimbAngle: uniqueIndex('climb_community_status_unique_idx').on(
@@ -171,14 +146,12 @@ export const climbClassicStatus = pgTable(
     boardType: text('board_type').notNull(),
     isClassic: boolean('is_classic').notNull().default(false),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
-    lastProposalId: bigserial('last_proposal_id', { mode: 'number' })
-      .references(() => climbProposals.id, { onDelete: 'set null' }),
+    lastProposalId: bigserial('last_proposal_id', { mode: 'number' }).references(() => climbProposals.id, {
+      onDelete: 'set null',
+    }),
   },
   (table) => ({
-    uniqueClimb: uniqueIndex('climb_classic_status_unique_idx').on(
-      table.climbUuid,
-      table.boardType,
-    ),
+    uniqueClimb: uniqueIndex('climb_classic_status_unique_idx').on(table.climbUuid, table.boardType),
   }),
 );
 

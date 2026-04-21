@@ -118,15 +118,12 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
     [hasMore, isFetchingNextPage, fetchNextPage],
   );
 
-  const handleViewportChange = useCallback(
-    ({ lat, lng, zoom: z }: { lat: number; lng: number; zoom: number }) => {
-      setCenter({ lat, lng });
-      setZoom(z);
-      locationResolvedRef.current = true;
-      setLocationResolved(true);
-    },
-    [],
-  );
+  const handleViewportChange = useCallback(({ lat, lng, zoom: z }: { lat: number; lng: number; zoom: number }) => {
+    setCenter({ lat, lng });
+    setZoom(z);
+    locationResolvedRef.current = true;
+    setLocationResolved(true);
+  }, []);
 
   const scrollCardIntoView = useCallback((uuid: string) => {
     const node = cardRefs.current.get(uuid);
@@ -201,7 +198,14 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
               },
             }}
           />
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 0.75 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              mt: 0.75,
+            }}
+          >
             <Typography variant="caption" color="text.secondary">
               Showing boards within {radiusKm} km of map center
             </Typography>

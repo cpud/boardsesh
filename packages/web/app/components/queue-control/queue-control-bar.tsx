@@ -18,7 +18,12 @@ import { useQueueActions, useCurrentClimb, useQueueList, useSessionData } from '
 import NextClimbButton from './next-climb-button';
 import { usePathname, useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { constructPlayUrlWithSlugs, getContextAwareClimbViewUrl, isNumericId, tryConstructSlugPlayUrl } from '@/app/lib/url-utils';
+import {
+  constructPlayUrlWithSlugs,
+  getContextAwareClimbViewUrl,
+  isNumericId,
+  tryConstructSlugPlayUrl,
+} from '@/app/lib/url-utils';
 import { BoardRouteParameters, BoardDetails, Angle, Climb } from '@/app/lib/types';
 import PreviousClimbButton from './previous-climb-button';
 import QueueList, { QueueListHandle } from './queue-list';
@@ -34,7 +39,12 @@ import ClimbTitle from '../climb-card/climb-title';
 import { themeTokens } from '@/app/theme/theme-config';
 import { TOUR_DRAWER_EVENT } from '../onboarding/onboarding-tour';
 import { ShareBoardButton } from '../board-page/share-button';
-import { useCardSwipeNavigation, EXIT_DURATION, SNAP_BACK_DURATION, ENTER_ANIMATION_DURATION } from '@/app/hooks/use-card-swipe-navigation';
+import {
+  useCardSwipeNavigation,
+  EXIT_DURATION,
+  SNAP_BACK_DURATION,
+  ENTER_ANIMATION_DURATION,
+} from '@/app/hooks/use-card-swipe-navigation';
 import PlayViewDrawer from '../play-view/play-view-drawer';
 import CircularProgress from '@mui/material/CircularProgress';
 import CloseOutlined from '@mui/icons-material/CloseOutlined';
@@ -85,12 +95,22 @@ const TICK_BADGE_SX = {
   },
 } as const;
 
-function TickBadgeAvatar({ user, hasTicked, size = 28 }: {
+function TickBadgeAvatar({
+  user,
+  hasTicked,
+  size = 28,
+}: {
   user: { id: string; username: string; avatarUrl?: string };
   hasTicked: boolean;
   size?: number;
 }) {
-  const avatar = <Avatar alt={user.username} src={user.avatarUrl ?? undefined} sx={size !== 28 ? { width: size, height: size } : undefined} />;
+  const avatar = (
+    <Avatar
+      alt={user.username}
+      src={user.avatarUrl ?? undefined}
+      sx={size !== 28 ? { width: size, height: size } : undefined}
+    />
+  );
   if (!hasTicked) return avatar;
   return (
     <Badge
@@ -203,12 +223,8 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
   // QuickTickBar reads the value back out via props when saving the tick.
   const [tickComment, setTickComment] = useState('');
   const [tickCommentFocused, setTickCommentFocused] = useState(false);
-  const [isFlash, setIsFlash] = useState(
-    () => !!currentClimb && !hasPriorHistoryForClimb(currentClimb, logbook),
-  );
-  const [ascentType, setAscentType] = useState<'flash' | 'send' | 'attempt'>(
-    () => isFlash ? 'flash' : 'send',
-  );
+  const [isFlash, setIsFlash] = useState(() => !!currentClimb && !hasPriorHistoryForClimb(currentClimb, logbook));
+  const [ascentType, setAscentType] = useState<'flash' | 'send' | 'attempt'>(() => (isFlash ? 'flash' : 'send'));
   const quickTickBarRef = useRef<QuickTickBarHandle>(null);
 
   // Whether the tick bar is in expanded mode (all pickers visible).
@@ -257,61 +273,65 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
 
   // Show reconnecting UI only when online but WebSocket is down.
   // When truly offline (browser has no network), show normal controls with an offline indicator instead.
-  const isReconnecting = !!sessionId && !isDisconnected && (connectionState === 'reconnecting' || connectionState === 'stale' || connectionState === 'error');
+  const isReconnecting =
+    !!sessionId &&
+    !isDisconnected &&
+    (connectionState === 'reconnecting' || connectionState === 'stale' || connectionState === 'error');
 
   const nextClimb = useMemo(() => getNextClimbQueueItem(), [getNextClimbQueueItem, queue, currentClimb]);
   const previousClimb = useMemo(() => getPreviousClimbQueueItem(), [getPreviousClimbQueueItem, queue, currentClimb]);
   const shouldNavigate = isViewPage || isPlayPage;
 
   // Build URL for a climb item (for navigation on view/play pages)
-  const buildClimbUrl = useCallback((climb: { uuid: string; name: string }) => {
-    let climbUrl: string | null = null;
+  const buildClimbUrl = useCallback(
+    (climb: { uuid: string; name: string }) => {
+      let climbUrl: string | null = null;
 
-    if (isPlayPage) {
-      if (boardDetails?.layout_name && boardDetails?.size_name && boardDetails?.set_names) {
-        climbUrl = constructPlayUrlWithSlugs(
-          boardDetails.board_name,
-          boardDetails.layout_name,
-          boardDetails.size_name,
-          boardDetails.size_description,
-          boardDetails.set_names,
-          angle,
-          climb.uuid,
-          climb.name,
-        );
-      } else if (params.board_name) {
-        const numericFallback = `/${params.board_name}/${params.layout_id}/${params.size_id}/${params.set_ids}/${params.angle}/play/${climb.uuid}`;
-        climbUrl = isNumericId(params.layout_id)
-          ? tryConstructSlugPlayUrl(
-              params.board_name, Number(params.layout_id), Number(params.size_id),
-              decodeURIComponent(params.set_ids).split(',').map(Number),
-              angle, climb.uuid, climb.name,
-            ) ?? numericFallback
-          : numericFallback;
+      if (isPlayPage) {
+        if (boardDetails?.layout_name && boardDetails?.size_name && boardDetails?.set_names) {
+          climbUrl = constructPlayUrlWithSlugs(
+            boardDetails.board_name,
+            boardDetails.layout_name,
+            boardDetails.size_name,
+            boardDetails.size_description,
+            boardDetails.set_names,
+            angle,
+            climb.uuid,
+            climb.name,
+          );
+        } else if (params.board_name) {
+          const numericFallback = `/${params.board_name}/${params.layout_id}/${params.size_id}/${params.set_ids}/${params.angle}/play/${climb.uuid}`;
+          climbUrl = isNumericId(params.layout_id)
+            ? (tryConstructSlugPlayUrl(
+                params.board_name,
+                Number(params.layout_id),
+                Number(params.size_id),
+                decodeURIComponent(params.set_ids).split(',').map(Number),
+                angle,
+                climb.uuid,
+                climb.name,
+              ) ?? numericFallback)
+            : numericFallback;
+        } else {
+          climbUrl = null;
+        }
       } else {
-        climbUrl = null;
+        climbUrl = getContextAwareClimbViewUrl(pathname, boardDetails, angle, climb.uuid, climb.name);
       }
-    } else {
-      climbUrl = getContextAwareClimbViewUrl(
-        pathname,
-        boardDetails,
-        angle,
-        climb.uuid,
-        climb.name,
-      );
-    }
 
-    if (!climbUrl) return null;
+      if (!climbUrl) return null;
 
-    // Preserve search params in play mode
-    if (isPlayPage) {
-      const queryString = searchParams.toString();
-      if (queryString) {
-        climbUrl = `${climbUrl}?${queryString}`;
+      // Preserve search params in play mode
+      if (isPlayPage) {
+        const queryString = searchParams.toString();
+        if (queryString) {
+          climbUrl = `${climbUrl}?${queryString}`;
+        }
       }
-    }
-    return climbUrl;
-  }, [pathname, boardDetails, angle, params, searchParams, isPlayPage]);
+      return climbUrl;
+    },
+    [pathname, boardDetails, angle, params, searchParams, isPlayPage],
+  );
 
   // Handle swipe navigation
   const handleSwipeNext = useCallback(() => {
@@ -334,7 +354,16 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
         }
       }
     }
-  }, [nextClimb, viewOnlyMode, setCurrentClimbQueueItem, shouldNavigate, router, buildClimbUrl, boardDetails, isPlayPage]);
+  }, [
+    nextClimb,
+    viewOnlyMode,
+    setCurrentClimbQueueItem,
+    shouldNavigate,
+    router,
+    buildClimbUrl,
+    boardDetails,
+    isPlayPage,
+  ]);
 
   const handleSwipePrevious = useCallback(() => {
     if (!previousClimb || viewOnlyMode) return;
@@ -356,7 +385,16 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
         }
       }
     }
-  }, [previousClimb, viewOnlyMode, setCurrentClimbQueueItem, shouldNavigate, router, buildClimbUrl, boardDetails, isPlayPage]);
+  }, [
+    previousClimb,
+    viewOnlyMode,
+    setCurrentClimbQueueItem,
+    shouldNavigate,
+    router,
+    buildClimbUrl,
+    boardDetails,
+    isPlayPage,
+  ]);
 
   const tickBarActive = activeDrawer === 'tick';
   const canSwipeNext = !viewOnlyMode && !!nextClimb && !tickBarActive;
@@ -375,8 +413,14 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
 
   // The climb shown in the queue bar — frozen during tick mode.
   const displayedClimb = tickBarActive ? (tickClimb ?? currentClimb) : currentClimb;
-  const gradeTintColor = useMemo(() => getGradeTintColor(displayedClimb?.difficulty, 'default', isDark), [displayedClimb?.difficulty, isDark]);
-  const sessionTintColor = useMemo(() => getGradeTintColor(displayedClimb?.difficulty, 'session', isDark), [displayedClimb?.difficulty, isDark]);
+  const gradeTintColor = useMemo(
+    () => getGradeTintColor(displayedClimb?.difficulty, 'default', isDark),
+    [displayedClimb?.difficulty, isDark],
+  );
+  const sessionTintColor = useMemo(
+    () => getGradeTintColor(displayedClimb?.difficulty, 'session', isDark),
+    [displayedClimb?.difficulty, isDark],
+  );
 
   // Deduplicate session users by userId (stable DB UUID).
   // When userId is absent (unauthenticated), fall back to connection id
@@ -429,24 +473,30 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
     const animations: Animation[] = [];
 
     const peekOnce = (el: HTMLElement): Promise<void> => {
-      const slideOut = el.animate(
-        [{ transform: 'translateX(0)' }, { transform: 'translateX(-40px)' }],
-        { duration: 350, easing: 'ease-out', fill: 'forwards' },
-      );
+      const slideOut = el.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-40px)' }], {
+        duration: 350,
+        easing: 'ease-out',
+        fill: 'forwards',
+      });
       animations.push(slideOut);
 
-      return slideOut.finished.then(() => {
-        if (cancelled) return;
-        return new Promise<void>((r) => { timer = setTimeout(r, 500); });
-      }).then(() => {
-        if (cancelled) return;
-        const slideBack = el.animate(
-          [{ transform: 'translateX(-40px)' }, { transform: 'translateX(0)' }],
-          { duration: 250, easing: 'ease-out', fill: 'forwards' },
-        );
-        animations.push(slideBack);
-        return slideBack.finished as Promise<unknown> as Promise<void>;
-      });
+      return slideOut.finished
+        .then(() => {
+          if (cancelled) return;
+          return new Promise<void>((r) => {
+            timer = setTimeout(r, 500);
+          });
+        })
+        .then(() => {
+          if (cancelled) return;
+          const slideBack = el.animate([{ transform: 'translateX(-40px)' }, { transform: 'translateX(0)' }], {
+            duration: 250,
+            easing: 'ease-out',
+            fill: 'forwards',
+          });
+          animations.push(slideBack);
+          return slideBack.finished as Promise<unknown> as Promise<void>;
+        });
     };
 
     getPreference<boolean>('swipeHint:queueBarSeen').then((seen) => {
@@ -463,13 +513,17 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
         try {
           await peekOnce(el);
           if (cancelled) return;
-          await new Promise<void>((r) => { timer = setTimeout(r, 300); });
+          await new Promise<void>((r) => {
+            timer = setTimeout(r, 300);
+          });
           if (cancelled) return;
           await peekOnce(el);
           if (cancelled) return;
           el.style.transform = '';
           setPreference('swipeHint:queueBarSeen', true);
-        } catch { /* cancelled */ }
+        } catch {
+          /* cancelled */
+        }
       }, 800);
     });
 
@@ -585,14 +639,15 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
     return { gridTemplateRows: `${fraction}fr`, opacity: fraction, transition: 'none' };
   }, [tickSwipeOffset]);
 
-  const { swipeHandlers, swipeOffset, isAnimating, animationDirection, enterDirection, clearEnterAnimation } = useCardSwipeNavigation({
-    onSwipeNext: handleSwipeNext,
-    onSwipePrevious: handleSwipePrevious,
-    canSwipeNext,
-    canSwipePrevious,
-    threshold: 80,
-    delayNavigation: true,
-  });
+  const { swipeHandlers, swipeOffset, isAnimating, animationDirection, enterDirection, clearEnterAnimation } =
+    useCardSwipeNavigation({
+      onSwipeNext: handleSwipeNext,
+      onSwipePrevious: handleSwipePrevious,
+      canSwipeNext,
+      canSwipePrevious,
+      threshold: 80,
+      delayNavigation: true,
+    });
 
   const playUrl = useMemo(() => {
     if (!currentClimb) return null;
@@ -614,11 +669,15 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
     } else if (params.board_name) {
       const numericFallback = `/${params.board_name}/${params.layout_id}/${params.size_id}/${params.set_ids}/${params.angle}/play/${currentClimb.uuid}`;
       baseUrl = isNumericId(params.layout_id)
-        ? tryConstructSlugPlayUrl(
-            params.board_name, Number(params.layout_id), Number(params.size_id),
+        ? (tryConstructSlugPlayUrl(
+            params.board_name,
+            Number(params.layout_id),
+            Number(params.size_id),
             decodeURIComponent(params.set_ids).split(',').map(Number),
-            angle, currentClimb.uuid, currentClimb.name,
-          ) ?? numericFallback
+            angle,
+            currentClimb.uuid,
+            currentClimb.name,
+          ) ?? numericFallback)
         : numericFallback;
     } else {
       return null;
@@ -691,14 +750,23 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
     <div className={styles.reconnectRow}>
       <CircularProgress size={16} thickness={5} />
       <span>{reconnectMessage}</span>
-      <MuiButton variant="text" size="small" onClick={() => setShowCancelConfirm(true)}>Cancel</MuiButton>
+      <MuiButton variant="text" size="small" onClick={() => setShowCancelConfirm(true)}>
+        Cancel
+      </MuiButton>
     </div>
   );
 
   const renderConfirmRow = () => (
     <div className={styles.reconnectRow}>
       <span className={styles.confirmText}>Cancelling will leave the session. Is that what you want?</span>
-      <IconButton aria-label="Leave session" color="error" onClick={() => { handleLeaveSession(); setShowCancelConfirm(false); }}>
+      <IconButton
+        aria-label="Leave session"
+        color="error"
+        onClick={() => {
+          handleLeaveSession();
+          setShowCancelConfirm(false);
+        }}
+      >
         <CloseOutlined />
       </IconButton>
       <IconButton aria-label="Keep reconnecting" onClick={() => setShowCancelConfirm(false)}>
@@ -775,237 +843,308 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
   return (
     <div id="onboarding-queue-bar" className={`queue-bar-shadow ${styles.queueBar}`} data-testid="queue-control-bar">
       {/* Main Control Bar */}
-      <MuiCard
-        variant="outlined"
-        className={styles.card}
-        sx={{ border: 'none', backgroundColor: 'transparent' }}
-      >
+      <MuiCard variant="outlined" className={styles.card} sx={{ border: 'none', backgroundColor: 'transparent' }}>
         <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
-        {/* Session header — name + avatars, or start sesh prompt.
+          {/* Session header — name + avatars, or start sesh prompt.
             Uses CSS grid collapse instead of unmounting so the transition
             between session header and tick row is smooth. */}
-          <div className={`${styles.sessionHeaderWrapper} ${!tickBarActive && !tickRowVisible ? styles.sessionHeaderExpanded : ''}`}>
-          <div className={styles.sessionHeaderInner}>
-            {/* Offline overlay on session header */}
-            {isDisconnected && !dismissedDisconnect && (
-              <div
-                className={styles.offlineBanner}
-                onClick={() => setDismissedDisconnect(true)}
-                role="button"
-                tabIndex={0}
-                aria-label="Dismiss offline notice"
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setDismissedDisconnect(true); } }}
-              >
-                <CloudOffOutlined sx={{ fontSize: 14, flexShrink: 0 }} />
-                <span className={styles.offlineBannerText}>
-                  {sessionId
-                    ? users && users.length > 1
-                      ? 'Offline. Queued climbs will still sync.'
-                      : 'Offline. Changes will sync when you reconnect.'
-                    : 'Offline'}
-                </span>
-                <CloseOutlined sx={{ fontSize: 14, flexShrink: 0, opacity: 0.6 }} />
-              </div>
-            )}
-            {activeSession ? (
-              <div
-                className={styles.sessionHeader}
-                onClick={dispatchOpenSeshSettingsDrawer}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') dispatchOpenSeshSettingsDrawer(); }}
-                style={{
-                  backgroundColor: sessionTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
-                }}
-              >
-                <span className={styles.sessionName}>
-                  {persistentSession?.name || activeSession.sessionName || generateSessionName(persistentSession?.startedAt ?? new Date().toISOString(), [boardDetails.board_name])}
-                </span>
-                {uniqueSessionUsers.length > 0 && (
-                  <div
-                    className={styles.avatarToggle}
-                    onClick={(e) => { e.stopPropagation(); setParticipantsExpanded((prev) => !prev); }}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={participantsExpanded ? 'Hide participants' : 'Show participants'}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); setParticipantsExpanded((prev) => !prev); } }}
-                  >
-                    {participantsExpanded ? (
-                      <IconButton size="small" component="span" tabIndex={-1} sx={{ p: 0.25 }}>
-                        <CloseOutlined sx={{ fontSize: 18 }} />
-                      </IconButton>
-                    ) : (
-                      <AvatarGroup
-                        max={3}
-                        sx={{
-                          '& .MuiAvatar-root': { width: 28, height: 28, fontSize: 11, border: '2px solid transparent' },
-                        }}
-                      >
-                        {uniqueSessionUsers.map((user) => (
-                          <TickBadgeAvatar
-                            key={user.id}
-                            user={user}
-                            hasTicked={tickedBySet.has(user.id) || (user.userId != null && tickedBySet.has(user.userId))}
-                          />
-                        ))}
-                      </AvatarGroup>
-                    )}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div
-                className={styles.sessionHeader}
-                onClick={() => setStartSeshOpen(true)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setStartSeshOpen(true); }}
-                style={{
-                  backgroundColor: gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
-                  justifyContent: 'flex-end',
-                }}
-              >
-                <PlayCircleOutlineOutlined sx={{ fontSize: 16, opacity: 0.7 }} />
-                <span className={styles.sessionName}>Start sesh</span>
-              </div>
-            )}
-            {/* Expandable participant bar — only for active sessions with participants */}
-            {activeSession && uniqueSessionUsers.length > 0 && (
-            <div
-              className={`${styles.participantBar} ${participantsExpanded ? styles.participantBarExpanded : ''}`}
-              style={{
-                backgroundColor: sessionTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
-              }}
-            >
-              <div className={styles.participantBarInner}>
-                {uniqueSessionUsers.length === 1 ? (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%', px: 1, py: 0.5 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
-                        Get your crew in by sharing this link or scanning the QR code
-                      </Typography>
-                      <IconButton size="small" onClick={handleInviteShare} aria-label="Share session link">
-                        <IosShare sx={{ fontSize: 18 }} />
-                      </IconButton>
-                      <IconButton size="small" onClick={() => setShowInviteQr((v) => !v)} aria-label={showInviteQr ? 'Hide QR code' : 'Show QR code'}>
-                        <QrCode2Outlined sx={{ fontSize: 18 }} color={showInviteQr ? 'primary' : 'inherit'} />
-                      </IconButton>
-                    </Box>
-                    {showInviteQr && sessionShareUrl && (
-                      <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
-                        <QRCodeSVG value={sessionShareUrl} size={140} />
-                      </Box>
-                    )}
-                  </Box>
-                ) : (
-                  <div className={styles.participantScroll}>
-                    {uniqueSessionUsers.map((user) => (
-                      <div key={user.id} className={styles.participantItem}>
-                        <TickBadgeAvatar
-                          user={user}
-                          hasTicked={tickedBySet.has(user.id) || (user.userId != null && tickedBySet.has(user.userId))}
-                          size={32}
-                        />
-                        <Typography variant="caption" className={styles.participantName} noWrap>
-                          {user.username}
-                        </Typography>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-            )}
-          </div>
-          </div>
-        {/* Tick-mode controls — expands/collapses via CSS grid transition.
-            Swipe-to-dismiss handlers are on the tick row only, not the whole card. */}
-        {(tickBarActive || tickRowVisible) && (
           <div
-            {...(tickBarActive ? tickDismissHandlers : {})}
-            className={`${styles.tickRow} ${tickBarActive ? styles.tickRowExpanded : ''} ${tickSwipeOffset > 0 ? styles.tickRowSwiping : ''}`}
-            style={{
-              backgroundColor: gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
-              ...tickDismissStyle,
-            }}
+            className={`${styles.sessionHeaderWrapper} ${!tickBarActive && !tickRowVisible ? styles.sessionHeaderExpanded : ''}`}
           >
-            {/* Drag handle — centered across full tick bar width */}
-            <div className={styles.tickDragHandleBar} />
-            <div className={styles.tickRowInner}>
-              {/* Toolbar: expand left, close right */}
-              <div className={styles.tickDragHandleRow}>
+            <div className={styles.sessionHeaderInner}>
+              {/* Offline overlay on session header */}
+              {isDisconnected && !dismissedDisconnect && (
                 <div
-                  className={styles.tickExpandButton}
-                  onClick={() => handleTickBarExpandedChange(!tickBarExpanded)}
+                  className={styles.offlineBanner}
+                  onClick={() => setDismissedDisconnect(true)}
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleTickBarExpandedChange(!tickBarExpanded); }}
-                  aria-label={tickBarExpanded ? 'Collapse tick bar' : 'Expand tick bar'}
-                >
-                  {tickBarExpanded ? (
-                    <KeyboardArrowDownOutlined sx={{ fontSize: 16, opacity: 0.7 }} />
-                  ) : (
-                    <KeyboardArrowUpOutlined sx={{ fontSize: 16, opacity: 0.7 }} />
-                  )}
-                  <span className={styles.tickExpandLabel}>{tickBarExpanded ? 'Collapse' : 'Expand'}</span>
-                </div>
-                <div className={styles.tickCloseButton}>
-                  <IconButton
-                    onClick={() => setActiveDrawer('none')}
-                    size="small"
-                    aria-label="Close tick bar"
-                    sx={{
-                      color: 'text.primary',
-                      backgroundColor: 'action.selected',
-                      '&:hover': { backgroundColor: 'action.focus' },
-                      padding: '2px',
-                    }}
-                  >
-                    <CloseOutlined sx={{ fontSize: 16 }} />
-                  </IconButton>
-                </div>
-              </div>
-              {tickBarActive && (
-                <QuickTickBar
-                  ref={quickTickBarRef}
-                  currentClimb={currentClimb}
-                  angle={angle}
-                  boardDetails={boardDetails}
-                  expanded={tickBarExpanded}
-                  onSave={() => {
-                    if (currentClimb) {
-                      setLocalTickedClimbs((prev) => new Set(prev).add(currentClimb.uuid));
+                  aria-label="Dismiss offline notice"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setDismissedDisconnect(true);
                     }
-                    setActiveDrawer('none');
                   }}
-                  onError={() => showMessage('Couldn\u2019t save your tick. Give it another go.', 'error')}
-                  onDraftRestored={(draftComment) => setTickComment(draftComment)}
-                  onIsFlashChange={setIsFlash}
-                  onAscentTypeChange={setAscentType}
-                  comment={tickComment}
-                  commentSlot={
-                    <div className={`${styles.tickComment} ${tickCommentFocused ? styles.tickCommentExpanded : ''}`}>
+                >
+                  <CloudOffOutlined sx={{ fontSize: 14, flexShrink: 0 }} />
+                  <span className={styles.offlineBannerText}>
+                    {sessionId
+                      ? users && users.length > 1
+                        ? 'Offline. Queued climbs will still sync.'
+                        : 'Offline. Changes will sync when you reconnect.'
+                      : 'Offline'}
+                  </span>
+                  <CloseOutlined sx={{ fontSize: 14, flexShrink: 0, opacity: 0.6 }} />
+                </div>
+              )}
+              {activeSession ? (
+                <div
+                  className={styles.sessionHeader}
+                  onClick={dispatchOpenSeshSettingsDrawer}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') dispatchOpenSeshSettingsDrawer();
+                  }}
+                  style={{
+                    backgroundColor: sessionTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
+                  }}
+                >
+                  <span className={styles.sessionName}>
+                    {persistentSession?.name ||
+                      activeSession.sessionName ||
+                      generateSessionName(persistentSession?.startedAt ?? new Date().toISOString(), [
+                        boardDetails.board_name,
+                      ])}
+                  </span>
+                  {uniqueSessionUsers.length > 0 && (
+                    <div
+                      className={styles.avatarToggle}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setParticipantsExpanded((prev) => !prev);
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={participantsExpanded ? 'Hide participants' : 'Show participants'}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.stopPropagation();
+                          setParticipantsExpanded((prev) => !prev);
+                        }
+                      }}
+                    >
+                      {participantsExpanded ? (
+                        <IconButton size="small" component="span" tabIndex={-1} sx={{ p: 0.25 }}>
+                          <CloseOutlined sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      ) : (
+                        <AvatarGroup
+                          max={3}
+                          sx={{
+                            '& .MuiAvatar-root': {
+                              width: 28,
+                              height: 28,
+                              fontSize: 11,
+                              border: '2px solid transparent',
+                            },
+                          }}
+                        >
+                          {uniqueSessionUsers.map((user) => (
+                            <TickBadgeAvatar
+                              key={user.id}
+                              user={user}
+                              hasTicked={
+                                tickedBySet.has(user.id) || (user.userId != null && tickedBySet.has(user.userId))
+                              }
+                            />
+                          ))}
+                        </AvatarGroup>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div
+                  className={styles.sessionHeader}
+                  onClick={() => setStartSeshOpen(true)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') setStartSeshOpen(true);
+                  }}
+                  style={{
+                    backgroundColor: gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
+                    justifyContent: 'flex-end',
+                  }}
+                >
+                  <PlayCircleOutlineOutlined sx={{ fontSize: 16, opacity: 0.7 }} />
+                  <span className={styles.sessionName}>Start sesh</span>
+                </div>
+              )}
+              {/* Expandable participant bar — only for active sessions with participants */}
+              {activeSession && uniqueSessionUsers.length > 0 && (
+                <div
+                  className={`${styles.participantBar} ${participantsExpanded ? styles.participantBarExpanded : ''}`}
+                  style={{
+                    backgroundColor: sessionTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
+                  }}
+                >
+                  <div className={styles.participantBarInner}>
+                    {uniqueSessionUsers.length === 1 ? (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 1,
+                          width: '100%',
+                          px: 1,
+                          py: 0.5,
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
+                            Get your crew in by sharing this link or scanning the QR code
+                          </Typography>
+                          <IconButton size="small" onClick={handleInviteShare} aria-label="Share session link">
+                            <IosShare sx={{ fontSize: 18 }} />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => setShowInviteQr((v) => !v)}
+                            aria-label={showInviteQr ? 'Hide QR code' : 'Show QR code'}
+                          >
+                            <QrCode2Outlined sx={{ fontSize: 18 }} color={showInviteQr ? 'primary' : 'inherit'} />
+                          </IconButton>
+                        </Box>
+                        {showInviteQr && sessionShareUrl && (
+                          <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
+                            <QRCodeSVG value={sessionShareUrl} size={140} />
+                          </Box>
+                        )}
+                      </Box>
+                    ) : (
+                      <div className={styles.participantScroll}>
+                        {uniqueSessionUsers.map((user) => (
+                          <div key={user.id} className={styles.participantItem}>
+                            <TickBadgeAvatar
+                              user={user}
+                              hasTicked={
+                                tickedBySet.has(user.id) || (user.userId != null && tickedBySet.has(user.userId))
+                              }
+                              size={32}
+                            />
+                            <Typography variant="caption" className={styles.participantName} noWrap>
+                              {user.username}
+                            </Typography>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          {/* Tick-mode controls — expands/collapses via CSS grid transition.
+            Swipe-to-dismiss handlers are on the tick row only, not the whole card. */}
+          {(tickBarActive || tickRowVisible) && (
+            <div
+              {...(tickBarActive ? tickDismissHandlers : {})}
+              className={`${styles.tickRow} ${tickBarActive ? styles.tickRowExpanded : ''} ${tickSwipeOffset > 0 ? styles.tickRowSwiping : ''}`}
+              style={{
+                backgroundColor: gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
+                ...tickDismissStyle,
+              }}
+            >
+              {/* Drag handle — centered across full tick bar width */}
+              <div className={styles.tickDragHandleBar} />
+              <div className={styles.tickRowInner}>
+                {/* Toolbar: expand left, close right */}
+                <div className={styles.tickDragHandleRow}>
+                  <div
+                    className={styles.tickExpandButton}
+                    onClick={() => handleTickBarExpandedChange(!tickBarExpanded)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') handleTickBarExpandedChange(!tickBarExpanded);
+                    }}
+                    aria-label={tickBarExpanded ? 'Collapse tick bar' : 'Expand tick bar'}
+                  >
+                    {tickBarExpanded ? (
+                      <KeyboardArrowDownOutlined sx={{ fontSize: 16, opacity: 0.7 }} />
+                    ) : (
+                      <KeyboardArrowUpOutlined sx={{ fontSize: 16, opacity: 0.7 }} />
+                    )}
+                    <span className={styles.tickExpandLabel}>{tickBarExpanded ? 'Collapse' : 'Expand'}</span>
+                  </div>
+                  <div className={styles.tickCloseButton}>
+                    <IconButton
+                      onClick={() => setActiveDrawer('none')}
+                      size="small"
+                      aria-label="Close tick bar"
+                      sx={{
+                        color: 'text.primary',
+                        backgroundColor: 'action.selected',
+                        '&:hover': { backgroundColor: 'action.focus' },
+                        padding: '2px',
+                      }}
+                    >
+                      <CloseOutlined sx={{ fontSize: 16 }} />
+                    </IconButton>
+                  </div>
+                </div>
+                {tickBarActive && (
+                  <QuickTickBar
+                    ref={quickTickBarRef}
+                    currentClimb={currentClimb}
+                    angle={angle}
+                    boardDetails={boardDetails}
+                    expanded={tickBarExpanded}
+                    onSave={() => {
+                      if (currentClimb) {
+                        setLocalTickedClimbs((prev) => new Set(prev).add(currentClimb.uuid));
+                      }
+                      setActiveDrawer('none');
+                    }}
+                    onError={() => showMessage('Couldn\u2019t save your tick. Give it another go.', 'error')}
+                    onDraftRestored={(draftComment) => setTickComment(draftComment)}
+                    onIsFlashChange={setIsFlash}
+                    onAscentTypeChange={setAscentType}
+                    comment={tickComment}
+                    commentSlot={
+                      <div className={`${styles.tickComment} ${tickCommentFocused ? styles.tickCommentExpanded : ''}`}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          variant="outlined"
+                          placeholder="Comment..."
+                          multiline
+                          minRows={1}
+                          maxRows={tickCommentFocused ? 4 : 1}
+                          value={tickComment}
+                          onChange={(e) => setTickComment(e.target.value)}
+                          onFocus={handleTickCommentFocus}
+                          onBlur={handleTickCommentBlur}
+                          slotProps={{
+                            htmlInput: { maxLength: 2000, 'aria-label': 'Tick comment' },
+                            input: {
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <ChatBubbleOutlineOutlined sx={{ fontSize: 16, opacity: 0.5 }} />
+                                </InputAdornment>
+                              ),
+                            },
+                          }}
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: '8px',
+                              backgroundColor: 'var(--input-bg)',
+                              '& .MuiOutlinedInput-notchedOutline': {
+                                borderColor: 'var(--neutral-200)',
+                              },
+                            },
+                          }}
+                        />
+                      </div>
+                    }
+                    expandedCommentSlot={
                       <TextField
                         fullWidth
                         size="small"
                         variant="outlined"
                         placeholder="Comment..."
                         multiline
-                        minRows={1}
-                        maxRows={tickCommentFocused ? 4 : 1}
+                        minRows={2}
+                        maxRows={4}
                         value={tickComment}
                         onChange={(e) => setTickComment(e.target.value)}
                         onFocus={handleTickCommentFocus}
                         onBlur={handleTickCommentBlur}
                         slotProps={{
                           htmlInput: { maxLength: 2000, 'aria-label': 'Tick comment' },
-                          input: {
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <ChatBubbleOutlineOutlined sx={{ fontSize: 16, opacity: 0.5 }} />
-                              </InputAdornment>
-                            ),
-                          },
                         }}
                         sx={{
                           '& .MuiOutlinedInput-root': {
@@ -1017,185 +1156,164 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                           },
                         }}
                       />
-                    </div>
-                  }
-                  expandedCommentSlot={
-                    <TextField
-                      fullWidth
-                      size="small"
-                      variant="outlined"
-                      placeholder="Comment..."
-                      multiline
-                      minRows={2}
-                      maxRows={4}
-                      value={tickComment}
-                      onChange={(e) => setTickComment(e.target.value)}
-                      onFocus={handleTickCommentFocus}
-                      onBlur={handleTickCommentBlur}
-                      slotProps={{
-                        htmlInput: { maxLength: 2000, 'aria-label': 'Tick comment' },
-                      }}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: '8px',
-                          backgroundColor: 'var(--input-bg)',
-                          '& .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'var(--neutral-200)',
-                          },
-                        },
-                      }}
-                    />
-                  }
-                />
-              )}
+                    }
+                  />
+                )}
+              </div>
             </div>
-          </div>
-        )}
-        {/* Swipe container - captures swipe gestures, does NOT translate */}
-        <div className={styles.swipeWrapper}>
-          <div
-            {...swipeHandlers}
-            className={styles.swipeContainer}
-            style={{
-              padding: `${themeTokens.spacing[2]}px ${themeTokens.spacing[3]}px`,
-              backgroundColor: gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
-            }}
-          >
-            <Box sx={{ display: 'flex', flexWrap: 'nowrap', justifyContent: 'space-between', alignItems: 'center' }} className={styles.row}>
-              {/* Left section: Thumbnail and climb info */}
-              <Box sx={{ flex: 1 }} className={styles.climbInfoCol}>
-                <div className={styles.climbInfoInner} style={{ gap: themeTokens.spacing[2] }}>
-                  {/* Board preview — STATIC, with crossfade on enter */}
-                  <div className={`${styles.boardPreviewContainer} ${enterDirection ? styles.thumbnailEnter : ''}`}>
-                    <ClimbThumbnail
-                      boardDetails={boardDetails}
-                      currentClimb={displayedClimb}
-                      pathname={pathname}
-                      onClick={handleThumbnailClick}
-                    />
-                  </div>
-
-                  {/* Text swipe clip — overflow hidden to contain sliding text */}
-                  <div className={styles.textSwipeClip}>
-                    {/* Current climb text — slides with finger */}
-                    <div
-                      id="onboarding-queue-toggle"
-                      onClick={tickBarActive ? undefined : handleClimbInfoClick}
-                      className={styles.queueToggle}
-                      style={{
-                        transform: tickBarActive ? undefined : `translateX(${swipeOffset}px)`,
-                        transition: tickBarActive ? undefined : getTextTransitionStyle(),
-                        cursor: tickBarActive ? 'default' : undefined,
-                      }}
-                    >
-                      <ClimbTitle
-                        climb={displayedClimb}
-                        gradePosition="right"
-                        showSetterInfo
+          )}
+          {/* Swipe container - captures swipe gestures, does NOT translate */}
+          <div className={styles.swipeWrapper}>
+            <div
+              {...swipeHandlers}
+              className={styles.swipeContainer}
+              style={{
+                padding: `${themeTokens.spacing[2]}px ${themeTokens.spacing[3]}px`,
+                backgroundColor: gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'nowrap',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+                className={styles.row}
+              >
+                {/* Left section: Thumbnail and climb info */}
+                <Box sx={{ flex: 1 }} className={styles.climbInfoCol}>
+                  <div className={styles.climbInfoInner} style={{ gap: themeTokens.spacing[2] }}>
+                    {/* Board preview — STATIC, with crossfade on enter */}
+                    <div className={`${styles.boardPreviewContainer} ${enterDirection ? styles.thumbnailEnter : ''}`}>
+                      <ClimbThumbnail
+                        boardDetails={boardDetails}
+                        currentClimb={displayedClimb}
+                        pathname={pathname}
+                        onClick={handleThumbnailClick}
                       />
                     </div>
 
-                    {/* Peek text — shows next/previous climb sliding in from the edge */}
-                    {!tickBarActive && showPeek && peekClimbData && (
+                    {/* Text swipe clip — overflow hidden to contain sliding text */}
+                    <div className={styles.textSwipeClip}>
+                      {/* Current climb text — slides with finger */}
                       <div
-                        className={`${styles.queueToggle} ${styles.peekText}`}
+                        id="onboarding-queue-toggle"
+                        onClick={tickBarActive ? undefined : handleClimbInfoClick}
+                        className={styles.queueToggle}
                         style={{
-                          transform: getPeekTransform(),
-                          transition: getTextTransitionStyle(),
+                          transform: tickBarActive ? undefined : `translateX(${swipeOffset}px)`,
+                          transition: tickBarActive ? undefined : getTextTransitionStyle(),
+                          cursor: tickBarActive ? 'default' : undefined,
                         }}
                       >
-                        <ClimbTitle
-                          climb={peekClimbData}
-                          gradePosition="right"
-                          showSetterInfo
-                        />
+                        <ClimbTitle climb={displayedClimb} gradePosition="right" showSetterInfo />
                       </div>
-                    )}
-                  </div>
-                </div>
-              </Box>
 
-              {/* Button cluster — always visible, lightbulb swaps to X in tick mode */}
-              <Box sx={{ flex: 'none', marginLeft: `${themeTokens.spacing[1]}px` }}>
-                <Stack direction="row" spacing={0.5}>
-                  {/* Mirror button - desktop only */}
-                  {boardDetails.supportsMirroring ? (
-                    <span className={styles.desktopOnly}>
-                      <IconButton
-                        id="button-mirror"
-                        onClick={() => {
-                          mirrorClimb();
-                          track('Mirror Climb Toggled', {
-                            boardLayout: boardDetails.layout_name || '',
-                            mirrored: !displayedClimb?.mirrored,
-                          });
-                        }}
-                        color={displayedClimb?.mirrored ? 'primary' : 'default'}
-                        sx={
-                          displayedClimb?.mirrored
-                            ? { backgroundColor: themeTokens.colors.purple, borderColor: themeTokens.colors.purple, color: 'common.white', '&:hover': { backgroundColor: themeTokens.colors.purple } }
-                            : undefined
-                        }
-                      >
-                        <SyncOutlined />
-                      </IconButton>
+                      {/* Peek text — shows next/previous climb sliding in from the edge */}
+                      {!tickBarActive && showPeek && peekClimbData && (
+                        <div
+                          className={`${styles.queueToggle} ${styles.peekText}`}
+                          style={{
+                            transform: getPeekTransform(),
+                            transition: getTextTransitionStyle(),
+                          }}
+                        >
+                          <ClimbTitle climb={peekClimbData} gradePosition="right" showSetterInfo />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Box>
+
+                {/* Button cluster — always visible, lightbulb swaps to X in tick mode */}
+                <Box sx={{ flex: 'none', marginLeft: `${themeTokens.spacing[1]}px` }}>
+                  <Stack direction="row" spacing={0.5}>
+                    {/* Mirror button - desktop only */}
+                    {boardDetails.supportsMirroring ? (
+                      <span className={styles.desktopOnly}>
+                        <IconButton
+                          id="button-mirror"
+                          onClick={() => {
+                            mirrorClimb();
+                            track('Mirror Climb Toggled', {
+                              boardLayout: boardDetails.layout_name || '',
+                              mirrored: !displayedClimb?.mirrored,
+                            });
+                          }}
+                          color={displayedClimb?.mirrored ? 'primary' : 'default'}
+                          sx={
+                            displayedClimb?.mirrored
+                              ? {
+                                  backgroundColor: themeTokens.colors.purple,
+                                  borderColor: themeTokens.colors.purple,
+                                  color: 'common.white',
+                                  '&:hover': { backgroundColor: themeTokens.colors.purple },
+                                }
+                              : undefined
+                          }
+                        >
+                          <SyncOutlined />
+                        </IconButton>
+                      </span>
+                    ) : null}
+                    {/* Play link - desktop only */}
+                    {!isPlayPage && playUrl && (
+                      <span className={styles.desktopOnly}>
+                        <Link
+                          href={playUrl}
+                          onClick={() => {
+                            track('Play Mode Entered', {
+                              boardLayout: boardDetails.layout_name || '',
+                            });
+                          }}
+                        >
+                          <IconButton aria-label="Enter play mode">
+                            <OpenInFullOutlined />
+                          </IconButton>
+                        </Link>
+                      </span>
+                    )}
+                    {/* Navigation buttons - desktop only */}
+                    <span className={styles.navButtons}>
+                      <Stack direction="row" spacing={0.5}>
+                        <PreviousClimbButton navigate={isViewPage || isPlayPage} boardDetails={boardDetails} />
+                        <NextClimbButton navigate={isViewPage || isPlayPage} boardDetails={boardDetails} />
+                      </Stack>
                     </span>
-                  ) : null}
-                  {/* Play link - desktop only */}
-                  {!isPlayPage && playUrl && (
-                    <span className={styles.desktopOnly}>
-                      <Link
-                        href={playUrl}
-                        onClick={() => {
-                          track('Play Mode Entered', {
-                            boardLayout: boardDetails.layout_name || '',
-                          });
-                        }}
-                      >
-                        <IconButton aria-label="Enter play mode"><OpenInFullOutlined /></IconButton>
-                      </Link>
-                    </span>
-                  )}
-                  {/* Navigation buttons - desktop only */}
-                  <span className={styles.navButtons}>
-                    <Stack direction="row" spacing={0.5}>
-                      <PreviousClimbButton navigate={isViewPage || isPlayPage} boardDetails={boardDetails} />
-                      <NextClimbButton navigate={isViewPage || isPlayPage} boardDetails={boardDetails} />
-                    </Stack>
-                  </span>
-                  {/* Attempt button — only visible in tick mode (collapsed) */}
-                  {tickBarActive && !tickBarExpanded && (
-                    <TickButtonWithLabel label="attempt">
-                      <IconButton
-                        onClick={(e) => quickTickBarRef.current?.saveAttempt(e.currentTarget)}
-                        sx={{
-                          backgroundColor: themeTokens.colors.errorMuted,
-                          color: themeTokens.colors.error,
-                          '&:hover': { backgroundColor: themeTokens.colors.errorMutedHover },
-                        }}
-                        aria-label="Log attempt"
-                      >
-                        <PersonFallingIcon />
-                      </IconButton>
-                    </TickButtonWithLabel>
-                  )}
-                  {!tickBarActive && <ShareBoardButton />}
-                  {/* Tick button — activates tick mode, or saves when already active */}
-                  <TickButton
-                    currentClimb={displayedClimb}
-                    angle={angle}
-                    boardDetails={boardDetails}
-                    onActivateTickBar={() => setActiveDrawer('tick')}
-                    onTickSave={(el) => quickTickBarRef.current?.save(el)}
-                    tickBarActive={tickBarActive}
-                    isFlash={isFlash}
-                    ascentType={tickBarExpanded ? ascentType : undefined}
-                  />
-                </Stack>
+                    {/* Attempt button — only visible in tick mode (collapsed) */}
+                    {tickBarActive && !tickBarExpanded && (
+                      <TickButtonWithLabel label="attempt">
+                        <IconButton
+                          onClick={(e) => quickTickBarRef.current?.saveAttempt(e.currentTarget)}
+                          sx={{
+                            backgroundColor: themeTokens.colors.errorMuted,
+                            color: themeTokens.colors.error,
+                            '&:hover': { backgroundColor: themeTokens.colors.errorMutedHover },
+                          }}
+                          aria-label="Log attempt"
+                        >
+                          <PersonFallingIcon />
+                        </IconButton>
+                      </TickButtonWithLabel>
+                    )}
+                    {!tickBarActive && <ShareBoardButton />}
+                    {/* Tick button — activates tick mode, or saves when already active */}
+                    <TickButton
+                      currentClimb={displayedClimb}
+                      angle={angle}
+                      boardDetails={boardDetails}
+                      onActivateTickBar={() => setActiveDrawer('tick')}
+                      onTickSave={(el) => quickTickBarRef.current?.save(el)}
+                      tickBarActive={tickBarActive}
+                      isFlash={isFlash}
+                      ascentType={tickBarExpanded ? ascentType : undefined}
+                    />
+                  </Stack>
+                </Box>
               </Box>
-            </Box>
+            </div>
           </div>
-        </div>
         </CardContent>
       </MuiCard>
 
@@ -1233,21 +1351,20 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
         angle={angle}
       />
 
-      <StartSeshDrawer
-        open={startSeshOpen}
-        onClose={() => setStartSeshOpen(false)}
-      />
+      <StartSeshDrawer open={startSeshOpen} onClose={() => setStartSeshOpen(false)} />
 
       {/* Backdrop overlay — rendered via portal so it escapes the fixed bottom-bar stacking context */}
-      {typeof document !== 'undefined' && (tickBarActive || tickRowVisible) && createPortal(
-        <div
-          data-testid="tick-backdrop-overlay"
-          className={`${styles.tickOverlay} ${tickBarActive ? styles.tickOverlayActive : ''}`}
-          onClick={() => setActiveDrawer('none')}
-          aria-hidden="true"
-        />,
-        document.body,
-      )}
+      {typeof document !== 'undefined' &&
+        (tickBarActive || tickRowVisible) &&
+        createPortal(
+          <div
+            data-testid="tick-backdrop-overlay"
+            className={`${styles.tickOverlay} ${tickBarActive ? styles.tickOverlayActive : ''}`}
+            onClick={() => setActiveDrawer('none')}
+            aria-hidden="true"
+          />,
+          document.body,
+        )}
     </div>
   );
 };

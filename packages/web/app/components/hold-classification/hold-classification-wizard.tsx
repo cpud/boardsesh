@@ -8,7 +8,14 @@ import LinearProgress from '@mui/material/LinearProgress';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
-import { ArrowBackOutlined, ArrowForwardOutlined, CheckOutlined, CheckCircle, OpenInFullOutlined, CompressOutlined } from '@mui/icons-material';
+import {
+  ArrowBackOutlined,
+  ArrowForwardOutlined,
+  CheckOutlined,
+  CheckCircle,
+  OpenInFullOutlined,
+  CompressOutlined,
+} from '@mui/icons-material';
 import { useSession } from 'next-auth/react';
 import { BoardDetails } from '@/app/lib/types';
 import { HoldRenderData } from '../board-renderer/types';
@@ -65,11 +72,7 @@ const HoldView: React.FC<HoldViewProps> = ({ hold, boardDetails, expanded = fals
   const outerStrokeWidth = expanded ? 3 : 2;
 
   return (
-    <svg
-      viewBox={viewBox}
-      preserveAspectRatio="xMidYMid meet"
-      style={{ width: '100%', height: '100%' }}
-    >
+    <svg viewBox={viewBox} preserveAspectRatio="xMidYMid meet" style={{ width: '100%', height: '100%' }}>
       {/* Board background images */}
       {Object.keys(boardDetails.images_to_holds).map((imageUrl) => (
         <image
@@ -96,7 +99,7 @@ const HoldView: React.FC<HoldViewProps> = ({ hold, boardDetails, expanded = fals
         stroke={themeTokens.colors.primary}
         strokeWidth={outerStrokeWidth}
         fill="none"
-        strokeDasharray={expanded ? "8 8" : "4 4"}
+        strokeDasharray={expanded ? '8 8' : '4 4'}
         opacity={0.5}
       />
     </svg>
@@ -142,9 +145,9 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
     try {
       const response = await fetch(
         `/api/internal/hold-classifications?` +
-        `boardType=${boardDetails.board_name}&` +
-        `layoutId=${boardDetails.layout_id}&` +
-        `sizeId=${boardDetails.size_id}`
+          `boardType=${boardDetails.board_name}&` +
+          `layoutId=${boardDetails.layout_id}&` +
+          `sizeId=${boardDetails.size_id}`,
       );
 
       if (response.ok) {
@@ -182,53 +185,59 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
   }, [open, sessionStatus, boardDetails, loadClassifications]);
 
   // Actual save function (non-debounced)
-  const doSaveClassification = useCallback(async (holdId: number, classification: HoldClassification) => {
-    setSaving(true);
-    try {
-      const response = await fetch('/api/internal/hold-classifications', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          boardType: boardDetails.board_name,
-          layoutId: boardDetails.layout_id,
-          sizeId: boardDetails.size_id,
-          holdId,
-          holdType: classification.holdType,
-          handRating: classification.handRating,
-          footRating: classification.footRating,
-          pullDirection: classification.pullDirection,
-        }),
-      });
+  const doSaveClassification = useCallback(
+    async (holdId: number, classification: HoldClassification) => {
+      setSaving(true);
+      try {
+        const response = await fetch('/api/internal/hold-classifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            boardType: boardDetails.board_name,
+            layoutId: boardDetails.layout_id,
+            sizeId: boardDetails.size_id,
+            holdId,
+            holdType: classification.holdType,
+            handRating: classification.handRating,
+            footRating: classification.footRating,
+            pullDirection: classification.pullDirection,
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error('Failed to save classification');
+        if (!response.ok) {
+          throw new Error('Failed to save classification');
+        }
+      } catch (error) {
+        console.error('Failed to save classification:', error);
+        showMessage('Failed to save classification', 'error');
+      } finally {
+        setSaving(false);
       }
-    } catch (error) {
-      console.error('Failed to save classification:', error);
-      showMessage('Failed to save classification', 'error');
-    } finally {
-      setSaving(false);
-    }
-  }, [boardDetails]);
+    },
+    [boardDetails],
+  );
 
   // Debounced save - waits 500ms after last change before saving
-  const saveClassification = useCallback((holdId: number, classification: HoldClassification) => {
-    // Store the pending save
-    pendingSaveRef.current = { holdId, classification };
+  const saveClassification = useCallback(
+    (holdId: number, classification: HoldClassification) => {
+      // Store the pending save
+      pendingSaveRef.current = { holdId, classification };
 
-    // Clear any existing timeout
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-
-    // Set new timeout
-    saveTimeoutRef.current = setTimeout(() => {
-      if (pendingSaveRef.current) {
-        doSaveClassification(pendingSaveRef.current.holdId, pendingSaveRef.current.classification);
-        pendingSaveRef.current = null;
+      // Clear any existing timeout
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
       }
-    }, 500);
-  }, [doSaveClassification]);
+
+      // Set new timeout
+      saveTimeoutRef.current = setTimeout(() => {
+        if (pendingSaveRef.current) {
+          doSaveClassification(pendingSaveRef.current.holdId, pendingSaveRef.current.classification);
+          pendingSaveRef.current = null;
+        }
+      }, 500);
+    },
+    [doSaveClassification],
+  );
 
   // Flush pending save immediately (e.g., when navigating)
   const flushPendingSave = useCallback(() => {
@@ -246,70 +255,84 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
     if (!currentHold) {
       return { holdId: 0, holdType: null, handRating: null, footRating: null, pullDirection: null };
     }
-    return classifications.get(currentHold.id) || {
-      holdId: currentHold.id,
-      holdType: null,
-      handRating: null,
-      footRating: null,
-      pullDirection: null,
-    };
+    return (
+      classifications.get(currentHold.id) || {
+        holdId: currentHold.id,
+        holdType: null,
+        handRating: null,
+        footRating: null,
+        pullDirection: null,
+      }
+    );
   }, [currentHold, classifications]);
 
-  const handleHoldTypeSelect = useCallback(async (holdType: HoldType) => {
-    if (!currentHold) return;
+  const handleHoldTypeSelect = useCallback(
+    async (holdType: HoldType) => {
+      if (!currentHold) return;
 
-    const current = getCurrentClassification();
-    const updated: HoldClassification = {
-      ...current,
-      holdId: currentHold.id,
-      holdType,
-    };
+      const current = getCurrentClassification();
+      const updated: HoldClassification = {
+        ...current,
+        holdId: currentHold.id,
+        holdType,
+      };
 
-    setClassifications(new Map(classifications).set(currentHold.id, updated));
-    await saveClassification(currentHold.id, updated);
-  }, [currentHold, classifications, getCurrentClassification, saveClassification]);
+      setClassifications(new Map(classifications).set(currentHold.id, updated));
+      await saveClassification(currentHold.id, updated);
+    },
+    [currentHold, classifications, getCurrentClassification, saveClassification],
+  );
 
-  const handleHandRatingChange = useCallback(async (rating: number) => {
-    if (!currentHold) return;
+  const handleHandRatingChange = useCallback(
+    async (rating: number) => {
+      if (!currentHold) return;
 
-    const current = getCurrentClassification();
-    const updated: HoldClassification = {
-      ...current,
-      holdId: currentHold.id,
-      handRating: rating,
-    };
+      const current = getCurrentClassification();
+      const updated: HoldClassification = {
+        ...current,
+        holdId: currentHold.id,
+        handRating: rating,
+      };
 
-    setClassifications(new Map(classifications).set(currentHold.id, updated));
-    await saveClassification(currentHold.id, updated);
-  }, [currentHold, classifications, getCurrentClassification, saveClassification]);
+      setClassifications(new Map(classifications).set(currentHold.id, updated));
+      await saveClassification(currentHold.id, updated);
+    },
+    [currentHold, classifications, getCurrentClassification, saveClassification],
+  );
 
-  const handleFootRatingChange = useCallback(async (rating: number) => {
-    if (!currentHold) return;
+  const handleFootRatingChange = useCallback(
+    async (rating: number) => {
+      if (!currentHold) return;
 
-    const current = getCurrentClassification();
-    const updated: HoldClassification = {
-      ...current,
-      holdId: currentHold.id,
-      footRating: rating,
-    };
+      const current = getCurrentClassification();
+      const updated: HoldClassification = {
+        ...current,
+        holdId: currentHold.id,
+        footRating: rating,
+      };
 
-    setClassifications(new Map(classifications).set(currentHold.id, updated));
-    await saveClassification(currentHold.id, updated);
-  }, [currentHold, classifications, getCurrentClassification, saveClassification]);
+      setClassifications(new Map(classifications).set(currentHold.id, updated));
+      await saveClassification(currentHold.id, updated);
+    },
+    [currentHold, classifications, getCurrentClassification, saveClassification],
+  );
 
-  const handlePullDirectionChange = useCallback(async (direction: number) => {
-    if (!currentHold) return;
+  const handlePullDirectionChange = useCallback(
+    async (direction: number) => {
+      if (!currentHold) return;
 
-    const current = getCurrentClassification();
-    const updated: HoldClassification = {
-      ...current,
-      holdId: currentHold.id,
-      pullDirection: direction,
-    };
+      const current = getCurrentClassification();
+      const updated: HoldClassification = {
+        ...current,
+        holdId: currentHold.id,
+        pullDirection: direction,
+      };
 
-    setClassifications(new Map(classifications).set(currentHold.id, updated));
-    await saveClassification(currentHold.id, updated);
-  }, [currentHold, classifications, getCurrentClassification, saveClassification]);
+      setClassifications(new Map(classifications).set(currentHold.id, updated));
+      await saveClassification(currentHold.id, updated);
+    },
+    [currentHold, classifications, getCurrentClassification, saveClassification],
+  );
 
   const handlePrevious = useCallback(() => {
     if (currentIndex > 0) {
@@ -331,13 +354,13 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
 
   const progress = holds.length > 0 ? ((currentIndex + 1) / holds.length) * 100 : 0;
   const classifiedCount = Array.from(classifications.values()).filter(
-    c => c.holdType !== null || c.handRating !== null || c.footRating !== null || c.pullDirection !== null
+    (c) => c.holdType !== null || c.handRating !== null || c.footRating !== null || c.pullDirection !== null,
   ).length;
 
   // Filter hold types based on board type (e.g., exclude pocket for Kilter)
   const filteredHoldTypeOptions = useMemo(() => {
     const boardName = boardDetails.board_name as string;
-    return HOLD_TYPE_OPTIONS.filter(option => {
+    return HOLD_TYPE_OPTIONS.filter((option) => {
       return !(option.excludeBoards as readonly string[]).includes(boardName);
     });
   }, [boardDetails.board_name]);
@@ -358,7 +381,9 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
       >
         <div className={styles.loadingContainer}>
           <CircularProgress size={48} />
-          <Typography variant="body2" component="span" className={styles.loadingText}>Loading holds...</Typography>
+          <Typography variant="body2" component="span" className={styles.loadingText}>
+            Loading holds...
+          </Typography>
         </div>
       </SwipeableDrawer>
     );
@@ -379,8 +404,12 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
         }}
       >
         <div className={styles.emptyState}>
-          <Typography variant="body2" component="span">No holds found for this board configuration.</Typography>
-          <MuiButton variant="outlined" onClick={onClose}>Close</MuiButton>
+          <Typography variant="body2" component="span">
+            No holds found for this board configuration.
+          </Typography>
+          <MuiButton variant="outlined" onClick={onClose}>
+            Close
+          </MuiButton>
         </div>
       </SwipeableDrawer>
     );
@@ -406,8 +435,8 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
             Classification Complete!
           </Typography>
           <Typography variant="body2" component="span" className={styles.completeSubtitle}>
-            You've classified {classifiedCount} of {holds.length} holds.
-            You can run through this wizard again anytime to update your ratings.
+            You've classified {classifiedCount} of {holds.length} holds. You can run through this wizard again anytime
+            to update your ratings.
           </Typography>
           <MuiButton variant="contained" size="large" onClick={onClose}>
             Done
@@ -454,9 +483,7 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
         {/* Hold view (zoomed in on the board) */}
         <div className={`${styles.holdViewSection} ${isHoldViewExpanded ? styles.holdViewExpanded : ''}`}>
           <div className={styles.holdViewContainer}>
-            {currentHold && (
-              <HoldView hold={currentHold} boardDetails={boardDetails} expanded={isHoldViewExpanded} />
-            )}
+            {currentHold && <HoldView hold={currentHold} boardDetails={boardDetails} expanded={isHoldViewExpanded} />}
           </div>
           <MuiButton
             className={styles.expandButton}
@@ -473,15 +500,15 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
         <div className={styles.classificationSection}>
           {/* Hold type selection */}
           <div>
-            <Typography variant="body2" component="span" className={styles.sectionTitle}>Hold Type</Typography>
+            <Typography variant="body2" component="span" className={styles.sectionTitle}>
+              Hold Type
+            </Typography>
             <div className={styles.holdTypeList}>
               {filteredHoldTypeOptions.map((option) => (
                 <div
                   key={option.value}
                   className={`${styles.holdTypeItem} ${
-                    currentClassification.holdType === option.value
-                      ? styles.holdTypeItemSelected
-                      : ''
+                    currentClassification.holdType === option.value ? styles.holdTypeItemSelected : ''
                   }`}
                   onClick={() => handleHoldTypeSelect(option.value)}
                 >
@@ -496,10 +523,10 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
 
           {/* Hand rating */}
           <div className={styles.ratingSection}>
-            <Typography variant="body2" component="span" className={styles.sectionTitle}>Hand Rating (1-5)</Typography>
-            <div className={styles.ratingLabel}>
-              5 = Easy to grip, 1 = Very difficult
-            </div>
+            <Typography variant="body2" component="span" className={styles.sectionTitle}>
+              Hand Rating (1-5)
+            </Typography>
+            <div className={styles.ratingLabel}>5 = Easy to grip, 1 = Very difficult</div>
             <Rating
               value={currentClassification.handRating || 0}
               onChange={(_, val) => val !== null && handleHandRatingChange(val)}
@@ -509,10 +536,10 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
 
           {/* Foot rating */}
           <div className={styles.ratingSection}>
-            <Typography variant="body2" component="span" className={styles.sectionTitle}>Foot Rating (1-5)</Typography>
-            <div className={styles.ratingLabel}>
-              5 = Easy to stand on, 1 = Very difficult
-            </div>
+            <Typography variant="body2" component="span" className={styles.sectionTitle}>
+              Foot Rating (1-5)
+            </Typography>
+            <div className={styles.ratingLabel}>5 = Easy to stand on, 1 = Very difficult</div>
             <Rating
               value={currentClassification.footRating || 0}
               onChange={(_, val) => val !== null && handleFootRatingChange(val)}
@@ -522,10 +549,10 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
 
           {/* Direction of pull */}
           <div className={styles.directionSection}>
-            <Typography variant="body2" component="span" className={styles.sectionTitle}>Direction of Pull</Typography>
-            <div className={styles.ratingLabel}>
-              Click or drag to set the best pulling direction
-            </div>
+            <Typography variant="body2" component="span" className={styles.sectionTitle}>
+              Direction of Pull
+            </Typography>
+            <div className={styles.ratingLabel}>Click or drag to set the best pulling direction</div>
             <DirectionPicker
               value={currentClassification.pullDirection}
               onChange={handlePullDirectionChange}
@@ -545,12 +572,7 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
           >
             Previous
           </MuiButton>
-          <MuiButton
-            className={styles.skipButton}
-            variant="outlined"
-            onClick={handleNext}
-            disabled={saving}
-          >
+          <MuiButton className={styles.skipButton} variant="outlined" onClick={handleNext} disabled={saving}>
             Skip
           </MuiButton>
           <MuiButton

@@ -42,12 +42,12 @@ export function fnv1aHash(str: string): string {
  * @param currentItemUuid - UUID of current climb queue item (or null)
  * @returns Hash string
  */
-export function computeQueueStateHash(
-  queue: Array<{ uuid: string }>,
-  currentItemUuid: string | null
-): string {
+export function computeQueueStateHash(queue: Array<{ uuid: string }>, currentItemUuid: string | null): string {
   // Create canonical representation: sorted queue UUIDs + current UUID
-  const queueUuids = queue.map(item => item.uuid).sort().join(',');
+  const queueUuids = queue
+    .map((item) => item.uuid)
+    .sort()
+    .join(',');
   const currentUuid = currentItemUuid || 'null';
   const canonical = `${queueUuids}|${currentUuid}`;
 

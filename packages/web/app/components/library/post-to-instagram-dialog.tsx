@@ -17,11 +17,7 @@ import { useQuery } from '@tanstack/react-query';
 import BetaVideos from '@/app/components/beta-videos/beta-videos';
 import AttachBetaLinkForm from '@/app/components/beta-videos/attach-beta-link-form';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
-import {
-  buildInstagramCaption,
-  copyAndOpenInstagram,
-  getBoardDisplayName,
-} from '@/app/lib/instagram-posting';
+import { buildInstagramCaption, copyAndOpenInstagram, getBoardDisplayName } from '@/app/lib/instagram-posting';
 import type { BetaLink } from '@/app/lib/api-wrappers/sync-api-types';
 import { themeTokens } from '@/app/theme/theme-config';
 
@@ -45,11 +41,7 @@ const instructions = [
   'Paste the Instagram link so we can display your ascent video here.',
 ];
 
-export default function PostToInstagramDialog({
-  open,
-  onClose,
-  item,
-}: PostToInstagramDialogProps) {
+export default function PostToInstagramDialog({ open, onClose, item }: PostToInstagramDialogProps) {
   const { showMessage } = useSnackbar();
   const [isLaunching, setIsLaunching] = useState(false);
   const {
@@ -166,7 +158,14 @@ export default function PostToInstagramDialog({
               gap: 1.5,
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1.5 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: 'space-between',
+                gap: 1.5,
+              }}
+            >
               <Box sx={{ minWidth: 0 }}>
                 <Typography variant="h5" component="h2" fontWeight={700} sx={{ mb: 0.5 }}>
                   Share your beta video
@@ -203,7 +202,15 @@ export default function PostToInstagramDialog({
             <Typography variant="overline" color="text.secondary" sx={{ letterSpacing: '0.06em' }}>
               How It Works
             </Typography>
-            <Box sx={{ color: 'text.secondary', display: 'flex', flexDirection: 'column', gap: 0.75, mt: 1 }}>
+            <Box
+              sx={{
+                color: 'text.secondary',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 0.75,
+                mt: 1,
+              }}
+            >
               {instructions.map((instruction, index) => (
                 <Typography key={instruction} variant="body1" sx={{ lineHeight: 1.5 }}>
                   <Box component="span" sx={{ color: 'text.primary', fontWeight: 700, mr: 1 }}>
@@ -320,7 +327,12 @@ export default function PostToInstagramDialog({
                 <Typography variant="body2" color="error">
                   Couldn&apos;t load beta videos.
                 </Typography>
-                <Button size="small" onClick={() => { void refetchBetaLinks(); }}>
+                <Button
+                  size="small"
+                  onClick={() => {
+                    void refetchBetaLinks();
+                  }}
+                >
                   Retry
                 </Button>
               </Box>

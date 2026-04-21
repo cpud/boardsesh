@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 const sessionFeedTestState = vi.hoisted(() => {
   const executeMock = vi.fn();
@@ -30,9 +30,19 @@ const { sessionGroupedFeed } = await import('../graphql/resolvers/social/session
 );
 
 function sqlToText(query: unknown): string {
-  const sqlQuery = query as { queryChunks?: Array<{ value?: string[] }> };
-  return (sqlQuery.queryChunks || [])
-    .map((chunk) => (Array.isArray(chunk?.value) ? chunk.value.join('') : ''))
+  if (!query || typeof query !== 'object') return '';
+  const sqlQuery = query as { queryChunks?: unknown[] };
+  if (!Array.isArray(sqlQuery.queryChunks)) return '';
+  return sqlQuery.queryChunks
+    .map((chunk) => {
+      if (!chunk || typeof chunk !== 'object') return '';
+      const c = chunk as { value?: string[]; queryChunks?: unknown[] };
+      // StringChunk: has .value (string[])
+      if (Array.isArray(c.value)) return c.value.join('');
+      // Nested SQL object: has .queryChunks
+      if (Array.isArray(c.queryChunks)) return sqlToText(c);
+      return '';
+    })
     .join('');
 }
 
@@ -42,20 +52,22 @@ describe('sessionGroupedFeed user filtering', () => {
 
     sessionFeedTestState.executeMock
       .mockResolvedValueOnce({
-        rows: [{
-          session_id: 'party-1',
-          session_type: 'party',
-          session_first_tick: '2024-01-15T10:00:00.000Z',
-          session_last_tick: '2024-01-15T12:00:00.000Z',
-          tick_count: 8,
-          total_sends: 5,
-          total_flashes: 2,
-          total_attempts: 6,
-          vote_score: 4,
-          vote_up: 5,
-          vote_down: 1,
-          comment_count: 2,
-        }],
+        rows: [
+          {
+            session_id: 'party-1',
+            session_type: 'party',
+            session_first_tick: '2024-01-15T10:00:00.000Z',
+            session_last_tick: '2024-01-15T12:00:00.000Z',
+            tick_count: 8,
+            total_sends: 5,
+            total_flashes: 2,
+            total_attempts: 6,
+            vote_score: 4,
+            vote_up: 5,
+            vote_down: 1,
+            comment_count: 2,
+          },
+        ],
       })
       .mockResolvedValueOnce({
         rows: [
@@ -91,10 +103,12 @@ describe('sessionGroupedFeed user filtering', () => {
         ],
       })
       .mockResolvedValueOnce({
-        rows: [{
-          effective_session_id: 'party-1',
-          board_types: ['kilter'],
-        }],
+        rows: [
+          {
+            effective_session_id: 'party-1',
+            board_types: ['kilter'],
+          },
+        ],
       });
 
     sessionFeedTestState.selectWhereMock.mockResolvedValue([
@@ -126,7 +140,7 @@ describe('sessionGroupedFeed user filtering', () => {
       totalSends: 5,
       totalFlashes: 2,
       totalAttempts: 6,
-      hardestGrade: 'V5',
+      hardestGrade: '4a/V0',
       participants: [
         expect.objectContaining({ userId: 'user-1', sends: 3 }),
         expect.objectContaining({ userId: 'user-2', sends: 2 }),

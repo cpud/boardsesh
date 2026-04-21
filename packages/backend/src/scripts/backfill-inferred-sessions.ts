@@ -15,11 +15,13 @@ async function main() {
   console.log('=== Backfill Inferred Sessions ===');
 
   // Check how many unassigned ticks exist
-  const [{ count: unassignedCount }] = await db.execute(sql`
+  const [{ count: unassignedCount }] = await db
+    .execute(sql`
     SELECT COUNT(*) AS count
     FROM boardsesh_ticks
     WHERE session_id IS NULL AND inferred_session_id IS NULL
-  `).then((r) => (r as unknown as { rows: Array<{ count: number }> }).rows);
+  `)
+    .then((r) => (r as unknown as { rows: Array<{ count: number }> }).rows);
 
   console.log(`Found ${unassignedCount} unassigned ticks`);
 
@@ -48,15 +50,19 @@ async function main() {
   // Migrate orphaned votes/comments with "ug:" entity IDs
   console.log('\n=== Migrating orphaned ug: entity references ===');
 
-  const [voteResult] = await db.execute(sql`
+  const [voteResult] = await db
+    .execute(sql`
     SELECT COUNT(*) AS count FROM vote_counts
     WHERE entity_type = 'session' AND entity_id LIKE 'ug:%'
-  `).then((r) => (r as unknown as { rows: Array<{ count: number }> }).rows);
+  `)
+    .then((r) => (r as unknown as { rows: Array<{ count: number }> }).rows);
 
-  const [commentResult] = await db.execute(sql`
+  const [commentResult] = await db
+    .execute(sql`
     SELECT COUNT(*) AS count FROM comments
     WHERE entity_type = 'session' AND entity_id LIKE 'ug:%'
-  `).then((r) => (r as unknown as { rows: Array<{ count: number }> }).rows);
+  `)
+    .then((r) => (r as unknown as { rows: Array<{ count: number }> }).rows);
 
   console.log(`Found ${voteResult.count} orphaned vote_counts, ${commentResult.count} orphaned comments`);
 
@@ -67,11 +73,13 @@ async function main() {
   }
 
   // Verify final state
-  const [{ count: remaining }] = await db.execute(sql`
+  const [{ count: remaining }] = await db
+    .execute(sql`
     SELECT COUNT(*) AS count
     FROM boardsesh_ticks
     WHERE session_id IS NULL AND inferred_session_id IS NULL
-  `).then((r) => (r as unknown as { rows: Array<{ count: number }> }).rows);
+  `)
+    .then((r) => (r as unknown as { rows: Array<{ count: number }> }).rows);
 
   console.log(`\n=== Final state: ${remaining} unassigned ticks remaining ===`);
 

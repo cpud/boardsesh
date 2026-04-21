@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
@@ -148,12 +148,23 @@ describe('ClimbTitle', () => {
     });
 
     it('renders "project" when no grade quality', () => {
-      render(<ClimbTitle climb={makeClimb({ quality_average: '0', difficulty: null, ascensionist_count: undefined })} layout="horizontal" />);
+      render(
+        <ClimbTitle
+          climb={makeClimb({
+            quality_average: '0',
+            difficulty: null,
+            ascensionist_count: undefined,
+          })}
+          layout="horizontal"
+        />,
+      );
       expect(screen.getByText('project')).toBeTruthy();
     });
 
     it('renders rightAddon', () => {
-      render(<ClimbTitle climb={makeClimb()} layout="horizontal" rightAddon={<span data-testid="right-addon">tick</span>} />);
+      render(
+        <ClimbTitle climb={makeClimb()} layout="horizontal" rightAddon={<span data-testid="right-addon">tick</span>} />,
+      );
       expect(screen.getByTestId('right-addon')).toBeTruthy();
     });
   });
@@ -183,7 +194,13 @@ describe('ClimbTitle', () => {
     });
 
     it('renders subtitle as "sends · stars · setter_name" format', () => {
-      render(<ClimbTitle climb={makeClimb({ quality_average: '3.5', setter_username: 'alice' })} gradePosition="right" showSetterInfo />);
+      render(
+        <ClimbTitle
+          climb={makeClimb({ quality_average: '3.5', setter_username: 'alice' })}
+          gradePosition="right"
+          showSetterInfo
+        />,
+      );
       expect(screen.getByText('10 sends · 3.5★ · alice')).toBeTruthy();
     });
 
@@ -219,7 +236,9 @@ describe('ClimbTitle', () => {
     });
 
     it('renders "project" when no grade and no ascents', () => {
-      render(<ClimbTitle climb={makeClimb({ quality_average: '0', ascensionist_count: undefined })} gradePosition="right" />);
+      render(
+        <ClimbTitle climb={makeClimb({ quality_average: '0', ascensionist_count: undefined })} gradePosition="right" />,
+      );
       expect(screen.getByText('project')).toBeTruthy();
     });
 
@@ -239,12 +258,20 @@ describe('ClimbTitle', () => {
     });
 
     it('renders nameAddon in the name row', () => {
-      render(<ClimbTitle climb={makeClimb()} gradePosition="right" nameAddon={<span data-testid="name-addon">✓</span>} />);
+      render(
+        <ClimbTitle climb={makeClimb()} gradePosition="right" nameAddon={<span data-testid="name-addon">✓</span>} />,
+      );
       expect(screen.getByTestId('name-addon')).toBeTruthy();
     });
 
     it('renders rightAddon before the grade on the right', () => {
-      render(<ClimbTitle climb={makeClimb()} gradePosition="right" rightAddon={<span data-testid="right-addon">status</span>} />);
+      render(
+        <ClimbTitle
+          climb={makeClimb()}
+          gradePosition="right"
+          rightAddon={<span data-testid="right-addon">status</span>}
+        />,
+      );
       expect(screen.getByTestId('right-addon')).toBeTruthy();
     });
 

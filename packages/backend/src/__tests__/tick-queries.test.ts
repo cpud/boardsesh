@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach } from 'vite-plus/test';
 import { sql } from 'drizzle-orm';
 import { db } from '../db/client';
 import { tickQueries } from '../graphql/resolvers/ticks/queries';
@@ -110,12 +110,33 @@ describe('tickQueries — behavior fixes', () => {
       const climbUuid = CLIMB_PREFIX + 'flash-only';
       await insertClimb(climbUuid, 'Flash Only Test');
 
-      await insertTick({ uuid: 'tick-flash-1', climbUuid, climbedAt: '2026-01-01 10:00:00', status: 'flash' });
-      await insertTick({ uuid: 'tick-send-1', climbUuid, climbedAt: '2026-01-02 10:00:00', status: 'send', attemptCount: 3 });
-      await insertTick({ uuid: 'tick-attempt-1', climbUuid, climbedAt: '2026-01-03 10:00:00', status: 'attempt', attemptCount: 5 });
+      await insertTick({
+        uuid: 'tick-flash-1',
+        climbUuid,
+        climbedAt: '2026-01-01 10:00:00',
+        status: 'flash',
+      });
+      await insertTick({
+        uuid: 'tick-send-1',
+        climbUuid,
+        climbedAt: '2026-01-02 10:00:00',
+        status: 'send',
+        attemptCount: 3,
+      });
+      await insertTick({
+        uuid: 'tick-attempt-1',
+        climbUuid,
+        climbedAt: '2026-01-03 10:00:00',
+        status: 'attempt',
+        attemptCount: 5,
+      });
 
       // statusMode=both + flashOnly=true: previously this returned flash + attempts.
-      const result = await callUserAscentsFeed(TEST_USER_ID, { statusMode: 'both', flashOnly: true, limit: 50 });
+      const result = await callUserAscentsFeed(TEST_USER_ID, {
+        statusMode: 'both',
+        flashOnly: true,
+        limit: 50,
+      });
 
       expect(result.items.every((item) => item.status === 'flash')).toBe(true);
       expect(result.items).toHaveLength(1);
@@ -126,11 +147,32 @@ describe('tickQueries — behavior fixes', () => {
       const climbUuid = CLIMB_PREFIX + 'send-mode';
       await insertClimb(climbUuid, 'Send Mode Test');
 
-      await insertTick({ uuid: 'tick-flash-2', climbUuid, climbedAt: '2026-01-01 10:00:00', status: 'flash' });
-      await insertTick({ uuid: 'tick-send-2', climbUuid, climbedAt: '2026-01-02 10:00:00', status: 'send', attemptCount: 2 });
-      await insertTick({ uuid: 'tick-attempt-2', climbUuid, climbedAt: '2026-01-03 10:00:00', status: 'attempt', attemptCount: 4 });
+      await insertTick({
+        uuid: 'tick-flash-2',
+        climbUuid,
+        climbedAt: '2026-01-01 10:00:00',
+        status: 'flash',
+      });
+      await insertTick({
+        uuid: 'tick-send-2',
+        climbUuid,
+        climbedAt: '2026-01-02 10:00:00',
+        status: 'send',
+        attemptCount: 2,
+      });
+      await insertTick({
+        uuid: 'tick-attempt-2',
+        climbUuid,
+        climbedAt: '2026-01-03 10:00:00',
+        status: 'attempt',
+        attemptCount: 4,
+      });
 
-      const result = await callUserAscentsFeed(TEST_USER_ID, { statusMode: 'send', flashOnly: false, limit: 50 });
+      const result = await callUserAscentsFeed(TEST_USER_ID, {
+        statusMode: 'send',
+        flashOnly: false,
+        limit: 50,
+      });
 
       const statuses = result.items.map((item) => item.status).sort();
       expect(statuses).toEqual(['flash', 'send']);
@@ -140,8 +182,19 @@ describe('tickQueries — behavior fixes', () => {
       const climbUuid = CLIMB_PREFIX + 'attempt-mode';
       await insertClimb(climbUuid, 'Attempt Mode Test');
 
-      await insertTick({ uuid: 'tick-flash-3', climbUuid, climbedAt: '2026-01-01 10:00:00', status: 'flash' });
-      await insertTick({ uuid: 'tick-attempt-3', climbUuid, climbedAt: '2026-01-02 10:00:00', status: 'attempt', attemptCount: 2 });
+      await insertTick({
+        uuid: 'tick-flash-3',
+        climbUuid,
+        climbedAt: '2026-01-01 10:00:00',
+        status: 'flash',
+      });
+      await insertTick({
+        uuid: 'tick-attempt-3',
+        climbUuid,
+        climbedAt: '2026-01-02 10:00:00',
+        status: 'attempt',
+        attemptCount: 2,
+      });
 
       const result = await callUserAscentsFeed(TEST_USER_ID, { statusMode: 'attempt', limit: 50 });
 
@@ -157,8 +210,18 @@ describe('tickQueries — behavior fixes', () => {
       await insertClimb(literalUuid, '100% Crimps');
       await insertClimb(decoyUuid, 'All Jugs');
 
-      await insertTick({ uuid: 'tick-literal-1', climbUuid: literalUuid, climbedAt: '2026-01-01 10:00:00', status: 'send' });
-      await insertTick({ uuid: 'tick-decoy-1', climbUuid: decoyUuid, climbedAt: '2026-01-02 10:00:00', status: 'send' });
+      await insertTick({
+        uuid: 'tick-literal-1',
+        climbUuid: literalUuid,
+        climbedAt: '2026-01-01 10:00:00',
+        status: 'send',
+      });
+      await insertTick({
+        uuid: 'tick-decoy-1',
+        climbUuid: decoyUuid,
+        climbedAt: '2026-01-02 10:00:00',
+        status: 'send',
+      });
 
       const result = await callUserAscentsFeed(TEST_USER_ID, { climbName: '100%', limit: 50 });
 
@@ -172,8 +235,18 @@ describe('tickQueries — behavior fixes', () => {
       await insertClimb(literalUuid, 'V_Five');
       await insertClimb(decoyUuid, 'VxFive'); // would match `V_Five` if _ were a wildcard
 
-      await insertTick({ uuid: 'tick-underscore-1', climbUuid: literalUuid, climbedAt: '2026-01-01 10:00:00', status: 'send' });
-      await insertTick({ uuid: 'tick-underscore-2', climbUuid: decoyUuid, climbedAt: '2026-01-02 10:00:00', status: 'send' });
+      await insertTick({
+        uuid: 'tick-underscore-1',
+        climbUuid: literalUuid,
+        climbedAt: '2026-01-01 10:00:00',
+        status: 'send',
+      });
+      await insertTick({
+        uuid: 'tick-underscore-2',
+        climbUuid: decoyUuid,
+        climbedAt: '2026-01-02 10:00:00',
+        status: 'send',
+      });
 
       const result = await callUserAscentsFeed(TEST_USER_ID, { climbName: 'V_Five', limit: 50 });
 
@@ -185,7 +258,12 @@ describe('tickQueries — behavior fixes', () => {
       const climbUuid = CLIMB_PREFIX + 'plain-substring';
       await insertClimb(climbUuid, 'Sloper Madness');
 
-      await insertTick({ uuid: 'tick-plain-1', climbUuid, climbedAt: '2026-01-01 10:00:00', status: 'send' });
+      await insertTick({
+        uuid: 'tick-plain-1',
+        climbUuid,
+        climbedAt: '2026-01-01 10:00:00',
+        status: 'send',
+      });
 
       const result = await callUserAscentsFeed(TEST_USER_ID, { climbName: 'Sloper', limit: 50 });
 
@@ -206,7 +284,12 @@ describe('tickQueries — behavior fixes', () => {
     it('returns one group with one item for a single tick', async () => {
       const climbUuid = CLIMB_PREFIX + 'single-tick';
       await insertClimb(climbUuid, 'Single Tick Climb');
-      await insertTick({ uuid: 'tick-single-1', climbUuid, climbedAt: '2026-02-01 10:00:00', status: 'send' });
+      await insertTick({
+        uuid: 'tick-single-1',
+        climbUuid,
+        climbedAt: '2026-02-01 10:00:00',
+        status: 'send',
+      });
 
       const result = await callUserGroupedAscentsFeed(TEST_USER_ID, { limit: 20, offset: 0 });
 
@@ -223,9 +306,27 @@ describe('tickQueries — behavior fixes', () => {
       const climbUuid = CLIMB_PREFIX + 'multi-attempt';
       await insertClimb(climbUuid, 'Project');
 
-      await insertTick({ uuid: 'tick-proj-1', climbUuid, climbedAt: '2026-02-05 09:00:00', status: 'attempt', attemptCount: 3 });
-      await insertTick({ uuid: 'tick-proj-2', climbUuid, climbedAt: '2026-02-05 14:00:00', status: 'attempt', attemptCount: 2 });
-      await insertTick({ uuid: 'tick-proj-3', climbUuid, climbedAt: '2026-02-05 16:00:00', status: 'send', attemptCount: 4 });
+      await insertTick({
+        uuid: 'tick-proj-1',
+        climbUuid,
+        climbedAt: '2026-02-05 09:00:00',
+        status: 'attempt',
+        attemptCount: 3,
+      });
+      await insertTick({
+        uuid: 'tick-proj-2',
+        climbUuid,
+        climbedAt: '2026-02-05 14:00:00',
+        status: 'attempt',
+        attemptCount: 2,
+      });
+      await insertTick({
+        uuid: 'tick-proj-3',
+        climbUuid,
+        climbedAt: '2026-02-05 16:00:00',
+        status: 'send',
+        attemptCount: 4,
+      });
 
       const result = await callUserGroupedAscentsFeed(TEST_USER_ID, { limit: 20, offset: 0 });
 
@@ -241,9 +342,27 @@ describe('tickQueries — behavior fixes', () => {
       const climbUuid = CLIMB_PREFIX + 'multi-day';
       await insertClimb(climbUuid, 'Multi Day Project');
 
-      await insertTick({ uuid: 'tick-md-1', climbUuid, climbedAt: '2026-03-01 11:00:00', status: 'attempt', attemptCount: 3 });
-      await insertTick({ uuid: 'tick-md-2', climbUuid, climbedAt: '2026-03-02 11:00:00', status: 'attempt', attemptCount: 2 });
-      await insertTick({ uuid: 'tick-md-3', climbUuid, climbedAt: '2026-03-03 11:00:00', status: 'send', attemptCount: 1 });
+      await insertTick({
+        uuid: 'tick-md-1',
+        climbUuid,
+        climbedAt: '2026-03-01 11:00:00',
+        status: 'attempt',
+        attemptCount: 3,
+      });
+      await insertTick({
+        uuid: 'tick-md-2',
+        climbUuid,
+        climbedAt: '2026-03-02 11:00:00',
+        status: 'attempt',
+        attemptCount: 2,
+      });
+      await insertTick({
+        uuid: 'tick-md-3',
+        climbUuid,
+        climbedAt: '2026-03-03 11:00:00',
+        status: 'send',
+        attemptCount: 1,
+      });
 
       const result = await callUserGroupedAscentsFeed(TEST_USER_ID, { limit: 20, offset: 0 });
 
@@ -261,8 +380,20 @@ describe('tickQueries — behavior fixes', () => {
       const climbUuid = CLIMB_PREFIX + 'late-night';
       await insertClimb(climbUuid, 'Late Night Send');
 
-      await insertTick({ uuid: 'tick-late-1', climbUuid, climbedAt: '2026-04-01 23:30:00', status: 'send', attemptCount: 1 });
-      await insertTick({ uuid: 'tick-late-2', climbUuid, climbedAt: '2026-04-02 00:30:00', status: 'send', attemptCount: 1 });
+      await insertTick({
+        uuid: 'tick-late-1',
+        climbUuid,
+        climbedAt: '2026-04-01 23:30:00',
+        status: 'send',
+        attemptCount: 1,
+      });
+      await insertTick({
+        uuid: 'tick-late-2',
+        climbUuid,
+        climbedAt: '2026-04-02 00:30:00',
+        status: 'send',
+        attemptCount: 1,
+      });
 
       const result = await callUserGroupedAscentsFeed(TEST_USER_ID, { limit: 20, offset: 0 });
 
@@ -307,8 +438,20 @@ describe('tickQueries — behavior fixes', () => {
       const climbUuid = CLIMB_PREFIX + 'multi-user';
       await insertClimb(climbUuid, 'Shared Climb');
 
-      await insertTick({ uuid: 'tick-mine', userId: TEST_USER_ID, climbUuid, climbedAt: '2026-06-01 10:00:00', status: 'send' });
-      await insertTick({ uuid: 'tick-theirs', userId: OTHER_USER_ID, climbUuid, climbedAt: '2026-06-01 10:00:00', status: 'send' });
+      await insertTick({
+        uuid: 'tick-mine',
+        userId: TEST_USER_ID,
+        climbUuid,
+        climbedAt: '2026-06-01 10:00:00',
+        status: 'send',
+      });
+      await insertTick({
+        uuid: 'tick-theirs',
+        userId: OTHER_USER_ID,
+        climbUuid,
+        climbedAt: '2026-06-01 10:00:00',
+        status: 'send',
+      });
 
       const result = await callUserGroupedAscentsFeed(TEST_USER_ID, { limit: 20, offset: 0 });
 

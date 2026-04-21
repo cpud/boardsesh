@@ -15,7 +15,13 @@ import { BOARD_IMAGE_DIMENSIONS } from './board-data';
 import type { BoardName, HoldTuple } from './types';
 
 export * from '@boardsesh/board-constants/product-sizes';
-export type { HoldTuple, LayoutData, ProductSizeData, SetData, SizeEdges } from '@boardsesh/board-constants/product-sizes';
+export type {
+  HoldTuple,
+  LayoutData,
+  ProductSizeData,
+  SetData,
+  SizeEdges,
+} from '@boardsesh/board-constants/product-sizes';
 
 export const AURORA_BOARD_NAMES = [...AURORA_BOARDS];
 export const KILTER_HOMEWALL_LAYOUT_ID = 8;
@@ -57,12 +63,7 @@ export const getBoardDetails = ({
     imagesToHolds[imageFilename] = getHolePlacements(board_name, layout_id, setId);
   }
 
-  const {
-    edgeLeft: edge_left,
-    edgeRight: edge_right,
-    edgeBottom: edge_bottom,
-    edgeTop: edge_top,
-  } = sizeData;
+  const { edgeLeft: edge_left, edgeRight: edge_right, edgeBottom: edge_bottom, edgeTop: edge_top } = sizeData;
 
   const firstImage = Object.keys(imagesToHolds)[0];
   const dimensions = BOARD_IMAGE_DIMENSIONS[board_name][firstImage];

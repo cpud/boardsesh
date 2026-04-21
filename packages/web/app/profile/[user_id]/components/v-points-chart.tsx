@@ -26,7 +26,12 @@ export default function VPointsChart({ data }: VPointsChartProps) {
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 0.5 }}>
-        <Typography variant="body2" component="span" fontWeight={600} sx={{ fontSize: 13, color: 'var(--neutral-600)' }}>
+        <Typography
+          variant="body2"
+          component="span"
+          fontWeight={600}
+          sx={{ fontSize: 13, color: 'var(--neutral-600)' }}
+        >
           V-Points
         </Typography>
         <Typography variant="body2" component="span" color="text.secondary" sx={{ fontSize: 12 }}>
@@ -43,21 +48,25 @@ export default function VPointsChart({ data }: VPointsChartProps) {
           curve: 'linear' as const,
           showMark: false,
         }))}
-        xAxis={[{
-          data: weekLabels,
-          scaleType: 'band' as const,
-          tickLabelStyle: { fontSize: 10 },
-          tickInterval: (_value: string, index: number) => index % labelInterval === 0,
-        }]}
-        yAxis={[{
-          max: yMax,
-          tickLabelStyle: { fontSize: 10 },
-          valueFormatter: (value: number | null) => {
-            if (value == null) return '';
-            if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
-            return value.toString();
+        xAxis={[
+          {
+            data: weekLabels,
+            scaleType: 'band' as const,
+            tickLabelStyle: { fontSize: 10 },
+            tickInterval: (_value: string, index: number) => index % labelInterval === 0,
           },
-        }]}
+        ]}
+        yAxis={[
+          {
+            max: yMax,
+            tickLabelStyle: { fontSize: 10 },
+            valueFormatter: (value: number | null) => {
+              if (value == null) return '';
+              if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
+              return value.toString();
+            },
+          },
+        ]}
         height={160}
         margin={{ top: 5, bottom: 30, left: 30, right: 5 }}
         hideLegend

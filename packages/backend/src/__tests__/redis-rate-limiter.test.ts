@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 
 // Use vi.hoisted() so mock variables are available when vi.mock factories run
 const { mockEval, mockIsRedisConnected, mockCheckRateLimit } = vi.hoisted(() => ({
@@ -60,17 +60,13 @@ describe('checkRateLimitRedis', () => {
     it('allows requests within the limit', async () => {
       mockEval.mockResolvedValue(30); // exactly at limit
 
-      await expect(
-        checkRateLimitRedis('user-1', 'vote', 30, 60_000),
-      ).resolves.toBeUndefined();
+      await expect(checkRateLimitRedis('user-1', 'vote', 30, 60_000)).resolves.toBeUndefined();
     });
 
     it('throws when rate limit is exceeded', async () => {
       mockEval.mockResolvedValue(31); // over limit of 30
 
-      await expect(
-        checkRateLimitRedis('user-1', 'vote', 30, 60_000),
-      ).rejects.toThrow('Rate limit exceeded');
+      await expect(checkRateLimitRedis('user-1', 'vote', 30, 60_000)).rejects.toThrow('Rate limit exceeded');
     });
 
     it('uses correct window bucket based on current time', async () => {
@@ -137,9 +133,7 @@ describe('checkRateLimitRedis', () => {
         throw new Error('Rate limit exceeded. Try again in 30 seconds.');
       });
 
-      await expect(
-        checkRateLimitRedis('user-1', 'vote', 30, 60_000),
-      ).rejects.toThrow('Rate limit exceeded');
+      await expect(checkRateLimitRedis('user-1', 'vote', 30, 60_000)).rejects.toThrow('Rate limit exceeded');
     });
   });
 
@@ -159,18 +153,14 @@ describe('checkRateLimitRedis', () => {
     it('re-throws rate limit errors even when Redis has issues', async () => {
       mockEval.mockRejectedValue(new Error('Rate limit exceeded. Try again in 30 seconds.'));
 
-      await expect(
-        checkRateLimitRedis('user-1', 'vote', 30, 60_000),
-      ).rejects.toThrow('Rate limit exceeded');
+      await expect(checkRateLimitRedis('user-1', 'vote', 30, 60_000)).rejects.toThrow('Rate limit exceeded');
     });
 
     it('does not re-throw non-rate-limit errors', async () => {
       mockEval.mockRejectedValue(new Error('Redis cluster timeout'));
 
       // Should not throw — falls back to in-memory
-      await expect(
-        checkRateLimitRedis('user-1', 'vote', 30, 60_000),
-      ).resolves.toBeUndefined();
+      await expect(checkRateLimitRedis('user-1', 'vote', 30, 60_000)).resolves.toBeUndefined();
     });
   });
 });

@@ -26,15 +26,18 @@ export function useHoldTypePicker({ litUpHoldsMap, setHoldState }: UseHoldTypePi
   const litUpHoldsMapRef = useRef(litUpHoldsMap);
   litUpHoldsMapRef.current = litUpHoldsMap;
 
-  const handleHoldClick = useCallback((holdId: number, anchor: Element) => {
-    // Auto-assign HAND to blank holds so the user gets immediate visual
-    // confirmation that the hold has been selected.
-    const currentState = litUpHoldsMapRef.current[holdId]?.state ?? 'OFF';
-    if (currentState === 'OFF') {
-      setHoldState(holdId, 'HAND');
-    }
-    setPickerState({ holdId, anchor });
-  }, [setHoldState]);
+  const handleHoldClick = useCallback(
+    (holdId: number, anchor: Element) => {
+      // Auto-assign HAND to blank holds so the user gets immediate visual
+      // confirmation that the hold has been selected.
+      const currentState = litUpHoldsMapRef.current[holdId]?.state ?? 'OFF';
+      if (currentState === 'OFF') {
+        setHoldState(holdId, 'HAND');
+      }
+      setPickerState({ holdId, anchor });
+    },
+    [setHoldState],
+  );
 
   const handleSelect = useCallback(
     (state: PickerSelection) => {
@@ -49,9 +52,7 @@ export function useHoldTypePicker({ litUpHoldsMap, setHoldState }: UseHoldTypePi
     setPickerState(null);
   }, []);
 
-  const currentState: PickerSelection = pickerState
-    ? litUpHoldsMap[pickerState.holdId]?.state ?? 'OFF'
-    : 'OFF';
+  const currentState: PickerSelection = pickerState ? (litUpHoldsMap[pickerState.holdId]?.state ?? 'OFF') : 'OFF';
 
   return {
     anchorEl: pickerState?.anchor ?? null,

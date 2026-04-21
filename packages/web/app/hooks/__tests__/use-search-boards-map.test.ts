@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, waitFor } from '@testing-library/react';
 import type { UserBoard, UserBoardConnection } from '@boardsesh/shared-schema';
 
@@ -11,7 +11,12 @@ vi.mock('@/app/lib/graphql/client', () => ({
 }));
 
 vi.mock('@/app/hooks/use-ws-auth-token', () => ({
-  useWsAuthToken: () => ({ token: 'test-token', isAuthenticated: true, isLoading: false, error: null }),
+  useWsAuthToken: () => ({
+    token: 'test-token',
+    isAuthenticated: true,
+    isLoading: false,
+    error: null,
+  }),
 }));
 
 vi.mock('@/app/hooks/use-debounced-value', () => ({

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vite-plus/test';
 import { startServer } from '../server';
 
 const BACKEND_PORT = 8083; // Use different port to avoid conflicts with other tests
@@ -14,10 +14,7 @@ async function fetchRest<T>(path: string): Promise<T> {
 }
 
 // Helper to call GraphQL API
-async function fetchGraphQL<T>(
-  query: string,
-  variables?: Record<string, unknown>
-): Promise<T> {
+async function fetchGraphQL<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
   const res = await fetch(`http://localhost:${BACKEND_PORT}/graphql`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -50,9 +47,8 @@ describe('REST vs GraphQL Parity Tests', () => {
   describe('Board Configuration', () => {
     it('grades should match between REST and GraphQL for kilter', async () => {
       // REST API call
-      const restResult = await fetchRest<
-        Array<{ difficulty_id: number; difficulty_name: string }>
-      >('/api/v1/grades/kilter');
+      const restResult =
+        await fetchRest<Array<{ difficulty_id: number; difficulty_name: string }>>('/api/v1/grades/kilter');
 
       // GraphQL API call
       const gqlResult = await fetchGraphQL<{
@@ -71,9 +67,8 @@ describe('REST vs GraphQL Parity Tests', () => {
 
     it('grades should match between REST and GraphQL for tension', async () => {
       // REST API call
-      const restResult = await fetchRest<
-        Array<{ difficulty_id: number; difficulty_name: string }>
-      >('/api/v1/grades/tension');
+      const restResult =
+        await fetchRest<Array<{ difficulty_id: number; difficulty_name: string }>>('/api/v1/grades/tension');
 
       // GraphQL API call
       const gqlResult = await fetchGraphQL<{
@@ -92,9 +87,7 @@ describe('REST vs GraphQL Parity Tests', () => {
 
     it('should return error for invalid board name', async () => {
       try {
-        await fetchGraphQL<{ grades: unknown }>(
-          `query { grades(boardName: "invalid") { difficultyId name } }`
-        );
+        await fetchGraphQL<{ grades: unknown }>(`query { grades(boardName: "invalid") { difficultyId name } }`);
         expect.fail('Should have thrown an error');
       } catch (error) {
         expect((error as Error).message).toContain('Board name must be');
@@ -107,16 +100,12 @@ describe('REST vs GraphQL Parity Tests', () => {
       const layoutId = 1;
 
       // REST API call
-      const restResult = await fetchRest<Array<{ angle: number }>>(
-        `/api/v1/angles/kilter/${layoutId}`
-      );
+      const restResult = await fetchRest<Array<{ angle: number }>>(`/api/v1/angles/kilter/${layoutId}`);
 
       // GraphQL API call
       const gqlResult = await fetchGraphQL<{
         angles: Array<{ angle: number }>;
-      }>(
-        `query { angles(boardName: "kilter", layoutId: ${layoutId}) { angle } }`
-      );
+      }>(`query { angles(boardName: "kilter", layoutId: ${layoutId}) { angle } }`);
 
       // Compare lengths
       expect(gqlResult.angles.length).toBe(restResult.length);
@@ -153,7 +142,7 @@ describe('REST vs GraphQL Parity Tests', () => {
             hasMore
           }
         }`,
-        { input: searchParams }
+        { input: searchParams },
       );
 
       // For now, just verify the structure is correct
@@ -188,7 +177,7 @@ describe('REST vs GraphQL Parity Tests', () => {
       const gqlResult = await fetchGraphQL<{ favorites: string[] }>(
         `query {
           favorites(boardName: "kilter", climbUuids: ["test-uuid"], angle: 40)
-        }`
+        }`,
       );
 
       expect(gqlResult.favorites).toEqual([]);
@@ -203,7 +192,7 @@ describe('REST vs GraphQL Parity Tests', () => {
             updateProfile(input: { displayName: "Test" }) {
               id
             }
-          }`
+          }`,
         );
         expect.fail('Should have thrown an error');
       } catch (error) {
@@ -218,7 +207,7 @@ describe('REST vs GraphQL Parity Tests', () => {
             toggleFavorite(input: { boardName: "kilter", climbUuid: "test-uuid", angle: 40 }) {
               favorited
             }
-          }`
+          }`,
         );
         expect.fail('Should have thrown an error');
       } catch (error) {

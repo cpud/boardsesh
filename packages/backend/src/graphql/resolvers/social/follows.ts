@@ -14,7 +14,7 @@ export const socialFollowQueries = {
   followers: async (
     _: unknown,
     { input }: { input: { userId: string; limit?: number; offset?: number } },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ) => {
     const validatedInput = validateInput(FollowListInputSchema, input, 'input');
     const userId = validatedInput.userId;
@@ -48,10 +48,7 @@ export const socialFollowQueries = {
 
     // Batch-fetch follower/following counts and isFollowedByMe (3 queries instead of 3N)
     const userIds = results.map((r) => r.followerId);
-    const enrichments = await batchEnrichUserProfiles(
-      userIds,
-      ctx.isAuthenticated ? ctx.userId : undefined,
-    );
+    const enrichments = await batchEnrichUserProfiles(userIds, ctx.isAuthenticated ? ctx.userId : undefined);
 
     const users = results.map((row) => {
       const enrichment = enrichments.get(row.followerId);
@@ -78,7 +75,7 @@ export const socialFollowQueries = {
   following: async (
     _: unknown,
     { input }: { input: { userId: string; limit?: number; offset?: number } },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ) => {
     const validatedInput = validateInput(FollowListInputSchema, input, 'input');
     const userId = validatedInput.userId;
@@ -112,10 +109,7 @@ export const socialFollowQueries = {
 
     // Batch-fetch follower/following counts and isFollowedByMe (3 queries instead of 3N)
     const userIds = results.map((r) => r.followingId);
-    const enrichments = await batchEnrichUserProfiles(
-      userIds,
-      ctx.isAuthenticated ? ctx.userId : undefined,
-    );
+    const enrichments = await batchEnrichUserProfiles(userIds, ctx.isAuthenticated ? ctx.userId : undefined);
 
     const users = results.map((row) => {
       const enrichment = enrichments.get(row.followingId);
@@ -142,7 +136,7 @@ export const socialFollowQueries = {
   isFollowing: async (
     _: unknown,
     { userId: targetUserId }: { userId: string },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ): Promise<boolean> => {
     requireAuthenticated(ctx);
     const myUserId = ctx.userId!;
@@ -150,12 +144,7 @@ export const socialFollowQueries = {
     const [result] = await db
       .select({ count: count() })
       .from(dbSchema.userFollows)
-      .where(
-        and(
-          eq(dbSchema.userFollows.followerId, myUserId),
-          eq(dbSchema.userFollows.followingId, targetUserId)
-        )
-      );
+      .where(and(eq(dbSchema.userFollows.followerId, myUserId), eq(dbSchema.userFollows.followingId, targetUserId)));
 
     return Number(result?.count || 0) > 0;
   },
@@ -163,11 +152,7 @@ export const socialFollowQueries = {
   /**
    * Get a public user profile by ID
    */
-  publicProfile: async (
-    _: unknown,
-    { userId }: { userId: string },
-    ctx: ConnectionContext
-  ) => {
+  publicProfile: async (_: unknown, { userId }: { userId: string }, ctx: ConnectionContext) => {
     // Get user and profile
     const users = await db
       .select({
@@ -189,10 +174,7 @@ export const socialFollowQueries = {
     const user = users[0];
 
     // Batch-fetch counts (single user, but uses same efficient pattern)
-    const enrichments = await batchEnrichUserProfiles(
-      [userId],
-      ctx.isAuthenticated ? ctx.userId : undefined,
-    );
+    const enrichments = await batchEnrichUserProfiles([userId], ctx.isAuthenticated ? ctx.userId : undefined);
     const enrichment = enrichments.get(userId);
 
     return {
@@ -213,7 +195,7 @@ export const socialFollowMutations = {
   followUser: async (
     _: unknown,
     { input }: { input: { userId: string } },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ): Promise<boolean> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 30, 'follow');
@@ -268,7 +250,7 @@ export const socialFollowMutations = {
   unfollowUser: async (
     _: unknown,
     { input }: { input: { userId: string } },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ): Promise<boolean> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 30, 'follow');
@@ -279,12 +261,7 @@ export const socialFollowMutations = {
 
     await db
       .delete(dbSchema.userFollows)
-      .where(
-        and(
-          eq(dbSchema.userFollows.followerId, myUserId),
-          eq(dbSchema.userFollows.followingId, targetUserId)
-        )
-      );
+      .where(and(eq(dbSchema.userFollows.followerId, myUserId), eq(dbSchema.userFollows.followingId, targetUserId)));
 
     return true;
   },

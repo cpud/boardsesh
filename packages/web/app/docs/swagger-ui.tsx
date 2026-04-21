@@ -54,7 +54,9 @@ export default function SwaggerUIComponent() {
       <div className={styles.swaggerLoading}>
         <CircularProgress size={48} />
         <div className={styles.swaggerLoadingText}>
-          <Typography variant="body2" component="span" color="text.secondary">Loading API documentation...</Typography>
+          <Typography variant="body2" component="span" color="text.secondary">
+            Loading API documentation...
+          </Typography>
         </div>
       </div>
     );
@@ -71,9 +73,7 @@ export default function SwaggerUIComponent() {
           <Typography variant="body1" component="p" className={styles.swaggerInstructionsFinal}>
             Run the following command to generate it:
           </Typography>
-          <pre className={styles.swaggerCommandBlock}>
-            bun run generate:openapi
-          </pre>
+          <pre className={styles.swaggerCommandBlock}>bun run generate:openapi</pre>
           <Typography variant="body1" component="p" color="text.secondary" className={styles.swaggerNote}>
             In production, this runs automatically during the build process.
           </Typography>

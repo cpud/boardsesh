@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -272,9 +272,12 @@ describe('CreateClimbForm', () => {
       fireEvent.click(button);
       await waitFor(() => {
         expect(mockReplaceQueueItem).toHaveBeenCalled();
-        expect(mockReplaceQueueItem).toHaveBeenCalledWith('queue-item-1', expect.objectContaining({
-          angle: 40,
-        }));
+        expect(mockReplaceQueueItem).toHaveBeenCalledWith(
+          'queue-item-1',
+          expect.objectContaining({
+            angle: 40,
+          }),
+        );
       });
     });
   });

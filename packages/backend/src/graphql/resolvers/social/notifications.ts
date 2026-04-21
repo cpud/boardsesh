@@ -34,7 +34,9 @@ function mapNotificationRow(row: NotificationRow) {
     entityType: row.entityType,
     entityId: row.entityId,
     commentBody: row.commentBody
-      ? (row.commentBody.length > 100 ? row.commentBody.slice(0, 100) + '...' : row.commentBody)
+      ? row.commentBody.length > 100
+        ? row.commentBody.slice(0, 100) + '...'
+        : row.commentBody
       : undefined,
     climbName: undefined,
     climbUuid: undefined,
@@ -88,7 +90,11 @@ export const socialNotificationQueries = {
       OFFSET ${offset}
     `);
 
-    const rows = (rawResult as unknown as { rows: (NotificationRow & { totalCount: string; unreadCount: string })[] }).rows;
+    const rows = (
+      rawResult as unknown as {
+        rows: (NotificationRow & { totalCount: string; unreadCount: string })[];
+      }
+    ).rows;
     const notifications = rows.map(mapNotificationRow);
     const totalCount = rows.length > 0 ? Number(rows[0].totalCount) : 0;
     const unreadCount = rows.length > 0 ? Number(rows[0].unreadCount) : 0;
@@ -101,11 +107,7 @@ export const socialNotificationQueries = {
     };
   },
 
-  groupedNotifications: async (
-    _: unknown,
-    args: { limit?: number; offset?: number },
-    ctx: ConnectionContext,
-  ) => {
+  groupedNotifications: async (_: unknown, args: { limit?: number; offset?: number }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     const userId = ctx.userId!;
 
@@ -200,7 +202,9 @@ export const socialNotificationQueries = {
         actorCount: Number(row.actorCount),
         actors,
         commentBody: row.commentBody
-          ? (row.commentBody.length > 100 ? row.commentBody.slice(0, 100) + '...' : row.commentBody)
+          ? row.commentBody.length > 100
+            ? row.commentBody.slice(0, 100) + '...'
+            : row.commentBody
           : undefined,
         climbName: undefined as string | undefined,
         climbUuid: undefined as string | undefined,
@@ -208,9 +212,8 @@ export const socialNotificationQueries = {
         proposalUuid: undefined as string | undefined,
         setterUsername: undefined as string | undefined,
         isRead: row.allRead,
-        createdAt: row.latestCreatedAt instanceof Date
-          ? row.latestCreatedAt.toISOString()
-          : String(row.latestCreatedAt),
+        createdAt:
+          row.latestCreatedAt instanceof Date ? row.latestCreatedAt.toISOString() : String(row.latestCreatedAt),
       };
     });
 
@@ -243,7 +246,11 @@ export const socialNotificationQueries = {
         .from(dbSchema.boardClimbs)
         .where(inArray(dbSchema.boardClimbs.uuid, climbEntityIds));
       for (const row of climbRows) {
-        climbMap.set(row.uuid, { name: row.name, boardType: row.boardType, setterUsername: row.setterUsername });
+        climbMap.set(row.uuid, {
+          name: row.name,
+          boardType: row.boardType,
+          setterUsername: row.setterUsername,
+        });
       }
     }
 
@@ -276,7 +283,11 @@ export const socialNotificationQueries = {
           .where(inArray(dbSchema.boardClimbs.uuid, proposalClimbUuids));
         for (const row of proposalClimbRows) {
           if (!climbMap.has(row.uuid)) {
-            climbMap.set(row.uuid, { name: row.name, boardType: row.boardType, setterUsername: row.setterUsername });
+            climbMap.set(row.uuid, {
+              name: row.name,
+              boardType: row.boardType,
+              setterUsername: row.setterUsername,
+            });
           }
         }
       }
@@ -317,12 +328,7 @@ export const socialNotificationQueries = {
     const unreadCountResult = await db
       .select({ count: count() })
       .from(dbSchema.notifications)
-      .where(
-        and(
-          eq(dbSchema.notifications.recipientId, userId),
-          isNull(dbSchema.notifications.readAt),
-        ),
-      );
+      .where(and(eq(dbSchema.notifications.recipientId, userId), isNull(dbSchema.notifications.readAt)));
     const unreadCount = Number(unreadCountResult[0]?.count || 0);
 
     return {
@@ -333,23 +339,14 @@ export const socialNotificationQueries = {
     };
   },
 
-  unreadNotificationCount: async (
-    _: unknown,
-    __: unknown,
-    ctx: ConnectionContext,
-  ): Promise<number> => {
+  unreadNotificationCount: async (_: unknown, __: unknown, ctx: ConnectionContext): Promise<number> => {
     requireAuthenticated(ctx);
     const userId = ctx.userId!;
 
     const result = await db
       .select({ count: count() })
       .from(dbSchema.notifications)
-      .where(
-        and(
-          eq(dbSchema.notifications.recipientId, userId),
-          isNull(dbSchema.notifications.readAt),
-        ),
-      );
+      .where(and(eq(dbSchema.notifications.recipientId, userId), isNull(dbSchema.notifications.readAt)));
 
     return Number(result[0]?.count || 0);
   },
@@ -368,12 +365,7 @@ export const socialNotificationMutations = {
     await db
       .update(dbSchema.notifications)
       .set({ readAt: new Date() })
-      .where(
-        and(
-          eq(dbSchema.notifications.uuid, notificationUuid),
-          eq(dbSchema.notifications.recipientId, userId),
-        ),
-      );
+      .where(and(eq(dbSchema.notifications.uuid, notificationUuid), eq(dbSchema.notifications.recipientId, userId)));
 
     return true;
   },
@@ -415,11 +407,7 @@ export const socialNotificationMutations = {
     return result.length;
   },
 
-  markAllNotificationsRead: async (
-    _: unknown,
-    __: unknown,
-    ctx: ConnectionContext,
-  ): Promise<boolean> => {
+  markAllNotificationsRead: async (_: unknown, __: unknown, ctx: ConnectionContext): Promise<boolean> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 5, 'notification_read_all');
     const userId = ctx.userId!;
@@ -427,12 +415,7 @@ export const socialNotificationMutations = {
     await db
       .update(dbSchema.notifications)
       .set({ readAt: new Date() })
-      .where(
-        and(
-          eq(dbSchema.notifications.recipientId, userId),
-          isNull(dbSchema.notifications.readAt),
-        ),
-      );
+      .where(and(eq(dbSchema.notifications.recipientId, userId), isNull(dbSchema.notifications.readAt)));
 
     return true;
   },

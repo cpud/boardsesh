@@ -112,11 +112,14 @@ export function useSwipeActions({
   const swipeZoneRef = useRef<SwipeZone>('none');
   const { detect: detectDirection, reset: resetDirection, isHorizontalRef } = useSwipeDirection();
 
-  const updateSwipeZone = useCallback((zone: SwipeZone) => {
-    if (swipeZoneRef.current === zone) return;
-    swipeZoneRef.current = zone;
-    onSwipeZoneChange?.(zone);
-  }, [onSwipeZoneChange]);
+  const updateSwipeZone = useCallback(
+    (zone: SwipeZone) => {
+      if (swipeZoneRef.current === zone) return;
+      swipeZoneRef.current = zone;
+      onSwipeZoneChange?.(zone);
+    },
+    [onSwipeZoneChange],
+  );
 
   const contentRef = useCallback((node: HTMLElement | null) => {
     contentEl.current = node;
@@ -131,31 +134,34 @@ export function useSwipeActions({
   }, []);
 
   /** Apply the current offset to the DOM elements directly */
-  const applyOffset = useCallback((offset: number) => {
-    offsetRef.current = offset;
-    onSwipeOffsetChange?.(offset);
+  const applyOffset = useCallback(
+    (offset: number) => {
+      offsetRef.current = offset;
+      onSwipeOffsetChange?.(offset);
 
-    if (contentEl.current) {
-      contentEl.current.style.transform = `translateX(${offset}px)`;
-      // Only apply transition when snapping back to zero
-      contentEl.current.style.transition = offset === 0 ? 'transform 150ms ease-out, opacity 150ms ease-out' : 'none';
-    }
+      if (contentEl.current) {
+        contentEl.current.style.transform = `translateX(${offset}px)`;
+        // Only apply transition when snapping back to zero
+        contentEl.current.style.transition = offset === 0 ? 'transform 150ms ease-out, opacity 150ms ease-out' : 'none';
+      }
 
-    const absOffset = Math.abs(offset);
-    const opacity = Math.min(1, absOffset / swipeThreshold);
+      const absOffset = Math.abs(offset);
+      const opacity = Math.min(1, absOffset / swipeThreshold);
 
-    // Left action (revealed on swipe right, offset > 0)
-    if (leftActionEl.current) {
-      leftActionEl.current.style.opacity = String(offset > 0 ? opacity : 0);
-      leftActionEl.current.style.visibility = offset > 0 ? 'visible' : 'hidden';
-    }
+      // Left action (revealed on swipe right, offset > 0)
+      if (leftActionEl.current) {
+        leftActionEl.current.style.opacity = String(offset > 0 ? opacity : 0);
+        leftActionEl.current.style.visibility = offset > 0 ? 'visible' : 'hidden';
+      }
 
-    // Right action (revealed on swipe left, offset < 0)
-    if (rightActionEl.current) {
-      rightActionEl.current.style.opacity = String(offset < 0 ? opacity : 0);
-      rightActionEl.current.style.visibility = offset < 0 ? 'visible' : 'hidden';
-    }
-  }, [swipeThreshold, onSwipeOffsetChange]);
+      // Right action (revealed on swipe left, offset < 0)
+      if (rightActionEl.current) {
+        rightActionEl.current.style.opacity = String(offset < 0 ? opacity : 0);
+        rightActionEl.current.style.visibility = offset < 0 ? 'visible' : 'hidden';
+      }
+    },
+    [swipeThreshold, onSwipeOffsetChange],
+  );
 
   /** Snap offset back to zero (no action taken) */
   const resetOffset = useCallback(() => {

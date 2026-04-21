@@ -21,18 +21,40 @@ import SaveIcon from '@mui/icons-material/Save';
 import { themeTokens } from '@/app/theme/theme-config';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  GET_COMMUNITY_SETTINGS,
-  SET_COMMUNITY_SETTING,
-} from '@/app/lib/graphql/operations/proposals';
+import { GET_COMMUNITY_SETTINGS, SET_COMMUNITY_SETTING } from '@/app/lib/graphql/operations/proposals';
 import type { CommunitySettingType } from '@boardsesh/shared-schema';
 
 const DEFAULT_SETTINGS = [
-  { key: 'approval_threshold', label: 'Approval Threshold', description: 'Weighted votes needed for auto-approval', defaultValue: '5' },
-  { key: 'outlier_min_ascents', label: 'Outlier Min Ascents', description: 'Min ascents for outlier detection', defaultValue: '10' },
-  { key: 'outlier_grade_diff', label: 'Outlier Grade Diff', description: 'Grade difference threshold for outlier', defaultValue: '2' },
-  { key: 'admin_vote_weight', label: 'Admin Vote Weight', description: 'Vote weight multiplier for admins', defaultValue: '3' },
-  { key: 'leader_vote_weight', label: 'Leader Vote Weight', description: 'Vote weight multiplier for leaders', defaultValue: '2' },
+  {
+    key: 'approval_threshold',
+    label: 'Approval Threshold',
+    description: 'Weighted votes needed for auto-approval',
+    defaultValue: '5',
+  },
+  {
+    key: 'outlier_min_ascents',
+    label: 'Outlier Min Ascents',
+    description: 'Min ascents for outlier detection',
+    defaultValue: '10',
+  },
+  {
+    key: 'outlier_grade_diff',
+    label: 'Outlier Grade Diff',
+    description: 'Grade difference threshold for outlier',
+    defaultValue: '2',
+  },
+  {
+    key: 'admin_vote_weight',
+    label: 'Admin Vote Weight',
+    description: 'Vote weight multiplier for admins',
+    defaultValue: '3',
+  },
+  {
+    key: 'leader_vote_weight',
+    label: 'Leader Vote Weight',
+    description: 'Vote weight multiplier for leaders',
+    defaultValue: '2',
+  },
 ];
 
 export default function CommunitySettingsPanel() {
@@ -48,10 +70,10 @@ export default function CommunitySettingsPanel() {
     if (!token) return;
     try {
       const client = createGraphQLHttpClient(token);
-      const result = await client.request<{ communitySettings: CommunitySettingType[] }>(
-        GET_COMMUNITY_SETTINGS,
-        { scope, scopeKey: scope === 'global' ? '' : scopeKey },
-      );
+      const result = await client.request<{ communitySettings: CommunitySettingType[] }>(GET_COMMUNITY_SETTINGS, {
+        scope,
+        scopeKey: scope === 'global' ? '' : scopeKey,
+      });
       setSettings(result.communitySettings);
       const values: Record<string, string> = {};
       for (const s of result.communitySettings) {
@@ -81,22 +103,20 @@ export default function CommunitySettingsPanel() {
     setSaving(true);
     try {
       const client = createGraphQLHttpClient(token);
-      const promises = DEFAULT_SETTINGS
-        .filter((def) => {
-          const savedValue = settings.find((s) => s.key === def.key)?.value;
-          const editValue = editValues[def.key];
-          return editValue !== undefined && editValue !== '' && editValue !== (savedValue ?? '');
-        })
-        .map((def) =>
-          client.request(SET_COMMUNITY_SETTING, {
-            input: {
-              scope,
-              scopeKey: scope === 'global' ? '' : scopeKey,
-              key: def.key,
-              value: editValues[def.key],
-            },
-          }),
-        );
+      const promises = DEFAULT_SETTINGS.filter((def) => {
+        const savedValue = settings.find((s) => s.key === def.key)?.value;
+        const editValue = editValues[def.key];
+        return editValue !== undefined && editValue !== '' && editValue !== (savedValue ?? '');
+      }).map((def) =>
+        client.request(SET_COMMUNITY_SETTING, {
+          input: {
+            scope,
+            scopeKey: scope === 'global' ? '' : scopeKey,
+            key: def.key,
+            value: editValues[def.key],
+          },
+        }),
+      );
       await Promise.all(promises);
       setSnackbar(`Saved ${promises.length} setting${promises.length !== 1 ? 's' : ''}`);
       fetchSettings();
@@ -155,7 +175,9 @@ export default function CommunitySettingsPanel() {
             {DEFAULT_SETTINGS.map((def) => (
               <TableRow key={def.key}>
                 <TableCell>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{def.label}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {def.label}
+                  </Typography>
                 </TableCell>
                 <TableCell>
                   <Typography variant="caption" sx={{ color: themeTokens.neutral[500] }}>
@@ -193,12 +215,7 @@ export default function CommunitySettingsPanel() {
         </Button>
       </Box>
 
-      <Snackbar
-        open={!!snackbar}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar('')}
-        message={snackbar}
-      />
+      <Snackbar open={!!snackbar} autoHideDuration={3000} onClose={() => setSnackbar('')} message={snackbar} />
     </Box>
   );
 }

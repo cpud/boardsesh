@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 
@@ -21,10 +21,7 @@ vi.mock('@/app/profile/[user_id]/hooks/use-profile-data', () => ({
 
 vi.mock('@/app/profile/[user_id]/components/stats-summary', () => ({
   default: (props: { weeklyBars?: unknown[] | null }) => (
-    <div
-      data-testid="stats-summary"
-      data-has-weekly-bars={props.weeklyBars ? 'true' : 'false'}
-    />
+    <div data-testid="stats-summary" data-has-weekly-bars={props.weeklyBars ? 'true' : 'false'} />
   ),
 }));
 
@@ -111,19 +108,21 @@ describe('YouProgressContent', () => {
   });
 
   it('passes weekly bars into StatsSummary and keeps BoardStatsSection fallback-only', () => {
-    mockUseProfileData.mockReturnValue(mockProfileDataReturn({
-      filteredLogbook: [{
-        climbed_at: new Date().toISOString(),
-        difficulty: 12,
-        tries: 2,
-        angle: 40,
-        status: 'send',
-        climbUuid: 'climb-1',
-      }],
-      weeklyBars: [
-        { key: '2026-W1', label: 'W1', segments: [{ value: 3, color: '#ccc', label: 'V4' }] },
-      ],
-    }));
+    mockUseProfileData.mockReturnValue(
+      mockProfileDataReturn({
+        filteredLogbook: [
+          {
+            climbed_at: new Date().toISOString(),
+            difficulty: 12,
+            tries: 2,
+            angle: 40,
+            status: 'send',
+            climbUuid: 'climb-1',
+          },
+        ],
+        weeklyBars: [{ key: '2026-W1', label: 'W1', segments: [{ value: 3, color: '#ccc', label: 'V4' }] }],
+      }),
+    );
 
     render(<YouProgressContent userId="user-1" />);
 

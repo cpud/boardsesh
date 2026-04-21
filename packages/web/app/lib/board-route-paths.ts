@@ -11,7 +11,7 @@ export function isBoardRoutePath(pathname: string | null | undefined): boolean {
   if (pathname.startsWith('/b/')) return true;
 
   const [firstSegment] = getPathSegments(pathname);
-  return firstSegment !== undefined && BOARD_NAMES.has(firstSegment as typeof SUPPORTED_BOARDS[number]);
+  return firstSegment !== undefined && BOARD_NAMES.has(firstSegment as (typeof SUPPORTED_BOARDS)[number]);
 }
 
 export function isBoardListPath(pathname: string | null | undefined): boolean {

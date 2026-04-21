@@ -18,7 +18,7 @@ import { createScriptDb } from './db-connection.js';
 // Helper to extract rows from drizzle execute result (shape varies by driver)
 function rows<T>(result: unknown): T[] {
   const r = result as { rows?: T[] };
-  return Array.isArray(r) ? r : r.rows ?? [];
+  return Array.isArray(r) ? r : (r.rows ?? []);
 }
 
 // Simplified local copy of HOLD_STATE_MAP (role code → role name only, no colors).
@@ -26,29 +26,69 @@ function rows<T>(result: unknown): T[] {
 // package intentionally does not depend on board-constants. Keep in sync manually.
 const HOLD_STATE_MAP: Record<string, Record<number, string>> = {
   kilter: {
-    12: 'STARTING', 13: 'HAND', 14: 'FINISH', 15: 'FOOT',
-    20: 'STARTING', 21: 'HAND', 22: 'FINISH', 23: 'FOOT',
-    24: 'STARTING', 25: 'HAND', 26: 'FINISH', 27: 'FOOT',
-    28: 'STARTING', 29: 'HAND', 30: 'FINISH', 31: 'FOOT',
-    32: 'STARTING', 33: 'HAND', 34: 'FINISH', 35: 'FOOT',
-    36: 'HAND', 37: 'HAND', 38: 'HAND', 39: 'HAND', 40: 'HAND', 41: 'HAND',
-    42: 'STARTING', 43: 'HAND', 44: 'FINISH', 45: 'FOOT',
+    12: 'STARTING',
+    13: 'HAND',
+    14: 'FINISH',
+    15: 'FOOT',
+    20: 'STARTING',
+    21: 'HAND',
+    22: 'FINISH',
+    23: 'FOOT',
+    24: 'STARTING',
+    25: 'HAND',
+    26: 'FINISH',
+    27: 'FOOT',
+    28: 'STARTING',
+    29: 'HAND',
+    30: 'FINISH',
+    31: 'FOOT',
+    32: 'STARTING',
+    33: 'HAND',
+    34: 'FINISH',
+    35: 'FOOT',
+    36: 'HAND',
+    37: 'HAND',
+    38: 'HAND',
+    39: 'HAND',
+    40: 'HAND',
+    41: 'HAND',
+    42: 'STARTING',
+    43: 'HAND',
+    44: 'FINISH',
+    45: 'FOOT',
   },
   tension: {
-    1: 'STARTING', 2: 'HAND', 3: 'FINISH', 4: 'FOOT',
-    5: 'STARTING', 6: 'HAND', 7: 'FINISH', 8: 'FOOT',
+    1: 'STARTING',
+    2: 'HAND',
+    3: 'FINISH',
+    4: 'FOOT',
+    5: 'STARTING',
+    6: 'HAND',
+    7: 'FINISH',
+    8: 'FOOT',
   },
   moonboard: {
-    42: 'STARTING', 43: 'HAND', 44: 'FINISH',
+    42: 'STARTING',
+    43: 'HAND',
+    44: 'FINISH',
   },
   decoy: {
-    1: 'STARTING', 2: 'HAND', 3: 'FINISH', 4: 'FOOT',
+    1: 'STARTING',
+    2: 'HAND',
+    3: 'FINISH',
+    4: 'FOOT',
   },
   touchstone: {
-    1: 'STARTING', 2: 'HAND', 3: 'FINISH', 4: 'FOOT',
+    1: 'STARTING',
+    2: 'HAND',
+    3: 'FINISH',
+    4: 'FOOT',
   },
   grasshopper: {
-    1: 'STARTING', 2: 'HAND', 3: 'FINISH', 4: 'FOOT',
+    1: 'STARTING',
+    2: 'HAND',
+    3: 'FINISH',
+    4: 'FOOT',
   },
 };
 
@@ -57,10 +97,14 @@ const STARTING_ROLES: Record<string, Set<number>> = {};
 const FINISH_ROLES: Record<string, Set<number>> = {};
 for (const [board, roles] of Object.entries(HOLD_STATE_MAP)) {
   STARTING_ROLES[board] = new Set(
-    Object.entries(roles).filter(([, name]) => name === 'STARTING').map(([code]) => Number(code)),
+    Object.entries(roles)
+      .filter(([, name]) => name === 'STARTING')
+      .map(([code]) => Number(code)),
   );
   FINISH_ROLES[board] = new Set(
-    Object.entries(roles).filter(([, name]) => name === 'FINISH').map(([code]) => Number(code)),
+    Object.entries(roles)
+      .filter(([, name]) => name === 'FINISH')
+      .map(([code]) => Number(code)),
   );
 }
 
@@ -109,7 +153,10 @@ function analyzeClimb(climb: ClimbRow): Problem[] {
 
   // Check basic format
   if (!/^p\d+r-?\d+/.test(frames)) {
-    problems.push({ type: 'malformed_frames', detail: `frames doesn't start with expected pattern: "${frames.slice(0, 40)}..."` });
+    problems.push({
+      type: 'malformed_frames',
+      detail: `frames doesn't start with expected pattern: "${frames.slice(0, 40)}..."`,
+    });
     return problems;
   }
 
@@ -177,7 +224,13 @@ async function main() {
     `);
 
     let unmappedCount = 0;
-    for (const role of rows<{ board_type: string; id: number; name: string; full_name: string; product_id: number }>(dbRoles)) {
+    for (const role of rows<{
+      board_type: string;
+      id: number;
+      name: string;
+      full_name: string;
+      product_id: number;
+    }>(dbRoles)) {
       const boardMap = HOLD_STATE_MAP[role.board_type];
       if (boardMap && !(role.id in boardMap)) {
         console.log(`  UNMAPPED: ${role.board_type} role ${role.id} "${role.full_name}" (product ${role.product_id})`);
@@ -239,7 +292,9 @@ async function main() {
 
       const totalProblematic = problemClimbs.length;
       console.log(`  Total climbs: ${climbs.length.toLocaleString()}`);
-      console.log(`  Problematic:  ${totalProblematic.toLocaleString()} (${climbs.length > 0 ? ((totalProblematic / climbs.length) * 100).toFixed(2) : '0.00'}%)`);
+      console.log(
+        `  Problematic:  ${totalProblematic.toLocaleString()} (${climbs.length > 0 ? ((totalProblematic / climbs.length) * 100).toFixed(2) : '0.00'}%)`,
+      );
       console.log('');
       console.log('  Breakdown:');
       for (const [type, count] of Object.entries(problemCounts)) {
@@ -253,9 +308,13 @@ async function main() {
         problemClimbs.sort((a, b) => b.ascents - a.ascents);
         const topN = problemClimbs.slice(0, limit);
 
-        console.log(`\n  Top ${Math.min(limit, totalProblematic)} affected climbs (by total ascents across all angles):\n`);
+        console.log(
+          `\n  Top ${Math.min(limit, totalProblematic)} affected climbs (by total ascents across all angles):\n`,
+        );
         for (const { climb, problems, ascents } of topN) {
-          console.log(`    "${climb.name || '(unnamed)'}" by ${climb.setter_username || '?'} — ${ascents.toLocaleString()} ascents ${climb.is_listed === false ? '[unlisted]' : ''}`);
+          console.log(
+            `    "${climb.name || '(unnamed)'}" by ${climb.setter_username || '?'} — ${ascents.toLocaleString()} ascents ${climb.is_listed === false ? '[unlisted]' : ''}`,
+          );
           for (const p of problems) {
             console.log(`      → ${p.type}: ${p.detail}`);
           }

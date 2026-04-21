@@ -31,20 +31,15 @@ import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
 import { track } from '@vercel/analytics';
 import { setClimbSessionCookie } from '@/app/lib/climb-session-cookie';
 
-const StartSeshDrawer = dynamic(
-  () => import('@/app/components/session-creation/start-sesh-drawer'),
-  { ssr: false },
-);
+const StartSeshDrawer = dynamic(() => import('@/app/components/session-creation/start-sesh-drawer'), { ssr: false });
 
-const UnifiedSearchDrawer = dynamic(
-  () => import('@/app/components/search-drawer/unified-search-drawer'),
-  { ssr: false },
-);
+const UnifiedSearchDrawer = dynamic(() => import('@/app/components/search-drawer/unified-search-drawer'), {
+  ssr: false,
+});
 
-const BoardSelectorDrawer = dynamic(
-  () => import('@/app/components/board-selector-drawer/board-selector-drawer'),
-  { ssr: false },
-);
+const BoardSelectorDrawer = dynamic(() => import('@/app/components/board-selector-drawer/board-selector-drawer'), {
+  ssr: false,
+});
 
 interface HomePageContentProps {
   boardConfigs: BoardConfigData;
@@ -101,14 +96,14 @@ function OnboardingCard({ icon, title, description, onClick }: OnboardingCardPro
             <Typography
               variant="body1"
               fontWeight={themeTokens.typography.fontWeight.semibold}
-              sx={{ color: 'var(--neutral-900)', lineHeight: themeTokens.typography.lineHeight.tight }}
+              sx={{
+                color: 'var(--neutral-900)',
+                lineHeight: themeTokens.typography.lineHeight.tight,
+              }}
             >
               {title}
             </Typography>
-            <Typography
-              variant="body2"
-              sx={{ color: 'var(--neutral-500)', mt: 0.25 }}
-            >
+            <Typography variant="body2" sx={{ color: 'var(--neutral-500)', mt: 0.25 }}>
               {description}
             </Typography>
           </Box>
@@ -213,7 +208,7 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
 
   useEffect(() => {
     let cancelled = false;
-    const classifyWeb = () => /Android/i.test(navigator.userAgent) ? 'android-web' : 'other-web';
+    const classifyWeb = () => (/Android/i.test(navigator.userAgent) ? 'android-web' : 'other-web');
 
     if (isNativeApp()) {
       setInstallPlatform('native');
@@ -224,12 +219,14 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
     // injected window.Capacitor yet. Wait for it before classifying as web,
     // otherwise native users get stuck with install CTAs.
     if (isCapacitorWebView()) {
-      waitForCapacitor().then((appeared) => {
-        if (cancelled) return;
-        setInstallPlatform(appeared && isNativeApp() ? 'native' : classifyWeb());
-      }).catch(() => {
-        if (!cancelled) setInstallPlatform(classifyWeb());
-      });
+      waitForCapacitor()
+        .then((appeared) => {
+          if (cancelled) return;
+          setInstallPlatform(appeared && isNativeApp() ? 'native' : classifyWeb());
+        })
+        .catch(() => {
+          if (!cancelled) setInstallPlatform(classifyWeb());
+        });
       return () => {
         cancelled = true;
       };
@@ -252,44 +249,62 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
 
   const isAuthenticated = status === 'authenticated';
 
-  const handleBoardClick = useCallback((board: UserBoard) => {
-    if (board.slug) {
-      router.push(constructBoardSlugListUrl(board.slug, board.angle));
-    }
-  }, [router]);
+  const handleBoardClick = useCallback(
+    (board: UserBoard) => {
+      if (board.slug) {
+        router.push(constructBoardSlugListUrl(board.slug, board.angle));
+      }
+    },
+    [router],
+  );
 
-  const handleConfigClick = useCallback((config: PopularBoardConfig) => {
-    const angle = getDefaultAngleForBoard(config.boardType);
-    if (config.layoutName && config.sizeName && config.setNames.length > 0) {
-      router.push(constructClimbListWithSlugs(
-        config.boardType,
-        config.layoutName,
-        config.sizeName,
-        config.sizeDescription ?? undefined,
-        config.setNames,
-        angle,
-      ));
-    } else {
-      const setIds = config.setIds.join(',');
-      const numericFallback = `/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`;
-      router.push(
-        tryConstructSlugListUrl(config.boardType, config.layoutId, config.sizeId, config.setIds, angle)
-          ?? numericFallback,
-      );
-    }
-  }, [router]);
+  const handleConfigClick = useCallback(
+    (config: PopularBoardConfig) => {
+      const angle = getDefaultAngleForBoard(config.boardType);
+      if (config.layoutName && config.sizeName && config.setNames.length > 0) {
+        router.push(
+          constructClimbListWithSlugs(
+            config.boardType,
+            config.layoutName,
+            config.sizeName,
+            config.sizeDescription ?? undefined,
+            config.setNames,
+            angle,
+          ),
+        );
+      } else {
+        const setIds = config.setIds.join(',');
+        const numericFallback = `/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`;
+        router.push(
+          tryConstructSlugListUrl(config.boardType, config.layoutId, config.sizeId, config.setIds, angle) ??
+            numericFallback,
+        );
+      }
+    },
+    [router],
+  );
 
   const handleCustomClick = useCallback(() => {
     setCreateBoardOpen(true);
   }, []);
 
-  const handleBoardCreated = useCallback((url: string) => {
-    setCreateBoardOpen(false);
-    router.push(url);
-  }, [router]);
+  const handleBoardCreated = useCallback(
+    (url: string) => {
+      setCreateBoardOpen(false);
+      router.push(url);
+    },
+    [router],
+  );
 
   return (
-    <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', pb: 'calc(120px + env(safe-area-inset-bottom, 0px))' }}>
+    <Box
+      sx={{
+        minHeight: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        pb: 'calc(120px + env(safe-area-inset-bottom, 0px))',
+      }}
+    >
       <Box
         component="main"
         sx={{
@@ -320,10 +335,7 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
           >
             Get on the board!
           </Typography>
-          <Typography
-            variant="body1"
-            sx={{ color: 'var(--neutral-500)', maxWidth: 320 }}
-          >
+          <Typography variant="body1" sx={{ color: 'var(--neutral-500)', maxWidth: 320 }}>
             Track your sends across Kilter, Tension, and MoonBoard.
           </Typography>
           <Button
@@ -437,12 +449,7 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
             <Typography variant="body2" sx={{ color: 'var(--neutral-400)', mb: 1 }}>
               Your friends are climbing.
             </Typography>
-            <Button
-              variant="text"
-              size="small"
-              onClick={() => router.push('/feed')}
-              sx={{ textTransform: 'none' }}
-            >
+            <Button variant="text" size="small" onClick={() => router.push('/feed')} sx={{ textTransform: 'none' }}>
               See the feed
             </Button>
           </Box>
@@ -450,11 +457,7 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
       </Box>
 
       {seshDrawerMounted && (
-        <StartSeshDrawer
-          open={seshDrawerOpen}
-          onClose={() => setSeshDrawerOpen(false)}
-          boardConfigs={boardConfigs}
-        />
+        <StartSeshDrawer open={seshDrawerOpen} onClose={() => setSeshDrawerOpen(false)} boardConfigs={boardConfigs} />
       )}
 
       {findClimbersMounted && (

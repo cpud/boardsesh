@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import type { Angle, BoardDetails, BoardName, Climb } from '@/app/lib/types';
@@ -112,59 +112,45 @@ describe('TickButton', () => {
 
   describe('icon rendering', () => {
     it('renders CheckOutlined when tickBarActive and isFlash is false', () => {
-      const { container } = render(
-        <TickButton {...defaultProps} tickBarActive={true} isFlash={false} />,
-      );
+      const { container } = render(<TickButton {...defaultProps} tickBarActive={true} isFlash={false} />);
       const svg = container.querySelector('#button-tick svg');
       expect(svg?.getAttribute('data-testid')).toBe('CheckOutlinedIcon');
     });
 
     it('renders ElectricBoltOutlined when tickBarActive and isFlash is true', () => {
-      const { container } = render(
-        <TickButton {...defaultProps} tickBarActive={true} isFlash={true} />,
-      );
+      const { container } = render(<TickButton {...defaultProps} tickBarActive={true} isFlash={true} />);
       const svg = container.querySelector('#button-tick svg');
       expect(svg?.getAttribute('data-testid')).toBe('ElectricBoltOutlinedIcon');
     });
 
     it('renders CheckOutlined when tickBarActive is false', () => {
-      const { container } = render(
-        <TickButton {...defaultProps} tickBarActive={false} isFlash={true} />,
-      );
+      const { container } = render(<TickButton {...defaultProps} tickBarActive={false} isFlash={true} />);
       const svg = container.querySelector('#button-tick svg');
       expect(svg?.getAttribute('data-testid')).toBe('CheckOutlinedIcon');
     });
 
     it('renders CheckOutlined when isFlash is undefined and not active', () => {
-      const { container } = render(
-        <TickButton {...defaultProps} tickBarActive={false} isFlash={undefined} />,
-      );
+      const { container } = render(<TickButton {...defaultProps} tickBarActive={false} isFlash={undefined} />);
       const svg = container.querySelector('#button-tick svg');
       expect(svg?.getAttribute('data-testid')).toBe('CheckOutlinedIcon');
     });
 
     it('renders person-falling icon and "attempt" label when ascentType is attempt', () => {
-      const { container } = render(
-        <TickButton {...defaultProps} tickBarActive={true} ascentType="attempt" />,
-      );
+      const { container } = render(<TickButton {...defaultProps} tickBarActive={true} ascentType="attempt" />);
       const svg = container.querySelector('#button-tick svg');
       expect(svg?.getAttribute('data-testid')).toBe('PersonFallingIcon');
       expect(screen.getByText('attempt')).toBeTruthy();
     });
 
     it('renders flash icon and "flash" label when ascentType is flash', () => {
-      const { container } = render(
-        <TickButton {...defaultProps} tickBarActive={true} ascentType="flash" />,
-      );
+      const { container } = render(<TickButton {...defaultProps} tickBarActive={true} ascentType="flash" />);
       const svg = container.querySelector('#button-tick svg');
       expect(svg?.getAttribute('data-testid')).toBe('ElectricBoltOutlinedIcon');
       expect(screen.getByText('flash')).toBeTruthy();
     });
 
     it('renders check icon and "tick" label when ascentType is send', () => {
-      const { container } = render(
-        <TickButton {...defaultProps} tickBarActive={true} ascentType="send" />,
-      );
+      const { container } = render(<TickButton {...defaultProps} tickBarActive={true} ascentType="send" />);
       const svg = container.querySelector('#button-tick svg');
       expect(svg?.getAttribute('data-testid')).toBe('CheckOutlinedIcon');
       expect(screen.getByText('tick')).toBeTruthy();
@@ -254,8 +240,32 @@ describe('TickButton', () => {
   describe('badge', () => {
     it('shows badge count from filtered logbook', () => {
       mockLogbookRef.current = [
-        { uuid: 'log-1', climb_uuid: 'climb-1', angle: 40, is_mirror: false, tries: 1, quality: null, difficulty: null, comment: '', climbed_at: '2025-01-01', is_ascent: true, status: 'flash' },
-        { uuid: 'log-2', climb_uuid: 'climb-1', angle: 40, is_mirror: false, tries: 2, quality: null, difficulty: null, comment: '', climbed_at: '2025-01-02', is_ascent: false, status: 'attempt' },
+        {
+          uuid: 'log-1',
+          climb_uuid: 'climb-1',
+          angle: 40,
+          is_mirror: false,
+          tries: 1,
+          quality: null,
+          difficulty: null,
+          comment: '',
+          climbed_at: '2025-01-01',
+          is_ascent: true,
+          status: 'flash',
+        },
+        {
+          uuid: 'log-2',
+          climb_uuid: 'climb-1',
+          angle: 40,
+          is_mirror: false,
+          tries: 2,
+          quality: null,
+          difficulty: null,
+          comment: '',
+          climbed_at: '2025-01-02',
+          is_ascent: false,
+          status: 'attempt',
+        },
       ];
       render(<TickButton {...defaultProps} />);
       const badge = document.querySelector('.MuiBadge-badge');

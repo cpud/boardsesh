@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { EventBroker } from '../event-broker';
 import type { SocialEvent } from '@boardsesh/shared-schema';
 
@@ -14,12 +14,18 @@ describe('EventBroker', () => {
 
     it('parses a valid event from Redis Stream fields', () => {
       const fields = [
-        'type', 'comment.created',
-        'actorId', 'user-123',
-        'entityType', 'tick',
-        'entityId', 'tick-456',
-        'timestamp', '1700000000000',
-        'metadata', '{"commentUuid":"abc-def"}',
+        'type',
+        'comment.created',
+        'actorId',
+        'user-123',
+        'entityType',
+        'tick',
+        'entityId',
+        'tick-456',
+        'timestamp',
+        '1700000000000',
+        'metadata',
+        '{"commentUuid":"abc-def"}',
       ];
 
       const event = broker.testParseEvent(fields);
@@ -36,12 +42,18 @@ describe('EventBroker', () => {
 
     it('parses event with empty metadata', () => {
       const fields = [
-        'type', 'follow.created',
-        'actorId', 'user-1',
-        'entityType', 'user',
-        'entityId', 'user-2',
-        'timestamp', '1700000000000',
-        'metadata', '{}',
+        'type',
+        'follow.created',
+        'actorId',
+        'user-1',
+        'entityType',
+        'user',
+        'entityId',
+        'user-2',
+        'timestamp',
+        '1700000000000',
+        'metadata',
+        '{}',
       ];
 
       const event = broker.testParseEvent(fields);
@@ -51,11 +63,16 @@ describe('EventBroker', () => {
 
     it('handles missing metadata field gracefully', () => {
       const fields = [
-        'type', 'vote.cast',
-        'actorId', 'user-1',
-        'entityType', 'tick',
-        'entityId', 'tick-1',
-        'timestamp', '1700000000000',
+        'type',
+        'vote.cast',
+        'actorId',
+        'user-1',
+        'entityType',
+        'tick',
+        'entityId',
+        'tick-1',
+        'timestamp',
+        '1700000000000',
       ];
 
       const event = broker.testParseEvent(fields);
@@ -65,12 +82,18 @@ describe('EventBroker', () => {
 
     it('returns null for invalid JSON in metadata', () => {
       const fields = [
-        'type', 'comment.created',
-        'actorId', 'user-1',
-        'entityType', 'tick',
-        'entityId', 'tick-1',
-        'timestamp', '1700000000000',
-        'metadata', 'not-valid-json{',
+        'type',
+        'comment.created',
+        'actorId',
+        'user-1',
+        'entityType',
+        'tick',
+        'entityId',
+        'tick-1',
+        'timestamp',
+        '1700000000000',
+        'metadata',
+        'not-valid-json{',
       ];
 
       const event = broker.testParseEvent(fields);
@@ -100,12 +123,18 @@ describe('EventBroker', () => {
 
       for (const type of eventTypes) {
         const fields = [
-          'type', type,
-          'actorId', 'user-1',
-          'entityType', 'tick',
-          'entityId', 'entity-1',
-          'timestamp', '1700000000000',
-          'metadata', '{}',
+          'type',
+          type,
+          'actorId',
+          'user-1',
+          'entityType',
+          'tick',
+          'entityId',
+          'entity-1',
+          'timestamp',
+          '1700000000000',
+          'metadata',
+          '{}',
         ];
 
         const event = broker.testParseEvent(fields);
@@ -116,12 +145,18 @@ describe('EventBroker', () => {
 
     it('correctly converts timestamp string to number', () => {
       const fields = [
-        'type', 'vote.cast',
-        'actorId', 'user-1',
-        'entityType', 'tick',
-        'entityId', 'tick-1',
-        'timestamp', '1700000000123',
-        'metadata', '{}',
+        'type',
+        'vote.cast',
+        'actorId',
+        'user-1',
+        'entityType',
+        'tick',
+        'entityId',
+        'tick-1',
+        'timestamp',
+        '1700000000123',
+        'metadata',
+        '{}',
       ];
 
       const event = broker.testParseEvent(fields);

@@ -53,18 +53,18 @@ export default async function BoardLayout(props: PropsWithChildren<BoardLayoutPr
   if (isNumericFormat) {
     const boardDetails = getBoardDetailsForBoard(parsedParams);
 
-      if (boardDetails.layout_name && boardDetails.size_name && boardDetails.set_names) {
-        const newUrl = constructClimbListWithSlugs(
-          boardDetails.board_name,
-          boardDetails.layout_name,
-          boardDetails.size_name,
-          boardDetails.size_description,
-          boardDetails.set_names,
-          parsedParams.angle,
-        );
+    if (boardDetails.layout_name && boardDetails.size_name && boardDetails.set_names) {
+      const newUrl = constructClimbListWithSlugs(
+        boardDetails.board_name,
+        boardDetails.layout_name,
+        boardDetails.size_name,
+        boardDetails.size_description,
+        boardDetails.set_names,
+        parsedParams.angle,
+      );
 
-        permanentRedirect(newUrl);
-      }
+      permanentRedirect(newUrl);
+    }
   }
 
   const { angle } = parsedParams;
@@ -73,19 +73,28 @@ export default async function BoardLayout(props: PropsWithChildren<BoardLayoutPr
   const boardDetails = getBoardDetailsForBoard(parsedParams);
 
   // Compute the list URL for last-used-board tracking
-  const listUrl = boardDetails.layout_name && boardDetails.size_name && boardDetails.set_names
-    ? constructClimbListWithSlugs(
-        boardDetails.board_name,
-        boardDetails.layout_name,
-        boardDetails.size_name,
-        boardDetails.size_description,
-        boardDetails.set_names,
-        angle,
-      )
-    : `/${boardDetails.board_name}`;
+  const listUrl =
+    boardDetails.layout_name && boardDetails.size_name && boardDetails.set_names
+      ? constructClimbListWithSlugs(
+          boardDetails.board_name,
+          boardDetails.layout_name,
+          boardDetails.size_name,
+          boardDetails.size_description,
+          boardDetails.set_names,
+          angle,
+        )
+      : `/${boardDetails.board_name}`;
 
   return (
-    <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', padding: 0, background: 'var(--semantic-surface)' }}>
+    <div
+      style={{
+        minHeight: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: 0,
+        background: 'var(--semantic-surface)',
+      }}
+    >
       <LastUsedBoardTracker
         url={listUrl}
         boardName={boardDetails.board_name}

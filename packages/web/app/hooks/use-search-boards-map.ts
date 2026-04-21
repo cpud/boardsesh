@@ -80,37 +80,38 @@ export function useSearchBoardsMap({
   // invocation (every page, every refetch) for no benefit.
   const client = useMemo(() => createGraphQLHttpClient(token ?? undefined), [token]);
 
-  const { data, isLoading, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteQuery<UserBoardConnection, Error, InfiniteData<UserBoardConnection>, QueryKey, number>({
-      queryKey: ['searchBoardsMap', debouncedQuery, lat, lon, radiusKm, token],
-      queryFn: async ({ pageParam }) => {
-        const input: SearchBoardsQueryVariables['input'] = {
-          query: hasQuery ? debouncedQuery.trim() : undefined,
-          latitude: hasCoords ? lat : undefined,
-          longitude: hasCoords ? lon : undefined,
-          radiusKm: hasCoords ? radiusKm : undefined,
-          limit: PAGE_LIMIT,
-          offset: pageParam,
-        };
-        const response = await client.request<SearchBoardsQueryResponse, SearchBoardsQueryVariables>(
-          SEARCH_BOARDS,
-          { input },
-        );
-        return response.searchBoards;
-      },
-      initialPageParam: 0,
-      getNextPageParam: (lastPage, _allPages, lastPageParam) => {
-        if (!lastPage.hasMore) return undefined;
-        return lastPageParam + lastPage.boards.length;
-      },
-      enabled: queryEnabled,
-      staleTime: 30 * 1000,
-    });
+  const { data, isLoading, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery<
+    UserBoardConnection,
+    Error,
+    InfiniteData<UserBoardConnection>,
+    QueryKey,
+    number
+  >({
+    queryKey: ['searchBoardsMap', debouncedQuery, lat, lon, radiusKm, token],
+    queryFn: async ({ pageParam }) => {
+      const input: SearchBoardsQueryVariables['input'] = {
+        query: hasQuery ? debouncedQuery.trim() : undefined,
+        latitude: hasCoords ? lat : undefined,
+        longitude: hasCoords ? lon : undefined,
+        radiusKm: hasCoords ? radiusKm : undefined,
+        limit: PAGE_LIMIT,
+        offset: pageParam,
+      };
+      const response = await client.request<SearchBoardsQueryResponse, SearchBoardsQueryVariables>(SEARCH_BOARDS, {
+        input,
+      });
+      return response.searchBoards;
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, _allPages, lastPageParam) => {
+      if (!lastPage.hasMore) return undefined;
+      return lastPageParam + lastPage.boards.length;
+    },
+    enabled: queryEnabled,
+    staleTime: 30 * 1000,
+  });
 
-  const boards = useMemo<UserBoard[]>(
-    () => data?.pages.flatMap((p) => p.boards) ?? [],
-    [data],
-  );
+  const boards = useMemo<UserBoard[]>(() => data?.pages.flatMap((p) => p.boards) ?? [], [data]);
 
   return {
     boards,

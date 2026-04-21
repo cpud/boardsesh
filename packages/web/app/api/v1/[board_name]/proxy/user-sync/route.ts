@@ -14,10 +14,14 @@ export async function POST(request: Request) {
     }
     const { token, userId } = session;
     await syncUserData(board_name, token, userId);
-    return new Response(JSON.stringify({ success: true, message: 'All tables synced' }), { status: 200 });
+    return new Response(JSON.stringify({ success: true, message: 'All tables synced' }), {
+      status: 200,
+    });
   } catch (err) {
     console.error('Failed to sync with Aurora:', err);
     //@ts-expect-error Eh cant be bothered fixing this now
-    return new Response(JSON.stringify({ error: 'Sync failed', details: err.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Sync failed', details: err.message }), {
+      status: 500,
+    });
   }
 }

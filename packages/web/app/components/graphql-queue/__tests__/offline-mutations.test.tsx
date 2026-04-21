@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 
 // --- Mocks must be before imports ---
@@ -22,7 +22,17 @@ const mockSetQueue = vi.fn().mockResolvedValue(undefined);
 const mockMirrorCurrentClimb = vi.fn().mockResolvedValue(undefined);
 
 const mockPersistentSession = {
-  activeSession: { sessionId: 'session-1', boardPath: '/kilter/1/1/1/40', boardDetails: {}, parsedParams: {} } as { sessionId: string; boardPath: string; boardDetails: unknown; parsedParams: unknown } | null,
+  activeSession: {
+    sessionId: 'session-1',
+    boardPath: '/kilter/1/1/1/40',
+    boardDetails: {},
+    parsedParams: {},
+  } as {
+    sessionId: string;
+    boardPath: string;
+    boardDetails: unknown;
+    parsedParams: unknown;
+  } | null,
   session: { clientId: 'client-1', isLeader: true, users: [], goal: null },
   isConnecting: false,
   hasConnected: true,
@@ -197,9 +207,7 @@ function createWrapper() {
   return function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <QueryClientProvider client={queryClient}>
-        <GraphQLQueueProvider {...defaultProps}>
-          {children}
-        </GraphQLQueueProvider>
+        <GraphQLQueueProvider {...defaultProps}>{children}</GraphQLQueueProvider>
       </QueryClientProvider>
     );
   };
@@ -273,7 +281,7 @@ describe('QueueContext offline mutations', () => {
       expect(shouldAddToQueue).toBe(false);
       expect(correlationId).toMatch(/^client-1-\d+$/);
       expect(mockAddQueueItem.mock.invocationCallOrder[0]).toBeLessThan(
-        mockSetCurrentClimb.mock.invocationCallOrder[0]
+        mockSetCurrentClimb.mock.invocationCallOrder[0],
       );
     });
 
@@ -329,7 +337,7 @@ describe('QueueContext offline mutations', () => {
 
       // Item should be in queue locally
       expect(result.current.queue.length).toBeGreaterThanOrEqual(1);
-      expect(result.current.queue.some(item => item.climb.uuid === mockClimb.uuid)).toBe(true);
+      expect(result.current.queue.some((item) => item.climb.uuid === mockClimb.uuid)).toBe(true);
 
       // Should NOT have called the server
       expect(mockAddQueueItem).not.toHaveBeenCalled();
@@ -338,7 +346,9 @@ describe('QueueContext offline mutations', () => {
     it('removeFromQueue applies locally but does NOT call persistentSession.removeQueueItem', () => {
       // Start online, add item, then go offline and remove
       mockConnectionState = 'connected';
-      const { result, rerender } = renderHook(() => useQueueContext(), { wrapper: createWrapper() });
+      const { result, rerender } = renderHook(() => useQueueContext(), {
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.addToQueue(mockClimb);
@@ -416,7 +426,7 @@ describe('QueueContext offline mutations', () => {
         result.current.addToQueue(mockClimb);
       });
 
-      expect(result.current.queue.some(item => item.climb.uuid === mockClimb.uuid)).toBe(true);
+      expect(result.current.queue.some((item) => item.climb.uuid === mockClimb.uuid)).toBe(true);
       expect(mockAddQueueItem).not.toHaveBeenCalled();
     });
   });

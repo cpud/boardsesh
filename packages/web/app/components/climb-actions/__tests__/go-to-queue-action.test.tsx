@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import type { Climb, BoardDetails, BoardName } from '@/app/lib/types';
@@ -81,11 +81,7 @@ vi.mock('../action-view-renderer', () => ({
       );
     } else {
       element = (
-        <button
-          data-testid="action-button"
-          onClick={() => onClick()}
-          disabled={disabled}
-        >
+        <button data-testid="action-button" onClick={() => onClick()} disabled={disabled}>
           {label}
         </button>
       );
@@ -204,12 +200,7 @@ describe('GoToQueueAction', () => {
       const onGoToQueue = vi.fn();
       const onComplete = vi.fn();
       render(
-        <TestGoToQueueAction
-          {...defaultProps}
-          viewMode="list"
-          onGoToQueue={onGoToQueue}
-          onComplete={onComplete}
-        />,
+        <TestGoToQueueAction {...defaultProps} viewMode="list" onGoToQueue={onGoToQueue} onComplete={onComplete} />,
       );
 
       screen.getByRole('button', { name: /go to queue/i }).click();
@@ -220,13 +211,7 @@ describe('GoToQueueAction', () => {
 
     it('is disabled when onGoToQueue is undefined', () => {
       mockUseOptionalQueueActions.mockReturnValue({ addToQueue: vi.fn() });
-      render(
-        <TestGoToQueueAction
-          {...defaultProps}
-          viewMode="list"
-          onGoToQueue={undefined}
-        />,
-      );
+      render(<TestGoToQueueAction {...defaultProps} viewMode="list" onGoToQueue={undefined} />);
 
       const button = screen.getByRole('button', { name: /go to queue/i });
       expect(button).toHaveProperty('disabled', true);
@@ -251,12 +236,7 @@ describe('GoToQueueAction', () => {
       const onGoToQueue = vi.fn();
       const onComplete = vi.fn();
       render(
-        <TestGoToQueueAction
-          {...defaultProps}
-          viewMode="icon"
-          onGoToQueue={onGoToQueue}
-          onComplete={onComplete}
-        />,
+        <TestGoToQueueAction {...defaultProps} viewMode="icon" onGoToQueue={onGoToQueue} onComplete={onComplete} />,
       );
 
       screen.getByTestId('action-icon').click();
@@ -284,12 +264,7 @@ describe('GoToQueueAction', () => {
       const onGoToQueue = vi.fn();
       const onComplete = vi.fn();
       render(
-        <TestGoToQueueAction
-          {...defaultProps}
-          viewMode="button"
-          onGoToQueue={onGoToQueue}
-          onComplete={onComplete}
-        />,
+        <TestGoToQueueAction {...defaultProps} viewMode="button" onGoToQueue={onGoToQueue} onComplete={onComplete} />,
       );
 
       screen.getByRole('button', { name: /go to queue/i }).click();
@@ -300,13 +275,7 @@ describe('GoToQueueAction', () => {
 
     it('is disabled when onGoToQueue is undefined in button mode', () => {
       mockUseOptionalQueueActions.mockReturnValue({ addToQueue: vi.fn() });
-      render(
-        <TestGoToQueueAction
-          {...defaultProps}
-          viewMode="button"
-          onGoToQueue={undefined}
-        />,
-      );
+      render(<TestGoToQueueAction {...defaultProps} viewMode="button" onGoToQueue={undefined} />);
 
       const button = screen.getByRole('button', { name: /go to queue/i });
       expect(button).toHaveProperty('disabled', true);

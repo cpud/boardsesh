@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   VALID_BOARD_TYPES,
   VALID_HOLD_TYPES,

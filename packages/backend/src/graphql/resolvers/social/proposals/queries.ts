@@ -3,21 +3,14 @@ import type { ConnectionContext } from '@boardsesh/shared-schema';
 import { db } from '../../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { validateInput } from '../../shared/helpers';
-import {
-  GetClimbProposalsInputSchema,
-  BrowseProposalsInputSchema,
-} from '../../../../validation/schemas';
+import { GetClimbProposalsInputSchema, BrowseProposalsInputSchema } from '../../../../validation/schemas';
 import { resolveCommunitySetting } from '../community-settings';
 import { batchEnrichProposals } from './enrichment';
 import { analyzeGradeOutlier } from './grade-analysis';
 import { sql } from 'drizzle-orm';
 
 export const socialProposalQueries = {
-  climbProposals: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  climbProposals: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     const validated = validateInput(GetClimbProposalsInputSchema, input, 'input');
     const { climbUuid, boardType, angle, type, status, limit: rawLimit, offset: rawOffset } = validated;
     const limitVal = rawLimit ?? 20;
@@ -55,11 +48,7 @@ export const socialProposalQueries = {
     };
   },
 
-  browseProposals: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  browseProposals: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     const validated = validateInput(BrowseProposalsInputSchema, input, 'input');
     const { type, status, limit: rawLimit, offset: rawOffset } = validated;
     const limitVal = rawLimit ?? 20;
@@ -74,7 +63,7 @@ export const socialProposalQueries = {
         .from(dbSchema.userBoards)
         .where(eq(dbSchema.userBoards.uuid, validated.boardUuid))
         .limit(1)
-        .then(rows => rows[0]);
+        .then((rows) => rows[0]);
 
       if (board) {
         boardTypeFilter = board.boardType;
@@ -100,10 +89,7 @@ export const socialProposalQueries = {
       .limit(limitVal)
       .offset(offsetVal);
 
-    const [totalResult] = await db
-      .select({ count: count() })
-      .from(dbSchema.climbProposals)
-      .where(whereClause);
+    const [totalResult] = await db.select({ count: count() }).from(dbSchema.climbProposals).where(whereClause);
 
     const totalCount = Number(totalResult?.count || 0);
     const enriched = await batchEnrichProposals(proposals, authenticatedUserId);
@@ -138,10 +124,7 @@ export const socialProposalQueries = {
       .select()
       .from(dbSchema.climbClassicStatus)
       .where(
-        and(
-          eq(dbSchema.climbClassicStatus.climbUuid, climbUuid),
-          eq(dbSchema.climbClassicStatus.boardType, boardType),
-        ),
+        and(eq(dbSchema.climbClassicStatus.climbUuid, climbUuid), eq(dbSchema.climbClassicStatus.boardType, boardType)),
       )
       .limit(1);
 
@@ -244,10 +227,7 @@ export const socialProposalQueries = {
       .select()
       .from(dbSchema.climbClassicStatus)
       .where(
-        and(
-          eq(dbSchema.climbClassicStatus.climbUuid, climbUuid),
-          eq(dbSchema.climbClassicStatus.boardType, boardType),
-        ),
+        and(eq(dbSchema.climbClassicStatus.climbUuid, climbUuid), eq(dbSchema.climbClassicStatus.boardType, boardType)),
       )
       .limit(1);
 

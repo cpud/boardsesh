@@ -29,10 +29,7 @@ export default async function BoardSlugLikedPage(props: LikedPageProps) {
 
     return (
       <div className={styles.pageContainer}>
-        <LikedClimbsViewContent
-          boardDetails={boardDetails}
-          angle={parsedParams.angle}
-        />
+        <LikedClimbsViewContent boardDetails={boardDetails} angle={parsedParams.angle} />
       </div>
     );
   } catch (error) {

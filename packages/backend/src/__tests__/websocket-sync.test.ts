@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { randomUUID } from 'crypto';
 import { roomManager } from '../services/room-manager';
 import { db } from '../db/client';
@@ -188,10 +188,7 @@ describe('WebSocket Sync - Sequence Number Consistency', () => {
     // Another update
     await roomManager.updateQueueStateImmediate(
       sessionId,
-      [
-        createTestClimbQueueItem('item-1', 'Climb 1'),
-        createTestClimbQueueItem('item-2', 'Climb 2'),
-      ],
+      [createTestClimbQueueItem('item-1', 'Climb 1'), createTestClimbQueueItem('item-2', 'Climb 2')],
       null,
       version1, // Pass previous version
     );

@@ -20,24 +20,33 @@ async function createTestUser() {
 
   try {
     // Insert user
-    await db.insert(users).values({
-      id: TEST_USER_ID,
-      name: TEST_USER_NAME,
-      email: TEST_USER_EMAIL,
-      emailVerified: new Date(),
-    }).onConflictDoNothing();
+    await db
+      .insert(users)
+      .values({
+        id: TEST_USER_ID,
+        name: TEST_USER_NAME,
+        email: TEST_USER_EMAIL,
+        emailVerified: new Date(),
+      })
+      .onConflictDoNothing();
 
     // Insert credentials
-    await db.insert(userCredentials).values({
-      userId: TEST_USER_ID,
-      passwordHash: TEST_PASSWORD_HASH,
-    }).onConflictDoNothing();
+    await db
+      .insert(userCredentials)
+      .values({
+        userId: TEST_USER_ID,
+        passwordHash: TEST_PASSWORD_HASH,
+      })
+      .onConflictDoNothing();
 
     // Insert profile
-    await db.insert(userProfiles).values({
-      userId: TEST_USER_ID,
-      displayName: TEST_USER_DISPLAY_NAME,
-    }).onConflictDoNothing();
+    await db
+      .insert(userProfiles)
+      .values({
+        userId: TEST_USER_ID,
+        displayName: TEST_USER_DISPLAY_NAME,
+      })
+      .onConflictDoNothing();
 
     console.log(`Test user created: ${TEST_USER_EMAIL} / test`);
     await close();

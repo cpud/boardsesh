@@ -35,7 +35,11 @@ import { socialCommentQueries, socialCommentMutations } from './social/comments'
 import { socialVoteQueries, socialVoteMutations } from './social/votes';
 import { socialBoardQueries, socialBoardMutations } from './social/boards';
 import { socialGymQueries, socialGymMutations } from './social/gyms';
-import { socialNotificationQueries, socialNotificationMutations, socialNotificationSubscriptions } from './social/notifications';
+import {
+  socialNotificationQueries,
+  socialNotificationMutations,
+  socialNotificationSubscriptions,
+} from './social/notifications';
 import { socialCommentSubscriptions } from './social/comment-subscriptions';
 import { socialProposalQueries, socialProposalMutations } from './social/proposals';
 import { socialRoleQueries, socialRoleMutations } from './social/roles';
@@ -112,8 +116,7 @@ export const resolvers = {
 
   // Climb type resolvers (derived fields)
   Climb: {
-    is_no_match: (climb: { description?: string | null }) =>
-      /^no match/i.test(climb.description || ''),
+    is_no_match: (climb: { description?: string | null }) => /^no match/i.test(climb.description || ''),
   },
 
   // Union type resolvers

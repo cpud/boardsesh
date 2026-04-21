@@ -66,9 +66,10 @@ export async function GET(request: NextRequest) {
     const boardInfoLine = summary.boardLabel
       ? `${summary.boardLabel}${summary.boardAngle != null ? ` • ${summary.boardAngle}°` : ''}`
       : 'Boardsesh session';
-    const statsLine = summary.participantCount > 0
-      ? `${summary.participantCount} climber${summary.participantCount !== 1 ? 's' : ''} • ${summary.totalSends} send${summary.totalSends !== 1 ? 's' : ''} so far`
-      : 'No one is here yet';
+    const statsLine =
+      summary.participantCount > 0
+        ? `${summary.participantCount} climber${summary.participantCount !== 1 ? 's' : ''} • ${summary.totalSends} send${summary.totalSends !== 1 ? 's' : ''} so far`
+        : 'No one is here yet';
     const previewUrl = summary.boardPreviewPath
       ? new URL(summary.boardPreviewPath, request.nextUrl.origin).toString()
       : null;
@@ -163,9 +164,7 @@ export async function GET(request: NextRequest) {
                 textAlign: 'center',
               }}
             >
-              <div style={{ fontSize: '22px', fontWeight: 700 }}>
-                {summary.boardLabel || 'Board ready'}
-              </div>
+              <div style={{ fontSize: '22px', fontWeight: 700 }}>{summary.boardLabel || 'Board ready'}</div>
               <div style={{ fontSize: '18px' }}>
                 {summary.boardAngle != null ? `${summary.boardAngle}°` : 'Session invite'}
               </div>
@@ -475,18 +474,15 @@ export async function GET(request: NextRequest) {
       </div>
     );
 
-    return new ImageResponse(
-      image,
-      {
-        width: OG_IMAGE_WIDTH,
-        height: OG_IMAGE_HEIGHT,
-        headers: createOgImageHeaders({
-          contentType: 'image/png',
-          version,
-          serverTiming: `db;dur=${dbMs.toFixed(1)}, render;dur=${renderMs.toFixed(1)}, route;dur=${(performance.now() - routeT0).toFixed(1)}`,
-        }),
-      },
-    );
+    return new ImageResponse(image, {
+      width: OG_IMAGE_WIDTH,
+      height: OG_IMAGE_HEIGHT,
+      headers: createOgImageHeaders({
+        contentType: 'image/png',
+        version,
+        serverTiming: `db;dur=${dbMs.toFixed(1)}, render;dur=${renderMs.toFixed(1)}, route;dur=${(performance.now() - routeT0).toFixed(1)}`,
+      }),
+    });
   } catch (error) {
     console.error('Error generating session OG image:', error);
     const message = error instanceof Error ? error.message : String(error);

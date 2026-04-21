@@ -141,11 +141,7 @@ export default function GymForm({
             Cancel
           </MuiButton>
         )}
-        <MuiButton
-          type="submit"
-          variant="contained"
-          disabled={isSubmitting || !name.trim()}
-        >
+        <MuiButton type="submit" variant="contained" disabled={isSubmitting || !name.trim()}>
           {isSubmitting ? <CircularProgress size={20} color="inherit" /> : submitLabel}
         </MuiButton>
       </Box>

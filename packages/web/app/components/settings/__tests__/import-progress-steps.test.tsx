@@ -1,11 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
-import {
-  ImportProgressSteps,
-  STEP_ORDER,
-  STEP_LABELS,
-} from '../aurora-credentials-section';
+import { ImportProgressSteps, STEP_ORDER, STEP_LABELS } from '../aurora-credentials-section';
 import type { ImportProgress } from '../aurora-credentials-section';
 
 describe('ImportProgressSteps', () => {

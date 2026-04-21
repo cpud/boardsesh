@@ -27,13 +27,13 @@ export function fnv1aHash(str: string): string {
  */
 export function computeQueueStateHash(
   queue: Array<{ uuid: string } | null | undefined>,
-  currentItemUuid: string | null
+  currentItemUuid: string | null,
 ): string {
   // Sort queue UUIDs for deterministic ordering
   // Defensive filter for null/undefined items that may have been introduced by state corruption
   const queueUuids = queue
     .filter((item): item is { uuid: string } => item != null && typeof item === 'object' && item.uuid != null)
-    .map(item => item.uuid)
+    .map((item) => item.uuid)
     .sort()
     .join(',');
   const currentUuid = currentItemUuid || 'null';

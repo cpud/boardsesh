@@ -41,14 +41,11 @@ export async function GET(request: Request) {
           .from(schema.auroraCredentials)
           .where(
             and(
-              or(
-                eq(schema.auroraCredentials.syncStatus, 'active'),
-                eq(schema.auroraCredentials.syncStatus, 'error')
-              ),
+              or(eq(schema.auroraCredentials.syncStatus, 'active'), eq(schema.auroraCredentials.syncStatus, 'error')),
               isNotNull(schema.auroraCredentials.encryptedUsername),
               isNotNull(schema.auroraCredentials.encryptedPassword),
-              isNotNull(schema.auroraCredentials.auroraUserId)
-            )
+              isNotNull(schema.auroraCredentials.auroraUserId),
+            ),
           )
           .orderBy(asc(schema.auroraCredentials.lastSyncAt)) // NULLS FIRST is default in PostgreSQL
           .limit(1);
@@ -66,7 +63,9 @@ export async function GET(request: Request) {
       });
     }
 
-    console.log(`[User Sync Cron] Syncing 1 user (oldest lastSyncAt): ${credentials[0].userId} (${credentials[0].boardType})`);
+    console.log(
+      `[User Sync Cron] Syncing 1 user (oldest lastSyncAt): ${credentials[0].userId} (${credentials[0].boardType})`,
+    );
 
     const results = {
       total: credentials.length,
@@ -80,7 +79,9 @@ export async function GET(request: Request) {
     for (const cred of credentials) {
       try {
         if (!cred.encryptedUsername || !cred.encryptedPassword || !cred.auroraUserId) {
-          console.warn(`[User Sync Cron] Skipping user ${cred.userId} (${cred.boardType}): Missing credentials or user ID`);
+          console.warn(
+            `[User Sync Cron] Skipping user ${cred.userId} (${cred.boardType}): Missing credentials or user ID`,
+          );
           continue;
         }
 
@@ -118,8 +119,8 @@ export async function GET(request: Request) {
               .where(
                 and(
                   eq(schema.auroraCredentials.userId, cred.userId),
-                  eq(schema.auroraCredentials.boardType, cred.boardType)
-                )
+                  eq(schema.auroraCredentials.boardType, cred.boardType),
+                ),
               );
           } finally {
             updateClient.release();
@@ -159,8 +160,8 @@ export async function GET(request: Request) {
               .where(
                 and(
                   eq(schema.auroraCredentials.userId, cred.userId),
-                  eq(schema.auroraCredentials.boardType, cred.boardType)
-                )
+                  eq(schema.auroraCredentials.boardType, cred.boardType),
+                ),
               );
           } finally {
             updateClient.release();
@@ -193,8 +194,8 @@ export async function GET(request: Request) {
             .where(
               and(
                 eq(schema.auroraCredentials.userId, cred.userId),
-                eq(schema.auroraCredentials.boardType, cred.boardType)
-              )
+                eq(schema.auroraCredentials.boardType, cred.boardType),
+              ),
             );
         } finally {
           tokenUpdateClient.release();
@@ -203,7 +204,7 @@ export async function GET(request: Request) {
         // Wait for Aurora session replication across their backend servers
         // Testing if this fixes the 404 errors on Vercel (works locally)
         console.log('[User Sync Cron] Waiting 5 seconds for Aurora session replication...');
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        await new Promise((resolve) => setTimeout(resolve, 5000));
 
         console.log(`[User Sync Cron] Syncing user ${cred.userId} for ${boardType}...`);
 
@@ -223,10 +224,7 @@ export async function GET(request: Request) {
               updatedAt: new Date(),
             })
             .where(
-              and(
-                eq(schema.auroraCredentials.userId, cred.userId),
-                eq(schema.auroraCredentials.boardType, boardType)
-              )
+              and(eq(schema.auroraCredentials.userId, cred.userId), eq(schema.auroraCredentials.boardType, boardType)),
             );
         } finally {
           updateClient.release();
@@ -257,8 +255,8 @@ export async function GET(request: Request) {
             .where(
               and(
                 eq(schema.auroraCredentials.userId, cred.userId),
-                eq(schema.auroraCredentials.boardType, cred.boardType)
-              )
+                eq(schema.auroraCredentials.boardType, cred.boardType),
+              ),
             );
         } catch (updateError) {
           console.error(`[User Sync Cron] Failed to update error status for user ${cred.userId}:`, updateError);
@@ -282,7 +280,7 @@ export async function GET(request: Request) {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

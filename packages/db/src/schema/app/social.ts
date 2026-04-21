@@ -41,19 +41,10 @@ export const comments = pgTable(
     deletedAt: timestamp('deleted_at'),
   },
   (table) => ({
-    entityCreatedAtIdx: index('comments_entity_created_at_idx').on(
-      table.entityType,
-      table.entityId,
-      table.createdAt
-    ),
-    userCreatedAtIdx: index('comments_user_created_at_idx').on(
-      table.userId,
-      table.createdAt
-    ),
-    parentCommentIdx: index('comments_parent_comment_idx').on(
-      table.parentCommentId
-    ),
-  })
+    entityCreatedAtIdx: index('comments_entity_created_at_idx').on(table.entityType, table.entityId, table.createdAt),
+    userCreatedAtIdx: index('comments_user_created_at_idx').on(table.userId, table.createdAt),
+    parentCommentIdx: index('comments_parent_comment_idx').on(table.parentCommentId),
+  }),
 );
 
 export const votes = pgTable(
@@ -69,15 +60,11 @@ export const votes = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => ({
-    uniqueVote: uniqueIndex('votes_unique_user_entity').on(
-      table.userId,
-      table.entityType,
-      table.entityId
-    ),
+    uniqueVote: uniqueIndex('votes_unique_user_entity').on(table.userId, table.entityType, table.entityId),
     entityIdx: index('votes_entity_idx').on(table.entityType, table.entityId),
     userIdx: index('votes_user_idx').on(table.userId),
     valueCheck: check('vote_value_check', sql`${table.value} IN (1, -1)`),
-  })
+  }),
 );
 
 export type Comment = typeof comments.$inferSelect;

@@ -1,4 +1,10 @@
-import type { QueueEvent, SessionEvent, NotificationEvent, CommentEvent, NewClimbCreatedEvent } from '@boardsesh/shared-schema';
+import type {
+  QueueEvent,
+  SessionEvent,
+  NotificationEvent,
+  CommentEvent,
+  NewClimbCreatedEvent,
+} from '@boardsesh/shared-schema';
 import type Redis from 'ioredis';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -39,10 +45,7 @@ export interface RedisPubSubAdapter {
   getInstanceId(): string;
 }
 
-export function createRedisPubSubAdapter(
-  publisher: Redis,
-  subscriber: Redis
-): RedisPubSubAdapter {
+export function createRedisPubSubAdapter(publisher: Redis, subscriber: Redis): RedisPubSubAdapter {
   const instanceId = uuidv4();
   const subscribedQueueChannels = new Set<string>();
   const subscribedSessionChannels = new Set<string>();
@@ -66,7 +69,9 @@ export function createRedisPubSubAdapter(
         return;
       }
 
-      console.log(`[Redis] Received cross-instance message from ${parsed.instanceId.slice(0, 8)} on channel: ${channel}`);
+      console.log(
+        `[Redis] Received cross-instance message from ${parsed.instanceId.slice(0, 8)} on channel: ${channel}`,
+      );
 
       if (channel.startsWith(QUEUE_CHANNEL_PREFIX)) {
         const sessionId = channel.slice(QUEUE_CHANNEL_PREFIX.length);

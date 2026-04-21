@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import React from 'react';
 import { renderHook } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -72,11 +72,7 @@ function createWrapper() {
     },
   });
   return function Wrapper({ children }: { children: React.ReactNode }) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        {children}
-      </QueryClientProvider>
-    );
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
   };
 }
 
@@ -97,25 +93,18 @@ describe('useBuildClimbDetailSections', () => {
   });
 
   it('returns 4 sections when enabled (default)', () => {
-    const { result } = renderHook(
-      () => useBuildClimbDetailSections(BASE_PROPS),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => useBuildClimbDetailSections(BASE_PROPS), {
+      wrapper: createWrapper(),
+    });
 
     expect(result.current).toHaveLength(4);
-    expect(result.current.map((s) => s.key)).toEqual([
-      'beta',
-      'logbook',
-      'community',
-      'analytics',
-    ]);
+    expect(result.current.map((s) => s.key)).toEqual(['beta', 'logbook', 'community', 'analytics']);
   });
 
   it('returns empty array when enabled is false', () => {
-    const { result } = renderHook(
-      () => useBuildClimbDetailSections({ ...BASE_PROPS, enabled: false }),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => useBuildClimbDetailSections({ ...BASE_PROPS, enabled: false }), {
+      wrapper: createWrapper(),
+    });
 
     expect(result.current).toEqual([]);
   });
@@ -123,10 +112,9 @@ describe('useBuildClimbDetailSections', () => {
   it('does not fire the beta links query when enabled is false', () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
 
-    renderHook(
-      () => useBuildClimbDetailSections({ ...BASE_PROPS, enabled: false }),
-      { wrapper: createWrapper() },
-    );
+    renderHook(() => useBuildClimbDetailSections({ ...BASE_PROPS, enabled: false }), {
+      wrapper: createWrapper(),
+    });
 
     expect(fetchSpy).not.toHaveBeenCalled();
   });
@@ -134,8 +122,7 @@ describe('useBuildClimbDetailSections', () => {
   it('returns sections again when enabled flips from false to true', () => {
     const wrapper = createWrapper();
     const { result, rerender } = renderHook(
-      ({ enabled }: { enabled: boolean }) =>
-        useBuildClimbDetailSections({ ...BASE_PROPS, enabled }),
+      ({ enabled }: { enabled: boolean }) => useBuildClimbDetailSections({ ...BASE_PROPS, enabled }),
       { wrapper, initialProps: { enabled: false } },
     );
 
@@ -144,19 +131,13 @@ describe('useBuildClimbDetailSections', () => {
     rerender({ enabled: true });
 
     expect(result.current).toHaveLength(4);
-    expect(result.current.map((s) => s.key)).toEqual([
-      'beta',
-      'logbook',
-      'community',
-      'analytics',
-    ]);
+    expect(result.current.map((s) => s.key)).toEqual(['beta', 'logbook', 'community', 'analytics']);
   });
 
   it('all sections have lazy: true', () => {
-    const { result } = renderHook(
-      () => useBuildClimbDetailSections(BASE_PROPS),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => useBuildClimbDetailSections(BASE_PROPS), {
+      wrapper: createWrapper(),
+    });
 
     for (const section of result.current) {
       expect(section.lazy).toBe(true);

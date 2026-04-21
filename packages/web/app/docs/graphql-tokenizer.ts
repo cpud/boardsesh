@@ -30,7 +30,8 @@ export function tokenizeLine(line: string): Token[] {
     { regex: /^("[^"\\]*(?:\\.[^"\\]*)*")/, type: 'string' },
     // Keywords
     {
-      regex: /^(type|input|enum|union|scalar|query|mutation|subscription|fragment|on|implements|interface|extend|schema|directive)\b/i,
+      regex:
+        /^(type|input|enum|union|scalar|query|mutation|subscription|fragment|on|implements|interface|extend|schema|directive)\b/i,
       type: 'keyword',
     },
     // Types (capitalized words)

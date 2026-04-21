@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   hasActiveNonNameFilters,
   hasActiveFilters,
@@ -31,14 +31,16 @@ describe('hasActiveNonNameFilters', () => {
   });
 
   it('returns true when grade filters are active even with a name filter', () => {
-    expect(
-      hasActiveNonNameFilters(makeParams({ name: 'Test', minGrade: 10, maxGrade: 20 })),
-    ).toBe(true);
+    expect(hasActiveNonNameFilters(makeParams({ name: 'Test', minGrade: 10, maxGrade: 20 }))).toBe(true);
   });
 
   it('returns true when holdsFilter has entries', () => {
     expect(
-      hasActiveNonNameFilters(makeParams({ holdsFilter: { 1: { state: 'HAND' as const, color: '#ff0000', displayColor: '#ff0000' } } })),
+      hasActiveNonNameFilters(
+        makeParams({
+          holdsFilter: { 1: { state: 'HAND' as const, color: '#ff0000', displayColor: '#ff0000' } },
+        }),
+      ),
     ).toBe(true);
   });
 
@@ -81,7 +83,13 @@ describe('hasActiveFilters', () => {
   });
 
   it('returns true when holdsFilter has entries', () => {
-    expect(hasActiveFilters(makeParams({ holdsFilter: { 1: { state: 'HAND' as const, color: '#ff0000', displayColor: '#ff0000' } } }))).toBe(true);
+    expect(
+      hasActiveFilters(
+        makeParams({
+          holdsFilter: { 1: { state: 'HAND' as const, color: '#ff0000', displayColor: '#ff0000' } },
+        }),
+      ),
+    ).toBe(true);
   });
 });
 

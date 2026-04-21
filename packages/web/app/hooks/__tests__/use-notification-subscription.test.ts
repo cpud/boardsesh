@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook } from '@testing-library/react';
 
 // --- Mocks ---
@@ -188,7 +188,10 @@ describe('useNotificationSubscription', () => {
 
     // Get the subscription callbacks
     const subscribeCall = mockSubscribe.mock.calls[0] as unknown[];
-    const callbacks = subscribeCall[2] as { next: (data: unknown) => void; error: (err: unknown) => void };
+    const callbacks = subscribeCall[2] as {
+      next: (data: unknown) => void;
+      error: (err: unknown) => void;
+    };
 
     // Simulate receiving a notification
     callbacks.next({
@@ -211,10 +214,7 @@ describe('useNotificationSubscription', () => {
     });
 
     // Should increment unread count
-    expect(mockSetQueryData).toHaveBeenCalledWith(
-      ['notifications', 'unreadCount'],
-      expect.any(Function),
-    );
+    expect(mockSetQueryData).toHaveBeenCalledWith(['notifications', 'unreadCount'], expect.any(Function));
 
     // Call the updater function to verify it increments
     const updaterFn = mockSetQueryData.mock.calls.find(
@@ -238,7 +238,10 @@ describe('useNotificationSubscription', () => {
     renderHook(() => useNotificationSubscription());
 
     const subscribeCall = mockSubscribe.mock.calls[0] as unknown[];
-    const callbacks = subscribeCall[2] as { next: (data: unknown) => void; error: (err: unknown) => void };
+    const callbacks = subscribeCall[2] as {
+      next: (data: unknown) => void;
+      error: (err: unknown) => void;
+    };
 
     callbacks.next({
       notificationReceived: {
@@ -275,17 +278,17 @@ describe('useNotificationSubscription', () => {
     renderHook(() => useNotificationSubscription());
 
     const subscribeCall = mockSubscribe.mock.calls[0] as unknown[];
-    const callbacks = subscribeCall[2] as { next: (data: unknown) => void; error: (err: unknown) => void };
+    const callbacks = subscribeCall[2] as {
+      next: (data: unknown) => void;
+      error: (err: unknown) => void;
+    };
 
     // Should not throw
     expect(() => {
       callbacks.error(new Error('Subscription error'));
     }).not.toThrow();
 
-    expect(errorSpy).toHaveBeenCalledWith(
-      '[Notifications] Subscription error:',
-      expect.any(Error),
-    );
+    expect(errorSpy).toHaveBeenCalledWith('[Notifications] Subscription error:', expect.any(Error));
 
     errorSpy.mockRestore();
   });
@@ -301,7 +304,10 @@ describe('useNotificationSubscription', () => {
     renderHook(() => useNotificationSubscription());
 
     const subscribeCall = mockSubscribe.mock.calls[0] as unknown[];
-    const callbacks = subscribeCall[2] as { next: (data: unknown) => void; error: (err: unknown) => void };
+    const callbacks = subscribeCall[2] as {
+      next: (data: unknown) => void;
+      error: (err: unknown) => void;
+    };
 
     callbacks.next({
       notificationReceived: {
@@ -323,10 +329,7 @@ describe('useNotificationSubscription', () => {
     });
 
     // Should call setQueriesData for grouped notifications
-    expect(mockSetQueriesData).toHaveBeenCalledWith(
-      { queryKey: ['notifications', 'grouped'] },
-      expect.any(Function),
-    );
+    expect(mockSetQueriesData).toHaveBeenCalledWith({ queryKey: ['notifications', 'grouped'] }, expect.any(Function));
 
     // Get the updater function and test it creates a new group
     const updaterFn = mockSetQueriesData.mock.calls[0][1];

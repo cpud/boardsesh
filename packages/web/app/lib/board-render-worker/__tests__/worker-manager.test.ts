@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 import type { BoardDetails } from '@/app/lib/types';
 import type { RenderResponse } from '../board-render.worker';
@@ -647,7 +647,10 @@ describe('renderBoard', () => {
 
     const worker = findWorkerWithRenderMsg('p88r42')!;
     act(() => {
-      worker.onerror?.({ message: 'Load failed', preventDefault: vi.fn() } as unknown as ErrorEvent);
+      worker.onerror?.({
+        message: 'Load failed',
+        preventDefault: vi.fn(),
+      } as unknown as ErrorEvent);
     });
 
     // Force useSyncExternalStore to re-read after the listener fires.

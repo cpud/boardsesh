@@ -34,11 +34,7 @@ import Snackbar from '@mui/material/Snackbar';
 import { themeTokens } from '@/app/theme/theme-config';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  GET_COMMUNITY_ROLES,
-  GRANT_ROLE,
-  REVOKE_ROLE,
-} from '@/app/lib/graphql/operations/proposals';
+import { GET_COMMUNITY_ROLES, GRANT_ROLE, REVOKE_ROLE } from '@/app/lib/graphql/operations/proposals';
 import { SEARCH_USERS } from '@/app/lib/graphql/operations/social';
 import type { CommunityRoleAssignment, CommunityRoleType } from '@boardsesh/shared-schema';
 import type { SearchUsersQueryResponse, SearchUsersQueryVariables } from '@/app/lib/graphql/operations/social';
@@ -88,10 +84,9 @@ export default function RoleManagement() {
       setSearching(true);
       try {
         const client = createGraphQLHttpClient(token);
-        const result = await client.request<SearchUsersQueryResponse, SearchUsersQueryVariables>(
-          SEARCH_USERS,
-          { input: { query: searchQuery, limit: 5 } },
-        );
+        const result = await client.request<SearchUsersQueryResponse, SearchUsersQueryVariables>(SEARCH_USERS, {
+          input: { query: searchQuery, limit: 5 },
+        });
         setSearchResults(result.searchUsers.results.map((r) => r.user));
       } catch {
         setSearchResults([]);
@@ -126,23 +121,26 @@ export default function RoleManagement() {
     }
   }, [token, selectedUser, grantRole, grantBoardType, fetchRoles]);
 
-  const handleRevoke = useCallback(async (role: CommunityRoleAssignment) => {
-    if (!token) return;
-    try {
-      const client = createGraphQLHttpClient(token);
-      await client.request(REVOKE_ROLE, {
-        input: {
-          userId: role.userId,
-          role: role.role,
-          boardType: role.boardType || null,
-        },
-      });
-      setSnackbar('Role revoked');
-      fetchRoles();
-    } catch {
-      setSnackbar('Failed to revoke role');
-    }
-  }, [token, fetchRoles]);
+  const handleRevoke = useCallback(
+    async (role: CommunityRoleAssignment) => {
+      if (!token) return;
+      try {
+        const client = createGraphQLHttpClient(token);
+        await client.request(REVOKE_ROLE, {
+          input: {
+            userId: role.userId,
+            role: role.role,
+            boardType: role.boardType || null,
+          },
+        });
+        setSnackbar('Role revoked');
+        fetchRoles();
+      } catch {
+        setSnackbar('Failed to revoke role');
+      }
+    },
+    [token, fetchRoles],
+  );
 
   const handleCloseDialog = useCallback(() => {
     setShowGrantDialog(false);
@@ -199,12 +197,9 @@ export default function RoleManagement() {
                     label={role.role === 'admin' ? 'Admin' : 'Leader'}
                     size="small"
                     sx={{
-                      bgcolor: role.role === 'admin'
-                        ? `${themeTokens.colors.error}14`
-                        : `${themeTokens.colors.primary}14`,
-                      color: role.role === 'admin'
-                        ? themeTokens.colors.error
-                        : themeTokens.colors.primary,
+                      bgcolor:
+                        role.role === 'admin' ? `${themeTokens.colors.error}14` : `${themeTokens.colors.primary}14`,
+                      color: role.role === 'admin' ? themeTokens.colors.error : themeTokens.colors.primary,
                       fontWeight: 600,
                       fontSize: 11,
                     }}
@@ -240,7 +235,16 @@ export default function RoleManagement() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             {/* User search or selected user display */}
             {selectedUser ? (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, border: `1px solid ${themeTokens.neutral[200]}`, borderRadius: 1 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  p: 1.5,
+                  border: `1px solid ${themeTokens.neutral[200]}`,
+                  borderRadius: 1,
+                }}
+              >
                 <Avatar src={selectedUser.avatarUrl || undefined} sx={{ width: 32, height: 32, fontSize: 14 }}>
                   {selectedUser.displayName?.[0] || 'U'}
                 </Avatar>
@@ -249,7 +253,11 @@ export default function RoleManagement() {
                 </Typography>
                 <Button
                   size="small"
-                  onClick={() => { setSelectedUser(null); setSearchQuery(''); setSearchResults([]); }}
+                  onClick={() => {
+                    setSelectedUser(null);
+                    setSearchQuery('');
+                    setSearchResults([]);
+                  }}
                   sx={{ textTransform: 'none', fontSize: 12 }}
                 >
                   Change
@@ -276,7 +284,10 @@ export default function RoleManagement() {
                       {searchResults.map((user) => (
                         <ListItemButton
                           key={user.id}
-                          onClick={() => { setSelectedUser(user); setSearchResults([]); }}
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setSearchResults([]);
+                          }}
                         >
                           <ListItemAvatar sx={{ minWidth: 40 }}>
                             <Avatar src={user.avatarUrl || undefined} sx={{ width: 28, height: 28, fontSize: 12 }}>
@@ -317,7 +328,9 @@ export default function RoleManagement() {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} sx={{ textTransform: 'none' }}>Cancel</Button>
+          <Button onClick={handleCloseDialog} sx={{ textTransform: 'none' }}>
+            Cancel
+          </Button>
           <Button
             onClick={handleGrant}
             variant="contained"
@@ -333,12 +346,7 @@ export default function RoleManagement() {
         </DialogActions>
       </Dialog>
 
-      <Snackbar
-        open={!!snackbar}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar('')}
-        message={snackbar}
-      />
+      <Snackbar open={!!snackbar} autoHideDuration={3000} onClose={() => setSnackbar('')} message={snackbar} />
     </Box>
   );
 }

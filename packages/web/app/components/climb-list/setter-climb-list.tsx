@@ -58,10 +58,7 @@ export default function SetterClimbList({ username, boardTypes, authToken }: Set
     staleTime: 60 * 1000,
   });
 
-  const climbs: Climb[] = useMemo(
-    () => data?.pages.flatMap((p) => p.climbs) ?? [],
-    [data],
-  );
+  const climbs: Climb[] = useMemo(() => data?.pages.flatMap((p) => p.climbs) ?? [], [data]);
   const totalCount = data?.pages[0]?.totalCount ?? 0;
 
   const handleLoadMore = useCallback(() => {

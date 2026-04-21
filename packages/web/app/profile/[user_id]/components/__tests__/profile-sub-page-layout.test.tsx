@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
@@ -8,9 +8,7 @@ interface ProfileSubPageLayoutProps {
   children: React.ReactNode;
 }
 
-function createDefaultProps(
-  overrides: Partial<ProfileSubPageLayoutProps> = {},
-): ProfileSubPageLayoutProps {
+function createDefaultProps(overrides: Partial<ProfileSubPageLayoutProps> = {}): ProfileSubPageLayoutProps {
   return {
     children: <div data-testid="child-content">Child content</div>,
     ...overrides,

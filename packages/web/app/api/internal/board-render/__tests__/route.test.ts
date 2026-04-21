@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { NextRequest } from 'next/server';
 
 // Mock WASM module - returns raw RGBA with 8-byte dimension header
@@ -45,7 +45,7 @@ const mockSharpInstance = () => {
     }),
     resize: vi.fn((...args: unknown[]) => {
       mockResize(...args);
-      return { toBuffer: vi.fn(() => Promise.resolve(Buffer.from([0xB0]))) };
+      return { toBuffer: vi.fn(() => Promise.resolve(Buffer.from([0xb0]))) };
     }),
     webp: vi.fn((opts: unknown) => {
       mockWebpOptions(opts);
@@ -53,7 +53,7 @@ const mockSharpInstance = () => {
     }),
     png: vi.fn((opts: unknown) => {
       mockPngOptions(opts);
-      return { toBuffer: vi.fn(() => Promise.resolve(Buffer.from([0x89, 0x50, 0x4E, 0x47]))) };
+      return { toBuffer: vi.fn(() => Promise.resolve(Buffer.from([0x89, 0x50, 0x4e, 0x47]))) };
     }),
   };
   return instance;
@@ -252,9 +252,7 @@ describe('board-render API route', () => {
       set_ids: [5, 6],
       boardWidth: 650,
       boardHeight: 1000,
-      holdsData: [
-        { id: 1, mirroredHoldId: null, cx: 100, cy: 200, r: 20 },
-      ],
+      holdsData: [{ id: 1, mirroredHoldId: null, cx: 100, cy: 200, r: 20 }],
       images_to_holds: { 'moonboard-bg.png': [] },
       edge_left: 0,
       edge_right: 11,
@@ -263,13 +261,15 @@ describe('board-render API route', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
-    await GET(makeRequest({
-      board_name: 'moonboard',
-      layout_id: '3',
-      size_id: '1',
-      set_ids: '5,6',
-      frames: 'p1r46',
-    }));
+    await GET(
+      makeRequest({
+        board_name: 'moonboard',
+        layout_id: '3',
+        size_id: '1',
+        set_ids: '5,6',
+        frames: 'p1r46',
+      }),
+    );
 
     const configJson = mockRenderOverlay.mock.calls[0][0];
     const config = JSON.parse(configJson);
@@ -325,9 +325,7 @@ describe('board-render API route', () => {
       set_ids: [1, 20],
       boardWidth: 1080,
       boardHeight: 1350,
-      holdsData: [
-        { id: 1073, mirroredHoldId: null, cx: 200, cy: 300, r: 20 },
-      ],
+      holdsData: [{ id: 1073, mirroredHoldId: null, cx: 200, cy: 300, r: 20 }],
       images_to_holds: {
         'layer-good.png': [],
         'layer-bad.png': [],
@@ -357,7 +355,7 @@ describe('board-render API route', () => {
             // Second background image fails
             return { toBuffer: vi.fn(() => Promise.reject(new Error('corrupt image'))) };
           }
-          return { toBuffer: vi.fn(() => Promise.resolve(Buffer.from([0xB0]))) };
+          return { toBuffer: vi.fn(() => Promise.resolve(Buffer.from([0xb0]))) };
         }),
         webp: vi.fn((opts: unknown) => {
           mockWebpOptions(opts);
@@ -365,7 +363,7 @@ describe('board-render API route', () => {
         }),
         png: vi.fn((opts: unknown) => {
           mockPngOptions(opts);
-          return { toBuffer: vi.fn(() => Promise.resolve(Buffer.from([0x89, 0x50, 0x4E, 0x47]))) };
+          return { toBuffer: vi.fn(() => Promise.resolve(Buffer.from([0x89, 0x50, 0x4e, 0x47]))) };
         }),
       };
       return instance;

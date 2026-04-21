@@ -39,7 +39,9 @@ import { useSessionDetail } from '@/app/hooks/use-session-detail';
 import { themeTokens } from '@/app/theme/theme-config';
 import type { Climb, BoardDetails } from '@/app/lib/types';
 import UserSearchDialog from './user-search-dialog';
-import SessionOverviewPanel, { buildSessionSummaryParts } from '@/app/components/session-details/session-overview-panel';
+import SessionOverviewPanel, {
+  buildSessionSummaryParts,
+} from '@/app/components/session-details/session-overview-panel';
 import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
 import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
 import { CssBarChart } from '@/app/components/charts/css-bar-chart';
@@ -86,10 +88,14 @@ function ordinalSuffix(n: number): string {
   const mod100 = n % 100;
   if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
   switch (n % 10) {
-    case 1: return `${n}st`;
-    case 2: return `${n}nd`;
-    case 3: return `${n}rd`;
-    default: return `${n}th`;
+    case 1:
+      return `${n}st`;
+    case 2:
+      return `${n}nd`;
+    case 3:
+      return `${n}rd`;
+    default:
+      return `${n}th`;
   }
 }
 
@@ -197,10 +203,7 @@ function SessionTickItem({
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
         {isMultiUser && (
           <>
-            <Avatar
-              src={participant?.avatarUrl ?? undefined}
-              sx={{ width: 18, height: 18 }}
-            >
+            <Avatar src={participant?.avatarUrl ?? undefined} sx={{ width: 18, height: 18 }}>
               {!participant?.avatarUrl && <PersonOutlined sx={{ fontSize: 10 }} />}
             </Avatar>
             <Typography variant="caption" sx={{ minWidth: 0 }} noWrap>
@@ -213,7 +216,10 @@ function SessionTickItem({
           size="small"
           color={getStatusColor(tick.status)}
           variant={tick.status === 'attempt' ? 'outlined' : 'filled'}
-          sx={{ height: 20, '& .MuiChip-label': { px: 0.75, fontSize: themeTokens.typography.fontSize.xs - 1 } }}
+          sx={{
+            height: 20,
+            '& .MuiChip-label': { px: 0.75, fontSize: themeTokens.typography.fontSize.xs - 1 },
+          }}
         />
         {attemptText && (
           <Typography variant="caption" color="text.secondary">
@@ -221,12 +227,7 @@ function SessionTickItem({
           </Typography>
         )}
         <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 0.25 }}>
-          <VoteButton
-            entityType="tick"
-            entityId={tick.uuid}
-            initialUpvotes={tick.upvotes}
-            likeOnly
-          />
+          <VoteButton entityType="tick" entityId={tick.uuid} initialUpvotes={tick.upvotes} likeOnly />
           <IconButton
             size="small"
             onClick={() => setCommentsOpen((prev) => !prev)}
@@ -312,9 +313,7 @@ export default function SessionDetailContent({
           </IconButton>
           <Typography variant="h6">Session Not Found</Typography>
         </Box>
-        <Typography color="text.secondary">
-          This session could not be found. It may have been removed.
-        </Typography>
+        <Typography color="text.secondary">This session could not be found. It may have been removed.</Typography>
       </Box>
     );
   }
@@ -342,9 +341,7 @@ export default function SessionDetailContent({
 
   const currentUserId = authSession?.user?.id;
   const isInferred = sessionType === 'inferred';
-  const isParticipant = currentUserId
-    ? participants.some((p) => p.userId === currentUserId)
-    : false;
+  const isParticipant = currentUserId ? participants.some((p) => p.userId === currentUserId) : false;
   const canEdit = isInferred && isParticipant;
 
   const isMultiUser = participants.length > 1;
@@ -416,19 +413,22 @@ export default function SessionDetailContent({
   });
 
   // Navigate to climb detail page using client-side routing
-  const navigateToClimb = useCallback(async (climb: Climb) => {
-    try {
-      const bt = climb.boardType;
-      if (!bt) return;
-      const params = new URLSearchParams({ boardType: bt, climbUuid: climb.uuid });
-      const res = await fetch(`/api/internal/climb-redirect?${params}`);
-      if (!res.ok) return;
-      const { url } = await res.json();
-      if (url) router.push(url);
-    } catch (error) {
-      console.error('Failed to navigate to climb:', error);
-    }
-  }, [router]);
+  const navigateToClimb = useCallback(
+    async (climb: Climb) => {
+      try {
+        const bt = climb.boardType;
+        if (!bt) return;
+        const params = new URLSearchParams({ boardType: bt, climbUuid: climb.uuid });
+        const res = await fetch(`/api/internal/climb-redirect?${params}`);
+        if (!res.ok) return;
+        const { url } = await res.json();
+        if (url) router.push(url);
+      } catch (error) {
+        console.error('Failed to navigate to climb:', error);
+      }
+    },
+    [router],
+  );
 
   const handleShare = useCallback(async () => {
     const shareUrl = `${window.location.origin}/session/${sessionId}`;
@@ -444,34 +444,40 @@ export default function SessionDetailContent({
     });
   }, [sessionId, sessionName, showMessage]);
 
-  const handleDeleteTick = useCallback((uuid: string) => {
-    deleteTick.mutate(uuid);
-  }, [deleteTick]);
+  const handleDeleteTick = useCallback(
+    (uuid: string) => {
+      deleteTick.mutate(uuid);
+    },
+    [deleteTick],
+  );
 
   // Render tick details below each climb item (per-user rows for multi-user, status/attempts for single-user)
-  const renderTickDetails = useCallback((climb: Climb) => {
-    const climbTicks = ticksByClimb.get(climb.uuid);
-    if (!climbTicks || climbTicks.length === 0) return null;
+  const renderTickDetails = useCallback(
+    (climb: Climb) => {
+      const climbTicks = ticksByClimb.get(climb.uuid);
+      if (!climbTicks || climbTicks.length === 0) return null;
 
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, px: 2, pb: 1 }}>
-        {climbTicks.map((tick) => {
-          const participant = isMultiUser ? participantMap.get(tick.userId) : null;
-          return (
-            <SessionTickItem
-              key={tick.uuid}
-              tick={tick}
-              isMultiUser={isMultiUser}
-              participant={participant ?? null}
-              currentUserId={currentUserId}
-              onDelete={handleDeleteTick}
-              isDeleting={deleteTick.isPending}
-            />
-          );
-        })}
-      </Box>
-    );
-  }, [ticksByClimb, participantMap, isMultiUser, currentUserId, handleDeleteTick, deleteTick.isPending]);
+      return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, px: 2, pb: 1 }}>
+          {climbTicks.map((tick) => {
+            const participant = isMultiUser ? participantMap.get(tick.userId) : null;
+            return (
+              <SessionTickItem
+                key={tick.uuid}
+                tick={tick}
+                isMultiUser={isMultiUser}
+                participant={participant ?? null}
+                currentUserId={currentUserId}
+                onDelete={handleDeleteTick}
+                isDeleting={deleteTick.isPending}
+              />
+            );
+          })}
+        </Box>
+      );
+    },
+    [ticksByClimb, participantMap, isMultiUser, currentUserId, handleDeleteTick, deleteTick.isPending],
+  );
 
   const handleStartEdit = useCallback(() => {
     setEditName(sessionName || '');
@@ -491,19 +497,25 @@ export default function SessionDetailContent({
     setIsEditing(false);
   }, [updateSessionMutation, editName, editDescription]);
 
-  const handleAddUser = useCallback(async (userId: string) => {
-    setAddUserDialogOpen(false);
-    await addUserMutation.mutateAsync(userId);
-  }, [addUserMutation]);
+  const handleAddUser = useCallback(
+    async (userId: string) => {
+      setAddUserDialogOpen(false);
+      await addUserMutation.mutateAsync(userId);
+    },
+    [addUserMutation],
+  );
 
-  const handleRemoveUser = useCallback(async (userId: string) => {
-    setRemovingUserId(userId);
-    try {
-      await removeUserMutation.mutateAsync(userId);
-    } finally {
-      setRemovingUserId(null);
-    }
-  }, [removeUserMutation]);
+  const handleRemoveUser = useCallback(
+    async (userId: string) => {
+      setRemovingUserId(userId);
+      try {
+        await removeUserMutation.mutateAsync(userId);
+      } finally {
+        setRemovingUserId(null);
+      }
+    },
+    [removeUserMutation],
+  );
 
   const noopLoadMore = useCallback(() => {}, []);
 
@@ -558,34 +570,42 @@ export default function SessionDetailContent({
       label: 'Activity',
       title: `${sessionClimbs.length} climb${sessionClimbs.length !== 1 ? 's' : ''} logged`,
       defaultSummary: 'No climbs yet',
-      getSummary: () => buildSessionSummaryParts({
-        totalFlashes, totalSends, totalAttempts, tickCount, hardestGrade,
-        formatGrade: gradeFormatLoaded ? formatGrade : undefined,
-      }),
+      getSummary: () =>
+        buildSessionSummaryParts({
+          totalFlashes,
+          totalSends,
+          totalAttempts,
+          tickCount,
+          hardestGrade,
+          formatGrade: gradeFormatLoaded ? formatGrade : undefined,
+        }),
       flush: true,
-      content: effectiveBoardDetails && sessionClimbs.length > 0 ? (
-        <VoteSummaryProvider entityType="tick" entityIds={tickUuids}>
-          <FavoritesProvider {...favoritesProviderProps}>
-            <PlaylistsProvider {...playlistsProviderProps}>
-              <ClimbsList
-                boardDetails={effectiveBoardDetails}
-                boardDetailsByClimb={boardDetailsByClimb}
-                unsupportedClimbs={unsupportedClimbs}
-                upsizedClimbs={upsizedClimbs}
-                climbs={sessionClimbs}
-                isFetching={false}
-                hasMore={false}
-                onClimbSelect={navigateToClimb}
-                onLoadMore={noopLoadMore}
-                hideEndMessage
-                renderItemExtra={renderTickDetails}
-              />
-            </PlaylistsProvider>
-          </FavoritesProvider>
-        </VoteSummaryProvider>
-      ) : (
-        <Typography variant="body2" color="text.secondary">No climbs yet</Typography>
-      ),
+      content:
+        effectiveBoardDetails && sessionClimbs.length > 0 ? (
+          <VoteSummaryProvider entityType="tick" entityIds={tickUuids}>
+            <FavoritesProvider {...favoritesProviderProps}>
+              <PlaylistsProvider {...playlistsProviderProps}>
+                <ClimbsList
+                  boardDetails={effectiveBoardDetails}
+                  boardDetailsByClimb={boardDetailsByClimb}
+                  unsupportedClimbs={unsupportedClimbs}
+                  upsizedClimbs={upsizedClimbs}
+                  climbs={sessionClimbs}
+                  isFetching={false}
+                  hasMore={false}
+                  onClimbSelect={navigateToClimb}
+                  onLoadMore={noopLoadMore}
+                  hideEndMessage
+                  renderItemExtra={renderTickDetails}
+                />
+              </PlaylistsProvider>
+            </FavoritesProvider>
+          </VoteSummaryProvider>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            No climbs yet
+          </Typography>
+        ),
     });
 
     sections.push({
@@ -599,42 +619,79 @@ export default function SessionDetailContent({
         return [`${count} grade${count !== 1 ? 's' : ''}`];
       },
       lazy: true,
-      content: effectiveGradeDistribution.length > 0 ? (
-        <Box>
-          <CssBarChart
-            bars={gradeBars}
-            height={160}
-            mobileHeight={120}
-            gap={3}
-            ariaLabel="Session grade distribution"
+      content:
+        effectiveGradeDistribution.length > 0 ? (
+          <Box>
+            <CssBarChart
+              bars={gradeBars}
+              height={160}
+              mobileHeight={120}
+              gap={3}
+              ariaLabel="Session grade distribution"
             />
             <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center', mt: 1 }}>
               {SESSION_GRADE_LEGEND.map((entry) => (
                 <Box key={entry.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Box sx={{ width: 10, height: 10, borderRadius: '2px', bgcolor: entry.color }} />
-                  <Typography variant="caption" color="text.secondary">{entry.label}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {entry.label}
+                  </Typography>
                 </Box>
               ))}
             </Box>
           </Box>
         ) : (
-          <Typography variant="body2" color="text.secondary">Log some climbs to see your grade breakdown</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Log some climbs to see your grade breakdown
+          </Typography>
         ),
-      });
+    });
 
     return sections;
   }, [
-    embedded, inviteContent, sessionClimbs, totalFlashes, totalSends, totalAttempts,
-    tickCount, hardestGrade, gradeFormatLoaded, formatGrade, effectiveBoardDetails,
-    tickUuids, favoritesProviderProps, playlistsProviderProps, boardDetailsByClimb,
-    unsupportedClimbs, upsizedClimbs, navigateToClimb, noopLoadMore, renderTickDetails,
-    effectiveGradeDistribution, gradeBars,
+    embedded,
+    inviteContent,
+    sessionClimbs,
+    totalFlashes,
+    totalSends,
+    totalAttempts,
+    tickCount,
+    hardestGrade,
+    gradeFormatLoaded,
+    formatGrade,
+    effectiveBoardDetails,
+    tickUuids,
+    favoritesProviderProps,
+    playlistsProviderProps,
+    boardDetailsByClimb,
+    unsupportedClimbs,
+    upsizedClimbs,
+    navigateToClimb,
+    noopLoadMore,
+    renderTickDetails,
+    effectiveGradeDistribution,
+    gradeBars,
   ]);
 
   return (
-    <Box sx={{ minHeight: embedded ? 'auto' : '100dvh', pb: embedded ? 0 : '60px', pt: embedded ? 0 : 'var(--global-header-height)' }}>
+    <Box
+      sx={{
+        minHeight: embedded ? 'auto' : '100dvh',
+        pb: embedded ? 0 : '60px',
+        pt: embedded ? 0 : 'var(--global-header-height)',
+      }}
+    >
       {!embedded && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1.5, borderBottom: `1px solid ${themeTokens.neutral[200]}` }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            px: 2,
+            py: 1.5,
+            borderBottom: `1px solid ${themeTokens.neutral[200]}`,
+          }}
+        >
           <IconButton component={Link} href="/" size="small">
             <ArrowBackOutlined />
           </IconButton>
@@ -680,7 +737,15 @@ export default function SessionDetailContent({
         </Box>
       )}
 
-      <Box sx={{ px: embedded ? { xs: 1, sm: 2 } : 2, py: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box
+        sx={{
+          px: embedded ? { xs: 1, sm: 2 } : 2,
+          py: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+        }}
+      >
         {isEditing ? (
           <TextField
             value={editDescription}
@@ -708,9 +773,7 @@ export default function SessionDetailContent({
         )}
 
         {/* Collapsible pills for embedded (drawer) mode */}
-        {embedded && embeddedSections.length > 0 && (
-          <CollapsibleSection sections={embeddedSections} />
-        )}
+        {embedded && embeddedSections.length > 0 && <CollapsibleSection sections={embeddedSections} />}
 
         {/* Full layout for standalone page */}
         {!embedded && (

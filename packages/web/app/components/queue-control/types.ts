@@ -44,15 +44,36 @@ export type QueueAction =
   | { type: 'SET_CURRENT_CLIMB'; payload: ClimbQueueItem }
   | { type: 'SET_CURRENT_CLIMB_QUEUE_ITEM'; payload: ClimbQueueItem }
   | { type: 'SET_CLIMB_SEARCH_PARAMS'; payload: SearchRequestPagination }
-  | { type: 'UPDATE_QUEUE'; payload: { queue: ClimbQueue; currentClimbQueueItem?: ClimbQueueItem | null } }
-  | { type: 'INITIAL_QUEUE_DATA'; payload: { queue: ClimbQueue; currentClimbQueueItem?: ClimbQueueItem | null } }
+  | {
+      type: 'UPDATE_QUEUE';
+      payload: { queue: ClimbQueue; currentClimbQueueItem?: ClimbQueueItem | null };
+    }
+  | {
+      type: 'INITIAL_QUEUE_DATA';
+      payload: { queue: ClimbQueue; currentClimbQueueItem?: ClimbQueueItem | null };
+    }
   | { type: 'SET_FIRST_FETCH'; payload: boolean }
   | { type: 'MIRROR_CLIMB' }
   // Delta-specific actions
   | { type: 'DELTA_ADD_QUEUE_ITEM'; payload: { item: ClimbQueueItem; position?: number } }
   | { type: 'DELTA_REMOVE_QUEUE_ITEM'; payload: { uuid: string } }
-  | { type: 'DELTA_REORDER_QUEUE_ITEM'; payload: { uuid: string; oldIndex: number; newIndex: number } }
-  | { type: 'DELTA_UPDATE_CURRENT_CLIMB'; payload: { item: ClimbQueueItem | null; shouldAddToQueue?: boolean; insertAfterCurrent?: boolean; isServerEvent?: boolean; eventClientId?: string; myClientId?: string; correlationId?: string; serverCorrelationId?: string } }
+  | {
+      type: 'DELTA_REORDER_QUEUE_ITEM';
+      payload: { uuid: string; oldIndex: number; newIndex: number };
+    }
+  | {
+      type: 'DELTA_UPDATE_CURRENT_CLIMB';
+      payload: {
+        item: ClimbQueueItem | null;
+        shouldAddToQueue?: boolean;
+        insertAfterCurrent?: boolean;
+        isServerEvent?: boolean;
+        eventClientId?: string;
+        myClientId?: string;
+        correlationId?: string;
+        serverCorrelationId?: string;
+      };
+    }
   | { type: 'DELTA_MIRROR_CURRENT_CLIMB'; payload: { mirrored: boolean } }
   | { type: 'DELTA_REPLACE_QUEUE_ITEM'; payload: { uuid: string; item: ClimbQueueItem } }
   | { type: 'CLEANUP_PENDING_UPDATE'; payload: { correlationId: string } }

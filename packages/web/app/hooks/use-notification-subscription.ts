@@ -61,9 +61,7 @@ export function useNotificationSubscription() {
         const currentToken = tokenRef.current;
         if (!currentToken) return;
         const client = createGraphQLHttpClient(currentToken);
-        const data = await client.request<GetUnreadNotificationCountQueryResponse>(
-          GET_UNREAD_NOTIFICATION_COUNT,
-        );
+        const data = await client.request<GetUnreadNotificationCountQueryResponse>(GET_UNREAD_NOTIFICATION_COUNT);
         queryClient.setQueryData(UNREAD_COUNT_QUERY_KEY, data.unreadNotificationCount);
       } catch (err) {
         console.error('[Notifications] Failed to refresh unread count:', err);
@@ -93,84 +91,79 @@ export function useNotificationSubscription() {
             showMessageRef.current(formatNotificationMessage(notification), 'info');
 
             // Merge into grouped notifications cache
-            queryClient.setQueriesData<{ pages: GroupedNotificationConnection[]; pageParams: unknown[] }>(
-              { queryKey: GROUPED_NOTIFICATIONS_QUERY_KEY },
-              (old) => {
-                if (!old) return old;
-                const allGroups = old.pages.flatMap((p) => p.groups);
-                const matchIdx = allGroups.findIndex(
-                  (g) =>
-                    g.type === notification.type &&
-                    g.entityType === notification.entityType &&
-                    g.entityId === notification.entityId,
-                );
+            queryClient.setQueriesData<{
+              pages: GroupedNotificationConnection[];
+              pageParams: unknown[];
+            }>({ queryKey: GROUPED_NOTIFICATIONS_QUERY_KEY }, (old) => {
+              if (!old) return old;
+              const allGroups = old.pages.flatMap((p) => p.groups);
+              const matchIdx = allGroups.findIndex(
+                (g) =>
+                  g.type === notification.type &&
+                  g.entityType === notification.entityType &&
+                  g.entityId === notification.entityId,
+              );
 
-                let newGroup: GroupedNotification;
+              let newGroup: GroupedNotification;
 
-                if (matchIdx >= 0) {
-                  const existing = allGroups[matchIdx];
-                  const actorAlreadyPresent = existing.actors.some(
-                    (a) => a.id === notification.actorId,
-                  );
-                  newGroup = {
-                    ...existing,
-                    uuid: notification.uuid,
-                    actorCount: actorAlreadyPresent ? existing.actorCount : existing.actorCount + 1,
-                    actors: actorAlreadyPresent
-                      ? existing.actors
-                      : [
-                          {
-                            id: notification.actorId || '',
-                            displayName: notification.actorDisplayName,
-                            avatarUrl: notification.actorAvatarUrl,
-                          },
-                          ...existing.actors,
-                        ].slice(0, 3),
-                    isRead: false,
-                    createdAt: notification.createdAt,
-                    commentBody: notification.commentBody || existing.commentBody,
-                  };
-                } else {
-                  newGroup = {
-                    uuid: notification.uuid,
-                    type: notification.type,
-                    entityType: notification.entityType,
-                    entityId: notification.entityId,
-                    actorCount: 1,
-                    actors: notification.actorId
-                      ? [
-                          {
-                            id: notification.actorId,
-                            displayName: notification.actorDisplayName,
-                            avatarUrl: notification.actorAvatarUrl,
-                          },
-                        ]
-                      : [],
-                    commentBody: notification.commentBody,
-                    climbName: notification.climbName,
-                    climbUuid: notification.climbUuid,
-                    boardType: notification.boardType,
-                    isRead: false,
-                    createdAt: notification.createdAt,
-                  };
-                }
+              if (matchIdx >= 0) {
+                const existing = allGroups[matchIdx];
+                const actorAlreadyPresent = existing.actors.some((a) => a.id === notification.actorId);
+                newGroup = {
+                  ...existing,
+                  uuid: notification.uuid,
+                  actorCount: actorAlreadyPresent ? existing.actorCount : existing.actorCount + 1,
+                  actors: actorAlreadyPresent
+                    ? existing.actors
+                    : [
+                        {
+                          id: notification.actorId || '',
+                          displayName: notification.actorDisplayName,
+                          avatarUrl: notification.actorAvatarUrl,
+                        },
+                        ...existing.actors,
+                      ].slice(0, 3),
+                  isRead: false,
+                  createdAt: notification.createdAt,
+                  commentBody: notification.commentBody || existing.commentBody,
+                };
+              } else {
+                newGroup = {
+                  uuid: notification.uuid,
+                  type: notification.type,
+                  entityType: notification.entityType,
+                  entityId: notification.entityId,
+                  actorCount: 1,
+                  actors: notification.actorId
+                    ? [
+                        {
+                          id: notification.actorId,
+                          displayName: notification.actorDisplayName,
+                          avatarUrl: notification.actorAvatarUrl,
+                        },
+                      ]
+                    : [],
+                  commentBody: notification.commentBody,
+                  climbName: notification.climbName,
+                  climbUuid: notification.climbUuid,
+                  boardType: notification.boardType,
+                  isRead: false,
+                  createdAt: notification.createdAt,
+                };
+              }
 
-                // Rebuild pages: prepend new group to first page, remove duplicate from any page
-                const existingUuid = matchIdx >= 0 ? allGroups[matchIdx].uuid : null;
-                const withoutExisting = (groups: GroupedNotification[]) =>
-                  existingUuid ? groups.filter((g) => g.uuid !== existingUuid) : groups;
+              // Rebuild pages: prepend new group to first page, remove duplicate from any page
+              const existingUuid = matchIdx >= 0 ? allGroups[matchIdx].uuid : null;
+              const withoutExisting = (groups: GroupedNotification[]) =>
+                existingUuid ? groups.filter((g) => g.uuid !== existingUuid) : groups;
 
-                const updatedPages = old.pages.map((page, pageIdx) => ({
-                  ...page,
-                  groups:
-                    pageIdx === 0
-                      ? [newGroup, ...withoutExisting(page.groups)]
-                      : withoutExisting(page.groups),
-                }));
+              const updatedPages = old.pages.map((page, pageIdx) => ({
+                ...page,
+                groups: pageIdx === 0 ? [newGroup, ...withoutExisting(page.groups)] : withoutExisting(page.groups),
+              }));
 
-                return { ...old, pages: updatedPages };
-              },
-            );
+              return { ...old, pages: updatedPages };
+            });
           }
         },
         error: (err) => {

@@ -24,9 +24,7 @@ function NativeStartInner() {
       if (!csrfToken || !formRef.current || submitted.current) return;
       submitted.current = true;
 
-      const input = formRef.current.querySelector<HTMLInputElement>(
-        'input[name="csrfToken"]',
-      );
+      const input = formRef.current.querySelector<HTMLInputElement>('input[name="csrfToken"]');
       if (input) input.value = csrfToken;
       formRef.current.submit();
     });

@@ -67,13 +67,8 @@ export default function BoardScrollSection({
   return (
     <div className={`${styles.scrollSection} ${isSmall ? styles.scrollSectionSmall : ''}`}>
       {title && <div className={styles.sectionTitle}>{title}</div>}
-      <div
-        ref={scrollRef}
-        className={`${styles.scrollContainer} ${isSmall ? styles.scrollContainerSmall : ''}`}
-      >
-        {loading
-          ? <SkeletonCards count={4} isSmall={isSmall} />
-          : children}
+      <div ref={scrollRef} className={`${styles.scrollContainer} ${isSmall ? styles.scrollContainerSmall : ''}`}>
+        {loading ? <SkeletonCards count={4} isSmall={isSmall} /> : children}
         {hasMore && (
           <>
             <div ref={sentinelRef} className={styles.loadMoreSentinel} />

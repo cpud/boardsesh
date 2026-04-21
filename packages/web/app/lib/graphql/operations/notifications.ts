@@ -243,5 +243,10 @@ export type CommentUpdatesSubscriptionResponse = {
   commentUpdates:
     | { __typename: 'CommentAdded'; comment: import('@boardsesh/shared-schema').Comment }
     | { __typename: 'CommentUpdated'; comment: import('@boardsesh/shared-schema').Comment }
-    | { __typename: 'CommentDeleted'; commentUuid: string; entityType: SocialEntityType; entityId: string };
+    | {
+        __typename: 'CommentDeleted';
+        commentUuid: string;
+        entityType: SocialEntityType;
+        entityId: string;
+      };
 };

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 import { createTestQueryClient } from '@/app/test-utils/test-providers';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -86,14 +86,11 @@ describe('useMarkGroupAsRead', () => {
       await result.current.mutateAsync(notification as unknown as GroupedNotification);
     });
 
-    expect(mockRequest).toHaveBeenCalledWith(
-      'MARK_GROUP_NOTIFICATIONS_READ_MUTATION',
-      {
-        type: 'FOLLOW',
-        entityType: 'USER',
-        entityId: 'user-123',
-      },
-    );
+    expect(mockRequest).toHaveBeenCalledWith('MARK_GROUP_NOTIFICATIONS_READ_MUTATION', {
+      type: 'FOLLOW',
+      entityType: 'USER',
+      entityId: 'user-123',
+    });
   });
 
   it('updates grouped notifications cache on success (marks group as read)', async () => {
@@ -125,7 +122,10 @@ describe('useMarkGroupAsRead', () => {
       await result.current.mutateAsync(notification as unknown as GroupedNotification);
     });
 
-    const cache = queryClient.getQueryData(['notifications', 'grouped']) as { pages: GroupedNotificationConnection[]; pageParams: unknown[] };
+    const cache = queryClient.getQueryData(['notifications', 'grouped']) as {
+      pages: GroupedNotificationConnection[];
+      pageParams: unknown[];
+    };
     expect(cache.pages[0].groups[0].isRead).toBe(true);
     expect(cache.pages[0].groups[1].isRead).toBe(false);
   });
@@ -223,7 +223,10 @@ describe('useMarkAllAsRead', () => {
       await result.current.mutateAsync();
     });
 
-    const cache = queryClient.getQueryData(['notifications', 'grouped']) as { pages: GroupedNotificationConnection[]; pageParams: unknown[] };
+    const cache = queryClient.getQueryData(['notifications', 'grouped']) as {
+      pages: GroupedNotificationConnection[];
+      pageParams: unknown[];
+    };
     expect(cache.pages[0].groups.every((n: GroupedNotification) => n.isRead === true)).toBe(true);
   });
 

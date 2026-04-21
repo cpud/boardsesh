@@ -17,9 +17,7 @@ export async function fetchClimbDetailData({ boardName, climbUuid, angle }: Fetc
       const results = await dbz
         .select()
         .from(betaLinks)
-        .where(
-          and(eq(betaLinks.boardType, boardName), eq(betaLinks.climbUuid, climbUuid)),
-        );
+        .where(and(eq(betaLinks.boardType, boardName), eq(betaLinks.climbUuid, climbUuid)));
 
       return results.map((link) => ({
         climb_uuid: link.climbUuid,
@@ -55,10 +53,7 @@ export async function fetchClimbDetailData({ boardName, climbUuid, angle }: Fetc
     }
   };
 
-  const [betaLinks, communityGrade] = await Promise.all([
-    fetchBetaLinks(),
-    fetchCommunityGrade(),
-  ]);
+  const [betaLinks, communityGrade] = await Promise.all([fetchBetaLinks(), fetchCommunityGrade()]);
 
   return { betaLinks, communityGrade };
 }

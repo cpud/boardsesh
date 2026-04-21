@@ -45,15 +45,27 @@ export function useQueueRestoration({
         dispatch({
           type: 'INITIAL_QUEUE_DATA',
           payload: {
-            queue: persistentSession.queue as Parameters<typeof dispatch>[0] extends { payload: infer P } ? P extends { queue: infer Q } ? Q : never : never,
-            currentClimbQueueItem: persistentSession.currentClimbQueueItem as Parameters<typeof dispatch>[0] extends { payload: infer P } ? P extends { currentClimbQueueItem?: infer C } ? C : never : never,
+            queue: persistentSession.queue as Parameters<typeof dispatch>[0] extends {
+              payload: infer P;
+            }
+              ? P extends { queue: infer Q }
+                ? Q
+                : never
+              : never,
+            currentClimbQueueItem: persistentSession.currentClimbQueueItem as Parameters<typeof dispatch>[0] extends {
+              payload: infer P;
+            }
+              ? P extends { currentClimbQueueItem?: infer C }
+                ? C
+                : never
+              : never,
           },
         });
       }
       setHasRestored(true);
     }
-  // Only run on mount and when session becomes active
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Only run on mount and when session becomes active
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPersistentSessionActive, persistentSession.hasConnected]);
 
   // Initialize queue state from in-memory local queue (SPA navigation, non-party mode)
@@ -78,8 +90,8 @@ export function useQueueRestoration({
 
     // Local queue is loaded but empty or for a different board
     setHasRestored(true);
-  // Only run on mount and when isLocalQueueLoaded changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Only run on mount and when isLocalQueueLoaded changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persistentSession.isLocalQueueLoaded]);
 
   // Clear local queue if navigating to a different board configuration
@@ -88,5 +100,4 @@ export function useQueueRestoration({
       persistentSession.clearLocalQueue();
     }
   }, [baseBoardPath, persistentSession]);
-
 }

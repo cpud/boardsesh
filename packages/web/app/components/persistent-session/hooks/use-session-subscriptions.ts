@@ -14,9 +14,13 @@ interface UseSessionSubscriptionsArgs {
   liveSessionStats: { sessionId: string } | null;
   setQueueState: Dispatch<SetStateAction<LocalClimbQueueItem[]>>;
   setLiveSessionStats: Dispatch<SetStateAction<SessionLiveStats | null>>;
-  refs: Pick<SharedRefs,
-    'triggerResyncRef' | 'lastCorruptionResyncRef' | 'isFilteringCorruptedItemsRef' |
-    'queueEventSubscribersRef' | 'sessionEventSubscribersRef'
+  refs: Pick<
+    SharedRefs,
+    | 'triggerResyncRef'
+    | 'lastCorruptionResyncRef'
+    | 'isFilteringCorruptedItemsRef'
+    | 'queueEventSubscribersRef'
+    | 'sessionEventSubscribersRef'
   >;
 }
 
@@ -56,7 +60,7 @@ export function useSessionSubscriptions({
     }
 
     // Check for corrupted (null/undefined) items in the queue
-    const hasCorruptedItems = queue.some(item => item == null);
+    const hasCorruptedItems = queue.some((item) => item == null);
     if (hasCorruptedItems) {
       const now = Date.now();
       const timeSinceLastResync = now - lastCorruptionResyncRef.current;
@@ -64,11 +68,11 @@ export function useSessionSubscriptions({
       if (timeSinceLastResync < CORRUPTION_RESYNC_COOLDOWN_MS) {
         console.error(
           `[PersistentSession] Detected null/undefined items in queue, but resync on cooldown ` +
-          `(${Math.round((CORRUPTION_RESYNC_COOLDOWN_MS - timeSinceLastResync) / 1000)}s remaining). ` +
-          `Filtering locally.`
+            `(${Math.round((CORRUPTION_RESYNC_COOLDOWN_MS - timeSinceLastResync) / 1000)}s remaining). ` +
+            `Filtering locally.`,
         );
         isFilteringCorruptedItemsRef.current = true;
-        setQueueState(prev => prev.filter(item => item != null));
+        setQueueState((prev) => prev.filter((item) => item != null));
         return;
       }
 
@@ -80,7 +84,15 @@ export function useSessionSubscriptions({
       return;
     }
     // Note: hash is computed in the main provider via the event processor
-  }, [session, queue, currentClimbQueueItem, setQueueState, triggerResyncRef, lastCorruptionResyncRef, isFilteringCorruptedItemsRef]);
+  }, [
+    session,
+    queue,
+    currentClimbQueueItem,
+    setQueueState,
+    triggerResyncRef,
+    lastCorruptionResyncRef,
+    isFilteringCorruptedItemsRef,
+  ]);
 
   // Periodic state hash verification (every 60 seconds)
   useEffect(() => {
@@ -95,7 +107,7 @@ export function useSessionSubscriptions({
         console.warn(
           '[PersistentSession] State hash mismatch detected!',
           `Local: ${localHash}, Server: ${lastReceivedStateHash}`,
-          'Triggering automatic resync...'
+          'Triggering automatic resync...',
         );
         if (triggerResyncRef.current) {
           triggerResyncRef.current();
@@ -114,11 +126,11 @@ export function useSessionSubscriptions({
       return;
     }
 
-    const isCurrentInQueue = queue.some(item => item.uuid === currentClimbQueueItem.uuid);
+    const isCurrentInQueue = queue.some((item) => item.uuid === currentClimbQueueItem.uuid);
 
     if (!isCurrentInQueue) {
       console.warn(
-        '[PersistentSession] Current climb not found in queue - state inconsistency detected. Triggering resync.'
+        '[PersistentSession] Current climb not found in queue - state inconsistency detected. Triggering resync.',
       );
       if (triggerResyncRef.current) {
         triggerResyncRef.current();
@@ -135,19 +147,25 @@ export function useSessionSubscriptions({
   }, [activeSession, setLiveSessionStats]);
 
   // Event subscription functions
-  const subscribeToQueueEvents = useCallback((callback: (event: SubscriptionQueueEvent) => void) => {
-    queueEventSubscribersRef.current.add(callback);
-    return () => {
-      queueEventSubscribersRef.current.delete(callback);
-    };
-  }, [queueEventSubscribersRef]);
+  const subscribeToQueueEvents = useCallback(
+    (callback: (event: SubscriptionQueueEvent) => void) => {
+      queueEventSubscribersRef.current.add(callback);
+      return () => {
+        queueEventSubscribersRef.current.delete(callback);
+      };
+    },
+    [queueEventSubscribersRef],
+  );
 
-  const subscribeToSessionEvents = useCallback((callback: (event: SessionEvent) => void) => {
-    sessionEventSubscribersRef.current.add(callback);
-    return () => {
-      sessionEventSubscribersRef.current.delete(callback);
-    };
-  }, [sessionEventSubscribersRef]);
+  const subscribeToSessionEvents = useCallback(
+    (callback: (event: SessionEvent) => void) => {
+      sessionEventSubscribersRef.current.add(callback);
+      return () => {
+        sessionEventSubscribersRef.current.delete(callback);
+      };
+    },
+    [sessionEventSubscribersRef],
+  );
 
   // Trigger a resync with the server
   const triggerResync = useCallback(() => {

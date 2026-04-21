@@ -117,7 +117,7 @@ class RoomManager {
     avatarUrl?: string,
     initialQueue?: ClimbQueueItem[],
     initialCurrentClimb?: ClimbQueueItem | null,
-    sessionName?: string
+    sessionName?: string,
   ): Promise<{
     clientId: string;
     users: SessionUser[];
@@ -149,7 +149,7 @@ class RoomManager {
       avatarUrl,
       initialQueue,
       initialCurrentClimb,
-      sessionName
+      sessionName,
     );
   }
 
@@ -163,7 +163,7 @@ class RoomManager {
       this.writeScheduler,
       this.sessionGraceTimers,
       this.pendingJoinPersists,
-      this.SESSION_GRACE_PERIOD_MS
+      this.SESSION_GRACE_PERIOD_MS,
     );
   }
 
@@ -249,16 +249,24 @@ class RoomManager {
     sessionId: string,
     queue: ClimbQueueItem[],
     currentClimbQueueItem: ClimbQueueItem | null,
-    expectedVersion?: number
+    expectedVersion?: number,
   ): Promise<{ version: number; sequence: number; stateHash: string }> {
-    return updateQueueStateFn(sessionId, queue, currentClimbQueueItem, expectedVersion, this.redisStore, this.writeScheduler, this.distributedState);
+    return updateQueueStateFn(
+      sessionId,
+      queue,
+      currentClimbQueueItem,
+      expectedVersion,
+      this.redisStore,
+      this.writeScheduler,
+      this.distributedState,
+    );
   }
 
   async updateQueueStateImmediate(
     sessionId: string,
     queue: ClimbQueueItem[],
     currentClimbQueueItem: ClimbQueueItem | null,
-    expectedVersion?: number
+    expectedVersion?: number,
   ): Promise<number> {
     return updateQueueStateImmediateFn(sessionId, queue, currentClimbQueueItem, expectedVersion, this.redisStore);
   }
@@ -266,9 +274,16 @@ class RoomManager {
   async updateQueueOnly(
     sessionId: string,
     queue: ClimbQueueItem[],
-    expectedVersion?: number
+    expectedVersion?: number,
   ): Promise<{ version: number; sequence: number; stateHash: string }> {
-    return updateQueueOnlyFn(sessionId, queue, expectedVersion, this.redisStore, this.writeScheduler, this.distributedState);
+    return updateQueueOnlyFn(
+      sessionId,
+      queue,
+      expectedVersion,
+      this.redisStore,
+      this.writeScheduler,
+      this.distributedState,
+    );
   }
 
   async getQueueState(sessionId: string): Promise<QueueState> {
@@ -288,17 +303,30 @@ class RoomManager {
     name?: string,
     goal?: string,
     isPermanent?: boolean,
-    color?: string
+    color?: string,
   ): Promise<Session> {
-    return createDiscoverableSessionFn(sessionId, boardPath, userId, latitude, longitude, name, goal, isPermanent, color);
+    return createDiscoverableSessionFn(
+      sessionId,
+      boardPath,
+      userId,
+      latitude,
+      longitude,
+      name,
+      goal,
+      isPermanent,
+      color,
+    );
   }
 
-  async findNearbySessions(
-    latitude: number,
-    longitude: number,
-    radiusMeters?: number
-  ): Promise<DiscoverableSession[]> {
-    return findNearbySessionsFn(latitude, longitude, radiusMeters, this.sessions, this.redisStore, this.distributedState);
+  async findNearbySessions(latitude: number, longitude: number, radiusMeters?: number): Promise<DiscoverableSession[]> {
+    return findNearbySessionsFn(
+      latitude,
+      longitude,
+      radiusMeters,
+      this.sessions,
+      this.redisStore,
+      this.distributedState,
+    );
   }
 
   async getUserSessions(userId: string): Promise<Session[]> {
@@ -312,7 +340,7 @@ class RoomManager {
       this.redisStore,
       this.writeScheduler,
       this.sessionGraceTimers,
-      this.pendingJoinPersists
+      this.pendingJoinPersists,
     );
   }
 

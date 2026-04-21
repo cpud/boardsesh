@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { renderHook } from '@testing-library/react';
 
 vi.mock('@/app/hooks/use-color-mode', () => ({

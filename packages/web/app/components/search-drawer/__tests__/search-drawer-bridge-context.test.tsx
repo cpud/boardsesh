@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
 
@@ -59,7 +59,12 @@ describe('search-drawer-bridge-context', () => {
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <SearchDrawerBridgeProvider>
           {children}
-          <SearchDrawerBridgeInjector nameFilter="" onNameFilterChange={() => {}} hasActiveNonNameFilters={false} {...props} />
+          <SearchDrawerBridgeInjector
+            nameFilter=""
+            onNameFilterChange={() => {}}
+            hasActiveNonNameFilters={false}
+            {...props}
+          />
         </SearchDrawerBridgeProvider>
       );
       return renderHook(() => useSearchDrawerBridge(), { wrapper });

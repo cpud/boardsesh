@@ -32,13 +32,19 @@ Once you've run setup, you will have a copy of both the Tension and Kilter climb
 
 ## Start Developing
 
-After setup completes, there will be a Docker container running with the database and shared data; you can then start the development server:
+After setup completes, start the development server:
 
 ```bash
-bun run dev
+vp run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This automatically starts the database containers (PostgreSQL, neon-proxy, Redis), runs any pending migrations, and then launches the backend and web servers. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can also run pieces independently:
+
+- `vp run dev:backend` - Database + backend only
+- `vp run dev:web` - Database + web only
+- `vp run db:up` - Database only
 
 ## Keeping local data up to date
 

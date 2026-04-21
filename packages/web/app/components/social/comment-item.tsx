@@ -91,10 +91,9 @@ export default function CommentItem({
     if (!token) return;
     try {
       const client = createGraphQLHttpClient(token);
-      await client.request<DeleteCommentMutationResponse, DeleteCommentMutationVariables>(
-        DELETE_COMMENT,
-        { commentUuid: comment.uuid },
-      );
+      await client.request<DeleteCommentMutationResponse, DeleteCommentMutationVariables>(DELETE_COMMENT, {
+        commentUuid: comment.uuid,
+      });
       onCommentDeleted(comment.uuid);
     } catch {
       showMessage('Failed to delete comment', 'error');
@@ -106,17 +105,14 @@ export default function CommentItem({
       if (!token) return;
       try {
         const client = createGraphQLHttpClient(token);
-        const response = await client.request<AddCommentMutationResponse, AddCommentMutationVariables>(
-          ADD_COMMENT,
-          {
-            input: {
-              entityType,
-              entityId,
-              parentCommentUuid: comment.uuid,
-              body,
-            },
+        const response = await client.request<AddCommentMutationResponse, AddCommentMutationVariables>(ADD_COMMENT, {
+          input: {
+            entityType,
+            entityId,
+            parentCommentUuid: comment.uuid,
+            body,
           },
-        );
+        });
         setReplies((prev) => [response.addComment, ...prev]);
         setShowReplyForm(false);
         setRepliesLoaded(true);
@@ -132,19 +128,16 @@ export default function CommentItem({
     setRepliesLoading(true);
     try {
       const client = createGraphQLHttpClient(token);
-      const response = await client.request<GetCommentsQueryResponse, GetCommentsQueryVariables>(
-        GET_COMMENTS,
-        {
-          input: {
-            entityType,
-            entityId,
-            parentCommentUuid: comment.uuid,
-            sortBy: 'new',
-            limit: 50,
-            offset: 0,
-          },
+      const response = await client.request<GetCommentsQueryResponse, GetCommentsQueryVariables>(GET_COMMENTS, {
+        input: {
+          entityType,
+          entityId,
+          parentCommentUuid: comment.uuid,
+          sortBy: 'new',
+          limit: 50,
+          offset: 0,
         },
-      );
+      });
       setReplies(response.comments.comments);
       setRepliesLoaded(true);
     } catch {
@@ -291,11 +284,7 @@ export default function CommentItem({
                     okText="Delete"
                     okButtonProps={{ color: 'error' }}
                   >
-                    <IconButton
-                      size="small"
-                      sx={{ color: 'var(--neutral-400)' }}
-                      aria-label="Delete comment"
-                    >
+                    <IconButton size="small" sx={{ color: 'var(--neutral-400)' }} aria-label="Delete comment">
                       <DeleteOutlined sx={{ fontSize: 16 }} />
                     </IconButton>
                   </ConfirmPopover>

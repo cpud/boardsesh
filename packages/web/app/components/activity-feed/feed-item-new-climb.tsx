@@ -55,7 +55,8 @@ export default function FeedItemNewClimb({ item }: FeedItemNewClimbProps) {
               {item.actorDisplayName || 'User'}
             </MuiTypography>
             <MuiTypography variant="body2" component="span" color="text.secondary">
-              {' '}created a new climb{' '}
+              {' '}
+              created a new climb{' '}
             </MuiTypography>
             <MuiTypography variant="body2" component="span" fontWeight={600}>
               {item.climbName}
@@ -82,12 +83,8 @@ export default function FeedItemNewClimb({ item }: FeedItemNewClimbProps) {
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }} className={styles.feedItemContent}>
             <Box sx={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-              {item.difficultyName && (
-                <Chip label={item.difficultyName} size="small" color="primary" />
-              )}
-              {item.angle != null && (
-                <Chip icon={<LocationOnOutlined />} label={`${item.angle}\u00B0`} size="small" />
-              )}
+              {item.difficultyName && <Chip label={item.difficultyName} size="small" color="primary" />}
+              {item.angle != null && <Chip icon={<LocationOnOutlined />} label={`${item.angle}\u00B0`} size="small" />}
               {item.boardType && (
                 <MuiTypography variant="body2" component="span" color="text.secondary" className={styles.boardType}>
                   {item.boardType.charAt(0).toUpperCase() + item.boardType.slice(1)}

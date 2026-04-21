@@ -72,7 +72,14 @@ export const DEFAULT_LOGBOOK_PREFERENCES: LogbookPreferences = {
 };
 
 const VALID_BOARD_FILTERS: BoardFilter[] = ['all', 'kilter', 'tension', 'moonboard'];
-const VALID_SORT_FIELDS: Array<SortField | ''> = ['', 'climbName', 'loggedGrade', 'consensusGrade', 'date', 'attemptCount'];
+const VALID_SORT_FIELDS: Array<SortField | ''> = [
+  '',
+  'climbName',
+  'loggedGrade',
+  'consensusGrade',
+  'date',
+  'attemptCount',
+];
 const VALID_SORT_DIRECTIONS: SortDirection[] = ['asc', 'desc'];
 const VALID_SORT_PRESETS: SortPreset[] = ['recent', 'hardest'];
 
@@ -101,7 +108,8 @@ function sanitizeAngleRange(value: unknown): [number, number] {
 }
 
 function sanitizeLayoutSelections(value: unknown): Record<Exclude<BoardFilter, 'all'>, number[]> {
-  const source = value && typeof value === 'object' ? value as Partial<Record<Exclude<BoardFilter, 'all'>, unknown>> : {};
+  const source =
+    value && typeof value === 'object' ? (value as Partial<Record<Exclude<BoardFilter, 'all'>, unknown>>) : {};
 
   return {
     kilter: sanitizeBoardLayouts(source.kilter, 'kilter'),
@@ -130,14 +138,20 @@ export function sanitizeLogbookPreferences(value: unknown): LogbookPreferences {
 
   const sanitizedFilters: LogbookFilterState = {
     includeSends: sanitizeBoolean((filters as Partial<LogbookFilterState>).includeSends, DEFAULT_FILTERS.includeSends),
-    includeAttempts: sanitizeBoolean((filters as Partial<LogbookFilterState>).includeAttempts, DEFAULT_FILTERS.includeAttempts),
+    includeAttempts: sanitizeBoolean(
+      (filters as Partial<LogbookFilterState>).includeAttempts,
+      DEFAULT_FILTERS.includeAttempts,
+    ),
     flashOnly: sanitizeBoolean((filters as Partial<LogbookFilterState>).flashOnly, DEFAULT_FILTERS.flashOnly),
     minGrade: sanitizeDifficulty((filters as Partial<LogbookFilterState>).minGrade),
     maxGrade: sanitizeDifficulty((filters as Partial<LogbookFilterState>).maxGrade),
     fromDate: sanitizeDate((filters as Partial<LogbookFilterState>).fromDate),
     toDate: sanitizeDate((filters as Partial<LogbookFilterState>).toDate),
     angleRange: sanitizeAngleRange((filters as Partial<LogbookFilterState>).angleRange),
-    benchmarkOnly: sanitizeBoolean((filters as Partial<LogbookFilterState>).benchmarkOnly, DEFAULT_FILTERS.benchmarkOnly),
+    benchmarkOnly: sanitizeBoolean(
+      (filters as Partial<LogbookFilterState>).benchmarkOnly,
+      DEFAULT_FILTERS.benchmarkOnly,
+    ),
   };
 
   if (!sanitizedFilters.includeSends && !sanitizedFilters.includeAttempts) {

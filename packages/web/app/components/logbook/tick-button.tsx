@@ -35,7 +35,16 @@ interface TickButtonProps {
   ascentType?: 'flash' | 'send' | 'attempt';
 }
 
-export const TickButton: React.FC<TickButtonProps> = ({ currentClimb, angle, boardDetails, onActivateTickBar, onTickSave, tickBarActive, isFlash, ascentType }) => {
+export const TickButton: React.FC<TickButtonProps> = ({
+  currentClimb,
+  angle,
+  boardDetails,
+  onActivateTickBar,
+  onTickSave,
+  tickBarActive,
+  isFlash,
+  ascentType,
+}) => {
   const { logbook, isAuthenticated } = useBoardProvider();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const { openAuthModal } = useAuthModal();
@@ -43,8 +52,8 @@ export const TickButton: React.FC<TickButtonProps> = ({ currentClimb, angle, boa
 
   // URL for opening in the Aurora app (null for Kilter as app URL is no longer accessible)
   const openInAppUrl = useMemo(
-    () => currentClimb ? constructClimbInfoUrl(boardDetails, currentClimb.uuid) : null,
-    [boardDetails, currentClimb]
+    () => (currentClimb ? constructClimbInfoUrl(boardDetails, currentClimb.uuid) : null),
+    [boardDetails, currentClimb],
   );
 
   const showDrawer = (e?: React.MouseEvent<HTMLButtonElement>) => {
@@ -102,39 +111,43 @@ export const TickButton: React.FC<TickButtonProps> = ({ currentClimb, angle, boa
         id="button-tick"
         onClick={showDrawer}
         aria-label={tickBarActive ? 'Save tick' : 'Log ascent'}
-        sx={tickBarActive
-          ? {
-              backgroundColor: ascentType === 'attempt' ? themeTokens.colors.error
-                : ascentType === 'flash' || isFlash ? themeTokens.colors.amber
-                : themeTokens.colors.success,
-              color: ascentType === 'flash' || isFlash ? themeTokens.neutral[900] : 'common.white',
-              transition: 'background-color 150ms ease, color 150ms ease',
-              '&:hover': {
-                backgroundColor: ascentType === 'attempt' ? themeTokens.colors.error
-                  : ascentType === 'flash' || isFlash ? themeTokens.colors.amber
-                  : themeTokens.colors.successHover,
-              },
-            }
-          : { opacity: themeTokens.opacity.subtle }
+        sx={
+          tickBarActive
+            ? {
+                backgroundColor:
+                  ascentType === 'attempt'
+                    ? themeTokens.colors.error
+                    : ascentType === 'flash' || isFlash
+                      ? themeTokens.colors.amber
+                      : themeTokens.colors.success,
+                color: ascentType === 'flash' || isFlash ? themeTokens.neutral[900] : 'common.white',
+                transition: 'background-color 150ms ease, color 150ms ease',
+                '&:hover': {
+                  backgroundColor:
+                    ascentType === 'attempt'
+                      ? themeTokens.colors.error
+                      : ascentType === 'flash' || isFlash
+                        ? themeTokens.colors.amber
+                        : themeTokens.colors.successHover,
+                },
+              }
+            : { opacity: themeTokens.opacity.subtle }
         }
       >
-        {tickBarActive && ascentType === 'attempt'
-          ? <PersonFallingIcon />
-          : <TickIcon isFlash={tickBarActive ? !!(ascentType === 'flash' || isFlash) : false} />
-        }
+        {tickBarActive && ascentType === 'attempt' ? (
+          <PersonFallingIcon />
+        ) : (
+          <TickIcon isFlash={tickBarActive ? !!(ascentType === 'flash' || isFlash) : false} />
+        )}
       </IconButton>
     </MuiBadge>
   );
 
-  const tickLabel = ascentType === 'attempt' ? 'attempt' : (ascentType === 'flash' || isFlash) ? 'flash' : 'tick';
+  const tickLabel = ascentType === 'attempt' ? 'attempt' : ascentType === 'flash' || isFlash ? 'flash' : 'tick';
 
   return (
     <>
-      {tickBarActive ? (
-        <TickButtonWithLabel label={tickLabel}>{badge}</TickButtonWithLabel>
-      ) : (
-        badge
-      )}
+      {tickBarActive ? <TickButtonWithLabel label={tickLabel}>{badge}</TickButtonWithLabel> : badge}
 
       {isAuthenticated ? (
         <LogAscentDrawer
@@ -152,11 +165,23 @@ export const TickButton: React.FC<TickButtonProps> = ({ currentClimb, angle, boa
           styles={{ wrapper: { height: '60%' } }}
         >
           <Stack spacing={3} sx={{ width: '100%', textAlign: 'center', padding: '24px 0' }}>
-            <Typography variant="body2" component="span" fontWeight={600} sx={{ fontSize: 16 }}>Sign in to record ticks</Typography>
+            <Typography variant="body2" component="span" fontWeight={600} sx={{ fontSize: 16 }}>
+              Sign in to record ticks
+            </Typography>
             <Typography variant="body1" component="p" color="text.secondary">
               Create a Boardsesh account to log your climbs and track your progress.
             </Typography>
-            <Button variant="contained" startIcon={<LoginOutlined />} onClick={() => openAuthModal({ title: 'Sign in to record ticks', description: 'Create an account to log your climbs and track your progress.' })} fullWidth>
+            <Button
+              variant="contained"
+              startIcon={<LoginOutlined />}
+              onClick={() =>
+                openAuthModal({
+                  title: 'Sign in to record ticks',
+                  description: 'Create an account to log your climbs and track your progress.',
+                })
+              }
+              fullWidth
+            >
               Sign In
             </Button>
             {openInAppUrl && (
@@ -183,7 +208,6 @@ export const TickButton: React.FC<TickButtonProps> = ({ currentClimb, angle, boa
           </Stack>
         </SwipeableDrawer>
       )}
-
     </>
   );
 };

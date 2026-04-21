@@ -45,10 +45,7 @@ interface CommentFeedProps {
   boardUuid?: string | null;
 }
 
-export default function CommentFeed({
-  isAuthenticated,
-  boardUuid,
-}: CommentFeedProps) {
+export default function CommentFeed({ isAuthenticated, boardUuid }: CommentFeedProps) {
   const { token, isLoading: authLoading } = useWsAuthToken();
 
   const queryKey = ['globalCommentFeed', boardUuid] as const;
@@ -66,10 +63,7 @@ export default function CommentFeed({
         boardUuid: boardUuid || undefined,
       };
 
-      const response = await client.request<GetGlobalCommentFeedResponse>(
-        GET_GLOBAL_COMMENT_FEED,
-        { input },
-      );
+      const response = await client.request<GetGlobalCommentFeedResponse>(GET_GLOBAL_COMMENT_FEED, { input });
       return response.globalCommentFeed;
     },
     initialPageParam: null as string | null,
@@ -81,10 +75,7 @@ export default function CommentFeed({
     staleTime: 60 * 1000,
   });
 
-  const comments: CommentType[] = useMemo(
-    () => data?.pages.flatMap((p) => p.comments) ?? [],
-    [data],
-  );
+  const comments: CommentType[] = useMemo(() => data?.pages.flatMap((p) => p.comments) ?? [], [data]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: fetchNextPage,
@@ -105,10 +96,7 @@ export default function CommentFeed({
   return (
     <Box data-testid="comment-feed" sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       {error && (
-        <EmptyState
-          icon={<ErrorOutline fontSize="inherit" />}
-          description="Failed to load comments. Please try again."
-        >
+        <EmptyState icon={<ErrorOutline fontSize="inherit" />} description="Failed to load comments. Please try again.">
           <MuiButton variant="contained" onClick={() => refetch()}>
             Retry
           </MuiButton>
@@ -116,16 +104,17 @@ export default function CommentFeed({
       )}
 
       {!error && comments.length === 0 ? (
-        <EmptyState
-          icon={<ChatBubbleOutlineOutlined fontSize="inherit" />}
-          description="No comments yet"
-        />
+        <EmptyState icon={<ChatBubbleOutlineOutlined fontSize="inherit" />} description="No comments yet" />
       ) : (
         <>
           {comments.map((comment) => (
             <CommentFeedCard key={comment.uuid} comment={comment} />
           ))}
-          <Box ref={sentinelRef} data-testid="comment-feed-sentinel" sx={{ display: 'flex', flexDirection: 'column', gap: '12px', py: 2, minHeight: 20 }}>
+          <Box
+            ref={sentinelRef}
+            data-testid="comment-feed-sentinel"
+            sx={{ display: 'flex', flexDirection: 'column', gap: '12px', py: 2, minHeight: 20 }}
+          >
             {isFetchingNextPage && (
               <>
                 <FeedItemSkeleton />
@@ -167,7 +156,8 @@ function CommentFeedCard({ comment }: { comment: CommentType }) {
               {comment.userDisplayName || 'User'}
             </Typography>
             <Typography variant="body2" component="span" color="text.secondary">
-              {' '}commented on {entityLabel}
+              {' '}
+              commented on {entityLabel}
             </Typography>
           </Box>
           <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>

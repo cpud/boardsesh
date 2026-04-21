@@ -43,15 +43,12 @@ export function useInfiniteScroll({
   isFetchingRef.current = isFetching;
 
   // Stable observer callback — never recreated
-  const handleObserver = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      const [target] = entries;
-      if (target.isIntersecting && hasMoreRef.current && !isFetchingRef.current) {
-        onLoadMoreRef.current();
-      }
-    },
-    [],
-  );
+  const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
+    const [target] = entries;
+    if (target.isIntersecting && hasMoreRef.current && !isFetchingRef.current) {
+      onLoadMoreRef.current();
+    }
+  }, []);
 
   useEffect(() => {
     if (!sentinelElement) return;

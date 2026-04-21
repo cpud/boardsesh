@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vite-plus/test';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
 vi.mock('next-auth/react', () => ({
@@ -22,11 +22,7 @@ vi.mock('@/app/lib/graphql/client', () => ({
 import { useSession } from 'next-auth/react';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { useGradeFormat } from '@/app/hooks/use-grade-format';
-import {
-  GET_USER_CLIMB_PERCENTILE,
-  GET_USER_PROFILE_STATS,
-  GET_USER_TICKS,
-} from '@/app/lib/graphql/operations';
+import { GET_USER_CLIMB_PERCENTILE, GET_USER_PROFILE_STATS, GET_USER_TICKS } from '@/app/lib/graphql/operations';
 import { useProfileData } from '../use-profile-data';
 
 const mockUseSession = vi.mocked(useSession);
@@ -54,59 +50,61 @@ describe('useProfileData', () => {
   });
 
   it('adds explicit send and flash status metadata to hardest grade highlights', () => {
-    const { result } = renderHook(() => useProfileData('user-1', {
-      initialProfile: {
-        id: 'user-1',
-        email: undefined,
-        name: 'Test User',
-        image: null,
-        profile: null,
-        credentials: [],
-        followerCount: 0,
-        followingCount: 0,
-        isFollowedByMe: false,
-      },
-      initialProfileStats: {
-        totalDistinctClimbs: 3,
-        layoutStats: [],
-      },
-      initialAllBoardsTicks: {
-        kilter: [
-          {
-            climbed_at: '2025-01-01T12:00:00Z',
-            difficulty: 22,
-            tries: 3,
-            angle: 40,
-            status: 'send',
-            layoutId: 1,
-            boardType: 'kilter',
-            climbUuid: 'send-climb',
-          },
-          {
-            climbed_at: '2025-01-02T12:00:00Z',
-            difficulty: 20,
-            tries: 1,
-            angle: 40,
-            status: 'flash',
-            layoutId: 1,
-            boardType: 'kilter',
-            climbUuid: 'flash-climb',
-          },
-          {
-            climbed_at: '2025-01-03T12:00:00Z',
-            difficulty: 24,
-            tries: 2,
-            angle: 40,
-            status: 'attempt',
-            layoutId: 1,
-            boardType: 'kilter',
-            climbUuid: 'attempt-climb',
-          },
-        ],
-      },
-      initialLogbook: [],
-      initialIsOwnProfile: true,
-    }));
+    const { result } = renderHook(() =>
+      useProfileData('user-1', {
+        initialProfile: {
+          id: 'user-1',
+          email: undefined,
+          name: 'Test User',
+          image: null,
+          profile: null,
+          credentials: [],
+          followerCount: 0,
+          followingCount: 0,
+          isFollowedByMe: false,
+        },
+        initialProfileStats: {
+          totalDistinctClimbs: 3,
+          layoutStats: [],
+        },
+        initialAllBoardsTicks: {
+          kilter: [
+            {
+              climbed_at: '2025-01-01T12:00:00Z',
+              difficulty: 22,
+              tries: 3,
+              angle: 40,
+              status: 'send',
+              layoutId: 1,
+              boardType: 'kilter',
+              climbUuid: 'send-climb',
+            },
+            {
+              climbed_at: '2025-01-02T12:00:00Z',
+              difficulty: 20,
+              tries: 1,
+              angle: 40,
+              status: 'flash',
+              layoutId: 1,
+              boardType: 'kilter',
+              climbUuid: 'flash-climb',
+            },
+            {
+              climbed_at: '2025-01-03T12:00:00Z',
+              difficulty: 24,
+              tries: 2,
+              angle: 40,
+              status: 'attempt',
+              layoutId: 1,
+              boardType: 'kilter',
+              climbUuid: 'attempt-climb',
+            },
+          ],
+        },
+        initialLogbook: [],
+        initialIsOwnProfile: true,
+      }),
+    );
 
     expect(result.current.loading).toBe(false);
     expect(result.current.hardestSend).toMatchObject({ label: 'V6', status: 'send' });
@@ -185,51 +183,53 @@ describe('useProfileData', () => {
   });
 
   it('recomputes hardest grades when filtering to a single board', async () => {
-    const { result } = renderHook(() => useProfileData('user-1', {
-      initialProfile: {
-        id: 'user-1',
-        email: undefined,
-        name: 'Test User',
-        image: null,
-        profile: null,
-        credentials: [],
-        followerCount: 0,
-        followingCount: 0,
-        isFollowedByMe: false,
-      },
-      initialProfileStats: {
-        totalDistinctClimbs: 4,
-        layoutStats: [],
-      },
-      initialAllBoardsTicks: {
-        kilter: [
-          {
-            climbed_at: '2025-01-01T12:00:00Z',
-            difficulty: 22,
-            tries: 3,
-            angle: 40,
-            status: 'send',
-            layoutId: 1,
-            boardType: 'kilter',
-            climbUuid: 'kilter-send',
-          },
-        ],
-        tension: [
-          {
-            climbed_at: '2025-01-02T12:00:00Z',
-            difficulty: 24,
-            tries: 1,
-            angle: 40,
-            status: 'flash',
-            layoutId: 9,
-            boardType: 'tension',
-            climbUuid: 'tension-flash',
-          },
-        ],
-      },
-      initialLogbook: [],
-      initialIsOwnProfile: true,
-    }));
+    const { result } = renderHook(() =>
+      useProfileData('user-1', {
+        initialProfile: {
+          id: 'user-1',
+          email: undefined,
+          name: 'Test User',
+          image: null,
+          profile: null,
+          credentials: [],
+          followerCount: 0,
+          followingCount: 0,
+          isFollowedByMe: false,
+        },
+        initialProfileStats: {
+          totalDistinctClimbs: 4,
+          layoutStats: [],
+        },
+        initialAllBoardsTicks: {
+          kilter: [
+            {
+              climbed_at: '2025-01-01T12:00:00Z',
+              difficulty: 22,
+              tries: 3,
+              angle: 40,
+              status: 'send',
+              layoutId: 1,
+              boardType: 'kilter',
+              climbUuid: 'kilter-send',
+            },
+          ],
+          tension: [
+            {
+              climbed_at: '2025-01-02T12:00:00Z',
+              difficulty: 24,
+              tries: 1,
+              angle: 40,
+              status: 'flash',
+              layoutId: 9,
+              boardType: 'tension',
+              climbUuid: 'tension-flash',
+            },
+          ],
+        },
+        initialLogbook: [],
+        initialIsOwnProfile: true,
+      }),
+    );
 
     await waitFor(() => {
       expect(mockRequest).toHaveBeenCalled();

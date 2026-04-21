@@ -80,18 +80,15 @@ export default function FindNearbyCard({ onClick, status = 'idle', size = 'defau
     >
       <div className={`${styles.cardSquare} ${isError ? styles.cardSquareDisabled : ''}`}>
         <div className={styles.findNearbyBoard}>
-          <BoardRenderer
-            mirrored={false}
-            boardDetails={boardDetails}
-            thumbnail
-            fillHeight
-          />
+          <BoardRenderer mirrored={false} boardDetails={boardDetails} thumbnail fillHeight />
         </div>
-        <div className={styles.findNearbyOverlay}>
-          {icon}
-        </div>
+        <div className={styles.findNearbyOverlay}>{icon}</div>
       </div>
-      <div className={`${styles.cardName} ${status === 'geo-denied' || status === 'error' ? styles.cardNameError : ''} ${status === 'no-results' ? styles.cardNameDisabled : ''}`}>{label}</div>
+      <div
+        className={`${styles.cardName} ${status === 'geo-denied' || status === 'error' ? styles.cardNameError : ''} ${status === 'no-results' ? styles.cardNameDisabled : ''}`}
+      >
+        {label}
+      </div>
     </div>
   );
 }

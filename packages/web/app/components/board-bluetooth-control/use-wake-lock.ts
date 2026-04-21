@@ -24,9 +24,12 @@ export function useWakeLock(enabled: boolean) {
     if (isNativeApp()) {
       const plugin = window.Capacitor?.Plugins?.KeepAwake;
       if (plugin) {
-        plugin.isSupported().then(({ isSupported: supported }) => {
-          setIsSupported(supported);
-        }).catch(() => setIsSupported(false));
+        plugin
+          .isSupported()
+          .then(({ isSupported: supported }) => {
+            setIsSupported(supported);
+          })
+          .catch(() => setIsSupported(false));
         return;
       }
     }

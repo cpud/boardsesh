@@ -27,27 +27,28 @@ export function MirrorAction({
   const canMirror = boardDetails.supportsMirroring === true && !!queueActions;
   const isMirrored = queueData?.currentClimb?.mirrored ?? climb.mirrored ?? false;
 
-  const handleClick = useCallback((e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    e?.preventDefault();
+  const handleClick = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      e?.preventDefault();
 
-    if (!canMirror || !queueActions) return;
+      if (!canMirror || !queueActions) return;
 
-    queueActions.mirrorClimb();
+      queueActions.mirrorClimb();
 
-    track('Mirror Climb', {
-      boardName: boardDetails.board_name,
-      climbUuid: climb.uuid,
-      mirrored: !isMirrored,
-    });
+      track('Mirror Climb', {
+        boardName: boardDetails.board_name,
+        climbUuid: climb.uuid,
+        mirrored: !isMirrored,
+      });
 
-    onComplete?.();
-  }, [canMirror, queueActions, boardDetails.board_name, climb.uuid, isMirrored, onComplete]);
+      onComplete?.();
+    },
+    [canMirror, queueActions, boardDetails.board_name, climb.uuid, isMirrored, onComplete],
+  );
 
   const label = isMirrored ? 'Mirrored' : 'Mirror';
-  const iconStyle = isMirrored
-    ? { color: themeTokens.colors.purple, fontSize: iconSize }
-    : { fontSize: iconSize };
+  const iconStyle = isMirrored ? { color: themeTokens.colors.purple, fontSize: iconSize } : { fontSize: iconSize };
   const icon = <SwapHorizOutlined sx={iconStyle} />;
   const listIcon = <SwapHorizOutlined sx={{ fontSize: iconSize }} />;
 

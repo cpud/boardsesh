@@ -27,20 +27,12 @@ export default function ClimbDetailPageServer({
   currentClimbDifficulty,
   boardName,
 }: ClimbDetailPageServerProps) {
-  const auroraAppUrl = constructClimbInfoUrl(
-    boardDetails,
-    climb.uuid,
-  ) ?? undefined;
+  const auroraAppUrl = constructClimbInfoUrl(boardDetails, climb.uuid) ?? undefined;
 
   return (
     <div className={styles.pageContainer}>
       <div className={styles.actionsSection}>
-        <ClimbViewActions
-          climb={climb}
-          boardDetails={boardDetails}
-          auroraAppUrl={auroraAppUrl}
-          angle={angle}
-        />
+        <ClimbViewActions climb={climb} boardDetails={boardDetails} auroraAppUrl={auroraAppUrl} angle={angle} />
       </div>
 
       <div className={styles.contentWrapper}>

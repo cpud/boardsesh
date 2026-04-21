@@ -50,4 +50,3 @@ export async function executeGraphQL<T = unknown, V extends Variables = Variable
 
   return client.request<T>(document, variables);
 }
-

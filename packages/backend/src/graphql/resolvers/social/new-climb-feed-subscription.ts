@@ -10,7 +10,7 @@ export const newClimbFeedSubscription = {
       { boardType, layoutId }: { boardType: string; layoutId: number },
       _ctx: ConnectionContext,
     ) {
-      if (!SUPPORTED_BOARDS.includes(boardType as typeof SUPPORTED_BOARDS[number])) {
+      if (!SUPPORTED_BOARDS.includes(boardType as (typeof SUPPORTED_BOARDS)[number])) {
         throw new Error(`Invalid boardType: ${boardType}`);
       }
       if (!Number.isInteger(layoutId) || layoutId <= 0) {

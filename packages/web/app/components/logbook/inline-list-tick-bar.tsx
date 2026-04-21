@@ -44,9 +44,7 @@ export const InlineListTickBar: React.FC<InlineListTickBarProps> = ({
   // initializer always produces a value. This avoids recomputing
   // hasPriorHistory on every logbook mutation (logbook is a new array
   // reference after each optimistic save).
-  const [tickTarget] = useState<TickTarget | null>(
-    () => buildTickTarget(climb, angle, boardDetails, logbook),
-  );
+  const [tickTarget] = useState<TickTarget | null>(() => buildTickTarget(climb, angle, boardDetails, logbook));
 
   const [quality, setQuality] = useState<number | null>(null);
   const [difficulty, setDifficulty] = useState<number | undefined>(undefined);
@@ -65,7 +63,9 @@ export const InlineListTickBar: React.FC<InlineListTickBarProps> = ({
       setDifficulty(draft.difficulty);
       setAttemptCount(draft.attemptCount);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [tickTarget]);
 
   // Track picker visibility for collapse animation
@@ -138,9 +138,7 @@ export const InlineListTickBar: React.FC<InlineListTickBarProps> = ({
         {/* Picker panel — expands above the controls row */}
         <div className={`${styles.pickerPanel} ${expandedControl ? styles.pickerPanelExpanded : ''}`}>
           <div className={styles.pickerPanelContent}>
-            {renderedControl === 'stars' && (
-              <InlineStarPicker quality={quality} onSelect={handleStarSelect} />
-            )}
+            {renderedControl === 'stars' && <InlineStarPicker quality={quality} onSelect={handleStarSelect} />}
             {renderedControl === 'grade' && (
               <InlineGradePicker
                 grades={grades}
@@ -151,7 +149,11 @@ export const InlineListTickBar: React.FC<InlineListTickBarProps> = ({
               />
             )}
             {renderedControl === 'tries' && (
-              <InlineTriesPicker attemptCount={attemptCount} onSelect={handleTriesSelect} triesButtonRef={triesButtonRef} />
+              <InlineTriesPicker
+                attemptCount={attemptCount}
+                onSelect={handleTriesSelect}
+                triesButtonRef={triesButtonRef}
+              />
             )}
           </div>
         </div>

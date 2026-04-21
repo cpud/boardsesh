@@ -227,7 +227,9 @@
   font-weight: 500;
   color: inherit;
   opacity: 0.7;
-  transition: opacity 150ms ease, background-color 150ms ease;
+  transition:
+    opacity 150ms ease,
+    background-color 150ms ease;
 }
 
 /* Only show hover effects with a real pointer (mouse/trackpad), not on touch */
@@ -255,16 +257,16 @@
 }
 
 @media (hover: hover) {
-  :global(html[data-theme="dark"]) .pickerItem:hover {
+  :global(html[data-theme='dark']) .pickerItem:hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
 }
 
-:global(html[data-theme="dark"]) .pickerItem:focus-visible {
+:global(html[data-theme='dark']) .pickerItem:focus-visible {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-:global(html[data-theme="dark"]) .pickerItemSelected {
+:global(html[data-theme='dark']) .pickerItemSelected {
   background-color: rgba(255, 255, 255, 0.15);
 }
 

@@ -38,34 +38,40 @@ async function _executeClimbSearch(
   const searchParams = JSON.parse(searchParamsJson) as SearchRequestPagination;
 
   const db = getDb();
-  const result = await sharedSearchClimbs(db, params, {
-    page: searchParams.page,
-    pageSize: searchParams.pageSize,
-    gradeAccuracy: searchParams.gradeAccuracy ? Number(searchParams.gradeAccuracy) : undefined,
-    minGrade: searchParams.minGrade || undefined,
-    maxGrade: searchParams.maxGrade || undefined,
-    minAscents: searchParams.minAscents || undefined,
-    minRating: searchParams.minRating || undefined,
-    sortBy: searchParams.sortBy || 'ascents',
-    sortOrder: searchParams.sortOrder || 'desc',
-    name: searchParams.name || undefined,
-    settername: searchParams.settername && searchParams.settername.length > 0 ? searchParams.settername : undefined,
-    onlyTallClimbs: searchParams.onlyTallClimbs || undefined,
-    holdsFilter: searchParams.holdsFilter && Object.keys(searchParams.holdsFilter).length > 0
-      ? Object.fromEntries(
-          Object.entries(searchParams.holdsFilter).map(([key, value]) => [
-            key.replace('hold_', ''),
-            typeof value === 'object' && value !== null ? (value as { state: string }).state : value,
-          ])
-        )
-      : undefined,
-    hideAttempted: searchParams.hideAttempted || undefined,
-    hideCompleted: searchParams.hideCompleted || undefined,
-    showOnlyAttempted: searchParams.showOnlyAttempted || undefined,
-    showOnlyCompleted: searchParams.showOnlyCompleted || undefined,
-    onlyDrafts: searchParams.onlyDrafts || undefined,
-    projectsOnly: searchParams.projectsOnly || undefined,
-  }, userId);
+  const result = await sharedSearchClimbs(
+    db,
+    params,
+    {
+      page: searchParams.page,
+      pageSize: searchParams.pageSize,
+      gradeAccuracy: searchParams.gradeAccuracy ? Number(searchParams.gradeAccuracy) : undefined,
+      minGrade: searchParams.minGrade || undefined,
+      maxGrade: searchParams.maxGrade || undefined,
+      minAscents: searchParams.minAscents || undefined,
+      minRating: searchParams.minRating || undefined,
+      sortBy: searchParams.sortBy || 'ascents',
+      sortOrder: searchParams.sortOrder || 'desc',
+      name: searchParams.name || undefined,
+      settername: searchParams.settername && searchParams.settername.length > 0 ? searchParams.settername : undefined,
+      onlyTallClimbs: searchParams.onlyTallClimbs || undefined,
+      holdsFilter:
+        searchParams.holdsFilter && Object.keys(searchParams.holdsFilter).length > 0
+          ? Object.fromEntries(
+              Object.entries(searchParams.holdsFilter).map(([key, value]) => [
+                key.replace('hold_', ''),
+                typeof value === 'object' && value !== null ? (value as { state: string }).state : value,
+              ]),
+            )
+          : undefined,
+      hideAttempted: searchParams.hideAttempted || undefined,
+      hideCompleted: searchParams.hideCompleted || undefined,
+      showOnlyAttempted: searchParams.showOnlyAttempted || undefined,
+      showOnlyCompleted: searchParams.showOnlyCompleted || undefined,
+      onlyDrafts: searchParams.onlyDrafts || undefined,
+      projectsOnly: searchParams.projectsOnly || undefined,
+    },
+    userId,
+  );
 
   const climbs: Climb[] = result.climbs.map((row) => ({
     ...row,
@@ -101,14 +107,10 @@ function _getCachedFn(boardName: BoardName, revalidate: number): CachedClimbSear
   const key = `${boardName}:${revalidate}`;
   let fn = _cacheRegistry.get(key);
   if (!fn) {
-    fn = unstable_cache(
-      _executeClimbSearch,
-      [`climb-search-v3:${boardName}`],
-      {
-        revalidate,
-        tags: ['climb-search', getBoardClimbSearchTag(boardName)],
-      },
-    );
+    fn = unstable_cache(_executeClimbSearch, [`climb-search-v3:${boardName}`], {
+      revalidate,
+      tags: ['climb-search', getBoardClimbSearchTag(boardName)],
+    });
     _cacheRegistry.set(key, fn);
   }
   return fn;
@@ -135,27 +137,29 @@ export async function cachedSearchClimbs(
   const cacheable = (options?.cacheable ?? !userId) && params.board_name !== 'moonboard';
 
   const setIdsStr = [...params.set_ids].sort((a, b) => a - b).join(',');
-  const searchParamsJson = JSON.stringify(sortObjectKeys({
-    page: searchParams.page,
-    pageSize: searchParams.pageSize,
-    gradeAccuracy: searchParams.gradeAccuracy,
-    minGrade: searchParams.minGrade,
-    maxGrade: searchParams.maxGrade,
-    minAscents: searchParams.minAscents,
-    minRating: searchParams.minRating,
-    sortBy: searchParams.sortBy,
-    sortOrder: searchParams.sortOrder,
-    name: searchParams.name,
-    settername: searchParams.settername,
-    onlyTallClimbs: searchParams.onlyTallClimbs,
-    holdsFilter: searchParams.holdsFilter,
-    hideAttempted: searchParams.hideAttempted,
-    hideCompleted: searchParams.hideCompleted,
-    showOnlyAttempted: searchParams.showOnlyAttempted,
-    showOnlyCompleted: searchParams.showOnlyCompleted,
-    onlyDrafts: searchParams.onlyDrafts,
-    projectsOnly: searchParams.projectsOnly,
-  }));
+  const searchParamsJson = JSON.stringify(
+    sortObjectKeys({
+      page: searchParams.page,
+      pageSize: searchParams.pageSize,
+      gradeAccuracy: searchParams.gradeAccuracy,
+      minGrade: searchParams.minGrade,
+      maxGrade: searchParams.maxGrade,
+      minAscents: searchParams.minAscents,
+      minRating: searchParams.minRating,
+      sortBy: searchParams.sortBy,
+      sortOrder: searchParams.sortOrder,
+      name: searchParams.name,
+      settername: searchParams.settername,
+      onlyTallClimbs: searchParams.onlyTallClimbs,
+      holdsFilter: searchParams.holdsFilter,
+      hideAttempted: searchParams.hideAttempted,
+      hideCompleted: searchParams.hideCompleted,
+      showOnlyAttempted: searchParams.showOnlyAttempted,
+      showOnlyCompleted: searchParams.showOnlyCompleted,
+      onlyDrafts: searchParams.onlyDrafts,
+      projectsOnly: searchParams.projectsOnly,
+    }),
+  );
 
   if (!cacheable) {
     return _executeClimbSearch(

@@ -4,11 +4,7 @@ import { resolveBoardBySlug, boardToRouteParams } from '@/app/lib/board-slug-uti
 import { getBoardDetails } from '@/app/lib/board-constants';
 import { getClimb } from '@/app/lib/data/queries';
 import CreateClimbForm from '@/app/components/create-climb/create-climb-form';
-import {
-  MOONBOARD_LAYOUTS,
-  MOONBOARD_SETS,
-  MoonBoardLayoutKey,
-} from '@/app/lib/moonboard-config';
+import { MOONBOARD_LAYOUTS, MOONBOARD_SETS, MoonBoardLayoutKey } from '@/app/lib/moonboard-config';
 import type { Climb } from '@/app/lib/types';
 import { Metadata } from 'next';
 import { getServerSession } from 'next-auth/next';
@@ -33,8 +29,12 @@ function getMoonBoardHoldSetImages(layoutKey: MoonBoardLayoutKey, setIds: number
 
 interface CreatePageProps {
   params: Promise<{ board_slug: string; angle: string }>;
-  searchParams: Promise<{ forkFrames?: string; forkName?: string; forkDescription?: string; editClimbUuid?: string }>;
-
+  searchParams: Promise<{
+    forkFrames?: string;
+    forkName?: string;
+    forkDescription?: string;
+    editClimbUuid?: string;
+  }>;
 }
 
 export default async function BoardSlugCreatePage(props: CreatePageProps) {
@@ -89,7 +89,7 @@ export default async function BoardSlugCreatePage(props: CreatePageProps) {
       } else {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id || loaded.userId !== session.user.id) {
-          editClimbError = "You can only edit your own climbs.";
+          editClimbError = 'You can only edit your own climbs.';
         } else {
           editClimb = loaded;
         }

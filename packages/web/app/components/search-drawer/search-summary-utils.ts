@@ -44,11 +44,7 @@ export function getClimbPanelSummary(params: SearchRequestPagination): string[] 
   }
 
   if (params.settername.length > 0) {
-    parts.push(
-      params.settername.length === 1
-        ? params.settername[0]
-        : `${params.settername.length} setters`,
-    );
+    parts.push(params.settername.length === 1 ? params.settername[0] : `${params.settername.length} setters`);
   }
 
   return parts;

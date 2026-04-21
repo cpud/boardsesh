@@ -53,9 +53,7 @@ export function generateInferredSessionId(userId: string, firstTickTimestamp: st
  */
 export function groupTicksIntoSessions(ticks: TickForGrouping[]): InferredSessionGroup[] {
   // Filter to ticks that need assignment
-  const unassigned = ticks.filter(
-    (t) => t.sessionId === null && t.inferredSessionId === null,
-  );
+  const unassigned = ticks.filter((t) => t.sessionId === null && t.inferredSessionId === null);
 
   if (unassigned.length === 0) return [];
 
@@ -71,9 +69,7 @@ export function groupTicksIntoSessions(ticks: TickForGrouping[]): InferredSessio
 
   for (const [userId, userTicks] of byUser) {
     // Sort by climbedAt ascending
-    userTicks.sort(
-      (a, b) => new Date(a.climbedAt).getTime() - new Date(b.climbedAt).getTime(),
-    );
+    userTicks.sort((a, b) => new Date(a.climbedAt).getTime() - new Date(b.climbedAt).getTime());
 
     let currentGroup: TickForGrouping[] = [userTicks[0]];
 
@@ -189,16 +185,19 @@ async function assignInferredSessionWithConn(
   // No previous tick within 4h or no previous inferred session — create a new one
   const sessionId = generateInferredSessionId(userId, climbedAt);
 
-  await conn.insert(dbSchema.inferredSessions).values({
-    id: sessionId,
-    userId,
-    firstTickAt: climbedAt,
-    lastTickAt: climbedAt,
-    totalSends: 0,
-    totalFlashes: 0,
-    totalAttempts: 0,
-    tickCount: 0,
-  }).onConflictDoNothing();
+  await conn
+    .insert(dbSchema.inferredSessions)
+    .values({
+      id: sessionId,
+      userId,
+      firstTickAt: climbedAt,
+      lastTickAt: climbedAt,
+      totalSends: 0,
+      totalFlashes: 0,
+      totalAttempts: 0,
+      tickCount: 0,
+    })
+    .onConflictDoNothing();
 
   // Assign tick to the new session
   await conn
@@ -215,10 +214,7 @@ async function assignInferredSessionWithConn(
       .update(dbSchema.inferredSessions)
       .set({ endedAt: prevTick.climbedAt })
       .where(
-        and(
-          eq(dbSchema.inferredSessions.id, prevTick.inferredSessionId),
-          isNull(dbSchema.inferredSessions.endedAt),
-        ),
+        and(eq(dbSchema.inferredSessions.id, prevTick.inferredSessionId), isNull(dbSchema.inferredSessions.endedAt)),
       );
   }
 
@@ -299,10 +295,7 @@ export async function runInferredSessionBuilderBatched(options?: {
         isNull(dbSchema.boardseshTicks.inferredSessionId),
         eq(dbSchema.boardseshTicks.userId, options.userId),
       )
-    : and(
-        isNull(dbSchema.boardseshTicks.sessionId),
-        isNull(dbSchema.boardseshTicks.inferredSessionId),
-      );
+    : and(isNull(dbSchema.boardseshTicks.sessionId), isNull(dbSchema.boardseshTicks.inferredSessionId));
 
   const usersWithUnassigned = await db
     .selectDistinct({ userId: dbSchema.boardseshTicks.userId })
@@ -347,12 +340,7 @@ export async function runInferredSessionBuilderBatched(options?: {
         lastTickAt: dbSchema.inferredSessions.lastTickAt,
       })
       .from(dbSchema.inferredSessions)
-      .where(
-        and(
-          eq(dbSchema.inferredSessions.userId, userId),
-          isNull(dbSchema.inferredSessions.endedAt),
-        ),
-      )
+      .where(and(eq(dbSchema.inferredSessions.userId, userId), isNull(dbSchema.inferredSessions.endedAt)))
       .orderBy(desc(dbSchema.inferredSessions.lastTickAt))
       .limit(1);
 
@@ -440,11 +428,7 @@ export async function adoptRecentTicksForSession(
 
     // Collect affected inferred session IDs (some ticks may not have one yet)
     const affectedInferredSessionIds = [
-      ...new Set(
-        recentTicks
-          .map((t) => t.inferredSessionId)
-          .filter((id): id is string => id !== null),
-      ),
+      ...new Set(recentTicks.map((t) => t.inferredSessionId).filter((id): id is string => id !== null)),
     ];
 
     // Reassign ticks to the party session
@@ -461,17 +445,13 @@ export async function adoptRecentTicksForSession(
         .where(eq(dbSchema.boardseshTicks.inferredSessionId, inferredId));
 
       if (!remaining || remaining.count === 0) {
-        await tx
-          .delete(dbSchema.inferredSessions)
-          .where(eq(dbSchema.inferredSessions.id, inferredId));
+        await tx.delete(dbSchema.inferredSessions).where(eq(dbSchema.inferredSessions.id, inferredId));
       } else {
         await recalculateSessionStats(inferredId, tx);
       }
     }
 
-    console.log(
-      `[adoptRecentTicks] Adopted ${tickUuids.length} tick(s) into session ${sessionId} for user ${userId}`,
-    );
+    console.log(`[adoptRecentTicks] Adopted ${tickUuids.length} tick(s) into session ${sessionId} for user ${userId}`);
 
     return tickUuids.length;
   });

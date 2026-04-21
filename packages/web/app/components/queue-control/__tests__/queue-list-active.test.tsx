@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import type { Climb, BoardDetails } from '@/app/lib/types';
@@ -86,7 +86,14 @@ vi.mock('../../graphql-queue', () => ({
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/kilter/original/12x12/default/40/play/some-climb',
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn(), forward: vi.fn(), refresh: vi.fn(), prefetch: vi.fn() }),
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+    prefetch: vi.fn(),
+  }),
   useParams: () => ({}),
 }));
 
@@ -131,11 +138,7 @@ vi.mock('../../climb-card/climb-list-item', () => ({
   default: (props: MockClimbListItemProps) => {
     mockClimbListItem(props);
     return (
-      <div
-        data-testid="climb-list-item"
-        data-uuid={props.climb.uuid}
-        onClick={() => props.onThumbnailClick?.()}
-      >
+      <div data-testid="climb-list-item" data-uuid={props.climb.uuid} onClick={() => props.onThumbnailClick?.()}>
         {props.climb.name}
       </div>
     );
@@ -147,9 +150,7 @@ vi.mock('../../climb-card/drawer-climb-header', () => ({
 }));
 
 vi.mock('../../swipeable-drawer/swipeable-drawer', () => ({
-  default: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="swipeable-drawer">{children}</div>
-  ),
+  default: ({ children }: { children: React.ReactNode }) => <div data-testid="swipeable-drawer">{children}</div>,
 }));
 
 vi.mock('../../climb-actions', () => ({

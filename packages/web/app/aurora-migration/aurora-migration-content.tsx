@@ -10,10 +10,7 @@ import MuiButton from '@mui/material/Button';
 import MuiLink from '@mui/material/Link';
 import MuiAvatar from '@mui/material/Avatar';
 import Stack from '@mui/material/Stack';
-import {
-  CheckCircleOutlined,
-  GitHub,
-} from '@mui/icons-material';
+import { CheckCircleOutlined, GitHub } from '@mui/icons-material';
 import { useSession } from 'next-auth/react';
 import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 import BoardImportPrompt from '@/app/components/settings/board-import-prompt';
@@ -39,21 +36,17 @@ export default function AuroraMigrationContent() {
           <MuiCard>
             <CardContent>
               <Stack spacing={2} className={styles.cardContent}>
-                <Typography variant="h5">
-                  What Happened
-                </Typography>
+                <Typography variant="h5">What Happened</Typography>
 
                 <Typography variant="body1" component="p" sx={{ fontWeight: 600 }}>
-                  The Aurora Kilter backend is gone. Your playlists, logbook, and
-                  draft climbs go with it unless you export them.
+                  The Aurora Kilter backend is gone. Your playlists, logbook, and draft climbs go with it unless you
+                  export them.
                 </Typography>
 
                 <Typography variant="body1" component="p">
-                  On March 25, the Kilter board app suddenly disappeared, as Aurora
-                  randomly shut down its Kilter backend. In response Kilter rushed out
-                  their own app which was still in beta, but the outcome of these two
-                  entities fighting is that the customer gets left holding the bag.
-                  For more info read:
+                  On March 25, the Kilter board app suddenly disappeared, as Aurora randomly shut down its Kilter
+                  backend. In response Kilter rushed out their own app which was still in beta, but the outcome of these
+                  two entities fighting is that the customer gets left holding the bag. For more info read:
                 </Typography>
 
                 <MuiLink
@@ -78,7 +71,8 @@ export default function AuroraMigrationContent() {
                       The Kilter Board App Just Disappeared Without Warning. Here&apos;s What Really Happened.
                     </Typography>
                     <Typography variant="body2" color="text.secondary" className={styles.articleDescription}>
-                      For years, climbing&apos;s most successful training board has been at war with its app developer. Now, climbers are paying the price.
+                      For years, climbing&apos;s most successful training board has been at war with its app developer.
+                      Now, climbers are paying the price.
                     </Typography>
                     <Typography variant="caption" color="text.disabled">
                       climbing.com
@@ -87,9 +81,8 @@ export default function AuroraMigrationContent() {
                 </MuiLink>
 
                 <Typography variant="body1" component="p">
-                  This single-vendor risk first became obvious 2 years ago, when you
-                  couldn&apos;t buy an LED kit for your Kilter holds due to an ongoing
-                  legal dispute between Kilter and Aurora.
+                  This single-vendor risk first became obvious 2 years ago, when you couldn&apos;t buy an LED kit for
+                  your Kilter holds due to an ongoing legal dispute between Kilter and Aurora.
                 </Typography>
 
                 <Typography variant="body1" component="p">
@@ -97,10 +90,9 @@ export default function AuroraMigrationContent() {
                   <MuiLink href="https://www.boardsesh.com" target="_blank" rel="noopener noreferrer">
                     Boardsesh
                   </MuiLink>{' '}
-                  was created as an open-source alternative to all board climbing apps.
-                  Boardsesh has its own copy of the climb databases and will eventually
-                  support all boards. It can easily be self-hosted, and will provide
-                  data checkout functionality.
+                  was created as an open-source alternative to all board climbing apps. Boardsesh has its own copy of
+                  the climb databases and will eventually support all boards. It can easily be self-hosted, and will
+                  provide data checkout functionality.
                 </Typography>
               </Stack>
             </CardContent>
@@ -110,9 +102,7 @@ export default function AuroraMigrationContent() {
           <MuiCard>
             <CardContent>
               <Stack spacing={3} className={styles.cardContent}>
-                <Typography variant="h5">
-                  How to Migrate
-                </Typography>
+                <Typography variant="h5">How to Migrate</Typography>
 
                 {/* Step 1: Request data export */}
                 <div className={styles.stepRow}>
@@ -133,8 +123,8 @@ export default function AuroraMigrationContent() {
                       Request your data export
                     </Typography>
                     <Typography variant="body1" component="p">
-                      Email Aurora to request an export of your data. This will give you
-                      a JSON file containing your ascents, attempts, and circuits.
+                      Email Aurora to request an export of your data. This will give you a JSON file containing your
+                      ascents, attempts, and circuits.
                     </Typography>
                     <MuiButton
                       variant="outlined"
@@ -178,7 +168,12 @@ export default function AuroraMigrationContent() {
                         <MuiButton
                           variant="contained"
                           size="small"
-                          onClick={() => openAuthModal({ title: 'Sign in to migrate your data', description: 'Create an account or sign in to import your Aurora data.' })}
+                          onClick={() =>
+                            openAuthModal({
+                              title: 'Sign in to migrate your data',
+                              description: 'Create an account or sign in to import your Aurora data.',
+                            })
+                          }
                           sx={{ mt: 1, textTransform: 'none' }}
                         >
                           Sign in or Create Account
@@ -217,9 +212,8 @@ export default function AuroraMigrationContent() {
                 {isAuthenticated && (
                   <Stack spacing={2}>
                     <Typography variant="body1" component="p">
-                      The Kilter backend is down so only JSON import is available for
-                      Kilter. For Tension, linking your account will automatically sync
-                      your data every 12 hours so you always have a backup.
+                      The Kilter backend is down so only JSON import is available for Kilter. For Tension, linking your
+                      account will automatically sync your data every 12 hours so you always have a backup.
                     </Typography>
                     <BoardImportPrompt boardType="kilter" onImportComplete={handleImportComplete} />
                     <BoardImportPrompt boardType="tension" onImportComplete={handleImportComplete} />
@@ -273,18 +267,10 @@ export default function AuroraMigrationContent() {
                 </Typography>
 
                 <Stack spacing={1}>
-                  <MuiLink
-                    href="https://discord.gg/YXA8GsXfQK"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <MuiLink href="https://discord.gg/YXA8GsXfQK" target="_blank" rel="noopener noreferrer">
                     Discord &mdash; Join for help and discussion
                   </MuiLink>
-                  <MuiLink
-                    href="https://github.com/boardsesh/boardsesh"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <MuiLink href="https://github.com/boardsesh/boardsesh" target="_blank" rel="noopener noreferrer">
                     GitHub &mdash; github.com/boardsesh/boardsesh
                   </MuiLink>
                 </Stack>
@@ -293,7 +279,6 @@ export default function AuroraMigrationContent() {
           </MuiCard>
         </Stack>
       </Box>
-
     </Box>
   );
 }

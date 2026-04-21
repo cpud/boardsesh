@@ -3,11 +3,7 @@ import type { ConnectionContext, SocialEntityType } from '@boardsesh/shared-sche
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { requireAuthenticated, applyRateLimit, validateInput } from '../shared/helpers';
-import {
-  VoteInputSchema,
-  BulkVoteSummaryInputSchema,
-  SocialEntityTypeSchema,
-} from '../../../validation/schemas';
+import { VoteInputSchema, BulkVoteSummaryInputSchema, SocialEntityTypeSchema } from '../../../validation/schemas';
 import { validateEntityExists } from './entity-validation';
 import { publishSocialEvent } from '../../../events/index';
 
@@ -24,12 +20,7 @@ async function getVoteSummary(
       score: dbSchema.voteCounts.score,
     })
     .from(dbSchema.voteCounts)
-    .where(
-      and(
-        eq(dbSchema.voteCounts.entityType, entityType),
-        eq(dbSchema.voteCounts.entityId, entityId),
-      ),
-    )
+    .where(and(eq(dbSchema.voteCounts.entityType, entityType), eq(dbSchema.voteCounts.entityId, entityId)))
     .limit(1);
 
   const upvotes = counts?.upvotes ?? 0;
@@ -73,11 +64,7 @@ export const socialVoteQueries = {
     return getVoteSummary(validatedType, entityId, authenticatedUserId);
   },
 
-  bulkVoteSummaries: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  bulkVoteSummaries: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     const validated = validateInput(BulkVoteSummaryInputSchema, input, 'input');
     const { entityType, entityIds } = validated;
     const authenticatedUserId = ctx.isAuthenticated ? ctx.userId : null;
@@ -92,12 +79,7 @@ export const socialVoteQueries = {
         downvotes: dbSchema.voteCounts.downvotes,
       })
       .from(dbSchema.voteCounts)
-      .where(
-        and(
-          eq(dbSchema.voteCounts.entityType, entityType),
-          inArray(dbSchema.voteCounts.entityId, entityIds),
-        ),
-      );
+      .where(and(eq(dbSchema.voteCounts.entityType, entityType), inArray(dbSchema.voteCounts.entityId, entityIds)));
 
     const votesMap = new Map<string, { upvotes: number; downvotes: number }>();
     for (const row of countResults) {
@@ -144,11 +126,7 @@ export const socialVoteQueries = {
 };
 
 export const socialVoteMutations = {
-  vote: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  vote: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 30, 'vote');
 
@@ -176,26 +154,19 @@ export const socialVoteMutations = {
     if (existing) {
       if (existing.value === value) {
         // Same value — toggle off (remove vote)
-        await db
-          .delete(dbSchema.votes)
-          .where(eq(dbSchema.votes.id, existing.id));
+        await db.delete(dbSchema.votes).where(eq(dbSchema.votes.id, existing.id));
       } else {
         // Different value — update (direction change, not a new vote)
-        await db
-          .update(dbSchema.votes)
-          .set({ value })
-          .where(eq(dbSchema.votes.id, existing.id));
+        await db.update(dbSchema.votes).set({ value }).where(eq(dbSchema.votes.id, existing.id));
       }
     } else {
       // No existing vote — insert
-      await db
-        .insert(dbSchema.votes)
-        .values({
-          userId,
-          entityType: entityType as SocialEntityType,
-          entityId,
-          value,
-        });
+      await db.insert(dbSchema.votes).values({
+        userId,
+        entityType: entityType as SocialEntityType,
+        entityId,
+        value,
+      });
       isFirstVote = true;
     }
 

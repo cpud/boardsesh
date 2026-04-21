@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   groupTicksIntoSessions,
   generateInferredSessionId,
@@ -72,9 +72,7 @@ describe('Inferred Session Builder', () => {
     });
 
     it('creates single-tick session for a lone tick', () => {
-      const ticks = [
-        makeTick({ userId: 'user-1', climbedAt: '2024-01-15T10:00:00.000Z' }),
-      ];
+      const ticks = [makeTick({ userId: 'user-1', climbedAt: '2024-01-15T10:00:00.000Z' })];
 
       const groups = groupTicksIntoSessions(ticks);
       expect(groups).toHaveLength(1);
@@ -104,7 +102,11 @@ describe('Inferred Session Builder', () => {
 
     it('skips ticks with existing inferredSessionId', () => {
       const ticks = [
-        makeTick({ userId: 'user-1', climbedAt: '2024-01-15T10:00:00.000Z', inferredSessionId: 'inferred-1' }),
+        makeTick({
+          userId: 'user-1',
+          climbedAt: '2024-01-15T10:00:00.000Z',
+          inferredSessionId: 'inferred-1',
+        }),
         makeTick({ userId: 'user-1', climbedAt: '2024-01-15T10:30:00.000Z' }),
       ];
 

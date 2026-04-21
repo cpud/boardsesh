@@ -6,19 +6,56 @@ import { ExternalUUIDSchema, BoardNameSchema } from './primitives';
  */
 export const ClimbInputSchema = z.object({
   uuid: ExternalUUIDSchema,
-  setter_username: z.string().max(100).nullish().transform(v => v ?? ''),
+  setter_username: z
+    .string()
+    .max(100)
+    .nullish()
+    .transform((v) => v ?? ''),
   // Boardsesh user ID of the climb owner. Nullable for Aurora-synced climbs
   // that pre-date Boardsesh accounts.
   userId: z.string().max(100).nullish(),
-  name: z.string().max(200).nullish().transform(v => v ?? ''),
-  description: z.string().max(2000).nullish().transform(v => v ?? ''),
-  frames: z.string().max(10000).nullish().transform(v => v ?? ''),
+  name: z
+    .string()
+    .max(200)
+    .nullish()
+    .transform((v) => v ?? ''),
+  description: z
+    .string()
+    .max(2000)
+    .nullish()
+    .transform((v) => v ?? ''),
+  frames: z
+    .string()
+    .max(10000)
+    .nullish()
+    .transform((v) => v ?? ''),
   angle: z.number().min(0).max(90),
-  ascensionist_count: z.number().min(0).nullish().transform(v => v ?? 0),
-  difficulty: z.string().max(50).nullish().transform(v => v ?? ''),
-  quality_average: z.string().max(20).nullish().transform(v => v ?? ''),
-  stars: z.number().min(0).max(15).nullish().transform(v => v ?? 0),
-  difficulty_error: z.string().max(50).nullish().transform(v => v ?? ''),
+  ascensionist_count: z
+    .number()
+    .min(0)
+    .nullish()
+    .transform((v) => v ?? 0),
+  difficulty: z
+    .string()
+    .max(50)
+    .nullish()
+    .transform((v) => v ?? ''),
+  quality_average: z
+    .string()
+    .max(20)
+    .nullish()
+    .transform((v) => v ?? ''),
+  stars: z
+    .number()
+    .min(0)
+    .max(15)
+    .nullish()
+    .transform((v) => v ?? 0),
+  difficulty_error: z
+    .string()
+    .max(50)
+    .nullish()
+    .transform((v) => v ?? ''),
   mirrored: z.boolean().nullish(),
   benchmark_difficulty: z.string().max(50).nullish(),
   // Whether this climb is still an unpublished draft. Round-trips through
@@ -134,8 +171,13 @@ export const SaveMoonBoardClimbInputSchema = z.object({
 export const CheckMoonBoardClimbDuplicatesInputSchema = z.object({
   layoutId: z.number().int().positive('Layout ID must be positive'),
   angle: z.number().int().min(0).max(90),
-  climbs: z.array(z.object({
-    clientKey: z.string().min(1).max(200),
-    holds: MoonBoardHoldsInputSchema,
-  })).min(1).max(100),
+  climbs: z
+    .array(
+      z.object({
+        clientKey: z.string().min(1).max(200),
+        holds: MoonBoardHoldsInputSchema,
+      }),
+    )
+    .min(1)
+    .max(100),
 });

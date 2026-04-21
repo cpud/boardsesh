@@ -71,7 +71,9 @@ export function useLiveActivity({
     isLiveActivityAvailable().then((result) => {
       if (!cancelled) setAvailable(result);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Start/end session — reacts to session activation, content presence, and board config.
@@ -96,7 +98,9 @@ export function useLiveActivity({
         boardName: stableBoardDetails.board_name,
         layoutId: stableBoardDetails.layout_id,
         sizeId: stableBoardDetails.size_id,
-        setIds: Array.isArray(stableBoardDetails.set_ids) ? stableBoardDetails.set_ids.join(',') : String(stableBoardDetails.set_ids),
+        setIds: Array.isArray(stableBoardDetails.set_ids)
+          ? stableBoardDetails.set_ids.join(',')
+          : String(stableBoardDetails.set_ids),
       }).then(() => {
         if (!isActiveRef.current || generationRef.current !== startGeneration) return;
         // Send an initial update so the widget doesn't stay on "Loading...".
@@ -153,7 +157,9 @@ export function useLiveActivity({
     // IMPORTANT: Effect 1 (queue-sync) MUST remain declared before Effect 2
     // (climb-nav) in source order. React runs effects top-to-bottom within a
     // render, so reversing the order would cause Effect 2 to always read false.
-    queueMicrotask(() => { queueSyncedRef.current = false; });
+    queueMicrotask(() => {
+      queueSyncedRef.current = false;
+    });
 
     updateLiveActivity({
       climbName: displayItem.climb.name,

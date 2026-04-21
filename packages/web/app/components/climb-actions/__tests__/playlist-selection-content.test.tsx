@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import type { BoardDetails } from '@/app/lib/types';
 
@@ -59,13 +59,7 @@ describe('PlaylistSelectionContent failures', () => {
       isLoading: false,
     });
 
-    render(
-      <PlaylistSelectionContent
-        climbUuid="climb-1"
-        angle={40}
-        boardDetails={createBoardDetails()}
-      />
-    );
+    render(<PlaylistSelectionContent climbUuid="climb-1" angle={40} boardDetails={createBoardDetails()} />);
 
     fireEvent.click(screen.getByText('Test Playlist'));
 
@@ -85,13 +79,7 @@ describe('PlaylistSelectionContent failures', () => {
       isLoading: false,
     });
 
-    render(
-      <PlaylistSelectionContent
-        climbUuid="climb-1"
-        angle={40}
-        boardDetails={createBoardDetails()}
-      />
-    );
+    render(<PlaylistSelectionContent climbUuid="climb-1" angle={40} boardDetails={createBoardDetails()} />);
 
     fireEvent.click(screen.getByText('Test Playlist'));
 
@@ -113,16 +101,13 @@ describe('PlaylistSelectionContent failures', () => {
     });
 
     render(
-      <PlaylistSelectionContent
-        climbUuid="climb-1"
-        angle={40}
-        boardDetails={createBoardDetails()}
-        onDone={onDone}
-      />
+      <PlaylistSelectionContent climbUuid="climb-1" angle={40} boardDetails={createBoardDetails()} onDone={onDone} />,
     );
 
     fireEvent.click(screen.getByRole('button', { name: /create new playlist/i }));
-    fireEvent.change(screen.getByPlaceholderText('e.g., Hard Crimps'), { target: { value: 'My Playlist' } });
+    fireEvent.change(screen.getByPlaceholderText('e.g., Hard Crimps'), {
+      target: { value: 'My Playlist' },
+    });
     fireEvent.click(screen.getByRole('button', { name: /^create$/i }));
 
     await waitFor(() => {
@@ -143,13 +128,7 @@ describe('PlaylistSelectionContent failures', () => {
       isLoading: false,
     });
 
-    render(
-      <PlaylistSelectionContent
-        climbUuid="climb-1"
-        angle={40}
-        boardDetails={createBoardDetails()}
-      />
-    );
+    render(<PlaylistSelectionContent climbUuid="climb-1" angle={40} boardDetails={createBoardDetails()} />);
 
     const playlistItem = screen.getByRole('button', { name: /add to playlist keyboard playlist/i });
     expect(playlistItem.getAttribute('tabindex')).toBe('0');
@@ -180,16 +159,12 @@ describe('PlaylistSelectionContent failures', () => {
       isLoading: false,
     });
 
-    render(
-      <PlaylistSelectionContent
-        climbUuid="climb-1"
-        angle={40}
-        boardDetails={createBoardDetails()}
-      />
-    );
+    render(<PlaylistSelectionContent climbUuid="climb-1" angle={40} boardDetails={createBoardDetails()} />);
 
     fireEvent.click(screen.getByRole('button', { name: /create new playlist/i }));
-    fireEvent.change(screen.getByPlaceholderText('e.g., Hard Crimps'), { target: { value: 'Created Playlist' } });
+    fireEvent.change(screen.getByPlaceholderText('e.g., Hard Crimps'), {
+      target: { value: 'Created Playlist' },
+    });
     fireEvent.click(screen.getByRole('button', { name: /^create$/i }));
 
     await waitFor(() => {

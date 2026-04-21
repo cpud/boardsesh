@@ -171,7 +171,7 @@ export async function startServer(): Promise<ServerResources> {
    */
   function cleanupIntervals(): void {
     console.log(`[Server] Cleaning up ${intervals.length} intervals`);
-    intervals.forEach(interval => clearInterval(interval));
+    intervals.forEach((interval) => clearInterval(interval));
     intervals.length = 0;
   }
 
@@ -214,11 +214,11 @@ export async function startServer(): Promise<ServerResources> {
           for (let i = 0; i < activeSessions.length; i += batchSize) {
             const batch = activeSessions.slice(i, i + batchSize);
             await Promise.all(
-              batch.map(sessionId =>
-                roomManager['redisStore']?.refreshTTL(sessionId).catch(err =>
-                  console.error(`[Server] TTL refresh failed for ${sessionId}:`, err)
-                )
-              )
+              batch.map((sessionId) =>
+                roomManager['redisStore']
+                  ?.refreshTTL(sessionId)
+                  .catch((err) => console.error(`[Server] TTL refresh failed for ${sessionId}:`, err)),
+              ),
             );
           }
         }

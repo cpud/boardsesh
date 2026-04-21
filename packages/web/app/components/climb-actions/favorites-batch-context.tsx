@@ -44,10 +44,7 @@ export function FavoritesProvider({
   // value never changes during normal operation. isLoading/isAuthenticated
   // are read from the external store via useSyncExternalStore, avoiding
   // the "all consumers re-render" cascade when loading state flips.
-  const value = useMemo<FavoritesContextValue>(
-    () => ({ toggleFavorite }),
-    [toggleFavorite]
-  );
+  const value = useMemo<FavoritesContextValue>(() => ({ toggleFavorite }), [toggleFavorite]);
 
   return <FavoritesContext.Provider value={value}>{children}</FavoritesContext.Provider>;
 }

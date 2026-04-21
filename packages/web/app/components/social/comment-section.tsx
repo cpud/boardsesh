@@ -77,10 +77,9 @@ export default function CommentSection({ entityType, entityId, title = 'Discussi
       if (!token) return;
       try {
         const client = createGraphQLHttpClient(token);
-        await client.request<AddCommentMutationResponse, AddCommentMutationVariables>(
-          ADD_COMMENT,
-          { input: { entityType, entityId, body } },
-        );
+        await client.request<AddCommentMutationResponse, AddCommentMutationVariables>(ADD_COMMENT, {
+          input: { entityType, entityId, body },
+        });
         setRefreshKey((prev) => prev + 1);
       } catch {
         showMessage('Failed to post comment', 'error');

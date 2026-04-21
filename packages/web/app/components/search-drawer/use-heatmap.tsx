@@ -75,7 +75,7 @@ export default function useHeatmapData({
     return () => {
       cancelled = true;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- filtersKey is a serialized version of filters
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- filtersKey is a serialized version of filters
   }, [boardName, layoutId, sizeId, setIds, angle, filtersKey, enabled]);
 
   return { data: heatmapData, loading, error };

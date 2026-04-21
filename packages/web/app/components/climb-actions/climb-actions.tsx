@@ -9,13 +9,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import MoreVertOutlined from '@mui/icons-material/MoreVertOutlined';
-import {
-  ClimbActionsProps,
-  ClimbActionType,
-  ClimbActionResult,
-  ClimbActionProps,
-  DEFAULT_ACTION_ORDER,
-} from './types';
+import { ClimbActionsProps, ClimbActionType, ClimbActionResult, ClimbActionProps, DEFAULT_ACTION_ORDER } from './types';
 import {
   ViewDetailsAction,
   ForkAction,
@@ -46,30 +40,28 @@ type ActionMenuItemType = {
 };
 
 // Map action types to their handler functions
-const ACTION_FUNCTIONS: Record<
-  ClimbActionType,
-  (props: ClimbActionProps | OpenInAppActionProps) => ClimbActionResult
-> = {
-  viewDetails: ViewDetailsAction,
-  fork: ForkAction,
-  favorite: FavoriteAction,
-  setActive: SetActiveAction,
-  queue: QueueAction,
-  goToQueue: GoToQueueAction,
-  tick: TickAction,
-  openInApp: OpenInAppAction,
-  mirror: MirrorAction,
-  share: ShareAction,
-  instagram: InstagramAction,
-  playlist: PlaylistAction,
-};
+const ACTION_FUNCTIONS: Record<ClimbActionType, (props: ClimbActionProps | OpenInAppActionProps) => ClimbActionResult> =
+  {
+    viewDetails: ViewDetailsAction,
+    fork: ForkAction,
+    favorite: FavoriteAction,
+    setActive: SetActiveAction,
+    queue: QueueAction,
+    goToQueue: GoToQueueAction,
+    tick: TickAction,
+    openInApp: OpenInAppAction,
+    mirror: MirrorAction,
+    share: ShareAction,
+    instagram: InstagramAction,
+    playlist: PlaylistAction,
+  };
 
 /**
  * Helper function to create a renderer component for an action type.
  * This ensures hooks are called at the component level (valid), not inside useMemo (invalid).
  */
 function createActionRenderer(
-  actionFn: (props: ClimbActionProps | OpenInAppActionProps) => ClimbActionResult
+  actionFn: (props: ClimbActionProps | OpenInAppActionProps) => ClimbActionResult,
 ): React.FC<ClimbActionProps | OpenInAppActionProps> {
   return function ActionRenderer(props) {
     // Call the action function at component level - hooks inside are now valid
@@ -134,13 +126,27 @@ export function ClimbActions({
       onTickAction,
       onGoToQueue,
     }),
-    [climb, boardDetails, angle, currentPathname, viewMode, size, onOpenPlaylistSelector, auroraAppUrl, onTickAction, onGoToQueue]
+    [
+      climb,
+      boardDetails,
+      angle,
+      currentPathname,
+      viewMode,
+      size,
+      onOpenPlaylistSelector,
+      auroraAppUrl,
+      onTickAction,
+      onGoToQueue,
+    ],
   );
 
   // Memoize action complete handler to prevent creating new functions on every render
-  const handleActionComplete = useCallback((actionType: ClimbActionType) => {
-    onActionComplete?.(actionType);
-  }, [onActionComplete]);
+  const handleActionComplete = useCallback(
+    (actionType: ClimbActionType) => {
+      onActionComplete?.(actionType);
+    },
+    [onActionComplete],
+  );
 
   // Icon mode - render each action as a component
   if (viewMode === 'icon') {
@@ -244,35 +250,34 @@ function DropdownActions({
   // Create a stable callback for collecting menu items
   const menuItemsRef = React.useRef<Map<string, ClimbActionResult['menuItem']>>(new Map());
 
-  const handleMenuItem = React.useCallback((actionType: ClimbActionType, item: ClimbActionResult['menuItem']) => {
-    menuItemsRef.current.set(actionType, item);
-    // Update menu items state (collect all items in order)
-    const items = actionsToShow
-      .map((type) => {
-        const menuItem = menuItemsRef.current.get(type);
-        if (!menuItem) return undefined;
-        return {
-          key: menuItem.key as string,
-          label: menuItem.label,
-          icon: menuItem.icon,
-          onClick: menuItem.onClick,
-          danger: menuItem.danger,
-        } as ActionMenuItemType;
-      })
-      .filter((item): item is ActionMenuItemType => item !== undefined);
-    setMenuItems(items);
-  }, [actionsToShow]);
+  const handleMenuItem = React.useCallback(
+    (actionType: ClimbActionType, item: ClimbActionResult['menuItem']) => {
+      menuItemsRef.current.set(actionType, item);
+      // Update menu items state (collect all items in order)
+      const items = actionsToShow
+        .map((type) => {
+          const menuItem = menuItemsRef.current.get(type);
+          if (!menuItem) return undefined;
+          return {
+            key: menuItem.key as string,
+            label: menuItem.label,
+            icon: menuItem.icon,
+            onClick: menuItem.onClick,
+            danger: menuItem.danger,
+          } as ActionMenuItemType;
+        })
+        .filter((item): item is ActionMenuItemType => item !== undefined);
+      setMenuItems(items);
+    },
+    [actionsToShow],
+  );
 
   return (
     <>
       <IconButton className={className} onClick={handleOpen}>
         <MoreVertOutlined />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         {menuItems.map((item) => (
           <MenuItem
             key={item.key}

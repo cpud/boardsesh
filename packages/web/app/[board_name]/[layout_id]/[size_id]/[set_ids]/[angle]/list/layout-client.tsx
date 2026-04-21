@@ -18,11 +18,18 @@ import { ConfirmPopover } from '@/app/components/ui/confirm-popover';
 import { TabPanel } from '@/app/components/ui/tab-panel';
 import styles from './layout-client.module.css';
 
-const AccordionSearchForm = dynamic(() => import('@/app/components/search-drawer/accordion-search-form'), { ssr: false });
-const SearchResultsFooter = dynamic(() => import('@/app/components/search-drawer/search-results-footer'), { ssr: false });
-const QueueList = dynamic(() => import('@/app/components/queue-control/queue-list'), { ssr: false });
-const OnboardingTour = dynamic(() => import('@/app/components/onboarding/onboarding-tour'), { ssr: false });
-
+const AccordionSearchForm = dynamic(() => import('@/app/components/search-drawer/accordion-search-form'), {
+  ssr: false,
+});
+const SearchResultsFooter = dynamic(() => import('@/app/components/search-drawer/search-results-footer'), {
+  ssr: false,
+});
+const QueueList = dynamic(() => import('@/app/components/queue-control/queue-list'), {
+  ssr: false,
+});
+const OnboardingTour = dynamic(() => import('@/app/components/onboarding/onboarding-tour'), {
+  ssr: false,
+});
 
 interface ListLayoutClientProps {
   boardDetails: BoardDetails;
@@ -32,7 +39,13 @@ interface ListLayoutClientProps {
 const QueueTabLabel: React.FC = () => {
   const { queue } = useQueueList();
   return (
-    <Badge badgeContent={queue.length} max={99} invisible={queue.length === 0} color="primary" sx={{ '& .MuiBadge-badge': { right: -8, top: -2 } }}>
+    <Badge
+      badgeContent={queue.length}
+      max={99}
+      invisible={queue.length === 0}
+      color="primary"
+      sx={{ '& .MuiBadge-badge': { right: -8, top: -2 } }}
+    >
       Queue
     </Badge>
   );
@@ -143,9 +156,10 @@ const ListLayoutClient: React.FC<PropsWithChildren<ListLayoutClientProps>> = ({ 
     };
 
     // Defer to idle time; fall back to setTimeout for Safari which lacks requestIdleCallback
-    const handle = typeof requestIdleCallback !== 'undefined'
-      ? requestIdleCallback(prefetchImages)
-      : setTimeout(prefetchImages, 1) as unknown as number;
+    const handle =
+      typeof requestIdleCallback !== 'undefined'
+        ? requestIdleCallback(prefetchImages)
+        : (setTimeout(prefetchImages, 1) as unknown as number);
 
     return () => {
       if (typeof cancelIdleCallback !== 'undefined') {
@@ -160,7 +174,9 @@ const ListLayoutClient: React.FC<PropsWithChildren<ListLayoutClientProps>> = ({ 
   return (
     <Box className={styles.listLayout}>
       <ThumbnailPreload boardDetails={boardDetails} />
-      <Box component="main" className={styles.mainContent}>{children}</Box>
+      <Box component="main" className={styles.mainContent}>
+        {children}
+      </Box>
       <Box component="aside" className={styles.sider} sx={{ width: 400, padding: '0 8px 20px 8px' }}>
         <TabsWrapper boardDetails={boardDetails} />
       </Box>

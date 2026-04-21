@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { findMatchingBoard } from '../find-matching-board';
 import type { UserBoard } from '@boardsesh/shared-schema';
 
@@ -27,8 +27,20 @@ const makeBoard = (overrides: Partial<UserBoard> = {}): UserBoard => ({
 });
 
 describe('findMatchingBoard', () => {
-  const kilterBoard = makeBoard({ uuid: 'b-1', slug: 'my-kilter', boardType: 'kilter', layoutId: 1, sizeId: 12 });
-  const tensionBoard = makeBoard({ uuid: 'b-2', slug: 'my-tension', boardType: 'tension', layoutId: 2, sizeId: 8 });
+  const kilterBoard = makeBoard({
+    uuid: 'b-1',
+    slug: 'my-kilter',
+    boardType: 'kilter',
+    layoutId: 1,
+    sizeId: 12,
+  });
+  const tensionBoard = makeBoard({
+    uuid: 'b-2',
+    slug: 'my-tension',
+    boardType: 'tension',
+    layoutId: 2,
+    sizeId: 8,
+  });
   const boards = [kilterBoard, tensionBoard];
 
   it('should return null for null boards', () => {
@@ -69,12 +81,20 @@ describe('findMatchingBoard', () => {
 
   it('should prefer slug over boardConfig when both provided', () => {
     // Slug matches kilter, config matches tension — slug wins
-    const result = findMatchingBoard(boards, 'my-kilter', { boardType: 'tension', layoutId: 2, sizeId: 8 });
+    const result = findMatchingBoard(boards, 'my-kilter', {
+      boardType: 'tension',
+      layoutId: 2,
+      sizeId: 8,
+    });
     expect(result).toBe(kilterBoard);
   });
 
   it('should fall back to boardConfig when slug is undefined', () => {
-    const result = findMatchingBoard(boards, undefined, { boardType: 'tension', layoutId: 2, sizeId: 8 });
+    const result = findMatchingBoard(boards, undefined, {
+      boardType: 'tension',
+      layoutId: 2,
+      sizeId: 8,
+    });
     expect(result).toBe(tensionBoard);
   });
 });

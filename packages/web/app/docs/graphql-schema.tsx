@@ -115,7 +115,10 @@ function parseSchema(schema: string): SchemaSection[] {
   return sections;
 }
 
-const chipColors: Record<SchemaSection['type'], 'primary' | 'success' | 'secondary' | 'info' | 'warning' | 'error' | 'default'> = {
+const chipColors: Record<
+  SchemaSection['type'],
+  'primary' | 'success' | 'secondary' | 'info' | 'warning' | 'error' | 'default'
+> = {
   type: 'primary',
   input: 'success',
   enum: 'secondary',
@@ -147,13 +150,15 @@ export default function GraphQLSchemaViewer() {
     ? sections.filter(
         (s) =>
           s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          s.content.toLowerCase().includes(searchQuery.toLowerCase())
+          s.content.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : sections;
 
   const groupedSections = {
     operations: filteredSections.filter((s) => ['query', 'mutation', 'subscription'].includes(s.type)),
-    types: filteredSections.filter((s) => s.type === 'type' && !['query', 'mutation', 'subscription'].includes(s.name.toLowerCase())),
+    types: filteredSections.filter(
+      (s) => s.type === 'type' && !['query', 'mutation', 'subscription'].includes(s.name.toLowerCase()),
+    ),
     inputs: filteredSections.filter((s) => s.type === 'input'),
     enums: filteredSections.filter((s) => s.type === 'enum'),
     others: filteredSections.filter((s) => ['union', 'scalar'].includes(s.type)),
@@ -166,7 +171,9 @@ export default function GraphQLSchemaViewer() {
           <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
             <Stack direction="row" spacing={1}>
               <TypeBadge type={section.type} />
-              <Typography variant="body2" component="span" fontWeight={600}>{section.name}</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                {section.name}
+              </Typography>
             </Stack>
           </AccordionSummary>
           <AccordionDetails>
@@ -236,9 +243,11 @@ export default function GraphQLSchemaViewer() {
       </TabPanel>
 
       <TabPanel value={activeTab} index="full">
-        <MuiCard><CardContent>
-          <SchemaBlock content={typeDefs} />
-        </CardContent></MuiCard>
+        <MuiCard>
+          <CardContent>
+            <SchemaBlock content={typeDefs} />
+          </CardContent>
+        </MuiCard>
       </TabPanel>
     </div>
   );

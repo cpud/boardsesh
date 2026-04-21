@@ -5,7 +5,7 @@
  * (within 2 hours, no session_id) are adopted into the new session,
  * and affected inferred sessions are cleaned up properly.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 
 // Track mutation calls on the transaction mock
 let txUpdateSetCalls: unknown[] = [];
@@ -184,10 +184,7 @@ describe('adoptRecentTicksForSession', () => {
     expect(result).toBe(2);
     expect(mockTxDelete).not.toHaveBeenCalled();
     expect(recalculateSessionStats).toHaveBeenCalledOnce();
-    expect(recalculateSessionStats).toHaveBeenCalledWith(
-      'inferred-1',
-      expect.anything(),
-    );
+    expect(recalculateSessionStats).toHaveBeenCalledWith('inferred-1', expect.anything());
   });
 
   it('handles ticks from multiple inferred sessions', async () => {
@@ -208,10 +205,7 @@ describe('adoptRecentTicksForSession', () => {
     expect(result).toBe(3);
     expect(txDeleteWhereCalls).toHaveLength(1);
     expect(recalculateSessionStats).toHaveBeenCalledOnce();
-    expect(recalculateSessionStats).toHaveBeenCalledWith(
-      'inferred-2',
-      expect.anything(),
-    );
+    expect(recalculateSessionStats).toHaveBeenCalledWith('inferred-2', expect.anything());
   });
 
   it('handles mix of orphaned and inferred-session ticks', async () => {
@@ -249,9 +243,7 @@ describe('adoptRecentTicksForSession', () => {
     // When boardType is passed, the WHERE clause includes a board_type filter.
     // We verify the select was called (the actual filtering is done by drizzle's
     // eq() which is tested by drizzle-orm itself).
-    txSelectResults = [
-      [{ uuid: 'tick-1', inferredSessionId: null }],
-    ];
+    txSelectResults = [[{ uuid: 'tick-1', inferredSessionId: null }]];
 
     const result = await adoptRecentTicksForSession('user-1', 'party-session-1', 'kilter');
 
@@ -260,9 +252,7 @@ describe('adoptRecentTicksForSession', () => {
   });
 
   it('works without boardType parameter', async () => {
-    txSelectResults = [
-      [{ uuid: 'tick-1', inferredSessionId: null }],
-    ];
+    txSelectResults = [[{ uuid: 'tick-1', inferredSessionId: null }]];
 
     const result = await adoptRecentTicksForSession('user-1', 'party-session-1');
 

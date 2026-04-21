@@ -1,11 +1,15 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { render, screen, act } from '@testing-library/react';
 import React from 'react';
 
 let capturedOnAnimationEnd: (() => void) | undefined;
 
 vi.mock('@mui/icons-material/Favorite', () => ({
-  default: ({ sx, onAnimationEnd, ...rest }: { sx?: unknown; onAnimationEnd?: () => void } & Record<string, unknown>) => {
+  default: ({
+    sx,
+    onAnimationEnd,
+    ...rest
+  }: { sx?: unknown; onAnimationEnd?: () => void } & Record<string, unknown>) => {
     capturedOnAnimationEnd = onAnimationEnd;
     return (
       <span data-testid="favorite-icon" {...rest}>
@@ -19,9 +23,7 @@ import HeartAnimationOverlay from '../heart-animation-overlay';
 
 describe('HeartAnimationOverlay', () => {
   it('renders nothing when visible is false', () => {
-    const { container } = render(
-      <HeartAnimationOverlay visible={false} onAnimationEnd={vi.fn()} />,
-    );
+    const { container } = render(<HeartAnimationOverlay visible={false} onAnimationEnd={vi.fn()} />);
     expect(container.innerHTML).toBe('');
   });
 

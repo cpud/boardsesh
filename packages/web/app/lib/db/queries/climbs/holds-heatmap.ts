@@ -57,7 +57,11 @@ export const getHoldHeatmapData = async (
         .innerJoin(climbs, and(...filters.getClimbHoldsJoinConditions()))
         .leftJoin(climbStats, and(...filters.getHoldHeatmapClimbStatsConditions()))
         .where(
-          and(...filters.getClimbWhereConditions(), ...filters.getSizeConditions(), ...filters.getClimbStatsConditions()),
+          and(
+            ...filters.getClimbWhereConditions(),
+            ...filters.getSizeConditions(),
+            ...filters.getClimbStatsConditions(),
+          ),
         )
         .groupBy(climbHolds.holdId);
 
@@ -79,7 +83,11 @@ export const getHoldHeatmapData = async (
         .innerJoin(climbs, and(...filters.getClimbHoldsJoinConditions()))
         .leftJoin(climbStats, and(...filters.getHoldHeatmapClimbStatsConditions()))
         .where(
-          and(...filters.getClimbWhereConditions(), ...filters.getSizeConditions(), ...filters.getClimbStatsConditions()),
+          and(
+            ...filters.getClimbWhereConditions(),
+            ...filters.getSizeConditions(),
+            ...filters.getClimbStatsConditions(),
+          ),
         )
         .groupBy(climbHolds.holdId);
 

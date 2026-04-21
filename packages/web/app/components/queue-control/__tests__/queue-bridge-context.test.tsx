@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
 
@@ -102,13 +102,18 @@ vi.mock('@/app/lib/board-config-for-playlist', () => ({
 }));
 
 // Now import the SUT — after all vi.mock calls
+import { QueueBridgeProvider, QueueBridgeInjector, useQueueBridgeBoardInfo } from '../queue-bridge-context';
 import {
-  QueueBridgeProvider,
-  QueueBridgeInjector,
-  useQueueBridgeBoardInfo,
-} from '../queue-bridge-context';
-import { QueueContext, QueueActionsContext, QueueDataContext, CurrentClimbUuidContext } from '../../graphql-queue/QueueContext';
-import type { GraphQLQueueContextType, GraphQLQueueActionsType, GraphQLQueueDataType } from '../../graphql-queue/QueueContext';
+  QueueContext,
+  QueueActionsContext,
+  QueueDataContext,
+  CurrentClimbUuidContext,
+} from '../../graphql-queue/QueueContext';
+import type {
+  GraphQLQueueContextType,
+  GraphQLQueueActionsType,
+  GraphQLQueueDataType,
+} from '../../graphql-queue/QueueContext';
 import type { BoardDetails, Climb, Angle } from '@/app/lib/types';
 import type { ClimbQueueItem } from '../types';
 
@@ -405,7 +410,13 @@ describe('queue-bridge-context', () => {
           sessionId: 'party-1',
           boardPath: '/kilter/1/10/1,2/40/list',
           boardDetails: bd,
-          parsedParams: { board_name: 'kilter', layout_id: 1, size_id: 10, set_ids: [1, 2], angle: 40 },
+          parsedParams: {
+            board_name: 'kilter',
+            layout_id: 1,
+            size_id: 10,
+            set_ids: [1, 2],
+            angle: 40,
+          },
         },
         queue: [],
         currentClimbQueueItem: null,
@@ -611,8 +622,7 @@ describe('queue-bridge-context', () => {
           result.current!.setCurrentClimb(climb);
         });
         expect(mockSetLocalQueueState).toHaveBeenCalledTimes(1);
-        const [newQueue, newCurrent, boardPath, boardDetails] =
-          mockSetLocalQueueState.mock.calls[0];
+        const [newQueue, newCurrent, boardPath, boardDetails] = mockSetLocalQueueState.mock.calls[0];
         expect(newQueue).toHaveLength(1);
         expect(newQueue[0].climb.uuid).toBe('c-cold');
         expect(newCurrent.climb.uuid).toBe('c-cold');
@@ -737,7 +747,9 @@ describe('queue-bridge-context', () => {
       const wrapper2 = ({ children }: { children: React.ReactNode }) => (
         <QueueBridgeProvider>{children}</QueueBridgeProvider>
       );
-      const { result: result2 } = renderHook(() => useQueueBridgeBoardInfo(), { wrapper: wrapper2 });
+      const { result: result2 } = renderHook(() => useQueueBridgeBoardInfo(), {
+        wrapper: wrapper2,
+      });
       expect(result2.current.hasActiveQueue).toBe(false);
     });
 
@@ -811,10 +823,7 @@ describe('queue-bridge-context', () => {
         </QueueBridgeProvider>
       );
 
-      const { result } = renderHook(
-        () => useTestQueueActions(),
-        { wrapper },
-      );
+      const { result } = renderHook(() => useTestQueueActions(), { wrapper });
 
       expect(result.current?.disconnect).toBe(mockDisconnect);
     });
@@ -988,7 +997,13 @@ describe('queue-bridge-context', () => {
           sessionId: 'party-1',
           boardPath: '/kilter/1/10/1,2/40',
           boardDetails: bd,
-          parsedParams: { board_name: 'kilter', layout_id: 1, size_id: 10, set_ids: [1, 2], angle: 40 },
+          parsedParams: {
+            board_name: 'kilter',
+            layout_id: 1,
+            size_id: 10,
+            set_ids: [1, 2],
+            angle: 40,
+          },
         },
       };
 

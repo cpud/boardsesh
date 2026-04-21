@@ -84,32 +84,36 @@ const DraftsDrawer: React.FC<DraftsDrawerProps> = ({ open, onClose, boardDetails
     }
   }, []);
 
-  const handleDragEnd = useCallback((e: React.TouchEvent) => {
-    if (!isDragGestureRef.current) return;
-    const deltaY = e.changedTouches[0].clientY - dragStartY.current;
-    const THRESHOLD = 30;
+  const handleDragEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isDragGestureRef.current) return;
+      const deltaY = e.changedTouches[0].clientY - dragStartY.current;
+      const THRESHOLD = 30;
 
-    if (deltaY < -THRESHOLD) {
-      updateDraftsDrawerHeight('100%');
-    } else if (deltaY > THRESHOLD) {
-      if (dragStartHeightRef.current === '100%') {
-        updateDraftsDrawerHeight('60%');
-      } else {
-        onClose();
+      if (deltaY < -THRESHOLD) {
+        updateDraftsDrawerHeight('100%');
+      } else if (deltaY > THRESHOLD) {
+        if (dragStartHeightRef.current === '100%') {
+          updateDraftsDrawerHeight('60%');
+        } else {
+          onClose();
+        }
       }
-    }
-  }, [onClose, updateDraftsDrawerHeight]);
+    },
+    [onClose, updateDraftsDrawerHeight],
+  );
 
   // Query: only run when drawer is open and user has a token
   const queryKey = useMemo(
-    () => [
-      'climbDrafts',
-      boardDetails.board_name,
-      boardDetails.layout_id,
-      boardDetails.size_id,
-      boardDetails.set_ids.join(','),
-      angle,
-    ] as const,
+    () =>
+      [
+        'climbDrafts',
+        boardDetails.board_name,
+        boardDetails.layout_id,
+        boardDetails.size_id,
+        boardDetails.set_ids.join(','),
+        angle,
+      ] as const,
     [boardDetails.board_name, boardDetails.layout_id, boardDetails.size_id, boardDetails.set_ids, angle],
   );
 

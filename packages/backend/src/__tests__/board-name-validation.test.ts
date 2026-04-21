@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vite-plus/test';
 import { SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
 import { BoardNameSchema } from '../validation/schemas';
 

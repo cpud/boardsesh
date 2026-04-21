@@ -70,9 +70,7 @@ export default function UnifiedSearchDrawer({
       { key: 'users', label: 'Users', visible: true },
       { key: 'playlists', label: 'Playlists', visible: true },
     ];
-    const allowedSet = allowedCategoriesKey
-      ? new Set(allowedCategoriesKey.split('|') as SearchCategory[])
-      : null;
+    const allowedSet = allowedCategoriesKey ? new Set(allowedCategoriesKey.split('|') as SearchCategory[]) : null;
     return all
       .filter((c) => c.visible && (allowedSet ? allowedSet.has(c.key) : true))
       .map(({ key, label }) => ({ key, label }));
@@ -145,10 +143,13 @@ export default function UnifiedSearchDrawer({
               fullWidth
               size="small"
               placeholder={
-                category === 'boards' ? 'Search boards...'
-                  : category === 'gyms' ? 'Search gyms...'
-                  : category === 'users' ? 'Search climbers...'
-                  : 'Search playlists...'
+                category === 'boards'
+                  ? 'Search boards...'
+                  : category === 'gyms'
+                    ? 'Search gyms...'
+                    : category === 'users'
+                      ? 'Search climbers...'
+                      : 'Search playlists...'
               }
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -166,18 +167,10 @@ export default function UnifiedSearchDrawer({
           </Box>
 
           <Box sx={{ overflow: 'auto', flex: 1 }}>
-            {category === 'boards' && (
-              <BoardSearchResults query={query} authToken={token} />
-            )}
-            {category === 'gyms' && (
-              <GymSearchResults query={query} authToken={token} />
-            )}
-            {category === 'users' && (
-              <UserSearchResults query={query} authToken={token} />
-            )}
-            {category === 'playlists' && (
-              <PlaylistSearchResults query={query} authToken={token} />
-            )}
+            {category === 'boards' && <BoardSearchResults query={query} authToken={token} />}
+            {category === 'gyms' && <GymSearchResults query={query} authToken={token} />}
+            {category === 'users' && <UserSearchResults query={query} authToken={token} />}
+            {category === 'playlists' && <PlaylistSearchResults query={query} authToken={token} />}
           </Box>
         </>
       )}

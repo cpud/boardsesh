@@ -1,26 +1,11 @@
-import {
-  pgTable,
-  text,
-  integer,
-  timestamp,
-  bigserial,
-  index,
-  uniqueIndex,
-  pgEnum,
-} from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, timestamp, bigserial, index, uniqueIndex, pgEnum } from 'drizzle-orm/pg-core';
 import { users } from '../auth/users';
 
 /**
  * Hold type enum
  * Based on common climbing hold classifications
  */
-export const holdTypeEnum = pgEnum('hold_type', [
-  'jug',
-  'sloper',
-  'pinch',
-  'crimp',
-  'pocket',
-]);
+export const holdTypeEnum = pgEnum('hold_type', ['jug', 'sloper', 'pinch', 'crimp', 'pocket']);
 
 /**
  * User hold classifications table
@@ -55,7 +40,7 @@ export const userHoldClassifications = pgTable(
       table.userId,
       table.boardType,
       table.layoutId,
-      table.sizeId
+      table.sizeId,
     ),
     // Unique constraint: one classification per user per hold per board configuration
     uniqueClassification: uniqueIndex('user_hold_classifications_unique_idx').on(
@@ -63,14 +48,11 @@ export const userHoldClassifications = pgTable(
       table.boardType,
       table.layoutId,
       table.sizeId,
-      table.holdId
+      table.holdId,
     ),
     // Index for hold lookups
-    holdIdx: index('user_hold_classifications_hold_idx').on(
-      table.boardType,
-      table.holdId
-    ),
-  })
+    holdIdx: index('user_hold_classifications_hold_idx').on(table.boardType, table.holdId),
+  }),
 );
 
 // Type exports

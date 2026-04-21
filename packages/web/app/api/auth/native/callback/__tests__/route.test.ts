@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vite-plus/test';
 import { NextRequest } from 'next/server';
 
 // Mock dependencies before importing the route handler
@@ -48,9 +48,7 @@ describe('GET /api/auth/native/callback', () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get('Content-Type')).toBe('text/html; charset=utf-8');
-    expect(await extractDeepLink(response)).toBe(
-      `${CALLBACK_SCHEME}?error=session_missing`,
-    );
+    expect(await extractDeepLink(response)).toBe(`${CALLBACK_SCHEME}?error=session_missing`);
   });
 
   it('returns HTML redirect with error when session has no user id', async () => {
@@ -59,9 +57,7 @@ describe('GET /api/auth/native/callback', () => {
     const response = await GET(createRequest('/api/auth/native/callback?next=/'));
 
     expect(response.status).toBe(200);
-    expect(await extractDeepLink(response)).toBe(
-      `${CALLBACK_SCHEME}?error=session_missing`,
-    );
+    expect(await extractDeepLink(response)).toBe(`${CALLBACK_SCHEME}?error=session_missing`);
   });
 
   it('returns HTML redirect with transfer token on success', async () => {
@@ -70,9 +66,7 @@ describe('GET /api/auth/native/callback', () => {
     });
     mockedIssueToken.mockReturnValue('test-transfer-token');
 
-    const response = await GET(
-      createRequest('/api/auth/native/callback?next=/settings'),
-    );
+    const response = await GET(createRequest('/api/auth/native/callback?next=/settings'));
 
     expect(response.status).toBe(200);
     const deepLink = await extractDeepLink(response);
@@ -92,9 +86,7 @@ describe('GET /api/auth/native/callback', () => {
     });
     mockedIssueToken.mockReturnValue('token');
 
-    const response = await GET(
-      createRequest('/api/auth/native/callback?next=https://evil.com'),
-    );
+    const response = await GET(createRequest('/api/auth/native/callback?next=https://evil.com'));
 
     expect(response.status).toBe(200);
     expect(mockedIssueToken).toHaveBeenCalledWith({
@@ -128,9 +120,7 @@ describe('GET /api/auth/native/callback', () => {
     const response = await GET(createRequest('/api/auth/native/callback?next=/'));
 
     expect(response.status).toBe(200);
-    expect(await extractDeepLink(response)).toBe(
-      `${CALLBACK_SCHEME}?error=token_issue_failed`,
-    );
+    expect(await extractDeepLink(response)).toBe(`${CALLBACK_SCHEME}?error=token_issue_failed`);
   });
 
   it('includes HTML-escaped URL in meta refresh attribute', async () => {

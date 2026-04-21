@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import {
   ProfileHeaderShareInjector,
@@ -31,9 +31,7 @@ function TestHarness({
   return (
     <ProfileHeaderShareProvider>
       <StateProbe />
-      {renderInjector ? (
-        <ProfileHeaderShareInjector displayName={displayName} isActive={isActive} />
-      ) : null}
+      {renderInjector ? <ProfileHeaderShareInjector displayName={displayName} isActive={isActive} /> : null}
     </ProfileHeaderShareProvider>
   );
 }

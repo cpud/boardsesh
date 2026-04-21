@@ -146,29 +146,32 @@ const BoardHeatmap: React.FC<BoardHeatmapProps> = ({ boardDetails, litUpHoldsMap
   }, []);
 
   // Updated getValue function to handle user-specific data
-  const getValue = useCallback((data: HeatmapData | undefined): number => {
-    if (!data) return 0;
-    switch (colorMode) {
-      case 'starting':
-        return data.startingUses;
-      case 'hand':
-        return data.handUses;
-      case 'foot':
-        return data.footUses;
-      case 'finish':
-        return data.finishUses;
-      case 'difficulty':
-        return data.averageDifficulty || 0;
-      case 'ascents':
-        return data.totalAscents || 0;
-      case 'userAscents':
-        return data.userAscents || 0;
-      case 'userAttempts':
-        return data.userAttempts || 0;
-      default:
-        return data.totalUses;
-    }
-  }, [colorMode]);
+  const getValue = useCallback(
+    (data: HeatmapData | undefined): number => {
+      if (!data) return 0;
+      switch (colorMode) {
+        case 'starting':
+          return data.startingUses;
+        case 'hand':
+          return data.handUses;
+        case 'foot':
+          return data.footUses;
+        case 'finish':
+          return data.finishUses;
+        case 'difficulty':
+          return data.averageDifficulty || 0;
+        case 'ascents':
+          return data.totalAscents || 0;
+        case 'userAscents':
+          return data.userAscents || 0;
+        case 'userAttempts':
+          return data.userAttempts || 0;
+        default:
+          return data.totalUses;
+      }
+    },
+    [colorMode],
+  );
 
   // Pre-filter and memoize holds that need rendering to avoid repeated filtering
   const holdsToRender = useMemo(() => {
@@ -319,7 +322,9 @@ const BoardHeatmap: React.FC<BoardHeatmapProps> = ({ boardDetails, litUpHoldsMap
                 thumbnail={true}
               />
             </div>
-            <span style={{ fontSize: '14px', color: 'var(--semantic-surface)', fontWeight: 500 }}>Loading heatmap...</span>
+            <span style={{ fontSize: '14px', color: 'var(--semantic-surface)', fontWeight: 500 }}>
+              Loading heatmap...
+            </span>
           </div>
         )}
         <svg
@@ -346,96 +351,105 @@ const BoardHeatmap: React.FC<BoardHeatmapProps> = ({ boardDetails, litUpHoldsMap
 
             {/* Heat overlay with blur effect */}
             {showHeatmap && !heatmapLoading && (
-            <>
-              {/* Blurred background layer */}
-              <g filter="url(#blur)">
-                {holdsToRender.map(({ hold, value }) => (
-                  <circle
-                    key={`heat-blur-${hold.id}`}
-                    cx={hold.cx}
-                    cy={hold.cy}
-                    r={hold.r * HEAT_RADIUS_MULTIPLIER}
-                    fill={colorScale(value)}
-                    opacity={opacityScale(value) * 0.5}
-                  />
-                ))}
-              </g>
-              <filter id="blurMe">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="20" />
-              </filter>
-
-              {/* Sharp circles with numbers */}
-              {holdsToRender.map(({ hold, value }) => (
-                <g key={`heat-sharp-${hold.id}`}>
-                  <circle
-                    cx={hold.cx}
-                    cy={hold.cy}
-                    r={hold.r}
-                    fill={colorScale(value)}
-                    opacity={opacityScale(value)}
-                    filter="url(#blurMe)"
-                  />
-                  {showNumbers && (
-                    <text
-                      x={hold.cx}
-                      y={hold.cy}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      fontSize={Math.max(8, hold.r * 0.6)}
-                      fontWeight="bold"
-                      fill={'#000'}
-                      style={{ userSelect: 'none' }}
-                    >
-                      {value}
-                    </text>
-                  )}
+              <>
+                {/* Blurred background layer */}
+                <g filter="url(#blur)">
+                  {holdsToRender.map(({ hold, value }) => (
+                    <circle
+                      key={`heat-blur-${hold.id}`}
+                      cx={hold.cx}
+                      cy={hold.cy}
+                      r={hold.r * HEAT_RADIUS_MULTIPLIER}
+                      fill={colorScale(value)}
+                      opacity={opacityScale(value) * 0.5}
+                    />
+                  ))}
                 </g>
+                <filter id="blurMe">
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="20" />
+                </filter>
+
+                {/* Sharp circles with numbers */}
+                {holdsToRender.map(({ hold, value }) => (
+                  <g key={`heat-sharp-${hold.id}`}>
+                    <circle
+                      cx={hold.cx}
+                      cy={hold.cy}
+                      r={hold.r}
+                      fill={colorScale(value)}
+                      opacity={opacityScale(value)}
+                      filter="url(#blurMe)"
+                    />
+                    {showNumbers && (
+                      <text
+                        x={hold.cx}
+                        y={hold.cy}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fontSize={Math.max(8, hold.r * 0.6)}
+                        fontWeight="bold"
+                        fill={'#000'}
+                        style={{ userSelect: 'none' }}
+                      >
+                        {value}
+                      </text>
+                    )}
+                  </g>
+                ))}
+              </>
+            )}
+
+            {/* Interaction layer - only render when click handler exists */}
+            {onHoldClick &&
+              holdsData.map((hold) => (
+                <circle
+                  key={`click-${hold.id}`}
+                  cx={hold.cx}
+                  cy={hold.cy}
+                  r={hold.r}
+                  fill="transparent"
+                  className="cursor-pointer"
+                  onClick={() => {
+                    onHoldClick(hold.id);
+                    track('Heatmap Hold Clicked', {
+                      hold_id: hold.id,
+                      boardLayout: `${boardDetails.layout_name}`,
+                    });
+                  }}
+                />
               ))}
-            </>
-          )}
 
-          {/* Interaction layer - only render when click handler exists */}
-          {onHoldClick && holdsData.map((hold) => (
-            <circle
-              key={`click-${hold.id}`}
-              cx={hold.cx}
-              cy={hold.cy}
-              r={hold.r}
-              fill="transparent"
-              className="cursor-pointer"
-              onClick={() => {
-                onHoldClick(hold.id);
-                track('Heatmap Hold Clicked', {
-                  hold_id: hold.id,
-                  boardLayout: `${boardDetails.layout_name}`,
-                });
-              }}
-            />
-          ))}
+            {/* Selected holds overlay */}
+            {holdsData.map((hold) => {
+              const litUpHold = litUpHoldsMap?.[hold.id];
+              if (!litUpHold) return null;
+              return (
+                <circle
+                  key={`selected-${hold.id}`}
+                  cx={hold.cx}
+                  cy={hold.cy}
+                  r={hold.r}
+                  stroke={litUpHold.color}
+                  strokeWidth="4"
+                  fill="none"
+                  className="transition-colors duration-200"
+                />
+              );
+            })}
 
-          {/* Selected holds overlay */}
-          {holdsData.map((hold) => {
-            const litUpHold = litUpHoldsMap?.[hold.id];
-            if (!litUpHold) return null;
-            return (
-              <circle
-                key={`selected-${hold.id}`}
-                cx={hold.cx}
-                cy={hold.cy}
-                r={hold.r}
-                stroke={litUpHold.color}
-                strokeWidth="4"
-                fill="none"
-                className="transition-colors duration-200"
-              />
-            );
-          })}
-
-          {showHeatmap && !heatmapLoading && <ColorLegend />}
-        </g>
-      </svg>
+            {showHeatmap && !heatmapLoading && <ColorLegend />}
+          </g>
+        </svg>
       </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginTop: '8px' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '8px',
+          alignItems: 'center',
+          marginTop: '8px',
+        }}
+      >
         <MuiButton
           variant={showHeatmap ? 'contained' : 'outlined'}
           size="small"
@@ -484,11 +498,7 @@ const BoardHeatmap: React.FC<BoardHeatmapProps> = ({ boardDetails, litUpHoldsMap
             </MuiSelect>
             <FormControlLabel
               control={
-                <MuiSwitch
-                  checked={showNumbers}
-                  onChange={(_, checked) => setShowNumbers(checked)}
-                  size="small"
-                />
+                <MuiSwitch checked={showNumbers} onChange={(_, checked) => setShowNumbers(checked)} size="small" />
               }
               label="#"
             />

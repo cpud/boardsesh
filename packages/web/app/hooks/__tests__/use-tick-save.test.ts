@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 import type { Climb, Angle, BoardDetails, BoardName } from '@/app/lib/types';
 import type { LogbookEntry } from '@/app/hooks/use-logbook';
@@ -38,12 +38,7 @@ vi.mock('@/app/lib/tick-draft-db', () => ({
 }));
 
 // Import after mocks.
-import {
-  hasPriorHistoryForClimb,
-  buildTickTarget,
-  useTickSave,
-  type UseTickSaveOptions,
-} from '../use-tick-save';
+import { hasPriorHistoryForClimb, buildTickTarget, useTickSave, type UseTickSaveOptions } from '../use-tick-save';
 import { saveTickDraft } from '@/app/lib/tick-draft-db';
 
 // --- Fixtures ---
@@ -213,12 +208,15 @@ describe('useTickSave', () => {
   it('save() fires confetti and calls onSave', () => {
     const onSave = vi.fn();
     // Use hasPriorHistory: true to avoid flash delay path
-    const opts = makeOptions({ onSave, tickTarget: {
-      climb: makeClimb(),
-      angle: 40 as Angle,
-      boardDetails: makeBoardDetails(),
-      hasPriorHistory: true,
-    }});
+    const opts = makeOptions({
+      onSave,
+      tickTarget: {
+        climb: makeClimb(),
+        angle: 40 as Angle,
+        boardDetails: makeBoardDetails(),
+        hasPriorHistory: true,
+      },
+    });
 
     const { result } = renderHook(() => useTickSave(opts));
 
@@ -379,12 +377,16 @@ describe('useTickSave', () => {
       const { result } = renderHook(() => useTickSave(opts));
 
       const el = document.createElement('button');
-      act(() => { result.current.save(el); });
+      act(() => {
+        result.current.save(el);
+      });
 
       expect(mockFireConfetti).toHaveBeenCalledWith(el, 'flash');
       // Flash delays onSave by 300ms
       expect(onSave).not.toHaveBeenCalled();
-      act(() => { vi.advanceTimersByTime(300); });
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
       expect(onSave).toHaveBeenCalledTimes(1);
     });
 
@@ -401,7 +403,9 @@ describe('useTickSave', () => {
 
       const { result } = renderHook(() => useTickSave(opts));
 
-      act(() => { result.current.save(null); });
+      act(() => {
+        result.current.save(null);
+      });
 
       expect(mockFireConfetti).toHaveBeenCalledWith(null, 'ascent');
     });
@@ -419,7 +423,9 @@ describe('useTickSave', () => {
 
       const { result } = renderHook(() => useTickSave(opts));
 
-      act(() => { result.current.save(null); });
+      act(() => {
+        result.current.save(null);
+      });
 
       expect(mockFireConfetti).toHaveBeenCalledWith(null, 'ascent');
     });
@@ -437,7 +443,9 @@ describe('useTickSave', () => {
 
       const { result } = renderHook(() => useTickSave(opts));
 
-      act(() => { result.current.saveAttempt(null); });
+      act(() => {
+        result.current.saveAttempt(null);
+      });
 
       expect(mockFireConfetti).toHaveBeenCalledWith(null, 'attempt');
     });

@@ -165,7 +165,7 @@ interface SwatchProps {
 }
 
 function Swatch({ label, color, isActive, isDisabled, isClear, onClick }: SwatchProps) {
-  const ring = isClear ? themeTokens.neutral[400] : color ?? themeTokens.neutral[400];
+  const ring = isClear ? themeTokens.neutral[400] : (color ?? themeTokens.neutral[400]);
 
   return (
     <ButtonBase
@@ -182,9 +182,7 @@ function Swatch({ label, color, isActive, isDisabled, isClear, onClick }: Swatch
         borderRadius: `${themeTokens.borderRadius.md}px`,
         opacity: isDisabled ? 0.35 : 1,
         transition: themeTokens.transitions.fast,
-        '&:hover': isDisabled
-          ? undefined
-          : { backgroundColor: themeTokens.semantic.selectedLight },
+        '&:hover': isDisabled ? undefined : { backgroundColor: themeTokens.semantic.selectedLight },
       }}
     >
       <Box

@@ -12,12 +12,7 @@ interface PlaylistsContextValue {
   getPlaylistsForClimb: (climbUuid: string) => Set<string>;
   addToPlaylist: (playlistId: string, climbUuid: string, angle: number) => Promise<void>;
   removeFromPlaylist: (playlistId: string, climbUuid: string) => Promise<void>;
-  createPlaylist: (
-    name: string,
-    description?: string,
-    color?: string,
-    icon?: string
-  ) => Promise<Playlist>;
+  createPlaylist: (name: string, description?: string, color?: string, icon?: string) => Promise<Playlist>;
   isLoading: boolean;
   isAuthenticated: boolean;
   refreshPlaylists: () => Promise<void>;
@@ -33,12 +28,7 @@ interface PlaylistsProviderProps {
   playlistMemberships: Map<string, Set<string>>;
   addToPlaylist: (playlistId: string, climbUuid: string, angle: number) => Promise<void>;
   removeFromPlaylist: (playlistId: string, climbUuid: string) => Promise<void>;
-  createPlaylist: (
-    name: string,
-    description?: string,
-    color?: string,
-    icon?: string
-  ) => Promise<Playlist>;
+  createPlaylist: (name: string, description?: string, color?: string, icon?: string) => Promise<Playlist>;
   isLoading: boolean;
   isAuthenticated: boolean;
   refreshPlaylists: () => Promise<void>;
@@ -60,7 +50,7 @@ export function PlaylistsProvider({
     () => (climbUuid: string) => {
       return playlistMemberships.get(climbUuid) || new Set<string>();
     },
-    [playlistMemberships]
+    [playlistMemberships],
   );
 
   const value = useMemo<PlaylistsContextValue>(
@@ -83,7 +73,7 @@ export function PlaylistsProvider({
       isLoading,
       isAuthenticated,
       refreshPlaylists,
-    ]
+    ],
   );
 
   return <PlaylistsContext.Provider value={value}>{children}</PlaylistsContext.Provider>;

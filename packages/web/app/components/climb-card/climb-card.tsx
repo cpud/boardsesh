@@ -77,11 +77,9 @@ function ClimbCardWithActions({
   const isDark = mode === 'dark';
   const selected = useIsClimbSelected(climb.uuid);
 
-  const {
-    handleDoubleTap,
-    showHeart,
-    dismissHeart,
-  } = useDoubleTapFavorite({ climbUuid: climb.uuid });
+  const { handleDoubleTap, showHeart, dismissHeart } = useDoubleTapFavorite({
+    climbUuid: climb.uuid,
+  });
 
   const cover = (
     <ClimbCardCover
@@ -101,7 +99,10 @@ function ClimbCardWithActions({
       <MuiCard>
         <CardHeader
           title={cardTitle}
-          sx={{ paddingTop: `${themeTokens.spacing[2]}px`, paddingBottom: `${themeTokens.spacing[1] + 2}px` }}
+          sx={{
+            paddingTop: `${themeTokens.spacing[2]}px`,
+            paddingBottom: `${themeTokens.spacing[1] + 2}px`,
+          }}
         />
         <CardContent
           sx={{
@@ -169,7 +170,10 @@ const ClimbCardStatic = React.memo(
         <MuiCard>
           <CardHeader
             title={cardTitle}
-            sx={{ paddingTop: `${themeTokens.spacing[2]}px`, paddingBottom: `${themeTokens.spacing[1] + 2}px` }}
+            sx={{
+              paddingTop: `${themeTokens.spacing[2]}px`,
+              paddingBottom: `${themeTokens.spacing[1] + 2}px`,
+            }}
           />
           <CardContent
             sx={{
@@ -233,8 +237,7 @@ ClimbCardStatic.displayName = 'ClimbCardStatic';
  * - When no climb, shows loading state
  */
 function ClimbCard(props: ClimbCardProps) {
-  const { climb, boardDetails, onCoverClick, onCoverDoubleClick, unsupported, actions, expandedContent } =
-    props;
+  const { climb, boardDetails, onCoverClick, onCoverDoubleClick, unsupported, actions, expandedContent } = props;
   const { preferImageLayers } = props;
 
   // When actions or expandedContent are provided externally, use the memoized static version

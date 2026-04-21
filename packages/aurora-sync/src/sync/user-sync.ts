@@ -407,7 +407,11 @@ async function upsertTableData(
 
     default:
       log(`  No specific upsert logic for table: ${tableName}`);
-      return { synced: 0, skipped: data.length, skippedReason: `No upsert logic for table: ${tableName}` };
+      return {
+        synced: 0,
+        skipped: data.length,
+        skippedReason: `No upsert logic for table: ${tableName}`,
+      };
   }
 
   return { synced: data.length, skipped: 0 };
@@ -470,9 +474,7 @@ export async function getLastSharedSyncTimes(pool: Pool, boardName: AuroraBoardN
     const result = await db
       .select()
       .from(sharedSyncsSchema)
-      .where(
-        and(eq(sharedSyncsSchema.boardType, boardName), inArray(sharedSyncsSchema.tableName, tableNames)),
-      );
+      .where(and(eq(sharedSyncsSchema.boardType, boardName), inArray(sharedSyncsSchema.tableName, tableNames)));
 
     return result;
   } finally {

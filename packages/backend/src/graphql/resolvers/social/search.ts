@@ -12,7 +12,7 @@ export const socialSearchQueries = {
   searchUsers: async (
     _: unknown,
     { input }: { input: { query: string; boardType?: string; limit?: number; offset?: number } },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ) => {
     await applyRateLimit(ctx, 20);
 
@@ -47,8 +47,8 @@ export const socialSearchQueries = {
           dbSchema.userBoardMappings,
           and(
             eq(dbSchema.users.id, dbSchema.userBoardMappings.userId),
-            eq(dbSchema.userBoardMappings.boardType, boardType)
-          )
+            eq(dbSchema.userBoardMappings.boardType, boardType),
+          ),
         )
         .where(searchConditions!);
     }
@@ -71,15 +71,20 @@ export const socialSearchQueries = {
       followerCount: sql<number>`(select count(*)::int from user_follows where following_id = ${dbSchema.users.id})`,
       followingCount: sql<number>`(select count(*)::int from user_follows where follower_id = ${dbSchema.users.id})`,
       recentAscentCount: sql<number>`(select count(*)::int from boardsesh_ticks where user_id = ${dbSchema.users.id} and created_at > ${thirtyDaysAgoIso})`,
-      isFollowedByMe: (ctx.isAuthenticated && ctx.userId)
-        ? sql<boolean>`exists(select 1 from user_follows where follower_id = ${ctx.userId} and following_id = ${dbSchema.users.id})`
-        : sql<boolean>`false`,
+      isFollowedByMe:
+        ctx.isAuthenticated && ctx.userId
+          ? sql<boolean>`exists(select 1 from user_follows where follower_id = ${ctx.userId} and following_id = ${dbSchema.users.id})`
+          : sql<boolean>`false`,
     };
 
     // Sort in SQL: prefix matches first, then by recent ascent count DESC
     const orderByExpressions = [
-      asc(sql`case when ${dbSchema.userProfiles.displayName} ilike ${prefixPattern} or ${dbSchema.users.name} ilike ${prefixPattern} then 0 else 1 end`),
-      desc(sql`(select count(*)::int from boardsesh_ticks where user_id = ${dbSchema.users.id} and created_at > ${thirtyDaysAgoIso})`),
+      asc(
+        sql`case when ${dbSchema.userProfiles.displayName} ilike ${prefixPattern} or ${dbSchema.users.name} ilike ${prefixPattern} then 0 else 1 end`,
+      ),
+      desc(
+        sql`(select count(*)::int from boardsesh_ticks where user_id = ${dbSchema.users.id} and created_at > ${thirtyDaysAgoIso})`,
+      ),
     ];
 
     // Build query with appropriate joins
@@ -93,8 +98,8 @@ export const socialSearchQueries = {
           dbSchema.userBoardMappings,
           and(
             eq(dbSchema.users.id, dbSchema.userBoardMappings.userId),
-            eq(dbSchema.userBoardMappings.boardType, boardType)
-          )
+            eq(dbSchema.userBoardMappings.boardType, boardType),
+          ),
         )
         .where(searchConditions!)
         .orderBy(...orderByExpressions)

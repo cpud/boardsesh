@@ -12,7 +12,8 @@ interface ProfileSessionsContentProps {
 
 export default function ProfileSessionsContent({ userId, isAuthenticatedSSR }: ProfileSessionsContentProps) {
   const { status } = useSession();
-  const isAuthenticated = status === 'authenticated' ? true : (status === 'loading' ? (isAuthenticatedSSR ?? false) : false);
+  const isAuthenticated =
+    status === 'authenticated' ? true : status === 'loading' ? (isAuthenticatedSSR ?? false) : false;
 
   return (
     <ProfileSubPageLayout>

@@ -50,9 +50,9 @@ export const getAllBoardConfigs = React.cache(async (): Promise<BoardConfigData>
       ];
 
       // Add sets for each layout-size combination
-      const layoutKey = Object.entries(MOONBOARD_LAYOUTS).find(
-        ([, l]) => l.id === layout.id,
-      )?.[0] as MoonBoardLayoutKey | undefined;
+      const layoutKey = Object.entries(MOONBOARD_LAYOUTS).find(([, l]) => l.id === layout.id)?.[0] as
+        | MoonBoardLayoutKey
+        | undefined;
 
       if (layoutKey) {
         const sets = MOONBOARD_SETS[layoutKey] || [];

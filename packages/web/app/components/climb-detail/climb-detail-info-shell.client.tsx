@@ -40,11 +40,9 @@ export default function ClimbDetailInfoShellClient({
     boardName,
   });
 
-  const {
-    handleDoubleTap,
-    showHeart,
-    dismissHeart,
-  } = useDoubleTapFavorite({ climbUuid: climb.uuid });
+  const { handleDoubleTap, showHeart, dismissHeart } = useDoubleTapFavorite({
+    climbUuid: climb.uuid,
+  });
 
   return (
     <ClimbDetailShellClient

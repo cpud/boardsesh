@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { fnv1aHash, computeQueueStateHash } from '../hash';
 
 describe('hash utilities', () => {
@@ -116,11 +116,7 @@ describe('hash utilities', () => {
       });
 
       it('should filter out items with null uuid', () => {
-        const queue = [
-          { uuid: 'item-1' },
-          { uuid: null as unknown as string },
-          { uuid: 'item-2' },
-        ];
+        const queue = [{ uuid: 'item-1' }, { uuid: null as unknown as string }, { uuid: 'item-2' }];
         const cleanQueue = [{ uuid: 'item-1' }, { uuid: 'item-2' }];
 
         const hashWithNullUuid = computeQueueStateHash(queue, 'item-1');
@@ -130,11 +126,7 @@ describe('hash utilities', () => {
       });
 
       it('should filter out items with undefined uuid', () => {
-        const queue = [
-          { uuid: 'item-1' },
-          { uuid: undefined as unknown as string },
-          { uuid: 'item-2' },
-        ];
+        const queue = [{ uuid: 'item-1' }, { uuid: undefined as unknown as string }, { uuid: 'item-2' }];
         const cleanQueue = [{ uuid: 'item-1' }, { uuid: 'item-2' }];
 
         const hashWithUndefinedUuid = computeQueueStateHash(queue, 'item-1');

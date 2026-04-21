@@ -4,11 +4,7 @@ import { getBoardDetails } from '@/app/lib/board-constants';
 import { getClimb } from '@/app/lib/data/queries';
 import { parseRouteParams } from '@/app/lib/url-utils.server';
 import CreateClimbForm from '@/app/components/create-climb/create-climb-form';
-import {
-  MOONBOARD_LAYOUTS,
-  MOONBOARD_SETS,
-  MoonBoardLayoutKey,
-} from '@/app/lib/moonboard-config';
+import { MOONBOARD_LAYOUTS, MOONBOARD_SETS, MoonBoardLayoutKey } from '@/app/lib/moonboard-config';
 import { Metadata } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/lib/auth/auth-options';
@@ -20,7 +16,12 @@ export const metadata: Metadata = {
 
 interface CreateClimbPageProps {
   params: Promise<BoardRouteParameters>;
-  searchParams: Promise<{ forkFrames?: string; forkName?: string; forkDescription?: string; editClimbUuid?: string }>;
+  searchParams: Promise<{
+    forkFrames?: string;
+    forkName?: string;
+    forkDescription?: string;
+    editClimbUuid?: string;
+  }>;
 }
 
 // Helper to get MoonBoard layout info from layout ID
@@ -78,7 +79,7 @@ export default async function CreateClimbPage(props: CreateClimbPageProps) {
       } else {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id || loaded.userId !== session.user.id) {
-          editClimbError = "You can only edit your own climbs.";
+          editClimbError = 'You can only edit your own climbs.';
         } else {
           editClimb = loaded;
         }

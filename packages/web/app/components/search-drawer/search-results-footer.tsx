@@ -12,7 +12,6 @@ import { DEFAULT_SEARCH_PARAMS } from '@/app/lib/url-utils';
 import { themeTokens } from '@/app/theme/theme-config';
 import styles from './search-form.module.css';
 
-
 const SearchResultsFooter = () => {
   const { totalSearchResultCount, isFetchingClimbs } = useSearchData();
   const { uiSearchParams } = useUISearchParams();

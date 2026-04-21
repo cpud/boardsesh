@@ -39,16 +39,18 @@ async function runMigrations() {
   // Validation: A database URL must be set
   if (!databaseUrl) {
     console.error('❌ DATABASE_URL or POSTGRES_URL is not set');
-    console.error('   Available env vars:', Object.keys(process.env).filter(k =>
-      k.includes('DATABASE') || k.includes('POSTGRES')
-    ).join(', ') || 'none');
+    console.error(
+      '   Available env vars:',
+      Object.keys(process.env)
+        .filter((k) => k.includes('DATABASE') || k.includes('POSTGRES'))
+        .join(', ') || 'none',
+    );
     process.exit(1);
   }
 
   // Safety: Block local dev URLs in production builds
-  const isLocalUrl = databaseUrl.includes('localhost') ||
-                     databaseUrl.includes('localtest.me') ||
-                     databaseUrl.includes('127.0.0.1');
+  const isLocalUrl =
+    databaseUrl.includes('localhost') || databaseUrl.includes('localtest.me') || databaseUrl.includes('127.0.0.1');
 
   if (process.env.VERCEL && isLocalUrl) {
     console.error('❌ Refusing to run migrations with local DATABASE_URL in Vercel build');

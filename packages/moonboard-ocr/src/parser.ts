@@ -28,7 +28,7 @@ export async function parseScreenshot(imagePath: string): Promise<ParseResult> {
  */
 export async function parseMultipleScreenshots(
   imagePaths: string[],
-  onProgress?: (current: number, total: number, file: string) => void
+  onProgress?: (current: number, total: number, file: string) => void,
 ): Promise<{ climbs: MoonBoardClimb[]; errors: Array<{ file: string; error: string }> }> {
   const climbs: MoonBoardClimb[] = [];
   const errors: Array<{ file: string; error: string }> = [];

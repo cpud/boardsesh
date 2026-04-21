@@ -42,8 +42,10 @@ export default function FavoriteButton({
 
     if (!isAuthenticated) {
       openAuthModal({
-        title: "Sign in to save favorites",
-        description: climbName ? `Sign in to save "${climbName}" to your favorites.` : 'Sign in to save climbs to your favorites.',
+        title: 'Sign in to save favorites',
+        description: climbName
+          ? `Sign in to save "${climbName}" to your favorites.`
+          : 'Sign in to save climbs to your favorites.',
         onSuccess: handleAuthSuccess,
       });
       return;

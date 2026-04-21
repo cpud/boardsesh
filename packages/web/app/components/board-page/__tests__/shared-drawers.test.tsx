@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { render, screen, act } from '@testing-library/react';
 import React, { createRef, forwardRef, useState, useCallback, useImperativeHandle } from 'react';
 import type { Climb, BoardDetails } from '@/app/lib/types';

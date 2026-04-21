@@ -79,9 +79,12 @@ export function BoardProvider({ boardName, children }: { boardName: BoardName; c
     });
   }, []);
 
-  const saveClimb = useCallback(async (options: Omit<SaveClimbOptions, 'setter_id' | 'user_id'>): Promise<SaveClimbResponse> => {
-    return saveClimbMutateRef.current(options);
-  }, []);
+  const saveClimb = useCallback(
+    async (options: Omit<SaveClimbOptions, 'setter_id' | 'user_id'>): Promise<SaveClimbResponse> => {
+      return saveClimbMutateRef.current(options);
+    },
+    [],
+  );
 
   const updateClimb = useCallback(async (input: UpdateClimbInput): Promise<UpdateClimbResponse> => {
     return updateClimbMutateRef.current(input);

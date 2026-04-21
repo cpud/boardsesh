@@ -2,7 +2,7 @@
  * Tests for applyRateLimit helper — specifically the key selection logic
  * that determines how anonymous vs authenticated requests are rate limited.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import type { ConnectionContext } from '@boardsesh/shared-schema';
 
 // Mock rate limiter utilities so we can inspect which keys are used

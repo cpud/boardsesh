@@ -58,11 +58,7 @@ export async function serverUserPlaylists(
   type Response = import('@/app/lib/graphql/operations/playlists').GetAllUserPlaylistsQueryResponse;
 
   try {
-    const response = await executeAuthenticatedGraphQL<Response>(
-      GET_ALL_USER_PLAYLISTS,
-      { input },
-      authToken,
-    );
+    const response = await executeAuthenticatedGraphQL<Response>(GET_ALL_USER_PLAYLISTS, { input }, authToken);
     return response.allUserPlaylists;
   } catch {
     return null;
@@ -81,11 +77,7 @@ export async function serverGroupedNotifications(
   const { GET_GROUPED_NOTIFICATIONS } = await import('@/app/lib/graphql/operations/notifications');
   type Response = { groupedNotifications: GroupedNotificationConnection };
 
-  const data = await executeAuthenticatedGraphQL<Response>(
-    GET_GROUPED_NOTIFICATIONS,
-    { limit, offset },
-    authToken,
-  );
+  const data = await executeAuthenticatedGraphQL<Response>(GET_GROUPED_NOTIFICATIONS, { limit, offset }, authToken);
 
   return data.groupedNotifications;
 }

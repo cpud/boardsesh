@@ -40,8 +40,8 @@ export function useDoubleTapFavorite({ climbUuid }: UseDoubleTapFavoriteOptions)
   const handleDoubleTap = useCallback(() => {
     if (!isAuthenticated) {
       openAuthModal({
-        title: "Sign in to like climbs",
-        description: "Save your favorite climbs so you can find them later.",
+        title: 'Sign in to like climbs',
+        description: 'Save your favorite climbs so you can find them later.',
       });
       return;
     }

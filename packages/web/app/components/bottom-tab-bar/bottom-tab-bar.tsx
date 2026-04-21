@@ -18,7 +18,17 @@ import PersonOutlined from '@mui/icons-material/PersonOutlined';
 import { usePathname, useRouter } from 'next/navigation';
 import { track } from '@vercel/analytics';
 import { BoardDetails, BoardName } from '@/app/lib/types';
-import { constructClimbListWithSlugs, constructBoardSlugListUrl, tryConstructSlugListUrl, generateLayoutSlug, generateSizeSlug, generateSetSlug, searchParamsToUrlParams, getContextAwarePlaylistUrl, getPlaylistsBasePath } from '@/app/lib/url-utils';
+import {
+  constructClimbListWithSlugs,
+  constructBoardSlugListUrl,
+  tryConstructSlugListUrl,
+  generateLayoutSlug,
+  generateSizeSlug,
+  generateSetSlug,
+  searchParamsToUrlParams,
+  getContextAwarePlaylistUrl,
+  getPlaylistsBasePath,
+} from '@/app/lib/url-utils';
 import { themeTokens } from '@/app/theme/theme-config';
 import { useColorMode } from '@/app/hooks/use-color-mode';
 import { PlaylistsContext } from '../climb-actions/playlists-batch-context';
@@ -129,20 +139,16 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
   const { showMessage } = useSnackbar();
 
   // Use the active queue's board details as a fallback when no boardDetails prop
-  const {
-    activeSession,
-    localBoardDetails,
-    localCurrentClimbQueueItem,
-  } = usePersistentSessionState();
+  const { activeSession, localBoardDetails, localCurrentClimbQueueItem } = usePersistentSessionState();
 
   // Resolve effective board details: prop > active session > local queue
-  const effectiveBoardDetails = boardDetails
-    ?? (activeSession ? activeSession.boardDetails : null)
-    ?? localBoardDetails;
-  const effectiveAngle = angle
-    ?? (activeSession ? activeSession.parsedParams.angle : undefined)
-    ?? localCurrentClimbQueueItem?.climb?.angle
-    ?? 0;
+  const effectiveBoardDetails =
+    boardDetails ?? (activeSession ? activeSession.boardDetails : null) ?? localBoardDetails;
+  const effectiveAngle =
+    angle ??
+    (activeSession ? activeSession.parsedParams.angle : undefined) ??
+    localCurrentClimbQueueItem?.climb?.angle ??
+    0;
   const playlistBoardName = effectiveBoardDetails?.board_name ?? selectedBoardContext?.boardName ?? '';
   const playlistLayoutId = effectiveBoardDetails?.layout_id ?? selectedBoardContext?.layoutId ?? 0;
   const playlistAngle = effectiveAngle ?? selectedBoardContext?.angle ?? 0;
@@ -184,7 +190,14 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
     if (!effectiveBoardDetails) return null;
     const { board_name, layout_name, size_name, size_description, set_names } = effectiveBoardDetails;
     if (layout_name && size_name && set_names) {
-      return constructClimbListWithSlugs(board_name, layout_name, size_name, size_description, set_names, effectiveAngle);
+      return constructClimbListWithSlugs(
+        board_name,
+        layout_name,
+        size_name,
+        size_description,
+        set_names,
+        effectiveAngle,
+      );
     }
     return null;
   })();
@@ -198,21 +211,31 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
     return null;
   })();
 
-  const getPlaylistUrl = useCallback((playlistUuid: string) => {
-    return getContextAwarePlaylistUrl(pathname, playlistUuid);
-  }, [pathname]);
+  const getPlaylistUrl = useCallback(
+    (playlistUuid: string) => {
+      return getContextAwarePlaylistUrl(pathname, playlistUuid);
+    },
+    [pathname],
+  );
 
   const handleHomeTab = () => {
-        setIsCreatePlaylistOpen(false);
+    setIsCreatePlaylistOpen(false);
     router.push('/');
     track('Bottom Tab Bar', { tab: 'home' });
   };
 
   // Whether we're currently on a board page (URL derived from pathname is reliable)
-  const isOnBoardPage = pathname.startsWith('/b/') || (!!effectiveBoardDetails && pathname !== '/' && !pathname.startsWith('/profile') && !pathname.startsWith('/you') && !pathname.startsWith('/playlists') && !pathname.startsWith('/notifications'));
+  const isOnBoardPage =
+    pathname.startsWith('/b/') ||
+    (!!effectiveBoardDetails &&
+      pathname !== '/' &&
+      !pathname.startsWith('/profile') &&
+      !pathname.startsWith('/you') &&
+      !pathname.startsWith('/playlists') &&
+      !pathname.startsWith('/notifications'));
 
   const handleClimbsTab = async () => {
-        setIsCreatePlaylistOpen(false);
+    setIsCreatePlaylistOpen(false);
 
     let url: string | null = null;
 
@@ -239,7 +262,8 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
 
     // Open board selector drawer if no board context
     if (!url) {
-      setIsBoardSelectorRendered(true); setIsBoardSelectorOpen(true);
+      setIsBoardSelectorRendered(true);
+      setIsBoardSelectorOpen(true);
       track('Bottom Tab Bar', { tab: 'climbs', action: 'open_selector' });
       return;
     }
@@ -249,7 +273,9 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
       const recentSearches = await getRecentSearches();
       if (recentSearches.length > 0) {
         const mostRecent = recentSearches[0];
-        const filterParams = searchParamsToUrlParams(mostRecent.filters as Parameters<typeof searchParamsToUrlParams>[0]);
+        const filterParams = searchParamsToUrlParams(
+          mostRecent.filters as Parameters<typeof searchParamsToUrlParams>[0],
+        );
         const filterString = filterParams.toString();
         if (filterString) {
           url = `${url}?${filterString}`;
@@ -275,7 +301,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
   const playlistsUrl = getPlaylistsBasePath(pathname);
 
   const handleLibraryTab = () => {
-        setIsCreatePlaylistOpen(false);
+    setIsCreatePlaylistOpen(false);
     const currentUrl = pathname + (typeof window !== 'undefined' ? window.location.search : '');
     if (playlistsUrl !== currentUrl) {
       router.push(playlistsUrl);
@@ -284,7 +310,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
   };
 
   const handleFeedTab = () => {
-        setIsCreatePlaylistOpen(false);
+    setIsCreatePlaylistOpen(false);
     router.push('/feed');
     track('Bottom Tab Bar', { tab: 'feed' });
   };
@@ -315,7 +341,8 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
     }
     if (boardConfigs) {
       setPendingCreateAction('climb');
-      setIsBoardSelectorRendered(true); setIsBoardSelectorOpen(true);
+      setIsBoardSelectorRendered(true);
+      setIsBoardSelectorOpen(true);
     }
   };
 
@@ -348,116 +375,131 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
         title: 'Sign in to create playlists',
         description: 'Sign in to create and manage your climb playlists.',
         onSuccess: () => {
-                    if (!canCreatePlaylistHere) {
+          if (!canCreatePlaylistHere) {
             if (boardConfigs) {
               setPendingCreateAction('playlist');
-              setIsBoardSelectorRendered(true); setIsBoardSelectorOpen(true);
+              setIsBoardSelectorRendered(true);
+              setIsBoardSelectorOpen(true);
             } else {
               showMessage('Select a board before creating a playlist', 'error');
             }
             return;
           }
-          setIsCreatePlaylistRendered(true); setIsCreatePlaylistOpen(true);
+          setIsCreatePlaylistRendered(true);
+          setIsCreatePlaylistOpen(true);
         },
       });
       return;
     }
 
     if (!canCreatePlaylistHere) {
-            if (boardConfigs) {
+      if (boardConfigs) {
         setPendingCreateAction('playlist');
-        setIsBoardSelectorRendered(true); setIsBoardSelectorOpen(true);
+        setIsBoardSelectorRendered(true);
+        setIsBoardSelectorOpen(true);
       } else {
         showMessage('Select a board before creating a playlist', 'error');
       }
       return;
     }
 
-        setIsCreatePlaylistRendered(true); setIsCreatePlaylistOpen(true);
+    setIsCreatePlaylistRendered(true);
+    setIsCreatePlaylistOpen(true);
   };
 
-  const handleBoardSelected = useCallback((url: string, config?: StoredBoardConfig) => {
-    const selectedContext = getBoardContextFromSelector(config);
-    if (selectedContext) {
-      setSelectedBoardContext(selectedContext);
-    }
+  const handleBoardSelected = useCallback(
+    (url: string, config?: StoredBoardConfig) => {
+      const selectedContext = getBoardContextFromSelector(config);
+      if (selectedContext) {
+        setSelectedBoardContext(selectedContext);
+      }
 
-    if (pendingCreateAction === 'climb') {
-      router.push(listUrlToCreateUrl(url));
-      setPendingCreateAction(null);
-      return;
-    }
-
-    if (pendingCreateAction === 'playlist') {
-      if (!selectedContext) {
-        showMessage('Unable to determine board details for playlist creation', 'error');
+      if (pendingCreateAction === 'climb') {
+        router.push(listUrlToCreateUrl(url));
         setPendingCreateAction(null);
         return;
       }
-      setIsCreatePlaylistRendered(true); setIsCreatePlaylistOpen(true);
-      setPendingCreateAction(null);
-      return;
-    }
 
-    if (config) {
-      const target: BoardRouteIdentity = {
-        board_name: config.board,
-        layout_id: config.layoutId,
-        size_id: config.sizeId,
-        set_ids: config.setIds,
-      };
-      guardBoardSwitch(target, () => router.push(url));
-    } else {
-      router.push(url);
-    }
-  }, [pendingCreateAction, router, showMessage, guardBoardSwitch]);
+      if (pendingCreateAction === 'playlist') {
+        if (!selectedContext) {
+          showMessage('Unable to determine board details for playlist creation', 'error');
+          setPendingCreateAction(null);
+          return;
+        }
+        setIsCreatePlaylistRendered(true);
+        setIsCreatePlaylistOpen(true);
+        setPendingCreateAction(null);
+        return;
+      }
 
-  const handleDiscoveryBoardClick = useCallback((board: UserBoard) => {
-    if (board.slug) {
-      const url = constructBoardSlugListUrl(board.slug, board.angle);
-      const config: StoredBoardConfig = {
-        name: board.name,
-        board: board.boardType as BoardName,
-        layoutId: board.layoutId,
-        sizeId: board.sizeId,
-        setIds: board.setIds.split(',').map(Number),
-        angle: board.angle,
-        createdAt: board.createdAt,
-      };
-      handleBoardSelected(url, config);
-    }
-    setIsBoardSelectorOpen(false);
-  }, [handleBoardSelected]);
+      if (config) {
+        const target: BoardRouteIdentity = {
+          board_name: config.board,
+          layout_id: config.layoutId,
+          size_id: config.sizeId,
+          set_ids: config.setIds,
+        };
+        guardBoardSwitch(target, () => router.push(url));
+      } else {
+        router.push(url);
+      }
+    },
+    [pendingCreateAction, router, showMessage, guardBoardSwitch],
+  );
 
-  const handleDiscoveryConfigClick = useCallback((config: PopularBoardConfig) => {
-    const angle = getDefaultAngleForBoard(config.boardType);
-    let url: string;
-    if (config.layoutName && config.sizeName && config.setNames.length > 0) {
-      url = constructClimbListWithSlugs(
-        config.boardType,
-        config.layoutName,
-        config.sizeName,
-        config.sizeDescription ?? undefined,
-        config.setNames,
+  const handleDiscoveryBoardClick = useCallback(
+    (board: UserBoard) => {
+      if (board.slug) {
+        const url = constructBoardSlugListUrl(board.slug, board.angle);
+        const config: StoredBoardConfig = {
+          name: board.name,
+          board: board.boardType as BoardName,
+          layoutId: board.layoutId,
+          sizeId: board.sizeId,
+          setIds: board.setIds.split(',').map(Number),
+          angle: board.angle,
+          createdAt: board.createdAt,
+        };
+        handleBoardSelected(url, config);
+      }
+      setIsBoardSelectorOpen(false);
+    },
+    [handleBoardSelected],
+  );
+
+  const handleDiscoveryConfigClick = useCallback(
+    (config: PopularBoardConfig) => {
+      const angle = getDefaultAngleForBoard(config.boardType);
+      let url: string;
+      if (config.layoutName && config.sizeName && config.setNames.length > 0) {
+        url = constructClimbListWithSlugs(
+          config.boardType,
+          config.layoutName,
+          config.sizeName,
+          config.sizeDescription ?? undefined,
+          config.setNames,
+          angle,
+        );
+      } else {
+        const setIds = config.setIds.join(',');
+        url =
+          tryConstructSlugListUrl(config.boardType, config.layoutId, config.sizeId, config.setIds, angle) ??
+          `/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`;
+      }
+      const storedConfig: StoredBoardConfig = {
+        name: config.layoutName ?? `${config.boardType} board`,
+        board: config.boardType as BoardName,
+        layoutId: config.layoutId,
+        sizeId: config.sizeId,
+        setIds: config.setIds,
         angle,
-      );
-    } else {
-      const setIds = config.setIds.join(',');
-      url = tryConstructSlugListUrl(config.boardType, config.layoutId, config.sizeId, config.setIds, angle)
-        ?? `/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`;
-    }
-    const storedConfig: StoredBoardConfig = {
-      name: config.layoutName ?? `${config.boardType} board`,
-      board: config.boardType as BoardName,
-      layoutId: config.layoutId,
-      sizeId: config.sizeId,
-      setIds: config.setIds,
-      angle,
-      createdAt: new Date().toISOString(),
-    };
-    handleBoardSelected(url, storedConfig);
-    setIsBoardSelectorOpen(false);
-  }, [handleBoardSelected]);
+        createdAt: new Date().toISOString(),
+      };
+      handleBoardSelected(url, storedConfig);
+      setIsBoardSelectorOpen(false);
+    },
+    [handleBoardSelected],
+  );
 
   const validatePlaylistForm = useCallback((): boolean => {
     const errors: Record<string, string> = {};
@@ -492,7 +534,12 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
         colorHex = playlistFormValues.color;
       }
 
-      const newPlaylist = await createPlaylist(playlistFormValues.name, playlistFormValues.description, colorHex, undefined);
+      const newPlaylist = await createPlaylist(
+        playlistFormValues.name,
+        playlistFormValues.description,
+        colorHex,
+        undefined,
+      );
 
       showMessage(`Created playlist "${playlistFormValues.name}"`, 'success');
       track('Create Playlist', {
@@ -512,7 +559,16 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
     } finally {
       setIsCreatingPlaylist(false);
     }
-  }, [validatePlaylistForm, createPlaylist, canCreatePlaylistHere, playlistFormValues, playlistBoardName, router, getPlaylistUrl, showMessage]);
+  }, [
+    validatePlaylistForm,
+    createPlaylist,
+    canCreatePlaylistHere,
+    playlistFormValues,
+    playlistBoardName,
+    router,
+    getPlaylistUrl,
+    showMessage,
+  ]);
 
   return (
     <>
@@ -538,12 +594,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
           },
         }}
       >
-        <BottomNavigationAction
-          label="Home"
-          icon={<HomeOutlined sx={{ fontSize: 20 }} />}
-          value="home"
-          sx={actionSx}
-        />
+        <BottomNavigationAction label="Home" icon={<HomeOutlined sx={{ fontSize: 20 }} />} value="home" sx={actionSx} />
         <BottomNavigationAction
           label="Climb"
           icon={<FormatListBulletedOutlined sx={{ fontSize: 20 }} />}
@@ -568,15 +619,8 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
           value="create"
           sx={actionSx}
         />
-        <BottomNavigationAction
-          label="You"
-          icon={<PersonOutlined sx={{ fontSize: 20 }} />}
-          value="you"
-          sx={actionSx}
-        />
+        <BottomNavigationAction label="You" icon={<PersonOutlined sx={{ fontSize: 20 }} />} value="you" sx={actionSx} />
       </BottomNavigation>
-
-
 
       {/* Create Playlist Drawer */}
       {isCreatePlaylistRendered && (
@@ -595,18 +639,16 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
             body: { padding: themeTokens.spacing[4] },
           }}
           extra={
-            <MuiButton
-              variant="contained"
-              onClick={handleCreatePlaylist}
-              disabled={isCreatingPlaylist}
-            >
+            <MuiButton variant="contained" onClick={handleCreatePlaylist} disabled={isCreatingPlaylist}>
               {isCreatingPlaylist ? 'Creating...' : 'Create'}
             </MuiButton>
           }
         >
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box>
-              <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Name</Typography>
+              <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+                Name
+              </Typography>
               <TextField
                 placeholder="e.g., Hard Crimps"
                 autoFocus
@@ -622,7 +664,9 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
               />
             </Box>
             <Box>
-              <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Description (optional)</Typography>
+              <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+                Description (optional)
+              </Typography>
               <TextField
                 placeholder="Optional description..."
                 multiline
@@ -640,7 +684,9 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
               />
             </Box>
             <Box>
-              <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Color (optional)</Typography>
+              <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+                Color (optional)
+              </Typography>
               <TextField
                 type="color"
                 value={playlistFormValues.color || '#000000'}
@@ -691,7 +737,6 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
           }}
         />
       )}
-
     </>
   );
 }

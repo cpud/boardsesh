@@ -58,10 +58,7 @@ export default function PlaylistCard({
   }
 
   return (
-    <Link
-      href={href}
-      className={`${styles.card} ${styles.cardScroll}`}
-    >
+    <Link href={href} className={`${styles.card} ${styles.cardScroll}`}>
       <div className={styles.cardSquare}>
         <PlaylistPreviewSquare
           boardType={boardType}

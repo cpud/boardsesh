@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { classifyClimbListChange, stabilizeClimbArrayRef } from '../climb-list-utils';
 import { Climb } from '@/app/lib/types';
 

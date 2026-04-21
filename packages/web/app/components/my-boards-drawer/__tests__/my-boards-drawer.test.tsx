@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 
@@ -31,15 +31,16 @@ vi.mock('../../swipeable-drawer/swipeable-drawer', () => ({
     title: React.ReactNode;
     extra?: React.ReactNode;
     onClose: () => void;
-  }) => (open ? (
-    <div data-testid="drawer">
-      <div data-testid="drawer-header">
-        <span data-testid="drawer-title">{title}</span>
-        {extra && <span data-testid="drawer-extra">{extra}</span>}
+  }) =>
+    open ? (
+      <div data-testid="drawer">
+        <div data-testid="drawer-header">
+          <span data-testid="drawer-title">{title}</span>
+          {extra && <span data-testid="drawer-extra">{extra}</span>}
+        </div>
+        {children}
       </div>
-      {children}
-    </div>
-  ) : null),
+    ) : null,
 }));
 
 vi.mock('../../board-entity/board-detail', () => ({
@@ -54,7 +55,11 @@ vi.mock('../../board-entity/board-detail', () => ({
   }) => (
     <div data-testid="board-detail-content">
       <span>Board: {boardUuid}</span>
-      {onDeleted && <button type="button" onClick={onDeleted} data-testid="delete-board">Delete</button>}
+      {onDeleted && (
+        <button type="button" onClick={onDeleted} data-testid="delete-board">
+          Delete
+        </button>
+      )}
     </div>
   ),
 }));

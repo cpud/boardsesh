@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 import { useZoomPan } from '../use-zoom-pan';
 
@@ -141,10 +141,9 @@ describe('useZoomPan', () => {
   });
 
   it('enabled=false resets zoom state', () => {
-    const { result, rerender } = renderHook(
-      ({ enabled }) => useZoomPan({ enabled }),
-      { initialProps: { enabled: true } },
-    );
+    const { result, rerender } = renderHook(({ enabled }) => useZoomPan({ enabled }), {
+      initialProps: { enabled: true },
+    });
 
     const contentEl = document.createElement('div');
     Object.defineProperty(result.current.contentRef, 'current', {

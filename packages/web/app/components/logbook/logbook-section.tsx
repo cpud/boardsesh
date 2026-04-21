@@ -32,9 +32,7 @@ export function useLogbookSummary(climbUuid: string): LogbookSummary | null {
 
     const totalAttempts = climbAscents.reduce((sum, ascent) => sum + (ascent.tries || 1), 0);
 
-    const sessionDates = new Set(
-      climbAscents.map((ascent) => dayjs(ascent.climbed_at).format('YYYY-MM-DD'))
-    );
+    const sessionDates = new Set(climbAscents.map((ascent) => dayjs(ascent.climbed_at).format('YYYY-MM-DD')));
     const sessionCount = sessionDates.size;
 
     const successfulAscents = climbAscents.filter((a) => a.is_ascent).length;
@@ -54,7 +52,12 @@ export const LogbookSection: React.FC<LogbookSectionProps> = ({ climb }) => {
 
   if (!summary) {
     return (
-      <Typography variant="body2" component="span" color="text.secondary" sx={{ display: 'block', textAlign: 'center', py: 2 }}>
+      <Typography
+        variant="body2"
+        component="span"
+        color="text.secondary"
+        sx={{ display: 'block', textAlign: 'center', py: 2 }}
+      >
         <BookOutlined sx={{ mr: 1, verticalAlign: 'middle' }} />
         No ascents logged for this climb
       </Typography>

@@ -31,10 +31,7 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      testIgnore: [
-        '**/app-store-screenshots.spec.ts',
-        '**/help-screenshots.spec.ts',
-      ],
+      testIgnore: ['**/app-store-screenshots.spec.ts', '**/help-screenshots.spec.ts'],
     },
 
     // Help page screenshots - mobile viewport (390×844, matches iPhone 14 logical size).

@@ -205,7 +205,11 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
               <div className={styles.gradeLegend}>
                 {gradeBars.map((bar: GradeBar) => (
                   <span key={bar.grade} className={styles.gradeLegendLabel}>
-                    {gradeFormatLoaded ? bar.grade : <Skeleton variant="text" width={20} sx={{ display: 'inline-block', fontSize: 'inherit' }} />}
+                    {gradeFormatLoaded ? (
+                      bar.grade
+                    ) : (
+                      <Skeleton variant="text" width={20} sx={{ display: 'inline-block', fontSize: 'inherit' }} />
+                    )}
                   </span>
                 ))}
               </div>

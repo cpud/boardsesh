@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import React, { createContext, useContext, useRef, useState } from 'react';
 import { renderHook, act } from '@testing-library/react';
 import type { Climb, SearchRequestPagination, ParsedBoardRouteParameters } from '@/app/lib/types';
@@ -210,9 +210,7 @@ function createTestWrapper() {
 
   const Wrapper = ({ children }: { children: React.ReactNode }) => {
     const [currentClimb, _setCurrentClimb] = useState<CurrentClimbDataType>(makeCurrentClimbData());
-    const [currentClimbUuid, _setCurrentClimbUuid] = useState<string | null>(
-      makeClimbQueueItem().uuid,
-    );
+    const [currentClimbUuid, _setCurrentClimbUuid] = useState<string | null>(makeClimbQueueItem().uuid);
     const [queueList, _setQueueList] = useState<QueueListDataType>(makeQueueListData());
     const [search, _setSearch] = useState<SearchDataType>(makeSearchData());
     const [session, _setSession] = useState<SessionDataType>(makeSessionData());
@@ -228,9 +226,7 @@ function createTestWrapper() {
         <CurrentClimbUuidContext.Provider value={currentClimbUuid}>
           <QueueListContext.Provider value={queueList}>
             <SearchContext.Provider value={search}>
-              <SessionContext.Provider value={session}>
-                {children}
-              </SessionContext.Provider>
+              <SessionContext.Provider value={session}>{children}</SessionContext.Provider>
             </SearchContext.Provider>
           </QueueListContext.Provider>
         </CurrentClimbUuidContext.Provider>
@@ -277,10 +273,7 @@ describe('Fine-grained context split isolation', () => {
 
     // Update queue list context -- should NOT trigger a re-render for useCurrentClimb
     update.queueList({
-      queue: [
-        makeClimbQueueItem({ uuid: 'new-item-1' }),
-        makeClimbQueueItem({ uuid: 'new-item-2' }),
-      ],
+      queue: [makeClimbQueueItem({ uuid: 'new-item-1' }), makeClimbQueueItem({ uuid: 'new-item-2' })],
     });
 
     expect(result.current.renderCount.current).toBe(initialRenderCount);
@@ -389,11 +382,7 @@ describe('Fine-grained context split isolation', () => {
     const initialRenderCount = result.current.renderCount.current;
 
     update.queueList({
-      queue: [
-        makeClimbQueueItem({ uuid: 'a' }),
-        makeClimbQueueItem({ uuid: 'b' }),
-        makeClimbQueueItem({ uuid: 'c' }),
-      ],
+      queue: [makeClimbQueueItem({ uuid: 'a' }), makeClimbQueueItem({ uuid: 'b' }), makeClimbQueueItem({ uuid: 'c' })],
     });
 
     expect(result.current.renderCount.current).toBeGreaterThan(initialRenderCount);
@@ -505,9 +494,7 @@ describe('Fine-grained context split isolation', () => {
     let setCurrentClimb: React.Dispatch<React.SetStateAction<CurrentClimbDataType>>;
 
     function TestTree({ children }: { children: React.ReactNode }) {
-      const [currentClimb, _setCurrentClimb] = useState<CurrentClimbDataType>(
-        makeCurrentClimbData(),
-      );
+      const [currentClimb, _setCurrentClimb] = useState<CurrentClimbDataType>(makeCurrentClimbData());
       const [currentClimbUuid] = useState<string | null>('queue-item-1');
 
       setCurrentClimb = _setCurrentClimb;

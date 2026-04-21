@@ -2,10 +2,7 @@ import React from 'react';
 
 import { notFound, permanentRedirect } from 'next/navigation';
 import { BoardRouteParametersWithUuid, SearchRequestPagination, BoardDetails } from '@/app/lib/types';
-import {
-  parsedRouteSearchParamsToSearchParams,
-  constructClimbListWithSlugs,
-} from '@/app/lib/url-utils';
+import { parsedRouteSearchParamsToSearchParams, constructClimbListWithSlugs } from '@/app/lib/url-utils';
 import { parseRouteParams } from '@/app/lib/url-utils.server';
 import BoardPageClimbsList from '@/app/components/board-page/board-page-climbs-list';
 import { cachedSearchClimbs } from '@/app/lib/db/queries/climbs/search-climbs';
@@ -104,13 +101,9 @@ export default async function DynamicResultsPage(props: {
   let searchResponse: { climbs: import('@/app/lib/types').Climb[]; hasMore: boolean };
 
   try {
-    searchResponse = await cachedSearchClimbs(
-      parsedParams,
-      searchParamsObject,
-      isDefaultSearch,
-      userId,
-      { cacheable: !hasProgressFilters },
-    );
+    searchResponse = await cachedSearchClimbs(parsedParams, searchParamsObject, isDefaultSearch, userId, {
+      cacheable: !hasProgressFilters,
+    });
   } catch (error) {
     console.error(
       'Error fetching climb search results (degrading to empty results for SSR):',
@@ -125,15 +118,11 @@ export default async function DynamicResultsPage(props: {
   // Preload the first climb's thumbnail so the browser can fetch it before JS hydration.
   // The climb list is virtualized (client-only), so the LCP image isn't in the initial HTML.
   const firstClimb = searchResponse.climbs[0];
-  const preloadUrl = firstClimb?.frames
-    ? buildOverlayUrl(boardDetails, firstClimb.frames, true)
-    : null;
+  const preloadUrl = firstClimb?.frames ? buildOverlayUrl(boardDetails, firstClimb.frames, true) : null;
 
   return (
     <>
-      {preloadUrl && (
-        <link rel="preload" as="image" href={preloadUrl} fetchPriority="high" />
-      )}
+      {preloadUrl && <link rel="preload" as="image" href={preloadUrl} fetchPriority="high" />}
       <BoardPageClimbsList {...parsedParams} boardDetails={boardDetails} initialClimbs={searchResponse.climbs} />
     </>
   );

@@ -171,7 +171,7 @@ export default function AuthPageContent() {
       if (data.requiresVerification) {
         showMessage('Please check your email to verify your account', 'info');
         setActiveTab('login');
-        setLoginValues(prev => ({ ...prev, email: registerValues.email }));
+        setLoginValues((prev) => ({ ...prev, email: registerValues.email }));
         return;
       }
 
@@ -188,7 +188,7 @@ export default function AuthPageContent() {
         router.push(callbackUrl);
       } else {
         setActiveTab('login');
-        setLoginValues(prev => ({ ...prev, email: registerValues.email }));
+        setLoginValues((prev) => ({ ...prev, email: registerValues.email }));
         showMessage('Please log in with your account', 'info');
       }
     } catch (error) {
@@ -242,7 +242,9 @@ export default function AuthPageContent() {
           <CardContent>
             <Stack spacing={1} sx={{ width: '100%', textAlign: 'center', marginBottom: 3 }}>
               <Logo size="md" />
-              <Typography variant="body2" component="span" color="text.secondary">Sign in or create an account to continue</Typography>
+              <Typography variant="body2" component="span" color="text.secondary">
+                Sign in or create an account to continue
+              </Typography>
             </Stack>
 
             <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} centered>
@@ -253,7 +255,10 @@ export default function AuthPageContent() {
             <TabPanel value={activeTab} index="login">
               <Box
                 component="form"
-                onSubmit={(e: React.FormEvent) => { e.preventDefault(); handleLogin(); }}
+                onSubmit={(e: React.FormEvent) => {
+                  e.preventDefault();
+                  handleLogin();
+                }}
                 sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
               >
                 <TextField
@@ -264,8 +269,8 @@ export default function AuthPageContent() {
                   fullWidth
                   value={loginValues.email}
                   onChange={(e) => {
-                    setLoginValues(prev => ({ ...prev, email: e.target.value }));
-                    if (loginErrors.email) setLoginErrors(prev => ({ ...prev, email: undefined }));
+                    setLoginValues((prev) => ({ ...prev, email: e.target.value }));
+                    if (loginErrors.email) setLoginErrors((prev) => ({ ...prev, email: undefined }));
                   }}
                   error={!!loginErrors.email}
                   helperText={loginErrors.email}
@@ -289,8 +294,8 @@ export default function AuthPageContent() {
                   fullWidth
                   value={loginValues.password}
                   onChange={(e) => {
-                    setLoginValues(prev => ({ ...prev, password: e.target.value }));
-                    if (loginErrors.password) setLoginErrors(prev => ({ ...prev, password: undefined }));
+                    setLoginValues((prev) => ({ ...prev, password: e.target.value }));
+                    if (loginErrors.password) setLoginErrors((prev) => ({ ...prev, password: undefined }));
                   }}
                   error={!!loginErrors.password}
                   helperText={loginErrors.password}
@@ -321,7 +326,10 @@ export default function AuthPageContent() {
             <TabPanel value={activeTab} index="register">
               <Box
                 component="form"
-                onSubmit={(e: React.FormEvent) => { e.preventDefault(); handleRegister(); }}
+                onSubmit={(e: React.FormEvent) => {
+                  e.preventDefault();
+                  handleRegister();
+                }}
                 sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
               >
                 <TextField
@@ -332,8 +340,8 @@ export default function AuthPageContent() {
                   fullWidth
                   value={registerValues.name}
                   onChange={(e) => {
-                    setRegisterValues(prev => ({ ...prev, name: e.target.value }));
-                    if (registerErrors.name) setRegisterErrors(prev => ({ ...prev, name: undefined }));
+                    setRegisterValues((prev) => ({ ...prev, name: e.target.value }));
+                    if (registerErrors.name) setRegisterErrors((prev) => ({ ...prev, name: undefined }));
                   }}
                   error={!!registerErrors.name}
                   helperText={registerErrors.name}
@@ -356,8 +364,8 @@ export default function AuthPageContent() {
                   fullWidth
                   value={registerValues.email}
                   onChange={(e) => {
-                    setRegisterValues(prev => ({ ...prev, email: e.target.value }));
-                    if (registerErrors.email) setRegisterErrors(prev => ({ ...prev, email: undefined }));
+                    setRegisterValues((prev) => ({ ...prev, email: e.target.value }));
+                    if (registerErrors.email) setRegisterErrors((prev) => ({ ...prev, email: undefined }));
                   }}
                   error={!!registerErrors.email}
                   helperText={registerErrors.email}
@@ -381,8 +389,8 @@ export default function AuthPageContent() {
                   fullWidth
                   value={registerValues.password}
                   onChange={(e) => {
-                    setRegisterValues(prev => ({ ...prev, password: e.target.value }));
-                    if (registerErrors.password) setRegisterErrors(prev => ({ ...prev, password: undefined }));
+                    setRegisterValues((prev) => ({ ...prev, password: e.target.value }));
+                    if (registerErrors.password) setRegisterErrors((prev) => ({ ...prev, password: undefined }));
                   }}
                   error={!!registerErrors.password}
                   helperText={registerErrors.password}
@@ -406,8 +414,9 @@ export default function AuthPageContent() {
                   fullWidth
                   value={registerValues.confirmPassword}
                   onChange={(e) => {
-                    setRegisterValues(prev => ({ ...prev, confirmPassword: e.target.value }));
-                    if (registerErrors.confirmPassword) setRegisterErrors(prev => ({ ...prev, confirmPassword: undefined }));
+                    setRegisterValues((prev) => ({ ...prev, confirmPassword: e.target.value }));
+                    if (registerErrors.confirmPassword)
+                      setRegisterErrors((prev) => ({ ...prev, confirmPassword: undefined }));
                   }}
                   error={!!registerErrors.confirmPassword}
                   helperText={registerErrors.confirmPassword}
@@ -436,7 +445,9 @@ export default function AuthPageContent() {
             </TabPanel>
 
             <MuiDivider>
-              <Typography variant="body2" component="span" color="text.secondary">or</Typography>
+              <Typography variant="body2" component="span" color="text.secondary">
+                or
+              </Typography>
             </MuiDivider>
 
             <SocialLoginButtons callbackUrl={callbackUrl} />

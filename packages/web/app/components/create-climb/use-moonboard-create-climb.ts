@@ -9,9 +9,7 @@ interface UseMoonBoardCreateClimbOptions {
 }
 
 export function useMoonBoardCreateClimb(options?: UseMoonBoardCreateClimbOptions) {
-  const [litUpHoldsMap, setLitUpHoldsMap] = useState<LitUpHoldsMap>(
-    options?.initialHoldsMap ?? {},
-  );
+  const [litUpHoldsMap, setLitUpHoldsMap] = useState<LitUpHoldsMap>(options?.initialHoldsMap ?? {});
 
   // Derived state: count holds by state
   const startingCount = useMemo(

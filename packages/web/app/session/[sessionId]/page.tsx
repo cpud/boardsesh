@@ -15,10 +15,9 @@ const fetchSessionDetail = React.cache(async (sessionId: string) => {
   const url = getGraphQLHttpUrl();
   const client = new GraphQLClient(url);
   try {
-    const data = await client.request<GetSessionDetailQueryResponse>(
-      GET_SESSION_DETAIL,
-      { sessionId },
-    );
+    const data = await client.request<GetSessionDetailQueryResponse>(GET_SESSION_DETAIL, {
+      sessionId,
+    });
     return data.sessionDetail;
   } catch (err) {
     console.error('[SessionDetailPage] Failed to fetch session:', sessionId, err);
@@ -44,9 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const stats = `${summary.totalSends} send${summary.totalSends !== 1 ? 's' : ''}`;
     description = participantNames ? `${participantNames} — ${stats}` : stats;
   } else {
-    description = participantNames
-      ? `${participantNames} climbing on Boardsesh`
-      : `${sessionName} on Boardsesh`;
+    description = participantNames ? `${participantNames} climbing on Boardsesh` : `${sessionName} on Boardsesh`;
   }
 
   const ogImage = buildVersionedOgImagePath('/api/og/session', { sessionId }, summary.version);

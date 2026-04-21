@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, act, waitFor } from '@testing-library/react';
 
 const mockGetFormat = vi.fn().mockResolvedValue('v-grade' as 'v-grade' | 'font');
@@ -10,10 +10,8 @@ vi.mock('@/app/lib/user-preferences-db', () => ({
 }));
 
 vi.mock('@/app/lib/grade-colors', () => ({
-  formatGrade: (d: string | null | undefined, format: string) =>
-    d ? `${format}:${d}` : null,
-  getSoftGradeColorByFormat: (d: string | null | undefined, format: string) =>
-    d ? `color:${format}:${d}` : undefined,
+  formatGrade: (d: string | null | undefined, format: string) => (d ? `${format}:${d}` : null),
+  getSoftGradeColorByFormat: (d: string | null | undefined, format: string) => (d ? `color:${format}:${d}` : undefined),
 }));
 
 import { useGradeFormat } from '../use-grade-format';
@@ -140,9 +138,7 @@ describe('useGradeFormat', () => {
     expect(result.current.gradeFormat).toBe('v-grade');
 
     act(() => {
-      window.dispatchEvent(
-        new CustomEvent('boardsesh:gradeFormatChange', { detail: 'font' }),
-      );
+      window.dispatchEvent(new CustomEvent('boardsesh:gradeFormatChange', { detail: 'font' }));
     });
 
     expect(result.current.gradeFormat).toBe('font');

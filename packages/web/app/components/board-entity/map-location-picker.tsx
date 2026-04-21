@@ -61,10 +61,7 @@ export default function MapLocationPicker({ latitude, longitude, onChange }: Map
       markerRef.current = L.marker([lat, lng], { icon, draggable: true }).addTo(map);
       markerRef.current.on('dragend', () => {
         const pos = markerRef.current!.getLatLng();
-        onChangeRef.current(
-          Math.round(pos.lat * 1000000) / 1000000,
-          Math.round(pos.lng * 1000000) / 1000000,
-        );
+        onChangeRef.current(Math.round(pos.lat * 1000000) / 1000000, Math.round(pos.lng * 1000000) / 1000000);
       });
     }
   }, []);
@@ -132,7 +129,7 @@ export default function MapLocationPicker({ latitude, longitude, onChange }: Map
         setMapReady(false);
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expanded]);
 
   const handleUseMyLocation = useCallback(() => {
@@ -155,38 +152,40 @@ export default function MapLocationPicker({ latitude, longitude, onChange }: Map
     }
   }, []);
 
-  const handleAddressSearch = useCallback((query: string) => {
-    setSearchQuery(query);
-    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    if (!query.trim()) return;
+  const handleAddressSearch = useCallback(
+    (query: string) => {
+      setSearchQuery(query);
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+      if (!query.trim()) return;
 
-    searchTimerRef.current = setTimeout(async () => {
-      setIsSearching(true);
-      try {
-        const encoded = encodeURIComponent(query.trim());
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encoded}`,
-          { headers: { 'Accept-Language': 'en' } },
-        );
-        if (!res.ok) {
-          console.error('Nominatim search failed:', res.status, res.statusText);
-          return;
+      searchTimerRef.current = setTimeout(async () => {
+        setIsSearching(true);
+        try {
+          const encoded = encodeURIComponent(query.trim());
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encoded}`, {
+            headers: { 'Accept-Language': 'en' },
+          });
+          if (!res.ok) {
+            console.error('Nominatim search failed:', res.status, res.statusText);
+            return;
+          }
+          const results: NominatimResult[] = await res.json();
+          if (results.length > 0) {
+            const lat = Math.round(parseFloat(results[0].lat) * 1000000) / 1000000;
+            const lng = Math.round(parseFloat(results[0].lon) * 1000000) / 1000000;
+            placeMarker(lat, lng);
+            mapRef.current?.flyTo([lat, lng], 16);
+            onChangeRef.current(lat, lng);
+          }
+        } catch (error) {
+          console.error('Address search failed:', error);
+        } finally {
+          setIsSearching(false);
         }
-        const results: NominatimResult[] = await res.json();
-        if (results.length > 0) {
-          const lat = Math.round(parseFloat(results[0].lat) * 1000000) / 1000000;
-          const lng = Math.round(parseFloat(results[0].lon) * 1000000) / 1000000;
-          placeMarker(lat, lng);
-          mapRef.current?.flyTo([lat, lng], 16);
-          onChangeRef.current(lat, lng);
-        }
-      } catch (error) {
-        console.error('Address search failed:', error);
-      } finally {
-        setIsSearching(false);
-      }
-    }, 500);
-  }, [placeMarker]);
+      }, 500);
+    },
+    [placeMarker],
+  );
 
   // Cleanup search timer
   useEffect(() => {
@@ -209,9 +208,7 @@ export default function MapLocationPicker({ latitude, longitude, onChange }: Map
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <MapOutlined fontSize="small" color="action" />
           <MuiTypography variant="body2">
-            {hasLocation
-              ? `Location: ${latitude!.toFixed(4)}, ${longitude!.toFixed(4)}`
-              : 'Set location on map'}
+            {hasLocation ? `Location: ${latitude!.toFixed(4)}, ${longitude!.toFixed(4)}` : 'Set location on map'}
           </MuiTypography>
         </Box>
       </AccordionSummary>

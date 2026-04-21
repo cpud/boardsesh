@@ -1,25 +1,22 @@
-import { describe, it, expect } from 'vitest';
-import { buildGradeDistributionFromTicks, computeSessionAggregates } from '../graphql/resolvers/social/session-feed-utils';
+import { describe, it, expect } from 'vite-plus/test';
+import {
+  buildGradeDistributionFromTicks,
+  computeSessionAggregates,
+} from '../graphql/resolvers/social/session-feed-utils';
 
 describe('computeSessionAggregates', () => {
   it('counts flashes as both flashes and sends', () => {
-    const result = computeSessionAggregates([
-      { tick: { status: 'flash', attemptCount: 1 } },
-    ]);
+    const result = computeSessionAggregates([{ tick: { status: 'flash', attemptCount: 1 } }]);
     expect(result).toEqual({ totalSends: 1, totalFlashes: 1, totalAttempts: 0 });
   });
 
   it('counts sends and their implicit failed attempts', () => {
-    const result = computeSessionAggregates([
-      { tick: { status: 'send', attemptCount: 5 } },
-    ]);
+    const result = computeSessionAggregates([{ tick: { status: 'send', attemptCount: 5 } }]);
     expect(result).toEqual({ totalSends: 1, totalFlashes: 0, totalAttempts: 4 });
   });
 
   it('counts attempt ticks', () => {
-    const result = computeSessionAggregates([
-      { tick: { status: 'attempt', attemptCount: 3 } },
-    ]);
+    const result = computeSessionAggregates([{ tick: { status: 'attempt', attemptCount: 3 } }]);
     expect(result).toEqual({ totalSends: 0, totalFlashes: 0, totalAttempts: 3 });
   });
 
@@ -36,9 +33,18 @@ describe('computeSessionAggregates', () => {
 describe('buildGradeDistributionFromTicks', () => {
   it('builds distribution from ticks with explicit difficulty', () => {
     const result = buildGradeDistributionFromTicks([
-      { tick: { status: 'flash', difficulty: 20, boardType: 'kilter', attemptCount: 1 }, difficultyName: '6c/V5' },
-      { tick: { status: 'send', difficulty: 20, boardType: 'kilter', attemptCount: 3 }, difficultyName: '6c/V5' },
-      { tick: { status: 'flash', difficulty: 22, boardType: 'kilter', attemptCount: 1 }, difficultyName: '7a/V6' },
+      {
+        tick: { status: 'flash', difficulty: 20, boardType: 'kilter', attemptCount: 1 },
+        difficultyName: '6c/V5',
+      },
+      {
+        tick: { status: 'send', difficulty: 20, boardType: 'kilter', attemptCount: 3 },
+        difficultyName: '6c/V5',
+      },
+      {
+        tick: { status: 'flash', difficulty: 22, boardType: 'kilter', attemptCount: 1 },
+        difficultyName: '7a/V6',
+      },
     ]);
 
     expect(result).toHaveLength(2);
@@ -49,7 +55,10 @@ describe('buildGradeDistributionFromTicks', () => {
 
   it('skips ticks with no difficulty and no consensus fallback', () => {
     const result = buildGradeDistributionFromTicks([
-      { tick: { status: 'flash', difficulty: null, boardType: 'kilter', attemptCount: 1 }, difficultyName: null },
+      {
+        tick: { status: 'flash', difficulty: null, boardType: 'kilter', attemptCount: 1 },
+        difficultyName: null,
+      },
     ]);
     expect(result).toHaveLength(0);
   });
@@ -98,7 +107,10 @@ describe('buildGradeDistributionFromTicks', () => {
   it('groups ticks with same effective difficulty from mixed sources', () => {
     const result = buildGradeDistributionFromTicks([
       // Tick with explicit difficulty
-      { tick: { status: 'flash', difficulty: 20, boardType: 'kilter', attemptCount: 1 }, difficultyName: '6c/V5' },
+      {
+        tick: { status: 'flash', difficulty: 20, boardType: 'kilter', attemptCount: 1 },
+        difficultyName: '6c/V5',
+      },
       // Tick falling back to consensus (rounds to same grade)
       {
         tick: { status: 'send', difficulty: null, boardType: 'kilter', attemptCount: 2 },

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import type { Climb, BoardDetails } from '@/app/lib/types';
@@ -9,6 +9,43 @@ let capturedSwipeOptions: Record<string, unknown> | null = null;
 
 // usePathname and useIsDarkMode are no longer called inside ClimbListItem —
 // pathname and isDark are passed as props from the parent.
+
+vi.mock('@/app/hooks/use-is-dark-mode', () => ({
+  useIsDarkMode: () => false,
+}));
+
+vi.mock('@/app/hooks/use-grade-format', () => ({
+  useGradeFormat: () => ({
+    gradeFormat: 'v-grade',
+    formatGrade: (d: string | null | undefined) => {
+      if (!d) return null;
+      const match = d.match(/V\d+\+?/i);
+      return match ? match[0].toUpperCase() : d;
+    },
+    getGradeColor: () => '#888',
+    loaded: true,
+  }),
+}));
+
+vi.mock('../climb-icons', () => ({
+  default: () => null,
+}));
+
+vi.mock('../../board-page/selected-climb-store', () => ({
+  useIsClimbSelected: () => false,
+}));
+
+vi.mock('../../board-provider/board-provider-context', () => ({
+  useOptionalBoardProvider: () => null,
+}));
+
+vi.mock('../../providers/snackbar-provider', () => ({
+  useSnackbar: () => ({ showMessage: vi.fn() }),
+}));
+
+vi.mock('../../logbook/inline-list-tick-bar', () => ({
+  InlineListTickBar: () => null,
+}));
 
 vi.mock('../../climb-actions', () => ({
   ClimbActions: () => <div data-testid="climb-actions" />,
@@ -42,12 +79,12 @@ vi.mock('@/app/hooks/use-swipe-actions', () => ({
   useSwipeActions: (options: { disabled?: boolean }) => {
     capturedSwipeOptions = options;
     return {
-    swipeHandlers: { ref: vi.fn() },
-    contentRef: vi.fn(),
-    leftActionRef: vi.fn(),
-    rightActionRef: vi.fn(),
-    _disabled: options.disabled,
-  };
+      swipeHandlers: { ref: vi.fn() },
+      contentRef: vi.fn(),
+      leftActionRef: vi.fn(),
+      rightActionRef: vi.fn(),
+      _disabled: options.disabled,
+    };
   },
 }));
 
@@ -68,16 +105,29 @@ vi.mock('@/app/lib/hooks/use-double-tap', () => ({
 vi.mock('@/app/lib/grade-colors', () => ({
   getSoftGradeColor: () => '#888',
   getSoftVGradeColor: () => '#888',
+  getSoftGradeColorByFormat: () => '#888',
   getGradeTintColor: () => null,
+  getGradeColorWithOpacity: () => '#888',
+  getGradeTextColor: () => '#000',
+  isLightColor: () => false,
   formatVGrade: (d: string) => (d.startsWith('V') ? d : null),
+  formatGrade: (d: string | null | undefined) => d ?? null,
 }));
 
 vi.mock('@/app/lib/climb-action-utils', () => ({
   getExcludedClimbActions: () => [],
 }));
 
+vi.mock('../../climb-actions/playlist-selection-content', () => ({
+  default: () => null,
+}));
+
+vi.mock('../../play-view/queue-drawer', () => ({
+  default: () => null,
+}));
+
 vi.mock('../climb-thumbnail', () => ({
-  default: () => <div data-testid="climb-thumbnail" />,
+  default: () => <div data-testid="climb-thumbnail-inner" />,
 }));
 
 vi.mock('../drawer-climb-header', () => ({
@@ -90,6 +140,22 @@ vi.mock('../../swipeable-drawer/swipeable-drawer', () => ({
 
 vi.mock('../ascent-status', () => ({
   AscentStatus: () => <span data-testid="ascent-status" />,
+}));
+
+vi.mock('../climb-list-item.module.css', () => ({
+  default: new Proxy({}, { get: (_target, prop) => String(prop) }),
+}));
+
+vi.mock('../ascent-status.module.css', () => ({
+  default: new Proxy({}, { get: (_target, prop) => String(prop) }),
+}));
+
+vi.mock('../../swipeable-drawer/swipeable-drawer.module.css', () => ({
+  default: new Proxy({}, { get: (_target, prop) => String(prop) }),
+}));
+
+vi.mock('@/app/hooks/use-drawer-drag-resize', () => ({
+  useDrawerDragResize: () => ({ paperRef: { current: null }, dragHandlers: {} }),
 }));
 
 vi.mock('@/app/theme/theme-config', () => ({
@@ -163,27 +229,62 @@ describe('ClimbListItem', () => {
 
   describe('basic rendering', () => {
     it('renders climb name', () => {
-      render(<ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb({ name: 'Cool Route' })} boardDetails={makeBoardDetails()} />);
+      render(
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={makeClimb({ name: 'Cool Route' })}
+          boardDetails={makeBoardDetails()}
+        />,
+      );
       expect(screen.getByText('Cool Route')).toBeTruthy();
     });
 
     it('renders setter username', () => {
-      render(<ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb({ setter_username: 'alice' })} boardDetails={makeBoardDetails()} />);
+      render(
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={makeClimb({ setter_username: 'alice' })}
+          boardDetails={makeBoardDetails()}
+        />,
+      );
       expect(screen.getByText(/alice/)).toBeTruthy();
     });
 
     it('renders V-grade', () => {
-      render(<ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb({ difficulty: 'V5' })} boardDetails={makeBoardDetails()} />);
+      render(
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={makeClimb({ difficulty: 'V5' })}
+          boardDetails={makeBoardDetails()}
+        />,
+      );
       expect(screen.getByText('V5')).toBeTruthy();
     });
 
     it('renders thumbnail', () => {
-      render(<ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb()} boardDetails={makeBoardDetails()} />);
+      render(
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={makeClimb()}
+          boardDetails={makeBoardDetails()}
+        />,
+      );
       expect(screen.getByTestId('climb-thumbnail')).toBeTruthy();
     });
 
     it('renders ellipsis menu button', () => {
-      render(<ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb()} boardDetails={makeBoardDetails()} />);
+      render(
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={makeClimb()}
+          boardDetails={makeBoardDetails()}
+        />,
+      );
       // There should be a button with the MoreHorizOutlined icon
       const buttons = screen.getAllByRole('button');
       expect(buttons.length).toBeGreaterThanOrEqual(1);
@@ -193,7 +294,13 @@ describe('ClimbListItem', () => {
   describe('disableSwipe behavior', () => {
     it('does not render swipe action backgrounds when disableSwipe is true', () => {
       render(
-        <ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb()} boardDetails={makeBoardDetails()} disableSwipe />,
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={makeClimb()}
+          boardDetails={makeBoardDetails()}
+          disableSwipe
+        />,
       );
 
       // Swipe icons (LocalOfferOutlined and AddOutlined) should not be in the DOM
@@ -203,7 +310,12 @@ describe('ClimbListItem', () => {
 
     it('renders swipe action backgrounds when disableSwipe is false/undefined', () => {
       render(
-        <ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb()} boardDetails={makeBoardDetails()} />,
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={makeClimb()}
+          boardDetails={makeBoardDetails()}
+        />,
       );
 
       // Swipe icons should be present when swipe is enabled
@@ -213,7 +325,13 @@ describe('ClimbListItem', () => {
 
     it('renders ellipsis menu regardless of disableSwipe', () => {
       render(
-        <ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb()} boardDetails={makeBoardDetails()} disableSwipe />,
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={makeClimb()}
+          boardDetails={makeBoardDetails()}
+          disableSwipe
+        />,
       );
 
       const buttons = screen.getAllByRole('button');
@@ -222,7 +340,13 @@ describe('ClimbListItem', () => {
 
     it('opens actions drawer on ellipsis click even with disableSwipe', async () => {
       render(
-        <ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb()} boardDetails={makeBoardDetails()} disableSwipe />,
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={makeClimb()}
+          boardDetails={makeBoardDetails()}
+          disableSwipe
+        />,
       );
 
       // Click the ellipsis menu button
@@ -235,7 +359,14 @@ describe('ClimbListItem', () => {
   });
 
   it('configures short swipe and long-right swipe thresholds for queue and playlist actions', () => {
-    render(<ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb()} boardDetails={makeBoardDetails()} />);
+    render(
+      <ClimbListItem
+        pathname={defaultPathname}
+        isDark={defaultIsDark}
+        climb={makeClimb()}
+        boardDetails={makeBoardDetails()}
+      />,
+    );
 
     expect(capturedSwipeOptions).not.toBeNull();
     expect(capturedSwipeOptions?.swipeThreshold).toBe(60);
@@ -253,7 +384,11 @@ describe('ClimbListItem', () => {
           isDark={defaultIsDark}
           climb={makeClimb()}
           boardDetails={makeBoardDetails()}
-          swipeRightAction={{ icon: <span data-testid="custom-right-icon" />, color: 'red', onAction: vi.fn() }}
+          swipeRightAction={{
+            icon: <span data-testid="custom-right-icon" />,
+            color: 'red',
+            onAction: vi.fn(),
+          }}
         />,
       );
 
@@ -321,14 +456,28 @@ describe('ClimbListItem', () => {
     });
 
     it('does not render afterTitleSlot when not provided', () => {
-      render(<ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb()} boardDetails={makeBoardDetails()} />);
+      render(
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={makeClimb()}
+          boardDetails={makeBoardDetails()}
+        />,
+      );
       expect(screen.queryByTestId('after-title-content')).toBeNull();
     });
   });
 
   describe('titleProps override', () => {
     it('uses default ClimbTitle props when titleProps is not provided', () => {
-      render(<ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb()} boardDetails={makeBoardDetails()} />);
+      render(
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={makeClimb()}
+          boardDetails={makeBoardDetails()}
+        />,
+      );
       // Default renders setter info
       expect(screen.getByText(/setter_joe/)).toBeTruthy();
     });
@@ -390,7 +539,12 @@ describe('ClimbListItem', () => {
 
     it('defaults to opacity 1 when contentOpacity is not provided', () => {
       const { container } = render(
-        <ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb()} boardDetails={makeBoardDetails()} />,
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={makeClimb()}
+          boardDetails={makeBoardDetails()}
+        />,
       );
 
       const contentDiv = container.querySelector('[style*="user-select: none"]') as HTMLElement;
@@ -401,7 +555,14 @@ describe('ClimbListItem', () => {
 
   describe('disableRipple optimization', () => {
     it('renders menu button with disableRipple to reduce closure overhead', () => {
-      render(<ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb()} boardDetails={makeBoardDetails()} />);
+      render(
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={makeClimb()}
+          boardDetails={makeBoardDetails()}
+        />,
+      );
       const menuButton = screen.getByLabelText('More actions');
       expect(menuButton).toBeTruthy();
       // MUI's disableRipple removes the MuiTouchRipple child element from the DOM
@@ -412,14 +573,28 @@ describe('ClimbListItem', () => {
 
   describe('double-tap to like', () => {
     it('passes handleDoubleTap to useDoubleTap hook', () => {
-      render(<ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb()} boardDetails={makeBoardDetails()} />);
+      render(
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={makeClimb()}
+          boardDetails={makeBoardDetails()}
+        />,
+      );
       expect(capturedDoubleTapCallback).toBe(mockDoubleTapFavorite.handleDoubleTap);
     });
 
     it('calls handleDoubleTap when thumbnail is double-clicked', () => {
-      render(<ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb()} boardDetails={makeBoardDetails()} />);
+      render(
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={makeClimb()}
+          boardDetails={makeBoardDetails()}
+        />,
+      );
 
-      const thumbnail = screen.getByTestId('climb-thumbnail').parentElement!;
+      const thumbnail = screen.getByTestId('climb-thumbnail');
       fireEvent.doubleClick(thumbnail);
 
       expect(mockDoubleTapFavorite.handleDoubleTap).toHaveBeenCalled();
@@ -427,7 +602,14 @@ describe('ClimbListItem', () => {
 
     it('shows heart animation overlay when showHeart is true', () => {
       mockDoubleTapFavorite.showHeart = true;
-      render(<ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb()} boardDetails={makeBoardDetails()} />);
+      render(
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={makeClimb()}
+          boardDetails={makeBoardDetails()}
+        />,
+      );
 
       expect(screen.getByTestId('heart-animation-overlay')).toBeTruthy();
       expect(screen.getByTestId('heart-animation-overlay').getAttribute('data-size')).toBe('32');
@@ -435,14 +617,28 @@ describe('ClimbListItem', () => {
 
     it('does not show heart animation overlay when showHeart is false', () => {
       mockDoubleTapFavorite.showHeart = false;
-      render(<ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb()} boardDetails={makeBoardDetails()} />);
+      render(
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={makeClimb()}
+          boardDetails={makeBoardDetails()}
+        />,
+      );
 
       expect(screen.queryByTestId('heart-animation-overlay')).toBeNull();
     });
 
     it('calls dismissHeart when heart animation ends', () => {
       mockDoubleTapFavorite.showHeart = true;
-      render(<ClimbListItem pathname={defaultPathname} isDark={defaultIsDark} climb={makeClimb()} boardDetails={makeBoardDetails()} />);
+      render(
+        <ClimbListItem
+          pathname={defaultPathname}
+          isDark={defaultIsDark}
+          climb={makeClimb()}
+          boardDetails={makeBoardDetails()}
+        />,
+      );
 
       // Our mock uses onClick to simulate onAnimationEnd
       fireEvent.click(screen.getByTestId('heart-animation-overlay'));
@@ -461,7 +657,7 @@ describe('ClimbListItem', () => {
         />,
       );
 
-      const thumbnail = screen.getByTestId('climb-thumbnail').parentElement!;
+      const thumbnail = screen.getByTestId('climb-thumbnail');
       fireEvent.click(thumbnail);
 
       expect(onThumbnailClick).toHaveBeenCalledOnce();

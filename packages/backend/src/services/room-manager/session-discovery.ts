@@ -27,7 +27,7 @@ export async function createDiscoverableSession(
   name?: string,
   goal?: string,
   isPermanent?: boolean,
-  color?: string
+  color?: string,
 ): Promise<Session> {
   const now = new Date();
 
@@ -94,7 +94,7 @@ export async function findNearbySessions(
   radiusMeters: number = DEFAULT_SEARCH_RADIUS_METERS,
   sessionsMap: Map<string, Set<string>>,
   redisStore: RedisSessionStore | null,
-  distributedState: DistributedStateManager | null
+  distributedState: DistributedStateManager | null,
 ): Promise<DiscoverableSession[]> {
   const box = getBoundingBox(latitude, longitude, radiusMeters);
 
@@ -108,14 +108,13 @@ export async function findNearbySessions(
         gte(sessions.latitude, box.minLat),
         lte(sessions.latitude, box.maxLat),
         gte(sessions.longitude, box.minLon),
-        lte(sessions.longitude, box.maxLon)
-      )
+        lte(sessions.longitude, box.maxLon),
+      ),
     );
 
   type SessionWithCoords = Session & { latitude: number; longitude: number };
   const sessionsWithDistance = candidates
-    .filter((s): s is SessionWithCoords =>
-      s.latitude !== null && s.longitude !== null)
+    .filter((s): s is SessionWithCoords => s.latitude !== null && s.longitude !== null)
     .map((s: SessionWithCoords) => ({
       session: s,
       distance: haversineDistance(latitude, longitude, s.latitude, s.longitude),
@@ -179,12 +178,7 @@ export async function getUserSessions(userId: string): Promise<Session[]> {
   const result = await db
     .select()
     .from(sessions)
-    .where(
-      and(
-        eq(sessions.createdByUserId, userId),
-        gt(sessions.createdAt, sevenDaysAgo)
-      )
-    )
+    .where(and(eq(sessions.createdByUserId, userId), gt(sessions.createdAt, sevenDaysAgo)))
     .orderBy(sessions.lastActivity);
 
   return result;
@@ -199,7 +193,7 @@ export async function endSession(
   redisStore: RedisSessionStore | null,
   writeScheduler: import('./write-scheduler').WriteScheduler,
   sessionGraceTimers: Map<string, NodeJS.Timeout>,
-  pendingJoinPersists: Map<string, Promise<void>>
+  pendingJoinPersists: Map<string, Promise<void>>,
 ): Promise<void> {
   // Cancel any pending writes to prevent FK violations after session ends
   writeScheduler.cancelPendingWrites(sessionId);
@@ -224,10 +218,7 @@ export async function endSession(
 
   // Mark as ended in Postgres
   const now = new Date();
-  await db
-    .update(sessions)
-    .set({ status: 'ended', lastActivity: now, endedAt: now })
-    .where(eq(sessions.id, sessionId));
+  await db.update(sessions).set({ status: 'ended', lastActivity: now, endedAt: now }).where(eq(sessions.id, sessionId));
 
   // Remove from memory
   sessionsMap.delete(sessionId);

@@ -137,7 +137,10 @@ export default function VerifyRequestContent() {
 
               <Box
                 component="form"
-                onSubmit={(e: React.FormEvent) => { e.preventDefault(); handleResend(); }}
+                onSubmit={(e: React.FormEvent) => {
+                  e.preventDefault();
+                  handleResend();
+                }}
                 sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
               >
                 <TextField

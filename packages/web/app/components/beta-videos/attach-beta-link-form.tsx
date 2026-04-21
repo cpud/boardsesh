@@ -55,10 +55,7 @@ export const AttachBetaLinkForm: React.FC<AttachBetaLinkFormProps> = ({
   }, [resetTrigger]);
 
   const trimmed = url.trim();
-  const validationError =
-    trimmed && !isInstagramUrl(trimmed)
-      ? 'Needs to be an Instagram post or reel URL'
-      : null;
+  const validationError = trimmed && !isInstagramUrl(trimmed) ? 'Needs to be an Instagram post or reel URL' : null;
 
   const mutation = useMutation({
     mutationFn: async () => {

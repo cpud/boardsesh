@@ -33,7 +33,12 @@ interface NewClimbFeedProps {
 
 const PAGE_SIZE = 20;
 
-export default function NewClimbFeed({ boardType, layoutId, isAuthenticated, isSubscribed = false }: NewClimbFeedProps) {
+export default function NewClimbFeed({
+  boardType,
+  layoutId,
+  isAuthenticated,
+  isSubscribed = false,
+}: NewClimbFeedProps) {
   const { token: wsAuthToken } = useWsAuthToken();
   const clientRef = useRef<Client | null>(null);
   const subscriptionRef = useRef<(() => void) | undefined>(undefined);
@@ -62,10 +67,7 @@ export default function NewClimbFeed({ boardType, layoutId, isAuthenticated, isS
       const variables: GetNewClimbFeedVariables = {
         input: { boardType, layoutId, limit: PAGE_SIZE, offset: pageParam as number },
       };
-      const response = await client.request<GetNewClimbFeedResponse>(
-        GET_NEW_CLIMB_FEED,
-        variables,
-      );
+      const response = await client.request<GetNewClimbFeedResponse>(GET_NEW_CLIMB_FEED, variables);
       return response.newClimbFeed;
     },
     initialPageParam: 0,
@@ -76,10 +78,7 @@ export default function NewClimbFeed({ boardType, layoutId, isAuthenticated, isS
     staleTime: 60 * 1000,
   });
 
-  const items: NewClimbFeedItemType[] = useMemo(
-    () => data?.pages.flatMap((p) => p.items) ?? [],
-    [data],
-  );
+  const items: NewClimbFeedItemType[] = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: fetchNextPage,
@@ -99,25 +98,22 @@ export default function NewClimbFeed({ boardType, layoutId, isAuthenticated, isS
       {
         next: (subData) => {
           const newItem = subData.newClimbCreated.climb;
-          queryClient.setQueryData<InfiniteData<NewClimbFeedResult>>(
-            queryKey,
-            (old) => {
-              if (!old) return old;
-              const firstPage = old.pages[0];
-              if (firstPage.items.some((i) => i.uuid === newItem.uuid)) return old;
-              return {
-                ...old,
-                pages: [
-                  {
-                    ...firstPage,
-                    items: [newItem, ...firstPage.items].slice(0, PAGE_SIZE),
-                    totalCount: firstPage.totalCount + 1,
-                  },
-                  ...old.pages.slice(1),
-                ],
-              };
-            },
-          );
+          queryClient.setQueryData<InfiniteData<NewClimbFeedResult>>(queryKey, (old) => {
+            if (!old) return old;
+            const firstPage = old.pages[0];
+            if (firstPage.items.some((i) => i.uuid === newItem.uuid)) return old;
+            return {
+              ...old,
+              pages: [
+                {
+                  ...firstPage,
+                  items: [newItem, ...firstPage.items].slice(0, PAGE_SIZE),
+                  totalCount: firstPage.totalCount + 1,
+                },
+                ...old.pages.slice(1),
+              ],
+            };
+          });
         },
         error: (err) => console.error('New climb subscription error', err),
         complete: () => {},
@@ -145,7 +141,11 @@ export default function NewClimbFeed({ boardType, layoutId, isAuthenticated, isS
         />
       </Box>
 
-      {error && <Alert severity="error" sx={{ mb: 1 }}>Failed to load climbs. Please try again.</Alert>}
+      {error && (
+        <Alert severity="error" sx={{ mb: 1 }}>
+          Failed to load climbs. Please try again.
+        </Alert>
+      )}
 
       {items.map((item) => (
         <NewClimbFeedItem key={item.uuid} item={item} />

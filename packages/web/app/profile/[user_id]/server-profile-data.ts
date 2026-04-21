@@ -5,10 +5,7 @@ import { eq, and, count } from 'drizzle-orm';
 import { getUserBoardMappings } from '@/app/lib/auth/user-board-mappings';
 import type { UserProfile } from './utils/profile-constants';
 
-export async function getProfileData(
-  userId: string,
-  viewerUserId?: string,
-): Promise<UserProfile | null> {
+export async function getProfileData(userId: string, viewerUserId?: string): Promise<UserProfile | null> {
   const db = getDb();
 
   const [users, profiles, mappings, followerCountResult, followingCountResult, followCheck] = await Promise.all([

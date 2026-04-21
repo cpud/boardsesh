@@ -8,7 +8,12 @@ import { createContext, removeContext, getContext } from '../graphql/context';
 import { validateQueryDepth } from '../graphql/query-depth';
 import { roomManager } from '../services/room-manager';
 import { pubsub } from '../pubsub/index';
-import { validateNextAuthToken, extractAuthToken, extractControllerApiKey, validateControllerApiKey } from '../middleware/auth';
+import {
+  validateNextAuthToken,
+  extractAuthToken,
+  extractControllerApiKey,
+  validateControllerApiKey,
+} from '../middleware/auth';
 import { isOriginAllowed } from '../handlers/cors';
 import type { ConnectionContext } from '@boardsesh/shared-schema';
 
@@ -37,7 +42,10 @@ type ServerContext = GqlWsContext<Record<string, unknown>, CustomExtra>;
  * @param httpServer The HTTP server to attach the WebSocket server to
  * @returns The WebSocket server instance
  */
-export function setupWebSocketServer(httpServer: HttpServer): { wss: WebSocketServer; pingInterval: NodeJS.Timeout } {
+export function setupWebSocketServer(httpServer: HttpServer): {
+  wss: WebSocketServer;
+  pingInterval: NodeJS.Timeout;
+} {
   // Create WebSocket server on /graphql path with origin validation
   const wss = new WebSocketServer({
     server: httpServer,
@@ -112,7 +120,14 @@ export function setupWebSocketServer(httpServer: HttpServer): { wss: WebSocketSe
         }
 
         // Create context on initial connection with auth info
-        const context = createContext(undefined, isAuthenticated, authenticatedUserId, controllerId, controllerApiKey, controllerMac);
+        const context = createContext(
+          undefined,
+          isAuthenticated,
+          authenticatedUserId,
+          controllerId,
+          controllerApiKey,
+          controllerMac,
+        );
         await roomManager.registerClient(context.connectionId, undefined, authenticatedUserId);
         console.log(`Client connected: ${context.connectionId} (authenticated: ${isAuthenticated})`);
 
@@ -140,7 +155,9 @@ export function setupWebSocketServer(httpServer: HttpServer): { wss: WebSocketSe
         }
 
         if (DEBUG) {
-          console.log(`[Context] Retrieved context: ${latestContext.connectionId}, sessionId: ${latestContext.sessionId}`);
+          console.log(
+            `[Context] Retrieved context: ${latestContext.connectionId}, sessionId: ${latestContext.sessionId}`,
+          );
         }
         return latestContext;
       },

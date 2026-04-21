@@ -41,7 +41,7 @@ export default function SetterProfileContent({ username }: SetterProfileContentP
       const client = createGraphQLHttpClient(authToken);
       const response = await client.request<GetSetterProfileQueryResponse, GetSetterProfileQueryVariables>(
         GET_SETTER_PROFILE,
-        { input: { username } }
+        { input: { username } },
       );
       setProfile(response.setterProfile);
     } catch (error) {
@@ -83,9 +83,7 @@ export default function SetterProfileContent({ username }: SetterProfileContentP
       <div className={styles.errorContainer}>
         <SentimentDissatisfiedOutlined className={styles.errorIcon} />
         <div className={styles.errorTitle}>Setter Not Found</div>
-        <div className={styles.errorMessage}>
-          This setter profile may not exist or may have been removed.
-        </div>
+        <div className={styles.errorMessage}>This setter profile may not exist or may have been removed.</div>
       </div>
     );
   }
@@ -114,11 +112,7 @@ export default function SetterProfileContent({ username }: SetterProfileContentP
               style={{ backgroundColor: themeTokens.colors.primary, overflow: 'hidden' }}
             >
               {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={displayName}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
+                <img src={avatarUrl} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
                 <PersonOutlined className={styles.heroSquareIcon} />
               )}
@@ -137,12 +131,7 @@ export default function SetterProfileContent({ username }: SetterProfileContentP
               </div>
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
                 {profile.boardTypes.map((bt) => (
-                  <Chip
-                    key={bt}
-                    label={bt.charAt(0).toUpperCase() + bt.slice(1)}
-                    size="small"
-                    variant="outlined"
-                  />
+                  <Chip key={bt} label={bt.charAt(0).toUpperCase() + bt.slice(1)} size="small" variant="outlined" />
                 ))}
               </Box>
               <FollowButton
@@ -168,11 +157,7 @@ export default function SetterProfileContent({ username }: SetterProfileContentP
 
         {/* Climbs Section */}
         <div className={styles.climbsSection}>
-          <SetterClimbList
-            username={profile.username}
-            boardTypes={profile.boardTypes}
-            authToken={authToken}
-          />
+          <SetterClimbList username={profile.username} boardTypes={profile.boardTypes} authToken={authToken} />
         </div>
       </div>
     </>

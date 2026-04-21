@@ -40,14 +40,12 @@ const BoardRenderer = React.memo(
 
     // When fillHeight is true, SVG fills container and uses preserveAspectRatio to fit
     // Otherwise, use auto height with maxHeight constraint
-    const svgClassName = fillHeight
-      ? `${styles.svg} ${styles.svgFillHeight}`
-      : `${styles.svg} ${styles.svgAutoHeight}`;
+    const svgClassName = fillHeight ? `${styles.svg} ${styles.svgFillHeight}` : `${styles.svg} ${styles.svgAutoHeight}`;
 
     // Only compute maxHeight when not using fillHeight - memoized to prevent recreation
-    const svgStyle = useMemo(() => 
-      fillHeight ? undefined : { maxHeight: maxHeight ?? (thumbnail ? '10vh' : '55vh') },
-      [fillHeight, maxHeight, thumbnail]
+    const svgStyle = useMemo(
+      () => (fillHeight ? undefined : { maxHeight: maxHeight ?? (thumbnail ? '10vh' : '55vh') }),
+      [fillHeight, maxHeight, thumbnail],
     );
 
     return (

@@ -3,7 +3,9 @@ import type { ClimbQueueItem } from '@boardsesh/shared-schema';
 // Custom error for version conflicts
 export class VersionConflictError extends Error {
   constructor(sessionId: string, expectedVersion: number) {
-    super(`Version conflict for session ${sessionId}. Expected version ${expectedVersion} but it was updated by another operation.`);
+    super(
+      `Version conflict for session ${sessionId}. Expected version ${expectedVersion} but it was updated by another operation.`,
+    );
     this.name = 'VersionConflictError';
   }
 }

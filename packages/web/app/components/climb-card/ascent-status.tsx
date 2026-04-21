@@ -33,12 +33,7 @@ function getHighestStatus(entries: LogbookEntry[]): AscentStatusValue | null {
   );
 }
 
-export const AscentStatus = ({
-  climbUuid,
-  fontSize,
-  className,
-  mirroredClassName,
-}: AscentStatusProps) => {
+export const AscentStatus = ({ climbUuid, fontSize, className, mirroredClassName }: AscentStatusProps) => {
   const boardProvider = useOptionalBoardProvider();
   const logbook = boardProvider?.logbook ?? [];
   const boardName = boardProvider?.boardName ?? 'kilter';

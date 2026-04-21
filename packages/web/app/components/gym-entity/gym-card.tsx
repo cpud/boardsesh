@@ -32,7 +32,14 @@ export default function GymCard({ gym, onClick }: GymCardProps) {
     >
       <CardActionArea onClick={() => onClick?.(gym)} disabled={!onClick}>
         <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: 1,
+            }}
+          >
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <MuiTypography
                 variant="subtitle1"
@@ -71,4 +78,3 @@ export default function GymCard({ gym, onClick }: GymCardProps) {
     </Card>
   );
 }
-

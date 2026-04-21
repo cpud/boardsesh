@@ -228,58 +228,55 @@ export default function BoardSearchMap({
     }
   }, [selectedBoardUuid]);
 
-  const flyToUserCoords = useCallback(
-    (coords: { latitude: number; longitude: number }) => {
-      const map = mapRef.current;
-      if (!map) return;
+  const flyToUserCoords = useCallback((coords: { latitude: number; longitude: number }) => {
+    const map = mapRef.current;
+    if (!map) return;
 
-      // At-destination guard: if the map is already at the target position and
-      // zoom, Leaflet skips the animation and never emits moveend. The once()
-      // handler below would never fire, onViewportChangeRef would not be called,
-      // and locationResolved would stay false for the session. Report the current
-      // viewport immediately and bail out instead.
-      const current = map.getCenter();
-      const FLY_TO_ZOOM = 13;
-      if (
-        Math.abs(current.lat - coords.latitude) < 0.0001 &&
-        Math.abs(current.lng - coords.longitude) < 0.0001 &&
-        map.getZoom() === FLY_TO_ZOOM
-      ) {
-        onViewportChangeRef.current({
-          lat: Math.round(coords.latitude * 1000000) / 1000000,
-          lng: Math.round(coords.longitude * 1000000) / 1000000,
-          zoom: FLY_TO_ZOOM,
-        });
-        return;
-      }
-
-      // Register the one-shot listener BEFORE setting programmaticMoveRef and
-      // calling flyTo. If flyTo fires moveend synchronously (e.g. in test mocks),
-      // the listener must already be attached or the viewport callback is dropped.
-      //
-      // Listener-ordering note: Leaflet fires 'moveend' handlers in registration
-      // order. The persistent fireViewport handler (registered at map init) runs
-      // first, sees programmaticMoveRef=true, clears the flag and returns without
-      // debouncing. This once() callback then fires unconditionally and reports
-      // the final viewport. This relies on Leaflet's stable (but undocumented)
-      // FIFO ordering — if that ever changes, fireViewport must not clear the flag
-      // before the once() handler has read it.
-      map.once('moveend', () => {
-        const c = map.getCenter();
-        onViewportChangeRef.current({
-          lat: Math.round(c.lat * 1000000) / 1000000,
-          lng: Math.round(c.lng * 1000000) / 1000000,
-          zoom: map.getZoom(),
-        });
+    // At-destination guard: if the map is already at the target position and
+    // zoom, Leaflet skips the animation and never emits moveend. The once()
+    // handler below would never fire, onViewportChangeRef would not be called,
+    // and locationResolved would stay false for the session. Report the current
+    // viewport immediately and bail out instead.
+    const current = map.getCenter();
+    const FLY_TO_ZOOM = 13;
+    if (
+      Math.abs(current.lat - coords.latitude) < 0.0001 &&
+      Math.abs(current.lng - coords.longitude) < 0.0001 &&
+      map.getZoom() === FLY_TO_ZOOM
+    ) {
+      onViewportChangeRef.current({
+        lat: Math.round(coords.latitude * 1000000) / 1000000,
+        lng: Math.round(coords.longitude * 1000000) / 1000000,
+        zoom: FLY_TO_ZOOM,
       });
-      // Suppress the regular fireViewport debounce so the parent's center/zoom
-      // isn't updated mid-flight — that would trigger the pan effect's setView,
-      // racing the flyTo.
-      programmaticMoveRef.current = true;
-      map.flyTo([coords.latitude, coords.longitude], FLY_TO_ZOOM);
-    },
-    [],
-  );
+      return;
+    }
+
+    // Register the one-shot listener BEFORE setting programmaticMoveRef and
+    // calling flyTo. If flyTo fires moveend synchronously (e.g. in test mocks),
+    // the listener must already be attached or the viewport callback is dropped.
+    //
+    // Listener-ordering note: Leaflet fires 'moveend' handlers in registration
+    // order. The persistent fireViewport handler (registered at map init) runs
+    // first, sees programmaticMoveRef=true, clears the flag and returns without
+    // debouncing. This once() callback then fires unconditionally and reports
+    // the final viewport. This relies on Leaflet's stable (but undocumented)
+    // FIFO ordering — if that ever changes, fireViewport must not clear the flag
+    // before the once() handler has read it.
+    map.once('moveend', () => {
+      const c = map.getCenter();
+      onViewportChangeRef.current({
+        lat: Math.round(c.lat * 1000000) / 1000000,
+        lng: Math.round(c.lng * 1000000) / 1000000,
+        zoom: map.getZoom(),
+      });
+    });
+    // Suppress the regular fireViewport debounce so the parent's center/zoom
+    // isn't updated mid-flight — that would trigger the pan effect's setView,
+    // racing the flyTo.
+    programmaticMoveRef.current = true;
+    map.flyTo([coords.latitude, coords.longitude], FLY_TO_ZOOM);
+  }, []);
 
   const handleUseMyLocation = useCallback(() => {
     if (userCoords) {
@@ -301,10 +298,7 @@ export default function BoardSearchMap({
   }, [pendingMyLocation, userCoords, mapReady, flyToUserCoords]);
 
   return (
-    <Box
-      data-swipe-blocked="true"
-      sx={{ position: 'relative', width: '100%', height: '100%' }}
-    >
+    <Box data-swipe-blocked="true" sx={{ position: 'relative', width: '100%', height: '100%' }}>
       <div ref={containerRef} className={markerStyles.mapContainer} />
       {mapReady && (
         <MuiButton

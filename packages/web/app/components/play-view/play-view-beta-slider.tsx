@@ -113,7 +113,12 @@ const PlayViewBetaSlider: React.FC<PlayViewBetaSliderProps> = ({ boardName, clim
                   }}
                 />
               ) : (
-                <Instagram sx={{ fontSize: themeTokens.typography.fontSize['2xl'], color: 'var(--neutral-400)' }} />
+                <Instagram
+                  sx={{
+                    fontSize: themeTokens.typography.fontSize['2xl'],
+                    color: 'var(--neutral-400)',
+                  }}
+                />
               )}
               {/* Play overlay */}
               <Box
@@ -173,8 +178,8 @@ const PlayViewBetaSlider: React.FC<PlayViewBetaSliderProps> = ({ boardName, clim
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {selectedVideo.foreign_username && (
                 <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <PersonOutlined sx={{ fontSize: themeTokens.typography.fontSize.base }} />
-                  @{selectedVideo.foreign_username}
+                  <PersonOutlined sx={{ fontSize: themeTokens.typography.fontSize.base }} />@
+                  {selectedVideo.foreign_username}
                 </Typography>
               )}
               {selectedVideo.angle && (

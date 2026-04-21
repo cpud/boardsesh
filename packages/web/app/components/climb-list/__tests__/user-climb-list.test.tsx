@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -12,7 +12,12 @@ vi.mock('@/app/lib/graphql/client', () => ({
 }));
 
 vi.mock('@/app/hooks/use-ws-auth-token', () => ({
-  useWsAuthToken: () => ({ token: 'mock-token', isLoading: false, isAuthenticated: true, error: null }),
+  useWsAuthToken: () => ({
+    token: 'mock-token',
+    isLoading: false,
+    isAuthenticated: true,
+    error: null,
+  }),
 }));
 
 vi.mock('@/app/lib/graphql/operations', () => ({
@@ -21,7 +26,13 @@ vi.mock('@/app/lib/graphql/operations', () => ({
 
 vi.mock('../multiboard-climb-list', () => ({
   default: (props: { climbs: unknown[]; totalCount: number; isLoading: boolean; hasMore: boolean }) => (
-    <div data-testid="multiboard-climb-list" data-count={props.climbs.length} data-total={props.totalCount} data-loading={props.isLoading} data-has-more={props.hasMore} />
+    <div
+      data-testid="multiboard-climb-list"
+      data-count={props.climbs.length}
+      data-total={props.totalCount}
+      data-loading={props.isLoading}
+      data-has-more={props.hasMore}
+    />
   ),
 }));
 

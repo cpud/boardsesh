@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 
 // Shared mock state, declared with vi.hoisted to ensure availability before mock setup
 const mockState = vi.hoisted(() => ({
@@ -31,11 +31,7 @@ vi.mock('../db/client', () => ({
         if (prop === 'select') {
           return (..._args: unknown[]) => {
             const index = mockState.selectCallIndex++;
-            const dataByIndex = [
-              mockState.sessionRows,
-              mockState.gradeDistRows,
-              mockState.hardestRows,
-            ];
+            const dataByIndex = [mockState.sessionRows, mockState.gradeDistRows, mockState.hardestRows];
             return createChainableMock(dataByIndex[index] ?? []);
           };
         }
@@ -88,9 +84,7 @@ describe('generateSessionSummary', () => {
     const startedAt = new Date('2024-01-15T10:00:00Z');
     const endedAt = new Date('2024-01-15T11:30:00Z');
 
-    mockState.sessionRows = [
-      { id: 'session-1', startedAt, endedAt, goal: 'Send V5' },
-    ];
+    mockState.sessionRows = [{ id: 'session-1', startedAt, endedAt, goal: 'Send V5' }];
     mockState.gradeDistRows = [
       { grade: 'V5', difficulty: 18, count: 3 },
       { grade: 'V4', difficulty: 16, count: 5 },
@@ -155,9 +149,7 @@ describe('generateSessionSummary', () => {
   });
 
   it('filters out null grades in grade distribution', async () => {
-    mockState.sessionRows = [
-      { id: 'session-1', startedAt: new Date(), endedAt: new Date(), goal: null },
-    ];
+    mockState.sessionRows = [{ id: 'session-1', startedAt: new Date(), endedAt: new Date(), goal: null }];
     mockState.gradeDistRows = [
       { grade: 'V3', difficulty: 14, count: 2 },
       { grade: null, difficulty: null, count: 1 },
@@ -175,9 +167,7 @@ describe('generateSessionSummary', () => {
   });
 
   it('returns null duration when endedAt is missing', async () => {
-    mockState.sessionRows = [
-      { id: 'session-1', startedAt: new Date(), endedAt: null, goal: null },
-    ];
+    mockState.sessionRows = [{ id: 'session-1', startedAt: new Date(), endedAt: null, goal: null }];
     mockState.gradeDistRows = [];
     mockState.hardestRows = [];
     mockState.participantRows = [];
@@ -188,9 +178,7 @@ describe('generateSessionSummary', () => {
   });
 
   it('returns null duration when startedAt is missing', async () => {
-    mockState.sessionRows = [
-      { id: 'session-1', startedAt: null, endedAt: new Date(), goal: null },
-    ];
+    mockState.sessionRows = [{ id: 'session-1', startedAt: null, endedAt: new Date(), goal: null }];
     mockState.gradeDistRows = [];
     mockState.hardestRows = [];
     mockState.participantRows = [];
@@ -201,9 +189,7 @@ describe('generateSessionSummary', () => {
   });
 
   it('returns null hardestClimb when no sends exist', async () => {
-    mockState.sessionRows = [
-      { id: 'session-1', startedAt: null, endedAt: null, goal: null },
-    ];
+    mockState.sessionRows = [{ id: 'session-1', startedAt: null, endedAt: null, goal: null }];
     mockState.gradeDistRows = [];
     mockState.hardestRows = [];
     mockState.participantRows = [];
@@ -214,9 +200,7 @@ describe('generateSessionSummary', () => {
   });
 
   it('falls back to "Unknown climb" when climbName is null', async () => {
-    mockState.sessionRows = [
-      { id: 'session-1', startedAt: null, endedAt: null, goal: null },
-    ];
+    mockState.sessionRows = [{ id: 'session-1', startedAt: null, endedAt: null, goal: null }];
     mockState.gradeDistRows = [];
     mockState.hardestRows = [
       {
@@ -235,9 +219,7 @@ describe('generateSessionSummary', () => {
   });
 
   it('falls back to V{difficulty} when grade is null on hardest climb', async () => {
-    mockState.sessionRows = [
-      { id: 'session-1', startedAt: null, endedAt: null, goal: null },
-    ];
+    mockState.sessionRows = [{ id: 'session-1', startedAt: null, endedAt: null, goal: null }];
     mockState.gradeDistRows = [];
     mockState.hardestRows = [
       {
@@ -256,9 +238,7 @@ describe('generateSessionSummary', () => {
   });
 
   it('returns zero totals when there are no participants', async () => {
-    mockState.sessionRows = [
-      { id: 'session-1', startedAt: null, endedAt: null, goal: null },
-    ];
+    mockState.sessionRows = [{ id: 'session-1', startedAt: null, endedAt: null, goal: null }];
     mockState.gradeDistRows = [];
     mockState.hardestRows = [];
     mockState.participantRows = [];
@@ -271,9 +251,7 @@ describe('generateSessionSummary', () => {
   });
 
   it('returns null goal when session has no goal', async () => {
-    mockState.sessionRows = [
-      { id: 'session-1', startedAt: null, endedAt: null, goal: null },
-    ];
+    mockState.sessionRows = [{ id: 'session-1', startedAt: null, endedAt: null, goal: null }];
     mockState.gradeDistRows = [];
     mockState.hardestRows = [];
     mockState.participantRows = [];
@@ -284,9 +262,7 @@ describe('generateSessionSummary', () => {
   });
 
   it('returns null goal when session goal is empty string', async () => {
-    mockState.sessionRows = [
-      { id: 'session-1', startedAt: null, endedAt: null, goal: '' },
-    ];
+    mockState.sessionRows = [{ id: 'session-1', startedAt: null, endedAt: null, goal: '' }];
     mockState.gradeDistRows = [];
     mockState.hardestRows = [];
     mockState.participantRows = [];
@@ -301,9 +277,7 @@ describe('generateSessionSummary', () => {
     const startedAt = new Date('2024-01-15T10:00:00Z');
     const endedAt = new Date('2024-01-15T10:45:30Z'); // 45 min 30 sec
 
-    mockState.sessionRows = [
-      { id: 'session-1', startedAt, endedAt, goal: null },
-    ];
+    mockState.sessionRows = [{ id: 'session-1', startedAt, endedAt, goal: null }];
     mockState.gradeDistRows = [];
     mockState.hardestRows = [];
     mockState.participantRows = [];
@@ -318,9 +292,7 @@ describe('generateSessionSummary', () => {
     const startedAt = new Date('2024-06-15T14:30:00Z');
     const endedAt = new Date('2024-06-15T16:45:00Z');
 
-    mockState.sessionRows = [
-      { id: 'session-1', startedAt, endedAt, goal: null },
-    ];
+    mockState.sessionRows = [{ id: 'session-1', startedAt, endedAt, goal: null }];
     mockState.gradeDistRows = [];
     mockState.hardestRows = [];
     mockState.participantRows = [];
@@ -332,9 +304,7 @@ describe('generateSessionSummary', () => {
   });
 
   it('returns null startedAt and endedAt when both are undefined', async () => {
-    mockState.sessionRows = [
-      { id: 'session-1', startedAt: undefined, endedAt: undefined, goal: null },
-    ];
+    mockState.sessionRows = [{ id: 'session-1', startedAt: undefined, endedAt: undefined, goal: null }];
     mockState.gradeDistRows = [];
     mockState.hardestRows = [];
     mockState.participantRows = [];
@@ -346,9 +316,7 @@ describe('generateSessionSummary', () => {
   });
 
   it('correctly sums totals from multiple participants', async () => {
-    mockState.sessionRows = [
-      { id: 'session-1', startedAt: null, endedAt: null, goal: null },
-    ];
+    mockState.sessionRows = [{ id: 'session-1', startedAt: null, endedAt: null, goal: null }];
     mockState.gradeDistRows = [];
     mockState.hardestRows = [];
     mockState.participantRows = [

@@ -7,15 +7,8 @@
 
 import { ImageProcessor } from './image-processor/types';
 import { runOCR } from './core/ocr';
-import {
-  detectHoldsFromPixelData,
-  detectBoardRegion,
-  detectBenchmarkCircle,
-} from './core/holds';
-import {
-  calculateRegions,
-  calculateRegionsFromDetectedBoard,
-} from './core/regions';
+import { detectHoldsFromPixelData, detectBoardRegion, detectBenchmarkCircle } from './core/holds';
+import { calculateRegions, calculateRegionsFromDetectedBoard } from './core/regions';
 import { MoonBoardClimb, ParseResult, GridCoordinate } from './types';
 
 /**
@@ -26,9 +19,7 @@ import { MoonBoardClimb, ParseResult, GridCoordinate } from './types';
  * to different iPhone screen sizes. Falls back to proportional calculation if
  * auto-detection fails.
  */
-export async function parseWithProcessor(
-  processor: ImageProcessor
-): Promise<ParseResult> {
+export async function parseWithProcessor(processor: ImageProcessor): Promise<ParseResult> {
   const warnings: string[] = [];
 
   try {
@@ -39,15 +30,9 @@ export async function parseWithProcessor(
     const yellowRegion = detectBoardRegion(fullPixelData);
 
     const regions = yellowRegion
-      ? calculateRegionsFromDetectedBoard(
-          yellowRegion,
-          metadata.width,
-          metadata.height
-        )
+      ? calculateRegionsFromDetectedBoard(yellowRegion, metadata.width, metadata.height)
       : (() => {
-          warnings.push(
-            'Could not auto-detect board region, using proportional fallback'
-          );
+          warnings.push('Could not auto-detect board region, using proportional fallback');
           return calculateRegions(metadata.width, metadata.height);
         })();
 
@@ -126,13 +111,9 @@ export function deduplicateClimbs(climbs: MoonBoardClimb[]): MoonBoardClimb[] {
 
   for (const climb of climbs) {
     // Create a unique key from sorted hold positions
-    const key = [
-      ...climb.holds.start.sort(),
-      '|',
-      ...climb.holds.hand.sort(),
-      '|',
-      ...climb.holds.finish.sort(),
-    ].join(',');
+    const key = [...climb.holds.start.sort(), '|', ...climb.holds.hand.sort(), '|', ...climb.holds.finish.sort()].join(
+      ',',
+    );
 
     // Keep the first occurrence (or could prefer one with better OCR results)
     if (!seen.has(key)) {

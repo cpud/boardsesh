@@ -1,36 +1,34 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, act } from '@testing-library/react';
 import React from 'react';
 import type { BoardDetails } from '@/app/lib/types';
 
 // --- Mocks ---
 
-const {
-  isWorkerRenderingSupportedMock,
-  renderBoardMock,
-  setResolveRenderBoard,
-  getResolveRenderBoard,
-} = vi.hoisted(() => {
-  let resolveRenderBoard: ((bitmap: ImageBitmap) => void) | undefined;
-  return {
-    isWorkerRenderingSupportedMock: vi.fn(() => true),
-    renderBoardMock: vi.fn(
-      () =>
-        new Promise<ImageBitmap>((resolve) => {
-          resolveRenderBoard = resolve;
-        }),
-    ),
-    setResolveRenderBoard: (fn?: (bitmap: ImageBitmap) => void) => {
-      resolveRenderBoard = fn;
-    },
-    getResolveRenderBoard: () => resolveRenderBoard,
-  };
-});
+const { isWorkerRenderingSupportedMock, renderBoardMock, setResolveRenderBoard, getResolveRenderBoard } = vi.hoisted(
+  () => {
+    let resolveRenderBoard: ((bitmap: ImageBitmap) => void) | undefined;
+    return {
+      isWorkerRenderingSupportedMock: vi.fn(() => true),
+      renderBoardMock: vi.fn(
+        () =>
+          new Promise<ImageBitmap>((resolve) => {
+            resolveRenderBoard = resolve;
+          }),
+      ),
+      setResolveRenderBoard: (fn?: (bitmap: ImageBitmap) => void) => {
+        resolveRenderBoard = fn;
+      },
+      getResolveRenderBoard: () => resolveRenderBoard,
+    };
+  },
+);
 
 vi.mock('@/app/lib/board-render-worker/worker-manager', () => ({
   isWorkerRenderingSupported: isWorkerRenderingSupportedMock,
   renderBoard: renderBoardMock,
+  computeCropTop: vi.fn(() => 0),
 }));
 
 vi.mock('@/app/lib/rendering-metrics', () => ({
@@ -67,11 +65,7 @@ describe('BoardCanvasRenderer cleanup', () => {
 
   it('sets initial canvas dimensions from board details', () => {
     const { container } = render(
-      <BoardCanvasRenderer
-        boardDetails={mockBoardDetails}
-        frames="p1r42p2r43"
-        mirrored={false}
-      />,
+      <BoardCanvasRenderer boardDetails={mockBoardDetails} frames="p1r42p2r43" mirrored={false} />,
     );
 
     const canvas = container.querySelector('canvas') as HTMLCanvasElement;
@@ -84,11 +78,7 @@ describe('BoardCanvasRenderer cleanup', () => {
 
   it('cancelled flag prevents stale renders after unmount', async () => {
     const { container, unmount } = render(
-      <BoardCanvasRenderer
-        boardDetails={mockBoardDetails}
-        frames="p1r42p2r43"
-        mirrored={false}
-      />,
+      <BoardCanvasRenderer boardDetails={mockBoardDetails} frames="p1r42p2r43" mirrored={false} />,
     );
 
     const canvas = container.querySelector('canvas') as HTMLCanvasElement;
@@ -128,11 +118,7 @@ describe('BoardCanvasRenderer cleanup', () => {
 
   it('resets canvas dimensions to 0 on unmount to release GPU memory', async () => {
     const { container, unmount } = render(
-      <BoardCanvasRenderer
-        boardDetails={mockBoardDetails}
-        frames="p1r42p2r43"
-        mirrored={false}
-      />,
+      <BoardCanvasRenderer boardDetails={mockBoardDetails} frames="p1r42p2r43" mirrored={false} />,
     );
 
     const canvas = container.querySelector('canvas') as HTMLCanvasElement;
@@ -151,12 +137,7 @@ describe('BoardCanvasRenderer cleanup', () => {
 
   it('uses thumbnail dimensions when thumbnail prop is set', () => {
     const { container } = render(
-      <BoardCanvasRenderer
-        boardDetails={mockBoardDetails}
-        frames="p1r42p2r43"
-        mirrored={false}
-        thumbnail
-      />,
+      <BoardCanvasRenderer boardDetails={mockBoardDetails} frames="p1r42p2r43" mirrored={false} thumbnail />,
     );
 
     const canvas = container.querySelector('canvas') as HTMLCanvasElement;
@@ -172,11 +153,7 @@ describe('BoardCanvasRenderer cleanup', () => {
     isWorkerRenderingSupportedMock.mockReturnValue(false);
 
     const { queryByTestId, container } = render(
-      <BoardCanvasRenderer
-        boardDetails={mockBoardDetails}
-        frames="p1r42p2r43"
-        mirrored={false}
-      />,
+      <BoardCanvasRenderer boardDetails={mockBoardDetails} frames="p1r42p2r43" mirrored={false} />,
     );
 
     expect(queryByTestId('board-image-layers')).toBeTruthy();

@@ -17,11 +17,14 @@ export function GoToQueueAction({
   const queueActions = useOptionalQueueActions();
   const { iconSize } = computeActionDisplay(viewMode, size, showLabel);
 
-  const handleClick = useCallback((e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    e?.preventDefault();
-    onGoToQueue?.();
-  }, [onGoToQueue]);
+  const handleClick = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      e?.preventDefault();
+      onGoToQueue?.();
+    },
+    [onGoToQueue],
+  );
 
   const icon = <QueueMusicOutlined sx={{ fontSize: iconSize }} />;
 

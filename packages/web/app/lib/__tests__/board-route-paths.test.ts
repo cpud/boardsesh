@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vite-plus/test';
 import { isBoardCreatePath, isBoardListPath, isBoardRoutePath } from '../board-route-paths';
 
 describe('board-route-paths', () => {
@@ -60,7 +60,9 @@ describe('board-route-paths', () => {
 
     it('rejects non-create board routes', () => {
       expect(isBoardCreatePath('/b/test-board/40/list')).toBe(false);
-      expect(isBoardCreatePath('/moonboard/moonboard-2024/standard-11x18-grid/wooden-holds/40/view/climb-123')).toBe(false);
+      expect(isBoardCreatePath('/moonboard/moonboard-2024/standard-11x18-grid/wooden-holds/40/view/climb-123')).toBe(
+        false,
+      );
     });
   });
 });

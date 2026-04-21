@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 import { useOfflineReconciliation, type UseOfflineReconciliationParams } from '../use-offline-reconciliation';
 import type { ClimbQueueItem } from '../../../queue-control/types';
@@ -45,7 +45,9 @@ describe('useOfflineReconciliation', () => {
   let subscriberCallback: ((event: SubscriptionQueueEvent) => void) | null = null;
   const mockSubscribeToQueueEvents = vi.fn((cb: (event: SubscriptionQueueEvent) => void) => {
     subscriberCallback = cb;
-    return () => { subscriberCallback = null; };
+    return () => {
+      subscriberCallback = null;
+    };
   });
 
   // Shared ref that simulates the persistent session's lastReceivedSequenceRef
@@ -63,51 +65,53 @@ describe('useOfflineReconciliation', () => {
     vi.useRealTimers();
   });
 
-  function renderReconciliation(overrides: {
-    isDisconnected?: boolean;
-    isPersistentSessionActive?: boolean;
-    hasConnected?: boolean;
-    currentQueue?: ClimbQueueItem[];
-    currentClimbQueueItem?: ClimbQueueItem | null;
-    users?: SessionUser[];
-    lastReceivedSequence?: number | null;
-  } = {}) {
+  function renderReconciliation(
+    overrides: {
+      isDisconnected?: boolean;
+      isPersistentSessionActive?: boolean;
+      hasConnected?: boolean;
+      currentQueue?: ClimbQueueItem[];
+      currentClimbQueueItem?: ClimbQueueItem | null;
+      users?: SessionUser[];
+      lastReceivedSequence?: number | null;
+    } = {},
+  ) {
     if (overrides.lastReceivedSequence !== undefined) {
       mockLastReceivedSequenceRef.current = overrides.lastReceivedSequence;
     }
-    return renderHook<void, UseOfflineReconciliationParams>(
-      (props) => useOfflineReconciliation(props),
-      {
-        initialProps: {
-          offlineBuffer: {
-            getBufferedAdditions: mockGetBufferedAdditions,
-            clearBuffer: mockClearBuffer,
-            hasPendingAdditions: mockGetBufferedAdditions().length > 0,
-            bufferAddition: vi.fn(),
-          },
-          isDisconnected: overrides.isDisconnected ?? false,
-          isPersistentSessionActive: overrides.isPersistentSessionActive ?? true,
-          hasConnected: overrides.hasConnected ?? true,
-          users: overrides.users ?? [createUser('me'), createUser('other')],
-          lastReceivedSequenceRef: mockLastReceivedSequenceRef,
-          persistentSession: {
-            addQueueItem: mockAddQueueItem,
-            setQueue: mockSetQueue,
-            setCurrentClimb: mockSetCurrentClimb,
-            subscribeToQueueEvents: mockSubscribeToQueueEvents,
-          },
-          currentQueue: overrides.currentQueue ?? [],
-          currentClimbQueueItem: overrides.currentClimbQueueItem ?? null,
+    return renderHook<void, UseOfflineReconciliationParams>((props) => useOfflineReconciliation(props), {
+      initialProps: {
+        offlineBuffer: {
+          getBufferedAdditions: mockGetBufferedAdditions,
+          clearBuffer: mockClearBuffer,
+          hasPendingAdditions: mockGetBufferedAdditions().length > 0,
+          bufferAddition: vi.fn(),
         },
+        isDisconnected: overrides.isDisconnected ?? false,
+        isPersistentSessionActive: overrides.isPersistentSessionActive ?? true,
+        hasConnected: overrides.hasConnected ?? true,
+        users: overrides.users ?? [createUser('me'), createUser('other')],
+        lastReceivedSequenceRef: mockLastReceivedSequenceRef,
+        persistentSession: {
+          addQueueItem: mockAddQueueItem,
+          setQueue: mockSetQueue,
+          setCurrentClimb: mockSetCurrentClimb,
+          subscribeToQueueEvents: mockSubscribeToQueueEvents,
+        },
+        currentQueue: overrides.currentQueue ?? [],
+        currentClimbQueueItem: overrides.currentClimbQueueItem ?? null,
       },
-    );
+    });
   }
 
-  function goOnline(hook: ReturnType<typeof renderReconciliation>, overrides: {
-    users?: SessionUser[];
-    currentQueue?: ClimbQueueItem[];
-    currentClimbQueueItem?: ClimbQueueItem | null;
-  } = {}) {
+  function goOnline(
+    hook: ReturnType<typeof renderReconciliation>,
+    overrides: {
+      users?: SessionUser[];
+      currentQueue?: ClimbQueueItem[];
+      currentClimbQueueItem?: ClimbQueueItem | null;
+    } = {},
+  ) {
     hook.rerender({
       offlineBuffer: {
         getBufferedAdditions: mockGetBufferedAdditions,
@@ -183,7 +187,12 @@ describe('useOfflineReconciliation', () => {
         subscriberCallback!({
           __typename: 'FullSync',
           sequence: 10,
-          state: { queue: [] as never[], currentClimbQueueItem: null, stateHash: 'abc', sequence: 10 },
+          state: {
+            queue: [] as never[],
+            currentClimbQueueItem: null,
+            stateHash: 'abc',
+            sequence: 10,
+          },
         });
       });
 
@@ -235,7 +244,12 @@ describe('useOfflineReconciliation', () => {
         subscriberCallback!({
           __typename: 'FullSync',
           sequence: 10,
-          state: { queue: [] as never[], currentClimbQueueItem: null, stateHash: 'abc', sequence: 10 },
+          state: {
+            queue: [] as never[],
+            currentClimbQueueItem: null,
+            stateHash: 'abc',
+            sequence: 10,
+          },
         });
       });
 
@@ -289,7 +303,12 @@ describe('useOfflineReconciliation', () => {
         subscriberCallback!({
           __typename: 'FullSync',
           sequence: 10,
-          state: { queue: [] as never[], currentClimbQueueItem: null, stateHash: 'abc', sequence: 10 },
+          state: {
+            queue: [] as never[],
+            currentClimbQueueItem: null,
+            stateHash: 'abc',
+            sequence: 10,
+          },
         });
       });
 
@@ -323,7 +342,12 @@ describe('useOfflineReconciliation', () => {
         subscriberCallback!({
           __typename: 'FullSync',
           sequence: 5,
-          state: { queue: [] as never[], currentClimbQueueItem: null, stateHash: 'abc', sequence: 5 },
+          state: {
+            queue: [] as never[],
+            currentClimbQueueItem: null,
+            stateHash: 'abc',
+            sequence: 5,
+          },
         });
       });
 
@@ -351,7 +375,12 @@ describe('useOfflineReconciliation', () => {
         subscriberCallback!({
           __typename: 'FullSync',
           sequence: 10,
-          state: { queue: [] as never[], currentClimbQueueItem: null, stateHash: 'abc', sequence: 10 },
+          state: {
+            queue: [] as never[],
+            currentClimbQueueItem: null,
+            stateHash: 'abc',
+            sequence: 10,
+          },
         });
       });
 
@@ -418,7 +447,12 @@ describe('useOfflineReconciliation', () => {
         subscriberCallback!({
           __typename: 'FullSync',
           sequence: 10,
-          state: { queue: [] as never[], currentClimbQueueItem: null, stateHash: 'abc', sequence: 10 },
+          state: {
+            queue: [] as never[],
+            currentClimbQueueItem: null,
+            stateHash: 'abc',
+            sequence: 10,
+          },
         });
       });
 
@@ -433,7 +467,12 @@ describe('useOfflineReconciliation', () => {
 
       // Use a slow addQueueItem to simulate in-flight reconciliation
       let resolveAdd: (() => void) | null = null;
-      mockAddQueueItem.mockImplementation(() => new Promise<void>((resolve) => { resolveAdd = resolve; }));
+      mockAddQueueItem.mockImplementation(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveAdd = resolve;
+          }),
+      );
 
       const hook = renderReconciliation({
         isDisconnected: true,
@@ -448,7 +487,12 @@ describe('useOfflineReconciliation', () => {
         subscriberCallback!({
           __typename: 'FullSync',
           sequence: 10,
-          state: { queue: [] as never[], currentClimbQueueItem: null, stateHash: 'abc', sequence: 10 },
+          state: {
+            queue: [] as never[],
+            currentClimbQueueItem: null,
+            stateHash: 'abc',
+            sequence: 10,
+          },
         });
       });
 

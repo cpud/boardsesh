@@ -14,7 +14,6 @@ import { useQueueActions, useQueueList } from '@/app/components/graphql-queue';
 import { ConfirmPopover } from '@/app/components/ui/confirm-popover';
 import styles from './layout-client.module.css';
 
-
 interface PlayLayoutClientProps {
   boardDetails: BoardDetails;
 }
@@ -69,7 +68,9 @@ const QueueSidebar: React.FC<{ boardDetails: BoardDetails }> = ({ boardDetails }
 const PlayLayoutClient: React.FC<PropsWithChildren<PlayLayoutClientProps>> = ({ boardDetails, children }) => {
   return (
     <Box className={styles.playLayout}>
-      <Box component="main" className={styles.mainContent}>{children}</Box>
+      <Box component="main" className={styles.mainContent}>
+        {children}
+      </Box>
       <Box component="aside" className={styles.sider} sx={{ width: 400 }}>
         <QueueSidebar boardDetails={boardDetails} />
       </Box>

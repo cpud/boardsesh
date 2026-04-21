@@ -8,7 +8,6 @@ export async function sharedSync(
   board: AuroraBoardName,
   options: Omit<SyncOptions, 'walls' | 'wallExpungements'> = {},
   token: string,
-   
 ): Promise<SyncData> {
   const { sharedSyncs = [] } = options;
 

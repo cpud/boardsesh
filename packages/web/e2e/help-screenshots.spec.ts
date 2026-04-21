@@ -29,7 +29,8 @@ test.describe('Help Page Screenshots', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto(boardUrl);
-    await page.waitForSelector('#onboarding-climb-card, [data-testid="climb-card"]', { timeout: 30000 })
+    await page
+      .waitForSelector('#onboarding-climb-card, [data-testid="climb-card"]', { timeout: 30000 })
       .catch(() => page.waitForLoadState('domcontentloaded'));
   });
 
@@ -128,7 +129,8 @@ test.describe('Help Page Screenshots - Authenticated', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto(boardUrl);
-    await page.waitForSelector('#onboarding-climb-card, [data-testid="climb-card"]', { timeout: 30000 })
+    await page
+      .waitForSelector('#onboarding-climb-card, [data-testid="climb-card"]', { timeout: 30000 })
       .catch(() => page.waitForLoadState('domcontentloaded'));
 
     // Login via user drawer
@@ -196,7 +198,10 @@ test.describe('Help Page Screenshots - Authenticated', () => {
     await page.getByText('Classify Holds').click();
 
     // Wait for wizard content to load
-    await page.waitForSelector('.MuiRating-root, .MuiLinearProgress-root', { state: 'visible', timeout: 10000 });
+    await page.waitForSelector('.MuiRating-root, .MuiLinearProgress-root', {
+      state: 'visible',
+      timeout: 10000,
+    });
 
     await page.screenshot({ path: `${SCREENSHOT_DIR}/hold-classification.png` });
   });
@@ -209,8 +214,9 @@ test.describe('Help Page Screenshots - Authenticated', () => {
 
     // Scroll to Board Accounts section
     await page.evaluate(() => {
-      const heading = Array.from(document.querySelectorAll('h4, .MuiCardHeader-title'))
-        .find(el => el.textContent?.includes('Board Accounts'));
+      const heading = Array.from(document.querySelectorAll('h4, .MuiCardHeader-title')).find((el) =>
+        el.textContent?.includes('Board Accounts'),
+      );
       if (heading) {
         heading.scrollIntoView({ behavior: 'instant', block: 'start' });
       }

@@ -17,9 +17,7 @@ function getOperationName(operation: { query: string }, type: 'mutation' | 'quer
   const cached = operationNameCache.get(operation);
   if (cached) return cached;
 
-  const pattern = type === 'subscription'
-    ? /subscription\s+(\w+)/
-    : /(?:mutation|query)\s+(\w+)/;
+  const pattern = type === 'subscription' ? /subscription\s+(\w+)/ : /(?:mutation|query)\s+(\w+)/;
   const match = operation.query.match(pattern);
   const name = match ? match[1] : 'unknown';
   operationNameCache.set(operation, name);
@@ -51,9 +49,8 @@ export function createGraphQLClient(
   onReconnect?: () => void,
 ): ExtendedClient {
   // Handle both signatures for backwards compatibility
-  const options: GraphQLClientOptions = typeof urlOrOptions === 'string'
-    ? { url: urlOrOptions, onReconnect }
-    : urlOrOptions;
+  const options: GraphQLClientOptions =
+    typeof urlOrOptions === 'string' ? { url: urlOrOptions, onReconnect } : urlOrOptions;
 
   const { url, authToken, onReconnect: onReconnectCallback, connectionName } = options;
   const managerConnectionName = connectionName ?? 'primary';
@@ -85,10 +82,7 @@ export function createGraphQLClient(
     shouldRetry: () => true,
     // Exponential backoff: 1s, 2s, 4s, 8s, 16s, 30s, 30s, ...
     retryWait: async (retryCount) => {
-      const delay = Math.min(
-        INITIAL_RETRY_DELAY_MS * Math.pow(BACKOFF_MULTIPLIER, retryCount),
-        MAX_RETRY_DELAY_MS,
-      );
+      const delay = Math.min(INITIAL_RETRY_DELAY_MS * Math.pow(BACKOFF_MULTIPLIER, retryCount), MAX_RETRY_DELAY_MS);
       if (DEBUG) console.log(`[GraphQL] Client #${clientId} retry #${retryCount + 1}, waiting ${delay}ms`);
       await new Promise((resolve) => setTimeout(resolve, delay));
     },
@@ -161,7 +155,12 @@ export function execute<TData = unknown, TVariables = Record<string, unknown>>(
       { query: operation.query, variables: operation.variables as Record<string, unknown> },
       {
         next: (data) => {
-          if (DEBUG) console.log(`[GraphQL] execute NEXT: ${opName}`, data.data ? 'has data' : 'no data', data.errors ? 'has errors' : 'no errors');
+          if (DEBUG)
+            console.log(
+              `[GraphQL] execute NEXT: ${opName}`,
+              data.data ? 'has data' : 'no data',
+              data.errors ? 'has errors' : 'no errors',
+            );
           // GraphQL can return null data values; keep the latest payload when present.
           if ('data' in data) {
             result = data.data as TData;

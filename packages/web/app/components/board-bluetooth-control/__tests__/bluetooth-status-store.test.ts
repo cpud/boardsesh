@@ -1,10 +1,5 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
-import {
-  registerBluetoothConnection,
-  disconnectAllBluetooth,
-  useBluetoothConnectedStatus,
-} from '../bluetooth-status-store';
+import { describe, it, expect, vi, afterEach } from 'vite-plus/test';
+import { registerBluetoothConnection, disconnectAllBluetooth } from '../bluetooth-status-store';
 
 // Track release functions so each test can clear its own registrations
 // (the store keeps module-level state).
@@ -48,7 +43,9 @@ describe('bluetooth-status-store', () => {
 
     it('continues invoking handlers when one throws', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      const broken = vi.fn(() => { throw new Error('boom'); });
+      const broken = vi.fn(() => {
+        throw new Error('boom');
+      });
       const ok = vi.fn();
       register(broken);
       register(ok);
@@ -62,59 +59,6 @@ describe('bluetooth-status-store', () => {
 
     it('is a no-op when nothing is registered', () => {
       expect(() => disconnectAllBluetooth()).not.toThrow();
-    });
-  });
-
-  describe('useBluetoothConnectedStatus', () => {
-    it('returns false when nothing is registered', () => {
-      const { result } = renderHook(() => useBluetoothConnectedStatus());
-      expect(result.current).toBe(false);
-    });
-
-    it('returns true when a connection is registered', () => {
-      const { result } = renderHook(() => useBluetoothConnectedStatus());
-
-      act(() => {
-        register(vi.fn());
-      });
-
-      expect(result.current).toBe(true);
-    });
-
-    it('returns false after the connection is released', () => {
-      const { result } = renderHook(() => useBluetoothConnectedStatus());
-
-      let release: () => void;
-      act(() => {
-        release = register(vi.fn());
-      });
-
-      expect(result.current).toBe(true);
-
-      act(() => {
-        release();
-      });
-
-      expect(result.current).toBe(false);
-    });
-
-    it('stays true when one of multiple connections is released', () => {
-      const { result } = renderHook(() => useBluetoothConnectedStatus());
-
-      let releaseFirst: () => void;
-      act(() => {
-        releaseFirst = register(vi.fn());
-        register(vi.fn());
-      });
-
-      expect(result.current).toBe(true);
-
-      act(() => {
-        releaseFirst();
-      });
-
-      // Second connection still active
-      expect(result.current).toBe(true);
     });
   });
 });

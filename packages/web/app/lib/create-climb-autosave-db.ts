@@ -29,7 +29,7 @@ export async function loadAutosave(boardKey: string): Promise<CreateClimbAutosav
   try {
     const db = await getDB();
     if (!db) return null;
-    const data = await db.get(STORE_NAME, AUTOSAVE_KEY) as CreateClimbAutosave | undefined;
+    const data = (await db.get(STORE_NAME, AUTOSAVE_KEY)) as CreateClimbAutosave | undefined;
     if (!data || data.boardKey !== boardKey) return null;
     return data;
   } catch {

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { render, screen, within, fireEvent } from '@testing-library/react';
 import { DevicePickerDialog } from '../device-picker-dialog';
 import type { DiscoveredDevice } from '@/app/lib/ble/types';
@@ -42,9 +42,7 @@ describe('DevicePickerDialog', () => {
     });
 
     it('does not show scanning text when devices are present', () => {
-      const devices: DiscoveredDevice[] = [
-        makeDevice({ deviceId: 'dev-1', name: 'Board', rssi: -60 }),
-      ];
+      const devices: DiscoveredDevice[] = [makeDevice({ deviceId: 'dev-1', name: 'Board', rssi: -60 })];
 
       render(<DevicePickerDialog {...defaultProps} devices={devices} />);
 
@@ -55,9 +53,7 @@ describe('DevicePickerDialog', () => {
 
   describe('unknown device fallback', () => {
     it('shows "Unknown device" when a device has no name', () => {
-      const devices: DiscoveredDevice[] = [
-        makeDevice({ deviceId: 'dev-no-name', rssi: -70 }),
-      ];
+      const devices: DiscoveredDevice[] = [makeDevice({ deviceId: 'dev-no-name', rssi: -70 })];
 
       render(<DevicePickerDialog {...defaultProps} devices={devices} />);
 
@@ -65,9 +61,7 @@ describe('DevicePickerDialog', () => {
     });
 
     it('shows "Unknown device" when name is an empty string', () => {
-      const devices: DiscoveredDevice[] = [
-        makeDevice({ deviceId: 'dev-empty-name', name: '', rssi: -70 }),
-      ];
+      const devices: DiscoveredDevice[] = [makeDevice({ deviceId: 'dev-empty-name', name: '', rssi: -70 })];
 
       render(<DevicePickerDialog {...defaultProps} devices={devices} />);
 
@@ -77,9 +71,7 @@ describe('DevicePickerDialog', () => {
 
   describe('signal strength labels', () => {
     it('shows "Strong" for rssi >= -50', () => {
-      const devices: DiscoveredDevice[] = [
-        makeDevice({ deviceId: 'strong', name: 'Strong Board', rssi: -50 }),
-      ];
+      const devices: DiscoveredDevice[] = [makeDevice({ deviceId: 'strong', name: 'Strong Board', rssi: -50 })];
 
       render(<DevicePickerDialog {...defaultProps} devices={devices} />);
 
@@ -97,9 +89,7 @@ describe('DevicePickerDialog', () => {
     });
 
     it('shows "Good" for rssi >= -70 and < -50', () => {
-      const devices: DiscoveredDevice[] = [
-        makeDevice({ deviceId: 'good', name: 'Good Board', rssi: -60 }),
-      ];
+      const devices: DiscoveredDevice[] = [makeDevice({ deviceId: 'good', name: 'Good Board', rssi: -60 })];
 
       render(<DevicePickerDialog {...defaultProps} devices={devices} />);
 
@@ -117,9 +107,7 @@ describe('DevicePickerDialog', () => {
     });
 
     it('shows "Weak" for rssi >= -85 and < -70', () => {
-      const devices: DiscoveredDevice[] = [
-        makeDevice({ deviceId: 'weak', name: 'Weak Board', rssi: -75 }),
-      ];
+      const devices: DiscoveredDevice[] = [makeDevice({ deviceId: 'weak', name: 'Weak Board', rssi: -75 })];
 
       render(<DevicePickerDialog {...defaultProps} devices={devices} />);
 
@@ -137,9 +125,7 @@ describe('DevicePickerDialog', () => {
     });
 
     it('shows "Very weak" for rssi < -85', () => {
-      const devices: DiscoveredDevice[] = [
-        makeDevice({ deviceId: 'very-weak', name: 'Very Weak Board', rssi: -90 }),
-      ];
+      const devices: DiscoveredDevice[] = [makeDevice({ deviceId: 'very-weak', name: 'Very Weak Board', rssi: -90 })];
 
       render(<DevicePickerDialog {...defaultProps} devices={devices} />);
 
@@ -202,9 +188,7 @@ describe('DevicePickerDialog', () => {
     it('calls onSelect with correct id when clicking the first device', () => {
       const onSelect = vi.fn();
 
-      const devices: DiscoveredDevice[] = [
-        makeDevice({ deviceId: 'first-dev', name: 'First Device', rssi: -50 }),
-      ];
+      const devices: DiscoveredDevice[] = [makeDevice({ deviceId: 'first-dev', name: 'First Device', rssi: -50 })];
 
       render(<DevicePickerDialog {...defaultProps} devices={devices} onSelect={onSelect} />);
 

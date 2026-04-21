@@ -1,9 +1,6 @@
 import { desc, sql, and, eq } from 'drizzle-orm';
 import type { DbInstance } from '../../client/neon';
-import {
-  boardClimbs,
-  boardClimbStats,
-} from '../../schema/index';
+import { boardClimbs, boardClimbStats } from '../../schema/index';
 import { createClimbFilters } from './create-climb-filters';
 import { getGradeLabel } from './grade-lookup';
 import type { BoardRouteParams, ClimbSearchParams, ClimbRow, ClimbSearchResult } from './types';
@@ -37,7 +34,8 @@ function mapResultToClimbRow(result: RawSelectResult, angle: number): ClimbRow {
     quality_average: result.quality_average?.toString() || '0',
     stars: Math.round((Number(result.quality_average) || 0) * 5),
     difficulty_error: result.difficulty_error?.toString() || '0',
-    benchmark_difficulty: result.benchmark_difficulty && result.benchmark_difficulty > 0 ? result.benchmark_difficulty.toString() : null,
+    benchmark_difficulty:
+      result.benchmark_difficulty && result.benchmark_difficulty > 0 ? result.benchmark_difficulty.toString() : null,
     is_draft: result.is_draft ?? false,
     description: result.description || '',
     created_at: result.created_at,
@@ -66,9 +64,7 @@ export const searchClimbs = async (
   const filters = createClimbFilters(params, searchParams, userId);
 
   // Drafts never have stats, so force creation sort (stats-based sorts would be meaningless)
-  const sortBy = searchParams.onlyDrafts
-    ? 'creation'
-    : (searchParams.sortBy || 'ascents');
+  const sortBy = searchParams.onlyDrafts ? 'creation' : searchParams.sortBy || 'ascents';
   const sortOrder = searchParams.sortOrder === 'asc' ? 'asc' : 'desc';
   const isDraftsQuery = !!searchParams.onlyDrafts;
 
@@ -85,8 +81,8 @@ export const searchClimbs = async (
   const hasStatsFilters = filters.getClimbStatsConditions().length > 0;
   // projectsOnly includes climbs with NO stats row (ascents NULL), so the INNER-JOIN
   // stats-driven path would drop exactly the climbs we want. Force the LEFT-JOIN path.
-  const useStatsDriven = sortBy === 'ascents' && sortOrder === 'desc'
-    && !isDraftsQuery && hasStatsFilters && !searchParams.projectsOnly;
+  const useStatsDriven =
+    sortBy === 'ascents' && sortOrder === 'desc' && !isDraftsQuery && hasStatsFilters && !searchParams.projectsOnly;
 
   if (useStatsDriven) {
     return statsDrivenSearch(db, params, filters, page, pageSize);
@@ -124,31 +120,35 @@ async function statsDrivenSearch(
     ascensionist_count: boardClimbStats.ascensionistCount,
     difficulty_id: sql<number | null>`ROUND(${boardClimbStats.displayDifficulty}::numeric, 0)`,
     quality_average: sql<number | null>`ROUND(${boardClimbStats.qualityAverage}::numeric, 2)`,
-    difficulty_error: sql<number | null>`ROUND(${boardClimbStats.difficultyAverage}::numeric - ${boardClimbStats.displayDifficulty}::numeric, 2)`,
+    difficulty_error: sql<
+      number | null
+    >`ROUND(${boardClimbStats.difficultyAverage}::numeric - ${boardClimbStats.displayDifficulty}::numeric, 2)`,
     benchmark_difficulty: boardClimbStats.benchmarkDifficulty,
     description: boardClimbs.description,
     created_at: boardClimbs.createdAt,
     published_at: boardClimbs.publishedAt,
   };
 
-  const results: RawSelectResult[] = await db
+  const results: RawSelectResult[] = (await db
     .select(selectFields)
     .from(boardClimbStats)
     .innerJoin(boardClimbs, eq(boardClimbs.uuid, boardClimbStats.climbUuid))
-    .where(and(
-      // Stats-table scope
-      eq(boardClimbStats.boardType, params.board_name),
-      eq(boardClimbStats.angle, params.angle),
-      // All climb conditions (base filters, name, setter, holds, personal progress)
-      ...filters.getClimbWhereConditions(),
-      // Size edge bounds
-      ...filters.getSizeConditions(),
-      // Stats conditions (minAscents, grade range, quality, accuracy)
-      ...filters.getClimbStatsConditions(),
-    ))
+    .where(
+      and(
+        // Stats-table scope
+        eq(boardClimbStats.boardType, params.board_name),
+        eq(boardClimbStats.angle, params.angle),
+        // All climb conditions (base filters, name, setter, holds, personal progress)
+        ...filters.getClimbWhereConditions(),
+        // Size edge bounds
+        ...filters.getSizeConditions(),
+        // Stats conditions (minAscents, grade range, quality, accuracy)
+        ...filters.getClimbStatsConditions(),
+      ),
+    )
     .orderBy(sql`${boardClimbStats.ascensionistCount} DESC NULLS LAST`, desc(boardClimbs.uuid))
     .limit(pageSize + 1)
-    .offset(page * pageSize) as unknown as RawSelectResult[];
+    .offset(page * pageSize)) as unknown as RawSelectResult[];
 
   const hasMore = results.length > pageSize;
   const trimmed = hasMore ? results.slice(0, pageSize) : results;
@@ -175,16 +175,20 @@ async function standardSearch(
   // For the popular sort, pre-aggregate total ascents across all angles via a joined subquery
   // instead of a correlated subquery that runs per candidate row.
   // Scoped with an EXISTS to only aggregate stats for climbs matching the search filters.
-  const popularCountsSubquery = sortBy === 'popular'
-    ? db
-        .select({
-          climbUuid: boardClimbStats.climbUuid,
-          totalAscensionistCount: sql<number>`COALESCE(SUM(${boardClimbStats.ascensionistCount}), 0)`.as('total_ascensionist_count'),
-        })
-        .from(boardClimbStats)
-        .where(and(
-          eq(boardClimbStats.boardType, params.board_name),
-          sql`EXISTS (
+  const popularCountsSubquery =
+    sortBy === 'popular'
+      ? db
+          .select({
+            climbUuid: boardClimbStats.climbUuid,
+            totalAscensionistCount: sql<number>`COALESCE(SUM(${boardClimbStats.ascensionistCount}), 0)`.as(
+              'total_ascensionist_count',
+            ),
+          })
+          .from(boardClimbStats)
+          .where(
+            and(
+              eq(boardClimbStats.boardType, params.board_name),
+              sql`EXISTS (
             SELECT 1 FROM ${boardClimbs}
             WHERE ${boardClimbs.uuid} = ${boardClimbStats.climbUuid}
             AND ${boardClimbs.boardType} = ${params.board_name}
@@ -193,10 +197,11 @@ async function standardSearch(
             AND ${boardClimbs.isDraft} = false
             AND ${boardClimbs.framesCount} = 1
           )`,
-        ))
-        .groupBy(boardClimbStats.climbUuid)
-        .as('popular_counts')
-    : null;
+            ),
+          )
+          .groupBy(boardClimbStats.climbUuid)
+          .as('popular_counts')
+      : null;
 
   const allowedSortColumns: Record<string, ReturnType<typeof sql>> = {
     ascents: sql`${boardClimbStats.ascensionistCount}`,
@@ -204,9 +209,7 @@ async function standardSearch(
     name: sql`${boardClimbs.name}`,
     quality: sql`${boardClimbStats.qualityAverage}`,
     creation: sql`${boardClimbs.createdAt}`,
-    ...(popularCountsSubquery
-      ? { popular: sql`${popularCountsSubquery.totalAscensionistCount}` }
-      : {}),
+    ...(popularCountsSubquery ? { popular: sql`${popularCountsSubquery.totalAscensionistCount}` } : {}),
   };
 
   const sortColumn = allowedSortColumns[sortBy] || sql`${boardClimbs.createdAt}`;
@@ -231,16 +234,16 @@ async function standardSearch(
     ascensionist_count: boardClimbStats.ascensionistCount,
     difficulty_id: sql<number | null>`ROUND(${boardClimbStats.displayDifficulty}::numeric, 0)`,
     quality_average: sql<number | null>`ROUND(${boardClimbStats.qualityAverage}::numeric, 2)`,
-    difficulty_error: sql<number | null>`ROUND(${boardClimbStats.difficultyAverage}::numeric - ${boardClimbStats.displayDifficulty}::numeric, 2)`,
+    difficulty_error: sql<
+      number | null
+    >`ROUND(${boardClimbStats.difficultyAverage}::numeric - ${boardClimbStats.displayDifficulty}::numeric, 2)`,
     benchmark_difficulty: boardClimbStats.benchmarkDifficulty,
     description: boardClimbs.description,
     created_at: boardClimbs.createdAt,
     published_at: boardClimbs.publishedAt,
   };
 
-  const orderByClause = sortOrder === 'asc'
-    ? sql`${sortColumn} ASC NULLS FIRST`
-    : sql`${sortColumn} DESC NULLS LAST`;
+  const orderByClause = sortOrder === 'asc' ? sql`${sortColumn} ASC NULLS FIRST` : sql`${sortColumn} DESC NULLS LAST`;
 
   // LEFT JOIN preserves climbs without stats (they get NULL stats columns).
   const coreQuery = db
@@ -252,11 +255,11 @@ async function standardSearch(
     ? coreQuery.leftJoin(popularCountsSubquery, eq(popularCountsSubquery.climbUuid, boardClimbs.uuid))
     : coreQuery;
 
-  const results: RawSelectResult[] = await queryWithJoins
+  const results: RawSelectResult[] = (await queryWithJoins
     .where(and(...whereConditions))
     .orderBy(orderByClause, desc(boardClimbs.uuid))
     .limit(pageSize + 1)
-    .offset(page * pageSize) as unknown as RawSelectResult[];
+    .offset(page * pageSize)) as unknown as RawSelectResult[];
 
   const hasMore = results.length > pageSize;
   const trimmed = hasMore ? results.slice(0, pageSize) : results;

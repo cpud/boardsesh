@@ -42,7 +42,7 @@ export function useMutationGuard({
   }, [sessionId, hasConnected, connectionState]);
 
   // Allow mutations when: not view-only AND (session ready OR disconnected with prior connection OR solo mode)
-  const canMutate = !viewOnlyMode && (sessionId ? (isSessionReady || isDisconnected) : true);
+  const canMutate = !viewOnlyMode && (sessionId ? isSessionReady || isDisconnected : true);
 
   // Ref to debounce the "blocked" toast so rapid taps don't spam
   const lastBlockedToastRef = useRef(0);

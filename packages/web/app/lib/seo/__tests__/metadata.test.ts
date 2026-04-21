@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vite-plus/test';
 import {
   DEFAULT_OG_IMAGE_PATH,
   SITE_NAME,

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 
 // Mock capacitor-utils to allow per-test control over platform detection.
 // vi.mock is hoisted before imports, so adapter-factory sees the mocked version.
@@ -95,7 +95,7 @@ describe('adapter-factory', () => {
       vi.mocked(waitForCapacitor).mockResolvedValue(true);
       vi.mocked(isCapacitor)
         .mockReturnValueOnce(false) // first check: !isCapacitor() → enters the wait branch
-        .mockReturnValue(true);     // second check: isCapacitor() → selects CapacitorBleAdapter
+        .mockReturnValue(true); // second check: isCapacitor() → selects CapacitorBleAdapter
 
       const adapter = await createBluetoothAdapter('kilter');
 

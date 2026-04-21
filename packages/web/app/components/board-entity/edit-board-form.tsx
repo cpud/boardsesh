@@ -26,13 +26,10 @@ export default function EditBoardForm({ board, totalAscents, onSuccess, onCancel
 
   const availableAngles = ANGLES[board.boardType as BoardName] ?? [];
 
-  const { execute } = useEntityMutation<UpdateBoardMutationResponse, UpdateBoardMutationVariables>(
-    UPDATE_BOARD,
-    {
-      successMessage: 'Board updated!',
-      errorMessage: 'Failed to update board',
-    },
-  );
+  const { execute } = useEntityMutation<UpdateBoardMutationResponse, UpdateBoardMutationVariables>(UPDATE_BOARD, {
+    successMessage: 'Board updated!',
+    errorMessage: 'Failed to update board',
+  });
 
   const configEditable = useMemo(() => {
     if (totalAscents !== 0) return undefined;
@@ -44,7 +41,24 @@ export default function EditBoardForm({ board, totalAscents, onSuccess, onCancel
   }, [totalAscents, board.boardType]);
 
   const handleSubmit = useCallback(
-    async (values: { name: string; slug?: string; description: string; locationName: string; latitude?: number | null; longitude?: number | null; isPublic: boolean; isUnlisted: boolean; hideLocation: boolean; isOwned: boolean; angle?: number; isAngleAdjustable?: boolean; layoutId?: number; sizeId?: number; setIds?: string; serialNumber?: string }) => {
+    async (values: {
+      name: string;
+      slug?: string;
+      description: string;
+      locationName: string;
+      latitude?: number | null;
+      longitude?: number | null;
+      isPublic: boolean;
+      isUnlisted: boolean;
+      hideLocation: boolean;
+      isOwned: boolean;
+      angle?: number;
+      isAngleAdjustable?: boolean;
+      layoutId?: number;
+      sizeId?: number;
+      setIds?: string;
+      serialNumber?: string;
+    }) => {
       if (!values.name) {
         showMessage('Board name is required', 'error');
         return;
@@ -65,11 +79,13 @@ export default function EditBoardForm({ board, totalAscents, onSuccess, onCancel
           isOwned: values.isOwned,
           angle: values.angle,
           isAngleAdjustable: values.isAngleAdjustable,
-          ...(configEditable ? {
-            layoutId: values.layoutId,
-            sizeId: values.sizeId,
-            setIds: values.setIds,
-          } : {}),
+          ...(configEditable
+            ? {
+                layoutId: values.layoutId,
+                sizeId: values.sizeId,
+                setIds: values.setIds,
+              }
+            : {}),
           serialNumber: values.serialNumber,
         },
       });

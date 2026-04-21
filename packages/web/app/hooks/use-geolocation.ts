@@ -79,16 +79,19 @@ export function useGeolocation(options: PositionOptions = defaultOptions): UseGe
       return;
     }
 
-    navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-      setState((prev) => ({ ...prev, permissionState: result.state }));
-
-      // Listen for permission changes
-      result.addEventListener('change', () => {
+    navigator.permissions
+      .query({ name: 'geolocation' })
+      .then((result) => {
         setState((prev) => ({ ...prev, permissionState: result.state }));
+
+        // Listen for permission changes
+        result.addEventListener('change', () => {
+          setState((prev) => ({ ...prev, permissionState: result.state }));
+        });
+      })
+      .catch(() => {
+        // Permission API not supported, that's okay
       });
-    }).catch(() => {
-      // Permission API not supported, that's okay
-    });
   }, []);
 
   const getCurrentPosition = useCallback((): Promise<GeolocationCoordinates> => {
@@ -113,7 +116,7 @@ export function useGeolocation(options: PositionOptions = defaultOptions): UseGe
         (error) => {
           reject(error);
         },
-        options
+        options,
       );
     });
   }, [options]);

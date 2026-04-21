@@ -23,12 +23,14 @@ export async function getRecentSessions(): Promise<StoredSession[]> {
     const db = await getDB();
     if (!db) return [];
 
-    const sessions = await db.getAll(STORE_NAME) as StoredSession[];
+    const sessions = (await db.getAll(STORE_NAME)) as StoredSession[];
     // Filter to sessions from last 7 days and sort by last activity
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     return sessions
       .filter((s) => new Date(s.lastActivity || s.createdAt) > sevenDaysAgo)
-      .sort((a, b) => new Date(b.lastActivity || b.createdAt).getTime() - new Date(a.lastActivity || a.createdAt).getTime());
+      .sort(
+        (a, b) => new Date(b.lastActivity || b.createdAt).getTime() - new Date(a.lastActivity || a.createdAt).getTime(),
+      );
   } catch (error) {
     console.error('Failed to get recent sessions:', error);
     return [];

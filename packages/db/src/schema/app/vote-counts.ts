@@ -1,12 +1,4 @@
-import {
-  pgTable,
-  text,
-  integer,
-  doublePrecision,
-  timestamp,
-  index,
-  primaryKey,
-} from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, doublePrecision, timestamp, index, primaryKey } from 'drizzle-orm/pg-core';
 import { socialEntityTypeEnum } from './social';
 
 export const voteCounts = pgTable(

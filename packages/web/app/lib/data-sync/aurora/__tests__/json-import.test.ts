@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 
 // Mock server-only and DB modules to avoid server-component import errors
 vi.mock('server-only', () => ({}));
@@ -8,8 +8,20 @@ vi.mock('@/app/lib/db/db', () => ({
 }));
 vi.mock('@/app/lib/db/schema', () => ({
   boardseshTicks: {},
-  boardClimbs: { uuid: 'uuid', name: 'name', boardType: 'board_type', isListed: 'is_listed', isDraft: 'is_draft', userId: 'user_id', setterId: 'setter_id' },
-  boardClimbStats: { climbUuid: 'climb_uuid', boardType: 'board_type', ascensionistCount: 'ascensionist_count' },
+  boardClimbs: {
+    uuid: 'uuid',
+    name: 'name',
+    boardType: 'board_type',
+    isListed: 'is_listed',
+    isDraft: 'is_draft',
+    userId: 'user_id',
+    setterId: 'setter_id',
+  },
+  boardClimbStats: {
+    climbUuid: 'climb_uuid',
+    boardType: 'board_type',
+    ascensionistCount: 'ascensionist_count',
+  },
   playlists: {},
   playlistClimbs: {},
   playlistOwnership: {},
@@ -33,8 +45,15 @@ vi.mock('@/app/lib/board-constants', () => ({
   },
   HOLE_PLACEMENTS: {
     kilter: {
-      '1-1': [[1131, null, 64, 32], [1233, null, 64, 80], [1270, null, 88, 96]],
-      '1-20': [[1464, null, 4, 4], [1447, null, 140, 4]],
+      '1-1': [
+        [1131, null, 64, 32],
+        [1233, null, 64, 80],
+        [1270, null, 88, 96],
+      ],
+      '1-20': [
+        [1464, null, 4, 4],
+        [1447, null, 140, 4],
+      ],
     },
     tension: {},
     moonboard: {},
@@ -151,34 +170,47 @@ describe('auroraExportSchema', () => {
   it('accepts a full export with all fields', () => {
     const full = {
       user: { username: 'testuser', email_address: 'test@example.com', created_at: '2024-01-01' },
-      ascents: [{
-        climb: 'Test Climb',
-        angle: 40,
-        count: 1,
-        stars: 3,
-        climbed_at: '2024-01-15 10:00:00',
-        created_at: '2024-01-15 10:00:00',
-        grade: '6c',
-      }],
-      attempts: [{
-        climb: 'Hard Climb',
-        angle: 45,
-        count: 3,
-        climbed_at: '2024-01-15 11:00:00',
-        created_at: '2024-01-15 11:00:00',
-      }],
-      circuits: [{
-        name: 'My Circuit',
-        color: 'FF00FF',
-        created_at: '2024-01-01',
-        climbs: ['Climb A', 'Climb B'],
-      }],
+      ascents: [
+        {
+          climb: 'Test Climb',
+          angle: 40,
+          count: 1,
+          stars: 3,
+          climbed_at: '2024-01-15 10:00:00',
+          created_at: '2024-01-15 10:00:00',
+          grade: '6c',
+        },
+      ],
+      attempts: [
+        {
+          climb: 'Hard Climb',
+          angle: 45,
+          count: 3,
+          climbed_at: '2024-01-15 11:00:00',
+          created_at: '2024-01-15 11:00:00',
+        },
+      ],
+      circuits: [
+        {
+          name: 'My Circuit',
+          color: 'FF00FF',
+          created_at: '2024-01-01',
+          climbs: ['Climb A', 'Climb B'],
+        },
+      ],
       likes: [{ climb: 'Liked Climb', created_at: '2024-01-01' }],
       follows: [{ some: 'data' }],
       walls: [],
       blocks: [],
       beta_links: [],
-      climbs: [{ name: 'My Climb', layout: 'Kilter Board Original', created_at: '2024-01-01', holds: [{ x: 64, y: 80, role: 'start' }] }],
+      climbs: [
+        {
+          name: 'My Climb',
+          layout: 'Kilter Board Original',
+          created_at: '2024-01-01',
+          holds: [{ x: 64, y: 80, role: 'start' }],
+        },
+      ],
       agreements: [{ name: 'privacy_policy' }],
     };
 
@@ -276,8 +308,20 @@ describe('dedup key consistency', () => {
   });
 
   it('auroraId is consistent regardless of input timestamp format', () => {
-    const id1 = generateJsonImportAuroraId('user-1', 'uuid-1', 40, normalizeTimestamp('2024-01-15 10:30:00'), 'ascents');
-    const id2 = generateJsonImportAuroraId('user-1', 'uuid-1', 40, normalizeTimestamp('2024-01-15T10:30:00.000Z'), 'ascents');
+    const id1 = generateJsonImportAuroraId(
+      'user-1',
+      'uuid-1',
+      40,
+      normalizeTimestamp('2024-01-15 10:30:00'),
+      'ascents',
+    );
+    const id2 = generateJsonImportAuroraId(
+      'user-1',
+      'uuid-1',
+      40,
+      normalizeTimestamp('2024-01-15T10:30:00.000Z'),
+      'ascents',
+    );
     expect(id1).toBe(id2);
   });
 });
@@ -351,7 +395,10 @@ describe('buildCoordinateMap', () => {
 
 describe('convertHoldsToFrames', () => {
   it('converts holds to frames string with correct format', () => {
-    const coordMap = new Map([['64,80', 1233], ['88,96', 1270]]);
+    const coordMap = new Map([
+      ['64,80', 1233],
+      ['88,96', 1270],
+    ]);
     const holds = [
       { x: 64, y: 80, role: 'start' },
       { x: 88, y: 96, role: 'middle' },
@@ -361,7 +408,12 @@ describe('convertHoldsToFrames', () => {
   });
 
   it('uses correct role codes for kilter', () => {
-    const coordMap = new Map([['10,10', 1], ['20,20', 2], ['30,30', 3], ['40,40', 4]]);
+    const coordMap = new Map([
+      ['10,10', 1],
+      ['20,20', 2],
+      ['30,30', 3],
+      ['40,40', 4],
+    ]);
     const holds = [
       { x: 10, y: 10, role: 'start' },
       { x: 20, y: 20, role: 'middle' },
@@ -373,7 +425,12 @@ describe('convertHoldsToFrames', () => {
   });
 
   it('uses correct role codes for tension', () => {
-    const coordMap = new Map([['10,10', 1], ['20,20', 2], ['30,30', 3], ['40,40', 4]]);
+    const coordMap = new Map([
+      ['10,10', 1],
+      ['20,20', 2],
+      ['30,30', 3],
+      ['40,40', 4],
+    ]);
     const holds = [
       { x: 10, y: 10, role: 'start' },
       { x: 20, y: 20, role: 'middle' },
@@ -395,7 +452,10 @@ describe('convertHoldsToFrames', () => {
   });
 
   it('skips holds with unknown role names', () => {
-    const coordMap = new Map([['10,10', 1], ['20,20', 2]]);
+    const coordMap = new Map([
+      ['10,10', 1],
+      ['20,20', 2],
+    ]);
     const holds = [
       { x: 10, y: 10, role: 'start' },
       { x: 20, y: 20, role: 'unknown_role' },
@@ -499,13 +559,15 @@ describe('auroraExportSchema - climb validation', () => {
   it('accepts climbs with valid holds', () => {
     const result = auroraExportSchema.safeParse({
       user: { username: 'test' },
-      climbs: [{
-        name: 'My Draft',
-        layout: 'Kilter Board Original',
-        created_at: '2024-01-01 00:00:00',
-        is_draft: true,
-        holds: [{ x: 64, y: 80, role: 'start' }],
-      }],
+      climbs: [
+        {
+          name: 'My Draft',
+          layout: 'Kilter Board Original',
+          created_at: '2024-01-01 00:00:00',
+          is_draft: true,
+          holds: [{ x: 64, y: 80, role: 'start' }],
+        },
+      ],
     });
     expect(result.success).toBe(true);
     if (result.success) {
@@ -517,13 +579,15 @@ describe('auroraExportSchema - climb validation', () => {
   it('accepts climbs with is_draft null (published)', () => {
     const result = auroraExportSchema.safeParse({
       user: { username: 'test' },
-      climbs: [{
-        name: 'Published Climb',
-        layout: 'Kilter Board Original',
-        created_at: '2024-01-01',
-        is_draft: null,
-        holds: [{ x: 64, y: 80, role: 'start' }],
-      }],
+      climbs: [
+        {
+          name: 'Published Climb',
+          layout: 'Kilter Board Original',
+          created_at: '2024-01-01',
+          is_draft: null,
+          holds: [{ x: 64, y: 80, role: 'start' }],
+        },
+      ],
     });
     expect(result.success).toBe(true);
   });
@@ -531,13 +595,15 @@ describe('auroraExportSchema - climb validation', () => {
   it('accepts climbs with optional description', () => {
     const result = auroraExportSchema.safeParse({
       user: { username: 'test' },
-      climbs: [{
-        name: 'Described Climb',
-        layout: 'Kilter Board Original',
-        created_at: '2024-01-01',
-        holds: [{ x: 10, y: 20, role: 'start' }],
-        description: 'A fun climb',
-      }],
+      climbs: [
+        {
+          name: 'Described Climb',
+          layout: 'Kilter Board Original',
+          created_at: '2024-01-01',
+          holds: [{ x: 10, y: 20, role: 'start' }],
+          description: 'A fun climb',
+        },
+      ],
     });
     expect(result.success).toBe(true);
     if (result.success) {
@@ -564,12 +630,14 @@ describe('auroraExportSchema - climb validation', () => {
   it('rejects climb with invalid hold (missing role)', () => {
     const result = auroraExportSchema.safeParse({
       user: { username: 'test' },
-      climbs: [{
-        name: 'Bad Hold',
-        layout: 'Kilter',
-        created_at: '2024-01-01',
-        holds: [{ x: 10, y: 20 }], // missing role
-      }],
+      climbs: [
+        {
+          name: 'Bad Hold',
+          layout: 'Kilter',
+          created_at: '2024-01-01',
+          holds: [{ x: 10, y: 20 }], // missing role
+        },
+      ],
     });
     expect(result.success).toBe(false);
   });

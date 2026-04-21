@@ -48,9 +48,12 @@ export const UpdateCommentInputSchema = z.object({
 export const VoteInputSchema = z.object({
   entityType: SocialEntityTypeSchema,
   entityId: z.string().min(1, 'Entity ID cannot be empty').max(200, 'Entity ID too long'),
-  value: z.number().int().refine((v) => v === 1 || v === -1, {
-    message: 'Vote value must be +1 or -1',
-  }),
+  value: z
+    .number()
+    .int()
+    .refine((v) => v === 1 || v === -1, {
+      message: 'Vote value must be +1 or -1',
+    }),
 });
 
 /**

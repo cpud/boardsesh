@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import type { BoardDetails } from '@/app/lib/types';
 import type { HoldRenderData } from '@/app/components/board-renderer/types';
 import { computeCropTop } from '../worker-manager';

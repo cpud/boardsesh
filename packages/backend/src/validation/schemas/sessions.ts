@@ -13,7 +13,10 @@ export const CreateSessionInputSchema = z.object({
   goal: z.string().max(500, 'Goal too long').optional(),
   isPermanent: z.boolean().optional(),
   boardIds: z.array(z.number().int().positive()).max(20).optional(),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Color must be a valid hex color').optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/, 'Color must be a valid hex color')
+    .optional(),
 });
 
 /**

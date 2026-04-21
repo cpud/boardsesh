@@ -10,11 +10,7 @@ import { sql } from '@/app/lib/db/db';
 import { getGradeLabel } from '@boardsesh/db/queries';
 
 import { Climb, ParsedBoardRouteParametersWithUuid, BoardName, LayoutId, Size } from '../types';
-import {
-  getSizesForLayoutId,
-  getAllLayouts,
-  getSetsForLayoutAndSize,
-} from '@/app/lib/board-constants';
+import { getSizesForLayoutId, getAllLayouts, getSetsForLayoutAndSize } from '@/app/lib/board-constants';
 
 export const getClimb = cache(async (params: ParsedBoardRouteParametersWithUuid): Promise<Climb> => {
   const result = await sql`
@@ -52,7 +48,7 @@ export interface ClimbStatsForAngle {
 }
 
 export const getClimbStatsForAllAngles = async (
-  params: ParsedBoardRouteParametersWithUuid
+  params: ParsedBoardRouteParametersWithUuid,
 ): Promise<ClimbStatsForAngle[]> => {
   const result = await sql`
     SELECT
@@ -114,4 +110,3 @@ export const getSets = (board_name: BoardName, layout_id: LayoutId, size_id: Siz
   // Use hardcoded data instead of database query
   return getSetsForLayoutAndSize(board_name, layout_id, size_id);
 };
-

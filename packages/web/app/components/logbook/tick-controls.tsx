@@ -116,11 +116,15 @@ const ScrollIndicatorWrapper: React.FC<{
   children: React.ReactNode;
 }> = ({ canScrollLeft, canScrollRight, children }) => (
   <div className={styles.scrollableWrapper}>
-    <div className={`${styles.scrollIndicator} ${styles.scrollIndicatorLeft} ${canScrollLeft ? styles.scrollIndicatorVisible : ''}`}>
+    <div
+      className={`${styles.scrollIndicator} ${styles.scrollIndicatorLeft} ${canScrollLeft ? styles.scrollIndicatorVisible : ''}`}
+    >
       <ChevronLeftIcon sx={{ fontSize: 16 }} />
     </div>
     {children}
-    <div className={`${styles.scrollIndicator} ${styles.scrollIndicatorRight} ${canScrollRight ? styles.scrollIndicatorVisible : ''}`}>
+    <div
+      className={`${styles.scrollIndicator} ${styles.scrollIndicatorRight} ${canScrollRight ? styles.scrollIndicatorVisible : ''}`}
+    >
       <ChevronRightIcon sx={{ fontSize: 16 }} />
     </div>
   </div>
@@ -146,46 +150,44 @@ export interface TickGradeButtonProps {
  * stars/tries controls so it can align with the consensus grade below.
  * Uses forwardRef so the parent can measure its position for picker scroll alignment.
  */
-export const TickGradeButton = forwardRef<HTMLButtonElement, TickGradeButtonProps>(({
-  difficulty,
-  displayedGrades,
-  expandedControl,
-  onExpandedControlChange,
-}, ref) => {
-  const isDark = useIsDarkMode();
-  const { formatGrade, getGradeColor, loaded: gradeFormatLoaded } = useGradeFormat();
+export const TickGradeButton = forwardRef<HTMLButtonElement, TickGradeButtonProps>(
+  ({ difficulty, displayedGrades, expandedControl, onExpandedControlChange }, ref) => {
+    const isDark = useIsDarkMode();
+    const { formatGrade, getGradeColor, loaded: gradeFormatLoaded } = useGradeFormat();
 
-  const selectedGrade = difficulty
-    ? displayedGrades.find((g) => g.difficulty_id === difficulty)
-    : undefined;
+    const selectedGrade = difficulty ? displayedGrades.find((g) => g.difficulty_id === difficulty) : undefined;
 
-  const displayDifficulty = selectedGrade?.difficulty_name ?? '';
-  const formattedGrade = formatGrade(displayDifficulty);
-  const gradeLabel = formattedGrade ?? (displayDifficulty || '—');
-  const gradeColor = getGradeColor(displayDifficulty, isDark);
+    const displayDifficulty = selectedGrade?.difficulty_name ?? '';
+    const formattedGrade = formatGrade(displayDifficulty);
+    const gradeLabel = formattedGrade ?? (displayDifficulty || '—');
+    const gradeColor = getGradeColor(displayDifficulty, isDark);
 
-  return (
-    <ButtonBase
-      ref={ref}
-      onClick={() => onExpandedControlChange(expandedControl === 'grade' ? null : 'grade')}
-      aria-label="Select logged grade"
-      aria-haspopup="listbox"
-      aria-expanded={expandedControl === 'grade'}
-      data-testid="quick-tick-grade"
-      className={`${styles.gradeButton} ${expandedControl === 'grade' ? styles.active : ''}`}
-      disableRipple={false}
-    >
-      {!gradeFormatLoaded ? (
-        <Skeleton variant="rounded" width={24} height={14} />
-      ) : (
-        <span className={styles.gradeNumber} {...(gradeColor ? { style: { '--grade-color': gradeColor } as React.CSSProperties } : {})}>
-          {gradeLabel}
-        </span>
-      )}
-      <span className={styles.gradeByline}>user</span>
-    </ButtonBase>
-  );
-});
+    return (
+      <ButtonBase
+        ref={ref}
+        onClick={() => onExpandedControlChange(expandedControl === 'grade' ? null : 'grade')}
+        aria-label="Select logged grade"
+        aria-haspopup="listbox"
+        aria-expanded={expandedControl === 'grade'}
+        data-testid="quick-tick-grade"
+        className={`${styles.gradeButton} ${expandedControl === 'grade' ? styles.active : ''}`}
+        disableRipple={false}
+      >
+        {!gradeFormatLoaded ? (
+          <Skeleton variant="rounded" width={24} height={14} />
+        ) : (
+          <span
+            className={styles.gradeNumber}
+            {...(gradeColor ? { style: { '--grade-color': gradeColor } as React.CSSProperties } : {})}
+          >
+            {gradeLabel}
+          </span>
+        )}
+        <span className={styles.gradeByline}>user</span>
+      </ButtonBase>
+    );
+  },
+);
 
 TickGradeButton.displayName = 'TickGradeButton';
 
@@ -322,9 +324,7 @@ export const InlineGradePicker: React.FC<{
     const container = containerRef.current;
     if (!container || scrollTargetId === undefined) return;
 
-    const targetEl = container.querySelector(
-      `[data-grade-id="${scrollTargetId}"]`,
-    ) as HTMLElement | null;
+    const targetEl = container.querySelector(`[data-grade-id="${scrollTargetId}"]`) as HTMLElement | null;
     if (!targetEl) return;
 
     const containerRect = container.getBoundingClientRect();
@@ -342,7 +342,13 @@ export const InlineGradePicker: React.FC<{
 
   return (
     <ScrollIndicatorWrapper canScrollLeft={canScrollLeft} canScrollRight={canScrollRight}>
-      <div ref={containerRef} className={styles.pickerRowScrollable} role="listbox" aria-label="Grade override" data-scrollable-picker>
+      <div
+        ref={containerRef}
+        className={styles.pickerRowScrollable}
+        role="listbox"
+        aria-label="Grade override"
+        data-scrollable-picker
+      >
         <ButtonBase
           onClick={() => onSelect(undefined)}
           className={`${styles.pickerItem} ${currentGradeId === undefined ? styles.pickerItemSelected : ''}`}
@@ -367,7 +373,10 @@ export const InlineGradePicker: React.FC<{
               aria-selected={isSelected}
               role="option"
             >
-              <span className={styles.pickerGrade} {...(color ? { style: { '--grade-color': color } as React.CSSProperties } : {})}>
+              <span
+                className={styles.pickerGrade}
+                {...(color ? { style: { '--grade-color': color } as React.CSSProperties } : {})}
+              >
                 {formatted}
               </span>
             </ButtonBase>
@@ -398,18 +407,14 @@ export const InlineTriesPicker: React.FC<{
     const triesButton = triesButtonRef?.current;
     if (!container || !triesButton || attemptCount <= 10) return;
 
-    const selectedEl = container.querySelector(
-      `[data-tries="${attemptCount}"]`,
-    ) as HTMLElement | null;
+    const selectedEl = container.querySelector(`[data-tries="${attemptCount}"]`) as HTMLElement | null;
     if (!selectedEl) return;
 
     const containerRect = container.getBoundingClientRect();
     const triesButtonRect = triesButton.getBoundingClientRect();
 
-    const triesButtonCenterInContainer =
-      triesButtonRect.left + triesButtonRect.width / 2 - containerRect.left;
-    const selectedItemCenter =
-      selectedEl.offsetLeft + selectedEl.offsetWidth / 2;
+    const triesButtonCenterInContainer = triesButtonRect.left + triesButtonRect.width / 2 - containerRect.left;
+    const selectedItemCenter = selectedEl.offsetLeft + selectedEl.offsetWidth / 2;
 
     const targetScrollLeft = selectedItemCenter - triesButtonCenterInContainer;
     const maxScroll = container.scrollWidth - container.clientWidth;
@@ -418,7 +423,13 @@ export const InlineTriesPicker: React.FC<{
 
   return (
     <ScrollIndicatorWrapper canScrollLeft={canScrollLeft} canScrollRight={canScrollRight}>
-      <div ref={containerRef} className={styles.pickerRowScrollable} role="listbox" aria-label="Attempt count" data-scrollable-picker>
+      <div
+        ref={containerRef}
+        className={styles.pickerRowScrollable}
+        role="listbox"
+        aria-label="Attempt count"
+        data-scrollable-picker
+      >
         {ATTEMPT_OPTIONS.map((n) => (
           <ButtonBase
             key={n}
@@ -441,10 +452,30 @@ export const InlineTriesPicker: React.FC<{
 /*  Ascent type picker — used in expanded tick bar                    */
 /* ------------------------------------------------------------------ */
 
-const ASCENT_TYPE_OPTIONS: readonly { value: TickStatus; label: string; icon: React.ReactNode; color: string }[] = [
-  { value: 'attempt', label: 'Attempt', icon: <PersonFallingIcon sx={{ fontSize: 18 }} />, color: themeTokens.colors.error },
-  { value: 'send', label: 'Send', icon: <CheckOutlined sx={{ fontSize: 18 }} />, color: themeTokens.colors.success },
-  { value: 'flash', label: 'Flash', icon: <ElectricBoltOutlined sx={{ fontSize: 18 }} />, color: themeTokens.colors.amber },
+const ASCENT_TYPE_OPTIONS: readonly {
+  value: TickStatus;
+  label: string;
+  icon: React.ReactNode;
+  color: string;
+}[] = [
+  {
+    value: 'attempt',
+    label: 'Attempt',
+    icon: <PersonFallingIcon sx={{ fontSize: 18 }} />,
+    color: themeTokens.colors.error,
+  },
+  {
+    value: 'send',
+    label: 'Send',
+    icon: <CheckOutlined sx={{ fontSize: 18 }} />,
+    color: themeTokens.colors.success,
+  },
+  {
+    value: 'flash',
+    label: 'Flash',
+    icon: <ElectricBoltOutlined sx={{ fontSize: 18 }} />,
+    color: themeTokens.colors.amber,
+  },
 ];
 
 export const InlineAscentTypePicker: React.FC<{
@@ -467,8 +498,15 @@ export const InlineAscentTypePicker: React.FC<{
           role="option"
           disabled={disabled}
         >
-          <span className={`${styles.ascentTypeIcon} ${disabled ? styles.ascentTypeItemDisabled : ''}`} style={{ color: opt.value === ascentType ? opt.color : 'inherit' }}>{opt.icon}</span>
-          <span className={`${styles.ascentTypeLabel} ${disabled ? styles.ascentTypeItemDisabled : ''}`}>{opt.label}</span>
+          <span
+            className={`${styles.ascentTypeIcon} ${disabled ? styles.ascentTypeItemDisabled : ''}`}
+            style={{ color: opt.value === ascentType ? opt.color : 'inherit' }}
+          >
+            {opt.icon}
+          </span>
+          <span className={`${styles.ascentTypeLabel} ${disabled ? styles.ascentTypeItemDisabled : ''}`}>
+            {opt.label}
+          </span>
         </ButtonBase>
       );
     })}

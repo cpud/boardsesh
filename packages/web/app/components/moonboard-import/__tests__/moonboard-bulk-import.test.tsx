@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -44,7 +44,13 @@ vi.mock('@boardsesh/moonboard-ocr/browser', () => ({
 }));
 
 vi.mock('../moonboard-import-card', () => ({
-  default: ({ climb, duplicateMatch }: { climb: { name: string }; duplicateMatch: { exists?: boolean; existingClimbName?: string | null } | null }) => (
+  default: ({
+    climb,
+    duplicateMatch,
+  }: {
+    climb: { name: string };
+    duplicateMatch: { exists?: boolean; existingClimbName?: string | null } | null;
+  }) => (
     <div>
       <div>{climb.name}</div>
       {duplicateMatch?.exists && <div>{`Skipping: Already Exists as "${duplicateMatch.existingClimbName}"`}</div>}

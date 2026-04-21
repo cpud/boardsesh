@@ -11,10 +11,9 @@ import {
 } from '@/app/lib/healthkit/healthkit-bridge';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import { SET_SESSION_HEALTHKIT_WORKOUT_ID } from '@/app/lib/graphql/operations/activity-feed';
-import { isSessionSavedOrInFlight, markSessionSaved } from '@/app/lib/healthkit/healthkit-auto-save';
 import { useWsAuthToken } from './use-ws-auth-token';
 
-export type HealthKitSaveState = 'idle' | 'saving' | 'saved' | 'error' | 'auth_denied' | 'unavailable';
+export type HealthKitSaveState = 'idle' | 'saving' | 'saved' | 'error' | 'unavailable';
 
 interface UseHealthKitSyncOptions {
   summary: SessionSummary | null;
@@ -54,16 +53,10 @@ export function useHealthKitSync({ summary, boardType, existingWorkoutId }: UseH
     }
     if (state === 'saving' || state === 'saved') return state === 'saved';
 
-    // Check if auto-save already handled this session (or is in progress)
-    if (isSessionSavedOrInFlight(summary.sessionId)) {
-      setState('saved');
-      return true;
-    }
-
     setState('saving');
     const granted = await requestHealthKitAuthorization();
     if (!granted) {
-      setState('auth_denied');
+      setState('error');
       return false;
     }
     const result = await saveSessionToHealthKit(summary, boardType);
@@ -82,7 +75,6 @@ export function useHealthKitSync({ summary, boardType, existingWorkoutId }: UseH
       // HealthKit workout exists; we just won't be able to dedupe later.
       console.warn('[HealthKit] Failed to persist workout id:', e);
     }
-    markSessionSaved(summary.sessionId);
     setState('saved');
     return true;
   }, [summary, available, state, boardType, token]);

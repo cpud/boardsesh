@@ -89,9 +89,10 @@ export const generatePyramidPlan = (options: PyramidOptions): PlannedClimbSlot[]
 
   // Calculate step size
   // Start from a lower grade, peak at target, then come back down
-  const warmUpEndGrade = warmUpSlots.length > 0
-    ? warmUpSlots[warmUpSlots.length - 1].grade
-    : clampGrade(options.targetGrade - options.numberOfSteps);
+  const warmUpEndGrade =
+    warmUpSlots.length > 0
+      ? warmUpSlots[warmUpSlots.length - 1].grade
+      : clampGrade(options.targetGrade - options.numberOfSteps);
 
   const stepsUp = Math.floor(options.numberOfSteps / 2) + 1;
   const stepsDown = options.numberOfSteps - stepsUp + 1;
@@ -102,9 +103,7 @@ export const generatePyramidPlan = (options: PyramidOptions): PlannedClimbSlot[]
 
   // Increasing phase
   for (let step = 0; step < stepsUp; step++) {
-    const grade = step === stepsUp - 1
-      ? options.targetGrade
-      : clampGrade(warmUpEndGrade + (gradeIncrement * step));
+    const grade = step === stepsUp - 1 ? options.targetGrade : clampGrade(warmUpEndGrade + gradeIncrement * step);
 
     for (let i = 0; i < options.climbsPerStep; i++) {
       slots.push({
@@ -117,7 +116,7 @@ export const generatePyramidPlan = (options: PyramidOptions): PlannedClimbSlot[]
 
   // Decreasing phase
   for (let step = 1; step < stepsDown; step++) {
-    const grade = clampGrade(options.targetGrade - (gradeIncrement * step));
+    const grade = clampGrade(options.targetGrade - gradeIncrement * step);
 
     for (let i = 0; i < options.climbsPerStep; i++) {
       slots.push({
@@ -140,19 +139,22 @@ export const generateLadderPlan = (options: LadderOptions): PlannedClimbSlot[] =
   slots.push(...warmUpSlots);
 
   // Calculate starting grade and step size
-  const warmUpEndGrade = warmUpSlots.length > 0
-    ? warmUpSlots[warmUpSlots.length - 1].grade
-    : clampGrade(options.targetGrade - options.numberOfSteps);
+  const warmUpEndGrade =
+    warmUpSlots.length > 0
+      ? warmUpSlots[warmUpSlots.length - 1].grade
+      : clampGrade(options.targetGrade - options.numberOfSteps);
 
-  const gradeIncrement = Math.max(1, Math.floor((options.targetGrade - warmUpEndGrade) / Math.max(1, options.numberOfSteps - 1)));
+  const gradeIncrement = Math.max(
+    1,
+    Math.floor((options.targetGrade - warmUpEndGrade) / Math.max(1, options.numberOfSteps - 1)),
+  );
 
   let currentIndex = slots.length;
 
   // Increasing phase only (ladder goes up)
   for (let step = 0; step < options.numberOfSteps; step++) {
-    const grade = step === options.numberOfSteps - 1
-      ? options.targetGrade
-      : clampGrade(warmUpEndGrade + (gradeIncrement * step));
+    const grade =
+      step === options.numberOfSteps - 1 ? options.targetGrade : clampGrade(warmUpEndGrade + gradeIncrement * step);
 
     for (let i = 0; i < options.climbsPerStep; i++) {
       slots.push({

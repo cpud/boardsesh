@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent } from '@testing-library/react';
 
 let mockSessionStatus = 'unauthenticated';
@@ -75,7 +75,9 @@ describe('AuroraMigrationContent', () => {
 
       fireEvent.click(screen.getByText('Sign in or Create Account'));
       expect(mockOpenAuthModal).toHaveBeenCalledTimes(1);
-      expect(mockOpenAuthModal).toHaveBeenCalledWith(expect.objectContaining({ title: 'Sign in to migrate your data' }));
+      expect(mockOpenAuthModal).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Sign in to migrate your data' }),
+      );
     });
 
     it('calls openAuthModal each time sign in button is clicked', () => {

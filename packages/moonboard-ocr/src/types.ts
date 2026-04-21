@@ -25,7 +25,7 @@ export interface MoonBoardClimb {
   angle: number;
   userGrade: string;
   setterGrade: string;
-  isBenchmark: boolean;  // Orange "B" icon indicates official benchmark climb
+  isBenchmark: boolean; // Orange "B" icon indicates official benchmark climb
 
   // Hold positions
   holds: {

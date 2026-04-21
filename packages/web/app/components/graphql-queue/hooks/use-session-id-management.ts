@@ -8,12 +8,8 @@ import { usePersistentSession } from '../../persistent-session';
 import { useConnectionSettings } from '../../connection-manager/connection-settings-context';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  END_SESSION as END_SESSION_GQL,
-  type EndSessionResponse,
-} from '@/app/lib/graphql/operations/sessions';
+import { END_SESSION as END_SESSION_GQL, type EndSessionResponse } from '@/app/lib/graphql/operations/sessions';
 import type { SessionSummary } from '@boardsesh/shared-schema';
-import { autoSaveToHealthKit } from '@/app/lib/healthkit/healthkit-auto-save';
 import type { ClimbQueueItem } from '../../queue-control/types';
 
 interface UseSessionIdManagementParams {
@@ -83,26 +79,17 @@ export function useSessionIdManagement({
   const sessionId = activeSessionId;
 
   // Compute base board path
-  const baseBoardPath = useMemo(
-    () => propsBaseBoardPath ?? getBaseBoardPath(pathname),
-    [propsBaseBoardPath, pathname],
-  );
+  const baseBoardPath = useMemo(() => propsBaseBoardPath ?? getBaseBoardPath(pathname), [propsBaseBoardPath, pathname]);
 
   // Check if persistent session is active for this board
-  const isPersistentSessionActive = persistentSession.activeSession?.sessionId === sessionId &&
-    (persistentSession.activeSession?.boardPath
-      ? getBaseBoardPath(persistentSession.activeSession.boardPath)
-      : '') === baseBoardPath;
+  const isPersistentSessionActive =
+    persistentSession.activeSession?.sessionId === sessionId &&
+    (persistentSession.activeSession?.boardPath ? getBaseBoardPath(persistentSession.activeSession.boardPath) : '') ===
+      baseBoardPath;
 
   // Session summary state
   const [sessionSummary, setSessionSummary] = useState<SessionSummary | null>(null);
-  const [sessionSummaryBoardType, setSessionSummaryBoardType] = useState<string | null>(null);
-  const [sessionSummaryHealthKitWorkoutId, setSessionSummaryHealthKitWorkoutId] = useState<string | null>(null);
-  const dismissSessionSummary = useCallback(() => {
-    setSessionSummary(null);
-    setSessionSummaryBoardType(null);
-    setSessionSummaryHealthKitWorkoutId(null);
-  }, []);
+  const dismissSessionSummary = useCallback(() => setSessionSummary(null), []);
 
   // Session management functions
   const startSession = useCallback(
@@ -113,9 +100,7 @@ export function useSessionIdManagement({
       const newSessionId = options?.sessionId || uuidv4();
 
       if (currentQueue.length > 0 || currentClimbQueueItem) {
-        persistentSession.setInitialQueueForSession(
-          newSessionId, currentQueue, currentClimbQueueItem, options?.name,
-        );
+        persistentSession.setInitialQueueForSession(newSessionId, currentQueue, currentClimbQueueItem, options?.name);
       }
 
       setClimbSessionCookie(newSessionId);
@@ -155,31 +140,20 @@ export function useSessionIdManagement({
 
   const endSession = useCallback(() => {
     const endingSessionId = activeSessionId;
-    // Capture board type before deactivation clears the active session
-    const boardType = persistentSession.activeSession?.parsedParams?.board_name ?? '';
-    const token = wsAuthToken;
-
     persistentSession.deactivateSession();
     clearClimbSessionCookie();
     setActiveSessionId(null);
 
-    if (endingSessionId && token) {
-      const client = createGraphQLHttpClient(token);
-      client.request<EndSessionResponse>(END_SESSION_GQL, { sessionId: endingSessionId })
-        .then(async (response: EndSessionResponse) => {
-          if (response.endSession) {
-            setSessionSummary(response.endSession);
-            setSessionSummaryBoardType(boardType);
-            // Fire-and-forget HealthKit auto-save
-            const workoutId = await autoSaveToHealthKit(response.endSession, boardType, token);
-            if (workoutId) {
-              setSessionSummaryHealthKitWorkoutId(workoutId);
-            }
-          }
+    if (endingSessionId && wsAuthToken) {
+      const client = createGraphQLHttpClient(wsAuthToken);
+      client
+        .request<EndSessionResponse>(END_SESSION_GQL, { sessionId: endingSessionId })
+        .then((response: EndSessionResponse) => {
+          if (response.endSession) setSessionSummary(response.endSession);
         })
         .catch((err: unknown) => console.error('[QueueContext] Failed to get session summary:', err));
     }
-  }, [persistentSession, activeSessionId, wsAuthToken]);
+  }, [persistentSession, isOffBoardMode, activeSessionId, wsAuthToken]);
 
   return {
     sessionId,
@@ -196,8 +170,6 @@ export function useSessionIdManagement({
     joinSession,
     endSession,
     sessionSummary,
-    sessionSummaryBoardType,
-    sessionSummaryHealthKitWorkoutId,
     dismissSessionSummary,
   };
 }

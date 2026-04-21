@@ -65,7 +65,7 @@ export async function requireSessionMember(
   ctx: ConnectionContext,
   sessionId: string,
   maxRetries = SESSION_MEMBER_RETRY_CONFIG.maxRetries,
-  initialDelayMs = SESSION_MEMBER_RETRY_CONFIG.initialDelayMs
+  initialDelayMs = SESSION_MEMBER_RETRY_CONFIG.initialDelayMs,
 ): Promise<void> {
   for (let i = 0; i < maxRetries; i++) {
     // First check local context (fast path for same-instance)
@@ -90,7 +90,7 @@ export async function requireSessionMember(
       // Exponential backoff: 50ms, 100ms, 200ms, 400ms, 800ms, 1600ms, 3200ms
       // Total max wait: ~6.4 seconds
       const delay = initialDelayMs * Math.pow(2, i);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
 
@@ -107,11 +107,15 @@ export async function requireSessionMember(
   }
 
   if (!finalCtx?.sessionId) {
-    console.error(`[Auth] requireSessionMember failed after ${maxRetries} retries: not in any session. connectionId=${ctx.connectionId}, requested=${sessionId}`);
+    console.error(
+      `[Auth] requireSessionMember failed after ${maxRetries} retries: not in any session. connectionId=${ctx.connectionId}, requested=${sessionId}`,
+    );
     throw new Error(`Unauthorized: not in any session (connectionId: ${ctx.connectionId}, requested: ${sessionId})`);
   }
   if (finalCtx.sessionId !== sessionId) {
-    console.error(`[Auth] requireSessionMember failed: session mismatch. connectionId=${ctx.connectionId}, have=${finalCtx.sessionId}, requested=${sessionId}`);
+    console.error(
+      `[Auth] requireSessionMember failed: session mismatch. connectionId=${ctx.connectionId}, have=${finalCtx.sessionId}, requested=${sessionId}`,
+    );
     throw new Error(`Unauthorized: session mismatch (have: ${finalCtx.sessionId}, requested: ${sessionId})`);
   }
 }
@@ -150,11 +154,12 @@ export async function applyRateLimit(ctx: ConnectionContext, limit?: number, ope
   // Tier 1: Synchronous in-memory rate limiting (fast path, per-instance)
   // Use userId for authenticated users, clientIp for anonymous HTTP requests,
   // or connectionId as fallback (WebSocket connections)
-  const key = ctx.isAuthenticated && ctx.userId
-    ? `${ctx.userId}:${operation}`
-    : ctx.clientIp
-      ? `ip:${ctx.clientIp}:${operation}`
-      : ctx.connectionId;
+  const key =
+    ctx.isAuthenticated && ctx.userId
+      ? `${ctx.userId}:${operation}`
+      : ctx.clientIp
+        ? `ip:${ctx.clientIp}:${operation}`
+        : ctx.connectionId;
   checkRateLimit(key, maxRequests);
 
   // Tier 2: Distributed Redis rate limiting (authenticated users only)
@@ -167,7 +172,10 @@ export async function applyRateLimit(ctx: ConnectionContext, limit?: number, ope
  * Helper to require controller authentication via connectionParams.
  * Throws if the connection is not authenticated as a controller.
  */
-export function requireControllerAuth(ctx: ConnectionContext): { controllerId: string; controllerApiKey: string } {
+export function requireControllerAuth(ctx: ConnectionContext): {
+  controllerId: string;
+  controllerApiKey: string;
+} {
   if (!ctx.controllerId || !ctx.controllerApiKey) {
     throw new Error('Controller authentication required. Pass controllerApiKey in connectionParams.');
   }
@@ -187,16 +195,12 @@ export function requireControllerAuth(ctx: ConnectionContext): { controllerId: s
  */
 export async function requireControllerAuthorizedForSession(
   ctx: ConnectionContext,
-  sessionId: string
+  sessionId: string,
 ): Promise<{ controllerId: string; controllerApiKey: string }> {
   const { controllerId, controllerApiKey } = requireControllerAuth(ctx);
 
   // Verify the controller still exists (it was already authenticated via connectionParams)
-  const [controller] = await db
-    .select()
-    .from(esp32Controllers)
-    .where(eq(esp32Controllers.id, controllerId))
-    .limit(1);
+  const [controller] = await db.select().from(esp32Controllers).where(eq(esp32Controllers.id, controllerId)).limit(1);
 
   if (!controller) {
     throw new Error('Controller not found');

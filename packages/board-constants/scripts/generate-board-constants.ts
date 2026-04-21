@@ -124,15 +124,22 @@ function runPsqlQuery(query: string): string {
   return execFileSync(
     'psql',
     [
-      '-h', postgresConfig.host,
-      '-p', postgresConfig.port,
-      '-U', postgresConfig.user,
-      '-d', postgresConfig.database,
+      '-h',
+      postgresConfig.host,
+      '-p',
+      postgresConfig.port,
+      '-U',
+      postgresConfig.user,
+      '-d',
+      postgresConfig.database,
       '-t',
       '-A',
-      '-F', '|',
-      '-R', '~~~',
-      '-c', query,
+      '-F',
+      '|',
+      '-R',
+      '~~~',
+      '-c',
+      query,
     ],
     {
       encoding: 'utf-8',
@@ -259,17 +266,23 @@ function assertBoardDataIsComplete(boardName: GeneratedBoardName, data: Generate
 }
 
 function generateSizesTypeScript(boardName: GeneratedBoardName, sizes: ProductSize[]): string {
-  const entries = sizes.map((size) =>
-    `    ${size.id}: { id: ${size.id}, name: '${escapeString(size.name)}', description: '${escapeString(size.description)}', edgeLeft: ${size.edgeLeft}, edgeRight: ${size.edgeRight}, edgeBottom: ${size.edgeBottom}, edgeTop: ${size.edgeTop}, productId: ${size.productId} },`,
-  ).join('\n');
+  const entries = sizes
+    .map(
+      (size) =>
+        `    ${size.id}: { id: ${size.id}, name: '${escapeString(size.name)}', description: '${escapeString(size.description)}', edgeLeft: ${size.edgeLeft}, edgeRight: ${size.edgeRight}, edgeBottom: ${size.edgeBottom}, edgeTop: ${size.edgeTop}, productId: ${size.productId} },`,
+    )
+    .join('\n');
 
   return `  ${boardName}: {\n${entries}\n  }`;
 }
 
 function generateLayoutsTypeScript(boardName: GeneratedBoardName, layouts: Layout[]): string {
-  const entries = layouts.map((layout) =>
-    `    ${layout.id}: { id: ${layout.id}, name: '${escapeString(layout.name)}', productId: ${layout.productId} },`,
-  ).join('\n');
+  const entries = layouts
+    .map(
+      (layout) =>
+        `    ${layout.id}: { id: ${layout.id}, name: '${escapeString(layout.name)}', productId: ${layout.productId} },`,
+    )
+    .join('\n');
 
   return `  ${boardName}: {\n${entries}\n  }`;
 }
@@ -295,7 +308,10 @@ function generateSetsTypeScript(boardName: GeneratedBoardName, sets: SetMapping[
 
 function generateImageFilenamesTypeScript(boardName: GeneratedBoardName, mappings: ImageFilenameMapping[]): string {
   const entries = mappings
-    .map((mapping) => `    '${mapping.layoutId}-${mapping.sizeId}-${mapping.setId}': '${escapeString(mapping.imageFilename)}',`)
+    .map(
+      (mapping) =>
+        `    '${mapping.layoutId}-${mapping.sizeId}-${mapping.setId}': '${escapeString(mapping.imageFilename)}',`,
+    )
     .join('\n');
 
   return `  ${boardName}: {\n${entries}\n  }`;
@@ -307,12 +323,7 @@ function generateHolePlacementsTypeScript(boardName: GeneratedBoardName, placeme
   for (const placement of placements) {
     const key = `${placement.layoutId}-${placement.setId}`;
     grouped[key] ??= [];
-    grouped[key].push([
-      placement.placementId,
-      placement.mirroredPlacementId,
-      placement.x,
-      placement.y,
-    ]);
+    grouped[key].push([placement.placementId, placement.mirroredPlacementId, placement.x, placement.y]);
   }
 
   const entries = Object.entries(grouped)

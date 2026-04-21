@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import type { Proposal } from '@boardsesh/shared-schema';
@@ -19,7 +19,12 @@ vi.mock('@/app/hooks/use-is-dark-mode', () => ({
 }));
 
 vi.mock('@/app/hooks/use-ws-auth-token', () => ({
-  useWsAuthToken: () => ({ token: 'test-token', isLoading: false, isAuthenticated: true, error: null }),
+  useWsAuthToken: () => ({
+    token: 'test-token',
+    isLoading: false,
+    isAuthenticated: true,
+    error: null,
+  }),
 }));
 
 vi.mock('@/app/lib/graphql/operations/proposals', () => ({
@@ -31,7 +36,10 @@ vi.mock('@/app/lib/graphql/operations/proposals', () => ({
 // Mock ClimbListItem to verify it receives the correct props
 const mockClimbListItem = vi.fn();
 vi.mock('@/app/components/climb-card/climb-list-item', () => ({
-  default: (props: { climb: { uuid: string; name: string; difficulty: string; setter_username: string }; disableSwipe?: boolean }) => {
+  default: (props: {
+    climb: { uuid: string; name: string; difficulty: string; setter_username: string };
+    disableSwipe?: boolean;
+  }) => {
     mockClimbListItem(props);
     return (
       <div data-testid="climb-list-item-mock">
@@ -164,9 +172,7 @@ describe('ProposalCard', () => {
     it('passes disableSwipe prop to ClimbListItem', () => {
       render(<ProposalCard proposal={makeProposal()} />);
       expect(screen.getByTestId('disable-swipe')).toBeTruthy();
-      expect(mockClimbListItem).toHaveBeenCalledWith(
-        expect.objectContaining({ disableSwipe: true }),
-      );
+      expect(mockClimbListItem).toHaveBeenCalledWith(expect.objectContaining({ disableSwipe: true }));
     });
 
     it('constructs climb data from proposal fields', () => {
@@ -227,9 +233,7 @@ describe('ProposalCard', () => {
     });
 
     it('does not render ClimbListItem when climbName and frames are null', () => {
-      render(
-        <ProposalCard proposal={makeProposal({ climbName: null, frames: null })} />,
-      );
+      render(<ProposalCard proposal={makeProposal({ climbName: null, frames: null })} />);
       expect(screen.queryByTestId('climb-list-item-mock')).toBeNull();
     });
 

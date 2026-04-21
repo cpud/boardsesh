@@ -46,12 +46,14 @@ export default function FeedItemComment({ item }: FeedItemCommentProps) {
               {item.actorDisplayName || 'User'}
             </MuiTypography>
             <MuiTypography variant="body2" component="span" color="text.secondary">
-              {' '}commented
+              {' '}
+              commented
             </MuiTypography>
             {item.climbName && (
               <>
                 <MuiTypography variant="body2" component="span" color="text.secondary">
-                  {' '}on{' '}
+                  {' '}
+                  on{' '}
                 </MuiTypography>
                 <MuiTypography variant="body2" component="span" fontWeight={600}>
                   {item.climbName}

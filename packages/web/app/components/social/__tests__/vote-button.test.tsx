@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import React from 'react';
 
@@ -41,13 +41,7 @@ import VoteButton from '../vote-button';
 // --- Helpers ---
 
 function renderVoteButton(props: Partial<React.ComponentProps<typeof VoteButton>> = {}) {
-  return render(
-    <VoteButton
-      entityType="climb"
-      entityId="climb-1"
-      {...props}
-    />,
-  );
+  return render(<VoteButton entityType="climb" entityId="climb-1" {...props} />);
 }
 
 // --- Tests ---
@@ -63,16 +57,23 @@ describe('VoteButton', () => {
   describe('fetch behavior', () => {
     it('fetches vote summary on mount when no initialUserVote or context', async () => {
       mockRequest.mockResolvedValueOnce({
-        voteSummary: { entityType: 'climb', entityId: 'climb-1', upvotes: 5, downvotes: 1, voteScore: 4, userVote: 1 },
+        voteSummary: {
+          entityType: 'climb',
+          entityId: 'climb-1',
+          upvotes: 5,
+          downvotes: 1,
+          voteScore: 4,
+          userVote: 1,
+        },
       });
 
       renderVoteButton();
 
       await waitFor(() => {
-        expect(mockRequest).toHaveBeenCalledWith(
-          'GET_VOTE_SUMMARY',
-          { entityType: 'climb', entityId: 'climb-1' },
-        );
+        expect(mockRequest).toHaveBeenCalledWith('GET_VOTE_SUMMARY', {
+          entityType: 'climb',
+          entityId: 'climb-1',
+        });
       });
 
       // After fetch, score should be 4 (5 upvotes - 1 downvote)
@@ -104,7 +105,14 @@ describe('VoteButton', () => {
       mockContextValue = {
         getVoteSummary: (id: string) =>
           id === 'climb-1'
-            ? { entityType: 'climb', entityId: 'climb-1', upvotes: 2, downvotes: 0, voteScore: 2, userVote: 1 }
+            ? {
+                entityType: 'climb',
+                entityId: 'climb-1',
+                upvotes: 2,
+                downvotes: 0,
+                voteScore: 2,
+                userVote: 1,
+              }
             : undefined,
       };
 
@@ -120,7 +128,14 @@ describe('VoteButton', () => {
       mockContextValue = {
         getVoteSummary: (id: string) =>
           id === 'climb-1'
-            ? { entityType: 'climb', entityId: 'climb-1', upvotes: 7, downvotes: 2, voteScore: 5, userVote: 1 }
+            ? {
+                entityType: 'climb',
+                entityId: 'climb-1',
+                upvotes: 7,
+                downvotes: 2,
+                voteScore: 5,
+                userVote: 1,
+              }
             : undefined,
       };
 
@@ -133,7 +148,12 @@ describe('VoteButton', () => {
     });
 
     it('does not fetch when user is not authenticated', async () => {
-      mockAuthState = { token: null as unknown as string, isLoading: false, isAuthenticated: false, error: null };
+      mockAuthState = {
+        token: null as unknown as string,
+        isLoading: false,
+        isAuthenticated: false,
+        error: null,
+      };
 
       renderVoteButton();
 
@@ -154,7 +174,14 @@ describe('VoteButton', () => {
         if (query === 'GET_VOTE_SUMMARY') return fetchPromise;
         // Vote mutation resolves immediately
         return Promise.resolve({
-          vote: { entityType: 'climb', entityId: 'climb-1', upvotes: 1, downvotes: 0, voteScore: 1, userVote: 1 },
+          vote: {
+            entityType: 'climb',
+            entityId: 'climb-1',
+            upvotes: 1,
+            downvotes: 0,
+            voteScore: 1,
+            userVote: 1,
+          },
         });
       });
 
@@ -169,7 +196,14 @@ describe('VoteButton', () => {
       // Now resolve the stale fetch with userVote=0 and score=0
       await act(async () => {
         resolveFetch!({
-          voteSummary: { entityType: 'climb', entityId: 'climb-1', upvotes: 0, downvotes: 0, voteScore: 0, userVote: 0 },
+          voteSummary: {
+            entityType: 'climb',
+            entityId: 'climb-1',
+            upvotes: 0,
+            downvotes: 0,
+            voteScore: 0,
+            userVote: 0,
+          },
         });
       });
 
@@ -196,7 +230,14 @@ describe('VoteButton', () => {
       mockContextValue = {
         getVoteSummary: (id: string) =>
           id === 'climb-1'
-            ? { entityType: 'climb', entityId: 'climb-1', upvotes: 5, downvotes: 0, voteScore: 5, userVote: 1 }
+            ? {
+                entityType: 'climb',
+                entityId: 'climb-1',
+                upvotes: 5,
+                downvotes: 0,
+                voteScore: 5,
+                userVote: 1,
+              }
             : undefined,
       };
 

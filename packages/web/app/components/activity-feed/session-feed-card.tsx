@@ -138,7 +138,11 @@ export default function SessionFeedCard({ session }: SessionFeedCardProps) {
               noWrap
               {...(primaryParticipant ? { component: Link, href: `/profile/${primaryParticipant.userId}` } : {})}
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
-              sx={{ textDecoration: 'none', color: 'text.primary', cursor: primaryParticipant ? 'pointer' : 'default' }}
+              sx={{
+                textDecoration: 'none',
+                color: 'text.primary',
+                cursor: primaryParticipant ? 'pointer' : 'default',
+              }}
             >
               {isMultiUser
                 ? participants.map((p) => p.displayName || 'Climber').join(', ')
@@ -202,10 +206,10 @@ export default function SessionFeedCard({ session }: SessionFeedCardProps) {
               />
             )}
             {/* totalSends includes flashes — subtract to avoid double-counting */}
-            {(totalSends - totalFlashes) > 0 && (
+            {totalSends - totalFlashes > 0 && (
               <Chip
                 icon={<CheckCircleOutlineOutlined />}
-                label={`${totalSends - totalFlashes} send${(totalSends - totalFlashes) !== 1 ? 's' : ''}`}
+                label={`${totalSends - totalFlashes} send${totalSends - totalFlashes !== 1 ? 's' : ''}`}
                 size="small"
                 sx={{
                   borderRadius: themeTokens.borderRadius.full,
@@ -226,8 +230,8 @@ export default function SessionFeedCard({ session }: SessionFeedCardProps) {
                 }}
               />
             )}
-            {hardestGrade && (
-              gradeFormatLoaded ? (
+            {hardestGrade &&
+              (gradeFormatLoaded ? (
                 <Chip
                   label={formatGrade(hardestGrade) ?? hardestGrade}
                   size="small"
@@ -239,9 +243,13 @@ export default function SessionFeedCard({ session }: SessionFeedCardProps) {
                   }}
                 />
               ) : (
-                <Skeleton variant="rounded" width={40} height={24} sx={{ borderRadius: themeTokens.borderRadius.full }} />
-              )
-            )}
+                <Skeleton
+                  variant="rounded"
+                  width={40}
+                  height={24}
+                  sx={{ borderRadius: themeTokens.borderRadius.full }}
+                />
+              ))}
           </Box>
 
           {/* Grade chart (compact) + outcome doughnut on desktop */}
@@ -311,11 +319,7 @@ export default function SessionFeedCard({ session }: SessionFeedCardProps) {
           initialDownvotes={downvotes}
           likeOnly
         />
-        <FeedCommentButton
-          entityType="session"
-          entityId={sessionId}
-          commentCount={commentCount}
-        />
+        <FeedCommentButton entityType="session" entityId={sessionId} commentCount={commentCount} />
       </Box>
     </Card>
   );

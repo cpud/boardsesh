@@ -58,13 +58,8 @@ const ClimbCardSkeleton = ({ aspectRatio }: { aspectRatio?: number }) => (
       backgroundColor: 'var(--semantic-surface)',
     }}
   >
-    <CardHeader
-      title={<ClimbCardTitleSkeleton />}
-      sx={{ paddingTop: '8px', paddingBottom: '6px' }}
-    />
-    <CardContent
-      sx={{ p: '6px', display: 'flex', justifyContent: 'center' }}
-    >
+    <CardHeader title={<ClimbCardTitleSkeleton />} sx={{ paddingTop: '8px', paddingBottom: '6px' }} />
+    <CardContent sx={{ p: '6px', display: 'flex', justifyContent: 'center' }}>
       <BoardRendererSkeleton aspectRatio={aspectRatio} />
     </CardContent>
     <CardActions sx={{ justifyContent: 'space-around' }}>

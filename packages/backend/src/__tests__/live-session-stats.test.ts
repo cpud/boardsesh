@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import type { SessionDetail } from '@boardsesh/shared-schema';
 
 const { sessionDetailMock } = vi.hoisted(() => ({
@@ -33,9 +33,7 @@ function makeSessionDetail(overrides: Partial<SessionDetail> = {}): SessionDetai
     totalFlashes: 1,
     totalAttempts: 3,
     tickCount: 1,
-    gradeDistribution: [
-      { grade: 'V5', flash: 1, send: 1, attempt: 0 },
-    ],
+    gradeDistribution: [{ grade: 'V5', flash: 1, send: 1, attempt: 0 }],
     boardTypes: ['kilter'],
     hardestGrade: 'V5',
     firstTickAt: '2024-01-15T10:00:00.000Z',

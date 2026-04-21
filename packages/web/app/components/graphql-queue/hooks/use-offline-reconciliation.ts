@@ -123,7 +123,7 @@ export function useOfflineReconciliation({
 
     async function reconcileAdditionsOnly(serverQueue: ClimbQueueItem[]) {
       const pending = offlineBuffer.getBufferedAdditions();
-      const serverUuids = new Set(serverQueue.map(item => item.uuid));
+      const serverUuids = new Set(serverQueue.map((item) => item.uuid));
 
       for (const item of pending) {
         if (isSuperseded()) return;

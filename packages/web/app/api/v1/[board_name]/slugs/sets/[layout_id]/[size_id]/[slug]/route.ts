@@ -4,7 +4,9 @@ import { BoardName } from '@/app/lib/types';
 
 export async function GET(
   req: Request,
-  props: { params: Promise<{ board_name: string; layout_id: string; size_id: string; slug: string }> },
+  props: {
+    params: Promise<{ board_name: string; layout_id: string; size_id: string; slug: string }>;
+  },
 ): Promise<NextResponse<SetRow[] | { error: string }>> {
   const params = await props.params;
   const { board_name, layout_id, size_id, slug } = params;

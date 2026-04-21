@@ -55,7 +55,15 @@ export const sessionMutations = {
    */
   joinSession: async (
     _: unknown,
-    { sessionId, boardPath, username, avatarUrl, initialQueue, initialCurrentClimb, sessionName }: {
+    {
+      sessionId,
+      boardPath,
+      username,
+      avatarUrl,
+      initialQueue,
+      initialCurrentClimb,
+      sessionName,
+    }: {
       sessionId: string;
       boardPath: string;
       username?: string;
@@ -64,9 +72,12 @@ export const sessionMutations = {
       initialCurrentClimb?: ClimbQueueItem;
       sessionName?: string;
     },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ) => {
-    if (DEBUG) console.log(`[joinSession] START - connectionId: ${ctx.connectionId}, sessionId: ${sessionId}, username: ${username}, sessionName: ${sessionName}, initialQueueLength: ${initialQueue?.length || 0}`);
+    if (DEBUG)
+      console.log(
+        `[joinSession] START - connectionId: ${ctx.connectionId}, sessionId: ${sessionId}, username: ${username}, sessionName: ${sessionName}, initialQueueLength: ${initialQueue?.length || 0}`,
+      );
 
     await applyRateLimit(ctx, 10); // Limit session joins to prevent abuse
 
@@ -87,9 +98,12 @@ export const sessionMutations = {
       avatarUrl || undefined,
       initialQueue,
       initialCurrentClimb || null,
-      sessionName || undefined
+      sessionName || undefined,
     );
-    if (DEBUG) console.log(`[joinSession] roomManager.joinSession completed - clientId: ${result.clientId}, isLeader: ${result.isLeader}`);
+    if (DEBUG)
+      console.log(
+        `[joinSession] roomManager.joinSession completed - clientId: ${result.clientId}, isLeader: ${result.isLeader}`,
+      );
 
     // Update context with session info
     if (DEBUG) console.log(`[joinSession] Before updateContext - ctx.sessionId: ${ctx.sessionId}`);
@@ -149,11 +163,7 @@ export const sessionMutations = {
    * Only authenticated users can create sessions
    * Optionally creates a discoverable session with GPS coordinates
    */
-  createSession: async (
-    _: unknown,
-    { input }: { input: CreateSessionInput },
-    ctx: ConnectionContext
-  ) => {
+  createSession: async (_: unknown, { input }: { input: CreateSessionInput }, ctx: ConnectionContext) => {
     if (DEBUG) console.log(`[createSession] START - connectionId: ${ctx.connectionId}, boardPath: ${input.boardPath}`);
 
     await applyRateLimit(ctx, 5); // Limit session creation to prevent abuse
@@ -179,7 +189,7 @@ export const sessionMutations = {
         input.name,
         input.goal,
         input.isPermanent,
-        input.color
+        input.color,
       );
 
       // If boardIds provided, create sessionBoards junction rows
@@ -205,7 +215,7 @@ export const sessionMutations = {
           input.boardIds.map((boardId) => ({
             sessionId,
             boardId,
-          }))
+          })),
         );
       }
     }
@@ -225,10 +235,11 @@ export const sessionMutations = {
         undefined, // username will be set later
         undefined, // avatarUrl will be set later
         undefined, // initialQueue
-        null,      // initialCurrentClimb
-        input.discoverable ? undefined : input.name
+        null, // initialCurrentClimb
+        input.discoverable ? undefined : input.name,
       );
-      if (DEBUG) console.log(`[createSession] Joined session - clientId: ${result.clientId}, isLeader: ${result.isLeader}`);
+      if (DEBUG)
+        console.log(`[createSession] Joined session - clientId: ${result.clientId}, isLeader: ${result.isLeader}`);
 
       updateContext(ctx.connectionId, { sessionId, userId: result.clientId });
 
@@ -325,11 +336,7 @@ export const sessionMutations = {
    * Validates the caller is the session creator or leader.
    * Returns a session summary with stats, or null if no ticks.
    */
-  endSession: async (
-    _: unknown,
-    { sessionId }: { sessionId: string },
-    ctx: ConnectionContext
-  ) => {
+  endSession: async (_: unknown, { sessionId }: { sessionId: string }, ctx: ConnectionContext) => {
     await applyRateLimit(ctx, 5);
     requireAuthenticated(ctx);
     validateInput(SessionIdSchema, sessionId, 'sessionId');
@@ -367,7 +374,11 @@ export const sessionMutations = {
    * Update username and avatar for the current user in the session
    * Re-announces the user to all session members
    */
-  updateUsername: async (_: unknown, { username, avatarUrl }: { username: string; avatarUrl?: string }, ctx: ConnectionContext) => {
+  updateUsername: async (
+    _: unknown,
+    { username, avatarUrl }: { username: string; avatarUrl?: string },
+    ctx: ConnectionContext,
+  ) => {
     // Validate inputs
     validateInput(UsernameSchema, username, 'username');
     if (avatarUrl) validateInput(AvatarUrlSchema, avatarUrl, 'avatarUrl');

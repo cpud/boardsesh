@@ -56,7 +56,11 @@ const BackButton = ({ fallbackUrl, className }: BackButtonProps) => {
     }
   };
 
-  return <IconButton onClick={handleClick} className={className}><ArrowBackOutlined /></IconButton>;
+  return (
+    <IconButton onClick={handleClick} className={className}>
+      <ArrowBackOutlined />
+    </IconButton>
+  );
 };
 
 export default BackButton;

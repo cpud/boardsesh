@@ -17,13 +17,7 @@ export default function HoldIndicator({ count, max, color, label }: HoldIndicato
   const active = count > 0;
   return (
     <MuiTooltip title={label}>
-      <Stack
-        direction="row"
-        alignItems="center"
-        spacing={0.5}
-        aria-label={label}
-        sx={{ cursor: 'default' }}
-      >
+      <Stack direction="row" alignItems="center" spacing={0.5} aria-label={label} sx={{ cursor: 'default' }}>
         <Box
           sx={(theme) => ({
             width: 10,

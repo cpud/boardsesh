@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vite-plus/test';
 
 vi.mock('graphql-request', () => ({
   gql: (strings: TemplateStringsArray, ...values: unknown[]) =>
@@ -20,9 +20,7 @@ const pageModule = await import('../page');
 const { getSessionOgSummary } = await import('@/app/lib/seo/dynamic-og-data');
 const getSessionOgSummaryMock = vi.mocked(getSessionOgSummary);
 
-function getOpenGraphImageUrl(
-  image: string | URL | { url: string | URL } | undefined,
-) {
+function getOpenGraphImageUrl(image: string | URL | { url: string | URL } | undefined) {
   if (!image) {
     return undefined;
   }
@@ -59,9 +57,7 @@ describe('session page metadata', () => {
       params: Promise.resolve({ sessionId: 'inferred-session-1' }),
     });
 
-    const image = Array.isArray(metadata.openGraph?.images)
-      ? metadata.openGraph.images[0]
-      : metadata.openGraph?.images;
+    const image = Array.isArray(metadata.openGraph?.images) ? metadata.openGraph.images[0] : metadata.openGraph?.images;
 
     expect(metadata.title).toBe('Solo Volume Day | Boardsesh');
     expect(metadata.description).toBe('Alex — 3 sends');

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { render, act } from '@testing-library/react';
 import React from 'react';
 
@@ -10,10 +10,7 @@ vi.mock('@/app/lib/user-preferences-db', () => ({
   setPreference: (...args: unknown[]) => setPreferenceMock(...args),
 }));
 
-import LogbookSwipeHintOrchestrator, {
-  REPEAT_COUNT,
-  ANIMATIONS_PER_CYCLE,
-} from '../logbook-swipe-hint-orchestrator';
+import LogbookSwipeHintOrchestrator, { REPEAT_COUNT, ANIMATIONS_PER_CYCLE } from '../logbook-swipe-hint-orchestrator';
 
 type FakeAnimation = {
   finished: Promise<void>;
@@ -26,7 +23,9 @@ function installFakeAnimations() {
   const animations: FakeAnimation[] = [];
   const animate = vi.fn(function (this: Element) {
     let resolveFn!: () => void;
-    const finished = new Promise<void>((r) => { resolveFn = r; });
+    const finished = new Promise<void>((r) => {
+      resolveFn = r;
+    });
     const anim: FakeAnimation = {
       finished,
       cancelled: false,
@@ -91,7 +90,9 @@ describe('LogbookSwipeHintOrchestrator', () => {
     mountTarget();
 
     render(<LogbookSwipeHintOrchestrator />);
-    await act(async () => { await vi.runAllTimersAsync(); });
+    await act(async () => {
+      await vi.runAllTimersAsync();
+    });
 
     expect(animate).not.toHaveBeenCalled();
     expect(setPreferenceMock).not.toHaveBeenCalled();
@@ -104,7 +105,9 @@ describe('LogbookSwipeHintOrchestrator', () => {
     mountTarget();
 
     render(<LogbookSwipeHintOrchestrator />);
-    await act(async () => { await vi.runAllTimersAsync(); });
+    await act(async () => {
+      await vi.runAllTimersAsync();
+    });
 
     expect(animate).not.toHaveBeenCalled();
     expect(setPreferenceMock).not.toHaveBeenCalled();
@@ -117,7 +120,9 @@ describe('LogbookSwipeHintOrchestrator', () => {
     // no mountTarget() — the card is not on screen
 
     render(<LogbookSwipeHintOrchestrator />);
-    await act(async () => { await vi.runAllTimersAsync(); });
+    await act(async () => {
+      await vi.runAllTimersAsync();
+    });
 
     expect(animate).not.toHaveBeenCalled();
     expect(setPreferenceMock).not.toHaveBeenCalled();
@@ -132,7 +137,9 @@ describe('LogbookSwipeHintOrchestrator', () => {
     render(<LogbookSwipeHintOrchestrator />);
 
     // Flush the initial pref read + setTimeout trigger + first pair of animate() calls.
-    await act(async () => { await vi.advanceTimersByTimeAsync(1600); });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1600);
+    });
     expect(animate).toHaveBeenCalledTimes(2);
 
     // Drive every animation to completion; advance holds/gaps between them.
@@ -143,7 +150,9 @@ describe('LogbookSwipeHintOrchestrator', () => {
       if (animations[i]) {
         animations[i].resolve();
       }
-      await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
     }
 
     expect(animate).toHaveBeenCalledTimes(totalAnimations);
@@ -158,14 +167,18 @@ describe('LogbookSwipeHintOrchestrator', () => {
     mountTarget();
 
     render(<LogbookSwipeHintOrchestrator />);
-    await act(async () => { await vi.advanceTimersByTimeAsync(1600); });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1600);
+    });
 
     const totalAnimations = REPEAT_COUNT * ANIMATIONS_PER_CYCLE;
     for (let i = 0; i < totalAnimations; i++) {
       if (animations[i]) {
         animations[i].resolve();
       }
-      await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
     }
 
     expect(setPreferenceMock).toHaveBeenCalledWith('swipeHint:logbookSeen', true);
@@ -179,7 +192,9 @@ describe('LogbookSwipeHintOrchestrator', () => {
     mountTarget();
 
     const view = render(<LogbookSwipeHintOrchestrator />);
-    await act(async () => { await vi.advanceTimersByTimeAsync(1600); });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1600);
+    });
     expect(animations.length).toBeGreaterThan(0);
 
     view.unmount();

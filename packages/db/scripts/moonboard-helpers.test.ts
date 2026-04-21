@@ -50,23 +50,17 @@ describe('coordinateToHoldId', () => {
 
 describe('movesToFrames', () => {
   it('converts a single start move', () => {
-    const moves: MoonBoardMove[] = [
-      { problemId: 1, description: 'A1', isStart: true, isEnd: false },
-    ];
+    const moves: MoonBoardMove[] = [{ problemId: 1, description: 'A1', isStart: true, isEnd: false }];
     assert.equal(movesToFrames(moves), `p1r${HOLD_STATE_CODES.start}`);
   });
 
   it('converts a single finish move', () => {
-    const moves: MoonBoardMove[] = [
-      { problemId: 1, description: 'K18', isStart: false, isEnd: true },
-    ];
+    const moves: MoonBoardMove[] = [{ problemId: 1, description: 'K18', isStart: false, isEnd: true }];
     assert.equal(movesToFrames(moves), `p198r${HOLD_STATE_CODES.finish}`);
   });
 
   it('converts a single hand move', () => {
-    const moves: MoonBoardMove[] = [
-      { problemId: 1, description: 'E5', isStart: false, isEnd: false },
-    ];
+    const moves: MoonBoardMove[] = [{ problemId: 1, description: 'E5', isStart: false, isEnd: false }];
     assert.equal(movesToFrames(moves), `p49r${HOLD_STATE_CODES.hand}`);
   });
 

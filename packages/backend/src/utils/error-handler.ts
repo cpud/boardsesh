@@ -11,10 +11,7 @@
  * @returns Result of the operation
  * @throws Sanitized error if operation fails
  */
-export async function wrapDatabaseOperation<T>(
-  operation: () => Promise<T>,
-  context: string
-): Promise<T> {
+export async function wrapDatabaseOperation<T>(operation: () => Promise<T>, context: string): Promise<T> {
   try {
     return await operation();
   } catch (error) {
@@ -47,7 +44,11 @@ export async function wrapDatabaseOperation<T>(
       }
 
       // Check for auth/rate limit errors
-      if (error.message.includes('Rate limit') || error.message.includes('Authentication required') || error.message.includes('Unauthorized')) {
+      if (
+        error.message.includes('Rate limit') ||
+        error.message.includes('Authentication required') ||
+        error.message.includes('Unauthorized')
+      ) {
         throw error; // These are safe to pass through
       }
     }

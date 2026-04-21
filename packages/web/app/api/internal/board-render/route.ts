@@ -196,7 +196,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid format' }, { status: 400 });
     }
 
-    const parsedSetIds = setIds.split(',').map(Number).filter((n) => !isNaN(n));
+    const parsedSetIds = setIds
+      .split(',')
+      .map(Number)
+      .filter((n) => !isNaN(n));
 
     // Get board details (pure computation, no DB)
     const boardDetails = getBoardDetailsForBoard({
@@ -275,17 +278,13 @@ export async function GET(request: NextRequest) {
     if (includeBackground) {
       const bgT0 = performance.now();
       const bgRelPaths = getBackgroundRelPaths(boardDetails, thumbnail);
-      const bgFsPaths = bgRelPaths
-        .map((rp) => findPublicImagePath(rp))
-        .filter((p): p is string => p !== null);
+      const bgFsPaths = bgRelPaths.map((rp) => findPublicImagePath(rp)).filter((p): p is string => p !== null);
       bgMs = performance.now() - bgT0;
 
       if (bgFsPaths.length > 0) {
         // Load and resize background images, skipping any that fail
         const results = await Promise.allSettled(
-          bgFsPaths.map((fsPath) =>
-            sharp(fsPath).resize(width, height, { fit: 'fill' }).toBuffer(),
-          ),
+          bgFsPaths.map((fsPath) => sharp(fsPath).resize(width, height, { fit: 'fill' }).toBuffer()),
         );
         const resizedBuffers = results
           .filter((r): r is PromiseFulfilledResult<Buffer> => r.status === 'fulfilled')
@@ -319,9 +318,7 @@ export async function GET(request: NextRequest) {
           const composeT0 = performance.now();
           const overlayImage = sharp(overlayBuffer, { raw: { width, height, channels: 4 } });
           if (!isOgVariant && format === 'webp') {
-            outputBuffer = await overlayImage
-              .webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true })
-              .toBuffer();
+            outputBuffer = await overlayImage.webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true }).toBuffer();
             outputContentType = 'image/webp';
           } else {
             imageBuffer = await overlayImage.png(DEFAULT_PNG_OPTIONS).toBuffer();
@@ -333,9 +330,7 @@ export async function GET(request: NextRequest) {
         const composeT0 = performance.now();
         const overlayImage = sharp(overlayBuffer, { raw: { width, height, channels: 4 } });
         if (!isOgVariant && format === 'webp') {
-          outputBuffer = await overlayImage
-            .webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true })
-            .toBuffer();
+          outputBuffer = await overlayImage.webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true }).toBuffer();
           outputContentType = 'image/webp';
         } else {
           imageBuffer = await overlayImage.png(DEFAULT_PNG_OPTIONS).toBuffer();
@@ -347,9 +342,7 @@ export async function GET(request: NextRequest) {
       const composeT0 = performance.now();
       const overlayImage = sharp(overlayBuffer, { raw: { width, height, channels: 4 } });
       if (!isOgVariant && format === 'webp') {
-        outputBuffer = await overlayImage
-          .webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true })
-          .toBuffer();
+        outputBuffer = await overlayImage.webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true }).toBuffer();
         outputContentType = 'image/webp';
       } else {
         imageBuffer = await overlayImage.png(DEFAULT_PNG_OPTIONS).toBuffer();

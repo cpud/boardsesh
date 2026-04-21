@@ -111,9 +111,9 @@ function generateHeader(boardName, layoutId, sizeId) {
 inline const std::map<uint16_t, uint16_t>& getLedToPlacementMap() {
     static const std::map<uint16_t, uint16_t> ledToPlacement = {
 ${Object.entries(reverseMap)
-    .sort(([a], [b]) => parseInt(a) - parseInt(b))
-    .map(([ledPos, placementId]) => `        {${ledPos}, ${placementId}}`)
-    .join(',\n')}
+  .sort(([a], [b]) => parseInt(a) - parseInt(b))
+  .map(([ledPos, placementId]) => `        {${ledPos}, ${placementId}}`)
+  .join(',\n')}
     };
     return ledToPlacement;
 }

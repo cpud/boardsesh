@@ -104,13 +104,9 @@ export default async function BoardSlugListPage(props: BoardSlugListPageProps) {
   let searchResponse: { climbs: import('@/app/lib/types').Climb[]; hasMore: boolean };
 
   try {
-    searchResponse = await cachedSearchClimbs(
-      parsedParams,
-      searchParamsObject,
-      isDefaultSearch,
-      userId,
-      { cacheable: !hasProgressFilters },
-    );
+    searchResponse = await cachedSearchClimbs(parsedParams, searchParamsObject, isDefaultSearch, userId, {
+      cacheable: !hasProgressFilters,
+    });
   } catch (error) {
     console.error('Error fetching climb search results:', error);
     searchResponse = { climbs: [], hasMore: false };
@@ -119,15 +115,11 @@ export default async function BoardSlugListPage(props: BoardSlugListPageProps) {
   scheduleOverlayWarming({ boardDetails, climbs: searchResponse.climbs, variant: 'thumbnail' });
 
   const firstClimb = searchResponse.climbs[0];
-  const preloadUrl = firstClimb?.frames
-    ? buildOverlayUrl(boardDetails, firstClimb.frames, true)
-    : null;
+  const preloadUrl = firstClimb?.frames ? buildOverlayUrl(boardDetails, firstClimb.frames, true) : null;
 
   return (
     <>
-      {preloadUrl && (
-        <link rel="preload" as="image" href={preloadUrl} fetchPriority="high" />
-      )}
+      {preloadUrl && <link rel="preload" as="image" href={preloadUrl} fetchPriority="high" />}
       <BoardPageClimbsList {...parsedParams} boardDetails={boardDetails} initialClimbs={searchResponse.climbs} />
     </>
   );

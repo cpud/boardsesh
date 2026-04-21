@@ -23,7 +23,9 @@ export default function ZoomHint({ visible }: ZoomHintProps) {
       if (cancelled || seen) return;
       setShow(true);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [visible]);
 
   useEffect(() => {

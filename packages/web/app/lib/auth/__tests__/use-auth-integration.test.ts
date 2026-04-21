@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 
 const mockUseSession = vi.fn();
@@ -57,9 +57,7 @@ describe('useAuthIntegration', () => {
       await result.current.linkBoardAccount('kilter', 123, 'testuser');
     });
 
-    expect(warnSpy).toHaveBeenCalledWith(
-      'Cannot link board account: user not authenticated with NextAuth',
-    );
+    expect(warnSpy).toHaveBeenCalledWith('Cannot link board account: user not authenticated with NextAuth');
     expect(mockCreateMapping).not.toHaveBeenCalled();
     warnSpy.mockRestore();
   });

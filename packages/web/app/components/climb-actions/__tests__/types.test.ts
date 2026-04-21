@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   DEFAULT_ACTION_ORDER,
   AUTH_REQUIRED_ACTIONS,

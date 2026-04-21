@@ -54,8 +54,6 @@ import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
 import { getPreference, setPreference } from '@/app/lib/user-preferences-db';
 import QueueDrawer from './queue-drawer';
 
-
-
 /** Window with optional requestIdleCallback (not available in all browsers). */
 type WindowWithIdleCallback = Window & {
   requestIdleCallback?: ((cb: () => void, opts?: { timeout: number }) => number) | undefined;
@@ -69,19 +67,21 @@ interface PlayDrawerContentProps {
   sectionsEnabled: boolean;
 }
 
-const PlayDrawerContent = React.memo<PlayDrawerContentProps>(({ climb, boardType, angle, aboveFold, sectionsEnabled }) => {
-  const sections = useBuildClimbDetailSections({
-    climb,
-    climbUuid: climb.uuid,
-    boardType,
-    angle,
-    currentClimbDifficulty: climb.difficulty ?? undefined,
-    boardName: boardType,
-    enabled: sectionsEnabled,
-  });
+const PlayDrawerContent = React.memo<PlayDrawerContentProps>(
+  ({ climb, boardType, angle, aboveFold, sectionsEnabled }) => {
+    const sections = useBuildClimbDetailSections({
+      climb,
+      climbUuid: climb.uuid,
+      boardType,
+      angle,
+      currentClimbDifficulty: climb.difficulty ?? undefined,
+      boardName: boardType,
+      enabled: sectionsEnabled,
+    });
 
-  return <ClimbDetailShellClient mode="play" sections={sections} aboveFold={aboveFold} />;
-});
+    return <ClimbDetailShellClient mode="play" sections={sections} aboveFold={aboveFold} />;
+  },
+);
 PlayDrawerContent.displayName = 'PlayDrawerContent';
 
 interface PlayViewActionBarProps {
@@ -126,7 +126,12 @@ export const PlayViewActionBar = React.memo(function PlayViewActionBar({
           onClick={onMirror}
           sx={
             isMirrored
-              ? { backgroundColor: themeTokens.colors.purple, borderColor: themeTokens.colors.purple, color: 'common.white', '&:hover': { backgroundColor: themeTokens.colors.purple } }
+              ? {
+                  backgroundColor: themeTokens.colors.purple,
+                  borderColor: themeTokens.colors.purple,
+                  color: 'common.white',
+                  '&:hover': { backgroundColor: themeTokens.colors.purple },
+                }
               : undefined
           }
         >
@@ -141,7 +146,16 @@ export const PlayViewActionBar = React.memo(function PlayViewActionBar({
       <IconButton onClick={onOpenActions} aria-label="Climb actions">
         <MoreHorizOutlined />
       </IconButton>
-      <MuiBadge badgeContent={remainingQueueCount} max={99} sx={{ '& .MuiBadge-badge': { backgroundColor: themeTokens.colors.primary, color: 'common.white' } }}>
+      <MuiBadge
+        badgeContent={remainingQueueCount}
+        max={99}
+        sx={{
+          '& .MuiBadge-badge': {
+            backgroundColor: themeTokens.colors.primary,
+            color: 'common.white',
+          },
+        }}
+      >
         <IconButton onClick={onOpenQueue} aria-label="Open queue">
           <FormatListBulletedOutlined />
         </IconButton>
@@ -246,7 +260,9 @@ export const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayVie
                 onClick={() => handleTickBarExpandedChange(!tickBarExpanded)}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleTickBarExpandedChange(!tickBarExpanded); }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') handleTickBarExpandedChange(!tickBarExpanded);
+                }}
                 aria-label={tickBarExpanded ? 'Collapse tick bar' : 'Expand tick bar'}
               >
                 {tickBarExpanded ? (
@@ -348,7 +364,7 @@ export const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayVie
               }
             />
             {/* Action buttons — save + attempt */}
-            {(
+            {
               <div className={styles.tickBarButtons}>
                 <TickButtonWithLabel label={isFlash ? 'flash' : 'tick'}>
                   <IconButton
@@ -358,7 +374,9 @@ export const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayVie
                       backgroundColor: isFlash ? themeTokens.colors.amber : themeTokens.colors.success,
                       color: isFlash ? themeTokens.neutral[900] : 'common.white',
                       transition: 'background-color 150ms ease, color 150ms ease',
-                      '&:hover': { backgroundColor: isFlash ? themeTokens.colors.amber : themeTokens.colors.successHover },
+                      '&:hover': {
+                        backgroundColor: isFlash ? themeTokens.colors.amber : themeTokens.colors.successHover,
+                      },
                     }}
                     aria-label="Save tick"
                   >
@@ -379,7 +397,7 @@ export const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayVie
                   </IconButton>
                 </TickButtonWithLabel>
               </div>
-            )}
+            }
           </>
         )}
       </div>
@@ -395,13 +413,7 @@ interface PlayViewDrawerProps {
   angle: Angle;
 }
 
-
-const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
-  activeDrawer,
-  setActiveDrawer,
-  boardDetails,
-  angle,
-}) => {
+const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({ activeDrawer, setActiveDrawer, boardDetails, angle }) => {
   const isOpen = activeDrawer === 'play';
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [isQueueOpen, setIsQueueOpen] = useState(false);
@@ -443,25 +455,14 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   const { currentClimb, currentClimbQueueItem } = isOpen ? currentClimbData : deferredCurrentClimb;
   const { queue } = isOpen ? queueListData : deferredQueue;
   const { viewOnlyMode } = isOpen ? sessionData : deferredSession;
-  const {
-    mirrorClimb,
-    getNextClimbQueueItem,
-    getPreviousClimbQueueItem,
-    setCurrentClimbQueueItem,
-  } = useQueueActions();
+  const { mirrorClimb, getNextClimbQueueItem, getPreviousClimbQueueItem, setCurrentClimbQueueItem } = useQueueActions();
 
-  const {
-    handleDoubleTap,
-    showHeart,
-    dismissHeart,
-    isFavorited,
-    toggleFavorite,
-  } = useDoubleTapFavorite({
+  const { handleDoubleTap, showHeart, dismissHeart, isFavorited, toggleFavorite } = useDoubleTapFavorite({
     climbUuid: currentClimb?.uuid ?? '',
   });
 
   const currentQueueIndex = currentClimbQueueItem
-    ? queue.findIndex(item => item.uuid === currentClimbQueueItem.uuid)
+    ? queue.findIndex((item) => item.uuid === currentClimbQueueItem.uuid)
     : -1;
   const remainingQueueCount = currentQueueIndex >= 0 ? queue.length - currentQueueIndex : queue.length;
 
@@ -499,9 +500,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   const currentAngle = typeof angle === 'string' ? parseInt(angle, 10) : angle;
   const filteredLogbook = useMemo(() => {
     if (!logbook || !currentClimb) return [];
-    return logbook.filter(
-      (asc) => asc.climb_uuid === currentClimb.uuid && Number(asc.angle) === currentAngle
-    );
+    return logbook.filter((asc) => asc.climb_uuid === currentClimb.uuid && Number(asc.angle) === currentAngle);
   }, [logbook, currentClimb, currentAngle]);
 
   const hasSuccessfulAscent = filteredLogbook.some((asc) => asc.is_ascent);
@@ -586,11 +585,14 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   const handleCloseQueueDrawer = useCallback(() => {
     setIsQueueOpen(false);
   }, []);
-  const handleQueueTransitionEnd = useCallback((open: boolean) => {
-    if (!open && !isQueueOpen) {
-      setQueueMounted(false);
-    }
-  }, [isQueueOpen]);
+  const handleQueueTransitionEnd = useCallback(
+    (open: boolean) => {
+      if (!open && !isQueueOpen) {
+        setQueueMounted(false);
+      }
+    },
+    [isQueueOpen],
+  );
 
   useEffect(() => {
     const handler = () => setIsQueueOpen(false);
@@ -656,7 +658,11 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   const currentMirrored = currentClimb?.mirrored;
   useEffect(() => {
     if (currentClimb) {
-      renderBoard({ boardDetails, frames: currentClimb.frames, mirrored: !!currentClimb.mirrored }).catch((e: unknown) => {
+      renderBoard({
+        boardDetails,
+        frames: currentClimb.frames,
+        mirrored: !!currentClimb.mirrored,
+      }).catch((e: unknown) => {
         if (process.env.NODE_ENV === 'development') console.debug('Pre-warm render failed:', e);
       });
     }
@@ -680,21 +686,27 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
     offsetByDeadZone: true,
   });
 
-  const handleBoardTouchStart = useCallback((e: React.TouchEvent) => {
-    (e.nativeEvent as unknown as Record<string, unknown>).defaultMuiPrevented = true;
+  const handleBoardTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      (e.nativeEvent as unknown as Record<string, unknown>).defaultMuiPrevented = true;
 
-    const scrollContainer = findScrollContainer(e.target as HTMLElement);
-    const y = e.touches[0].clientY;
-    boardPull.onTouchStart(y, scrollContainer);
+      const scrollContainer = findScrollContainer(e.target as HTMLElement);
+      const y = e.touches[0].clientY;
+      boardPull.onTouchStart(y, scrollContainer);
 
-    if (scrollContainer && scrollContainer.scrollTop <= 0) {
-      boardPull.stateRef.current.pullOriginY = y;
-    }
-  }, [boardPull]);
+      if (scrollContainer && scrollContainer.scrollTop <= 0) {
+        boardPull.stateRef.current.pullOriginY = y;
+      }
+    },
+    [boardPull],
+  );
 
-  const handleBoardTouchMove = useCallback((e: React.TouchEvent) => {
-    boardPull.onTouchMove(e.touches[0].clientY, e.touches.length, isBoardZoomed);
-  }, [boardPull, isBoardZoomed]);
+  const handleBoardTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      boardPull.onTouchMove(e.touches[0].clientY, e.touches.length, isBoardZoomed);
+    },
+    [boardPull, isBoardZoomed],
+  );
 
   const handleBoardTouchEnd = useCallback(() => {
     boardPull.onTouchEnd();
@@ -703,101 +715,99 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   const aboveFold = useMemo(() => {
     if (!currentClimb) return null;
     return (
-    <>
-      {/* Header: Grade | Name */}
-      <div className={styles.headerSection}>
-        <ClimbDetailHeader climb={currentClimb} />
-      </div>
+      <>
+        {/* Header: Grade | Name */}
+        <div className={styles.headerSection}>
+          <ClimbDetailHeader climb={currentClimb} />
+        </div>
 
-      {/* Board renderer with card-swipe and floating Tick FAB */}
-      <div className={styles.boardSectionWrapper}>
-        {currentClimb && (
-          <SwipeBoardCarousel
-            boardDetails={boardDetails}
-            currentClimb={currentClimb}
-            nextClimb={nextItem?.climb}
-            previousClimb={prevItem?.climb}
-            onSwipeNext={handleSwipeNext}
-            onSwipePrevious={handleSwipePrevious}
-            canSwipeNext={canSwipeNext}
-            canSwipePrevious={canSwipePrevious}
-            className={styles.boardSection}
-            boardContainerClassName={styles.swipeCardContainer}
-            fillContainer
-            onDoubleTap={handleDoubleTap}
-            showZoomHint
-            isDrawerOpen={isOpen}
-            onZoomChange={setIsBoardZoomed}
-            overlay={<HeartAnimationOverlay visible={showHeart} onAnimationEnd={dismissHeart} />}
-          />
-        )}
-
-        {/* Floating Tick FAB - hides when tick bar is active */}
-        {isOpen && (
-          <div className={styles.tickFabContainer}>
-            <button
-              className={`${styles.tickFab} ${hasSuccessfulAscent ? styles.tickFabSuccess : ''} ${isTickBarActive ? styles.tickFabHiding : ''}`}
-              onClick={handleTickFabClick}
-              aria-label="Log ascent"
-              disabled={isTickBarActive}
-            >
-              <CheckOutlined className={styles.tickFabIcon} />
-              {ascentCount > 0 && (
-                <span className={styles.tickFabBadge}>{ascentCount}</span>
-              )}
-            </button>
-          </div>
-        )}
-
-        {/* Tick bar backdrop overlay */}
-        {isOpen && (
-          <div
-            className={`${styles.tickBarOverlay} ${isTickBarActive ? styles.tickBarOverlayActive : ''}`}
-            onClick={handleTickBarClose}
-            aria-hidden="true"
-          />
-        )}
-
-        {/* Floating tick bar — overlays bottom of board section, no reflow */}
-        {isOpen && currentClimb && (
-          <PlayViewTickBar
-            isTickBarActive={isTickBarActive}
-            currentClimb={currentClimb}
-            angle={angle}
-            boardDetails={boardDetails}
-            onClose={handleTickBarClose}
-            onError={handleTickBarError}
-          />
-        )}
-      </div>
-
-      {/* Action bar */}
-      {isOpen && (
-        <PlayViewActionBar
-          canSwipePrevious={canSwipePrevious}
-          canSwipeNext={canSwipeNext}
-          isMirrored={isMirrored}
-          supportsMirroring={!!boardDetails.supportsMirroring}
-          isFavorited={isFavorited}
-          remainingQueueCount={remainingQueueCount}
-          onPrevClick={handlePrevNavClick}
-          onNextClick={handleNextNavClick}
-          onMirror={mirrorClimb}
-          onToggleFavorite={toggleFavorite}
-          onOpenActions={handleOpenActionsMenu}
-          onOpenQueue={handleOpenQueueDrawer}
-          angleSelector={
-            <AngleSelector
-              boardName={boardDetails.board_name}
+        {/* Board renderer with card-swipe and floating Tick FAB */}
+        <div className={styles.boardSectionWrapper}>
+          {currentClimb && (
+            <SwipeBoardCarousel
               boardDetails={boardDetails}
-              currentAngle={currentAngle}
               currentClimb={currentClimb}
-              isAngleAdjustable
+              nextClimb={nextItem?.climb}
+              previousClimb={prevItem?.climb}
+              onSwipeNext={handleSwipeNext}
+              onSwipePrevious={handleSwipePrevious}
+              canSwipeNext={canSwipeNext}
+              canSwipePrevious={canSwipePrevious}
+              className={styles.boardSection}
+              boardContainerClassName={styles.swipeCardContainer}
+              fillContainer
+              onDoubleTap={handleDoubleTap}
+              showZoomHint
+              isDrawerOpen={isOpen}
+              onZoomChange={setIsBoardZoomed}
+              overlay={<HeartAnimationOverlay visible={showHeart} onAnimationEnd={dismissHeart} />}
             />
-          }
-        />
-      )}
-    </>
+          )}
+
+          {/* Floating Tick FAB - hides when tick bar is active */}
+          {isOpen && (
+            <div className={styles.tickFabContainer}>
+              <button
+                className={`${styles.tickFab} ${hasSuccessfulAscent ? styles.tickFabSuccess : ''} ${isTickBarActive ? styles.tickFabHiding : ''}`}
+                onClick={handleTickFabClick}
+                aria-label="Log ascent"
+                disabled={isTickBarActive}
+              >
+                <CheckOutlined className={styles.tickFabIcon} />
+                {ascentCount > 0 && <span className={styles.tickFabBadge}>{ascentCount}</span>}
+              </button>
+            </div>
+          )}
+
+          {/* Tick bar backdrop overlay */}
+          {isOpen && (
+            <div
+              className={`${styles.tickBarOverlay} ${isTickBarActive ? styles.tickBarOverlayActive : ''}`}
+              onClick={handleTickBarClose}
+              aria-hidden="true"
+            />
+          )}
+
+          {/* Floating tick bar — overlays bottom of board section, no reflow */}
+          {isOpen && currentClimb && (
+            <PlayViewTickBar
+              isTickBarActive={isTickBarActive}
+              currentClimb={currentClimb}
+              angle={angle}
+              boardDetails={boardDetails}
+              onClose={handleTickBarClose}
+              onError={handleTickBarError}
+            />
+          )}
+        </div>
+
+        {/* Action bar */}
+        {isOpen && (
+          <PlayViewActionBar
+            canSwipePrevious={canSwipePrevious}
+            canSwipeNext={canSwipeNext}
+            isMirrored={isMirrored}
+            supportsMirroring={!!boardDetails.supportsMirroring}
+            isFavorited={isFavorited}
+            remainingQueueCount={remainingQueueCount}
+            onPrevClick={handlePrevNavClick}
+            onNextClick={handleNextNavClick}
+            onMirror={mirrorClimb}
+            onToggleFavorite={toggleFavorite}
+            onOpenActions={handleOpenActionsMenu}
+            onOpenQueue={handleOpenQueueDrawer}
+            angleSelector={
+              <AngleSelector
+                boardName={boardDetails.board_name}
+                boardDetails={boardDetails}
+                currentAngle={currentAngle}
+                currentClimb={currentClimb}
+                isAngleAdjustable
+              />
+            }
+          />
+        )}
+      </>
     );
   }, [
     currentClimb,
@@ -833,119 +843,129 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
 
   return (
     <>
-    <SwipeableDrawer
-      placement="bottom"
-      height="100%"
-      fullHeight
-      open={drawerOpen}
-      onClose={handleClose}
-      onTransitionEnd={handleTransitionEnd}
-      keepMounted
-      paperRef={playPaperRef}
-      swipeEnabled={!isActionsOpen && !isQueueOpen && !isPlaylistSelectorOpen}
-      showDragHandle={true}
-      styles={{
-        body: { padding: 0 },
-        wrapper: { height: '100%', backgroundColor: 'var(--semantic-background)' },
-      }}
-    >
-      {(contentReady || isOpen) ? (<>
-      <IconButton
-        size="small"
-        onClick={handleClose}
-        aria-label="Close"
-        sx={{
-          position: 'absolute',
-          top: 8,
-          right: 8,
-          zIndex: 2,
-          color: 'text.primary',
-          backgroundColor: 'action.selected',
-          '&:hover': { backgroundColor: 'action.focus' },
+      <SwipeableDrawer
+        placement="bottom"
+        height="100%"
+        fullHeight
+        open={drawerOpen}
+        onClose={handleClose}
+        onTransitionEnd={handleTransitionEnd}
+        keepMounted
+        paperRef={playPaperRef}
+        swipeEnabled={!isActionsOpen && !isQueueOpen && !isPlaylistSelectorOpen}
+        showDragHandle={true}
+        styles={{
+          body: { padding: 0 },
+          wrapper: { height: '100%', backgroundColor: 'var(--semantic-background)' },
         }}
       >
-        <CloseOutlined />
-      </IconButton>
-      <div className={styles.drawerContent} onTouchStart={handleBoardTouchStart} onTouchMove={handleBoardTouchMove} onTouchEnd={handleBoardTouchEnd}>
-        {currentClimb ? (
-          <PlayDrawerContent
-            climb={currentClimb}
-            boardType={boardDetails.board_name}
-            angle={currentAngle}
-            sectionsEnabled={sectionsEverEnabled && isOpen}
-            aboveFold={aboveFold}
-          />
-        ) : (
-          <ClimbDetailShellClient mode="play" sections={[]} aboveFold={null} />
-        )}
-      </div>
+        {contentReady || isOpen ? (
+          <>
+            <IconButton
+              size="small"
+              onClick={handleClose}
+              aria-label="Close"
+              sx={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                zIndex: 2,
+                color: 'text.primary',
+                backgroundColor: 'action.selected',
+                '&:hover': { backgroundColor: 'action.focus' },
+              }}
+            >
+              <CloseOutlined />
+            </IconButton>
+            <div
+              className={styles.drawerContent}
+              onTouchStart={handleBoardTouchStart}
+              onTouchMove={handleBoardTouchMove}
+              onTouchEnd={handleBoardTouchEnd}
+            >
+              {currentClimb ? (
+                <PlayDrawerContent
+                  climb={currentClimb}
+                  boardType={boardDetails.board_name}
+                  angle={currentAngle}
+                  sectionsEnabled={sectionsEverEnabled && isOpen}
+                  aboveFold={aboveFold}
+                />
+              ) : (
+                <ClimbDetailShellClient mode="play" sections={[]} aboveFold={null} />
+              )}
+            </div>
 
-        {/* Climb actions drawer */}
-        {isOpen && currentClimb && isActionsOpen && (
-          <SwipeableDrawer
-            placement="bottom"
-            title={
-              currentClimb ? (
-                <div data-swipe-blocked="" {...actionsDragHandlers} className={drawerCss.dragHeaderWrapper}>
-                  <DrawerClimbHeader climb={currentClimb} boardDetails={boardDetails} />
-                </div>
-              ) : undefined
-            }
-            height="60%"
-            paperRef={actionsPaperRef}
-            open={isActionsOpen}
-            onClose={handleCloseActions}
-            swipeEnabled={false}
-            disablePortal
-            styles={{
-              wrapper: {
-                touchAction: 'pan-y' as const,
-                transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              },
-              body: { padding: `${themeTokens.spacing[2]}px 0` },
-            }}
-          >
-              <ClimbActions
-                climb={currentClimb}
-                boardDetails={boardDetails}
-                angle={currentAngle}
-                currentPathname={pathname}
-                viewMode="list"
-                onOpenPlaylistSelector={() => {
-                  setIsActionsOpen(false);
-                  setIsPlaylistSelectorOpen(true);
+            {/* Climb actions drawer */}
+            {isOpen && currentClimb && isActionsOpen && (
+              <SwipeableDrawer
+                placement="bottom"
+                title={
+                  currentClimb ? (
+                    <div data-swipe-blocked="" {...actionsDragHandlers} className={drawerCss.dragHeaderWrapper}>
+                      <DrawerClimbHeader climb={currentClimb} boardDetails={boardDetails} />
+                    </div>
+                  ) : undefined
+                }
+                height="60%"
+                paperRef={actionsPaperRef}
+                open={isActionsOpen}
+                onClose={handleCloseActions}
+                swipeEnabled={false}
+                disablePortal
+                styles={{
+                  wrapper: {
+                    touchAction: 'pan-y' as const,
+                    transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  },
+                  body: { padding: `${themeTokens.spacing[2]}px 0` },
                 }}
-                onActionComplete={handleCloseActions}
-                onGoToQueue={handleGoToQueueFromActions}
-              />
-          </SwipeableDrawer>
-        )}
+              >
+                <ClimbActions
+                  climb={currentClimb}
+                  boardDetails={boardDetails}
+                  angle={currentAngle}
+                  currentPathname={pathname}
+                  viewMode="list"
+                  onOpenPlaylistSelector={() => {
+                    setIsActionsOpen(false);
+                    setIsPlaylistSelectorOpen(true);
+                  }}
+                  onActionComplete={handleCloseActions}
+                  onGoToQueue={handleGoToQueueFromActions}
+                />
+              </SwipeableDrawer>
+            )}
 
-        {/* Playlist selector drawer */}
-        {isOpen && currentClimb && isPlaylistSelectorOpen && (
-          <SwipeableDrawer
-            title={<DrawerClimbHeader climb={currentClimb} boardDetails={boardDetails} />}
-            placement="bottom"
-            open={isPlaylistSelectorOpen}
-            onClose={handleClosePlaylist}
-            paperRef={playlistSwipe.paperRef}
-            swipeEnabled={false}
-            disablePortal
-            styles={{
-              wrapper: { height: 'auto', maxHeight: '70vh' },
-              body: { padding: 0 },
-              header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
-            }}
-          >
-            <PlaylistSelectionContent
-              climbUuid={currentClimb.uuid}
-              boardDetails={boardDetails}
-              angle={currentAngle}
-              onDone={handleClosePlaylist}
-            />
-          </SwipeableDrawer>
-        )}
-      </>) : null}
+            {/* Playlist selector drawer */}
+            {isOpen && currentClimb && isPlaylistSelectorOpen && (
+              <SwipeableDrawer
+                title={<DrawerClimbHeader climb={currentClimb} boardDetails={boardDetails} />}
+                placement="bottom"
+                open={isPlaylistSelectorOpen}
+                onClose={handleClosePlaylist}
+                paperRef={playlistSwipe.paperRef}
+                swipeEnabled={false}
+                disablePortal
+                styles={{
+                  wrapper: { height: 'auto', maxHeight: '70vh' },
+                  body: { padding: 0 },
+                  header: {
+                    paddingLeft: `${themeTokens.spacing[3]}px`,
+                    paddingRight: `${themeTokens.spacing[3]}px`,
+                  },
+                }}
+              >
+                <PlaylistSelectionContent
+                  climbUuid={currentClimb.uuid}
+                  boardDetails={boardDetails}
+                  angle={currentAngle}
+                  onDone={handleClosePlaylist}
+                />
+              </SwipeableDrawer>
+            )}
+          </>
+        ) : null}
 
         {/* Queue list drawer */}
         {queueMounted && (
@@ -956,7 +976,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
             boardDetails={boardDetails}
           />
         )}
-    </SwipeableDrawer>
+      </SwipeableDrawer>
     </>
   );
 };

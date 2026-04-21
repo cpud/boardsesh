@@ -137,10 +137,7 @@ export default function SessionSummaryView({ summary }: SessionSummaryViewProps)
               {summary.gradeDistribution.map((g) => (
                 <Box key={g.grade} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   {gradeFormatLoaded ? (
-                    <Typography
-                      variant="body2"
-                      sx={{ minWidth: 40, fontWeight: 600, textAlign: 'right' }}
-                    >
+                    <Typography variant="body2" sx={{ minWidth: 40, fontWeight: 600, textAlign: 'right' }}>
                       {formatGrade(g.grade) ?? g.grade}
                     </Typography>
                   ) : (

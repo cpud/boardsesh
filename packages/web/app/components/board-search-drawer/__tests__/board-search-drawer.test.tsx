@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import type { UserBoard } from '@boardsesh/shared-schema';
@@ -51,7 +51,11 @@ vi.mock('@/app/components/swipeable-drawer/swipeable-drawer', () => ({
 }));
 
 vi.mock('@/app/components/board-entity/board-card', () => ({
-  default: ({ board, onClick, trailingAction }: {
+  default: ({
+    board,
+    onClick,
+    trailingAction,
+  }: {
     board: UserBoard;
     onClick?: (b: UserBoard) => void;
     trailingAction?: React.ReactNode;
@@ -68,13 +72,8 @@ vi.mock('@/app/components/ui/follow-button', () => ({
 }));
 
 vi.mock('../board-search-map', () => ({
-  default: ({ onViewportChange }: {
-    onViewportChange: (v: { lat: number; lng: number; zoom: number }) => void;
-  }) => (
-    <div
-      data-testid="board-search-map"
-      onClick={() => onViewportChange({ lat: 51.5, lng: -0.1, zoom: 12 })}
-    />
+  default: ({ onViewportChange }: { onViewportChange: (v: { lat: number; lng: number; zoom: number }) => void }) => (
+    <div data-testid="board-search-map" onClick={() => onViewportChange({ lat: 51.5, lng: -0.1, zoom: 12 })} />
   ),
 }));
 
@@ -129,9 +128,7 @@ describe('BoardSearchDrawer', () => {
   });
 
   it('requests geolocation exactly once on the first open', () => {
-    const { rerender } = render(
-      <BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />,
-    );
+    const { rerender } = render(<BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />);
     expect(mockRequestPermission).toHaveBeenCalledTimes(1);
 
     // Re-rendering while still open must not re-fire the prompt
@@ -140,9 +137,7 @@ describe('BoardSearchDrawer', () => {
   });
 
   it('re-requests geolocation when the drawer is reopened (requestedGeo resets on close)', () => {
-    const { rerender } = render(
-      <BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />,
-    );
+    const { rerender } = render(<BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />);
     expect(mockRequestPermission).toHaveBeenCalledTimes(1);
 
     rerender(<BoardSearchDrawer open={false} onClose={vi.fn()} onBoardOpen={vi.fn()} />);
@@ -170,9 +165,7 @@ describe('BoardSearchDrawer', () => {
   it('clears the typed query when the drawer closes', () => {
     mockBoards = [makeBoard('b1')];
 
-    const { rerender, container } = render(
-      <BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />,
-    );
+    const { rerender, container } = render(<BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />);
     const input = container.querySelector('input') as HTMLInputElement;
     expect(input).toBeTruthy();
 
@@ -188,9 +181,7 @@ describe('BoardSearchDrawer', () => {
 
   it('resets coords to null when the drawer is closed and reopened without geolocation', () => {
     // userCoords is null (no geo) — only a manual pan had resolved coords.
-    const { rerender } = render(
-      <BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />,
-    );
+    const { rerender } = render(<BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />);
 
     // Simulate the user panning the map to a real location
     fireEvent.click(screen.getByTestId('board-search-map'));
@@ -210,9 +201,7 @@ describe('BoardSearchDrawer', () => {
     // Geolocation was already granted before the drawer opens.
     mockUserCoords = { latitude: 48.8, longitude: 2.3, accuracy: 10 };
 
-    const { rerender } = render(
-      <BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />,
-    );
+    const { rerender } = render(<BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />);
 
     // Should auto-center to the resolved location immediately
     expect(lastSearchInput!.latitude).toBe(48.8);
@@ -233,9 +222,7 @@ describe('BoardSearchDrawer', () => {
     mockBoards = [makeBoard('b1', { latitude: 51.5, longitude: -0.1 })];
     mockUserCoords = null;
 
-    const { rerender } = render(
-      <BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />,
-    );
+    const { rerender } = render(<BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />);
 
     // Click the card — handleCardClick sets center and locationResolved=true
     fireEvent.click(screen.getByTestId('board-card-b1'));

@@ -29,7 +29,7 @@ export function usePendingUpdateCleanup({
     const pendingTimestamps = pendingTimestampsRef.current;
 
     // Add timestamps for NEW correlation IDs only
-    pendingCurrentClimbUpdates.forEach(id => {
+    pendingCurrentClimbUpdates.forEach((id) => {
       if (!pendingTimestamps.has(id)) {
         pendingTimestamps.set(id, Date.now());
       }
@@ -59,7 +59,7 @@ export function usePendingUpdateCleanup({
           type: 'CLEANUP_PENDING_UPDATES_BATCH',
           payload: { correlationIds: staleIds },
         });
-        staleIds.forEach(id => pendingTimestamps.delete(id));
+        staleIds.forEach((id) => pendingTimestamps.delete(id));
       }
     }, 2000);
 

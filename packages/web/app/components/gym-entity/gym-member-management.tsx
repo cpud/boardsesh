@@ -39,29 +39,31 @@ export default function GymMemberManagement({ gymUuid, isOwnerOrAdmin }: GymMemb
   const { token } = useWsAuthToken();
   const { showMessage } = useSnackbar();
 
-  const fetchMembers = useCallback(async (offset = 0) => {
-    if (!token) return;
-    setLoading(true);
-    try {
-      const client = createGraphQLHttpClient(token);
-      const data = await client.request<GetGymMembersQueryResponse, GetGymMembersQueryVariables>(
-        GET_GYM_MEMBERS,
-        { input: { gymUuid, limit: 20, offset } },
-      );
+  const fetchMembers = useCallback(
+    async (offset = 0) => {
+      if (!token) return;
+      setLoading(true);
+      try {
+        const client = createGraphQLHttpClient(token);
+        const data = await client.request<GetGymMembersQueryResponse, GetGymMembersQueryVariables>(GET_GYM_MEMBERS, {
+          input: { gymUuid, limit: 20, offset },
+        });
 
-      if (offset === 0) {
-        setMembers(data.gymMembers.members);
-      } else {
-        setMembers((prev) => [...prev, ...data.gymMembers.members]);
+        if (offset === 0) {
+          setMembers(data.gymMembers.members);
+        } else {
+          setMembers((prev) => [...prev, ...data.gymMembers.members]);
+        }
+        setHasMore(data.gymMembers.hasMore);
+        setTotalCount(data.gymMembers.totalCount);
+      } catch (error) {
+        console.error('Failed to fetch members:', error);
+      } finally {
+        setLoading(false);
       }
-      setHasMore(data.gymMembers.hasMore);
-      setTotalCount(data.gymMembers.totalCount);
-    } catch (error) {
-      console.error('Failed to fetch members:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [token, gymUuid]);
+    },
+    [token, gymUuid],
+  );
 
   useEffect(() => {
     fetchMembers();
@@ -73,10 +75,9 @@ export default function GymMemberManagement({ gymUuid, isOwnerOrAdmin }: GymMemb
 
     try {
       const client = createGraphQLHttpClient(token);
-      await client.request<RemoveGymMemberMutationResponse, RemoveGymMemberMutationVariables>(
-        REMOVE_GYM_MEMBER,
-        { input: { gymUuid, userId } },
-      );
+      await client.request<RemoveGymMemberMutationResponse, RemoveGymMemberMutationVariables>(REMOVE_GYM_MEMBER, {
+        input: { gymUuid, userId },
+      });
       setMembers((prev) => prev.filter((m) => m.userId !== userId));
       setTotalCount((prev) => prev - 1);
       showMessage('Member removed', 'success');
@@ -112,33 +113,21 @@ export default function GymMemberManagement({ gymUuid, isOwnerOrAdmin }: GymMemb
             key={member.userId}
             secondaryAction={
               isOwnerOrAdmin ? (
-                <IconButton
-                  edge="end"
-                  size="small"
-                  onClick={() => handleRemove(member.userId)}
-                >
+                <IconButton edge="end" size="small" onClick={() => handleRemove(member.userId)}>
                   <RemoveCircleOutlined fontSize="small" />
                 </IconButton>
               ) : undefined
             }
           >
             <ListItemAvatar>
-              <Avatar
-                src={member.avatarUrl ?? undefined}
-                sx={{ width: 32, height: 32, fontSize: 13 }}
-              >
+              <Avatar src={member.avatarUrl ?? undefined} sx={{ width: 32, height: 32, fontSize: 13 }}>
                 {member.displayName?.[0]?.toUpperCase()}
               </Avatar>
             </ListItemAvatar>
             <ListItemText
               primary={member.displayName ?? 'Unknown User'}
               secondary={
-                <Chip
-                  label={member.role}
-                  size="small"
-                  variant="outlined"
-                  sx={{ fontSize: 11, height: 20, mt: 0.5 }}
-                />
+                <Chip label={member.role} size="small" variant="outlined" sx={{ fontSize: 11, height: 20, mt: 0.5 }} />
               }
             />
           </ListItem>

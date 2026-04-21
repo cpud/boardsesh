@@ -9,11 +9,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import GymCard from '@/app/components/gym-entity/gym-card';
 import GymDetail from '@/app/components/gym-entity/gym-detail';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  SEARCH_GYMS,
-  type SearchGymsQueryVariables,
-  type SearchGymsQueryResponse,
-} from '@/app/lib/graphql/operations';
+import { SEARCH_GYMS, type SearchGymsQueryVariables, type SearchGymsQueryResponse } from '@/app/lib/graphql/operations';
 import type { Gym, GymConnection } from '@boardsesh/shared-schema';
 import { useDebouncedValue } from '@/app/hooks/use-debounced-value';
 import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
@@ -27,17 +23,13 @@ export default function GymSearchResults({ query, authToken }: GymSearchResultsP
   const [selectedGymUuid, setSelectedGymUuid] = useState<string | null>(null);
   const debouncedQuery = useDebouncedValue(query, 300);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery<
-    GymConnection,
-    Error
-  >({
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery<GymConnection, Error>({
     queryKey: ['searchGyms', debouncedQuery, authToken],
     queryFn: async ({ pageParam }) => {
       const client = createGraphQLHttpClient(authToken);
-      const response = await client.request<SearchGymsQueryResponse, SearchGymsQueryVariables>(
-        SEARCH_GYMS,
-        { input: { query: debouncedQuery, limit: 20, offset: pageParam as number } }
-      );
+      const response = await client.request<SearchGymsQueryResponse, SearchGymsQueryVariables>(SEARCH_GYMS, {
+        input: { query: debouncedQuery, limit: 20, offset: pageParam as number },
+      });
       return response.searchGyms;
     },
     initialPageParam: 0,
@@ -49,10 +41,7 @@ export default function GymSearchResults({ query, authToken }: GymSearchResultsP
     staleTime: 30 * 1000,
   });
 
-  const results: Gym[] = useMemo(
-    () => data?.pages.flatMap((p) => p.gyms) ?? [],
-    [data],
-  );
+  const results: Gym[] = useMemo(() => data?.pages.flatMap((p) => p.gyms) ?? [], [data]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: fetchNextPage,

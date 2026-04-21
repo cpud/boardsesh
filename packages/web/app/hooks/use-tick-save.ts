@@ -32,10 +32,7 @@ export interface UseTickSaveOptions {
 /**
  * Decide whether the user has any prior history for a climb at open time.
  */
-export function hasPriorHistoryForClimb(
-  climb: Climb,
-  logbook: LogbookEntry[],
-): boolean {
+export function hasPriorHistoryForClimb(climb: Climb, logbook: LogbookEntry[]): boolean {
   // Check server-side counts first — these are available immediately
   // and prevent cold-cache flicker when logbook hasn't loaded yet.
   const ascents = climb.userAscents;
@@ -73,7 +70,16 @@ export function useTickSave(options: UseTickSaveOptions): {
   save: (originElement?: HTMLElement | null) => void;
   saveAttempt: (originElement?: HTMLElement | null) => void;
 } {
-  const { tickTarget, quality, difficulty, attemptCount, comment, ascentType: explicitAscentType, onSave, onError } = options;
+  const {
+    tickTarget,
+    quality,
+    difficulty,
+    attemptCount,
+    comment,
+    ascentType: explicitAscentType,
+    onSave,
+    onError,
+  } = options;
   const { saveTick } = useBoardProvider();
   const fireConfetti = useConfetti();
   const saving = useRef(false);
@@ -105,14 +111,30 @@ export function useTickSave(options: UseTickSaveOptions): {
       }
 
       // Capture values for the draft in case the save fails.
-      const draftValues = { climbUuid: climb.uuid, angle: Number(targetAngle), quality, difficulty, attemptCount, comment, status };
+      const draftValues = {
+        climbUuid: climb.uuid,
+        angle: Number(targetAngle),
+        quality,
+        difficulty,
+        attemptCount,
+        comment,
+        status,
+      };
 
       // Fire celebration and close the bar -- don't wait for the network.
       // When an explicit ascentType is provided, derive the variant from status
       // (the isAscent boolean is only meaningful for the legacy two-method API).
       const variant = explicitAscentType
-        ? (status === 'attempt' ? 'attempt' : status === 'flash' ? 'flash' : 'ascent')
-        : (!isAscent ? 'attempt' : status === 'flash' ? 'flash' : 'ascent');
+        ? status === 'attempt'
+          ? 'attempt'
+          : status === 'flash'
+            ? 'flash'
+            : 'ascent'
+        : !isAscent
+          ? 'attempt'
+          : status === 'flash'
+            ? 'flash'
+            : 'ascent';
       fireConfetti(confettiOrigin ?? null, variant);
       // Flash: brief 300ms delay so the button pulse + sparks play before the bar closes.
       if (variant === 'flash') {
@@ -138,33 +160,50 @@ export function useTickSave(options: UseTickSaveOptions): {
         climbedAt: new Date().toISOString(),
         layoutId: targetBoard.layout_id,
         sizeId: targetBoard.size_id,
-        setIds: Array.isArray(targetBoard.set_ids)
-          ? targetBoard.set_ids.join(',')
-          : String(targetBoard.set_ids),
-      }).then(() => {
-        track('Quick Tick Saved', {
-          boardLayout: targetBoard.layout_name || '',
-          status,
-          attemptCount,
-          hasQuality: quality !== null,
-          hasDifficulty: difficulty !== undefined,
-          hasComment: comment.length > 0,
+        setIds: Array.isArray(targetBoard.set_ids) ? targetBoard.set_ids.join(',') : String(targetBoard.set_ids),
+      })
+        .then(() => {
+          track('Quick Tick Saved', {
+            boardLayout: targetBoard.layout_name || '',
+            status,
+            attemptCount,
+            hasQuality: quality !== null,
+            hasDifficulty: difficulty !== undefined,
+            hasComment: comment.length > 0,
+          });
+          clearTickDraft(climb.uuid, Number(targetAngle));
+        })
+        .catch(() => {
+          track('Quick Tick Failed', {
+            boardLayout: targetBoard.layout_name || '',
+          });
+          saveTickDraft(draftValues);
+          saving.current = false;
+          onError?.();
         });
-        clearTickDraft(climb.uuid, Number(targetAngle));
-      }).catch(() => {
-        track('Quick Tick Failed', {
-          boardLayout: targetBoard.layout_name || '',
-        });
-        saveTickDraft(draftValues);
-        saving.current = false;
-        onError?.();
-      });
     },
-    [tickTarget, quality, difficulty, comment, explicitAscentType, saveTick, onSave, attemptCount, fireConfetti, onError],
+    [
+      tickTarget,
+      quality,
+      difficulty,
+      comment,
+      explicitAscentType,
+      saveTick,
+      onSave,
+      attemptCount,
+      fireConfetti,
+      onError,
+    ],
   );
 
-  const save = useCallback((originElement?: HTMLElement | null) => handleSave(true, originElement, false), [handleSave]);
-  const saveAttempt = useCallback((originElement?: HTMLElement | null) => handleSave(false, originElement, true), [handleSave]);
+  const save = useCallback(
+    (originElement?: HTMLElement | null) => handleSave(true, originElement, false),
+    [handleSave],
+  );
+  const saveAttempt = useCallback(
+    (originElement?: HTMLElement | null) => handleSave(false, originElement, true),
+    [handleSave],
+  );
 
   return { save, saveAttempt };
 }

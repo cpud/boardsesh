@@ -31,7 +31,9 @@ import styles from './climb-list-item.module.css';
 import ascentStyles from './ascent-status.module.css';
 import drawerCss from '../swipeable-drawer/swipeable-drawer.module.css';
 
-const SwipeableDrawer = dynamic(() => import('../swipeable-drawer/swipeable-drawer'), { ssr: false });
+const SwipeableDrawer = dynamic(() => import('../swipeable-drawer/swipeable-drawer'), {
+  ssr: false,
+});
 const QueueDrawer = dynamic(() => import('../play-view/queue-drawer'), { ssr: false });
 
 // Keep swipe visuals aligned with gesture max distance
@@ -124,7 +126,11 @@ const defaultRightActionStyle: React.CSSProperties = {
 
 const iconStyle: React.CSSProperties = { color: 'white', fontSize: 20 };
 
-const thumbnailStyle: React.CSSProperties = { width: themeTokens.spacing[16], flexShrink: 0, position: 'relative' };
+const thumbnailStyle: React.CSSProperties = {
+  width: themeTokens.spacing[16],
+  flexShrink: 0,
+  position: 'relative',
+};
 
 const centerStyle: React.CSSProperties = { flex: 1, minWidth: 0 };
 
@@ -137,13 +143,19 @@ const actionsDrawerStyles = {
     transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   },
   body: { padding: `${themeTokens.spacing[2]}px 0` },
-  header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
+  header: {
+    paddingLeft: `${themeTokens.spacing[3]}px`,
+    paddingRight: `${themeTokens.spacing[3]}px`,
+  },
 } as const;
 
 const playlistDrawerStyles = {
   wrapper: { height: 'auto', maxHeight: '70vh', width: '100%' },
   body: { padding: 0 },
-  header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
+  header: {
+    paddingLeft: `${themeTokens.spacing[3]}px`,
+    paddingRight: `${themeTokens.spacing[3]}px`,
+  },
 } as const;
 
 export type SwipeActionOverride = {
@@ -263,12 +275,9 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     // value without requiring addToQueue in the memo comparator.
     const addToQueueRef = useRef(addToQueue);
     addToQueueRef.current = addToQueue;
-    const {
-      handleDoubleTap,
-      showHeart,
-      dismissHeart,
-      isFavorited,
-    } = useDoubleTapFavorite({ climbUuid: climb.uuid });
+    const { handleDoubleTap, showHeart, dismissHeart, isFavorited } = useDoubleTapFavorite({
+      climbUuid: climb.uuid,
+    });
     const { ref: doubleTapRef, onDoubleClick: handleDoubleTapClick } = useDoubleTap(handleDoubleTap);
     // Store onThumbnailClick in a ref so the memoized handler always reads the latest
     // value without requiring onThumbnailClick in the memo comparator.
@@ -322,9 +331,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       const rightBaseOpacity = Math.min(1, rightOffset / SHORT_SWIPE_THRESHOLD);
       const transitionRange = LONG_SWIPE_THRESHOLD - TRANSITION_START;
       const blend =
-        transitionRange > 0
-          ? Math.max(0, Math.min(1, (rightOffset - TRANSITION_START) / transitionRange))
-          : 1;
+        transitionRange > 0 ? Math.max(0, Math.min(1, (rightOffset - TRANSITION_START) / transitionRange)) : 1;
 
       if (shortSwipeLayerRef.current) {
         shortSwipeLayerRef.current.style.opacity = String(rightBaseOpacity * (1 - blend));
@@ -356,18 +363,24 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     });
 
     // Combined ref callback for left action container — avoids inline function recreation
-    const leftActionCombinedRef = useCallback((node: HTMLDivElement | null) => {
-      leftActionRef(node);
-      leftActionContainerRef.current = node;
-    }, [leftActionRef]);
+    const leftActionCombinedRef = useCallback(
+      (node: HTMLDivElement | null) => {
+        leftActionRef(node);
+        leftActionContainerRef.current = node;
+      },
+      [leftActionRef],
+    );
 
     // Combined ref callback for swipeable content div
-    const contentCombinedRef = useCallback((node: HTMLDivElement | null) => {
-      if (!disableSwipe) {
-        swipeHandlers.ref(node);
-        contentRef(node);
-      }
-    }, [disableSwipe, swipeHandlers, contentRef]);
+    const contentCombinedRef = useCallback(
+      (node: HTMLDivElement | null) => {
+        if (!disableSwipe) {
+          swipeHandlers.ref(node);
+          contentRef(node);
+        }
+      },
+      [disableSwipe, swipeHandlers, contentRef],
+    );
 
     // Stable refs so the memoized handlers below stay stable across renders
     // even when the bigger-board callback identity changes.
@@ -442,18 +455,21 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     }, []);
 
     // Menu button click handler — extracted from inline to avoid per-render allocation
-    const handleMenuClick = useCallback((e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (onOpenActions) {
-        onOpenActions(climb);
-      } else {
-        setIsPlaylistSelectorOpen(false);
-        setIsActionsOpen(true);
-      }
-    }, [onOpenActions, climb]);
+    const handleMenuClick = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (onOpenActions) {
+          onOpenActions(climb);
+        } else {
+          setIsPlaylistSelectorOpen(false);
+          setIsActionsOpen(true);
+        }
+      },
+      [onOpenActions, climb],
+    );
 
     const excludeActions = useMemo(
-      () => boardDetails ? getExcludedClimbActions(boardDetails.board_name, 'list') : [],
+      () => (boardDetails ? getExcludedClimbActions(boardDetails.board_name, 'list') : []),
       [boardDetails],
     );
 
@@ -466,7 +482,6 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       }),
       [unsupported, needsBiggerBoard],
     );
-
 
     const rightOverrideActionStyle = useMemo(
       () => ({
@@ -488,9 +503,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
 
     const resolvedBg =
       backgroundColor ??
-      (selected
-        ? (getGradeTintColor(climb.difficulty, 'light', isDark) ?? 'var(--semantic-selected)')
-        : 'transparent');
+      (selected ? (getGradeTintColor(climb.difficulty, 'light', isDark) ?? 'var(--semantic-selected)') : 'transparent');
 
     const swipeableContentStyle = useMemo(
       () => ({
@@ -522,9 +535,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
 
     // Memoize right action layer styles to avoid inline object creation per render
     const rightActionDefaultLayerStyle = useMemo(
-      () => swipeLeftConfirmed
-        ? { ...rightActionLayerDefaultStyle, opacity: 0 }
-        : rightActionLayerDefaultStyle,
+      () => (swipeLeftConfirmed ? { ...rightActionLayerDefaultStyle, opacity: 0 } : rightActionLayerDefaultStyle),
       [swipeLeftConfirmed],
     );
 
@@ -598,8 +609,15 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
                     fetchPriority={fetchPriority}
                   />
                 )}
-                {!disableFavorite && <HeartAnimationOverlay visible={showHeart} onAnimationEnd={dismissHeart} size={32} />}
-                <AscentStatus climbUuid={climb.uuid} fontSize={12} className={ascentStyles.badge} mirroredClassName={ascentStyles.badgeMirrored} />
+                {!disableFavorite && (
+                  <HeartAnimationOverlay visible={showHeart} onAnimationEnd={dismissHeart} size={32} />
+                )}
+                <AscentStatus
+                  climbUuid={climb.uuid}
+                  fontSize={12}
+                  className={ascentStyles.badge}
+                  mirroredClassName={ascentStyles.badgeMirrored}
+                />
               </div>
             )}
 
@@ -677,11 +695,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
             </SwipeableDrawer>
 
             {isQueueListOpen && (
-              <QueueDrawer
-                open={isQueueListOpen}
-                onClose={handleCloseQueueList}
-                boardDetails={boardDetails}
-              />
+              <QueueDrawer open={isQueueListOpen} onClose={handleCloseQueueList} boardDetails={boardDetails} />
             )}
           </>
         )}

@@ -114,21 +114,63 @@ const KILTER_LAYOUT_SIZES: Record<number, number[]> = {
 
 /** Sets indexed by "layoutId-sizeId" */
 const KILTER_SETS: Record<string, SetMapping[]> = {
-  '1-7': [{ id: 1, name: 'Bolt Ons' }, { id: 20, name: 'Screw Ons' }],
-  '1-8': [{ id: 1, name: 'Bolt Ons' }, { id: 20, name: 'Screw Ons' }],
-  '1-10': [{ id: 1, name: 'Bolt Ons' }, { id: 20, name: 'Screw Ons' }],
-  '1-14': [{ id: 1, name: 'Bolt Ons' }, { id: 20, name: 'Screw Ons' }],
-  '1-27': [{ id: 1, name: 'Bolt Ons' }, { id: 20, name: 'Screw Ons' }],
-  '1-28': [{ id: 1, name: 'Bolt Ons' }, { id: 20, name: 'Screw Ons' }],
-  '8-17': [{ id: 26, name: 'Mainline' }, { id: 27, name: 'Auxiliary' }],
+  '1-7': [
+    { id: 1, name: 'Bolt Ons' },
+    { id: 20, name: 'Screw Ons' },
+  ],
+  '1-8': [
+    { id: 1, name: 'Bolt Ons' },
+    { id: 20, name: 'Screw Ons' },
+  ],
+  '1-10': [
+    { id: 1, name: 'Bolt Ons' },
+    { id: 20, name: 'Screw Ons' },
+  ],
+  '1-14': [
+    { id: 1, name: 'Bolt Ons' },
+    { id: 20, name: 'Screw Ons' },
+  ],
+  '1-27': [
+    { id: 1, name: 'Bolt Ons' },
+    { id: 20, name: 'Screw Ons' },
+  ],
+  '1-28': [
+    { id: 1, name: 'Bolt Ons' },
+    { id: 20, name: 'Screw Ons' },
+  ],
+  '8-17': [
+    { id: 26, name: 'Mainline' },
+    { id: 27, name: 'Auxiliary' },
+  ],
   '8-18': [{ id: 26, name: 'Mainline' }],
   '8-19': [{ id: 27, name: 'Auxiliary' }],
-  '8-21': [{ id: 26, name: 'Mainline' }, { id: 27, name: 'Auxiliary' }],
+  '8-21': [
+    { id: 26, name: 'Mainline' },
+    { id: 27, name: 'Auxiliary' },
+  ],
   '8-22': [{ id: 26, name: 'Mainline' }],
-  '8-23': [{ id: 26, name: 'Mainline' }, { id: 27, name: 'Auxiliary' }, { id: 28, name: 'Mainline Kickboard' }, { id: 29, name: 'Auxiliary Kickboard' }],
-  '8-24': [{ id: 26, name: 'Mainline' }, { id: 28, name: 'Mainline Kickboard' }, { id: 29, name: 'Auxiliary Kickboard' }],
-  '8-25': [{ id: 26, name: 'Mainline' }, { id: 27, name: 'Auxiliary' }, { id: 28, name: 'Mainline Kickboard' }, { id: 29, name: 'Auxiliary Kickboard' }],
-  '8-26': [{ id: 26, name: 'Mainline' }, { id: 28, name: 'Mainline Kickboard' }, { id: 29, name: 'Auxiliary Kickboard' }],
+  '8-23': [
+    { id: 26, name: 'Mainline' },
+    { id: 27, name: 'Auxiliary' },
+    { id: 28, name: 'Mainline Kickboard' },
+    { id: 29, name: 'Auxiliary Kickboard' },
+  ],
+  '8-24': [
+    { id: 26, name: 'Mainline' },
+    { id: 28, name: 'Mainline Kickboard' },
+    { id: 29, name: 'Auxiliary Kickboard' },
+  ],
+  '8-25': [
+    { id: 26, name: 'Mainline' },
+    { id: 27, name: 'Auxiliary' },
+    { id: 28, name: 'Mainline Kickboard' },
+    { id: 29, name: 'Auxiliary Kickboard' },
+  ],
+  '8-26': [
+    { id: 26, name: 'Mainline' },
+    { id: 28, name: 'Mainline Kickboard' },
+    { id: 29, name: 'Auxiliary Kickboard' },
+  ],
   '8-29': [{ id: 27, name: 'Auxiliary' }],
 };
 
@@ -374,11 +416,7 @@ async function seedBoardLocations() {
     console.log('Starting board location seed...');
 
     // Step 1: Ensure system user exists
-    const [existingUser] = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(eq(users.id, SYSTEM_USER_ID))
-      .limit(1);
+    const [existingUser] = await db.select({ id: users.id }).from(users).where(eq(users.id, SYSTEM_USER_ID)).limit(1);
 
     if (!existingUser) {
       await db.insert(users).values({

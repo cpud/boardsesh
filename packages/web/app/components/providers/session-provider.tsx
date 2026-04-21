@@ -74,17 +74,19 @@ export default function SessionProviderWrapper({ children }: SessionProviderWrap
       window.location.assign(result?.url ?? safeCallbackUrl);
     });
 
-    Promise.resolve(listenerResult).then((handle) => {
-      if (cancelled) {
-        // Component unmounted before the listener was registered — clean up
-        void handle.remove();
-      } else {
-        listenerHandle = handle;
-      }
-    }).catch((err) => {
-      console.error('[Native OAuth] Failed to register appUrlOpen listener:', err);
-      setDeepLinkError(true);
-    });
+    Promise.resolve(listenerResult)
+      .then((handle) => {
+        if (cancelled) {
+          // Component unmounted before the listener was registered — clean up
+          void handle.remove();
+        } else {
+          listenerHandle = handle;
+        }
+      })
+      .catch((err) => {
+        console.error('[Native OAuth] Failed to register appUrlOpen listener:', err);
+        setDeepLinkError(true);
+      });
 
     return () => {
       cancelled = true;
@@ -93,16 +95,9 @@ export default function SessionProviderWrapper({ children }: SessionProviderWrap
   }, []);
 
   return (
-    <SessionProvider
-      refetchOnWindowFocus={false}
-      refetchWhenOffline={false}
-    >
+    <SessionProvider refetchOnWindowFocus={false} refetchWhenOffline={false}>
       {children}
-      <Snackbar
-        open={deepLinkError}
-        autoHideDuration={8000}
-        onClose={() => setDeepLinkError(false)}
-      >
+      <Snackbar open={deepLinkError} autoHideDuration={8000} onClose={() => setDeepLinkError(false)}>
         <Alert severity="warning" onClose={() => setDeepLinkError(false)}>
           Sign-in with Google, Apple, or Facebook may not work. Try restarting the app.
         </Alert>

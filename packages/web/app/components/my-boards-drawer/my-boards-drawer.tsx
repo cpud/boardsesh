@@ -84,37 +84,31 @@ export default function MyBoardsDrawer({ open, onClose, onCreateBoard, onTransit
     return parts.join(' \u00B7 ');
   };
 
-  const drawerTitle = view.type === 'list' ? (
-    'My Boards'
-  ) : (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-      <IconButton size="small" onClick={handleBack} edge="start" aria-label="Back">
-        <ArrowBackOutlined fontSize="small" />
-      </IconButton>
-      {view.type === 'search' ? 'Find a Board' : 'Board'}
-    </Box>
-  );
-
-  const headerExtra = view.type === 'list' ? (
-    <>
-      <IconButton
-        size="small"
-        onClick={() => setView({ type: 'search' })}
-        aria-label="Find a board"
-      >
-        <SearchOutlined fontSize="small" />
-      </IconButton>
-      {onCreateBoard && (
-        <IconButton
-          size="small"
-          onClick={onCreateBoard}
-          aria-label="Create a board"
-        >
-          <AddOutlined fontSize="small" />
+  const drawerTitle =
+    view.type === 'list' ? (
+      'My Boards'
+    ) : (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <IconButton size="small" onClick={handleBack} edge="start" aria-label="Back">
+          <ArrowBackOutlined fontSize="small" />
         </IconButton>
-      )}
-    </>
-  ) : null;
+        {view.type === 'search' ? 'Find a Board' : 'Board'}
+      </Box>
+    );
+
+  const headerExtra =
+    view.type === 'list' ? (
+      <>
+        <IconButton size="small" onClick={() => setView({ type: 'search' })} aria-label="Find a board">
+          <SearchOutlined fontSize="small" />
+        </IconButton>
+        {onCreateBoard && (
+          <IconButton size="small" onClick={onCreateBoard} aria-label="Create a board">
+            <AddOutlined fontSize="small" />
+          </IconButton>
+        )}
+      </>
+    ) : null;
 
   return (
     <SwipeableDrawer
@@ -162,9 +156,7 @@ export default function MyBoardsDrawer({ open, onClose, onCreateBoard, onTransit
                   </div>
                   <div className={styles.boardItemInfo}>
                     <div className={styles.boardItemName}>{board.name}</div>
-                    <div className={styles.boardItemMeta}>
-                      {formatBoardMeta(board)}
-                    </div>
+                    <div className={styles.boardItemMeta}>{formatBoardMeta(board)}</div>
                   </div>
                   <ChevronRightOutlined className={styles.boardItemAction} />
                 </button>

@@ -13,7 +13,7 @@ export const favoriteMutations = {
   toggleFavorite: async (
     _: unknown,
     { input }: { input: ToggleFavoriteInput },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ): Promise<ToggleFavoriteResult> => {
     requireAuthenticated(ctx);
     validateInput(ToggleFavoriteInputSchema, input, 'input');
@@ -29,8 +29,8 @@ export const favoriteMutations = {
           eq(dbSchema.userFavorites.userId, userId),
           eq(dbSchema.userFavorites.boardName, input.boardName),
           eq(dbSchema.userFavorites.climbUuid, input.climbUuid),
-          eq(dbSchema.userFavorites.angle, input.angle)
-        )
+          eq(dbSchema.userFavorites.angle, input.angle),
+        ),
       )
       .limit(1);
 
@@ -43,8 +43,8 @@ export const favoriteMutations = {
             eq(dbSchema.userFavorites.userId, userId),
             eq(dbSchema.userFavorites.boardName, input.boardName),
             eq(dbSchema.userFavorites.climbUuid, input.climbUuid),
-            eq(dbSchema.userFavorites.angle, input.angle)
-          )
+            eq(dbSchema.userFavorites.angle, input.angle),
+          ),
         );
       return { favorited: false };
     } else {

@@ -227,9 +227,7 @@ async function main(): Promise<void> {
   }
 
   // Find available port for web (always auto-increment)
-  const webPort = process.env.PORT
-    ? requestedWebPort
-    : await findAvailablePort(requestedWebPort);
+  const webPort = process.env.PORT ? requestedWebPort : await findAvailablePort(requestedWebPort);
 
   console.log(`[dev] Boardsesh Development Orchestrator`);
   console.log(`[dev] Backend port: ${backendPort}${startNewBackend ? ' (new instance)' : ''}`);

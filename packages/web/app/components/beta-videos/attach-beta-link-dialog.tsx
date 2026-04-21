@@ -25,9 +25,7 @@ export const AttachBetaLinkDialog: React.FC<AttachBetaLinkDialogProps> = ({
 }) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        {climbName ? `Share beta for ${climbName}` : 'Share beta video'}
-      </DialogTitle>
+      <DialogTitle>{climbName ? `Share beta for ${climbName}` : 'Share beta video'}</DialogTitle>
       <DialogContent>
         <AttachBetaLinkForm
           boardType={boardType}

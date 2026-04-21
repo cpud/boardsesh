@@ -1,13 +1,6 @@
 import type Redis from 'ioredis';
 import type { SessionUser } from '@boardsesh/shared-schema';
-import {
-  KEYS,
-  TTL,
-  UNSET_SENTINEL,
-  validateConnectionId,
-  validateSessionId,
-  hashToConnection,
-} from './constants';
+import { KEYS, TTL, UNSET_SENTINEL, validateConnectionId, validateSessionId, hashToConnection } from './constants';
 import {
   JOIN_SESSION_SCRIPT,
   LEAVE_SESSION_SCRIPT,
@@ -26,7 +19,7 @@ export async function joinSession(
   connectionId: string,
   sessionId: string,
   username?: string,
-  avatarUrl?: string | null
+  avatarUrl?: string | null,
 ): Promise<{ isLeader: boolean }> {
   validateConnectionId(connectionId);
   validateSessionId(sessionId);
@@ -44,12 +37,12 @@ export async function joinSession(
     username || UNSET_SENTINEL,
     // Use sentinel when avatarUrl is undefined (not provided), otherwise use actual value
     // This allows empty string to explicitly clear the avatar
-    avatarUrl !== undefined ? (avatarUrl || '') : UNSET_SENTINEL
+    avatarUrl !== undefined ? avatarUrl || '' : UNSET_SENTINEL,
   )) as number;
 
   if (becameLeader === 1) {
     console.log(
-      `[DistributedState] Connection ${connectionId.slice(0, 8)} became leader of session ${sessionId.slice(0, 8)}`
+      `[DistributedState] Connection ${connectionId.slice(0, 8)} became leader of session ${sessionId.slice(0, 8)}`,
     );
   }
 
@@ -64,7 +57,7 @@ export async function joinSession(
 export async function leaveSession(
   redis: Redis,
   connectionId: string,
-  sessionId: string
+  sessionId: string,
 ): Promise<{ newLeaderId: string | null }> {
   validateConnectionId(connectionId);
   validateSessionId(sessionId);
@@ -78,7 +71,7 @@ export async function leaveSession(
       KEYS.sessionLeader(sessionId),
       connectionId,
       TTL.sessionMembership.toString(),
-      TTL.sessionMembership.toString()
+      TTL.sessionMembership.toString(),
     )) as string | null;
 
     // Result: null = wasn't leader, '' = was leader but no new leader, otherwise = new leader ID
@@ -87,15 +80,11 @@ export async function leaveSession(
     }
 
     if (result === '') {
-      console.log(
-        `[DistributedState] Session ${sessionId.slice(0, 8)} has no remaining members after leader left`
-      );
+      console.log(`[DistributedState] Session ${sessionId.slice(0, 8)} has no remaining members after leader left`);
       return { newLeaderId: null };
     }
 
-    console.log(
-      `[DistributedState] Elected new leader: ${result.slice(0, 8)} for session ${sessionId.slice(0, 8)}`
-    );
+    console.log(`[DistributedState] Elected new leader: ${result.slice(0, 8)} for session ${sessionId.slice(0, 8)}`);
     return { newLeaderId: result };
   } catch (err) {
     console.error(`[DistributedState] Failed to leave session ${sessionId.slice(0, 8)}:`, err);
@@ -110,7 +99,7 @@ export async function leaveSession(
 async function leaveSessionFallback(
   redis: Redis,
   connectionId: string,
-  sessionId: string
+  sessionId: string,
 ): Promise<{ newLeaderId: string | null }> {
   try {
     await redis.watch(KEYS.sessionLeader(sessionId));
@@ -126,7 +115,7 @@ async function leaveSessionFallback(
 
       if (execResult === null) {
         console.log(
-          `[DistributedState] Fallback aborted: leader changed during cleanup for session ${sessionId.slice(0, 8)}`
+          `[DistributedState] Fallback aborted: leader changed during cleanup for session ${sessionId.slice(0, 8)}`,
         );
         return { newLeaderId: null };
       }
@@ -140,12 +129,12 @@ async function leaveSessionFallback(
             KEYS.sessionLeader(sessionId),
             connectionId,
             TTL.sessionMembership.toString(),
-            TTL.sessionMembership.toString()
+            TTL.sessionMembership.toString(),
           )) as string | null;
 
           if (newLeaderId) {
             console.log(
-              `[DistributedState] Fallback: elected new leader ${newLeaderId.slice(0, 8)} for session ${sessionId.slice(0, 8)}`
+              `[DistributedState] Fallback: elected new leader ${newLeaderId.slice(0, 8)} for session ${sessionId.slice(0, 8)}`,
             );
             return { newLeaderId };
           }
@@ -211,7 +200,7 @@ export async function getSessionMembers(redis: Redis, sessionId: string): Promis
     cleanupPipeline.exec().catch((err) => {
       console.error(
         `[DistributedState] Failed to prune ${staleMemberIds.length} stale members from session ${sessionId.slice(0, 8)}:`,
-        err
+        err,
       );
     });
   }
@@ -259,11 +248,7 @@ export async function getSessionMemberCount(redis: Redis, sessionId: string): Pr
 /**
  * Check if a connection exists and belongs to a specific session.
  */
-export async function isConnectionInSession(
-  redis: Redis,
-  connectionId: string,
-  sessionId: string
-): Promise<boolean> {
+export async function isConnectionInSession(redis: Redis, connectionId: string, sessionId: string): Promise<boolean> {
   validateConnectionId(connectionId);
   validateSessionId(sessionId);
   const data = await redis.hgetall(KEYS.connection(connectionId));
@@ -284,7 +269,7 @@ export async function refreshConnection(redis: Redis, connectionId: string): Pro
     1,
     KEYS.connection(connectionId),
     TTL.connection.toString(),
-    TTL.sessionMembership.toString()
+    TTL.sessionMembership.toString(),
   )) as number;
 
   return result === 1;
@@ -310,23 +295,18 @@ export async function hasSessionMembers(redis: Redis, sessionId: string): Promis
  * Prune stale members from a single session.
  * Removes members whose connection hashes have expired from the session set.
  */
-export async function cleanupStaleSessionMembers(
-  redis: Redis,
-  sessionId: string
-): Promise<number> {
+export async function cleanupStaleSessionMembers(redis: Redis, sessionId: string): Promise<number> {
   validateSessionId(sessionId);
   const removed = (await redis.eval(
     PRUNE_STALE_SESSION_MEMBERS_SCRIPT,
     2,
     KEYS.sessionMembers(sessionId),
     KEYS.sessionLeader(sessionId),
-    TTL.sessionMembership.toString()
+    TTL.sessionMembership.toString(),
   )) as number;
 
   if (removed > 0) {
-    console.log(
-      `[DistributedState] Pruned ${removed} stale members from session ${sessionId.slice(0, 8)}`
-    );
+    console.log(`[DistributedState] Pruned ${removed} stale members from session ${sessionId.slice(0, 8)}`);
   }
   return removed;
 }

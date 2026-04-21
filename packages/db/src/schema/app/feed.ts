@@ -1,12 +1,4 @@
-import {
-  pgTable,
-  bigserial,
-  text,
-  timestamp,
-  index,
-  jsonb,
-  pgEnum,
-} from 'drizzle-orm/pg-core';
+import { pgTable, bigserial, text, timestamp, index, jsonb, pgEnum } from 'drizzle-orm/pg-core';
 import { desc } from 'drizzle-orm';
 import { users } from '../auth/users';
 import { socialEntityTypeEnum } from './social';
@@ -26,8 +18,7 @@ export const feedItems = pgTable(
     recipientId: text('recipient_id')
       .references(() => users.id, { onDelete: 'cascade' })
       .notNull(),
-    actorId: text('actor_id')
-      .references(() => users.id, { onDelete: 'set null' }),
+    actorId: text('actor_id').references(() => users.id, { onDelete: 'set null' }),
     type: feedItemTypeEnum('type').notNull(),
     entityType: socialEntityTypeEnum('entity_type').notNull(),
     entityId: text('entity_id').notNull(),
@@ -47,16 +38,10 @@ export const feedItems = pgTable(
       desc(table.createdAt),
       desc(table.id),
     ),
-    actorCreatedAtIdx: index('feed_items_actor_created_at_idx').on(
-      table.actorId,
-      table.createdAt
-    ),
+    actorCreatedAtIdx: index('feed_items_actor_created_at_idx').on(table.actorId, table.createdAt),
     createdAtIdx: index('feed_items_created_at_idx').on(table.createdAt),
-    entityTypeEntityIdIdx: index('feed_items_entity_type_entity_id_idx').on(
-      table.entityType,
-      table.entityId,
-    ),
-  })
+    entityTypeEntityIdIdx: index('feed_items_entity_type_entity_id_idx').on(table.entityType, table.entityId),
+  }),
 );
 
 export type FeedItem = typeof feedItems.$inferSelect;

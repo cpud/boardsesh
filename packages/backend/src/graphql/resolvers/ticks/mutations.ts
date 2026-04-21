@@ -17,11 +17,7 @@ export const tickMutations = {
    * Delete a tick (climb attempt/ascent) for the authenticated user.
    * Only the owner can delete their own ticks.
    */
-  deleteTick: async (
-    _: unknown,
-    { uuid }: { uuid: string },
-    ctx: ConnectionContext
-  ): Promise<boolean> => {
+  deleteTick: async (_: unknown, { uuid }: { uuid: string }, ctx: ConnectionContext): Promise<boolean> => {
     requireAuthenticated(ctx);
     const userId = ctx.userId!;
 
@@ -52,35 +48,30 @@ export const tickMutations = {
 
       // Delete notifications referencing these comments (commentId FK is SET NULL, so we must delete explicitly)
       if (commentIds.length > 0) {
-        await tx.delete(dbSchema.notifications).where(
-          inArray(dbSchema.notifications.commentId, commentIds)
-        );
+        await tx.delete(dbSchema.notifications).where(inArray(dbSchema.notifications.commentId, commentIds));
       }
 
       // Delete related social data for the tick itself
-      await tx.delete(dbSchema.feedItems).where(
-        and(eq(dbSchema.feedItems.entityType, 'tick'), eq(dbSchema.feedItems.entityId, uuid))
-      );
-      await tx.delete(dbSchema.votes).where(
-        and(eq(dbSchema.votes.entityType, 'tick'), eq(dbSchema.votes.entityId, uuid))
-      );
-      await tx.delete(dbSchema.voteCounts).where(
-        and(eq(dbSchema.voteCounts.entityType, 'tick'), eq(dbSchema.voteCounts.entityId, uuid))
-      );
-      await tx.delete(dbSchema.comments).where(
-        and(eq(dbSchema.comments.entityType, 'tick'), eq(dbSchema.comments.entityId, uuid))
-      );
-      await tx.delete(dbSchema.notifications).where(
-        and(eq(dbSchema.notifications.entityType, 'tick'), eq(dbSchema.notifications.entityId, uuid))
-      );
+      await tx
+        .delete(dbSchema.feedItems)
+        .where(and(eq(dbSchema.feedItems.entityType, 'tick'), eq(dbSchema.feedItems.entityId, uuid)));
+      await tx
+        .delete(dbSchema.votes)
+        .where(and(eq(dbSchema.votes.entityType, 'tick'), eq(dbSchema.votes.entityId, uuid)));
+      await tx
+        .delete(dbSchema.voteCounts)
+        .where(and(eq(dbSchema.voteCounts.entityType, 'tick'), eq(dbSchema.voteCounts.entityId, uuid)));
+      await tx
+        .delete(dbSchema.comments)
+        .where(and(eq(dbSchema.comments.entityType, 'tick'), eq(dbSchema.comments.entityId, uuid)));
+      await tx
+        .delete(dbSchema.notifications)
+        .where(and(eq(dbSchema.notifications.entityType, 'tick'), eq(dbSchema.notifications.entityId, uuid)));
       // Delete the tick itself
       await tx.delete(dbSchema.boardseshTicks).where(eq(dbSchema.boardseshTicks.uuid, uuid));
 
       if (tick.sessionId) {
-        await tx
-          .update(sessions)
-          .set({ lastActivity: new Date() })
-          .where(eq(sessions.id, tick.sessionId));
+        await tx.update(sessions).set({ lastActivity: new Date() }).where(eq(sessions.id, tick.sessionId));
       }
     });
 
@@ -90,11 +81,7 @@ export const tickMutations = {
   /**
    * Save a tick (climb attempt/ascent) for the authenticated user
    */
-  saveTick: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext
-  ): Promise<unknown> => {
+  saveTick: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext): Promise<unknown> => {
     requireAuthenticated(ctx);
 
     // Validate input with business rules
@@ -148,10 +135,7 @@ export const tickMutations = {
         .returning();
 
       if (validatedInput.sessionId) {
-        await tx
-          .update(sessions)
-          .set({ lastActivity: new Date() })
-          .where(eq(sessions.id, validatedInput.sessionId));
+        await tx.update(sessions).set({ lastActivity: new Date() }).where(eq(sessions.id, validatedInput.sessionId));
       }
 
       // Attach the Instagram URL as community beta for this climb if the
@@ -159,8 +143,7 @@ export const tickMutations = {
       // URL format; the (boardType, climbUuid, link) PK makes re-submission
       // idempotent.
       const shouldAttachBeta =
-        validatedInput.videoUrl &&
-        (validatedInput.status === 'flash' || validatedInput.status === 'send');
+        validatedInput.videoUrl && (validatedInput.status === 'flash' || validatedInput.status === 'send');
       if (shouldAttachBeta) {
         await tx
           .insert(dbSchema.boardBetaLinks)
@@ -229,11 +212,7 @@ export const tickMutations = {
    * Attach an Instagram post or reel as beta for a climb.
    * Idempotent on (boardType, climbUuid, link).
    */
-  attachBetaLink: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext
-  ): Promise<boolean> => {
+  attachBetaLink: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext): Promise<boolean> => {
     requireAuthenticated(ctx);
 
     const validated = validateInput(AttachBetaLinkInputSchema, input, 'input');
@@ -260,7 +239,7 @@ export const tickMutations = {
   updateTick: async (
     _: unknown,
     { uuid, input }: { uuid: string; input: unknown },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ): Promise<unknown> => {
     requireAuthenticated(ctx);
     const userId = ctx.userId!;
@@ -326,7 +305,19 @@ const RETRY_BASE_DELAY_MS = 500;
  * Retries up to MAX_EVENT_RETRIES times with exponential backoff.
  */
 async function publishAscentEvent(
-  tick: { uuid: string; climbUuid: string; boardType: string; status: string; angle: number; isMirror: boolean | null; isBenchmark: boolean | null; difficulty: number | null; quality: number | null; attemptCount: number; comment: string | null },
+  tick: {
+    uuid: string;
+    climbUuid: string;
+    boardType: string;
+    status: string;
+    angle: number;
+    isMirror: boolean | null;
+    isBenchmark: boolean | null;
+    difficulty: number | null;
+    quality: number | null;
+    attemptCount: number;
+    comment: string | null;
+  },
   userId: string,
   boardId: number | null,
 ): Promise<void> {
@@ -340,12 +331,7 @@ async function publishAscentEvent(
           frames: dbSchema.boardClimbs.frames,
         })
         .from(dbSchema.boardClimbs)
-        .where(
-          and(
-            eq(dbSchema.boardClimbs.uuid, tick.climbUuid),
-            eq(dbSchema.boardClimbs.boardType, tick.boardType)
-          )
-        )
+        .where(and(eq(dbSchema.boardClimbs.uuid, tick.climbUuid), eq(dbSchema.boardClimbs.boardType, tick.boardType)))
         .limit(1);
 
       const [userProfile] = await db
@@ -368,8 +354,8 @@ async function publishAscentEvent(
           .where(
             and(
               eq(dbSchema.boardDifficultyGrades.difficulty, tick.difficulty),
-              eq(dbSchema.boardDifficultyGrades.boardType, tick.boardType)
-            )
+              eq(dbSchema.boardDifficultyGrades.boardType, tick.boardType),
+            ),
           )
           .limit(1);
         difficultyName = grade?.boulderName ?? undefined;

@@ -115,7 +115,7 @@ export function formatGrade(difficulty: string | null | undefined, format: Grade
 export function getSoftGradeColorByFormat(
   difficulty: string | null | undefined,
   format: GradeDisplayFormat,
-  darkMode?: boolean
+  darkMode?: boolean,
 ): string | undefined {
   if (format === 'font') {
     const fontGrade = extractFontGrade(difficulty);
@@ -251,7 +251,11 @@ function hexToHue(hex: string): number {
  * @param darkMode - When true, uses lower lightness values suitable for dark backgrounds
  * @returns HSL color string or undefined if no grade color found
  */
-export function getGradeTintColor(difficulty: string | null | undefined, variant: 'default' | 'light' | 'session' = 'default', darkMode?: boolean): string | undefined {
+export function getGradeTintColor(
+  difficulty: string | null | undefined,
+  variant: 'default' | 'light' | 'session' = 'default',
+  darkMode?: boolean,
+): string | undefined {
   const color = getGradeColor(difficulty);
   if (!color) return undefined;
 

@@ -50,12 +50,8 @@ export default function LogbookSwipeHintOrchestrator() {
       schedule(async () => {
         if (cancelled) return;
 
-        const contentEl = document.querySelector<HTMLElement>(
-          '#onboarding-logbook-card [data-swipe-content]',
-        );
-        const actionEl = document.querySelector<HTMLElement>(
-          '#onboarding-logbook-card [data-swipe-right-action]',
-        );
+        const contentEl = document.querySelector<HTMLElement>('#onboarding-logbook-card [data-swipe-content]');
+        const actionEl = document.querySelector<HTMLElement>('#onboarding-logbook-card [data-swipe-right-action]');
         if (!contentEl || !actionEl) return;
 
         const iconLayer = actionEl.firstElementChild as HTMLElement | null;
@@ -73,17 +69,20 @@ export default function LogbookSwipeHintOrchestrator() {
               [{ transform: 'translateX(0)' }, { transform: `translateX(-${PEEK_DISTANCE}px)` }],
               { duration: SLIDE_OUT_MS, easing: 'ease-out', fill: 'forwards' },
             );
-            const fadeIn = actionEl.animate(
-              [{ opacity: 0 }, { opacity: 1 }],
-              { duration: SLIDE_OUT_MS, easing: 'ease-out', fill: 'forwards' },
-            );
+            const fadeIn = actionEl.animate([{ opacity: 0 }, { opacity: 1 }], {
+              duration: SLIDE_OUT_MS,
+              easing: 'ease-out',
+              fill: 'forwards',
+            });
             animationsRef.current.push(slideOut, fadeIn);
 
             await slideOut.finished;
             if (cancelled) return;
 
             // Hold
-            await new Promise<void>((r) => { schedule(r, HOLD_MS); });
+            await new Promise<void>((r) => {
+              schedule(r, HOLD_MS);
+            });
             if (cancelled) return;
 
             // Slide back
@@ -91,10 +90,11 @@ export default function LogbookSwipeHintOrchestrator() {
               [{ transform: `translateX(-${PEEK_DISTANCE}px)` }, { transform: 'translateX(0)' }],
               { duration: SLIDE_BACK_MS, easing: 'ease-out', fill: 'forwards' },
             );
-            const fadeOut = actionEl.animate(
-              [{ opacity: 1 }, { opacity: 0 }],
-              { duration: SLIDE_BACK_MS, easing: 'ease-out', fill: 'forwards' },
-            );
+            const fadeOut = actionEl.animate([{ opacity: 1 }, { opacity: 0 }], {
+              duration: SLIDE_BACK_MS,
+              easing: 'ease-out',
+              fill: 'forwards',
+            });
             animationsRef.current.push(slideBack, fadeOut);
 
             await slideBack.finished;
@@ -108,7 +108,9 @@ export default function LogbookSwipeHintOrchestrator() {
 
             // Gap before next repeat
             if (i < REPEAT_COUNT - 1) {
-              await new Promise<void>((r) => { schedule(r, GAP_BETWEEN_MS); });
+              await new Promise<void>((r) => {
+                schedule(r, GAP_BETWEEN_MS);
+              });
             }
           }
 

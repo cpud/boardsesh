@@ -128,12 +128,20 @@ export default function SettingsPageContent() {
   const { showMessage } = useSnackbar();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { gradeFormat, setGradeFormat, loaded: gradeFormatLoaded } = useGradeFormat();
-  const { enabled: healthKitAutoSync, loaded: healthKitAutoSyncLoaded, setEnabled: setHealthKitAutoSyncEnabled } = useHealthKitAutoSync();
+  const {
+    enabled: healthKitAutoSync,
+    loaded: healthKitAutoSyncLoaded,
+    setEnabled: setHealthKitAutoSyncEnabled,
+  } = useHealthKitAutoSync();
   const [healthKitAvailable, setHealthKitAvailable] = useState(false);
   useEffect(() => {
     let cancelled = false;
-    isHealthKitAvailable().then((v) => { if (!cancelled) setHealthKitAvailable(v); });
-    return () => { cancelled = true; };
+    isHealthKitAvailable().then((v) => {
+      if (!cancelled) setHealthKitAvailable(v);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Redirect unauthenticated users to login with a return URL
@@ -223,7 +231,10 @@ export default function SettingsPageContent() {
         showMessage('Display name must be less than 100 characters', 'error');
         return;
       }
-      if (values.instagramUrl && !/^(https?:\/\/)?(www\.)?instagram\.com\/[a-zA-Z0-9._]+\/?$/.test(values.instagramUrl)) {
+      if (
+        values.instagramUrl &&
+        !/^(https?:\/\/)?(www\.)?instagram\.com\/[a-zA-Z0-9._]+\/?$/.test(values.instagramUrl)
+      ) {
         showMessage('Please enter a valid Instagram profile URL', 'error');
         return;
       }
@@ -314,8 +325,22 @@ export default function SettingsPageContent() {
 
   if (status === 'loading' || loading) {
     return (
-      <Box sx={{ minHeight: '100vh', paddingTop: 'var(--global-header-height)', background: 'var(--semantic-background)' }}>
-        <Box component="main" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+      <Box
+        sx={{
+          minHeight: '100vh',
+          paddingTop: 'var(--global-header-height)',
+          background: 'var(--semantic-background)',
+        }}
+      >
+        <Box
+          component="main"
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '100vh',
+          }}
+        >
           <CircularProgress size={48} />
         </Box>
       </Box>
@@ -327,7 +352,13 @@ export default function SettingsPageContent() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', paddingTop: 'var(--global-header-height)', background: 'var(--semantic-background)' }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        paddingTop: 'var(--global-header-height)',
+        background: 'var(--semantic-background)',
+      }}
+    >
       <Box
         component="header"
         sx={{
@@ -347,17 +378,33 @@ export default function SettingsPageContent() {
         </Typography>
       </Box>
 
-      <Box component="main" sx={{ padding: '24px', paddingBottom: 'calc(120px + env(safe-area-inset-bottom, 0px))', maxWidth: 600, margin: '0 auto', width: '100%' }}>
+      <Box
+        component="main"
+        sx={{
+          padding: '24px',
+          paddingBottom: 'calc(120px + env(safe-area-inset-bottom, 0px))',
+          maxWidth: 600,
+          margin: '0 auto',
+          width: '100%',
+        }}
+      >
         <Card>
           <CardContent>
             <Typography variant="h5">Profile</Typography>
-            <Typography variant="body2" component="span" color="text.secondary" sx={{ display: 'block', marginBottom: 3 }}>
+            <Typography
+              variant="body2"
+              component="span"
+              color="text.secondary"
+              sx={{ display: 'block', marginBottom: 3 }}
+            >
               Customize how you appear on Boardsesh
             </Typography>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Box>
-                <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Avatar</Typography>
+                <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+                  Avatar
+                </Typography>
                 <Stack spacing={1} alignItems="center" sx={{ width: '100%' }}>
                   <MuiAvatar sx={{ width: 96, height: 96 }} src={previewUrl ?? undefined}>
                     {!previewUrl && <PersonOutlined />}
@@ -395,7 +442,9 @@ export default function SettingsPageContent() {
               </Box>
 
               <Box>
-                <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Display Name</Typography>
+                <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+                  Display Name
+                </Typography>
                 <TextField
                   placeholder="Enter your display name"
                   variant="outlined"
@@ -417,7 +466,9 @@ export default function SettingsPageContent() {
               </Box>
 
               <Box>
-                <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Instagram Profile</Typography>
+                <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+                  Instagram Profile
+                </Typography>
                 <TextField
                   placeholder="https://instagram.com/username"
                   variant="outlined"
@@ -440,7 +491,9 @@ export default function SettingsPageContent() {
               <MuiDivider sx={{ my: 2 }} />
 
               <Box>
-                <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Email</Typography>
+                <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+                  Email
+                </Typography>
                 <TextField
                   value={profile?.email || session?.user?.email || ''}
                   disabled
@@ -457,7 +510,12 @@ export default function SettingsPageContent() {
                     },
                   }}
                 />
-                <Typography variant="body2" component="span" color="text.secondary" sx={{ fontSize: 12, marginTop: 0.5, display: 'block' }}>
+                <Typography
+                  variant="body2"
+                  component="span"
+                  color="text.secondary"
+                  sx={{ fontSize: 12, marginTop: 0.5, display: 'block' }}
+                >
                   Email cannot be changed
                 </Typography>
               </Box>
@@ -482,12 +540,19 @@ export default function SettingsPageContent() {
         <Card>
           <CardContent>
             <Typography variant="h5">Display Preferences</Typography>
-            <Typography variant="body2" component="span" color="text.secondary" sx={{ display: 'block', marginBottom: 3 }}>
+            <Typography
+              variant="body2"
+              component="span"
+              color="text.secondary"
+              sx={{ display: 'block', marginBottom: 3 }}
+            >
               Customize how grades and other data are displayed
             </Typography>
 
             <Box>
-              <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>Grade Display Format</Typography>
+              <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>
+                Grade Display Format
+              </Typography>
               <ToggleButtonGroup
                 value={gradeFormat}
                 exclusive
@@ -500,18 +565,16 @@ export default function SettingsPageContent() {
                 size="small"
                 fullWidth
               >
-                <ToggleButton value="v-grade">
-                  V-Grade (V3, V6, ...)
-                </ToggleButton>
-                <ToggleButton value="font">
-                  Font (6A, 7C+, ...)
-                </ToggleButton>
+                <ToggleButton value="v-grade">V-Grade (V3, V6, ...)</ToggleButton>
+                <ToggleButton value="font">Font (6A, 7C+, ...)</ToggleButton>
               </ToggleButtonGroup>
             </Box>
 
             {healthKitAvailable && (
               <Box sx={{ mt: 3 }}>
-                <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>Apple Health</Typography>
+                <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>
+                  Apple Health
+                </Typography>
                 <FormControlLabel
                   control={
                     <Switch

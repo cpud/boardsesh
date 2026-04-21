@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
@@ -121,9 +121,7 @@ describe('loading state', () => {
       loaded: false,
     });
 
-    const { container } = render(
-      <ClimbDetailHeader climb={makeClimb({ difficulty: null })} />,
-    );
+    const { container } = render(<ClimbDetailHeader climb={makeClimb({ difficulty: null })} />);
     expect(container.querySelector('.MuiSkeleton-root')).toBeNull();
     expect(screen.getByText('project')).toBeTruthy();
   });

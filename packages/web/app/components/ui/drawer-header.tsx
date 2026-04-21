@@ -27,11 +27,7 @@ export function DrawerHeader({ title, onClose, extra, sx }: DrawerHeaderProps) {
         ...sx,
       }}
     >
-      {typeof title === 'string' ? (
-        <Typography variant="h6">{title}</Typography>
-      ) : (
-        title
-      )}
+      {typeof title === 'string' ? <Typography variant="h6">{title}</Typography> : title}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         {extra}
         {onClose && (

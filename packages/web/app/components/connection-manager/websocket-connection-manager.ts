@@ -237,17 +237,23 @@ class WebSocketConnectionManager {
   }
 }
 
-export const connectionManager = typeof window !== 'undefined'
-  ? new WebSocketConnectionManager()
-  : // Provide a no-op shim for SSR
-    {
-      registerClient: () => () => {},
-      subscribe: () => () => {},
-      getSnapshot: (): ConnectionSnapshot => ({ name: null, state: 'idle', lastActivity: null, error: null }),
-      forceReconnect: () => {},
-      setPrimaryName: () => {},
-      dispose: () => {},
-      __resetForTests: () => {},
-    } as unknown as WebSocketConnectionManager;
+export const connectionManager =
+  typeof window !== 'undefined'
+    ? new WebSocketConnectionManager()
+    : // Provide a no-op shim for SSR
+      ({
+        registerClient: () => () => {},
+        subscribe: () => () => {},
+        getSnapshot: (): ConnectionSnapshot => ({
+          name: null,
+          state: 'idle',
+          lastActivity: null,
+          error: null,
+        }),
+        forceReconnect: () => {},
+        setPrimaryName: () => {},
+        dispose: () => {},
+        __resetForTests: () => {},
+      } as unknown as WebSocketConnectionManager);
 
 export { KEEP_ALIVE_MS, STALE_GRACE_MS, HEALTH_CHECK_INTERVAL_MS };

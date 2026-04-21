@@ -53,7 +53,7 @@ export function TickAction({
   // Use optional board provider - allows TickAction to work outside board routes
   const boardProvider = useOptionalBoardProvider();
   const { status: sessionStatus } = useSession();
-  const isAuthenticated = boardProvider?.isAuthenticated ?? (sessionStatus === 'authenticated');
+  const isAuthenticated = boardProvider?.isAuthenticated ?? sessionStatus === 'authenticated';
   const logbook = boardProvider?.logbook ?? [];
 
   // Fetch user's boards when we need the board selector (no existing BoardProvider + authenticated)
@@ -70,9 +70,9 @@ export function TickAction({
   const boardsReady = hasStartedLoadingRef.current && !isLoadingBoards;
 
   // Filter boards to matching board type (e.g., only Kilter boards for a Kilter climb)
-  const matchingBoards = useMemo(() =>
-    myBoards.filter(b => b.boardType === boardDetails.board_name),
-    [myBoards, boardDetails.board_name]
+  const matchingBoards = useMemo(
+    () => myBoards.filter((b) => b.boardType === boardDetails.board_name),
+    [myBoards, boardDetails.board_name],
   );
 
   const { alwaysUseApp, loaded, enableAlwaysUseApp } = useAlwaysTickInApp();
@@ -80,39 +80,40 @@ export function TickAction({
   // Find ascent entries for this climb
   const filteredLogbook = useMemo(() => {
     if (!logbook || !climb) return [];
-    return logbook.filter(
-      (asc) => asc.climb_uuid === climb.uuid && Number(asc.angle) === angle
-    );
+    return logbook.filter((asc) => asc.climb_uuid === climb.uuid && Number(asc.angle) === angle);
   }, [logbook, climb, angle]);
 
   const hasSuccessfulAscent = filteredLogbook.some((asc) => asc.is_ascent);
   const badgeCount = filteredLogbook.length;
 
-  const handleClick = useCallback((e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    e?.preventDefault();
+  const handleClick = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      e?.preventDefault();
 
-    track('Tick Button Clicked', {
-      boardLayout: boardDetails.layout_name || '',
-      existingAscentCount: badgeCount,
-    });
+      track('Tick Button Clicked', {
+        boardLayout: boardDetails.layout_name || '',
+        existingAscentCount: badgeCount,
+      });
 
-    if (onTickAction) {
-      onTickAction();
-      return;
-    }
-
-    if (!isAuthenticated && alwaysUseApp && loaded) {
-      const url = constructClimbInfoUrl(boardDetails, climb.uuid);
-      if (url) {
-        openExternalUrl(url);
-        onComplete?.();
+      if (onTickAction) {
+        onTickAction();
         return;
       }
-    }
 
-    setDrawerVisible(true);
-  }, [boardDetails, badgeCount, isAuthenticated, alwaysUseApp, loaded, climb.uuid, angle, onTickAction]);
+      if (!isAuthenticated && alwaysUseApp && loaded) {
+        const url = constructClimbInfoUrl(boardDetails, climb.uuid);
+        if (url) {
+          openExternalUrl(url);
+          onComplete?.();
+          return;
+        }
+      }
+
+      setDrawerVisible(true);
+    },
+    [boardDetails, badgeCount, isAuthenticated, alwaysUseApp, loaded, climb.uuid, angle, onTickAction],
+  );
 
   const closeDrawer = useCallback(() => {
     setDrawerVisible(false);
@@ -131,11 +132,23 @@ export function TickAction({
 
   const renderSignInPrompt = () => (
     <Stack spacing={3} sx={{ width: '100%', textAlign: 'center', padding: '24px 0' }}>
-      <Typography variant="body2" component="span" fontWeight={600} sx={{ fontSize: 16 }}>Sign in to record ticks</Typography>
+      <Typography variant="body2" component="span" fontWeight={600} sx={{ fontSize: 16 }}>
+        Sign in to record ticks
+      </Typography>
       <Typography variant="body1" component="p" color="text.secondary">
         Create a Boardsesh account to log your climbs and track your progress.
       </Typography>
-      <MuiButton variant="contained" startIcon={<LoginOutlined />} onClick={() => openAuthModal({ title: "Sign in to record ticks", description: "Create an account to log your climbs and track your progress." })} fullWidth>
+      <MuiButton
+        variant="contained"
+        startIcon={<LoginOutlined />}
+        onClick={() =>
+          openAuthModal({
+            title: 'Sign in to record ticks',
+            description: 'Create an account to log your climbs and track your progress.',
+          })
+        }
+        fullWidth
+      >
         Sign In
       </MuiButton>
       {openInAppUrl && (
@@ -218,11 +231,7 @@ export function TickAction({
   );
 
   const renderLogAscentForm = () => (
-    <LogAscentForm
-      currentClimb={climb}
-      boardDetails={effectiveBoardDetails}
-      onClose={closeDrawer}
-    />
+    <LogAscentForm currentClimb={climb} boardDetails={effectiveBoardDetails} onClose={closeDrawer} />
   );
 
   const renderNoMatchingBoardsMessage = () => (
@@ -293,7 +302,11 @@ export function TickAction({
   const iconElement = (
     <>
       <ActionTooltip title={label}>
-        <MuiBadge badgeContent={badgeCount} max={99} sx={{ '& .MuiBadge-badge': { backgroundColor: badgeColor, color: 'common.white' } }}>
+        <MuiBadge
+          badgeContent={badgeCount}
+          max={99}
+          sx={{ '& .MuiBadge-badge': { backgroundColor: badgeColor, color: 'common.white' } }}
+        >
           <Box component="span" onClick={handleClick} sx={{ cursor: 'pointer' }} className={className}>
             {icon}
           </Box>
@@ -306,7 +319,11 @@ export function TickAction({
   // Button mode
   const buttonElement = (
     <>
-      <MuiBadge badgeContent={badgeCount} max={99} sx={{ '& .MuiBadge-badge': { backgroundColor: badgeColor, color: 'common.white' } }}>
+      <MuiBadge
+        badgeContent={badgeCount}
+        max={99}
+        sx={{ '& .MuiBadge-badge': { backgroundColor: badgeColor, color: 'common.white' } }}
+      >
         <MuiButton
           variant="outlined"
           startIcon={icon}

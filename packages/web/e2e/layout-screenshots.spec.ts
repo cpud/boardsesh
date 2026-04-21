@@ -100,17 +100,12 @@ test.describe('Layout Screenshots', () => {
       // ── 3. Tap the first climb's thumbnail ─────────────────────────────────
       // Clicking the thumbnail activates the climb AND dispatches the
       // open-play-drawer event (see climbs-list.tsx → handleClimbThumbnailClickByIndex).
-      const thumbnail = page.locator(
-        '#onboarding-climb-card [data-testid="climb-thumbnail"]',
-      );
+      const thumbnail = page.locator('#onboarding-climb-card [data-testid="climb-thumbnail"]');
       await thumbnail.waitFor({ state: 'visible', timeout: 10_000 });
       await thumbnail.click();
 
       // ── 4. Wait for the play-view drawer ───────────────────────────────────
-      await page
-        .locator('[data-swipeable-drawer="true"]:visible')
-        .first()
-        .waitFor({ timeout: 15_000 });
+      await page.locator('[data-swipeable-drawer="true"]:visible').first().waitFor({ timeout: 15_000 });
 
       // ── 5. Screenshot: play-view drawer ────────────────────────────────────
       await page.screenshot({

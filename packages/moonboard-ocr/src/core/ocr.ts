@@ -47,9 +47,7 @@ async function imageDataToBlob(imageData: ImageData): Promise<Blob> {
  * Run OCR on image data and parse the result.
  * Accepts Buffer (Node) or ImageData (Browser).
  */
-export async function runOCR(
-  imageData: Buffer | ImageData
-): Promise<OcrResult> {
+export async function runOCR(imageData: Buffer | ImageData): Promise<OcrResult> {
   // Convert ImageData to Blob for browser compatibility
   let ocrInput: Buffer | Blob = imageData as Buffer;
   // Guard against ImageData not being defined in Node.js environment
@@ -88,12 +86,7 @@ export function parseHeaderText(lines: string[]): OcrResult {
   for (const line of lines) {
     const trimmed = line.trim();
     // Look for standalone "B" or "8" (OCR might read orange B as 8)
-    if (
-      trimmed === 'B' ||
-      trimmed === '8' ||
-      trimmed === '[B]' ||
-      trimmed === '(B)'
-    ) {
+    if (trimmed === 'B' || trimmed === '8' || trimmed === '[B]' || trimmed === '(B)') {
       isBenchmark = true;
       break;
     }
@@ -173,9 +166,7 @@ export function parseHeaderText(lines: string[]): OcrResult {
   // Find grades
   for (const line of lines) {
     // Format: "Grade: User 8A/V11/ Setter 8A/V11"
-    const gradeMatch = line.match(
-      /grade[:\s]+user\s+([^\s/]+(?:\/[^\s/]+)?)\s*[/|]\s*setter\s+([^\s]+)/i
-    );
+    const gradeMatch = line.match(/grade[:\s]+user\s+([^\s/]+(?:\/[^\s/]+)?)\s*[/|]\s*setter\s+([^\s]+)/i);
     if (gradeMatch) {
       userGrade = gradeMatch[1].trim();
       setterGrade = gradeMatch[2].trim();

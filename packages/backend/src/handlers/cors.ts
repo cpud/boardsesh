@@ -90,7 +90,7 @@ export function initCors(boardseshUrl: string): void {
     // Example: DEV_ALLOWED_ORIGINS=http://192.168.0.201:3000,http://192.168.1.100:3000
     const devAllowedOrigins = process.env.DEV_ALLOWED_ORIGINS;
     if (devAllowedOrigins) {
-      devAllowedOrigins.split(',').forEach(origin => {
+      devAllowedOrigins.split(',').forEach((origin) => {
         const trimmed = origin.trim();
         if (trimmed) {
           allowedOrigins.push(trimmed);

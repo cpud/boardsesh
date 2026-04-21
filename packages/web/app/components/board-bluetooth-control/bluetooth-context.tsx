@@ -3,10 +3,14 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { track } from '@vercel/analytics';
 import { useBoardBluetooth } from './use-board-bluetooth';
-import { DevicePickerDialog } from './device-picker-dialog';
 import { useCurrentClimb } from '../graphql-queue';
 import type { BoardDetails } from '@/app/lib/types';
-import { isCapacitor, isCapacitorWebView, waitForCapacitor, CAPACITOR_BRIDGE_TIMEOUT_MS } from '@/app/lib/ble/capacitor-utils';
+import {
+  isCapacitor,
+  isCapacitorWebView,
+  waitForCapacitor,
+  CAPACITOR_BRIDGE_TIMEOUT_MS,
+} from '@/app/lib/ble/capacitor-utils';
 import { registerBluetoothConnection } from './bluetooth-status-store';
 
 interface BluetoothContextValue {
@@ -93,8 +97,9 @@ export function BluetoothProvider({
   boardDetails: BoardDetails;
   children: React.ReactNode;
 }) {
-  const { isConnected, loading, connect, disconnect, sendFramesToBoard, pickerState } =
-    useBoardBluetooth({ boardDetails });
+  const { isConnected, loading, connect, disconnect, sendFramesToBoard } = useBoardBluetooth({
+    boardDetails,
+  });
 
   const [isBluetoothSupported, setIsBluetoothSupported] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -117,14 +122,14 @@ export function BluetoothProvider({
           setIsBluetoothSupported(true);
         }
       });
-      cancelPolling = () => { cancelled = true; };
+      cancelPolling = () => {
+        cancelled = true;
+      };
     }
 
     if (
       typeof navigator !== 'undefined' &&
-      /iPhone|iPad|iPod/i.test(
-        navigator.userAgent || (navigator as { vendor?: string }).vendor || '',
-      )
+      /iPhone|iPad|iPod/i.test(navigator.userAgent || (navigator as { vendor?: string }).vendor || '')
     ) {
       setIsIOS(true);
     }
@@ -151,31 +156,13 @@ export function BluetoothProvider({
       isBluetoothSupported,
       isIOS,
     }),
-    [
-      isConnected,
-      loading,
-      connect,
-      disconnect,
-      sendFramesToBoard,
-      isBluetoothSupported,
-      isIOS,
-    ],
+    [isConnected, loading, connect, disconnect, sendFramesToBoard, isBluetoothSupported, isIOS],
   );
 
   return (
     <BluetoothContext.Provider value={value}>
       {isConnected && (
-        <BluetoothAutoSender
-          sendFramesToBoard={sendFramesToBoard}
-          layoutName={boardDetails.layout_name ?? ''}
-        />
-      )}
-      {pickerState && (
-        <DevicePickerDialog
-          devices={pickerState.devices}
-          onSelect={pickerState.onSelect}
-          onCancel={pickerState.onCancel}
-        />
+        <BluetoothAutoSender sendFramesToBoard={sendFramesToBoard} layoutName={boardDetails.layout_name ?? ''} />
       )}
       {children}
     </BluetoothContext.Provider>
@@ -185,9 +172,7 @@ export function BluetoothProvider({
 export function useBluetoothContext() {
   const context = useContext(BluetoothContext);
   if (!context) {
-    throw new Error(
-      'useBluetoothContext must be used within a BluetoothProvider',
-    );
+    throw new Error('useBluetoothContext must be used within a BluetoothProvider');
   }
   return context;
 }

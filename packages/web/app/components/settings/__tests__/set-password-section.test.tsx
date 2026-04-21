@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 
@@ -144,7 +144,9 @@ describe('SetPasswordSection', () => {
       );
 
       fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'testpass123' } });
-      fireEvent.change(screen.getByLabelText('Confirm Password'), { target: { value: 'different123' } });
+      fireEvent.change(screen.getByLabelText('Confirm Password'), {
+        target: { value: 'different123' },
+      });
       fireEvent.click(screen.getByText('Set Password'));
 
       await waitFor(() => {
@@ -171,7 +173,9 @@ describe('SetPasswordSection', () => {
       );
 
       fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'testpass123' } });
-      fireEvent.change(screen.getByLabelText('Confirm Password'), { target: { value: 'testpass123' } });
+      fireEvent.change(screen.getByLabelText('Confirm Password'), {
+        target: { value: 'testpass123' },
+      });
       fireEvent.click(screen.getByText('Set Password'));
 
       await waitFor(() => {
@@ -208,7 +212,9 @@ describe('SetPasswordSection', () => {
       );
 
       fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'testpass123' } });
-      fireEvent.change(screen.getByLabelText('Confirm Password'), { target: { value: 'testpass123' } });
+      fireEvent.change(screen.getByLabelText('Confirm Password'), {
+        target: { value: 'testpass123' },
+      });
       fireEvent.click(screen.getByText('Set Password'));
 
       await waitFor(() => {
@@ -229,14 +235,13 @@ describe('SetPasswordSection', () => {
       );
 
       fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'testpass123' } });
-      fireEvent.change(screen.getByLabelText('Confirm Password'), { target: { value: 'testpass123' } });
+      fireEvent.change(screen.getByLabelText('Confirm Password'), {
+        target: { value: 'testpass123' },
+      });
       fireEvent.click(screen.getByText('Set Password'));
 
       await waitFor(() => {
-        expect(mockShowMessage).toHaveBeenCalledWith(
-          'Failed to set password. Please try again.',
-          'error',
-        );
+        expect(mockShowMessage).toHaveBeenCalledWith('Failed to set password. Please try again.', 'error');
       });
     });
 
@@ -258,7 +263,9 @@ describe('SetPasswordSection', () => {
       );
 
       fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'testpass123' } });
-      fireEvent.change(screen.getByLabelText('Confirm Password'), { target: { value: 'testpass123' } });
+      fireEvent.change(screen.getByLabelText('Confirm Password'), {
+        target: { value: 'testpass123' },
+      });
       fireEvent.click(screen.getByText('Set Password'));
 
       // Button should be disabled while the request is in-flight

@@ -6,7 +6,7 @@
  * - Anonymous users cannot create discoverable sessions (auth required)
  * - Authenticated users can create both discoverable and non-discoverable sessions
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import type { ConnectionContext } from '@boardsesh/shared-schema';
 
 // Mock dependencies
@@ -102,11 +102,7 @@ describe('createSession authentication', () => {
   it('allows anonymous users to create non-discoverable sessions', async () => {
     const ctx = makeAnonymousCtx('192.168.1.1');
 
-    const result = await sessionMutations.createSession(
-      undefined,
-      { input: validNonDiscoverableInput },
-      ctx,
-    );
+    const result = await sessionMutations.createSession(undefined, { input: validNonDiscoverableInput }, ctx);
 
     expect(result.id).toBe('test-uuid-1234');
     expect(result.boardPath).toBe('/kilter/1/2/3/40');
@@ -116,23 +112,15 @@ describe('createSession authentication', () => {
   it('rejects anonymous users from creating discoverable sessions', async () => {
     const ctx = makeAnonymousCtx('192.168.1.1');
 
-    await expect(
-      sessionMutations.createSession(
-        undefined,
-        { input: validDiscoverableInput },
-        ctx,
-      ),
-    ).rejects.toThrow('Authentication required');
+    await expect(sessionMutations.createSession(undefined, { input: validDiscoverableInput }, ctx)).rejects.toThrow(
+      'Authentication required',
+    );
   });
 
   it('allows authenticated users to create discoverable sessions', async () => {
     const ctx = makeAuthenticatedCtx('user-1');
 
-    const result = await sessionMutations.createSession(
-      undefined,
-      { input: validDiscoverableInput },
-      ctx,
-    );
+    const result = await sessionMutations.createSession(undefined, { input: validDiscoverableInput }, ctx);
 
     expect(result.id).toBe('test-uuid-1234');
     expect(result.boardPath).toBe('/kilter/1/2/3/40');
@@ -141,11 +129,7 @@ describe('createSession authentication', () => {
   it('allows authenticated users to create non-discoverable sessions', async () => {
     const ctx = makeAuthenticatedCtx('user-1');
 
-    const result = await sessionMutations.createSession(
-      undefined,
-      { input: validNonDiscoverableInput },
-      ctx,
-    );
+    const result = await sessionMutations.createSession(undefined, { input: validNonDiscoverableInput }, ctx);
 
     expect(result.id).toBe('test-uuid-1234');
     expect(result.name).toBe('Test Session');
@@ -154,11 +138,7 @@ describe('createSession authentication', () => {
   it('returns session metadata for HTTP requests without joining in-memory', async () => {
     const ctx = makeAnonymousCtx();
 
-    const result = await sessionMutations.createSession(
-      undefined,
-      { input: validNonDiscoverableInput },
-      ctx,
-    );
+    const result = await sessionMutations.createSession(undefined, { input: validNonDiscoverableInput }, ctx);
 
     // HTTP requests (connectionId starts with 'http-') don't join in-memory
     expect(result.users).toEqual([]);

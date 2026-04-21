@@ -12,9 +12,7 @@ type ImageDimensions = {
 export type SetIdList = number[];
 
 // Conditionally include moonboard based on feature flag
-export const SUPPORTED_BOARDS: BoardName[] = MOONBOARD_ENABLED
-  ? [...ALL_SUPPORTED_BOARDS]
-  : [...AURORA_BOARDS];
+export const SUPPORTED_BOARDS: BoardName[] = MOONBOARD_ENABLED ? [...ALL_SUPPORTED_BOARDS] : [...AURORA_BOARDS];
 
 export const BOARD_IMAGE_DIMENSIONS: Record<BoardName, ImageDimensions> = {
   kilter: {
@@ -231,7 +229,7 @@ export const BOULDER_GRADES = [
   { difficulty_id: 33, font_grade: '8c+', v_grade: 'V16', difficulty_name: '8c+/V16' },
 ] as const;
 
-export type BoulderGrade = typeof BOULDER_GRADES[number];
+export type BoulderGrade = (typeof BOULDER_GRADES)[number];
 
 // Alias for backwards compatibility
 export const TENSION_KILTER_GRADES = BOULDER_GRADES;
@@ -243,7 +241,7 @@ export const MOONBOARD_MIN_DIFFICULTY_ID = 13; // 5a/V1 (MoonBoard "5+" grade)
 // Helper to get grades for a specific board
 export function getGradesForBoard(boardName: BoardName) {
   if (boardName === 'moonboard') {
-    return BOULDER_GRADES.filter(g => g.difficulty_id >= MOONBOARD_MIN_DIFFICULTY_ID);
+    return BOULDER_GRADES.filter((g) => g.difficulty_id >= MOONBOARD_MIN_DIFFICULTY_ID);
   }
   return BOULDER_GRADES;
 }
@@ -258,7 +256,7 @@ export function fontGradeToDifficultyId(fontGrade: string): number | null {
   const fontPart = fontGrade.split('/')[0].trim();
   // Normalize to lowercase for comparison
   const normalized = fontPart.toLowerCase();
-  const grade = BOULDER_GRADES.find(g => g.font_grade === normalized);
+  const grade = BOULDER_GRADES.find((g) => g.font_grade === normalized);
   return grade?.difficulty_id ?? null;
 }
 
@@ -266,5 +264,5 @@ export function fontGradeToDifficultyId(fontGrade: string): number | null {
 // Note: difficultyId may come from database as a float (doublePrecision), so we round it
 export function getGradeByDifficultyId(difficultyId: number): BoulderGrade | undefined {
   const roundedId = Math.round(difficultyId);
-  return BOULDER_GRADES.find(g => g.difficulty_id === roundedId);
+  return BOULDER_GRADES.find((g) => g.difficulty_id === roundedId);
 }

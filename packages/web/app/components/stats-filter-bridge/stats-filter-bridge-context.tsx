@@ -1,6 +1,15 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useMemo, useRef, useLayoutEffect, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useLayoutEffect,
+  useEffect,
+} from 'react';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
@@ -84,13 +93,16 @@ export function StatsFilterBridgeProvider({ children }: { children: React.ReactN
     openDrawerRef.current?.();
   }, []);
 
-  const state = useMemo<StatsFilterBridgeState>(() => ({
-    isActive: isRegistered,
-    pageTitle,
-    backUrl,
-    openFilterDrawer: isRegistered ? stableOpenDrawer : null,
-    hasActiveFilters,
-  }), [isRegistered, pageTitle, backUrl, stableOpenDrawer, hasActiveFilters]);
+  const state = useMemo<StatsFilterBridgeState>(
+    () => ({
+      isActive: isRegistered,
+      pageTitle,
+      backUrl,
+      openFilterDrawer: isRegistered ? stableOpenDrawer : null,
+      hasActiveFilters,
+    }),
+    [isRegistered, pageTitle, backUrl, stableOpenDrawer, hasActiveFilters],
+  );
 
   const setters = useMemo<StatsFilterBridgeSetters>(
     () => ({ register, update, deregister }),
@@ -99,9 +111,7 @@ export function StatsFilterBridgeProvider({ children }: { children: React.ReactN
 
   return (
     <StatsFilterBridgeSetterContext.Provider value={setters}>
-      <StatsFilterBridgeContext.Provider value={state}>
-        {children}
-      </StatsFilterBridgeContext.Provider>
+      <StatsFilterBridgeContext.Provider value={state}>{children}</StatsFilterBridgeContext.Provider>
     </StatsFilterBridgeSetterContext.Provider>
   );
 }
@@ -138,16 +148,13 @@ export function StatsFilterBridgeInjector({
 
   useIsomorphicLayoutEffect(() => {
     if (isActive) {
-      register(
-        () => openDrawerRef.current(),
-        pageTitleRef.current,
-        backUrlRef.current,
-        hasActiveFiltersRef.current,
-      );
+      register(() => openDrawerRef.current(), pageTitleRef.current, backUrlRef.current, hasActiveFiltersRef.current);
     } else {
       deregister();
     }
-    return () => { deregister(); };
+    return () => {
+      deregister();
+    };
   }, [isActive, register, deregister]);
 
   useEffect(() => {

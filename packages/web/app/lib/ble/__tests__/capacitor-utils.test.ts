@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test';
 
 // We need to test the functions in isolation, so we re-import after each
 // navigator/window mock change. Use dynamic import to avoid caching issues.

@@ -1,6 +1,13 @@
 import type { MutableRefObject } from 'react';
 import { getBackendWsUrl } from '@/app/lib/backend-url';
-import type { SessionUser, SubscriptionQueueEvent, SessionEvent, SessionLiveStats, SessionSummary, QueueState } from '@boardsesh/shared-schema';
+import type {
+  SessionUser,
+  SubscriptionQueueEvent,
+  SessionEvent,
+  SessionLiveStats,
+  SessionSummary,
+  QueueState,
+} from '@boardsesh/shared-schema';
 import type { ClimbQueueItem as LocalClimbQueueItem } from '../queue-control/types';
 import type { BoardDetails, ParsedBoardRouteParameters } from '@/app/lib/types';
 // Re-export QueueState from shared-schema for convenience
@@ -60,7 +67,11 @@ export interface PersistentSessionActionsType {
   // Mutation functions
   addQueueItem: (item: LocalClimbQueueItem, position?: number) => Promise<void>;
   removeQueueItem: (uuid: string) => Promise<void>;
-  setCurrentClimb: (item: LocalClimbQueueItem | null, shouldAddToQueue?: boolean, correlationId?: string) => Promise<void>;
+  setCurrentClimb: (
+    item: LocalClimbQueueItem | null,
+    shouldAddToQueue?: boolean,
+    correlationId?: string,
+  ) => Promise<void>;
   mirrorCurrentClimb: (mirrored: boolean) => Promise<void>;
   setQueue: (queue: LocalClimbQueueItem[], currentClimbQueueItem?: LocalClimbQueueItem | null) => Promise<void>;
   replaceQueueItem: (uuid: string, item: LocalClimbQueueItem) => Promise<void>;

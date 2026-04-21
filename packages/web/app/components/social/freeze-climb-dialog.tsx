@@ -66,12 +66,7 @@ export default function FreezeClimbDialog({
         <DialogTitle>{currentlyFrozen ? 'Unfreeze Climb' : 'Freeze Climb'}</DialogTitle>
         <DialogContent>
           <FormControlLabel
-            control={
-              <Switch
-                checked={frozen}
-                onChange={(e) => setFrozen(e.target.checked)}
-              />
-            }
+            control={<Switch checked={frozen} onChange={(e) => setFrozen(e.target.checked)} />}
             label={frozen ? 'Frozen (no new proposals)' : 'Not frozen'}
             sx={{ mb: 2, mt: 1 }}
           />
@@ -87,7 +82,9 @@ export default function FreezeClimbDialog({
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} sx={{ textTransform: 'none' }}>Cancel</Button>
+          <Button onClick={onClose} sx={{ textTransform: 'none' }}>
+            Cancel
+          </Button>
           <Button
             onClick={handleSubmit}
             variant="contained"
@@ -103,12 +100,7 @@ export default function FreezeClimbDialog({
         </DialogActions>
       </Dialog>
 
-      <Snackbar
-        open={!!snackbar}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar('')}
-        message={snackbar}
-      />
+      <Snackbar open={!!snackbar} autoHideDuration={3000} onClose={() => setSnackbar('')} message={snackbar} />
     </>
   );
 }

@@ -92,9 +92,7 @@ export default function MultiboardClimbList({
     initialBoards,
   );
   const myBoards = externalBoards ?? fetchedBoards;
-  const isLoadingBoards = externalBoards !== undefined
-    ? (externalBoardsLoading ?? false)
-    : fetchedBoardsLoading;
+  const isLoadingBoards = externalBoards !== undefined ? (externalBoardsLoading ?? false) : fetchedBoardsLoading;
 
   // Prefer the user's active session (the board they are actually climbing on)
   // so playlist previews match the physical wall. Falls back to the list's
@@ -135,19 +133,22 @@ export default function MultiboardClimbList({
 
   // Fallback for the rare case with no queue bridge (e.g. mid-hydration): navigate
   // to the climb's view page so the user is never stranded.
-  const navigateToClimb = useCallback(async (climb: Climb) => {
-    try {
-      const bt = climb.boardType || selectedBoard?.boardType;
-      if (!bt) return;
-      const params = new URLSearchParams({ boardType: bt, climbUuid: climb.uuid });
-      const res = await fetch(`/api/internal/climb-redirect?${params}`);
-      if (!res.ok) return;
-      const { url } = await res.json();
-      if (url) window.location.href = url;
-    } catch (error) {
-      console.error('Failed to navigate to climb:', error);
-    }
-  }, [selectedBoard]);
+  const navigateToClimb = useCallback(
+    async (climb: Climb) => {
+      try {
+        const bt = climb.boardType || selectedBoard?.boardType;
+        if (!bt) return;
+        const params = new URLSearchParams({ boardType: bt, climbUuid: climb.uuid });
+        const res = await fetch(`/api/internal/climb-redirect?${params}`);
+        if (!res.ok) return;
+        const { url } = await res.json();
+        if (url) window.location.href = url;
+      } catch (error) {
+        console.error('Failed to navigate to climb:', error);
+      }
+    },
+    [selectedBoard],
+  );
 
   // Internal selection state drives the visual highlight. A caller-supplied
   // selectedClimbUuid takes precedence so controlled usage still works.
@@ -158,15 +159,18 @@ export default function MultiboardClimbList({
   // Thumbnail click reuses this via ClimbsList and additionally dispatches the
   // PLAY_DRAWER_EVENT so the play view drawer opens. Mirrors the pattern in
   // liked-climbs-list.tsx and board-page-climbs-list.tsx.
-  const handleClimbSelect = useCallback((climb: Climb) => {
-    setInternalSelectedUuid(climb.uuid);
-    if (queueActions?.setCurrentClimb) {
-      queueActions.setCurrentClimb(climb);
-    } else {
-      navigateToClimb(climb);
-    }
-    onClimbSelect?.(climb);
-  }, [queueActions, navigateToClimb, onClimbSelect]);
+  const handleClimbSelect = useCallback(
+    (climb: Climb) => {
+      setInternalSelectedUuid(climb.uuid);
+      if (queueActions?.setCurrentClimb) {
+        queueActions.setCurrentClimb(climb);
+      } else {
+        navigateToClimb(climb);
+      }
+      onClimbSelect?.(climb);
+    },
+    [queueActions, navigateToClimb, onClimbSelect],
+  );
 
   const handleSortChange = (_: React.MouseEvent<HTMLElement>, value: SortBy | null) => {
     if (value && onSortChange) {
@@ -176,13 +180,17 @@ export default function MultiboardClimbList({
 
   // Header with sort toggle and count
   const headerInline = showSortToggle ? (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', flex: 1, minWidth: 0 }}>
-      <ToggleButtonGroup
-        exclusive
-        size="small"
-        value={sortBy}
-        onChange={handleSortChange}
-      >
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        flexWrap: 'wrap',
+        flex: 1,
+        minWidth: 0,
+      }}
+    >
+      <ToggleButtonGroup exclusive size="small" value={sortBy} onChange={handleSortChange}>
         <ToggleButton value="popular">Popular</ToggleButton>
         <ToggleButton value="new">New</ToggleButton>
       </ToggleButtonGroup>

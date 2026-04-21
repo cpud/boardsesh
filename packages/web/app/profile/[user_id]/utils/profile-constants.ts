@@ -89,11 +89,11 @@ const LAYOUT_DISPLAY_OVERRIDES: Record<string, string> = {
 
 // Colors for each layout — soft, muted palette that feels cohesive
 const layoutColors: Record<string, string> = {
-  'kilter-1': 'hsla(190, 55%, 52%, 0.7)',   // Muted teal
-  'kilter-8': 'hsla(160, 40%, 50%, 0.7)',    // Soft sage green
-  'tension-9': 'hsla(350, 50%, 58%, 0.7)',   // Dusty rose
-  'tension-10': 'hsla(20, 55%, 58%, 0.7)',   // Warm terracotta
-  'tension-11': 'hsla(42, 50%, 55%, 0.7)',   // Muted gold
+  'kilter-1': 'hsla(190, 55%, 52%, 0.7)', // Muted teal
+  'kilter-8': 'hsla(160, 40%, 50%, 0.7)', // Soft sage green
+  'tension-9': 'hsla(350, 50%, 58%, 0.7)', // Dusty rose
+  'tension-10': 'hsla(20, 55%, 58%, 0.7)', // Warm terracotta
+  'tension-11': 'hsla(42, 50%, 55%, 0.7)', // Muted gold
   'moonboard-1': 'hsla(270, 40%, 58%, 0.7)', // Soft lavender
   'moonboard-2': 'hsla(250, 40%, 55%, 0.7)', // Muted indigo
   'moonboard-3': 'hsla(290, 35%, 55%, 0.7)', // Soft plum

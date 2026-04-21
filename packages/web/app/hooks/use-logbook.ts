@@ -5,11 +5,7 @@ import { useRef, useEffect, useMemo, useState, useCallback } from 'react';
 import { useWsAuthToken } from './use-ws-auth-token';
 import { useSession } from 'next-auth/react';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  GET_TICKS,
-  type GetTicksQueryVariables,
-  type GetTicksQueryResponse,
-} from '@/app/lib/graphql/operations';
+import { GET_TICKS, type GetTicksQueryVariables, type GetTicksQueryResponse } from '@/app/lib/graphql/operations';
 import type { BoardName, ClimbUuid } from '@/app/lib/types';
 
 // Tick status type matching the database enum
@@ -63,10 +59,7 @@ function transformTicks(ticks: GetTicksQueryResponse['ticks']): LogbookEntry[] {
   return ticks.map(toLogbookEntry);
 }
 
-export function mergeLogbookEntries(
-  existing: LogbookEntry[],
-  incoming: LogbookEntry[],
-): LogbookEntry[] {
+export function mergeLogbookEntries(existing: LogbookEntry[], incoming: LogbookEntry[]): LogbookEntry[] {
   if (incoming.length === 0) return existing;
 
   const existingUuids = new Set(existing.map((entry) => entry.uuid));
@@ -173,9 +166,8 @@ export function useLogbook(boardName: BoardName, climbUuids: ClimbUuid[]) {
     // Mark these UUIDs as fetched (including those with no ticks)
     newUuids.forEach((uuid) => fetchedUuidsRef.current.add(uuid));
 
-    queryClient.setQueryData<LogbookEntry[]>(
-      accumulatedKey,
-      (existing = []) => mergeLogbookEntries(existing, fetchQuery.data),
+    queryClient.setQueryData<LogbookEntry[]>(accumulatedKey, (existing = []) =>
+      mergeLogbookEntries(existing, fetchQuery.data),
     );
   }, [fetchQuery.data, newUuids, accumulatedKey, queryClient]);
 

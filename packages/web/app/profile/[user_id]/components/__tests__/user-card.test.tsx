@@ -1,13 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import type { UserProfile } from '../../utils/profile-constants';
 
 // Mock dependencies before component import
 vi.mock('@/app/components/ui/follow-button', () => ({
-  default: (props: { entityId: string }) => (
-    <div data-testid="follow-button">{props.entityId}</div>
-  ),
+  default: (props: { entityId: string }) => <div data-testid="follow-button">{props.entityId}</div>,
 }));
 
 vi.mock('@/app/components/social/follower-count', () => ({

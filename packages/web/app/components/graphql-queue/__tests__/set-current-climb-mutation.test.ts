@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { queueReducer } from '../../queue-control/reducer';
 import type { QueueState, ClimbQueueItem } from '../../queue-control/types';
 import type { Climb, SearchRequestPagination } from '@/app/lib/types';

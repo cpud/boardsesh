@@ -24,26 +24,27 @@ export function SetActiveAction({
 
   const isCurrentClimb = queueData?.currentClimb?.uuid === climb.uuid;
 
-  const handleClick = useCallback((e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    e?.preventDefault();
+  const handleClick = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      e?.preventDefault();
 
-    if (!queueActions || isCurrentClimb) return;
+      if (!queueActions || isCurrentClimb) return;
 
-    queueActions.setCurrentClimb(climb);
+      queueActions.setCurrentClimb(climb);
 
-    track('Set Active Climb', {
-      boardLayout: boardDetails.layout_name || '',
-      climbUuid: climb.uuid,
-    });
+      track('Set Active Climb', {
+        boardLayout: boardDetails.layout_name || '',
+        climbUuid: climb.uuid,
+      });
 
-    onComplete?.();
-  }, [queueActions, isCurrentClimb, climb, boardDetails.layout_name, onComplete]);
+      onComplete?.();
+    },
+    [queueActions, isCurrentClimb, climb, boardDetails.layout_name, onComplete],
+  );
 
   const label = isCurrentClimb ? 'Active' : 'Set Active';
-  const iconStyle = isCurrentClimb
-    ? { color: themeTokens.colors.primary, fontSize: iconSize }
-    : { fontSize: iconSize };
+  const iconStyle = isCurrentClimb ? { color: themeTokens.colors.primary, fontSize: iconSize } : { fontSize: iconSize };
   const icon = <PlayCircleOutlineOutlined sx={iconStyle} />;
 
   return buildActionResult({

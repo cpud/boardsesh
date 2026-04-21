@@ -29,9 +29,8 @@ export function getScriptDatabaseUrl(): string {
   }
 
   // Safety: Block local dev URLs in production builds
-  const isLocalUrl = databaseUrl.includes('localhost') ||
-                     databaseUrl.includes('localtest.me') ||
-                     databaseUrl.includes('127.0.0.1');
+  const isLocalUrl =
+    databaseUrl.includes('localhost') || databaseUrl.includes('localtest.me') || databaseUrl.includes('127.0.0.1');
 
   if (process.env.VERCEL && isLocalUrl) {
     console.error('Refusing to run with local DATABASE_URL in Vercel build');
@@ -77,7 +76,9 @@ export function createScriptDb(url?: string): { db: ScriptDb; close: () => Promi
     const db = drizzlePostgres(client);
     return {
       db,
-      close: async () => { await client.end(); },
+      close: async () => {
+        await client.end();
+      },
     };
   }
 
@@ -87,6 +88,8 @@ export function createScriptDb(url?: string): { db: ScriptDb; close: () => Promi
   const db = drizzleServerless(pool);
   return {
     db,
-    close: async () => { await pool.end(); },
+    close: async () => {
+      await pool.end();
+    },
   };
 }

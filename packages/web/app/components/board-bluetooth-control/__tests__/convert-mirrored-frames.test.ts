@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { convertToMirroredFramesString } from '../use-board-bluetooth';
 
 // Minimal HoldRenderData shape for tests
@@ -23,11 +23,7 @@ describe('convertToMirroredFramesString', () => {
   });
 
   it('handles multiple holds', () => {
-    const holdsData = [
-      createHold(10, 20),
-      createHold(30, 40),
-      createHold(50, 60),
-    ];
+    const holdsData = [createHold(10, 20), createHold(30, 40), createHold(50, 60)];
     const result = convertToMirroredFramesString('p10r42p30r43p50r44', holdsData);
 
     expect(result).toBe('p20r42p40r43p60r44');
@@ -64,10 +60,7 @@ describe('convertToMirroredFramesString', () => {
   });
 
   it('preserves state codes during mirroring', () => {
-    const holdsData = [
-      createHold(1, 100),
-      createHold(2, 200),
-    ];
+    const holdsData = [createHold(1, 100), createHold(2, 200)];
     const result = convertToMirroredFramesString('p1r42p2r45', holdsData);
 
     expect(result).toBe('p100r42p200r45');

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 
 // Mock server-only and DB modules to avoid server-component import errors
 vi.mock('server-only', () => ({}));
@@ -10,11 +10,7 @@ vi.mock('@/app/lib/db/schema', () => ({
   inferredSessions: {},
 }));
 
-import {
-  generateInferredSessionId,
-  groupTicks,
-  type TickForGrouping,
-} from '../inferred-session-builder';
+import { generateInferredSessionId, groupTicks, type TickForGrouping } from '../inferred-session-builder';
 
 function makeTick(overrides: Partial<TickForGrouping> & { climbedAt: string }): TickForGrouping {
   return {

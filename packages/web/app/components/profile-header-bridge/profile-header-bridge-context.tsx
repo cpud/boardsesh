@@ -1,14 +1,6 @@
 'use client';
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useMemo,
-  useLayoutEffect,
-  useEffect,
-} from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, useLayoutEffect, useEffect } from 'react';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
@@ -50,21 +42,25 @@ export function ProfileHeaderShareProvider({ children }: { children: React.React
     setIsActive(false);
   }, []);
 
-  const state = useMemo<ProfileHeaderShareState>(() => ({
-    isActive,
-    displayName,
-  }), [isActive, displayName]);
+  const state = useMemo<ProfileHeaderShareState>(
+    () => ({
+      isActive,
+      displayName,
+    }),
+    [isActive, displayName],
+  );
 
-  const setters = useMemo<ProfileHeaderShareSetters>(() => ({
-    register,
-    deregister,
-  }), [register, deregister]);
+  const setters = useMemo<ProfileHeaderShareSetters>(
+    () => ({
+      register,
+      deregister,
+    }),
+    [register, deregister],
+  );
 
   return (
     <ProfileHeaderShareSetterContext.Provider value={setters}>
-      <ProfileHeaderShareContext.Provider value={state}>
-        {children}
-      </ProfileHeaderShareContext.Provider>
+      <ProfileHeaderShareContext.Provider value={state}>{children}</ProfileHeaderShareContext.Provider>
     </ProfileHeaderShareSetterContext.Provider>
   );
 }
@@ -74,10 +70,7 @@ interface ProfileHeaderShareInjectorProps {
   isActive: boolean;
 }
 
-export function ProfileHeaderShareInjector({
-  displayName,
-  isActive,
-}: ProfileHeaderShareInjectorProps) {
+export function ProfileHeaderShareInjector({ displayName, isActive }: ProfileHeaderShareInjectorProps) {
   const { register, deregister } = useContext(ProfileHeaderShareSetterContext);
 
   useIsomorphicLayoutEffect(() => {

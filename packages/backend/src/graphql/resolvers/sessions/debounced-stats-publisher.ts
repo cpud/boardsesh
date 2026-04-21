@@ -74,10 +74,7 @@ export function publishDebouncedSessionStats(sessionId: string): void {
           pubsub.publishSessionEvent(sessionId, event);
         }
       } catch (error) {
-        console.error(
-          `[debouncedStats] Failed to publish SessionStatsUpdated for session ${sessionId}:`,
-          error,
-        );
+        console.error(`[debouncedStats] Failed to publish SessionStatsUpdated for session ${sessionId}:`, error);
       }
     }, DEBOUNCE_MS),
   );

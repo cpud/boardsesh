@@ -36,10 +36,7 @@ function calculateDepth(selectionSet: SelectionSetNode, currentDepth: number): n
  */
 export function validateQueryDepth(document: DocumentNode): string | null {
   for (const definition of document.definitions) {
-    if (
-      definition.kind === Kind.OPERATION_DEFINITION &&
-      definition.selectionSet
-    ) {
+    if (definition.kind === Kind.OPERATION_DEFINITION && definition.selectionSet) {
       const depth = calculateDepth(definition.selectionSet, 0);
       if (depth > MAX_QUERY_DEPTH) {
         return `Query depth ${depth} exceeds maximum allowed depth of ${MAX_QUERY_DEPTH}`;

@@ -42,9 +42,9 @@ bun start
 
 Environment variables:
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `8080` | WebSocket server port |
+| Variable       | Default                                                           | Description                  |
+| -------------- | ----------------------------------------------------------------- | ---------------------------- |
+| `PORT`         | `8080`                                                            | WebSocket server port        |
 | `DATABASE_URL` | `postgresql://postgres:postgres@localhost:5432/boardsesh_backend` | PostgreSQL connection string |
 
 ## Network Setup
@@ -83,7 +83,7 @@ Add to your Traefik dynamic configuration:
 http:
   routers:
     boardsesh-backend:
-      rule: "Host(`boardsesh-ws.yourdomain.com`)"
+      rule: 'Host(`boardsesh-ws.yourdomain.com`)'
       entryPoints:
         - websecure
       service: boardsesh-backend
@@ -94,7 +94,7 @@ http:
     boardsesh-backend:
       loadBalancer:
         servers:
-          - url: "http://backend-internal-ip:8080"
+          - url: 'http://backend-internal-ip:8080'
 ```
 
 ### Docker Compose for Production
@@ -112,7 +112,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     networks:
-      - traefik  # Your Traefik network
+      - traefik # Your Traefik network
       - internal
 
   db:
@@ -123,7 +123,7 @@ services:
     volumes:
       - backend_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -144,6 +144,7 @@ volumes:
 ### Usage
 
 Once deployed, users connect via:
+
 ```
 https://boardsesh.com?backendUrl=wss://boardsesh-ws.yourdomain.com
 ```

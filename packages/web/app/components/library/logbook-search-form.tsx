@@ -18,12 +18,7 @@ import FilterListOutlined from '@mui/icons-material/FilterListOutlined';
 import ClearOutlined from '@mui/icons-material/ClearOutlined';
 import { BOULDER_GRADES } from '@/app/lib/board-data';
 import { DEFAULT_ANGLE_RANGE, DEFAULT_FILTERS, DEFAULT_SORT } from '@/app/lib/logbook-preferences';
-import type {
-  LogbookFilterState,
-  LogbookSortState,
-  SortField,
-  SortDirection,
-} from '@/app/lib/logbook-preferences';
+import type { LogbookFilterState, LogbookSortState, SortField, SortDirection } from '@/app/lib/logbook-preferences';
 import type { UserBoard } from '@boardsesh/shared-schema';
 import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
 import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
@@ -156,27 +151,30 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
   // Avoids sharing the same ReactNode reference across two render locations
   // (outside the drawer and inside the drawer), which can confuse React's
   // reconciliation and cause unexpected unmount/remount cycles.
-  const makeBoardsSectionConfig = useCallback((): CollapsibleSectionConfig => ({
-    key: 'boards',
-    label: 'Boards',
-    title: 'Filter by Board',
-    defaultSummary: 'All boards',
-    getSummary: () => {
-      if (selectedBoards.length === 0) return [];
-      const names = selectedBoards.map((b) => b.name);
-      if (names.length <= 2) return names;
-      return [`${names[0]}, ${names[1]}`, `+${names.length - 2} more`];
-    },
-    content: (
-      <BoardFilterStrip
-        multiSelect
-        boards={boards}
-        loading={boardsLoading}
-        selectedBoards={selectedBoards}
-        onBoardToggle={onBoardToggle}
-      />
-    ),
-  }), [boards, boardsLoading, selectedBoards, onBoardToggle]);
+  const makeBoardsSectionConfig = useCallback(
+    (): CollapsibleSectionConfig => ({
+      key: 'boards',
+      label: 'Boards',
+      title: 'Filter by Board',
+      defaultSummary: 'All boards',
+      getSummary: () => {
+        if (selectedBoards.length === 0) return [];
+        const names = selectedBoards.map((b) => b.name);
+        if (names.length <= 2) return names;
+        return [`${names[0]}, ${names[1]}`, `+${names.length - 2} more`];
+      },
+      content: (
+        <BoardFilterStrip
+          multiSelect
+          boards={boards}
+          loading={boardsLoading}
+          selectedBoards={selectedBoards}
+          onBoardToggle={onBoardToggle}
+        />
+      ),
+    }),
+    [boards, boardsLoading, selectedBoards, onBoardToggle],
+  );
 
   // Collapsible sections inside the drawer
   const sections: CollapsibleSectionConfig[] = [
@@ -190,50 +188,50 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
       content: (
         <div className={styles.switchGroup}>
           <div className={styles.switchRow}>
-            <MuiTypography variant="body2" component="span">Include Sends</MuiTypography>
+            <MuiTypography variant="body2" component="span">
+              Include Sends
+            </MuiTypography>
             <MuiSwitch
               size="small"
               color="primary"
               checked={filters.includeSends}
               disabled={!filters.includeAttempts}
-              onChange={(_, checked) =>
-                onFiltersChange((prev) => ({ ...prev, includeSends: checked }))
-              }
+              onChange={(_, checked) => onFiltersChange((prev) => ({ ...prev, includeSends: checked }))}
             />
           </div>
           <div className={styles.switchRow}>
-            <MuiTypography variant="body2" component="span">Include Attempts</MuiTypography>
+            <MuiTypography variant="body2" component="span">
+              Include Attempts
+            </MuiTypography>
             <MuiSwitch
               size="small"
               color="primary"
               checked={filters.includeAttempts}
               disabled={!filters.includeSends}
-              onChange={(_, checked) =>
-                onFiltersChange((prev) => ({ ...prev, includeAttempts: checked }))
-              }
+              onChange={(_, checked) => onFiltersChange((prev) => ({ ...prev, includeAttempts: checked }))}
             />
           </div>
           <div className={styles.switchRow}>
-            <MuiTypography variant="body2" component="span">Flash Only</MuiTypography>
+            <MuiTypography variant="body2" component="span">
+              Flash Only
+            </MuiTypography>
             <MuiSwitch
               size="small"
               color="primary"
               checked={filters.flashOnly}
               disabled={!filters.includeSends}
-              onChange={(_, checked) =>
-                onFiltersChange((prev) => ({ ...prev, flashOnly: checked }))
-              }
+              onChange={(_, checked) => onFiltersChange((prev) => ({ ...prev, flashOnly: checked }))}
             />
           </div>
           <div className={styles.switchRow}>
-            <MuiTypography variant="body2" component="span">Benchmark Only</MuiTypography>
+            <MuiTypography variant="body2" component="span">
+              Benchmark Only
+            </MuiTypography>
             <MuiSwitch
               size="small"
               color="primary"
               checked={filters.benchmarkOnly}
-              onChange={(_, checked) =>
-                onFiltersChange((prev) => ({ ...prev, benchmarkOnly: checked }))
-              }
+              onChange={(_, checked) => onFiltersChange((prev) => ({ ...prev, benchmarkOnly: checked }))}
             />
           </div>
         </div>
@@ -254,9 +252,7 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
                 type="date"
                 label="Start date"
                 value={filters.fromDate}
-                onChange={(e) =>
-                  onFiltersChange((prev) => ({ ...prev, fromDate: e.target.value }))
-                }
+                onChange={(e) => onFiltersChange((prev) => ({ ...prev, fromDate: e.target.value }))}
                 size="small"
                 fullWidth
                 slotProps={{ inputLabel: { shrink: true } }}
@@ -265,9 +261,7 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
                 type="date"
                 label="End date"
                 value={filters.toDate}
-                onChange={(e) =>
-                  onFiltersChange((prev) => ({ ...prev, toDate: e.target.value }))
-                }
+                onChange={(e) => onFiltersChange((prev) => ({ ...prev, toDate: e.target.value }))}
                 size="small"
                 fullWidth
                 slotProps={{ inputLabel: { shrink: true } }}
@@ -302,27 +296,29 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
   ];
 
   // Footer matching SearchResultsFooter from climb list
-  const drawerFooter = activeFilterCount > 0 ? (
-    <div className={footerStyles.searchFooter}>
-      <div className={footerStyles.resultCount}>
-        <Stack direction="row" spacing={1}>
-          <FilterListOutlined sx={{ color: themeTokens.colors.primary }} />
-          <MuiTypography variant="body2" component="span" color="text.secondary">
-            <span className={footerStyles.resultBadge}>{activeFilterCount}</span> active {activeFilterCount === 1 ? 'filter' : 'filters'}
-          </MuiTypography>
-        </Stack>
+  const drawerFooter =
+    activeFilterCount > 0 ? (
+      <div className={footerStyles.searchFooter}>
+        <div className={footerStyles.resultCount}>
+          <Stack direction="row" spacing={1}>
+            <FilterListOutlined sx={{ color: themeTokens.colors.primary }} />
+            <MuiTypography variant="body2" component="span" color="text.secondary">
+              <span className={footerStyles.resultBadge}>{activeFilterCount}</span> active{' '}
+              {activeFilterCount === 1 ? 'filter' : 'filters'}
+            </MuiTypography>
+          </Stack>
+        </div>
+        <MuiButton
+          size="small"
+          variant="text"
+          startIcon={<ClearOutlined />}
+          onClick={handleClearAll}
+          sx={{ textTransform: 'none' }}
+        >
+          Clear All
+        </MuiButton>
       </div>
-      <MuiButton
-        size="small"
-        variant="text"
-        startIcon={<ClearOutlined />}
-        onClick={handleClearAll}
-        sx={{ textTransform: 'none' }}
-      >
-        Clear All
-      </MuiButton>
-    </div>
-  ) : undefined;
+    ) : undefined;
 
   return (
     <>
@@ -348,17 +344,12 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
                 }}
               />
               <div className={headerStyles.filterButton}>
-                <IconButton
-                  onClick={openDrawer}
-                  aria-label="Open filters"
-                  size="small"
-                >
+                <IconButton onClick={openDrawer} aria-label="Open filters" size="small">
                   <FilterListOutlined />
                 </IconButton>
                 {activeFilterCount > 0 && <span className={headerStyles.filterActiveIndicator} />}
               </div>
             </Box>
-
           </div>
         </div>
         <CollapsibleSection sections={[makeBoardsSectionConfig()]} />

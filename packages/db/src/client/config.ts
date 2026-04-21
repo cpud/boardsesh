@@ -7,13 +7,11 @@ export interface ConnectionConfig {
 }
 
 export function isLocalDevelopment(): boolean {
-  return process.env.VERCEL_ENV === 'development' ||
-         process.env.NODE_ENV === 'development';
+  return process.env.VERCEL_ENV === 'development' || process.env.NODE_ENV === 'development';
 }
 
 export function isTestEnvironment(): boolean {
-  return process.env.NODE_ENV === 'test' ||
-         process.env.VITEST === 'true';
+  return process.env.NODE_ENV === 'test' || process.env.VITEST === 'true';
 }
 
 export function getConnectionConfig(): ConnectionConfig {

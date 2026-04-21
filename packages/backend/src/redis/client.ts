@@ -202,7 +202,7 @@ class RedisClientManager {
       disconnectPromises.push(
         this.publisher.quit().then(() => {
           console.log('[Redis] Publisher disconnected');
-        })
+        }),
       );
     }
 
@@ -210,7 +210,7 @@ class RedisClientManager {
       disconnectPromises.push(
         this.subscriber.quit().then(() => {
           console.log('[Redis] Subscriber disconnected');
-        })
+        }),
       );
     }
 
@@ -218,7 +218,7 @@ class RedisClientManager {
       disconnectPromises.push(
         this.streamConsumer.quit().then(() => {
           console.log('[Redis] Stream consumer disconnected');
-        })
+        }),
       );
     }
 

@@ -1,12 +1,7 @@
 import 'fake-indexeddb/auto';
 import { openDB } from 'idb';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  getRecentSearches,
-  addRecentSearch,
-  getFilterKey,
-  type RecentSearch,
-} from '../recent-searches-storage';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+import { getRecentSearches, addRecentSearch, getFilterKey, type RecentSearch } from '../recent-searches-storage';
 
 const DB_NAME = 'boardsesh-recent-searches';
 const STORE_NAME = 'searches';

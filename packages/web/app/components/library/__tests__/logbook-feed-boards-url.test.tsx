@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, waitFor, act } from '@testing-library/react';
 import React from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -52,7 +52,12 @@ vi.mock('next/navigation', () => ({
 // Auth token resolved synchronously so the query is immediately enabled once
 // preferencesLoaded and boardsInitialized both flip to true.
 vi.mock('@/app/hooks/use-ws-auth-token', () => ({
-  useWsAuthToken: () => ({ token: 'test-token', isAuthenticated: true, isLoading: false, error: null }),
+  useWsAuthToken: () => ({
+    token: 'test-token',
+    isAuthenticated: true,
+    isLoading: false,
+    error: null,
+  }),
 }));
 
 vi.mock('@/app/hooks/use-infinite-scroll', () => ({
@@ -275,9 +280,10 @@ describe('LogbookFeed — boards URL round-trip', () => {
     expect(variables.input.boardTypes).toEqual(['kilter', 'tension']);
     expect(variables.input.layoutIds?.sort()).toEqual([1, 9]);
 
-    expect(lastSelectedBoards().map((b) => b.uuid).sort()).toEqual([
-      'logbook-kilter-1',
-      'logbook-tension-9',
-    ]);
+    expect(
+      lastSelectedBoards()
+        .map((b) => b.uuid)
+        .sort(),
+    ).toEqual(['logbook-kilter-1', 'logbook-tension-9']);
   });
 });

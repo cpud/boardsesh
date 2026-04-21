@@ -28,7 +28,10 @@ export interface QueueStorageActions {
   clearLocalQueue: () => void;
 }
 
-export function useQueueStorage({ activeSession, setActiveSession }: UseQueueStorageArgs): QueueStorageState & QueueStorageActions {
+export function useQueueStorage({
+  activeSession,
+  setActiveSession,
+}: UseQueueStorageArgs): QueueStorageState & QueueStorageActions {
   const [localQueue, setLocalQueue] = useState<LocalClimbQueueItem[]>([]);
   const [localCurrentClimbQueueItem, setLocalCurrentClimbQueueItem] = useState<LocalClimbQueueItem | null>(null);
   const [localBoardPath, setLocalBoardPath] = useState<string | null>(null);
@@ -66,7 +69,7 @@ export function useQueueStorage({ activeSession, setActiveSession }: UseQueueSto
     }
 
     restoreState();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only on mount
 
   // Local queue management (in-memory only)

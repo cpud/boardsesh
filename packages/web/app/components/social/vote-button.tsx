@@ -156,10 +156,9 @@ export default function VoteButton({
       setIsLoading(true);
       try {
         const client = createGraphQLHttpClient(token);
-        const response = await client.request<VoteMutationResponse, VoteMutationVariables>(
-          VOTE,
-          { input: { entityType, entityId, value } },
-        );
+        const response = await client.request<VoteMutationResponse, VoteMutationVariables>(VOTE, {
+          input: { entityType, entityId, value },
+        });
 
         // Use server response as source of truth
         const s = response.vote;
@@ -203,11 +202,7 @@ export default function VoteButton({
             p: 0.5,
           }}
         >
-          {isLiked ? (
-            <FavoriteOutlined sx={{ fontSize: 18 }} />
-          ) : (
-            <FavoriteBorderOutlined sx={{ fontSize: 18 }} />
-          )}
+          {isLiked ? <FavoriteOutlined sx={{ fontSize: 18 }} /> : <FavoriteBorderOutlined sx={{ fontSize: 18 }} />}
         </IconButton>
         {upvotes > 0 && (
           <MuiTypography

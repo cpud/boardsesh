@@ -45,7 +45,7 @@ export const sessionQueries = {
   eventsReplay: async (
     _: unknown,
     { sessionId, sinceSequence }: { sessionId: string; sinceSequence: number },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ): Promise<EventsReplayResponse> => {
     // Validate inputs
     validateInput(SessionIdSchema, sessionId, 'sessionId');
@@ -71,7 +71,7 @@ export const sessionQueries = {
    */
   nearbySessions: async (
     _: unknown,
-    { latitude, longitude, radiusMeters }: { latitude: number; longitude: number; radiusMeters?: number }
+    { latitude, longitude, radiusMeters }: { latitude: number; longitude: number; radiusMeters?: number },
   ): Promise<DiscoverableSession[]> => {
     // Validate GPS coordinates
     validateInput(LatitudeSchema, latitude, 'latitude');
@@ -120,7 +120,7 @@ export const sessionQueries = {
           isPermanent: s.isPermanent,
           color: s.color || null,
         };
-      })
+      }),
     );
   },
 

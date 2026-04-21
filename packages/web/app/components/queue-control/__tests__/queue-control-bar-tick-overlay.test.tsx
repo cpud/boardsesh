@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import React from 'react';
 
@@ -21,8 +21,13 @@ vi.mock('@/app/components/graphql-queue', () => ({
   useQueueContext: () => mockQueueContext,
   useQueueData: () => mockQueueContext,
   useQueueActions: () => mockQueueContext,
-  useCurrentClimb: () => ({ currentClimb: (mockQueueContext as Record<string, unknown>).currentClimb }),
-  useQueueList: () => ({ queue: (mockQueueContext as Record<string, unknown>).queue, suggestedClimbs: [] }),
+  useCurrentClimb: () => ({
+    currentClimb: (mockQueueContext as Record<string, unknown>).currentClimb,
+  }),
+  useQueueList: () => ({
+    queue: (mockQueueContext as Record<string, unknown>).queue,
+    suggestedClimbs: [],
+  }),
   useSessionData: () => ({
     viewOnlyMode: (mockQueueContext as Record<string, unknown>).viewOnlyMode ?? false,
     isSessionActive: !!(mockQueueContext as Record<string, unknown>).sessionId,
@@ -43,7 +48,13 @@ vi.mock('@/app/components/graphql-queue', () => ({
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/kilter/1/1/1/40',
-  useParams: () => ({ board_name: 'kilter', layout_id: '1', size_id: '1', set_ids: '1', angle: '40' }),
+  useParams: () => ({
+    board_name: 'kilter',
+    layout_id: '1',
+    size_id: '1',
+    set_ids: '1',
+    angle: '40',
+  }),
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
 }));

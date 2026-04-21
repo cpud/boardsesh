@@ -6,17 +6,13 @@ import { STATE_TO_PRIMARY_CODE } from './hold-states';
 export { LED_PLACEMENTS };
 export type { LedPositionWithColor } from './types';
 
-export const getLedPlacements = (
-  boardName: BoardName,
-  layoutId: number,
-  sizeId: number,
-): Record<number, number> => {
+export const getLedPlacements = (boardName: BoardName, layoutId: number, sizeId: number): Record<number, number> => {
   const key = `${layoutId}-${sizeId}`;
   const placements = LED_PLACEMENTS[boardName]?.[key];
   if (!placements) {
     console.warn(
       `[LED] No LED placements found for ${boardName} layout=${layoutId} size=${sizeId}. ` +
-      `Available keys: ${Object.keys(LED_PLACEMENTS[boardName] || {}).join(', ')}`,
+        `Available keys: ${Object.keys(LED_PLACEMENTS[boardName] || {}).join(', ')}`,
     );
     return {};
   }

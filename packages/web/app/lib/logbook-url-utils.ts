@@ -8,7 +8,13 @@ import {
   type SortField,
 } from '@/app/lib/logbook-preferences';
 
-const VALID_SORT_FIELDS: Set<SortField> = new Set(['climbName', 'loggedGrade', 'consensusGrade', 'date', 'attemptCount']);
+const VALID_SORT_FIELDS: Set<SortField> = new Set([
+  'climbName',
+  'loggedGrade',
+  'consensusGrade',
+  'date',
+  'attemptCount',
+]);
 
 function isValidSortField(value: string): value is SortField {
   return VALID_SORT_FIELDS.has(value as SortField);
@@ -55,10 +61,7 @@ export function readFiltersFromQuery(params: URLSearchParams): Partial<LogbookFi
   const minAngle = parseQueryParamInt(params, 'minAngle');
   const maxAngle = parseQueryParamInt(params, 'maxAngle');
   if (minAngle !== undefined || maxAngle !== undefined) {
-    partial.angleRange = [
-      minAngle ?? DEFAULT_ANGLE_RANGE[0],
-      maxAngle ?? DEFAULT_ANGLE_RANGE[1],
-    ];
+    partial.angleRange = [minAngle ?? DEFAULT_ANGLE_RANGE[0], maxAngle ?? DEFAULT_ANGLE_RANGE[1]];
   }
 
   return partial;
@@ -120,7 +123,8 @@ export function filtersToQueryParams(
     params.sort = sortState.primaryField;
     if (sortState.primaryDirection !== DEFAULT_SORT.primaryDirection) params.order = sortState.primaryDirection;
     if (sortState.secondaryField) params.sort2 = sortState.secondaryField;
-    if (sortState.secondaryField && sortState.secondaryDirection !== 'desc') params.order2 = sortState.secondaryDirection;
+    if (sortState.secondaryField && sortState.secondaryDirection !== 'desc')
+      params.order2 = sortState.secondaryDirection;
   }
 
   return params;

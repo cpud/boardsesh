@@ -26,20 +26,22 @@ const baseSearch: ClimbSearchParams = {};
  */
 function sqlToString(fragment: SQL): string {
   const chunks = (fragment as unknown as { queryChunks?: unknown[] }).queryChunks ?? [];
-  return chunks.map((chunk) => {
-    if (chunk && typeof chunk === 'object' && 'queryChunks' in chunk) {
-      return sqlToString(chunk as SQL);
-    }
-    if (chunk && typeof chunk === 'object' && 'value' in chunk) {
-      const value = (chunk as { value: unknown }).value;
-      if (Array.isArray(value)) return value.join('');
-      return String(value);
-    }
-    if (chunk && typeof chunk === 'object' && 'name' in chunk) {
-      return String((chunk as { name: unknown }).name);
-    }
-    return '';
-  }).join('');
+  return chunks
+    .map((chunk) => {
+      if (chunk && typeof chunk === 'object' && 'queryChunks' in chunk) {
+        return sqlToString(chunk as SQL);
+      }
+      if (chunk && typeof chunk === 'object' && 'value' in chunk) {
+        const value = (chunk as { value: unknown }).value;
+        if (Array.isArray(value)) return value.join('');
+        return String(value);
+      }
+      if (chunk && typeof chunk === 'object' && 'name' in chunk) {
+        return String((chunk as { name: unknown }).name);
+      }
+      return '';
+    })
+    .join('');
 }
 
 describe('createClimbFilters: projectsOnly', () => {
@@ -61,7 +63,9 @@ describe('createClimbFilters: projectsOnly', () => {
 
   it('adds the projectsOnly condition to the climb WHERE array', () => {
     const baseline = createClimbFilters(params, baseSearch).getClimbWhereConditions();
-    const withProjects = createClimbFilters(params, { projectsOnly: true }).getClimbWhereConditions();
+    const withProjects = createClimbFilters(params, {
+      projectsOnly: true,
+    }).getClimbWhereConditions();
     assert.equal(withProjects.length, baseline.length + 1);
     // The new entry must be the COALESCE zero-ascents condition.
     const rendered = withProjects.map(sqlToString).join(' || ');

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { formatCount, formatSends, formatQuality } from '@/app/lib/format-climb-stats';
 
 describe('formatCount', () => {

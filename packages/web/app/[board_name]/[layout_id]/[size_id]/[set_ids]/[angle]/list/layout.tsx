@@ -9,7 +9,6 @@ import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import { permanentRedirect } from 'next/navigation';
 import ListLayoutClient from './layout-client';
 
-
 interface LayoutProps {
   params: Promise<BoardRouteParameters>;
 }

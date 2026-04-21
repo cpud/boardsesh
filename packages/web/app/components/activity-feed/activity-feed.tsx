@@ -11,10 +11,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { EmptyState } from '@/app/components/ui/empty-state';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  GET_SESSION_GROUPED_FEED,
-  type GetSessionGroupedFeedQueryResponse,
-} from '@/app/lib/graphql/operations';
+import { GET_SESSION_GROUPED_FEED, type GetSessionGroupedFeedQueryResponse } from '@/app/lib/graphql/operations';
 import type { SessionFeedItem, SessionFeedResult } from '@boardsesh/shared-schema';
 import { VoteSummaryProvider } from '@/app/components/social/vote-summary-context';
 import SessionFeedCard from './session-feed-card';
@@ -61,10 +58,7 @@ export default function ActivityFeed({
         userId: userId || undefined,
       };
 
-      const response = await client.request<GetSessionGroupedFeedQueryResponse>(
-        GET_SESSION_GROUPED_FEED,
-        { input },
-      );
+      const response = await client.request<GetSessionGroupedFeedQueryResponse>(GET_SESSION_GROUPED_FEED, { input });
       return response.sessionGroupedFeed;
     },
     initialPageParam: null as string | null,
@@ -85,15 +79,9 @@ export default function ActivityFeed({
       : {}),
   });
 
-  const sessions: SessionFeedItem[] = useMemo(
-    () => data?.pages.flatMap((p) => p.sessions) ?? [],
-    [data],
-  );
+  const sessions: SessionFeedItem[] = useMemo(() => data?.pages.flatMap((p) => p.sessions) ?? [], [data]);
 
-  const sessionIds = useMemo(
-    () => sessions.map((s) => s.sessionId),
-    [sessions],
-  );
+  const sessionIds = useMemo(() => sessions.map((s) => s.sessionId), [sessions]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: fetchNextPage,
@@ -151,17 +139,18 @@ export default function ActivityFeed({
             )}
           </EmptyState>
         ) : (
-          <EmptyState
-            icon={<PublicOutlined fontSize="inherit" />}
-            description="No recent activity yet"
-          />
+          <EmptyState icon={<PublicOutlined fontSize="inherit" />} description="No recent activity yet" />
         )
       ) : (
         <VoteSummaryProvider entityType="session" entityIds={sessionIds}>
           {sessions.map((session) => (
             <SessionFeedCard key={session.sessionId} session={session} />
           ))}
-          <Box ref={sentinelRef} data-testid="activity-feed-sentinel" sx={{ display: 'flex', flexDirection: 'column', gap: '12px', py: 2, minHeight: 20 }}>
+          <Box
+            ref={sentinelRef}
+            data-testid="activity-feed-sentinel"
+            sx={{ display: 'flex', flexDirection: 'column', gap: '12px', py: 2, minHeight: 20 }}
+          >
             {isFetchingNextPage && (
               <>
                 <FeedItemSkeleton />

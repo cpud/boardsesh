@@ -34,9 +34,8 @@ export default async function FeedPage({ searchParams }: FeedProps) {
   let initialMyBoards: import('@boardsesh/shared-schema').UserBoard[] | null = null;
 
   if (authToken) {
-    const feedPromise = tab === 'sessions'
-      ? cachedSessionGroupedFeed(boardUuid, true).catch(() => null)
-      : Promise.resolve(null);
+    const feedPromise =
+      tab === 'sessions' ? cachedSessionGroupedFeed(boardUuid, true).catch(() => null) : Promise.resolve(null);
     const boardsPromise = serverMyBoards(authToken);
 
     const [feedResult, boardsResult] = await Promise.all([feedPromise, boardsPromise]);

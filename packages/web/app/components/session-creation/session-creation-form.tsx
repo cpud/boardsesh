@@ -13,9 +13,18 @@ import CircularProgress from '@mui/material/CircularProgress';
 import PlayCircleOutlineOutlined from '@mui/icons-material/PlayCircleOutlineOutlined';
 
 const COLOR_OPTIONS = [
-  '#F44336', '#E91E63', '#9C27B0', '#673AB7',
-  '#3F51B5', '#2196F3', '#00BCD4', '#009688',
-  '#4CAF50', '#8BC34A', '#FF9800', '#FF5722',
+  '#F44336',
+  '#E91E63',
+  '#9C27B0',
+  '#673AB7',
+  '#3F51B5',
+  '#2196F3',
+  '#00BCD4',
+  '#009688',
+  '#4CAF50',
+  '#8BC34A',
+  '#FF9800',
+  '#FF5722',
 ];
 
 export interface SessionCreationFormData {
@@ -141,39 +150,31 @@ export default function SessionCreationForm({
               Others nearby can find and join your session
             </Typography>
           </Stack>
-          <Switch
-            checked={discoverable}
-            onChange={(e) => setDiscoverable(e.target.checked)}
-          />
+          <Switch checked={discoverable} onChange={(e) => setDiscoverable(e.target.checked)} />
         </Box>
       )}
 
       {isGymAdmin && (
         <FormControlLabel
-          control={
-            <Switch
-              checked={isPermanent}
-              onChange={(e) => setIsPermanent(e.target.checked)}
-            />
-          }
+          control={<Switch checked={isPermanent} onChange={(e) => setIsPermanent(e.target.checked)} />}
           label="Permanent session (won't auto-end)"
         />
       )}
 
-      {renderSubmit
-        ? renderSubmit({ onSubmit: handleSubmit, isSubmitting, label: submitLabel })
-        : (
-          <Button
-            variant="contained"
-            size="large"
-            startIcon={isSubmitting ? <CircularProgress size={16} /> : <PlayCircleOutlineOutlined />}
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            fullWidth
-          >
-            {submitLabel}
-          </Button>
-        )}
+      {renderSubmit ? (
+        renderSubmit({ onSubmit: handleSubmit, isSubmitting, label: submitLabel })
+      ) : (
+        <Button
+          variant="contained"
+          size="large"
+          startIcon={isSubmitting ? <CircularProgress size={16} /> : <PlayCircleOutlineOutlined />}
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          fullWidth
+        >
+          {submitLabel}
+        </Button>
+      )}
     </Stack>
   );
 }

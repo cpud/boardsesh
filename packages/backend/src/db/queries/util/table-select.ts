@@ -48,9 +48,7 @@ export type UnifiedTableSet = typeof UNIFIED_TABLES;
  * @param tableName The name of the unified table to retrieve
  * @returns The unified table
  */
-export function getUnifiedTable<K extends keyof UnifiedTableSet>(
-  tableName: K
-): UnifiedTableSet[K] {
+export function getUnifiedTable<K extends keyof UnifiedTableSet>(tableName: K): UnifiedTableSet[K] {
   return UNIFIED_TABLES[tableName];
 }
 
@@ -62,4 +60,3 @@ export function getUnifiedTable<K extends keyof UnifiedTableSet>(
 export function isValidBoardName(boardName: string): boardName is BoardName {
   return SUPPORTED_BOARDS.includes(boardName as BoardName);
 }
-

@@ -23,10 +23,7 @@ export default async function LikedClimbsPage(props: { params: Promise<BoardRout
 
     return (
       <div className={styles.pageContainer}>
-        <LikedClimbsViewContent
-          boardDetails={boardDetails}
-          angle={parsedParams.angle}
-        />
+        <LikedClimbsViewContent boardDetails={boardDetails} angle={parsedParams.angle} />
       </div>
     );
   } catch (error) {

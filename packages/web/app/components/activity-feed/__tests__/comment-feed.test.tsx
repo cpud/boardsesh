@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -115,11 +115,7 @@ describe('CommentFeed', () => {
     });
 
     it('shows entity type labels', async () => {
-      const comments = [
-        makeComment('c1', 'session'),
-        makeComment('c2', 'climb'),
-        makeComment('c3', 'proposal'),
-      ];
+      const comments = [makeComment('c1', 'session'), makeComment('c2', 'climb'), makeComment('c3', 'proposal')];
       mockRequest.mockResolvedValueOnce({
         globalCommentFeed: { comments, totalCount: 0, hasMore: false, cursor: null },
       });
@@ -172,10 +168,9 @@ describe('CommentFeed', () => {
         globalCommentFeed: { comments: [], totalCount: 0, hasMore: false, cursor: null },
       });
 
-      render(
-        <CommentFeed isAuthenticated={false} boardUuid="board-456" />,
-        { wrapper: createWrapper() },
-      );
+      render(<CommentFeed isAuthenticated={false} boardUuid="board-456" />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(mockRequest).toHaveBeenCalledWith(
@@ -285,7 +280,12 @@ describe('CommentFeed', () => {
 
       // Set up success response for retry
       mockRequest.mockResolvedValueOnce({
-        globalCommentFeed: { comments: [makeComment('c1')], totalCount: 1, hasMore: false, cursor: null },
+        globalCommentFeed: {
+          comments: [makeComment('c1')],
+          totalCount: 1,
+          hasMore: false,
+          cursor: null,
+        },
       });
 
       fireEvent.click(screen.getByText('Retry'));

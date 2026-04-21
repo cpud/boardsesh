@@ -46,7 +46,7 @@ function fireThunderstrike(targetElement: HTMLElement) {
     const x = cx + Math.cos(angle) * startDist;
     const y = cy + Math.sin(angle) * startDist;
     // Rotate bolt to point outward (angle in degrees, offset by 90 since bolt points up)
-    const rotDeg = (angle * 180 / Math.PI) + 90;
+    const rotDeg = (angle * 180) / Math.PI + 90;
     // Each bolt translates outward during animation
     const tx = Math.cos(angle) * 35;
     const ty = Math.sin(angle) * 35;
@@ -111,11 +111,10 @@ function fireThunderstrike(targetElement: HTMLElement) {
   }, 300);
 
   // Pulse the button itself (expand then contract)
-  targetElement.animate?.([
-    { transform: 'scale(1)' },
-    { transform: 'scale(1.3)' },
-    { transform: 'scale(1)' },
-  ], { duration: 250, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
+  targetElement.animate?.([{ transform: 'scale(1)' }, { transform: 'scale(1.3)' }, { transform: 'scale(1)' }], {
+    duration: 250,
+    easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+  });
 }
 
 function getOrigin(element?: HTMLElement | null): { x: number; y: number } {

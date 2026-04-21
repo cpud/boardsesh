@@ -28,11 +28,7 @@ export function LoadingSpinner({ spinning = true, size = 40, children, sx, tip }
         }}
       >
         <CircularProgress size={size} />
-        {tip && (
-          <Box sx={{ mt: 1, color: 'text.secondary', fontSize: 14 }}>
-            {tip}
-          </Box>
-        )}
+        {tip && <Box sx={{ mt: 1, color: 'text.secondary', fontSize: 14 }}>{tip}</Box>}
       </Box>
     );
   }
@@ -54,11 +50,7 @@ export function LoadingSpinner({ spinning = true, size = 40, children, sx, tip }
           }}
         >
           <CircularProgress size={size} />
-          {tip && (
-            <Box sx={{ mt: 1, color: 'text.secondary', fontSize: 14 }}>
-              {tip}
-            </Box>
-          )}
+          {tip && <Box sx={{ mt: 1, color: 'text.secondary', fontSize: 14 }}>{tip}</Box>}
         </Box>
       )}
     </Box>

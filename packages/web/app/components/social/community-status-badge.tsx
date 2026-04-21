@@ -104,9 +104,5 @@ export default function CommunityStatusBadge({
 
   if (badges.length === 0) return null;
 
-  return (
-    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center' }}>
-      {badges}
-    </Box>
-  );
+  return <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center' }}>{badges}</Box>;
 }

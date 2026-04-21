@@ -26,11 +26,12 @@ import {
  * Exported for reuse in board auto-gym creation.
  */
 export async function generateUniqueGymSlug(name: string): Promise<string> {
-  const baseSlug = name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 100) || 'gym';
+  const baseSlug =
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 100) || 'gym';
 
   // Find all existing slugs matching this base in a single query
   const existing = await db
@@ -38,12 +39,9 @@ export async function generateUniqueGymSlug(name: string): Promise<string> {
     .from(dbSchema.gyms)
     .where(
       and(
-        or(
-          eq(dbSchema.gyms.slug, baseSlug),
-          ilike(dbSchema.gyms.slug, `${baseSlug.replace(/[%_\\]/g, '\\$&')}-%`),
-        ),
+        or(eq(dbSchema.gyms.slug, baseSlug), ilike(dbSchema.gyms.slug, `${baseSlug.replace(/[%_\\]/g, '\\$&')}-%`)),
         isNull(dbSchema.gyms.deletedAt),
-      )
+      ),
     );
 
   const existingSlugs = new Set(existing.map((r) => r.slug));
@@ -90,87 +88,70 @@ function mapRawGymRow(row: Record<string, unknown>): typeof dbSchema.gyms.$infer
 /**
  * Enrich a gym row with computed fields (counts, follow status, membership).
  */
-async function enrichGym(
-  gym: typeof dbSchema.gyms.$inferSelect,
-  authenticatedUserId?: string,
-) {
-  const [ownerResult, boardCountResult, memberCountResult, followerCountResult, commentCountResult, followCheckResult, memberCheckResult] =
-    await Promise.all([
-      // Get owner profile
-      db
-        .select({
-          name: dbSchema.users.name,
-          image: dbSchema.users.image,
-          displayName: dbSchema.userProfiles.displayName,
-          avatarUrl: dbSchema.userProfiles.avatarUrl,
-        })
-        .from(dbSchema.users)
-        .leftJoin(dbSchema.userProfiles, eq(dbSchema.users.id, dbSchema.userProfiles.userId))
-        .where(eq(dbSchema.users.id, gym.ownerId))
-        .limit(1),
+async function enrichGym(gym: typeof dbSchema.gyms.$inferSelect, authenticatedUserId?: string) {
+  const [
+    ownerResult,
+    boardCountResult,
+    memberCountResult,
+    followerCountResult,
+    commentCountResult,
+    followCheckResult,
+    memberCheckResult,
+  ] = await Promise.all([
+    // Get owner profile
+    db
+      .select({
+        name: dbSchema.users.name,
+        image: dbSchema.users.image,
+        displayName: dbSchema.userProfiles.displayName,
+        avatarUrl: dbSchema.userProfiles.avatarUrl,
+      })
+      .from(dbSchema.users)
+      .leftJoin(dbSchema.userProfiles, eq(dbSchema.users.id, dbSchema.userProfiles.userId))
+      .where(eq(dbSchema.users.id, gym.ownerId))
+      .limit(1),
 
-      // Count linked boards
-      db
-        .select({ count: count() })
-        .from(dbSchema.userBoards)
-        .where(
-          and(
-            eq(dbSchema.userBoards.gymId, gym.id),
-            isNull(dbSchema.userBoards.deletedAt),
-          )
+    // Count linked boards
+    db
+      .select({ count: count() })
+      .from(dbSchema.userBoards)
+      .where(and(eq(dbSchema.userBoards.gymId, gym.id), isNull(dbSchema.userBoards.deletedAt))),
+
+    // Count members
+    db.select({ count: count() }).from(dbSchema.gymMembers).where(eq(dbSchema.gymMembers.gymId, gym.id)),
+
+    // Count followers
+    db.select({ count: count() }).from(dbSchema.gymFollows).where(eq(dbSchema.gymFollows.gymId, gym.id)),
+
+    // Count comments
+    db
+      .select({ count: count() })
+      .from(dbSchema.comments)
+      .where(
+        and(
+          eq(dbSchema.comments.entityType, 'gym'),
+          eq(dbSchema.comments.entityId, gym.uuid),
+          isNull(dbSchema.comments.deletedAt),
         ),
+      ),
 
-      // Count members
-      db
-        .select({ count: count() })
-        .from(dbSchema.gymMembers)
-        .where(eq(dbSchema.gymMembers.gymId, gym.id)),
+    // Check if authenticated user follows this gym
+    authenticatedUserId
+      ? db
+          .select({ count: count() })
+          .from(dbSchema.gymFollows)
+          .where(and(eq(dbSchema.gymFollows.userId, authenticatedUserId), eq(dbSchema.gymFollows.gymId, gym.id)))
+      : Promise.resolve([]),
 
-      // Count followers
-      db
-        .select({ count: count() })
-        .from(dbSchema.gymFollows)
-        .where(eq(dbSchema.gymFollows.gymId, gym.id)),
-
-      // Count comments
-      db
-        .select({ count: count() })
-        .from(dbSchema.comments)
-        .where(
-          and(
-            eq(dbSchema.comments.entityType, 'gym'),
-            eq(dbSchema.comments.entityId, gym.uuid),
-            isNull(dbSchema.comments.deletedAt),
-          )
-        ),
-
-      // Check if authenticated user follows this gym
-      authenticatedUserId
-        ? db
-            .select({ count: count() })
-            .from(dbSchema.gymFollows)
-            .where(
-              and(
-                eq(dbSchema.gymFollows.userId, authenticatedUserId),
-                eq(dbSchema.gymFollows.gymId, gym.id),
-              )
-            )
-        : Promise.resolve([]),
-
-      // Check if authenticated user is a member
-      authenticatedUserId
-        ? db
-            .select({ role: dbSchema.gymMembers.role })
-            .from(dbSchema.gymMembers)
-            .where(
-              and(
-                eq(dbSchema.gymMembers.userId, authenticatedUserId),
-                eq(dbSchema.gymMembers.gymId, gym.id),
-              )
-            )
-            .limit(1)
-        : Promise.resolve([]),
-    ]);
+    // Check if authenticated user is a member
+    authenticatedUserId
+      ? db
+          .select({ role: dbSchema.gymMembers.role })
+          .from(dbSchema.gymMembers)
+          .where(and(eq(dbSchema.gymMembers.userId, authenticatedUserId), eq(dbSchema.gymMembers.gymId, gym.id)))
+          .limit(1)
+      : Promise.resolve([]),
+  ]);
 
   const ownerInfo = ownerResult[0];
   const boardCount = Number(boardCountResult[0]?.count || 0);
@@ -183,7 +164,7 @@ async function enrichGym(
   const isOwner = authenticatedUserId === gym.ownerId;
   const memberRow = (memberCheckResult as Array<{ role: string }>)[0];
   const isMember = isOwner || !!memberRow;
-  const myRole = isOwner ? 'admin' : (memberRow?.role as 'admin' | 'member' | undefined) ?? null;
+  const myRole = isOwner ? 'admin' : ((memberRow?.role as 'admin' | 'member' | undefined) ?? null);
 
   return {
     uuid: gym.uuid,
@@ -214,10 +195,7 @@ async function enrichGym(
 /**
  * Verify user is gym owner or admin, return the gym row.
  */
-async function requireGymOwnerOrAdmin(
-  gymUuid: string,
-  userId: string,
-): Promise<typeof dbSchema.gyms.$inferSelect> {
+async function requireGymOwnerOrAdmin(gymUuid: string, userId: string): Promise<typeof dbSchema.gyms.$inferSelect> {
   const [gym] = await db
     .select()
     .from(dbSchema.gyms)
@@ -241,7 +219,7 @@ async function requireGymOwnerOrAdmin(
         eq(dbSchema.gymMembers.gymId, gym.id),
         eq(dbSchema.gymMembers.userId, userId),
         eq(dbSchema.gymMembers.role, 'admin'),
-      )
+      ),
     )
     .limit(1);
 
@@ -257,11 +235,7 @@ async function requireGymOwnerOrAdmin(
 // ============================================
 
 export const socialGymQueries = {
-  gym: async (
-    _: unknown,
-    { gymUuid }: { gymUuid: string },
-    ctx: ConnectionContext,
-  ) => {
+  gym: async (_: unknown, { gymUuid }: { gymUuid: string }, ctx: ConnectionContext) => {
     validateInput(UUIDSchema, gymUuid, 'gymUuid');
 
     const [gym] = await db
@@ -274,11 +248,7 @@ export const socialGymQueries = {
     return enrichGym(gym, ctx.isAuthenticated ? ctx.userId : undefined);
   },
 
-  gymBySlug: async (
-    _: unknown,
-    { slug }: { slug: string },
-    ctx: ConnectionContext,
-  ) => {
+  gymBySlug: async (_: unknown, { slug }: { slug: string }, ctx: ConnectionContext) => {
     if (!slug || slug.length > 120 || !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(slug)) {
       return null;
     }
@@ -293,11 +263,7 @@ export const socialGymQueries = {
     return enrichGym(gym, ctx.isAuthenticated ? ctx.userId : undefined);
   },
 
-  myGyms: async (
-    _: unknown,
-    { input }: { input?: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  myGyms: async (_: unknown, { input }: { input?: unknown }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     const validatedInput = validateInput(MyGymsInputSchema, input || {}, 'input');
     const userId = ctx.userId!;
@@ -317,18 +283,11 @@ export const socialGymQueries = {
 
     // Build WHERE: owned OR followed, and not deleted
     const ownerCondition = eq(dbSchema.gyms.ownerId, userId);
-    const followedCondition = followedGymIds.length > 0
-      ? inArray(dbSchema.gyms.id, followedGymIds)
-      : undefined;
-    const matchCondition = followedCondition
-      ? or(ownerCondition, followedCondition)!
-      : ownerCondition;
+    const followedCondition = followedGymIds.length > 0 ? inArray(dbSchema.gyms.id, followedGymIds) : undefined;
+    const matchCondition = followedCondition ? or(ownerCondition, followedCondition)! : ownerCondition;
     const whereClause = and(matchCondition, isNull(dbSchema.gyms.deletedAt));
 
-    const [countResult] = await db
-      .select({ count: count() })
-      .from(dbSchema.gyms)
-      .where(whereClause);
+    const [countResult] = await db.select({ count: count() }).from(dbSchema.gyms).where(whereClause);
 
     const totalCount = Number(countResult?.count || 0);
 
@@ -340,9 +299,7 @@ export const socialGymQueries = {
       .limit(limit)
       .offset(offset);
 
-    const enrichedGyms = await Promise.all(
-      gymRows.map((g) => enrichGym(g, userId)),
-    );
+    const enrichedGyms = await Promise.all(gymRows.map((g) => enrichGym(g, userId)));
 
     return {
       gyms: enrichedGyms,
@@ -351,11 +308,7 @@ export const socialGymQueries = {
     };
   },
 
-  searchGyms: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  searchGyms: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     const validatedInput = validateInput(SearchGymsInputSchema, input, 'input');
     const { query, latitude, longitude, radiusKm } = validatedInput;
     const limit = validatedInput.limit ?? 20;
@@ -375,14 +328,14 @@ export const socialGymQueries = {
           ? sql`SELECT count(*)::int as count FROM gyms WHERE is_public = true AND deleted_at IS NULL AND location IS NOT NULL AND ST_DWithin(location, ST_MakePoint(${lon}, ${lat})::geography, ${radiusMeters}) AND (name ILIKE ${likePattern} OR address ILIKE ${likePattern})`
           : sql`SELECT count(*)::int as count FROM gyms WHERE is_public = true AND deleted_at IS NULL AND location IS NOT NULL AND ST_DWithin(location, ST_MakePoint(${lon}, ${lat})::geography, ${radiusMeters})`,
       );
-      const totalCount = Number(((countRows as unknown as Array<Record<string, unknown>>)[0])?.count || 0);
+      const totalCount = Number((countRows as unknown as Array<Record<string, unknown>>)[0]?.count || 0);
 
       const gymRows = await db.execute(
         likePattern
           ? sql`SELECT *, ST_Distance(location, ST_MakePoint(${lon}, ${lat})::geography) as distance_meters FROM gyms WHERE is_public = true AND deleted_at IS NULL AND location IS NOT NULL AND ST_DWithin(location, ST_MakePoint(${lon}, ${lat})::geography, ${radiusMeters}) AND (name ILIKE ${likePattern} OR address ILIKE ${likePattern}) ORDER BY distance_meters ASC LIMIT ${limit} OFFSET ${offset}`
           : sql`SELECT *, ST_Distance(location, ST_MakePoint(${lon}, ${lat})::geography) as distance_meters FROM gyms WHERE is_public = true AND deleted_at IS NULL AND location IS NOT NULL AND ST_DWithin(location, ST_MakePoint(${lon}, ${lat})::geography, ${radiusMeters}) ORDER BY distance_meters ASC LIMIT ${limit} OFFSET ${offset}`,
       );
-      const rows = (gymRows as unknown as Array<Record<string, unknown>>);
+      const rows = gymRows as unknown as Array<Record<string, unknown>>;
 
       const mappedGyms = rows.map(mapRawGymRow);
 
@@ -398,27 +351,18 @@ export const socialGymQueries = {
     }
 
     // Text-only search path
-    const conditions = [
-      eq(dbSchema.gyms.isPublic, true),
-      isNull(dbSchema.gyms.deletedAt),
-    ];
+    const conditions = [eq(dbSchema.gyms.isPublic, true), isNull(dbSchema.gyms.deletedAt)];
 
     if (query) {
       const escapedQuery = query.replace(/[%_\\]/g, '\\$&');
       conditions.push(
-        or(
-          ilike(dbSchema.gyms.name, `%${escapedQuery}%`),
-          ilike(dbSchema.gyms.address, `%${escapedQuery}%`),
-        )!,
+        or(ilike(dbSchema.gyms.name, `%${escapedQuery}%`), ilike(dbSchema.gyms.address, `%${escapedQuery}%`))!,
       );
     }
 
     const whereClause = and(...conditions);
 
-    const [countResult] = await db
-      .select({ count: count() })
-      .from(dbSchema.gyms)
-      .where(whereClause);
+    const [countResult] = await db.select({ count: count() }).from(dbSchema.gyms).where(whereClause);
 
     const totalCount = Number(countResult?.count || 0);
 
@@ -441,11 +385,7 @@ export const socialGymQueries = {
     };
   },
 
-  gymMembers: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  gymMembers: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     const validatedInput = validateInput(GymMembersInputSchema, input, 'input');
     const { gymUuid } = validatedInput;
     const limit = validatedInput.limit ?? 20;
@@ -508,11 +448,7 @@ export const socialGymQueries = {
 // ============================================
 
 export const socialGymMutations = {
-  createGym: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  createGym: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 10);
 
@@ -543,7 +479,7 @@ export const socialGymMutations = {
     // Populate PostGIS location column if lat/lon provided
     if (validatedInput.latitude != null && validatedInput.longitude != null) {
       await db.execute(
-        sql`UPDATE gyms SET location = ST_MakePoint(${validatedInput.longitude}, ${validatedInput.latitude})::geography WHERE id = ${gym.id}`
+        sql`UPDATE gyms SET location = ST_MakePoint(${validatedInput.longitude}, ${validatedInput.latitude})::geography WHERE id = ${gym.id}`,
       );
     }
 
@@ -552,30 +488,18 @@ export const socialGymMutations = {
       const [board] = await db
         .select({ id: dbSchema.userBoards.id, ownerId: dbSchema.userBoards.ownerId })
         .from(dbSchema.userBoards)
-        .where(
-          and(
-            eq(dbSchema.userBoards.uuid, validatedInput.boardUuid),
-            isNull(dbSchema.userBoards.deletedAt),
-          )
-        )
+        .where(and(eq(dbSchema.userBoards.uuid, validatedInput.boardUuid), isNull(dbSchema.userBoards.deletedAt)))
         .limit(1);
 
       if (board && board.ownerId === userId) {
-        await db
-          .update(dbSchema.userBoards)
-          .set({ gymId: gym.id })
-          .where(eq(dbSchema.userBoards.id, board.id));
+        await db.update(dbSchema.userBoards).set({ gymId: gym.id }).where(eq(dbSchema.userBoards.id, board.id));
       }
     }
 
     return enrichGym(gym, userId);
   },
 
-  updateGym: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  updateGym: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 20);
 
@@ -608,7 +532,7 @@ export const socialGymMutations = {
             eq(dbSchema.gyms.slug, validatedInput.slug),
             isNull(dbSchema.gyms.deletedAt),
             sql`${dbSchema.gyms.id} != ${gym.id}`,
-          )
+          ),
         )
         .limit(1);
 
@@ -618,11 +542,7 @@ export const socialGymMutations = {
       updateValues.slug = validatedInput.slug;
     }
 
-    const [updated] = await db
-      .update(dbSchema.gyms)
-      .set(updateValues)
-      .where(eq(dbSchema.gyms.id, gym.id))
-      .returning();
+    const [updated] = await db.update(dbSchema.gyms).set(updateValues).where(eq(dbSchema.gyms.id, gym.id)).returning();
 
     // Update PostGIS location column
     if (validatedInput.latitude !== undefined || validatedInput.longitude !== undefined) {
@@ -630,23 +550,17 @@ export const socialGymMutations = {
       const lon = validatedInput.longitude ?? updated.longitude;
       if (lat != null && lon != null) {
         await db.execute(
-          sql`UPDATE gyms SET location = ST_MakePoint(${lon}, ${lat})::geography WHERE id = ${updated.id}`
+          sql`UPDATE gyms SET location = ST_MakePoint(${lon}, ${lat})::geography WHERE id = ${updated.id}`,
         );
       } else {
-        await db.execute(
-          sql`UPDATE gyms SET location = NULL WHERE id = ${updated.id}`
-        );
+        await db.execute(sql`UPDATE gyms SET location = NULL WHERE id = ${updated.id}`);
       }
     }
 
     return enrichGym(updated, userId);
   },
 
-  deleteGym: async (
-    _: unknown,
-    { gymUuid }: { gymUuid: string },
-    ctx: ConnectionContext,
-  ): Promise<boolean> => {
+  deleteGym: async (_: unknown, { gymUuid }: { gymUuid: string }, ctx: ConnectionContext): Promise<boolean> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 10);
 
@@ -668,25 +582,15 @@ export const socialGymMutations = {
     }
 
     // Soft-delete the gym
-    await db
-      .update(dbSchema.gyms)
-      .set({ deletedAt: new Date() })
-      .where(eq(dbSchema.gyms.id, gym.id));
+    await db.update(dbSchema.gyms).set({ deletedAt: new Date() }).where(eq(dbSchema.gyms.id, gym.id));
 
     // Unlink all boards
-    await db
-      .update(dbSchema.userBoards)
-      .set({ gymId: null })
-      .where(eq(dbSchema.userBoards.gymId, gym.id));
+    await db.update(dbSchema.userBoards).set({ gymId: null }).where(eq(dbSchema.userBoards.gymId, gym.id));
 
     return true;
   },
 
-  addGymMember: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ): Promise<boolean> => {
+  addGymMember: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext): Promise<boolean> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 20);
 
@@ -718,11 +622,7 @@ export const socialGymMutations = {
     return true;
   },
 
-  removeGymMember: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ): Promise<boolean> => {
+  removeGymMember: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext): Promise<boolean> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 20);
 
@@ -738,21 +638,12 @@ export const socialGymMutations = {
 
     await db
       .delete(dbSchema.gymMembers)
-      .where(
-        and(
-          eq(dbSchema.gymMembers.gymId, gym.id),
-          eq(dbSchema.gymMembers.userId, validatedInput.userId),
-        )
-      );
+      .where(and(eq(dbSchema.gymMembers.gymId, gym.id), eq(dbSchema.gymMembers.userId, validatedInput.userId)));
 
     return true;
   },
 
-  followGym: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ): Promise<boolean> => {
+  followGym: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext): Promise<boolean> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 20);
 
@@ -788,11 +679,7 @@ export const socialGymMutations = {
     return true;
   },
 
-  unfollowGym: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ): Promise<boolean> => {
+  unfollowGym: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext): Promise<boolean> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 20);
 
@@ -812,21 +699,12 @@ export const socialGymMutations = {
 
     await db
       .delete(dbSchema.gymFollows)
-      .where(
-        and(
-          eq(dbSchema.gymFollows.userId, userId),
-          eq(dbSchema.gymFollows.gymId, gym.id),
-        )
-      );
+      .where(and(eq(dbSchema.gymFollows.userId, userId), eq(dbSchema.gymFollows.gymId, gym.id)));
 
     return true;
   },
 
-  linkBoardToGym: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ): Promise<boolean> => {
+  linkBoardToGym: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext): Promise<boolean> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 20);
 
@@ -837,12 +715,7 @@ export const socialGymMutations = {
     const [board] = await db
       .select({ id: dbSchema.userBoards.id, ownerId: dbSchema.userBoards.ownerId })
       .from(dbSchema.userBoards)
-      .where(
-        and(
-          eq(dbSchema.userBoards.uuid, validatedInput.boardUuid),
-          isNull(dbSchema.userBoards.deletedAt),
-        )
-      )
+      .where(and(eq(dbSchema.userBoards.uuid, validatedInput.boardUuid), isNull(dbSchema.userBoards.deletedAt)))
       .limit(1);
 
     if (!board) {
@@ -857,16 +730,10 @@ export const socialGymMutations = {
       // Link to gym — verify gym ownership/admin
       const gym = await requireGymOwnerOrAdmin(validatedInput.gymUuid, userId);
 
-      await db
-        .update(dbSchema.userBoards)
-        .set({ gymId: gym.id })
-        .where(eq(dbSchema.userBoards.id, board.id));
+      await db.update(dbSchema.userBoards).set({ gymId: gym.id }).where(eq(dbSchema.userBoards.id, board.id));
     } else {
       // Unlink from gym
-      await db
-        .update(dbSchema.userBoards)
-        .set({ gymId: null })
-        .where(eq(dbSchema.userBoards.id, board.id));
+      await db.update(dbSchema.userBoards).set({ gymId: null }).where(eq(dbSchema.userBoards.id, board.id));
     }
 
     return true;

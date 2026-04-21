@@ -61,21 +61,12 @@ jobs:
         with:
           fetch-depth: 50
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+      - uses: oven-sh/setup-bun@v2
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-
-      - name: Cache bun dependencies
-        uses: actions/cache@v4
+      - uses: voidzero-dev/setup-vp@v1
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
+          node-version: 'lts'
+          cache: true
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -114,17 +105,21 @@ jobs:
       pull-requests: write
 
     steps:
+      - uses: actions/checkout@v6
+
       - name: Download all shard results
         uses: actions/download-artifact@v4
         with:
           pattern: backend-test-results-*
           path: test-results
-          merge-multiple: false
+          merge-multiple: true
 
       - name: Publish test report
-        uses: dorny/test-reporter@v1
+        uses: turing85/publish-report@v2
         with:
-          name: Backend Integration Tests
-          path: 'test-results/**/*.xml'
-          reporter: java-junit
-          fail-on-error: false
+          comment-header: backend-integration-tests
+          comment-enabled: 'true'
+          report-name: Backend Integration Tests
+          report-path: 'test-results/**/*.xml'
+          report-reporter: java-junit
+          report-fail-on-error: false

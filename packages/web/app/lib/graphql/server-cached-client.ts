@@ -7,11 +7,7 @@ import { executeAuthenticatedGraphQL } from './server-graphql';
 
 // Re-export uncached authenticated server functions so existing imports
 // from this file continue to work without changes.
-export {
-  serverMyBoards,
-  serverUserPlaylists,
-  serverGroupedNotifications,
-} from './server-graphql';
+export { serverMyBoards, serverUserPlaylists, serverGroupedNotifications } from './server-graphql';
 
 /**
  * Execute a GraphQL query via HTTP (non-cached version for internal use)
@@ -65,7 +61,7 @@ export function createCachedGraphQLQuery<T = unknown, V extends Variables = Vari
       {
         revalidate,
         tags: [cacheTag],
-      }
+      },
     );
 
     return cachedFn();
@@ -76,10 +72,7 @@ export function createCachedGraphQLQuery<T = unknown, V extends Variables = Vari
  * Cached server-side session-grouped feed query.
  * Used for SSR on the home page for both authenticated and unauthenticated users.
  */
-export async function cachedSessionGroupedFeed(
-  boardUuid?: string,
-  isAuthenticated: boolean = false,
-) {
+export async function cachedSessionGroupedFeed(boardUuid?: string, isAuthenticated: boolean = false) {
   const { GET_SESSION_GROUPED_FEED } = await import('@/app/lib/graphql/operations/activity-feed');
 
   const revalidate = isAuthenticated ? 300 : 86400;
@@ -101,10 +94,7 @@ export async function cachedSessionGroupedFeed(
  * Used for SSR on the /you/sessions page.
  * Cache is per-user (tag includes userId) with a 2-minute TTL.
  */
-export async function cachedUserSessionGroupedFeed(
-  authToken: string,
-  userId: string,
-) {
+export async function cachedUserSessionGroupedFeed(authToken: string, userId: string) {
   const { GET_SESSION_GROUPED_FEED } = await import('@/app/lib/graphql/operations/activity-feed');
 
   type Response = { sessionGroupedFeed: import('@boardsesh/shared-schema').SessionFeedResult };
@@ -129,9 +119,7 @@ export async function cachedUserSessionGroupedFeed(
 /**
  * Server-side cached fetch of discover playlists (public, no auth needed).
  */
-export async function cachedDiscoverPlaylists(
-  input: { boardType?: string; layoutId?: number } = {},
-): Promise<{
+export async function cachedDiscoverPlaylists(input: { boardType?: string; layoutId?: number } = {}): Promise<{
   popular: import('@/app/lib/graphql/operations/playlists').DiscoverablePlaylist[];
   recent: import('@/app/lib/graphql/operations/playlists').DiscoverablePlaylist[];
 } | null> {
@@ -144,11 +132,7 @@ export async function cachedDiscoverPlaylists(
       'discover-playlists-popular',
       300, // 5 min cache
     );
-    const recentQuery = createCachedGraphQLQuery<Response>(
-      DISCOVER_PLAYLISTS,
-      'discover-playlists-recent',
-      300,
-    );
+    const recentQuery = createCachedGraphQLQuery<Response>(DISCOVER_PLAYLISTS, 'discover-playlists-recent', 300);
 
     const [popularRes, recentRes] = await Promise.all([
       popularQuery({ input: { ...input, pageSize: 10, sortBy: 'popular' } }),
@@ -175,11 +159,7 @@ export async function cachedUserProfileStats(
 
   try {
     const tag = `user-profile-stats-${userId}`;
-    const query = createCachedGraphQLQuery<Response>(
-      GET_USER_PROFILE_STATS,
-      tag,
-      300,
-    );
+    const query = createCachedGraphQLQuery<Response>(GET_USER_PROFILE_STATS, tag, 300);
     const result = await query({ userId });
     return result.userProfileStats;
   } catch {
@@ -199,11 +179,7 @@ export async function cachedUserTicks(
 
   try {
     const tag = `user-ticks-${userId}-${boardType}`;
-    const query = createCachedGraphQLQuery<Response>(
-      GET_USER_TICKS,
-      tag,
-      300,
-    );
+    const query = createCachedGraphQLQuery<Response>(GET_USER_TICKS, tag, 300);
     const result = await query({ userId, boardType });
     return result.userTicks;
   } catch {

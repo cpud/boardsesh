@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 
 // Import a fresh instance per test by re-importing the module
 import { favoritesStore } from '../favorites-store';

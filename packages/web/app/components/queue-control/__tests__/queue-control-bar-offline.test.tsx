@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import React from 'react';
 
@@ -14,8 +14,13 @@ vi.mock('@/app/components/graphql-queue', () => ({
   useQueueContext: () => mockQueueContext,
   useQueueData: () => mockQueueContext,
   useQueueActions: () => mockQueueContext,
-  useCurrentClimb: () => ({ currentClimb: (mockQueueContext as Record<string, unknown>).currentClimb }),
-  useQueueList: () => ({ queue: (mockQueueContext as Record<string, unknown>).queue, suggestedClimbs: [] }),
+  useCurrentClimb: () => ({
+    currentClimb: (mockQueueContext as Record<string, unknown>).currentClimb,
+  }),
+  useQueueList: () => ({
+    queue: (mockQueueContext as Record<string, unknown>).queue,
+    suggestedClimbs: [],
+  }),
   useSessionData: () => ({
     viewOnlyMode: (mockQueueContext as Record<string, unknown>).viewOnlyMode ?? false,
     isSessionActive: !!(mockQueueContext as Record<string, unknown>).sessionId,
@@ -38,7 +43,13 @@ vi.mock('@/app/components/graphql-queue', () => ({
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/kilter/1/1/1/40',
-  useParams: () => ({ board_name: 'kilter', layout_id: '1', size_id: '1', set_ids: '1', angle: '40' }),
+  useParams: () => ({
+    board_name: 'kilter',
+    layout_id: '1',
+    size_id: '1',
+    set_ids: '1',
+    angle: '40',
+  }),
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
 }));
@@ -111,6 +122,10 @@ vi.mock('@/app/components/play-view/play-view-drawer', () => ({
   default: () => null,
 }));
 
+vi.mock('@/app/components/session-creation/start-sesh-drawer', () => ({
+  default: () => null,
+}));
+
 vi.mock('@/app/components/onboarding/onboarding-tour', () => ({
   TOUR_DRAWER_EVENT: 'tour-drawer',
 }));
@@ -131,10 +146,41 @@ vi.mock('@/app/components/persistent-session', () => ({
   }),
   usePersistentSessionState: () => ({
     activeSession: null,
+    session: null,
+    users: [],
     localBoardDetails: null,
     localCurrentClimbQueueItem: null,
   }),
   usePersistentSessionActions: () => ({}),
+}));
+
+vi.mock('@/app/components/persistent-session/persistent-session-context', () => ({
+  usePersistentSession: () => ({
+    activeSession: null,
+    localBoardDetails: null,
+    localCurrentClimbQueueItem: null,
+  }),
+  usePersistentSessionState: () => ({
+    activeSession: null,
+    session: null,
+    users: [],
+    localBoardDetails: null,
+    localCurrentClimbQueueItem: null,
+  }),
+  usePersistentSessionActions: () => ({}),
+}));
+
+vi.mock('@/app/components/board-provider/board-provider-context', () => ({
+  useBoardProvider: () => ({
+    logbook: [],
+    saveTick: vi.fn(),
+    isAuthenticated: false,
+    isLoading: false,
+    error: null,
+    isInitialized: true,
+    getLogbook: vi.fn(),
+    saveClimb: vi.fn(),
+  }),
 }));
 
 vi.mock('@/app/components/board-bluetooth-control/bluetooth-context', () => ({
@@ -183,7 +229,10 @@ const baseQueueContext = {
   sessionId: 'session-1',
   canMutate: true,
   isDisconnected: false,
-  users: [{ id: 'me', username: 'me', isLeader: true }, { id: 'other', username: 'other', isLeader: false }],
+  users: [
+    { id: 'me', username: 'me', isLeader: true },
+    { id: 'other', username: 'other', isLeader: false },
+  ],
   endSession: vi.fn(),
   disconnect: vi.fn(),
   addToQueue: vi.fn(),
@@ -223,6 +272,20 @@ const defaultProps = {
 describe('QueueControlBar offline UI', () => {
   beforeEach(() => {
     mockQueueContext = { ...baseQueueContext };
+    // Mock matchMedia for JSDOM
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: vi.fn().mockImplementation((query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
   });
 
   it('renders normal controls when online with active session', () => {
@@ -249,7 +312,10 @@ describe('QueueControlBar offline UI', () => {
       ...baseQueueContext,
       connectionState: 'reconnecting',
       isDisconnected: true,
-      users: [{ id: 'me', username: 'me', isLeader: true }, { id: 'other', username: 'other', isLeader: false }],
+      users: [
+        { id: 'me', username: 'me', isLeader: true },
+        { id: 'other', username: 'other', isLeader: false },
+      ],
     };
 
     render(<QueueControlBar {...defaultProps} />);
@@ -333,7 +399,11 @@ describe('QueueControlBar offline UI', () => {
     });
 
     // Simulate disconnection again
-    mockQueueContext = { ...baseQueueContext, isDisconnected: true, connectionState: 'reconnecting' };
+    mockQueueContext = {
+      ...baseQueueContext,
+      isDisconnected: true,
+      connectionState: 'reconnecting',
+    };
     act(() => {
       rerender(<QueueControlBar {...defaultProps} boardDetails={{ ...bd } as never} />);
     });

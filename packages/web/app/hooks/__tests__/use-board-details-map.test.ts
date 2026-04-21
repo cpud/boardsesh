@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook } from '@testing-library/react';
 
 // Mock dependencies
@@ -139,9 +139,7 @@ describe('useBoardDetailsMap', () => {
       status: 'exact',
     });
 
-    const { result } = renderHook(() =>
-      useBoardDetailsMap([climb1, climb2], []),
-    );
+    const { result } = renderHook(() => useBoardDetailsMap([climb1, climb2], []));
 
     expect(result.current.unsupportedClimbs.size).toBe(0);
   });
@@ -170,9 +168,7 @@ describe('useBoardDetailsMap', () => {
     const genericDetails = makeBoardDetails('tension');
     mockGetBoardDetailsForPlaylist.mockReturnValue(genericDetails);
 
-    const { result } = renderHook(() =>
-      useBoardDetailsMap([], [], null, null, ['tension']),
-    );
+    const { result } = renderHook(() => useBoardDetailsMap([], [], null, null, ['tension']));
 
     expect(result.current.defaultBoardDetails).toBe(genericDetails);
     expect(mockGetBoardDetailsForPlaylist).toHaveBeenCalledWith('tension', null);
@@ -253,7 +249,12 @@ describe('useBoardDetailsMap', () => {
 
   it('should prefer sessionBoard over selectedBoard when both are provided', () => {
     const climb = makeClimb({ uuid: 'c1', boardType: 'kilter', layoutId: 1 });
-    const selectedBoard = makeUserBoard({ boardType: 'kilter', layoutId: 1, sizeId: 10, setIds: '1,2' });
+    const selectedBoard = makeUserBoard({
+      boardType: 'kilter',
+      layoutId: 1,
+      sizeId: 10,
+      setIds: '1,2',
+    });
     const sessionBoard = {
       boardType: 'kilter' as const,
       layoutId: 1,

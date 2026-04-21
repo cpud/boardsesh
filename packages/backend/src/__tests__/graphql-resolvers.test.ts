@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vite-plus/test';
 import { createClient, Client } from 'graphql-ws';
 import WebSocket from 'ws';
 import { SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
@@ -286,7 +286,9 @@ describe('GraphQL Resolver Input Validation', () => {
       `;
 
       // This should succeed (not throw)
-      const result = await execute<{ searchClimbs: { climbs: Array<{ uuid: string }>; hasMore: boolean } }>(client, {
+      const result = await execute<{
+        searchClimbs: { climbs: Array<{ uuid: string }>; hasMore: boolean };
+      }>(client, {
         query,
         variables: {
           input: {

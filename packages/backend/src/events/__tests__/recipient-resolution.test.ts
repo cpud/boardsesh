@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 
 // Mock the db client to avoid DATABASE_URL requirement
 vi.mock('../../db/client', () => ({ db: {} }));

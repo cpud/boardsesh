@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, afterAll } from 'vitest';
+import { beforeAll, beforeEach, afterAll } from 'vite-plus/test';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { sql } from 'drizzle-orm';
@@ -7,8 +7,7 @@ import { roomManager } from '../services/room-manager';
 import { resetAllRateLimits } from '../utils/rate-limiter';
 
 const TEST_DB_NAME = 'boardsesh_backend_test';
-const connectionString =
-  process.env.DATABASE_URL || `postgresql://postgres:postgres@localhost:5433/${TEST_DB_NAME}`;
+const connectionString = process.env.DATABASE_URL || `postgresql://postgres:postgres@localhost:5433/${TEST_DB_NAME}`;
 
 // Parse connection string to get base URL (without database name)
 const baseConnectionString = connectionString.replace(/\/[^/]+$/, '/postgres');
@@ -55,6 +54,7 @@ const createTablesSQL = `
     "ended_at" timestamp,
     "is_permanent" boolean DEFAULT false NOT NULL,
     "color" text,
+    "health_kit_workout_id" text,
     CONSTRAINT "board_sessions_status_check" CHECK (status IN ('active', 'inactive', 'ended'))
   );
 
@@ -158,7 +158,8 @@ const createTablesSQL = `
     "sync_error" text,
     "user_id" text REFERENCES "users"("id") ON DELETE SET NULL,
     "required_set_ids" integer[],
-    "compatible_size_ids" integer[]
+    "compatible_size_ids" integer[],
+    "published_at" text
   );
 
   -- Create board_climb_stats table
@@ -235,11 +236,39 @@ const createTablesSQL = `
     PRIMARY KEY ("board_type", "climb_uuid", "hold_id")
   );
 
+  -- Create user_board_mappings table (needed for setter-follows tests)
+  DROP TABLE IF EXISTS "user_board_mappings" CASCADE;
+  CREATE TABLE IF NOT EXISTS "user_board_mappings" (
+    "id" bigserial PRIMARY KEY NOT NULL,
+    "user_id" text NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+    "board_type" text NOT NULL,
+    "board_user_id" integer NOT NULL,
+    "board_username" text,
+    "linked_at" timestamp DEFAULT now() NOT NULL
+  );
+  CREATE UNIQUE INDEX IF NOT EXISTS "unique_user_board_mapping" ON "user_board_mappings" ("user_id", "board_type");
+  CREATE INDEX IF NOT EXISTS "board_user_mapping_idx" ON "user_board_mappings" ("board_type", "board_user_id");
+
+  -- Create inferred_sessions table (needed for session-feed tests)
+  DROP TABLE IF EXISTS "inferred_sessions" CASCADE;
+  CREATE TABLE IF NOT EXISTS "inferred_sessions" (
+    "id" text PRIMARY KEY NOT NULL,
+    "user_id" text NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+    "board_type" text NOT NULL,
+    "started_at" timestamp NOT NULL,
+    "ended_at" timestamp,
+    "tick_count" integer DEFAULT 0 NOT NULL,
+    "health_kit_workout_id" text,
+    "created_at" timestamp DEFAULT now() NOT NULL
+  );
+
   -- Insert common test users (needed for FK constraints in session tests)
   INSERT INTO "users" (id, email, name, created_at, updated_at)
   VALUES ('user-123', 'user-123@test.com', 'Test User 123', now(), now())
   ON CONFLICT (id) DO NOTHING;
 `;
+
+let dbAvailable = false;
 
 beforeAll(async () => {
   // First, connect to postgres database to create test database if needed
@@ -258,10 +287,20 @@ beforeAll(async () => {
       console.log(`Created test database: ${TEST_DB_NAME}`);
     }
   } catch (error) {
-    // Database might already exist, that's okay
+    // Database might not be available — mock-based tests can still run
     console.log('Test database check:', error);
+    try {
+      await adminClient.end();
+    } catch (_) {
+      // ignore cleanup errors
+    }
+    return;
   } finally {
-    await adminClient.end();
+    try {
+      await adminClient.end();
+    } catch (_) {
+      // ignore cleanup errors
+    }
   }
 
   // Now connect to the test database
@@ -270,6 +309,7 @@ beforeAll(async () => {
 
   // Create tables directly (backend tests only need session tables)
   await migrationClient.unsafe(createTablesSQL);
+  dbAvailable = true;
 });
 
 beforeEach(async () => {
@@ -279,16 +319,19 @@ beforeEach(async () => {
   // Reset rate limiter to prevent state leaking between tests
   resetAllRateLimits();
 
-  // Clear all tables in correct order (respect foreign keys)
-  await db.execute(sql`TRUNCATE TABLE board_session_queues CASCADE`);
-  await db.execute(sql`TRUNCATE TABLE board_session_clients CASCADE`);
-  await db.execute(sql`TRUNCATE TABLE board_session_participants CASCADE`);
-  await db.execute(sql`TRUNCATE TABLE board_sessions CASCADE`);
+  // Only clear tables if the database is available
+  if (dbAvailable && db) {
+    // Clear all tables in correct order (respect foreign keys)
+    await db.execute(sql`TRUNCATE TABLE board_session_queues CASCADE`);
+    await db.execute(sql`TRUNCATE TABLE board_session_clients CASCADE`);
+    await db.execute(sql`TRUNCATE TABLE board_session_participants CASCADE`);
+    await db.execute(sql`TRUNCATE TABLE board_sessions CASCADE`);
+  }
 });
 
 afterAll(async () => {
-  // Close database connection
-  if (migrationClient) {
+  // Close database connection if it was opened
+  if (dbAvailable && migrationClient) {
     await migrationClient.end();
   }
 });

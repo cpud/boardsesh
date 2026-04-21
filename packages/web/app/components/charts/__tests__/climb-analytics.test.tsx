@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 
@@ -63,10 +63,7 @@ const MOCK_RESPONSE = {
 
 function getLatestChartProps(): [MockLineChartProps, MockLineChartProps] {
   const calls = mockLineChart.mock.calls.slice(-2);
-  return [
-    calls[0][0] as MockLineChartProps,
-    calls[1][0] as MockLineChartProps,
-  ];
+  return [calls[0][0] as MockLineChartProps, calls[1][0] as MockLineChartProps];
 }
 
 describe('ClimbAnalytics', () => {

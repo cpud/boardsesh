@@ -20,7 +20,7 @@ export function createContext(
   userId?: string,
   controllerId?: string,
   controllerApiKey?: string,
-  controllerMac?: string
+  controllerMac?: string,
 ): ConnectionContext {
   const id = connectionId || uuidv4();
   const context: ConnectionContext = {
@@ -34,7 +34,9 @@ export function createContext(
   };
   connections.set(id, context);
   if (DEBUG) {
-    console.log(`[Context] createContext: ${id} (authenticated: ${isAuthenticated}, userId: ${userId}, controllerId: ${controllerId}, mac: ${controllerMac}). Total connections: ${connections.size}`);
+    console.log(
+      `[Context] createContext: ${id} (authenticated: ${isAuthenticated}, userId: ${userId}, controllerId: ${controllerId}, mac: ${controllerMac}). Total connections: ${connections.size}`,
+    );
   }
   return context;
 }
@@ -51,13 +53,12 @@ export function getContext(connectionId: string): ConnectionContext | undefined 
  * Used when a user joins/leaves a session.
  * Gracefully handles missing connections (expected when WS disconnects mid-operation).
  */
-export function updateContext(
-  connectionId: string,
-  updates: Partial<Omit<ConnectionContext, 'connectionId'>>
-): void {
+export function updateContext(connectionId: string, updates: Partial<Omit<ConnectionContext, 'connectionId'>>): void {
   const context = connections.get(connectionId);
   if (!context) {
-    console.warn(`[Context] updateContext: connection ${connectionId} not found (likely disconnected mid-operation). Map has ${connections.size} entries.`);
+    console.warn(
+      `[Context] updateContext: connection ${connectionId} not found (likely disconnected mid-operation). Map has ${connections.size} entries.`,
+    );
     return;
   }
 

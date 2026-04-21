@@ -81,7 +81,8 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({ currentClimb, boar
       ...prev,
       date: dayjs(),
       angle: currentClimb?.angle || prev.angle,
-      difficulty: grades.find((grade) => grade.difficulty_name === currentClimb?.difficulty)?.difficulty_id || prev.difficulty,
+      difficulty:
+        grades.find((grade) => grade.difficulty_name === currentClimb?.difficulty)?.difficulty_id || prev.difficulty,
       attempts: 1,
     }));
     setIsMirrored(!!currentClimb?.mirrored);
@@ -176,14 +177,15 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({ currentClimb, boar
   };
 
   return (
-    <Box component="form" onSubmit={(e: React.FormEvent) => { e.preventDefault(); handleSubmit(formValues); }}>
+    <Box
+      component="form"
+      onSubmit={(e: React.FormEvent) => {
+        e.preventDefault();
+        handleSubmit(formValues);
+      }}
+    >
       <Box sx={{ mb: 2 }}>
-        <ToggleButtonGroup
-          exclusive
-          fullWidth
-          value={logType}
-          onChange={(_, val) => val && setLogType(val as LogType)}
-        >
+        <ToggleButtonGroup exclusive fullWidth value={logType} onChange={(_, val) => val && setLogType(val as LogType)}>
           <ToggleButton value="ascent">Ascent</ToggleButton>
           <ToggleButton value="attempt">Attempt</ToggleButton>
         </ToggleButtonGroup>

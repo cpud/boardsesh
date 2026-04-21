@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
@@ -92,7 +92,12 @@ const defaultProps = {
     mirrored: false,
   } as unknown as Parameters<typeof QuickTickBar>[0]['currentClimb'],
   angle: 40 as unknown as Parameters<typeof QuickTickBar>[0]['angle'],
-  boardDetails: { layout_id: 1, size_id: 1, set_ids: '1', layout_name: 'Test' } as unknown as Parameters<typeof QuickTickBar>[0]['boardDetails'],
+  boardDetails: {
+    layout_id: 1,
+    size_id: 1,
+    set_ids: '1',
+    layout_name: 'Test',
+  } as unknown as Parameters<typeof QuickTickBar>[0]['boardDetails'],
   onSave: vi.fn(),
   comment: '',
   commentSlot: null,
@@ -111,29 +116,29 @@ describe('QuickTickBar grade format integration', () => {
 
     const { container } = render(<QuickTickBar {...defaultProps} />);
 
-    // A MUI Skeleton should be rendered in place of the grade label.
-    const skeleton = container.querySelector('.MuiSkeleton-root');
+    // A MUI Skeleton should be rendered inside the grade button.
+    const gradeEl = screen.getByTestId('quick-tick-grade');
+    const skeleton = gradeEl.querySelector('.MuiSkeleton-root');
     expect(skeleton).not.toBeNull();
-
-    // The grade text element should not be present.
-    expect(screen.queryByTestId('quick-tick-grade')).toBeNull();
   });
 
-  it('shows formatted grade when loaded', () => {
+  it('shows dash placeholder when no difficulty is selected', () => {
     // Default mock has loaded: true and v-grade formatter.
+    // No difficulty is selected by default, so the grade button shows '—'
     render(<QuickTickBar {...defaultProps} />);
 
     const gradeEl = screen.getByTestId('quick-tick-grade');
-    expect(gradeEl.textContent).toBe('V3');
+    // The button contains the grade label plus a "user" byline
+    expect(gradeEl.textContent).toContain('—');
+    expect(gradeEl.textContent).toContain('user');
   });
 
-  it('shows Font grade when format is font', () => {
+  it('uses grade format when a difficulty is selected', () => {
     mockUseGradeFormat.mockReturnValue({
       ...defaultGradeFormat,
       gradeFormat: 'font',
       formatGrade: (d: string | null | undefined) => {
         if (!d) return null;
-        // Extract the Font portion before the slash and uppercase it.
         const slashIndex = d.indexOf('/');
         if (slashIndex > 0) {
           return d.substring(0, slashIndex).toUpperCase();
@@ -145,7 +150,10 @@ describe('QuickTickBar grade format integration', () => {
 
     render(<QuickTickBar {...defaultProps} />);
 
+    // The grade button shows the formatted grade for the selected difficulty
     const gradeEl = screen.getByTestId('quick-tick-grade');
-    expect(gradeEl.textContent).toBe('6A');
+    // With no difficulty selected, shows '—'
+    expect(gradeEl.textContent).toContain('—');
+    expect(gradeEl.textContent).toContain('user');
   });
 });

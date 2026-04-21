@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 
 // --- Mocks ---
@@ -9,7 +9,6 @@ const {
   mockGetAuroraBluetoothPacket,
   mockGetMoonboardBluetoothPacket,
   mockGetLedPlacements,
-  mockSupportsCapacitorBleManualScan,
   mockShowMessage,
 } = vi.hoisted(() => {
   const mockAdapter = {
@@ -22,19 +21,16 @@ const {
 
   return {
     mockAdapter,
-    mockCreateBluetoothAdapter: vi.fn<(boardName: string, devicePicker?: unknown) => Promise<typeof mockAdapter>>(
-      () => Promise.resolve(mockAdapter),
+    mockCreateBluetoothAdapter: vi.fn<(boardName: string) => Promise<typeof mockAdapter>>(() =>
+      Promise.resolve(mockAdapter),
     ),
     mockGetAuroraBluetoothPacket: vi.fn<
       (frames: string, placementPositions: Record<number, number>, boardName: string) => Uint8Array
     >(() => new Uint8Array([1, 2, 3])),
-    mockGetMoonboardBluetoothPacket: vi.fn<(frames: string) => Uint8Array>(
-      () => new Uint8Array([9, 8, 7]),
+    mockGetMoonboardBluetoothPacket: vi.fn<(frames: string) => Uint8Array>(() => new Uint8Array([9, 8, 7])),
+    mockGetLedPlacements: vi.fn<(boardName: string, layoutId: number, sizeId: number) => Record<number, number>>(
+      () => ({ 4131: 39 }),
     ),
-    mockGetLedPlacements: vi.fn<
-      (boardName: string, layoutId: number, sizeId: number) => Record<number, number>
-    >(() => ({ 4131: 39 })),
-    mockSupportsCapacitorBleManualScan: vi.fn(() => false),
     mockShowMessage: vi.fn(),
   };
 });
@@ -67,10 +63,6 @@ vi.mock('@/app/components/providers/snackbar-provider', () => ({
 
 vi.mock('@vercel/analytics', () => ({
   track: vi.fn(),
-}));
-
-vi.mock('@/app/lib/ble/capacitor-utils', () => ({
-  supportsCapacitorBleManualScan: mockSupportsCapacitorBleManualScan,
 }));
 
 import { useBoardBluetooth } from '../use-board-bluetooth';
@@ -116,13 +108,10 @@ describe('useBoardBluetooth', () => {
     mockGetAuroraBluetoothPacket.mockReturnValue(new Uint8Array([1, 2, 3]));
     mockGetMoonboardBluetoothPacket.mockReturnValue(new Uint8Array([9, 8, 7]));
     mockGetLedPlacements.mockReturnValue({ 4131: 39 });
-    mockSupportsCapacitorBleManualScan.mockReturnValue(false);
   });
 
   it('initial state: not connected, not loading', () => {
-    const { result } = renderHook(() =>
-      useBoardBluetooth({ boardDetails: mockBoardDetails }),
-    );
+    const { result } = renderHook(() => useBoardBluetooth({ boardDetails: mockBoardDetails }));
 
     expect(result.current.isConnected).toBe(false);
     expect(result.current.loading).toBe(false);
@@ -131,9 +120,7 @@ describe('useBoardBluetooth', () => {
   it('shows error when bluetooth not available', async () => {
     mockAdapter.isAvailable.mockResolvedValue(false);
 
-    const { result } = renderHook(() =>
-      useBoardBluetooth({ boardDetails: mockBoardDetails }),
-    );
+    const { result } = renderHook(() => useBoardBluetooth({ boardDetails: mockBoardDetails }));
 
     let connectResult: boolean | undefined;
     await act(async () => {
@@ -141,18 +128,13 @@ describe('useBoardBluetooth', () => {
     });
 
     expect(connectResult).toBe(false);
-    expect(mockShowMessage).toHaveBeenCalledWith(
-      'Bluetooth is not available on this device.',
-      'error',
-    );
+    expect(mockShowMessage).toHaveBeenCalledWith('Bluetooth is not available on this device.', 'error');
   });
 
   it('returns false when no boardDetails', async () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    const { result } = renderHook(() =>
-      useBoardBluetooth({ boardDetails: undefined }),
-    );
+    const { result } = renderHook(() => useBoardBluetooth({ boardDetails: undefined }));
 
     let connectResult: boolean | undefined;
     await act(async () => {
@@ -170,9 +152,7 @@ describe('useBoardBluetooth', () => {
     });
     mockAdapter.requestAndConnect.mockReturnValue(connectPromise);
 
-    const { result } = renderHook(() =>
-      useBoardBluetooth({ boardDetails: mockBoardDetails }),
-    );
+    const { result } = renderHook(() => useBoardBluetooth({ boardDetails: mockBoardDetails }));
 
     // Start connection
     let hookConnectPromise: Promise<boolean>;
@@ -192,9 +172,7 @@ describe('useBoardBluetooth', () => {
   });
 
   it('sets isConnected on successful connection', async () => {
-    const { result } = renderHook(() =>
-      useBoardBluetooth({ boardDetails: mockBoardDetails }),
-    );
+    const { result } = renderHook(() => useBoardBluetooth({ boardDetails: mockBoardDetails }));
 
     await act(async () => {
       await result.current.connect();
@@ -204,51 +182,20 @@ describe('useBoardBluetooth', () => {
   });
 
   it('creates a board-aware adapter for the active board', async () => {
-    const { result } = renderHook(() =>
-      useBoardBluetooth({ boardDetails: mockMoonboardDetails }),
-    );
+    const { result } = renderHook(() => useBoardBluetooth({ boardDetails: mockMoonboardDetails }));
 
     await act(async () => {
       await result.current.connect();
     });
 
-    expect(mockCreateBluetoothAdapter).toHaveBeenCalledWith('moonboard', undefined);
-  });
-
-  it('injects the custom picker when native manual scan is supported', async () => {
-    mockSupportsCapacitorBleManualScan.mockReturnValue(true);
-
-    const { result } = renderHook(() =>
-      useBoardBluetooth({ boardDetails: mockBoardDetails }),
-    );
-
-    await act(async () => {
-      await result.current.connect();
-    });
-
-    expect(mockCreateBluetoothAdapter).toHaveBeenCalledWith('kilter', expect.any(Function));
-  });
-
-  it('keeps pickerState unset when falling back to the legacy native picker', async () => {
-    const { result } = renderHook(() =>
-      useBoardBluetooth({ boardDetails: mockBoardDetails }),
-    );
-
-    await act(async () => {
-      await result.current.connect();
-    });
-
-    expect(mockCreateBluetoothAdapter).toHaveBeenCalledWith('kilter', undefined);
-    expect(result.current.pickerState).toBeNull();
+    expect(mockCreateBluetoothAdapter).toHaveBeenCalledWith('moonboard');
   });
 
   it('handles connect failure', async () => {
     mockAdapter.requestAndConnect.mockRejectedValue(new Error('Connection failed'));
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    const { result } = renderHook(() =>
-      useBoardBluetooth({ boardDetails: mockBoardDetails }),
-    );
+    const { result } = renderHook(() => useBoardBluetooth({ boardDetails: mockBoardDetails }));
 
     let connectResult: boolean | undefined;
     await act(async () => {
@@ -262,9 +209,7 @@ describe('useBoardBluetooth', () => {
   });
 
   it('disconnect calls adapter.disconnect', async () => {
-    const { result } = renderHook(() =>
-      useBoardBluetooth({ boardDetails: mockBoardDetails }),
-    );
+    const { result } = renderHook(() => useBoardBluetooth({ boardDetails: mockBoardDetails }));
 
     await act(async () => {
       await result.current.connect();
@@ -281,9 +226,7 @@ describe('useBoardBluetooth', () => {
   });
 
   it('uses the Aurora encoder and LED placements for Aurora boards', async () => {
-    const { result } = renderHook(() =>
-      useBoardBluetooth({ boardDetails: mockBoardDetails }),
-    );
+    const { result } = renderHook(() => useBoardBluetooth({ boardDetails: mockBoardDetails }));
 
     await act(async () => {
       await result.current.connect();
@@ -296,20 +239,13 @@ describe('useBoardBluetooth', () => {
 
     expect(sendResult).toBe(true);
     expect(mockGetLedPlacements).toHaveBeenCalledWith('kilter', 1, 10);
-    expect(mockGetAuroraBluetoothPacket).toHaveBeenCalledWith(
-      'p4131r42',
-      { 4131: 39 },
-      'kilter',
-      3,
-    );
+    expect(mockGetAuroraBluetoothPacket).toHaveBeenCalledWith('p4131r42', { 4131: 39 }, 'kilter', 3);
     expect(mockGetMoonboardBluetoothPacket).not.toHaveBeenCalled();
     expect(mockAdapter.write).toHaveBeenCalledWith(new Uint8Array([1, 2, 3]), undefined);
   });
 
   it('uses the Moonboard encoder without loading LED placements', async () => {
-    const { result } = renderHook(() =>
-      useBoardBluetooth({ boardDetails: mockMoonboardDetails }),
-    );
+    const { result } = renderHook(() => useBoardBluetooth({ boardDetails: mockMoonboardDetails }));
 
     await act(async () => {
       await result.current.connect();
@@ -330,9 +266,7 @@ describe('useBoardBluetooth', () => {
   it('calls onConnectionChange callback', async () => {
     const onConnectionChange = vi.fn();
 
-    const { result } = renderHook(() =>
-      useBoardBluetooth({ boardDetails: mockBoardDetails, onConnectionChange }),
-    );
+    const { result } = renderHook(() => useBoardBluetooth({ boardDetails: mockBoardDetails, onConnectionChange }));
 
     await act(async () => {
       await result.current.connect();
@@ -348,9 +282,7 @@ describe('useBoardBluetooth', () => {
   });
 
   it('cleans up adapter on unmount', async () => {
-    const { result, unmount } = renderHook(() =>
-      useBoardBluetooth({ boardDetails: mockBoardDetails }),
-    );
+    const { result, unmount } = renderHook(() => useBoardBluetooth({ boardDetails: mockBoardDetails }));
 
     await act(async () => {
       await result.current.connect();
@@ -364,9 +296,7 @@ describe('useBoardBluetooth', () => {
   it('shows an error when Aurora LED placement data is missing', async () => {
     mockGetLedPlacements.mockReturnValueOnce({});
 
-    const { result } = renderHook(() =>
-      useBoardBluetooth({ boardDetails: mockBoardDetails }),
-    );
+    const { result } = renderHook(() => useBoardBluetooth({ boardDetails: mockBoardDetails }));
 
     await act(async () => {
       await result.current.connect();

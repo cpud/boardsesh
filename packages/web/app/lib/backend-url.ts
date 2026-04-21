@@ -58,8 +58,7 @@ function deriveWsUrlFromFallbackForCurrentHost(
 
     const protocol = secure ? 'wss:' : 'ws:';
     const port =
-      fallbackUrl.port ||
-      (fallbackUrl.protocol === 'wss:' || fallbackUrl.protocol === 'https:' ? '443' : '80');
+      fallbackUrl.port || (fallbackUrl.protocol === 'wss:' || fallbackUrl.protocol === 'https:' ? '443' : '80');
 
     return `${protocol}//${hostname}:${port}${fallbackUrl.pathname}`;
   } catch {
@@ -82,10 +81,7 @@ export function getBackendWsUrl(): string | null {
   const fallbackWsUrl = process.env.NEXT_PUBLIC_WS_URL || null;
 
   // 1. Host-derived URL for known domain patterns
-  const derived = deriveWsUrlFromHost(
-    window.location.hostname,
-    window.location.protocol === 'https:',
-  );
+  const derived = deriveWsUrlFromHost(window.location.hostname, window.location.protocol === 'https:');
   if (derived) return derived;
 
   // 2. Local-network dev fallback:

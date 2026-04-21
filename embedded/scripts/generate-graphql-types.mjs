@@ -40,15 +40,15 @@ const CONTROLLER_TYPES = [
 
 // GraphQL to C++ type mapping
 const TYPE_MAP = {
-  'Int': 'int32_t',
+  Int: 'int32_t',
   'Int!': 'int32_t',
-  'Float': 'float',
+  Float: 'float',
   'Float!': 'float',
-  'String': 'const char*',
+  String: 'const char*',
   'String!': 'const char*',
-  'Boolean': 'bool',
+  Boolean: 'bool',
   'Boolean!': 'bool',
-  'ID': 'const char*',
+  ID: 'const char*',
   'ID!': 'const char*',
 };
 
@@ -65,7 +65,7 @@ const FIELD_TYPE_OVERRIDES = {
 
 // Sentinel values for optional fields (use specific values to indicate "not set")
 const ROLE_NOT_SET = -1;
-const ANGLE_NOT_SET = -32768;  // INT16_MIN - unlikely valid angle value
+const ANGLE_NOT_SET = -32768; // INT16_MIN - unlikely valid angle value
 
 /**
  * ESP32 Memory Optimization: Field Exclusions
@@ -80,12 +80,12 @@ const ANGLE_NOT_SET = -32768;  // INT16_MIN - unlikely valid angle value
  */
 const ESP32_FIELD_EXCLUSIONS = {
   LedUpdate: new Set([
-    'queueItemUuid',  // Not needed for LED display on ESP32
-    'climbGrade',     // Grade info not displayed on ESP32 hardware
-    'gradeColor',     // Color info not displayed on ESP32 hardware
-    'boardPath',      // Board path not used by ESP32 controller
-    'navigation',     // Complex nested type (QueueNavigationContext), exceeds ESP32 memory budget
-    'clientId',       // BLE disconnect logic uses different mechanism on ESP32
+    'queueItemUuid', // Not needed for LED display on ESP32
+    'climbGrade', // Grade info not displayed on ESP32 hardware
+    'gradeColor', // Color info not displayed on ESP32 hardware
+    'boardPath', // Board path not used by ESP32 controller
+    'navigation', // Complex nested type (QueueNavigationContext), exceeds ESP32 memory budget
+    'clientId', // BLE disconnect logic uses different mechanism on ESP32
   ]),
 };
 
@@ -166,7 +166,7 @@ function parseGraphQLSchema(schemaContent) {
 
     if (!CONTROLLER_TYPES.includes(name)) continue;
 
-    const unionTypes = unionBody.split('|').map(t => t.trim());
+    const unionTypes = unionBody.split('|').map((t) => t.trim());
     types.set(name, {
       name,
       kind: 'union',
@@ -275,8 +275,8 @@ function generateFieldSelection(typeName, types, depth = 0) {
   const exclusions = ESP32_FIELD_EXCLUSIONS[typeName] || new Set();
 
   return type.fields
-    .filter(f => !exclusions.has(f.name))
-    .map(f => {
+    .filter((f) => !exclusions.has(f.name))
+    .map((f) => {
       const subType = types.get(f.type);
       if (subType && subType.kind !== 'union' && subType.fields.length > 0) {
         const subSelection = generateFieldSelection(f.type, types, depth + 1);
@@ -604,8 +604,7 @@ async function main() {
 }
 
 // Run main only when script is executed directly (not when imported for testing)
-const isMainModule = process.argv[1] &&
-  fileURLToPath(import.meta.url) === process.argv[1];
+const isMainModule = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 
 if (isMainModule) {
   main().catch(console.error);

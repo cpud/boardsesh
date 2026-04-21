@@ -1,19 +1,7 @@
 import { AURORA_BOARDS } from '@boardsesh/shared-schema';
 import type { BoardName } from '@boardsesh/shared-schema';
-import {
-  AURORA_PRODUCT_SIZES,
-  HOLE_PLACEMENTS,
-  IMAGE_FILENAMES,
-  LAYOUTS,
-  SETS,
-} from './generated/product-sizes-data';
-import type {
-  HoldTuple,
-  LayoutData,
-  ProductSizeData,
-  SetData,
-  SizeEdges,
-} from './types';
+import { AURORA_PRODUCT_SIZES, HOLE_PLACEMENTS, IMAGE_FILENAMES, LAYOUTS, SETS } from './generated/product-sizes-data';
+import type { HoldTuple, LayoutData, ProductSizeData, SetData, SizeEdges } from './types';
 
 export type { HoldTuple, LayoutData, ProductSizeData, SetData, SizeEdges } from './types';
 
@@ -135,7 +123,10 @@ export const getBoardSelectorOptions = () => {
   const sets: Record<string, { id: number; name: string }[]> = {};
 
   for (const boardName of AURORA_BOARDS) {
-    layouts[boardName] = getAllLayouts(boardName).map((layout) => ({ id: layout.id, name: layout.name }));
+    layouts[boardName] = getAllLayouts(boardName).map((layout) => ({
+      id: layout.id,
+      name: layout.name,
+    }));
 
     for (const layout of layouts[boardName]) {
       const layoutSizes = getSizesForLayoutId(boardName, layout.id);
@@ -166,11 +157,7 @@ export const getImageFilename = (
   return IMAGE_FILENAMES[boardName]?.[key] ?? null;
 };
 
-export const getHolePlacements = (
-  boardName: BoardName,
-  layoutId: number,
-  setId: number,
-): HoldTuple[] => {
+export const getHolePlacements = (boardName: BoardName, layoutId: number, setId: number): HoldTuple[] => {
   const key = `${layoutId}-${setId}`;
   return HOLE_PLACEMENTS[boardName]?.[key] ?? [];
 };

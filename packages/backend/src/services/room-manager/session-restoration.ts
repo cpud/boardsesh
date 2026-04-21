@@ -20,7 +20,7 @@ export async function restoreSessionWithLock(
   sessionId: string,
   sessionsMap: Map<string, Set<string>>,
   redisStore: RedisSessionStore,
-  getSessionById: (id: string) => Promise<Session | null>
+  getSessionById: (id: string) => Promise<Session | null>,
 ): Promise<boolean> {
   const lockKey = getSessionRestoreLockKey(sessionId);
   const lockValue = uuidv4();
@@ -56,7 +56,7 @@ async function tryRestoreFromStores(
   sessionId: string,
   sessionsMap: Map<string, Set<string>>,
   redisStore: RedisSessionStore,
-  getSessionById: (id: string) => Promise<Session | null>
+  getSessionById: (id: string) => Promise<Session | null>,
 ): Promise<boolean> {
   let isNewSession = false;
 
@@ -80,7 +80,7 @@ async function tryRestoreFromStores(
 async function restoreFromPostgres(
   sessionId: string,
   redisStore: RedisSessionStore,
-  getSessionById: (id: string) => Promise<Session | null>
+  getSessionById: (id: string) => Promise<Session | null>,
 ): Promise<boolean> {
   const pgSession = await getSessionById(sessionId);
   if (pgSession && pgSession.status !== 'ended') {
@@ -117,7 +117,7 @@ async function waitForRestoration(
   sessionId: string,
   sessionsMap: Map<string, Set<string>>,
   redisStore: RedisSessionStore,
-  getSessionById: (id: string) => Promise<Session | null>
+  getSessionById: (id: string) => Promise<Session | null>,
 ): Promise<boolean> {
   console.log(`[RoomManager] Lock not acquired for session ${sessionId}, waiting with backoff...`);
   let waitTime = 50;
@@ -126,7 +126,7 @@ async function waitForRestoration(
   let sessionRestored = false;
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    await new Promise(resolve => setTimeout(resolve, waitTime));
+    await new Promise((resolve) => setTimeout(resolve, waitTime));
 
     // Check if session was restored by another instance
     if (sessionsMap.has(sessionId)) {

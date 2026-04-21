@@ -17,11 +17,7 @@ interface BoardSessionBridgeProps {
  * Bridge component that connects the board layout to the persistent session.
  * This component activates the session when mounted on a board page with a session param.
  */
-const BoardSessionBridge: React.FC<BoardSessionBridgeProps> = ({
-  boardDetails,
-  parsedParams,
-  children,
-}) => {
+const BoardSessionBridge: React.FC<BoardSessionBridgeProps> = ({ boardDetails, parsedParams, children }) => {
   const pathname = usePathname();
   const sessionIdFromCookie = getClimbSessionCookie();
 

@@ -63,7 +63,18 @@ export function useFollowToggle({
     } finally {
       setIsLoading(false);
     }
-  }, [isFollowing, isAuthenticated, token, entityId, entityLabel, followMutation, unfollowMutation, getFollowVariables, onFollowChange, showMessage]);
+  }, [
+    isFollowing,
+    isAuthenticated,
+    token,
+    entityId,
+    entityLabel,
+    followMutation,
+    unfollowMutation,
+    getFollowVariables,
+    onFollowChange,
+    showMessage,
+  ]);
 
   return {
     isFollowing,

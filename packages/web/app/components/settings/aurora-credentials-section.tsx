@@ -38,7 +38,11 @@ import type { AuroraCredentialStatus } from '@/app/api/internal/aurora-credentia
 import type { UnsyncedCounts } from '@/app/api/internal/aurora-credentials/unsynced/route';
 import type { ImportResult } from '@/app/lib/data-sync/aurora/json-import';
 import { streamImport } from '@/app/lib/data-sync/aurora/json-import-stream';
-import { parseAuroraExport, type AuroraExportPreview, type StrippedExportData } from '@/app/lib/data-sync/aurora/parse-aurora-export';
+import {
+  parseAuroraExport,
+  type AuroraExportPreview,
+  type StrippedExportData,
+} from '@/app/lib/data-sync/aurora/parse-aurora-export';
 import styles from './aurora-credentials-section.module.css';
 
 interface BoardUnsyncedCounts {
@@ -120,21 +124,13 @@ export function BoardCredentialCard({
 
     switch (credential.syncStatus) {
       case 'active':
-        return (
-          <Chip icon={<CheckCircleOutlined />} label="Connected" size="small" color="success" />
-        );
+        return <Chip icon={<CheckCircleOutlined />} label="Connected" size="small" color="success" />;
       case 'error':
-        return (
-          <Chip icon={<WarningAmberOutlined />} label="Error" size="small" color="error" />
-        );
+        return <Chip icon={<WarningAmberOutlined />} label="Error" size="small" color="error" />;
       case 'expired':
-        return (
-          <Chip icon={<AccessTimeOutlined />} label="Expired" size="small" color="warning" />
-        );
+        return <Chip icon={<AccessTimeOutlined />} label="Expired" size="small" color="warning" />;
       default:
-        return (
-          <Chip icon={<SyncOutlined />} label="Syncing" size="small" color="primary" />
-        );
+        return <Chip icon={<SyncOutlined />} label="Syncing" size="small" color="primary" />;
     }
   };
 
@@ -155,12 +151,13 @@ export function BoardCredentialCard({
           </div>
           {isKilter ? (
             <Typography variant="body2" component="span" color="text.secondary" className={styles.notConnectedText}>
-              The Kilter backend has been shut down. You can import your data using an Aurora JSON export file, or
-              email Aurora Climbing to request a data export.
+              The Kilter backend has been shut down. You can import your data using an Aurora JSON export file, or email
+              Aurora Climbing to request a data export.
             </Typography>
           ) : (
             <Typography variant="body2" component="span" color="text.secondary" className={styles.notConnectedText}>
-              Not connected. Link your {boardName} account to import your Aurora data, or import from a JSON export file.
+              Not connected. Link your {boardName} account to import your Aurora data, or import from a JSON export
+              file.
             </Typography>
           )}
           <div className={isKilter ? styles.buttonRowStacked : styles.buttonRow}>
@@ -203,23 +200,34 @@ export function BoardCredentialCard({
         </div>
         <div className={styles.credentialInfo}>
           <div className={styles.infoRow}>
-            <Typography variant="body2" component="span" color="text.secondary">Username:</Typography>
-            <Typography variant="body2" component="span" fontWeight={600}>{credential.auroraUsername}</Typography>
+            <Typography variant="body2" component="span" color="text.secondary">
+              Username:
+            </Typography>
+            <Typography variant="body2" component="span" fontWeight={600}>
+              {credential.auroraUsername}
+            </Typography>
           </div>
           <div className={styles.infoRow}>
-            <Typography variant="body2" component="span" color="text.secondary">Last synced:</Typography>
-            <Typography variant="body2" component="span">{formatLastSync(credential.lastSyncAt)}</Typography>
+            <Typography variant="body2" component="span" color="text.secondary">
+              Last synced:
+            </Typography>
+            <Typography variant="body2" component="span">
+              {formatLastSync(credential.lastSyncAt)}
+            </Typography>
           </div>
           {credential.syncError && (
             <div className={styles.errorRow}>
-              <Typography variant="body2" component="span" color="error">{credential.syncError}</Typography>
+              <Typography variant="body2" component="span" color="error">
+                {credential.syncError}
+              </Typography>
             </div>
           )}
           {totalUnsynced > 0 && (
             <MuiAlert severity="warning" icon={<WarningOutlined />} className={styles.unsyncedAlert}>
               <AlertTitle>{`${totalUnsynced} item${totalUnsynced > 1 ? 's' : ''} pending sync`}</AlertTitle>
               <Typography variant="body2" component="span" color="text.secondary">
-                {unsyncedCounts.ascents > 0 && `${unsyncedCounts.ascents} ascent${unsyncedCounts.ascents > 1 ? 's' : ''}`}
+                {unsyncedCounts.ascents > 0 &&
+                  `${unsyncedCounts.ascents} ascent${unsyncedCounts.ascents > 1 ? 's' : ''}`}
                 {unsyncedCounts.ascents > 0 && unsyncedCounts.climbs > 0 && ', '}
                 {unsyncedCounts.climbs > 0 && `${unsyncedCounts.climbs} climb${unsyncedCounts.climbs > 1 ? 's' : ''}`}
               </Typography>
@@ -285,18 +293,9 @@ export function ImportProgressSteps({ progress }: { progress: ImportProgress | n
               </Typography>
             </div>
             {hasCounts && (
-              <LinearProgress
-                variant="determinate"
-                value={progressPercent}
-                sx={{ ml: '32px', mr: 1, mt: 0.5 }}
-              />
+              <LinearProgress variant="determinate" value={progressPercent} sx={{ ml: '32px', mr: 1, mt: 0.5 }} />
             )}
-            {isActive && !hasCounts && (
-              <LinearProgress
-                variant="indeterminate"
-                sx={{ ml: '32px', mr: 1, mt: 0.5 }}
-              />
-            )}
+            {isActive && !hasCounts && <LinearProgress variant="indeterminate" sx={{ ml: '32px', mr: 1, mt: 0.5 }} />}
           </div>
         );
       })}
@@ -390,7 +389,10 @@ export default function AuroraCredentialsSection() {
       if (selectedBoard === 'tension') {
         showMessage('Tension account linked. Your data will show up within 12 hours.', 'success');
       } else {
-        showMessage(`${selectedBoard.charAt(0).toUpperCase() + selectedBoard.slice(1)} account linked successfully`, 'success');
+        showMessage(
+          `${selectedBoard.charAt(0).toUpperCase() + selectedBoard.slice(1)} account linked successfully`,
+          'success',
+        );
       }
       setIsModalOpen(false);
       setFormValues({ username: '', password: '' });
@@ -529,7 +531,9 @@ export default function AuroraCredentialsSection() {
 
       // If stream ended without a complete/error event (e.g. server timeout)
       if (!receivedCompleteRef.current) {
-        setImportError('Import was interrupted. The server may have timed out. Your data may have been partially imported.');
+        setImportError(
+          'Import was interrupted. The server may have timed out. Your data may have been partially imported.',
+        );
         setImportPhase('error');
         showMessage('Import was interrupted', 'error');
       }
@@ -553,15 +557,21 @@ export default function AuroraCredentialsSection() {
   };
 
   const isImporting = importPhase === 'importing';
-  const isImportDialogOpen = importPhase === 'preview' || importPhase === 'importing' || importPhase === 'complete' || importPhase === 'error';
+  const isImportDialogOpen =
+    importPhase === 'preview' || importPhase === 'importing' || importPhase === 'complete' || importPhase === 'error';
 
   const getImportDialogTitle = () => {
     switch (importPhase) {
-      case 'preview': return 'Import Aurora Data';
-      case 'importing': return 'Importing Aurora Data...';
-      case 'complete': return 'Import Complete';
-      case 'error': return 'Import Failed';
-      default: return '';
+      case 'preview':
+        return 'Import Aurora Data';
+      case 'importing':
+        return 'Importing Aurora Data...';
+      case 'complete':
+        return 'Import Complete';
+      case 'error':
+        return 'Import Failed';
+      default:
+        return '';
     }
   };
 
@@ -583,9 +593,9 @@ export default function AuroraCredentialsSection() {
         <CardContent>
           <Typography variant="h5">Board Accounts</Typography>
           <Typography variant="body2" component="span" color="text.secondary" className={styles.sectionDescription}>
-            Link your board accounts to import your Aurora data to Boardsesh, or import from a JSON export file.
-            We'll automatically sync your logbook, ascents, and climbs FROM Aurora every 12 hours.
-            Data created in Boardsesh stays local and does not sync back to Aurora.
+            Link your board accounts to import your Aurora data to Boardsesh, or import from a JSON export file. We'll
+            automatically sync your logbook, ascents, and climbs FROM Aurora every 12 hours. Data created in Boardsesh
+            stays local and does not sync back to Aurora.
           </Typography>
 
           <Stack spacing={2} className={styles.cardsContainer}>
@@ -626,62 +636,56 @@ export default function AuroraCredentialsSection() {
       />
 
       {/* Link Account Dialog */}
-      <Dialog
-        open={isModalOpen}
-        onClose={handleModalCancel}
-        maxWidth="sm"
-        fullWidth
-      >
+      <Dialog open={isModalOpen} onClose={handleModalCancel} maxWidth="sm" fullWidth>
         <DialogTitle>{`Link ${selectedBoard.charAt(0).toUpperCase() + selectedBoard.slice(1)} Account`}</DialogTitle>
         <DialogContent>
-        <Typography variant="body2" component="span" color="text.secondary" className={styles.modalDescription}>
-          Enter your {selectedBoard.charAt(0).toUpperCase() + selectedBoard.slice(1)} Board
-          username and password to import your Aurora data.
-          Your credentials are encrypted and securely stored. Data syncs every 12 hours.
-        </Typography>
-        <Box
-          component="form"
-          onSubmit={(e: React.FormEvent) => {
-            e.preventDefault();
-            const vals = formValues;
-            if (!vals.username || !vals.password) return;
-            handleSaveCredentials(vals);
-          }}
-          sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}
-        >
-          <TextField
-            label="Username"
-            placeholder="Enter your username"
-            variant="outlined"
-            size="small"
-            fullWidth
-            required
-            value={formValues.username}
-            onChange={(e) => setFormValues((prev) => ({ ...prev, username: e.target.value }))}
-          />
-
-          <TextField
-            label="Password"
-            type="password"
-            placeholder="Enter your password"
-            variant="outlined"
-            size="small"
-            fullWidth
-            required
-            value={formValues.password}
-            onChange={(e) => setFormValues((prev) => ({ ...prev, password: e.target.value }))}
-          />
-
-          <Button
-            variant="contained"
-            type="submit"
-            disabled={isSaving}
-            startIcon={isSaving ? <CircularProgress size={16} /> : undefined}
-            fullWidth
+          <Typography variant="body2" component="span" color="text.secondary" className={styles.modalDescription}>
+            Enter your {selectedBoard.charAt(0).toUpperCase() + selectedBoard.slice(1)} Board username and password to
+            import your Aurora data. Your credentials are encrypted and securely stored. Data syncs every 12 hours.
+          </Typography>
+          <Box
+            component="form"
+            onSubmit={(e: React.FormEvent) => {
+              e.preventDefault();
+              const vals = formValues;
+              if (!vals.username || !vals.password) return;
+              handleSaveCredentials(vals);
+            }}
+            sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}
           >
-            {isSaving ? 'Linking...' : 'Link Account'}
-          </Button>
-        </Box>
+            <TextField
+              label="Username"
+              placeholder="Enter your username"
+              variant="outlined"
+              size="small"
+              fullWidth
+              required
+              value={formValues.username}
+              onChange={(e) => setFormValues((prev) => ({ ...prev, username: e.target.value }))}
+            />
+
+            <TextField
+              label="Password"
+              type="password"
+              placeholder="Enter your password"
+              variant="outlined"
+              size="small"
+              fullWidth
+              required
+              value={formValues.password}
+              onChange={(e) => setFormValues((prev) => ({ ...prev, password: e.target.value }))}
+            />
+
+            <Button
+              variant="contained"
+              type="submit"
+              disabled={isSaving}
+              startIcon={isSaving ? <CircularProgress size={16} /> : undefined}
+              fullWidth
+            >
+              {isSaving ? 'Linking...' : 'Link Account'}
+            </Button>
+          </Box>
         </DialogContent>
       </Dialog>
 
@@ -700,7 +704,11 @@ export default function AuroraCredentialsSection() {
             <>
               <Typography variant="body2" color="text.secondary" className={styles.modalDescription}>
                 Import data from <strong>{importPreview.username}</strong> to{' '}
-                <strong>{importingBoard?.charAt(0).toUpperCase()}{importingBoard?.slice(1)}</strong>:
+                <strong>
+                  {importingBoard?.charAt(0).toUpperCase()}
+                  {importingBoard?.slice(1)}
+                </strong>
+                :
               </Typography>
               <List dense>
                 {importPreview.climbs > 0 && (
@@ -719,16 +727,14 @@ export default function AuroraCredentialsSection() {
                 </ListItem>
               </List>
               <Typography variant="body2" color="text.secondary">
-                Climbs will be matched by name. Any that can't be matched will be reported after import.
-                Re-importing the same file will not create duplicates.
+                Climbs will be matched by name. Any that can't be matched will be reported after import. Re-importing
+                the same file will not create duplicates.
               </Typography>
             </>
           )}
 
           {/* Importing phase */}
-          {importPhase === 'importing' && (
-            <ImportProgressSteps progress={importProgress} />
-          )}
+          {importPhase === 'importing' && <ImportProgressSteps progress={importProgress} />}
 
           {/* Complete phase */}
           {importPhase === 'complete' && importResult && (
@@ -764,11 +770,14 @@ export default function AuroraCredentialsSection() {
               {importResult.unresolvedClimbs.length > 0 && (
                 <MuiAlert severity="warning" className={styles.unsyncedAlert}>
                   <AlertTitle>
-                    {importResult.unresolvedClimbs.length} climb{importResult.unresolvedClimbs.length > 1 ? 's' : ''} could not be matched
+                    {importResult.unresolvedClimbs.length} climb
+                    {importResult.unresolvedClimbs.length > 1 ? 's' : ''} could not be matched
                   </AlertTitle>
                   <div className={styles.unresolvedList}>
                     {importResult.unresolvedClimbs.slice(0, 20).map((name) => (
-                      <Typography key={name} variant="body2">{name}</Typography>
+                      <Typography key={name} variant="body2">
+                        {name}
+                      </Typography>
                     ))}
                     {importResult.unresolvedClimbs.length > 20 && (
                       <Typography variant="body2" color="text.secondary">
@@ -801,7 +810,9 @@ export default function AuroraCredentialsSection() {
         )}
         {(importPhase === 'complete' || importPhase === 'error') && (
           <DialogActions>
-            <Button variant="contained" onClick={handleImportDialogClose}>Close</Button>
+            <Button variant="contained" onClick={handleImportDialogClose}>
+              Close
+            </Button>
           </DialogActions>
         )}
       </Dialog>

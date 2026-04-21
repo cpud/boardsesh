@@ -38,9 +38,7 @@ export interface SessionGroup {
 export function groupTicks(userId: string, ticks: TickForGrouping[]): SessionGroup[] {
   if (ticks.length === 0) return [];
 
-  const sorted = [...ticks].sort(
-    (a, b) => new Date(a.climbedAt).getTime() - new Date(b.climbedAt).getTime(),
-  );
+  const sorted = [...ticks].sort((a, b) => new Date(a.climbedAt).getTime() - new Date(b.climbedAt).getTime());
 
   const groups: SessionGroup[] = [];
   let currentGroup: TickForGrouping[] = [sorted[0]];
@@ -69,9 +67,14 @@ function buildGroup(userId: string, ticks: TickForGrouping[]): SessionGroup {
   let totalFlashes = 0;
   let totalAttempts = 0;
   for (const t of ticks) {
-    if (t.status === 'flash') { totalFlashes++; totalSends++; }
-    else if (t.status === 'send') { totalSends++; }
-    else if (t.status === 'attempt') { totalAttempts++; }
+    if (t.status === 'flash') {
+      totalFlashes++;
+      totalSends++;
+    } else if (t.status === 'send') {
+      totalSends++;
+    } else if (t.status === 'attempt') {
+      totalAttempts++;
+    }
   }
 
   return {
@@ -99,10 +102,7 @@ const SessionStatsRowSchema = z.object({
  * Recalculate aggregate stats for an inferred session from its current ticks.
  * Mirrors packages/backend/src/graphql/resolvers/social/session-mutations.ts
  */
-async function recalculateSessionStats(
-  sessionId: string,
-  conn: ReturnType<typeof getDb>,
-): Promise<void> {
+async function recalculateSessionStats(sessionId: string, conn: ReturnType<typeof getDb>): Promise<void> {
   const result = await conn.execute(sql`
     SELECT
       COUNT(*) AS tick_count,
@@ -150,10 +150,7 @@ async function recalculateSessionStats(
  * Called after Aurora sync completion in the web package.
  * Processes in batches to avoid memory issues with large tick counts.
  */
-export async function buildInferredSessionsForUser(
-  userId: string,
-  options?: { batchSize?: number },
-): Promise<number> {
+export async function buildInferredSessionsForUser(userId: string, options?: { batchSize?: number }): Promise<number> {
   const db = getDb();
   const batchSize = options?.batchSize ?? 5000;
   let assigned = 0;
@@ -186,12 +183,7 @@ export async function buildInferredSessionsForUser(
         lastTickAt: inferredSessions.lastTickAt,
       })
       .from(inferredSessions)
-      .where(
-        and(
-          eq(inferredSessions.userId, userId),
-          isNull(inferredSessions.endedAt),
-        ),
-      )
+      .where(and(eq(inferredSessions.userId, userId), isNull(inferredSessions.endedAt)))
       .orderBy(desc(inferredSessions.lastTickAt))
       .limit(1);
 

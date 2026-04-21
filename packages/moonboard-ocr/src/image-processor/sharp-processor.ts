@@ -1,12 +1,6 @@
 import sharp, { Sharp } from 'sharp';
 import path from 'path';
-import {
-  ImageProcessor,
-  RawPixelData,
-  ImageMetadata,
-  ImageRegion,
-  NodeImageSource,
-} from './types';
+import { ImageProcessor, RawPixelData, ImageMetadata, ImageRegion, NodeImageSource } from './types';
 
 /**
  * Sharp-based image processor for Node.js environment.

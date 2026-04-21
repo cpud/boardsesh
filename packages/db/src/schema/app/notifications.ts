@@ -1,12 +1,4 @@
-import {
-  pgTable,
-  bigserial,
-  bigint,
-  text,
-  timestamp,
-  index,
-  pgEnum,
-} from 'drizzle-orm/pg-core';
+import { pgTable, bigserial, bigint, text, timestamp, index, pgEnum } from 'drizzle-orm/pg-core';
 import { users } from '../auth/users';
 import { socialEntityTypeEnum, comments } from './social';
 
@@ -52,19 +44,9 @@ export const notifications = pgTable(
       table.readAt,
       table.createdAt,
     ),
-    recipientCreatedAtIdx: index('notifications_recipient_created_at_idx').on(
-      table.recipientId,
-      table.createdAt,
-    ),
-    deduplicationIdx: index('notifications_dedup_idx').on(
-      table.actorId,
-      table.recipientId,
-      table.type,
-      table.entityId,
-    ),
-    createdAtIdx: index('notifications_created_at_idx').on(
-      table.createdAt,
-    ),
+    recipientCreatedAtIdx: index('notifications_recipient_created_at_idx').on(table.recipientId, table.createdAt),
+    deduplicationIdx: index('notifications_dedup_idx').on(table.actorId, table.recipientId, table.type, table.entityId),
+    createdAtIdx: index('notifications_created_at_idx').on(table.createdAt),
   }),
 );
 

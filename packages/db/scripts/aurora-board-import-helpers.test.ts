@@ -1,9 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  dedupeSourceClimbHolds,
-  deriveClimbHoldsFromFrames,
-} from './aurora-board-import-helpers.js';
+import { dedupeSourceClimbHolds, deriveClimbHoldsFromFrames } from './aurora-board-import-helpers.js';
 
 test('deriveClimbHoldsFromFrames maps aurora role codes', () => {
   const holds = deriveClimbHoldsFromFrames(
@@ -49,9 +46,7 @@ test('deriveClimbHoldsFromFrames prefers FOOT over OFF', () => {
     'decoy',
   );
 
-  assert.deepEqual(holds1, [
-    { climbUuid: 'climb-4', holdId: 401, frameNumber: 0, holdState: 'FOOT' },
-  ]);
+  assert.deepEqual(holds1, [{ climbUuid: 'climb-4', holdId: 401, frameNumber: 0, holdState: 'FOOT' }]);
 
   // OFF in frame 0, FOOT in frame 1 -> FOOT wins
   const holds2 = deriveClimbHoldsFromFrames(
@@ -62,9 +57,7 @@ test('deriveClimbHoldsFromFrames prefers FOOT over OFF', () => {
     'decoy',
   );
 
-  assert.deepEqual(holds2, [
-    { climbUuid: 'climb-5', holdId: 501, frameNumber: 1, holdState: 'FOOT' },
-  ]);
+  assert.deepEqual(holds2, [{ climbUuid: 'climb-5', holdId: 501, frameNumber: 1, holdState: 'FOOT' }]);
 });
 
 test('dedupeSourceClimbHolds keeps the newest source hold row per climb and hold', () => {

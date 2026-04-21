@@ -62,6 +62,28 @@ run_pending_drizzle_sql_migrations() {
   done
 }
 
+# ── Fast path: if everything is already running, just check migrations ─
+# This makes multi-worktree setups fast — the second worktree skips all
+# container setup and pg_hba configuration.
+all_running=true
+for svc in postgres neon-proxy redis; do
+  container=$(docker compose ps -q "$svc" 2>/dev/null)
+  if [ -z "$container" ] || ! docker inspect "$container" --format='{{.State.Running}}' 2>/dev/null | grep -q true; then
+    all_running=false
+    break
+  fi
+done
+
+if [ "$all_running" = true ]; then
+  echo "All containers already running — checking for pending migrations..."
+  PG_CONTAINER=$(docker compose ps -q postgres)
+  run_pending_drizzle_sql_migrations
+  echo ""
+  echo "Development database is ready."
+  echo "  Test user: test@boardsesh.com / test"
+  exit 0
+fi
+
 echo "Starting development database containers..."
 docker compose up -d postgres redis
 

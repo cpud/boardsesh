@@ -52,7 +52,9 @@ export const LogbookView: React.FC<LogbookViewProps> = ({ currentClimb }) => {
             <CardContent sx={{ p: 1.5 }}>
               <Stack spacing={1} style={{ width: '100%' }}>
                 <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
-                  <Typography variant="body2" component="span" fontWeight={600}>{dayjs(ascent.climbed_at).format('MMM D, YYYY h:mm A')}</Typography>
+                  <Typography variant="body2" component="span" fontWeight={600}>
+                    {dayjs(ascent.climbed_at).format('MMM D, YYYY h:mm A')}
+                  </Typography>
                   {ascent.angle !== currentClimb.angle && (
                     <>
                       <Chip label={ascent.angle} size="small" color="primary" />
@@ -67,7 +69,9 @@ export const LogbookView: React.FC<LogbookViewProps> = ({ currentClimb }) => {
                   </Stack>
                 )}
                 <Stack direction="row" spacing={1}>
-                  <Typography variant="body2" component="span">Attempts: {ascent.tries}</Typography>
+                  <Typography variant="body2" component="span">
+                    Attempts: {ascent.tries}
+                  </Typography>
                 </Stack>
 
                 {ascent.comment && (

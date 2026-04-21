@@ -96,7 +96,8 @@ const SocialFeedItem: React.FC<SocialFeedItemProps> = ({ item, showUserHeader = 
                 {item.userDisplayName || 'User'}
               </MuiTypography>
               <MuiTypography variant="body2" component="span" color="text.secondary">
-                {' '}climbed{' '}
+                {' '}
+                climbed{' '}
               </MuiTypography>
               <MuiTypography variant="body2" component="span" fontWeight={600}>
                 {item.climbName}
@@ -126,7 +127,15 @@ const SocialFeedItem: React.FC<SocialFeedItemProps> = ({ item, showUserHeader = 
           {/* Details */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }} className={styles.feedItemContent}>
             {/* Status and climb name row */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '8px',
+              }}
+            >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Chip
                   icon={statusDisplay.icon as React.ReactElement}
@@ -151,9 +160,7 @@ const SocialFeedItem: React.FC<SocialFeedItemProps> = ({ item, showUserHeader = 
 
             {/* Climb details chips */}
             <Box sx={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-              {item.difficultyName && (
-                <Chip label={item.difficultyName} size="small" color="primary" />
-              )}
+              {item.difficultyName && <Chip label={item.difficultyName} size="small" color="primary" />}
               <Chip icon={<LocationOnOutlined />} label={`${item.angle}\u00B0`} size="small" />
               <MuiTypography variant="body2" component="span" color="text.secondary" className={styles.boardType}>
                 {boardDisplay}

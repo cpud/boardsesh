@@ -7,10 +7,7 @@ import { config } from 'dotenv';
 config({ path: '.env.local' });
 config({ path: '.env' });
 
-program
-  .name('aurora-sync')
-  .description('Aurora board sync utility for Boardsesh')
-  .version('1.0.0');
+program.name('aurora-sync').description('Aurora board sync utility for Boardsesh').version('1.0.0');
 
 program
   .command('all')
@@ -18,11 +15,13 @@ program
   .option('-v, --verbose', 'Enable verbose logging')
   .action(async (options) => {
     const runner = new SyncRunner({
-      onLog: options.verbose ? console.log : (msg: string) => {
-        if (msg.includes('✓') || msg.includes('✗') || msg.includes('Found')) {
-          console.log(msg);
-        }
-      },
+      onLog: options.verbose
+        ? console.log
+        : (msg: string) => {
+            if (msg.includes('✓') || msg.includes('✗') || msg.includes('Found')) {
+              console.log(msg);
+            }
+          },
       onError: (error, context) => {
         console.error(`Error syncing ${context.userId}/${context.board}:`, error.message);
       },
@@ -93,14 +92,16 @@ program
 
     try {
       const db = drizzle(client);
-      const credentials = await db.select({
-        userId: auroraCredentials.userId,
-        boardType: auroraCredentials.boardType,
-        auroraUserId: auroraCredentials.auroraUserId,
-        syncStatus: auroraCredentials.syncStatus,
-        lastSyncAt: auroraCredentials.lastSyncAt,
-        syncError: auroraCredentials.syncError,
-      }).from(auroraCredentials);
+      const credentials = await db
+        .select({
+          userId: auroraCredentials.userId,
+          boardType: auroraCredentials.boardType,
+          auroraUserId: auroraCredentials.auroraUserId,
+          syncStatus: auroraCredentials.syncStatus,
+          lastSyncAt: auroraCredentials.lastSyncAt,
+          syncError: auroraCredentials.syncError,
+        })
+        .from(auroraCredentials);
 
       console.log('\n=== Aurora Credentials ===\n');
 

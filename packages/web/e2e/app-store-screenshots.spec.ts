@@ -127,9 +127,19 @@ test.describe('App Store Screenshots', () => {
     let drawerOpened = false;
     for (const btn of buttons) {
       const label = await btn.getAttribute('aria-label').catch(() => '');
-      if (label && (label.toLowerCase().includes('party') || label.toLowerCase().includes('share') || label.toLowerCase().includes('sesh'))) {
+      if (
+        label &&
+        (label.toLowerCase().includes('party') ||
+          label.toLowerCase().includes('share') ||
+          label.toLowerCase().includes('sesh'))
+      ) {
         await btn.click();
-        drawerOpened = await page.locator('[data-swipeable-drawer="true"]:visible').first().waitFor({ timeout: 5000 }).then(() => true).catch(() => false);
+        drawerOpened = await page
+          .locator('[data-swipeable-drawer="true"]:visible')
+          .first()
+          .waitFor({ timeout: 5000 })
+          .then(() => true)
+          .catch(() => false);
         break;
       }
     }

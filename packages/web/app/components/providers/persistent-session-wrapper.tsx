@@ -29,7 +29,9 @@ import { isNativeApp } from '@/app/lib/ble/capacitor-utils';
 import dynamic from 'next/dynamic';
 import { SESH_SETTINGS_DRAWER_EVENT } from '../sesh-settings/sesh-settings-drawer-event';
 
-const SeshSettingsDrawer = dynamic(() => import('../sesh-settings/sesh-settings-drawer'), { ssr: false });
+const SeshSettingsDrawer = dynamic(() => import('../sesh-settings/sesh-settings-drawer'), {
+  ssr: false,
+});
 import { BoardSwitchConfirmProvider } from '../board-lock/board-switch-confirm-provider';
 
 interface PersistentSessionWrapperProps {
@@ -74,12 +76,8 @@ export default function PersistentSessionWrapper({ children, boardConfigs }: Per
  * so session ending works from any page (not just board routes).
  */
 function RootSessionSummaryDialog() {
-  const {
-    sessionSummary,
-    sessionSummaryBoardType,
-    sessionSummaryHealthKitWorkoutId,
-    dismissSessionSummary,
-  } = usePersistentSession();
+  const { sessionSummary, sessionSummaryBoardType, sessionSummaryHealthKitWorkoutId, dismissSessionSummary } =
+    usePersistentSession();
   return (
     <SessionSummaryDialog
       summary={sessionSummary}
@@ -115,13 +113,7 @@ function RootSeshSettingsDrawer() {
 
   if (!rendered) return null;
 
-  return (
-    <SeshSettingsDrawer
-      open={open}
-      onClose={handleClose}
-      onTransitionEnd={handleTransitionEnd}
-    />
-  );
+  return <SeshSettingsDrawer open={open} onClose={handleClose} onTransitionEnd={handleTransitionEnd} />;
 }
 
 /**

@@ -44,7 +44,12 @@ export function ForkAction({
         boardDetails.set_names!,
         angle,
         isEdit
-          ? { frames: climb.frames, name: climb.name, description: climb.description, editClimbUuid: climb.uuid }
+          ? {
+              frames: climb.frames,
+              name: climb.name,
+              description: climb.description,
+              editClimbUuid: climb.uuid,
+            }
           : { frames: climb.frames, name: climb.name },
       )
     : null;
@@ -59,9 +64,11 @@ export function ForkAction({
 
   const label = isEdit ? 'Edit' : 'Remix this climb';
   const tooltip = isEdit ? 'Edit this draft' : 'Remix this climb';
-  const icon = isEdit
-    ? <EditOutlined sx={{ fontSize: iconSize }} />
-    : <CallSplitOutlined sx={{ fontSize: iconSize }} />;
+  const icon = isEdit ? (
+    <EditOutlined sx={{ fontSize: iconSize }} />
+  ) : (
+    <CallSplitOutlined sx={{ fontSize: iconSize }} />
+  );
 
   // Link-based actions need custom elements since they wrap with Next.js Link
   return buildActionResult({

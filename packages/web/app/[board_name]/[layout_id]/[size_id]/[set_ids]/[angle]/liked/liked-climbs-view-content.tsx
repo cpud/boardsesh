@@ -7,12 +7,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  FavoriteOutlined,
-  SentimentDissatisfiedOutlined,
-  MoreVertOutlined,
-  AddOutlined,
-} from '@mui/icons-material';
+import { FavoriteOutlined, SentimentDissatisfiedOutlined, MoreVertOutlined, AddOutlined } from '@mui/icons-material';
 import { track } from '@vercel/analytics';
 import { BoardDetails, Climb } from '@/app/lib/types';
 import { executeGraphQL } from '@/app/lib/graphql/client';
@@ -34,10 +29,7 @@ type LikedClimbsViewContentProps = {
   angle: number;
 };
 
-export default function LikedClimbsViewContent({
-  boardDetails,
-  angle,
-}: LikedClimbsViewContentProps) {
+export default function LikedClimbsViewContent({ boardDetails, angle }: LikedClimbsViewContentProps) {
   const { showMessage } = useSnackbar();
   const [isAddingToQueue, setIsAddingToQueue] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
@@ -70,10 +62,7 @@ export default function LikedClimbsViewContent({
       while (hasMore) {
         if (abortController.signal.aborted) return;
 
-        const response = await executeGraphQL<
-          GetUserFavoriteClimbsQueryResponse,
-          GetUserFavoriteClimbsQueryVariables
-        >(
+        const response = await executeGraphQL<GetUserFavoriteClimbsQueryResponse, GetUserFavoriteClimbsQueryVariables>(
           GET_USER_FAVORITE_CLIMBS,
           {
             input: {
@@ -136,9 +125,7 @@ export default function LikedClimbsViewContent({
       <div className={styles.errorContainer}>
         <SentimentDissatisfiedOutlined className={styles.errorIcon} />
         <div className={styles.errorTitle}>Sign In Required</div>
-        <div className={styles.errorMessage}>
-          Please sign in to view your liked climbs.
-        </div>
+        <div className={styles.errorMessage}>Please sign in to view your liked climbs.</div>
       </div>
     );
   }
@@ -166,9 +153,7 @@ export default function LikedClimbsViewContent({
                 Liked Climbs
               </Typography>
               <div className={styles.heroMeta}>
-                <span className={styles.heroMetaItem}>
-                  Your favorite climbs
-                </span>
+                <span className={styles.heroMetaItem}>Your favorite climbs</span>
               </div>
             </div>
           </div>
@@ -182,26 +167,18 @@ export default function LikedClimbsViewContent({
             <MoreVertOutlined />
           </IconButton>
 
-          <Menu
-            anchorEl={menuAnchor}
-            open={Boolean(menuAnchor)}
-            onClose={() => setMenuAnchor(null)}
-          >
-            <MenuItem
-              onClick={handleAddAllToQueue}
-              disabled={isAddingToQueue}
-            >
-              <ListItemIcon><AddOutlined /></ListItemIcon>
+          <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>
+            <MenuItem onClick={handleAddAllToQueue} disabled={isAddingToQueue}>
+              <ListItemIcon>
+                <AddOutlined />
+              </ListItemIcon>
               <ListItemText>{isAddingToQueue ? 'Adding...' : 'Queue All'}</ListItemText>
             </MenuItem>
           </Menu>
         </div>
 
         {/* Climbs List */}
-        <LikedClimbsList
-          boardDetails={boardDetails}
-          angle={angle}
-        />
+        <LikedClimbsList boardDetails={boardDetails} angle={angle} />
       </div>
     </>
   );

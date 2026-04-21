@@ -39,13 +39,13 @@ export const getClimbByUuid = async (params: GetClimbParams): Promise<Climb | nu
         tables.climbStats,
         sql`${tables.climbStats.climbUuid} = ${tables.climbs.uuid}
         AND ${tables.climbStats.boardType} = ${params.board_name}
-        AND ${tables.climbStats.angle} = ${params.angle}`
+        AND ${tables.climbStats.angle} = ${params.angle}`,
       )
       .where(
         sql`${tables.climbs.boardType} = ${params.board_name}
         AND ${tables.climbs.layoutId} = ${params.layout_id}
         AND ${tables.climbs.uuid} = ${params.climb_uuid}
-        AND ${tables.climbs.framesCount} = 1`
+        AND ${tables.climbs.framesCount} = 1`,
       )
       .limit(1);
 
@@ -68,7 +68,8 @@ export const getClimbByUuid = async (params: GetClimbParams): Promise<Climb | nu
       quality_average: row.quality_average?.toString() || '0',
       stars: Math.round((Number(row.quality_average) || 0) * 5),
       difficulty_error: row.difficulty_error?.toString() || '0',
-      benchmark_difficulty: row.benchmark_difficulty && row.benchmark_difficulty > 0 ? row.benchmark_difficulty.toString() : null,
+      benchmark_difficulty:
+        row.benchmark_difficulty && row.benchmark_difficulty > 0 ? row.benchmark_difficulty.toString() : null,
       is_draft: row.is_draft ?? false,
       created_at: row.created_at ?? null,
       published_at: row.published_at ?? null,

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vite-plus/test';
 import { createClient, Client } from 'graphql-ws';
 import WebSocket from 'ws';
 import { v4 as uuidv4 } from 'uuid';
@@ -92,7 +92,7 @@ const createTestClimb = (label: string): ClimbQueueItem => ({
 // Helper to execute GraphQL operations (mutations and queries)
 async function execute<T>(
   client: Client,
-  operation: { query: string; variables?: Record<string, unknown> }
+  operation: { query: string; variables?: Record<string, unknown> },
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     let result: T;
@@ -115,12 +115,7 @@ async function execute<T>(
 }
 
 // Helper to wait for a specific event from a subscription
-function waitForEvent<T>(
-  client: Client,
-  query: string,
-  predicate: (event: T) => boolean,
-  timeout = 5000
-): Promise<T> {
+function waitForEvent<T>(client: Client, query: string, predicate: (event: T) => boolean, timeout = 5000): Promise<T> {
   return new Promise((resolve, reject) => {
     const timeoutId = setTimeout(() => {
       reject(new Error(`Timeout waiting for event (${timeout}ms)`));
@@ -143,18 +138,13 @@ function waitForEvent<T>(
           reject(err);
         },
         complete: () => {},
-      }
+      },
     );
   });
 }
 
 // Helper to collect multiple events from a subscription
-function collectEvents<T>(
-  client: Client,
-  query: string,
-  count: number,
-  timeout = 5000
-): Promise<T[]> {
+function collectEvents<T>(client: Client, query: string, count: number, timeout = 5000): Promise<T[]> {
   return new Promise((resolve, reject) => {
     const events: T[] = [];
     const timeoutId = setTimeout(() => {
@@ -181,7 +171,7 @@ function collectEvents<T>(
           reject(err);
         },
         complete: () => {},
-      }
+      },
     );
   });
 }
@@ -311,7 +301,7 @@ describe('Daemon Integration Tests', () => {
       const event = await waitForEvent<QueueEvent | SessionEvent>(
         client,
         `subscription { queueUpdates(sessionId: "${sessionId}") { __typename ... on FullSync { state { queue { uuid } } } } }`,
-        (e) => e.__typename === 'FullSync'
+        (e) => e.__typename === 'FullSync',
       );
 
       expect(event.__typename).toBe('FullSync');
@@ -474,7 +464,7 @@ describe('Daemon Integration Tests', () => {
       const eventPromise = collectEvents<QueueEvent>(
         client2,
         `subscription { queueUpdates(sessionId: "${sessionId}") { __typename ... on FullSync { state { queue { uuid } } } ... on QueueItemAdded { item { uuid climb { name } } } } }`,
-        2 // FullSync + QueueItemAdded
+        2, // FullSync + QueueItemAdded
       );
 
       // Wait for subscription to be established
@@ -511,7 +501,7 @@ describe('Daemon Integration Tests', () => {
       const eventPromise = collectEvents<QueueEvent>(
         client2,
         `subscription { queueUpdates(sessionId: "${sessionId}") { __typename ... on FullSync { state { currentClimbQueueItem { uuid } } } ... on CurrentClimbChanged { item { uuid } } } }`,
-        2 // FullSync + CurrentClimbChanged
+        2, // FullSync + CurrentClimbChanged
       );
 
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -555,7 +545,7 @@ describe('Daemon Integration Tests', () => {
       const eventPromise = waitForEvent<QueueEvent | SessionEvent>(
         client2,
         `subscription { queueUpdates(sessionId: "${sessionId}") { __typename ... on FullSync { state { queue { uuid } } } ... on QueueReordered { uuid oldIndex newIndex } } }`,
-        (e) => e.__typename === 'QueueReordered'
+        (e) => e.__typename === 'QueueReordered',
       );
 
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -596,7 +586,7 @@ describe('Daemon Integration Tests', () => {
       const eventPromise = waitForEvent<QueueEvent | SessionEvent>(
         client2,
         `subscription { sessionUpdates(sessionId: "${sessionId}") { __typename ... on LeaderChanged { leaderId } ... on UserLeft { userId } } }`,
-        (e) => e.__typename === 'LeaderChanged'
+        (e) => e.__typename === 'LeaderChanged',
       );
 
       // Client 1 disconnects
@@ -631,7 +621,7 @@ describe('Daemon Integration Tests', () => {
       const eventPromise = waitForEvent<QueueEvent | SessionEvent>(
         client1,
         `subscription { sessionUpdates(sessionId: "${sessionId}") { __typename ... on UserLeft { userId } ... on LeaderChanged { leaderId } } }`,
-        (e) => e.__typename === 'UserLeft'
+        (e) => e.__typename === 'UserLeft',
       );
 
       // Client 2 disconnects
@@ -660,7 +650,7 @@ describe('Daemon Integration Tests', () => {
       const eventPromise = waitForEvent<QueueEvent | SessionEvent>(
         client1,
         `subscription { sessionUpdates(sessionId: "${sessionId}") { __typename ... on UserJoined { user { id username } } } }`,
-        (e) => e.__typename === 'UserJoined'
+        (e) => e.__typename === 'UserJoined',
       );
 
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -693,7 +683,7 @@ describe('Daemon Integration Tests', () => {
       const eventPromise = waitForEvent<QueueEvent | SessionEvent>(
         client1,
         `subscription { sessionUpdates(sessionId: "${sessionId}") { __typename ... on UserLeft { userId } } }`,
-        (e) => e.__typename === 'UserLeft'
+        (e) => e.__typename === 'UserLeft',
       );
 
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -728,7 +718,7 @@ describe('Daemon Integration Tests', () => {
       const eventPromise = collectEvents<SessionEvent>(
         client2,
         `subscription { sessionUpdates(sessionId: "${sessionId}") { __typename ... on UserLeft { userId } ... on LeaderChanged { leaderId } } }`,
-        2 // UserLeft + LeaderChanged
+        2, // UserLeft + LeaderChanged
       );
 
       await new Promise((resolve) => setTimeout(resolve, 100));

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 
 // Mock server-only before any imports
 vi.mock('server-only', () => ({}));
@@ -142,10 +142,7 @@ describe('authOptions.callbacks.signIn', () => {
       });
 
       expect(result).toBe(true);
-      expect(warnSpy).toHaveBeenCalledWith(
-        'Failed to mark email as verified during OAuth sign-in:',
-        expect.any(Error),
-      );
+      expect(warnSpy).toHaveBeenCalledWith('Failed to mark email as verified during OAuth sign-in:', expect.any(Error));
       warnSpy.mockRestore();
     });
 
@@ -230,9 +227,7 @@ describe('authOptions.callbacks.signIn', () => {
 
     it('returns true when email verification enabled and email is verified', async () => {
       vi.stubEnv('EMAIL_VERIFICATION_ENABLED', 'true');
-      mockDbLimit.mockResolvedValue([
-        { id: 'user-1', email: 'user@example.com', emailVerified: new Date() },
-      ]);
+      mockDbLimit.mockResolvedValue([{ id: 'user-1', email: 'user@example.com', emailVerified: new Date() }]);
 
       const result = await callSignIn({
         user: { id: 'user-1', email: 'user@example.com' },
@@ -244,9 +239,7 @@ describe('authOptions.callbacks.signIn', () => {
 
     it('returns redirect URL when email verification enabled and email is not verified', async () => {
       vi.stubEnv('EMAIL_VERIFICATION_ENABLED', 'true');
-      mockDbLimit.mockResolvedValue([
-        { id: 'user-1', email: 'user@example.com', emailVerified: null },
-      ]);
+      mockDbLimit.mockResolvedValue([{ id: 'user-1', email: 'user@example.com', emailVerified: null }]);
 
       const result = await callSignIn({
         user: { id: 'user-1', email: 'user@example.com' },
@@ -271,9 +264,7 @@ describe('authOptions.callbacks.signIn', () => {
 
     it('returns true when EMAIL_VERIFICATION_ENABLED is not "true" (e.g. "false")', async () => {
       vi.stubEnv('EMAIL_VERIFICATION_ENABLED', 'false');
-      mockDbLimit.mockResolvedValue([
-        { id: 'user-1', email: 'user@example.com', emailVerified: null },
-      ]);
+      mockDbLimit.mockResolvedValue([{ id: 'user-1', email: 'user@example.com', emailVerified: null }]);
 
       const result = await callSignIn({
         user: { id: 'user-1', email: 'user@example.com' },
@@ -295,9 +286,12 @@ describe('authOptions.callbacks.signIn', () => {
 
 type CredentialProviderLike = {
   id?: string;
-  authorize?: (
-    credentials: Record<string, string> | undefined,
-  ) => Promise<{ id: string; email: string | null; name: string | null; image: string | null } | null>;
+  authorize?: (credentials: Record<string, string> | undefined) => Promise<{
+    id: string;
+    email: string | null;
+    name: string | null;
+    image: string | null;
+  } | null>;
 };
 
 function getEmailCredentialsProvider(): CredentialProviderLike {
@@ -363,7 +357,10 @@ describe('CredentialsProvider.authorize — email/password', () => {
       .mockResolvedValueOnce([]);
 
     const provider = getEmailCredentialsProvider();
-    const result = await provider.authorize?.({ email: 'user@example.com', password: 'mypassword' });
+    const result = await provider.authorize?.({
+      email: 'user@example.com',
+      password: 'mypassword',
+    });
     expect(result).toBeNull();
   });
 
@@ -386,7 +383,10 @@ describe('CredentialsProvider.authorize — email/password', () => {
     mockBcryptCompare.mockResolvedValue(true);
 
     const provider = getEmailCredentialsProvider();
-    const result = await provider.authorize?.({ email: 'user@example.com', password: 'correctpass' });
+    const result = await provider.authorize?.({
+      email: 'user@example.com',
+      password: 'correctpass',
+    });
 
     expect(result).toEqual({
       id: 'user-1',

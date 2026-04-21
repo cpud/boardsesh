@@ -14,12 +14,7 @@ import Link from 'next/link';
 import { PersonOutlined } from '@mui/icons-material';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import FollowButton from '@/app/components/ui/follow-button';
-import {
-  FOLLOW_USER,
-  UNFOLLOW_USER,
-  FOLLOW_SETTER,
-  UNFOLLOW_SETTER,
-} from '@/app/lib/graphql/operations';
+import { FOLLOW_USER, UNFOLLOW_USER, FOLLOW_SETTER, UNFOLLOW_SETTER } from '@/app/lib/graphql/operations';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   SEARCH_USERS_AND_SETTERS,
@@ -47,7 +42,9 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
       const client = createGraphQLHttpClient(authToken);
       const response = await client.request<SearchUsersAndSettersQueryResponse, SearchUsersAndSettersQueryVariables>(
         SEARCH_USERS_AND_SETTERS,
-        { input: { query: debouncedQuery, limit: 20, offset: pageParam as number } }
+        {
+          input: { query: debouncedQuery, limit: 20, offset: pageParam as number },
+        },
       );
       return response.searchUsersAndSetters;
     },
@@ -60,10 +57,7 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
     staleTime: 30 * 1000,
   });
 
-  const results: UnifiedSearchResult[] = useMemo(
-    () => data?.pages.flatMap((p) => p.results) ?? [],
-    [data],
-  );
+  const results: UnifiedSearchResult[] = useMemo(() => data?.pages.flatMap((p) => p.results) ?? [], [data]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: fetchNextPage,
@@ -141,7 +135,8 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
                       )}
                       {result.setter && (
                         <Typography variant="caption" component="span" color="text.secondary">
-                          {result.setter.climbCount} climb{result.setter.climbCount !== 1 ? 's' : ''} set
+                          {result.setter.climbCount} climb
+                          {result.setter.climbCount !== 1 ? 's' : ''} set
                         </Typography>
                       )}
                     </Box>

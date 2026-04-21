@@ -20,10 +20,7 @@ export function createYogaInstance() {
     graphqlEndpoint: '/graphql',
     // Depth/cost limiting for HTTP GraphQL requests.
     // WebSocket subscriptions are protected separately via onSubscribe in websocket/setup.ts
-    plugins: [
-      maxDepthPlugin({ n: 10 }),
-      costLimitPlugin({ maxCost: 5000 }),
-    ],
+    plugins: [maxDepthPlugin({ n: 10 }), costLimitPlugin({ maxCost: 5000 })],
     // Context function - extract auth from HTTP requests
     // HTTP requests are stateless and don't need to be tracked in the connections Map.
     // Only WebSocket connections are stored there (they have onDisconnect cleanup).
@@ -32,9 +29,8 @@ export function createYogaInstance() {
       const authHeader = request.headers.get('authorization');
 
       // Extract client IP for rate limiting anonymous HTTP requests
-      const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-        || request.headers.get('x-real-ip')
-        || undefined;
+      const clientIp =
+        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || undefined;
 
       if (authHeader?.startsWith('Bearer ')) {
         const token = authHeader.slice(7);
@@ -60,11 +56,12 @@ export function createYogaInstance() {
       };
     },
     // Disable GraphiQL in production
-    graphiql: process.env.NODE_ENV !== 'production'
-      ? {
-          subscriptionsProtocol: 'WS',
-        }
-      : false,
+    graphiql:
+      process.env.NODE_ENV !== 'production'
+        ? {
+            subscriptionsProtocol: 'WS',
+          }
+        : false,
     // Disable CORS - we handle it manually in the request router
     cors: false,
     // Logging - suppress debug entirely (Yoga internals like "Parsing request" are noisy)

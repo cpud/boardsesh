@@ -35,11 +35,13 @@ export default function OutcomeDoughnut({
   return (
     <div data-testid="outcome-doughnut" style={{ height }}>
       <PieChart
-        series={[{
-          data,
-          innerRadius: '55%',
-          paddingAngle: 1,
-        }]}
+        series={[
+          {
+            data,
+            innerRadius: '55%',
+            paddingAngle: 1,
+          },
+        ]}
         height={height}
         margin={{ top: 0, bottom: 0, left: 0, right: compact ? 0 : 100 }}
         hideLegend={compact}

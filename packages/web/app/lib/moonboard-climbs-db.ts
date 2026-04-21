@@ -5,11 +5,7 @@ import type { LitUpHoldsMap } from '../components/board-renderer/types';
  * Convert OCR hold coordinates to the lit up holds map format for the renderer
  * This is a shared utility used by both the create form and bulk import
  */
-export function convertOcrHoldsToMap(holds: {
-  start: string[];
-  hand: string[];
-  finish: string[];
-}): LitUpHoldsMap {
+export function convertOcrHoldsToMap(holds: { start: string[]; hand: string[]; finish: string[] }): LitUpHoldsMap {
   const map: LitUpHoldsMap = {};
 
   holds.start.forEach((coord) => {

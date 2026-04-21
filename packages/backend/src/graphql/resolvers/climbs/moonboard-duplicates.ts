@@ -49,9 +49,7 @@ const MOONBOARD_COORDINATE_GROUPS: Array<{
 export const MOONBOARD_DUPLICATE_ERROR_PREFIX = 'A MoonBoard climb with the same holds already exists';
 
 function getExecuteRows<T extends Record<string, unknown>>(result: unknown): T[] {
-  return Array.isArray(result)
-    ? (result as T[])
-    : ((result as { rows?: T[] }).rows ?? []);
+  return Array.isArray(result) ? (result as T[]) : ((result as { rows?: T[] }).rows ?? []);
 }
 
 function coordinateToHoldId(coord: string): number {
@@ -154,7 +152,10 @@ export async function findMoonBoardDuplicateMatches(
   const bestMatchBySignature = new Map<string, DuplicateMatchRow>();
 
   if (uniqueSignatures.length > 0) {
-    const signatureValues = sql.join(uniqueSignatures.map((signature) => sql`${signature}`), sql`, `);
+    const signatureValues = sql.join(
+      uniqueSignatures.map((signature) => sql`${signature}`),
+      sql`, `,
+    );
     const exactMatchResult = await db.execute(sql`
       SELECT
         ${dbSchema.boardClimbs.uuid} AS uuid,

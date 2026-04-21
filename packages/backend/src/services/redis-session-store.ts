@@ -57,9 +57,7 @@ export class RedisSessionStore {
       sessionId: data.sessionId,
       boardPath: data.boardPath,
       queue: JSON.stringify(data.queue),
-      currentClimbQueueItem: data.currentClimbQueueItem
-        ? JSON.stringify(data.currentClimbQueueItem)
-        : '',
+      currentClimbQueueItem: data.currentClimbQueueItem ? JSON.stringify(data.currentClimbQueueItem) : '',
       version: data.version.toString(),
       sequence: data.sequence.toString(),
       stateHash: data.stateHash,
@@ -90,7 +88,7 @@ export class RedisSessionStore {
     currentClimbQueueItem: ClimbQueueItem | null,
     version: number,
     sequence: number,
-    stateHash: string
+    stateHash: string,
   ): Promise<void> {
     const key = `boardsesh:session:${sessionId}`;
     const multi = this.redis.multi();
@@ -98,9 +96,7 @@ export class RedisSessionStore {
     multi.hmset(key, {
       sessionId,
       queue: JSON.stringify(queue),
-      currentClimbQueueItem: currentClimbQueueItem
-        ? JSON.stringify(currentClimbQueueItem)
-        : '',
+      currentClimbQueueItem: currentClimbQueueItem ? JSON.stringify(currentClimbQueueItem) : '',
       version: version.toString(),
       sequence: sequence.toString(),
       stateHash: stateHash,
@@ -261,11 +257,7 @@ export class RedisSessionStore {
    * Acquire a distributed lock for concurrent session restoration.
    * Returns true if lock acquired, false if already locked.
    */
-  async acquireLock(
-    key: string,
-    value: string,
-    ttlSeconds: number
-  ): Promise<boolean> {
+  async acquireLock(key: string, value: string, ttlSeconds: number): Promise<boolean> {
     // SET key value EX ttlSeconds NX
     // NX = only set if key doesn't exist
     const result = await this.redis.set(key, value, 'EX', ttlSeconds, 'NX');

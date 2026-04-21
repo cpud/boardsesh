@@ -147,10 +147,7 @@ export function useProfileData(userId: string, initialData?: InitialData) {
   const fetchPercentile = useCallback(async () => {
     try {
       const client = createGraphQLHttpClient(null);
-      const response = await client.request<GetUserClimbPercentileQueryResponse>(
-        GET_USER_CLIMB_PERCENTILE,
-        { userId },
-      );
+      const response = await client.request<GetUserClimbPercentileQueryResponse>(GET_USER_CLIMB_PERCENTILE, { userId });
       setPercentile(response.userClimbPercentile);
     } catch {
       // Percentile is not critical — silently fail

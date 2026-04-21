@@ -103,7 +103,11 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
               y: oy - rect.top - rect.height / 2,
             };
           }
-          return { startScale: scaleRef.current, startX: translateRef.current.x, startY: translateRef.current.y };
+          return {
+            startScale: scaleRef.current,
+            startX: translateRef.current.x,
+            startY: translateRef.current.y,
+          };
         }
 
         const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, s));

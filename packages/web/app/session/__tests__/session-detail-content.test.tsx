@@ -1,13 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import type { SessionDetail } from '@boardsesh/shared-schema';
 
 // Mock dependencies
 vi.mock('next/link', () => ({
-  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
-    <a href={href}>{children}</a>
-  ),
+  default: ({ children, href }: { children: React.ReactNode; href: string }) => <a href={href}>{children}</a>,
 }));
 
 vi.mock('next/navigation', () => ({
@@ -33,14 +31,100 @@ vi.mock('@/app/theme/theme-config', () => ({
     transitions: { normal: '200ms ease' },
     shadows: { md: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' },
     borderRadius: { full: 9999, sm: 4 },
-    colors: { amber: '#FBBF24', success: '#6B9080', successBg: '#EFF5F2' },
-    typography: { fontSize: { xs: 12 } },
-    neutral: { 100: '#F3F4F6', 200: '#E5E7EB', 300: '#D1D5DB' },
+    colors: { amber: '#FBBF24', success: '#6B9080', successBg: '#EFF5F2', error: '#f44336', primary: '#8C4A52' },
+    typography: {
+      fontSize: { xs: 12, sm: 14, base: 16, lg: 18, xl: 20, '2xl': 24 },
+      fontWeight: { normal: 400, medium: 500, semibold: 600, bold: 700 },
+    },
+    spacing: { 0: 0, 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 16: 64 },
+    neutral: { 100: '#F3F4F6', 200: '#E5E7EB', 300: '#D1D5DB', 400: '#9CA3AF', 500: '#6B7280' },
+    opacity: { subtle: 0.6 },
   },
 }));
 
 vi.mock('@/app/lib/grade-colors', () => ({
   formatVGrade: (g: string | null | undefined) => g ?? null,
+  formatGrade: (g: string | null | undefined) => g ?? null,
+  getSoftGradeColor: () => '#888',
+  getSoftVGradeColor: () => '#888',
+  getSoftGradeColorByFormat: () => '#888',
+  getGradeTintColor: () => null,
+  getGradeColorWithOpacity: () => '#888',
+  getGradeTextColor: () => '#000',
+  isLightColor: () => false,
+  getSoftFontGradeColor: () => '#888',
+}));
+
+vi.mock('@/app/components/providers/snackbar-provider', () => ({
+  useSnackbar: () => ({ showMessage: vi.fn() }),
+}));
+
+vi.mock('@/app/lib/share-utils', () => ({
+  shareWithFallback: vi.fn(),
+}));
+
+vi.mock('@/app/hooks/use-board-details-map', () => ({
+  useBoardDetailsMap: () => ({
+    boardDetailsByClimb: {},
+    defaultBoardDetails: {
+      board_name: 'kilter',
+      layout_id: 1,
+      size_id: 1,
+      set_ids: [1],
+      boardWidth: 100,
+      boardHeight: 200,
+      images_to_holds: {},
+      holdsData: [],
+      edge_left: 0,
+      edge_right: 100,
+      edge_bottom: 0,
+      edge_top: 200,
+    },
+    unsupportedClimbs: new Set(),
+    upsizedClimbs: new Set(),
+  }),
+}));
+
+vi.mock('@/app/components/board-renderer/board-renderer', () => ({
+  default: () => <div data-testid="board-renderer" />,
+}));
+
+vi.mock('@/app/components/board-page/angle-selector', () => ({
+  default: () => <div data-testid="angle-selector" />,
+}));
+
+vi.mock('@/app/components/collapsible-section/collapsible-section', () => ({
+  default: ({ title, children, defaultExpanded }: { title: string; children: React.ReactNode; defaultExpanded?: boolean }) => (
+    <div data-testid="collapsible-section" data-title={title} data-expanded={defaultExpanded}>
+      {children}
+    </div>
+  ),
+}));
+
+vi.mock('@/app/hooks/use-grade-format', () => ({
+  useGradeFormat: () => ({
+    gradeFormat: 'v-grade',
+    formatGrade: (d: string | null | undefined) => d ?? null,
+    getGradeColor: () => '#888',
+    loaded: true,
+  }),
+}));
+
+vi.mock('@/app/lib/session-utils', () => ({
+  generateSessionName: (firstTickAt: string | null, boardTypes: string[]) => {
+    if (!firstTickAt) return 'Session';
+    const day = new Date(firstTickAt).toLocaleDateString('en-US', { weekday: 'long' });
+    const board = boardTypes[0] ? boardTypes[0].charAt(0).toUpperCase() + boardTypes[0].slice(1) : '';
+    return `${day} ${board} Session`;
+  },
+}));
+
+vi.mock('@/app/components/ui/confirm-popover', () => ({
+  ConfirmPopover: () => null,
+}));
+
+vi.mock('@/app/components/healthkit/save-to-healthkit-button', () => ({
+  default: () => null,
 }));
 
 vi.mock('../[sessionId]/user-search-dialog', () => ({
@@ -48,9 +132,7 @@ vi.mock('../[sessionId]/user-search-dialog', () => ({
 }));
 
 vi.mock('@/app/components/charts/css-bar-chart', () => ({
-  CssBarChart: (props: { ariaLabel?: string }) => (
-    <div data-testid="css-bar-chart" aria-label={props.ariaLabel} />
-  ),
+  CssBarChart: (props: { ariaLabel?: string }) => <div data-testid="css-bar-chart" aria-label={props.ariaLabel} />,
 }));
 
 vi.mock('@/app/components/charts/session-grade-bars', () => ({
@@ -63,8 +145,21 @@ vi.mock('@/app/components/charts/session-grade-bars', () => ({
 }));
 
 vi.mock('@/app/components/social/vote-button', () => ({
-  default: ({ entityType, entityId, initialUpvotes }: { entityType: string; entityId: string; initialUpvotes?: number }) => (
-    <div data-testid="vote-button" data-entity-type={entityType} data-entity-id={entityId} data-initial-upvotes={initialUpvotes ?? 0} />
+  default: ({
+    entityType,
+    entityId,
+    initialUpvotes,
+  }: {
+    entityType: string;
+    entityId: string;
+    initialUpvotes?: number;
+  }) => (
+    <div
+      data-testid="vote-button"
+      data-entity-type={entityType}
+      data-entity-id={entityId}
+      data-initial-upvotes={initialUpvotes ?? 0}
+    />
   ),
 }));
 
@@ -75,18 +170,36 @@ vi.mock('@/app/components/social/vote-summary-context', () => ({
 
 vi.mock('@/app/components/social/comment-section', () => ({
   default: ({ entityType, entityId, title }: { entityType: string; entityId: string; title?: string }) => (
-    <div data-testid="comment-section" data-entity-type={entityType} data-entity-id={entityId} data-title={title ?? ''} />
+    <div
+      data-testid="comment-section"
+      data-entity-type={entityType}
+      data-entity-id={entityId}
+      data-title={title ?? ''}
+    />
   ),
 }));
 
 // Mock ClimbsList to render a testable placeholder with climb data
 vi.mock('@/app/components/board-page/climbs-list', () => ({
-  default: ({ climbs, renderItemExtra }: { climbs: Array<{ uuid: string; name: string }>; renderItemExtra?: (climb: { uuid: string; name: string }) => React.ReactNode }) => (
+  default: (props: {
+    climbs: Array<{ uuid: string; name: string }>;
+    renderItemExtra?: (climb: { uuid: string; name: string }) => React.ReactNode;
+    boardDetails?: unknown;
+    boardDetailsByClimb?: unknown;
+    unsupportedClimbs?: unknown;
+    upsizedClimbs?: unknown;
+    isFetching?: boolean;
+    hasMore?: boolean;
+    onClimbSelect?: unknown;
+    onLoadMore?: unknown;
+    hideEndMessage?: boolean;
+    showBottomSpacer?: boolean;
+  }) => (
     <div data-testid="climbs-list">
-      {climbs.map((climb) => (
+      {props.climbs.map((climb) => (
         <div key={climb.uuid} data-testid="climb-item" data-climb-name={climb.name}>
           {climb.name}
-          {renderItemExtra?.(climb)}
+          {props.renderItemExtra?.(climb)}
         </div>
       ))}
     </div>
@@ -111,7 +224,6 @@ vi.mock('@/app/hooks/use-climb-actions-data', () => ({
 vi.mock('@/app/hooks/use-my-boards', () => ({
   useMyBoards: () => ({ boards: [], isLoading: false }),
 }));
-
 
 vi.mock('@/app/hooks/use-delete-tick', () => ({
   useDeleteTick: () => ({
@@ -145,14 +257,16 @@ function makeSession(overrides: Partial<SessionDetail> = {}): SessionDetail {
     sessionType: 'inferred',
     sessionName: null,
     ownerUserId: 'user-1',
-    participants: [{
-      userId: 'user-1',
-      displayName: 'Test User',
-      avatarUrl: null,
-      sends: 5,
-      flashes: 2,
-      attempts: 3,
-    }],
+    participants: [
+      {
+        userId: 'user-1',
+        displayName: 'Test User',
+        avatarUrl: null,
+        sends: 5,
+        flashes: 2,
+        attempts: 3,
+      },
+    ],
     totalSends: 5,
     totalFlashes: 2,
     totalAttempts: 3,
@@ -203,7 +317,8 @@ describe('SessionDetailContent', () => {
 
   it('renders session stats', () => {
     render(<SessionDetailContent session={makeSession()} />);
-    expect(screen.getByText('5 sends')).toBeTruthy();
+    // totalSends (5) minus totalFlashes (2) = 3 sends
+    expect(screen.getByText('3 sends')).toBeTruthy();
     expect(screen.getByText('2 flashes')).toBeTruthy();
     expect(screen.getByText('3 attempts')).toBeTruthy();
     expect(screen.getByText('8 climbs')).toBeTruthy();
@@ -258,9 +373,7 @@ describe('SessionDetailContent', () => {
   it('renders session-level VoteButton with session entity type', () => {
     render(<SessionDetailContent session={makeSession()} />);
     const voteButtons = screen.getAllByTestId('vote-button');
-    const sessionVote = voteButtons.find(
-      (el) => el.getAttribute('data-entity-type') === 'session',
-    );
+    const sessionVote = voteButtons.find((el) => el.getAttribute('data-entity-type') === 'session');
     expect(sessionVote).toBeTruthy();
     expect(sessionVote!.getAttribute('data-entity-id')).toBe('session-1');
   });
@@ -269,9 +382,7 @@ describe('SessionDetailContent', () => {
     render(<SessionDetailContent session={makeSession()} />);
     // Session comments should be collapsed by default
     const commentSections = screen.queryAllByTestId('comment-section');
-    const sessionComment = commentSections.find(
-      (el) => el.getAttribute('data-entity-type') === 'session',
-    );
+    const sessionComment = commentSections.find((el) => el.getAttribute('data-entity-type') === 'session');
     expect(sessionComment).toBeFalsy();
   });
 
@@ -282,9 +393,7 @@ describe('SessionDetailContent', () => {
 
     // After clicking, the session comment section should be visible
     const commentSections = screen.getAllByTestId('comment-section');
-    const sessionComment = commentSections.find(
-      (el) => el.getAttribute('data-entity-type') === 'session',
-    );
+    const sessionComment = commentSections.find((el) => el.getAttribute('data-entity-type') === 'session');
     expect(sessionComment).toBeTruthy();
     expect(sessionComment!.getAttribute('data-entity-id')).toBe('session-1');
   });
@@ -292,9 +401,9 @@ describe('SessionDetailContent', () => {
   it('renders comment toggle button on each tick', () => {
     render(<SessionDetailContent session={makeSession()} />);
     // Each tick should have a comment toggle button (tick comments are collapsed by default)
-    const commentButtons = screen.getAllByRole('button').filter(
-      (el) => el.querySelector('[data-testid="ChatBubbleOutlineOutlinedIcon"]'),
-    );
+    const commentButtons = screen
+      .getAllByRole('button')
+      .filter((el) => el.querySelector('[data-testid="ChatBubbleOutlineOutlinedIcon"]'));
     // At least one comment toggle for the tick (plus one for session-level)
     expect(commentButtons.length).toBeGreaterThanOrEqual(1);
   });
@@ -352,9 +461,7 @@ describe('SessionDetailContent', () => {
   it('renders per-tick VoteButton with tick entity type and SSR upvotes', () => {
     render(<SessionDetailContent session={makeSession()} />);
     const voteButtons = screen.getAllByTestId('vote-button');
-    const tickVote = voteButtons.find(
-      (el) => el.getAttribute('data-entity-type') === 'tick',
-    );
+    const tickVote = voteButtons.find((el) => el.getAttribute('data-entity-type') === 'tick');
     expect(tickVote).toBeTruthy();
     expect(tickVote!.getAttribute('data-entity-id')).toBe('tick-1');
     expect(tickVote!.getAttribute('data-initial-upvotes')).toBe('3');
@@ -370,13 +477,30 @@ describe('SessionDetailContent', () => {
 
   it('shows total attempts when totalAttempts exceeds attemptCount', () => {
     const session = makeSession({
-      ticks: [{
-        uuid: 'tick-1', userId: 'user-1', climbUuid: 'climb-1', climbName: 'Hard Climb',
-        boardType: 'kilter', layoutId: 1, angle: 40, status: 'send', attemptCount: 3,
-        difficulty: 20, difficultyName: 'V5', quality: 3, isMirror: false, isBenchmark: false,
-        comment: null, frames: 'abc', setterUsername: 'setter1', climbedAt: '2024-01-15T10:30:00.000Z',
-        upvotes: 0, totalAttempts: 15,
-      }],
+      ticks: [
+        {
+          uuid: 'tick-1',
+          userId: 'user-1',
+          climbUuid: 'climb-1',
+          climbName: 'Hard Climb',
+          boardType: 'kilter',
+          layoutId: 1,
+          angle: 40,
+          status: 'send',
+          attemptCount: 3,
+          difficulty: 20,
+          difficultyName: 'V5',
+          quality: 3,
+          isMirror: false,
+          isBenchmark: false,
+          comment: null,
+          frames: 'abc',
+          setterUsername: 'setter1',
+          climbedAt: '2024-01-15T10:30:00.000Z',
+          upvotes: 0,
+          totalAttempts: 15,
+        },
+      ],
     });
     render(<SessionDetailContent session={session} />);
     expect(screen.getByText('on 3rd attempt, 15 total')).toBeTruthy();
@@ -385,13 +509,29 @@ describe('SessionDetailContent', () => {
   it('does not show extra attempt text for flash status', () => {
     const session = makeSession({
       totalAttempts: 0,
-      ticks: [{
-        uuid: 'tick-1', userId: 'user-1', climbUuid: 'climb-1', climbName: 'Easy Climb',
-        boardType: 'kilter', layoutId: 1, angle: 40, status: 'flash', attemptCount: 1,
-        difficulty: 10, difficultyName: 'V2', quality: 3, isMirror: false, isBenchmark: false,
-        comment: null, frames: 'abc', setterUsername: 'setter1', climbedAt: '2024-01-15T10:30:00.000Z',
-        upvotes: 0,
-      }],
+      ticks: [
+        {
+          uuid: 'tick-1',
+          userId: 'user-1',
+          climbUuid: 'climb-1',
+          climbName: 'Easy Climb',
+          boardType: 'kilter',
+          layoutId: 1,
+          angle: 40,
+          status: 'flash',
+          attemptCount: 1,
+          difficulty: 10,
+          difficultyName: 'V2',
+          quality: 3,
+          isMirror: false,
+          isBenchmark: false,
+          comment: null,
+          frames: 'abc',
+          setterUsername: 'setter1',
+          climbedAt: '2024-01-15T10:30:00.000Z',
+          upvotes: 0,
+        },
+      ],
     });
     render(<SessionDetailContent session={session} />);
     expect(screen.getByText('flash')).toBeTruthy();
@@ -404,16 +544,46 @@ describe('SessionDetailContent', () => {
     const sessionWithDuplicates = makeSession({
       ticks: [
         {
-          uuid: 'tick-1', userId: 'user-1', climbUuid: 'climb-1', climbName: 'Duplicated Climb',
-          boardType: 'kilter', layoutId: 1, angle: 40, status: 'send', attemptCount: 1,
-          difficulty: 20, difficultyName: 'V5', quality: 3, isMirror: false, isBenchmark: false,
-          comment: null, frames: 'abc', setterUsername: 'setter1', climbedAt: '2024-01-15T10:30:00.000Z', upvotes: 0,
+          uuid: 'tick-1',
+          userId: 'user-1',
+          climbUuid: 'climb-1',
+          climbName: 'Duplicated Climb',
+          boardType: 'kilter',
+          layoutId: 1,
+          angle: 40,
+          status: 'send',
+          attemptCount: 1,
+          difficulty: 20,
+          difficultyName: 'V5',
+          quality: 3,
+          isMirror: false,
+          isBenchmark: false,
+          comment: null,
+          frames: 'abc',
+          setterUsername: 'setter1',
+          climbedAt: '2024-01-15T10:30:00.000Z',
+          upvotes: 0,
         },
         {
-          uuid: 'tick-2', userId: 'user-1', climbUuid: 'climb-1', climbName: 'Duplicated Climb',
-          boardType: 'kilter', layoutId: 1, angle: 40, status: 'flash', attemptCount: 1,
-          difficulty: 20, difficultyName: 'V5', quality: 3, isMirror: false, isBenchmark: false,
-          comment: null, frames: 'abc', setterUsername: 'setter1', climbedAt: '2024-01-15T11:00:00.000Z', upvotes: 0,
+          uuid: 'tick-2',
+          userId: 'user-1',
+          climbUuid: 'climb-1',
+          climbName: 'Duplicated Climb',
+          boardType: 'kilter',
+          layoutId: 1,
+          angle: 40,
+          status: 'flash',
+          attemptCount: 1,
+          difficulty: 20,
+          difficultyName: 'V5',
+          quality: 3,
+          isMirror: false,
+          isBenchmark: false,
+          comment: null,
+          frames: 'abc',
+          setterUsername: 'setter1',
+          climbedAt: '2024-01-15T11:00:00.000Z',
+          upvotes: 0,
         },
       ],
     });
@@ -425,30 +595,72 @@ describe('SessionDetailContent', () => {
   it('renders per-user tick details in multi-user sessions', () => {
     const multiUserSession = makeSession({
       participants: [
-        { userId: 'user-1', displayName: 'Alice', avatarUrl: null, sends: 3, flashes: 1, attempts: 1 },
-        { userId: 'user-2', displayName: 'Bob', avatarUrl: null, sends: 2, flashes: 1, attempts: 0 },
+        {
+          userId: 'user-1',
+          displayName: 'Alice',
+          avatarUrl: null,
+          sends: 3,
+          flashes: 1,
+          attempts: 1,
+        },
+        {
+          userId: 'user-2',
+          displayName: 'Bob',
+          avatarUrl: null,
+          sends: 2,
+          flashes: 1,
+          attempts: 0,
+        },
       ],
       ticks: [
         {
-          uuid: 'tick-1', userId: 'user-1', climbUuid: 'climb-1', climbName: 'Shared Climb',
-          boardType: 'kilter', layoutId: 1, angle: 40, status: 'send', attemptCount: 2,
-          difficulty: 20, difficultyName: 'V5', quality: 3, isMirror: false, isBenchmark: false,
-          comment: null, frames: 'abc', setterUsername: 'setter1', climbedAt: '2024-01-15T10:30:00.000Z', upvotes: 0,
+          uuid: 'tick-1',
+          userId: 'user-1',
+          climbUuid: 'climb-1',
+          climbName: 'Shared Climb',
+          boardType: 'kilter',
+          layoutId: 1,
+          angle: 40,
+          status: 'send',
+          attemptCount: 2,
+          difficulty: 20,
+          difficultyName: 'V5',
+          quality: 3,
+          isMirror: false,
+          isBenchmark: false,
+          comment: null,
+          frames: 'abc',
+          setterUsername: 'setter1',
+          climbedAt: '2024-01-15T10:30:00.000Z',
+          upvotes: 0,
         },
         {
-          uuid: 'tick-2', userId: 'user-2', climbUuid: 'climb-1', climbName: 'Shared Climb',
-          boardType: 'kilter', layoutId: 1, angle: 40, status: 'flash', attemptCount: 1,
-          difficulty: 20, difficultyName: 'V5', quality: 3, isMirror: false, isBenchmark: false,
-          comment: null, frames: 'abc', setterUsername: 'setter1', climbedAt: '2024-01-15T10:35:00.000Z', upvotes: 0,
+          uuid: 'tick-2',
+          userId: 'user-2',
+          climbUuid: 'climb-1',
+          climbName: 'Shared Climb',
+          boardType: 'kilter',
+          layoutId: 1,
+          angle: 40,
+          status: 'flash',
+          attemptCount: 1,
+          difficulty: 20,
+          difficultyName: 'V5',
+          quality: 3,
+          isMirror: false,
+          isBenchmark: false,
+          comment: null,
+          frames: 'abc',
+          setterUsername: 'setter1',
+          climbedAt: '2024-01-15T10:35:00.000Z',
+          upvotes: 0,
         },
       ],
     });
     render(<SessionDetailContent session={multiUserSession} />);
     // Per-user tick details should be rendered via renderItemExtra
     const voteButtons = screen.getAllByTestId('vote-button');
-    const tickVotes = voteButtons.filter(
-      (el) => el.getAttribute('data-entity-type') === 'tick',
-    );
+    const tickVotes = voteButtons.filter((el) => el.getAttribute('data-entity-type') === 'tick');
     // Two ticks for two users on the same climb
     expect(tickVotes).toHaveLength(2);
     // Participant names appear in multiple places (header, stats, tick details)
@@ -460,9 +672,7 @@ describe('SessionDetailContent', () => {
     render(<SessionDetailContent session={makeSession()} />);
     // By default, all comment sections (both session and tick) should be collapsed
     const allCommentSections = screen.queryAllByTestId('comment-section');
-    const tickCommentSections = allCommentSections.filter(
-      (el) => el.getAttribute('data-entity-type') === 'tick',
-    );
+    const tickCommentSections = allCommentSections.filter((el) => el.getAttribute('data-entity-type') === 'tick');
     expect(tickCommentSections).toHaveLength(0);
   });
 
@@ -486,9 +696,9 @@ describe('SessionDetailContent', () => {
     fireEvent.click(sessionCommentToggle);
 
     // Session-level CommentSection should be a sibling of the vote/comment button row, not nested inside it
-    const sessionCommentSection = screen.getAllByTestId('comment-section').find(
-      (el) => el.getAttribute('data-entity-type') === 'session',
-    );
+    const sessionCommentSection = screen
+      .getAllByTestId('comment-section')
+      .find((el) => el.getAttribute('data-entity-type') === 'session');
     expect(sessionCommentSection).toBeTruthy();
     // The toggle button's parent flex row should NOT contain the comment section
     const buttonRow = sessionCommentToggle.parentElement!;
@@ -502,13 +712,29 @@ describe('SessionDetailContent', () => {
 
   it('shows tick comment text when present', () => {
     const session = makeSession({
-      ticks: [{
-        uuid: 'tick-1', userId: 'user-1', climbUuid: 'climb-1', climbName: 'Commented Climb',
-        boardType: 'kilter', layoutId: 1, angle: 40, status: 'send', attemptCount: 1,
-        difficulty: 20, difficultyName: 'V5', quality: 3, isMirror: false, isBenchmark: false,
-        comment: 'Great beta!', frames: 'abc', setterUsername: 'setter1',
-        climbedAt: '2024-01-15T10:30:00.000Z', upvotes: 0,
-      }],
+      ticks: [
+        {
+          uuid: 'tick-1',
+          userId: 'user-1',
+          climbUuid: 'climb-1',
+          climbName: 'Commented Climb',
+          boardType: 'kilter',
+          layoutId: 1,
+          angle: 40,
+          status: 'send',
+          attemptCount: 1,
+          difficulty: 20,
+          difficultyName: 'V5',
+          quality: 3,
+          isMirror: false,
+          isBenchmark: false,
+          comment: 'Great beta!',
+          frames: 'abc',
+          setterUsername: 'setter1',
+          climbedAt: '2024-01-15T10:30:00.000Z',
+          upvotes: 0,
+        },
+      ],
     });
     render(<SessionDetailContent session={session} />);
     expect(screen.getByText('Great beta!')).toBeTruthy();

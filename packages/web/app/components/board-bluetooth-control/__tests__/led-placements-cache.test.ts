@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 
 /**
  * Tests for the module-level LED placements cache pattern used in use-board-bluetooth.ts.

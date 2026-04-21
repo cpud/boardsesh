@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 import { render, act, fireEvent, cleanup } from '@testing-library/react';
 
@@ -40,11 +40,7 @@ const QueueContent = () => {
  * - isQueueOpen: whether the queue sub-drawer is open
  * - queueMounted: whether the queue sub-drawer tree exists in the DOM
  */
-const PlayDrawerSimulation = ({
-  isOpen: isOpenProp,
-}: {
-  isOpen: boolean;
-}) => {
+const PlayDrawerSimulation = ({ isOpen: isOpenProp }: { isOpen: boolean }) => {
   const [isOpen, setIsOpen] = useState(isOpenProp);
   const [isQueueOpen, setIsQueueOpen] = useState(false);
   const [queueMounted, setQueueMounted] = useState(false);
@@ -94,10 +90,7 @@ const PlayDrawerSimulation = ({
       {queueMounted && (
         <div data-testid="queue-drawer" data-open={isQueueOpen}>
           <QueueContent />
-          <button
-            data-testid="close-queue-btn"
-            onClick={() => setIsQueueOpen(false)}
-          >
+          <button data-testid="close-queue-btn" onClick={() => setIsQueueOpen(false)}>
             Close Queue
           </button>
           {/* Simulates onTransitionEnd(false) after close animation */}
@@ -162,9 +155,7 @@ describe('Queue drawer lazy-mount pattern', () => {
   // Queue mounts when user clicks the queue button
   // -------------------------------------------------------------------------
   it('mounts queue content when the user opens the queue', () => {
-    const { queryByTestId, getByTestId } = render(
-      <PlayDrawerSimulation isOpen={true} />,
-    );
+    const { queryByTestId, getByTestId } = render(<PlayDrawerSimulation isOpen={true} />);
 
     // Initially: queue not mounted
     expect(queryByTestId('queue-content')).toBeNull();
@@ -185,9 +176,7 @@ describe('Queue drawer lazy-mount pattern', () => {
   // Queue stays mounted during close animation, then unmounts
   // -------------------------------------------------------------------------
   it('keeps queue mounted during close animation, unmounts after transition end', () => {
-    const { queryByTestId, getByTestId } = render(
-      <PlayDrawerSimulation isOpen={true} />,
-    );
+    const { queryByTestId, getByTestId } = render(<PlayDrawerSimulation isOpen={true} />);
 
     // Open the queue
     act(() => {
@@ -220,9 +209,7 @@ describe('Queue drawer lazy-mount pattern', () => {
   // Play drawer close unmounts queue immediately
   // -------------------------------------------------------------------------
   it('unmounts queue immediately when play drawer closes', () => {
-    const { queryByTestId, getByTestId } = render(
-      <PlayDrawerSimulation isOpen={true} />,
-    );
+    const { queryByTestId, getByTestId } = render(<PlayDrawerSimulation isOpen={true} />);
 
     // Open the queue
     act(() => {
@@ -246,9 +233,7 @@ describe('Queue drawer lazy-mount pattern', () => {
   // Re-opening queue after close works correctly
   // -------------------------------------------------------------------------
   it('re-mounts queue when opened again after a full close cycle', () => {
-    const { queryByTestId, getByTestId } = render(
-      <PlayDrawerSimulation isOpen={true} />,
-    );
+    const { queryByTestId, getByTestId } = render(<PlayDrawerSimulation isOpen={true} />);
 
     // Open the queue
     act(() => {
@@ -281,9 +266,7 @@ describe('Queue drawer lazy-mount pattern', () => {
   // Re-opening play drawer starts with queue unmounted
   // -------------------------------------------------------------------------
   it('starts with queue unmounted when play drawer re-opens', () => {
-    const { queryByTestId, getByTestId } = render(
-      <PlayDrawerSimulation isOpen={true} />,
-    );
+    const { queryByTestId, getByTestId } = render(<PlayDrawerSimulation isOpen={true} />);
 
     // Open queue, then close play drawer
     act(() => {
@@ -312,9 +295,7 @@ describe('Queue drawer lazy-mount pattern', () => {
   // Transition end with isQueueOpen=true does NOT unmount (race condition guard)
   // -------------------------------------------------------------------------
   it('does NOT unmount on transition end if queue was re-opened (race guard)', () => {
-    const { queryByTestId, getByTestId } = render(
-      <PlayDrawerSimulation isOpen={true} />,
-    );
+    const { queryByTestId, getByTestId } = render(<PlayDrawerSimulation isOpen={true} />);
 
     // Open the queue
     act(() => {

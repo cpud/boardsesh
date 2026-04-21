@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 
 // Mock React.cache - in test environment it may not deduplicate, so we test the function itself
 vi.mock('react', async () => {
@@ -193,9 +193,7 @@ describe('getAllBoardConfigs', () => {
           { id: 2, name: 'Hold Set A', imageFile: 'holdseta.png' },
           { id: 3, name: 'Hold Set B', imageFile: 'holdsetb.png' },
         ],
-        'moonboard-2024': [
-          { id: 5, name: 'Hold Set D', imageFile: 'holdsetd.png' },
-        ],
+        'moonboard-2024': [{ id: 5, name: 'Hold Set D', imageFile: 'holdsetd.png' }],
       },
       MOONBOARD_SIZE: { id: 1, name: 'Standard', description: '11x18 Grid' },
     }));

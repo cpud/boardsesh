@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import React from 'react';
 import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 
@@ -207,9 +207,7 @@ describe('PlayViewTickBar expanded state persistence', () => {
 
   it('does not persist state on close reset', () => {
     const onClose = vi.fn();
-    const { rerender } = render(
-      <PlayViewTickBar {...defaultProps} isTickBarActive={true} onClose={onClose} />,
-    );
+    const { rerender } = render(<PlayViewTickBar {...defaultProps} isTickBarActive={true} onClose={onClose} />);
 
     mockSetPreference.mockClear();
 
@@ -221,17 +219,13 @@ describe('PlayViewTickBar expanded state persistence', () => {
   });
 
   it('does not persist state on climb change reset', () => {
-    const { rerender } = render(
-      <PlayViewTickBar {...defaultProps} isTickBarActive={true} />,
-    );
+    const { rerender } = render(<PlayViewTickBar {...defaultProps} isTickBarActive={true} />);
 
     mockSetPreference.mockClear();
 
     // Change the climb — this triggers the climb-change useEffect reset
     const newClimb = { ...mockClimb, uuid: 'climb-2' };
-    rerender(
-      <PlayViewTickBar {...defaultProps} isTickBarActive={true} currentClimb={newClimb as never} />,
-    );
+    rerender(<PlayViewTickBar {...defaultProps} isTickBarActive={true} currentClimb={newClimb as never} />);
 
     // Should not persist the automatic reset
     expect(mockSetPreference).not.toHaveBeenCalledWith('tickBarExpanded', false);

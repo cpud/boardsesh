@@ -200,12 +200,21 @@ export const urlParamsToSearchParams = (urlParams: URLSearchParams): SearchReque
     minAscents: Number(urlParams.get('minAscents') ?? DEFAULT_SEARCH_PARAMS.minAscents),
     minGrade: Number(urlParams.get('minGrade') ?? DEFAULT_SEARCH_PARAMS.minGrade),
     minRating: Number(urlParams.get('minRating') ?? DEFAULT_SEARCH_PARAMS.minRating),
-    sortBy: (urlParams.get('sortBy') ?? DEFAULT_SEARCH_PARAMS.sortBy) as 'ascents' | 'difficulty' | 'name' | 'quality' | 'popular',
+    sortBy: (urlParams.get('sortBy') ?? DEFAULT_SEARCH_PARAMS.sortBy) as
+      | 'ascents'
+      | 'difficulty'
+      | 'name'
+      | 'quality'
+      | 'popular',
     sortOrder: (urlParams.get('sortOrder') ?? DEFAULT_SEARCH_PARAMS.sortOrder) as 'asc' | 'desc',
     name: urlParams.get('name') ?? DEFAULT_SEARCH_PARAMS.name,
     onlyClassics: urlParams.get('onlyClassics') === 'true',
     onlyTallClimbs: urlParams.get('onlyTallClimbs') === 'true',
-    settername: urlParams.get('settername')?.split(',').filter(s => s.length > 0) ?? DEFAULT_SEARCH_PARAMS.settername,
+    settername:
+      urlParams
+        .get('settername')
+        ?.split(',')
+        .filter((s) => s.length > 0) ?? DEFAULT_SEARCH_PARAMS.settername,
     setternameSuggestion: urlParams.get('setternameSuggestion') ?? DEFAULT_SEARCH_PARAMS.setternameSuggestion,
     //@ts-expect-error fix later
     holdsFilter: holdsFilter ?? DEFAULT_SEARCH_PARAMS.holdsFilter,
@@ -290,10 +299,7 @@ export const constructClimbViewUrlWithSlugs = (
   return `${baseUrl}${climb_uuid}`;
 };
 
-export const constructClimbInfoUrl = (
-  { board_name }: BoardDetails,
-  climb_uuid: ClimbUuid,
-): string | null => {
+export const constructClimbInfoUrl = ({ board_name }: BoardDetails, climb_uuid: ClimbUuid): string | null => {
   // Kilter board app URL is no longer accessible
   if (board_name === 'kilter') {
     return null;
@@ -504,9 +510,11 @@ export const hasOnlyNumericBoardRouteSegments = (
 ): boolean => {
   const decodedSetIds = decodeRouteSegment(params.set_ids);
 
-  return isNumericId(params.layout_id)
-    && isNumericId(params.size_id)
-    && decodedSetIds.split(',').every((id) => isNumericId(id.trim()));
+  return (
+    isNumericId(params.layout_id) &&
+    isNumericId(params.size_id) &&
+    decodedSetIds.split(',').every((id) => isNumericId(id.trim()))
+  );
 };
 
 export const constructPlayUrlWithSlugs = (
@@ -586,35 +594,66 @@ const tryResolveBoardSlugs = (
 
 /** Try to construct a slug-based play URL. Returns null if resolution fails. */
 export const tryConstructSlugPlayUrl = (
-  board_name: string, layout_id: number, size_id: number, set_ids: number[],
-  angle: number, climb_uuid: string, climbName?: string,
+  board_name: string,
+  layout_id: number,
+  size_id: number,
+  set_ids: number[],
+  angle: number,
+  climb_uuid: string,
+  climbName?: string,
 ): string | null => {
   const d = tryResolveBoardSlugs(board_name, layout_id, size_id, set_ids);
-  return d ? constructPlayUrlWithSlugs(
-    d.board_name, d.layout_name, d.size_name, d.size_description, d.set_names, angle, climb_uuid, climbName,
-  ) : null;
+  return d
+    ? constructPlayUrlWithSlugs(
+        d.board_name,
+        d.layout_name,
+        d.size_name,
+        d.size_description,
+        d.set_names,
+        angle,
+        climb_uuid,
+        climbName,
+      )
+    : null;
 };
 
 /** Try to construct a slug-based view URL. Returns null if resolution fails. */
 export const tryConstructSlugViewUrl = (
-  board_name: string, layout_id: number, size_id: number, set_ids: number[],
-  angle: number, climb_uuid: string, climbName?: string,
+  board_name: string,
+  layout_id: number,
+  size_id: number,
+  set_ids: number[],
+  angle: number,
+  climb_uuid: string,
+  climbName?: string,
 ): string | null => {
   const d = tryResolveBoardSlugs(board_name, layout_id, size_id, set_ids);
-  return d ? constructClimbViewUrlWithSlugs(
-    d.board_name, d.layout_name, d.size_name, d.size_description, d.set_names, angle, climb_uuid, climbName,
-  ) : null;
+  return d
+    ? constructClimbViewUrlWithSlugs(
+        d.board_name,
+        d.layout_name,
+        d.size_name,
+        d.size_description,
+        d.set_names,
+        angle,
+        climb_uuid,
+        climbName,
+      )
+    : null;
 };
 
 /** Try to construct a slug-based list URL. Returns null if resolution fails. */
 export const tryConstructSlugListUrl = (
-  board_name: string, layout_id: number, size_id: number, set_ids: number[],
+  board_name: string,
+  layout_id: number,
+  size_id: number,
+  set_ids: number[],
   angle: number,
 ): string | null => {
   const d = tryResolveBoardSlugs(board_name, layout_id, size_id, set_ids);
-  return d ? constructClimbListWithSlugs(
-    d.board_name, d.layout_name, d.size_name, d.size_description, d.set_names, angle,
-  ) : null;
+  return d
+    ? constructClimbListWithSlugs(d.board_name, d.layout_name, d.size_name, d.size_description, d.set_names, angle)
+    : null;
 };
 
 /**
@@ -703,8 +742,7 @@ export const constructBoardSlugUrl = (slug: string, angle: number, path?: string
  * Construct a board slug URL for the climb list.
  * /b/{board-slug}/{angle}/list
  */
-export const constructBoardSlugListUrl = (slug: string, angle: number) =>
-  constructBoardSlugUrl(slug, angle, 'list');
+export const constructBoardSlugListUrl = (slug: string, angle: number) => constructBoardSlugUrl(slug, angle, 'list');
 
 /**
  * Construct a board slug URL for the play view.
@@ -717,12 +755,7 @@ export const constructBoardSlugPlayUrl = (slug: string, angle: number, climbUuid
  * Construct a board slug URL for the climb view.
  * /b/{board-slug}/{angle}/view/{climb_uuid}
  */
-export const constructBoardSlugViewUrl = (
-  slug: string,
-  angle: number,
-  climbUuid: string,
-  climbName?: string,
-) => {
+export const constructBoardSlugViewUrl = (slug: string, angle: number, climbUuid: string, climbName?: string) => {
   if (climbName && climbName.trim()) {
     const climbSlug = generateSlugFromText(climbName.trim());
     if (climbSlug) {
@@ -781,9 +814,13 @@ export const getContextAwareClimbViewUrl = (
 
   // Try resolving names from static data
   const slugUrl = tryConstructSlugViewUrl(
-    boardDetails.board_name, boardDetails.layout_id,
-    boardDetails.size_id, boardDetails.set_ids,
-    angle, climbUuid, climbName,
+    boardDetails.board_name,
+    boardDetails.layout_id,
+    boardDetails.size_id,
+    boardDetails.set_ids,
+    angle,
+    climbUuid,
+    climbName,
   );
   if (slugUrl) return slugUrl;
 
@@ -819,7 +856,14 @@ export const getPlaylistsBasePath = (pathname: string): string => {
   const oldStyleMatch = pathname.match(/^\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)/);
   if (oldStyleMatch) {
     const [, boardName] = oldStyleMatch;
-    const validBoardNames: readonly string[] = ['kilter', 'tension', 'moonboard', 'decoy', 'touchstone', 'grasshopper'] satisfies readonly BoardName[];
+    const validBoardNames: readonly string[] = [
+      'kilter',
+      'tension',
+      'moonboard',
+      'decoy',
+      'touchstone',
+      'grasshopper',
+    ] satisfies readonly BoardName[];
     if (validBoardNames.includes(boardName)) {
       return `/${oldStyleMatch.slice(1, 6).join('/')}/playlists`;
     }

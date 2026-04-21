@@ -63,7 +63,7 @@ const BoardImageLayers = React.memo(function BoardImageLayers({
     [style, mirrored],
   );
 
-  const imgStyle = (contain || thumbnail) ? layerContainStyle : layerStyle;
+  const imgStyle = contain || thumbnail ? layerContainStyle : layerStyle;
 
   const renderContext: RenderContext = thumbnail ? 'thumbnail' : contain ? 'full-board' : 'card';
 

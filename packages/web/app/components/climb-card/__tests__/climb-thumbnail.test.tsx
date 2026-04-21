@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import type { BoardDetails, Climb } from '@/app/lib/types';
@@ -44,13 +44,17 @@ const climb = {
 describe('ClimbThumbnail', () => {
   it('fires onClick when a climb is present', () => {
     const onClick = vi.fn();
-    render(<ClimbThumbnail boardDetails={boardDetails} currentClimb={climb} pathname={mockPathname} onClick={onClick} />);
+    render(
+      <ClimbThumbnail boardDetails={boardDetails} currentClimb={climb} pathname={mockPathname} onClick={onClick} />,
+    );
     fireEvent.click(screen.getByRole('button'));
     expect(onClick).toHaveBeenCalledOnce();
   });
 
   it('does not expose a button when there is no climb', () => {
-    render(<ClimbThumbnail boardDetails={boardDetails} currentClimb={null} pathname={mockPathname} onClick={vi.fn()} />);
+    render(
+      <ClimbThumbnail boardDetails={boardDetails} currentClimb={null} pathname={mockPathname} onClick={vi.fn()} />,
+    );
     expect(screen.queryByRole('button')).toBeNull();
   });
 });

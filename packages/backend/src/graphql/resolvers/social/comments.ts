@@ -69,12 +69,7 @@ async function getCommentVoteCounts(commentUuid: string) {
       downvotes: dbSchema.voteCounts.downvotes,
     })
     .from(dbSchema.voteCounts)
-    .where(
-      and(
-        eq(dbSchema.voteCounts.entityType, 'comment'),
-        eq(dbSchema.voteCounts.entityId, commentUuid),
-      ),
-    )
+    .where(and(eq(dbSchema.voteCounts.entityType, 'comment'), eq(dbSchema.voteCounts.entityId, commentUuid)))
     .limit(1);
 
   return {
@@ -84,11 +79,7 @@ async function getCommentVoteCounts(commentUuid: string) {
 }
 
 export const socialCommentQueries = {
-  comments: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  comments: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     const validated = validateInput(CommentsInputSchema, input, 'input');
     const { entityType, entityId, parentCommentUuid, sortBy, limit = 20, offset = 0 } = validated;
 
@@ -174,10 +165,7 @@ export const socialCommentQueries = {
         COALESCE(reply_cnt.cnt, 0) as "replyCount",
         COALESCE(vc."upvotes", 0) as "upvotes",
         COALESCE(vc."downvotes", 0) as "downvotes",
-        ${authenticatedUserId
-          ? sql`COALESCE(my_vote."value", 0)`
-          : sql`0`
-        } as "userVote"
+        ${authenticatedUserId ? sql`COALESCE(my_vote."value", 0)` : sql`0`} as "userVote"
       FROM "comments" c
       INNER JOIN "users" u ON c."user_id" = u."id"
       LEFT JOIN "user_profiles" up ON c."user_id" = up."user_id"
@@ -190,9 +178,10 @@ export const socialCommentQueries = {
         GROUP BY r."parent_comment_id"
       ) reply_cnt ON reply_cnt."parent_comment_id" = c."id"
       LEFT JOIN "vote_counts" vc ON vc."entity_type" = 'comment' AND vc."entity_id" = c."uuid"
-      ${authenticatedUserId
-        ? sql`LEFT JOIN "votes" my_vote ON my_vote."entity_type" = 'comment' AND my_vote."entity_id" = c."uuid" AND my_vote."user_id" = ${authenticatedUserId}`
-        : sql``
+      ${
+        authenticatedUserId
+          ? sql`LEFT JOIN "votes" my_vote ON my_vote."entity_type" = 'comment' AND my_vote."entity_id" = c."uuid" AND my_vote."user_id" = ${authenticatedUserId}`
+          : sql``
       }
       WHERE c."entity_type" = ${entityType}
         AND c."entity_id" = ${entityId}
@@ -217,18 +206,12 @@ export const socialCommentQueries = {
    * Global comment feed: recent comments across all entities.
    * Supports board filtering via boardUuid. Always chronological.
    */
-  globalCommentFeed: async (
-    _: unknown,
-    { input }: { input?: Record<string, unknown> },
-    ctx: ConnectionContext,
-  ) => {
+  globalCommentFeed: async (_: unknown, { input }: { input?: Record<string, unknown> }, ctx: ConnectionContext) => {
     const validatedInput = validateInput(GlobalCommentFeedInputSchema, input || {}, 'input');
     const limit = validatedInput.limit ?? 20;
     const authenticatedUserId = ctx.isAuthenticated ? ctx.userId : null;
 
-    const offset = validatedInput.cursor
-      ? (decodeOffsetCursor(validatedInput.cursor) ?? 0)
-      : 0;
+    const offset = validatedInput.cursor ? (decodeOffsetCursor(validatedInput.cursor) ?? 0) : 0;
 
     // Board filter: resolve boardUuid to boardType
     let boardTypeFilter: string | null = null;
@@ -238,7 +221,7 @@ export const socialCommentQueries = {
         .from(dbSchema.userBoards)
         .where(eq(dbSchema.userBoards.uuid, validatedInput.boardUuid))
         .limit(1)
-        .then(rows => rows[0]);
+        .then((rows) => rows[0]);
 
       if (board) {
         boardTypeFilter = board.boardType;
@@ -272,9 +255,7 @@ export const socialCommentQueries = {
         )`
       : sql``;
 
-    const distinctClause = boardTypeFilter
-      ? sql`DISTINCT ON (c."id")`
-      : sql``;
+    const distinctClause = boardTypeFilter ? sql`DISTINCT ON (c."id")` : sql``;
 
     const rawResult = await db.execute(sql`
       SELECT ${distinctClause}
@@ -296,10 +277,7 @@ export const socialCommentQueries = {
         COALESCE(reply_cnt.cnt, 0) as "replyCount",
         COALESCE(vc."upvotes", 0) as "upvotes",
         COALESCE(vc."downvotes", 0) as "downvotes",
-        ${authenticatedUserId
-          ? sql`COALESCE(my_vote."value", 0)`
-          : sql`0`
-        } as "userVote"
+        ${authenticatedUserId ? sql`COALESCE(my_vote."value", 0)` : sql`0`} as "userVote"
       FROM "comments" c
       INNER JOIN "users" u ON c."user_id" = u."id"
       LEFT JOIN "user_profiles" up ON c."user_id" = up."user_id"
@@ -313,9 +291,10 @@ export const socialCommentQueries = {
         GROUP BY "parent_comment_id"
       ) reply_cnt ON reply_cnt."parent_comment_id" = c."id"
       LEFT JOIN "vote_counts" vc ON vc."entity_type" = 'comment' AND vc."entity_id" = c."uuid"
-      ${authenticatedUserId
-        ? sql`LEFT JOIN "votes" my_vote ON my_vote."entity_type" = 'comment' AND my_vote."entity_id" = c."uuid" AND my_vote."user_id" = ${authenticatedUserId}`
-        : sql``
+      ${
+        authenticatedUserId
+          ? sql`LEFT JOIN "votes" my_vote ON my_vote."entity_type" = 'comment' AND my_vote."entity_id" = c."uuid" AND my_vote."user_id" = ${authenticatedUserId}`
+          : sql``
       }
       ${boardFilterJoin}
       WHERE c."deleted_at" IS NULL
@@ -342,11 +321,7 @@ export const socialCommentQueries = {
 };
 
 export const socialCommentMutations = {
-  addComment: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  addComment: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 10, 'comment');
 
@@ -450,11 +425,7 @@ export const socialCommentMutations = {
     return commentResult;
   },
 
-  updateComment: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  updateComment: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 10, 'comment');
 
@@ -462,11 +433,7 @@ export const socialCommentMutations = {
     const { commentUuid, body } = validated;
     const userId = ctx.userId!;
 
-    const [comment] = await db
-      .select()
-      .from(dbSchema.comments)
-      .where(eq(dbSchema.comments.uuid, commentUuid))
-      .limit(1);
+    const [comment] = await db.select().from(dbSchema.comments).where(eq(dbSchema.comments.uuid, commentUuid)).limit(1);
 
     if (!comment) {
       throw new Error('Comment not found');
@@ -505,12 +472,7 @@ export const socialCommentMutations = {
     const replyResult = await db
       .select({ count: count() })
       .from(dbSchema.comments)
-      .where(
-        and(
-          eq(dbSchema.comments.parentCommentId, comment.id),
-          isNull(dbSchema.comments.deletedAt),
-        ),
-      );
+      .where(and(eq(dbSchema.comments.parentCommentId, comment.id), isNull(dbSchema.comments.deletedAt)));
     const replyCount = Number(replyResult[0]?.count || 0);
 
     // User's own vote
@@ -574,11 +536,7 @@ export const socialCommentMutations = {
     requireAuthenticated(ctx);
     const userId = ctx.userId!;
 
-    const [comment] = await db
-      .select()
-      .from(dbSchema.comments)
-      .where(eq(dbSchema.comments.uuid, commentUuid))
-      .limit(1);
+    const [comment] = await db.select().from(dbSchema.comments).where(eq(dbSchema.comments.uuid, commentUuid)).limit(1);
 
     if (!comment) {
       throw new Error('Comment not found');
@@ -607,9 +565,7 @@ export const socialCommentMutations = {
           .where(eq(dbSchema.comments.uuid, commentUuid));
       } else {
         // Hard delete
-        await tx
-          .delete(dbSchema.comments)
-          .where(eq(dbSchema.comments.uuid, commentUuid));
+        await tx.delete(dbSchema.comments).where(eq(dbSchema.comments.uuid, commentUuid));
       }
     });
 

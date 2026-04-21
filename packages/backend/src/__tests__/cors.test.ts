@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
 
 vi.mock('node:child_process', () => ({
   execFileSync: vi.fn(),
@@ -92,9 +92,7 @@ describe('CORS Handler', () => {
     });
 
     it('adds Tailscale hostname origins from tailscale status when available', () => {
-      vi.mocked(execFileSync).mockReturnValue(
-        JSON.stringify({ Self: { DNSName: 'my-mac.tailnet123.ts.net.' } })
-      );
+      vi.mocked(execFileSync).mockReturnValue(JSON.stringify({ Self: { DNSName: 'my-mac.tailnet123.ts.net.' } }));
 
       initCors('https://boardsesh.com');
 
@@ -123,9 +121,7 @@ describe('CORS Handler', () => {
     });
 
     it('returns true for Vercel preview deployments matching regex', () => {
-      expect(
-        isOriginAllowed('https://boardsesh-abc123-marcodejonghs-projects.vercel.app'),
-      ).toBe(true);
+      expect(isOriginAllowed('https://boardsesh-abc123-marcodejonghs-projects.vercel.app')).toBe(true);
     });
 
     it('returns true for homelab preview deployments matching regex', () => {
@@ -152,15 +148,11 @@ describe('CORS Handler', () => {
     });
 
     it('returns false for partial regex matches with wrong prefix', () => {
-      expect(
-        isOriginAllowed('http://boardsesh-abc123-marcodejonghs-projects.vercel.app'),
-      ).toBe(false); // http not https
+      expect(isOriginAllowed('http://boardsesh-abc123-marcodejonghs-projects.vercel.app')).toBe(false); // http not https
     });
 
     it('returns false for partial regex matches with wrong suffix', () => {
-      expect(
-        isOriginAllowed('https://boardsesh-abc123-marcodejonghs-projects.vercel.app.evil.com'),
-      ).toBe(false);
+      expect(isOriginAllowed('https://boardsesh-abc123-marcodejonghs-projects.vercel.app.evil.com')).toBe(false);
     });
 
     it('returns true for localhost origins in non-production', () => {

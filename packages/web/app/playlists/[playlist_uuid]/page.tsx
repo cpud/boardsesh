@@ -6,20 +6,12 @@ import { generatePlaylistMetadata } from '@/app/lib/seo/playlist-metadata';
 import PlaylistDetailContent from './playlist-detail-content';
 import styles from '@/app/components/library/playlist-view.module.css';
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ playlist_uuid: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ playlist_uuid: string }> }): Promise<Metadata> {
   const { playlist_uuid } = await params;
   return generatePlaylistMetadata(playlist_uuid);
 }
 
-export default async function PlaylistDetailPage({
-  params,
-}: {
-  params: Promise<{ playlist_uuid: string }>;
-}) {
+export default async function PlaylistDetailPage({ params }: { params: Promise<{ playlist_uuid: string }> }) {
   const { playlist_uuid } = await params;
 
   const authToken = await getServerAuthToken();

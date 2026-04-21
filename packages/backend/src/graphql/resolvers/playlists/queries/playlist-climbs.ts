@@ -52,9 +52,7 @@ async function fetchSpecificBoardClimbs(
   }
 
   if (input.sizeId != null) {
-    climbJoinConditions.push(
-      sql`${input.sizeId} = ANY(${tables.climbs.compatibleSizeIds})`,
-    );
+    climbJoinConditions.push(sql`${input.sizeId} = ANY(${tables.climbs.compatibleSizeIds})`);
   }
 
   const inputAngle = input.angle ?? 40;
@@ -106,7 +104,8 @@ async function fetchSpecificBoardClimbs(
     quality_average: result.quality_average?.toString() || '0',
     stars: Math.round((Number(result.quality_average) || 0) * 5),
     difficulty_error: result.difficulty_error?.toString() || '0',
-    benchmark_difficulty: result.benchmark_difficulty && result.benchmark_difficulty > 0 ? result.benchmark_difficulty.toString() : null,
+    benchmark_difficulty:
+      result.benchmark_difficulty && result.benchmark_difficulty > 0 ? result.benchmark_difficulty.toString() : null,
     boardType: boardName,
   }));
 
@@ -144,22 +143,22 @@ async function fetchAllBoardsClimbs(
       benchmark_difficulty: tables.climbStats.benchmarkDifficulty,
     })
     .from(dbSchema.playlistClimbs)
-    .innerJoin(
-      tables.climbs,
-      eq(tables.climbs.uuid, dbSchema.playlistClimbs.climbUuid),
-    )
+    .innerJoin(tables.climbs, eq(tables.climbs.uuid, dbSchema.playlistClimbs.climbUuid))
     .leftJoin(
       tables.climbStats,
       and(
         eq(tables.climbStats.boardType, tables.climbs.boardType),
         eq(tables.climbStats.climbUuid, tables.climbs.uuid),
-        eq(tables.climbStats.angle, sql`(
+        eq(
+          tables.climbStats.angle,
+          sql`(
           SELECT s.angle FROM board_climb_stats s
           WHERE s.board_type = ${tables.climbs.boardType}
             AND s.climb_uuid = ${tables.climbs.uuid}
           ORDER BY s.ascensionist_count DESC NULLS LAST
           LIMIT 1
-        )`),
+        )`,
+        ),
       ),
     )
     .where(eq(dbSchema.playlistClimbs.playlistId, playlistId))
@@ -184,7 +183,8 @@ async function fetchAllBoardsClimbs(
       quality_average: result.quality_average?.toString() || '0',
       stars: Math.round((Number(result.quality_average) || 0) * 5),
       difficulty_error: result.difficulty_error?.toString() || '0',
-      benchmark_difficulty: result.benchmark_difficulty && result.benchmark_difficulty > 0 ? result.benchmark_difficulty.toString() : null,
+      benchmark_difficulty:
+        result.benchmark_difficulty && result.benchmark_difficulty > 0 ? result.benchmark_difficulty.toString() : null,
       boardType: bt,
     };
   });

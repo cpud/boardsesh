@@ -28,7 +28,6 @@ import {
 } from './types';
 import styles from './generator-options-form.module.css';
 
-
 import { KILTER_HOMEWALL_LAYOUT_ID } from '@/app/lib/board-constants';
 
 interface GeneratorOptionsFormProps {
@@ -65,10 +64,12 @@ const GeneratorOptionsForm: React.FC<GeneratorOptionsFormProps> = ({
     value: number,
     onUpdate: (newValue: number) => void,
     min: number = 1,
-    max: number = 50
+    max: number = 50,
   ) => (
     <div className={styles.formRow}>
-      <Typography variant="body2" component="span" className={styles.label}>{label}</Typography>
+      <Typography variant="body2" component="span" className={styles.label}>
+        {label}
+      </Typography>
       <div className={styles.stepperContainer}>
         <span className={styles.stepperValue}>{value}</span>
         <div className={styles.stepperButtons}>
@@ -98,10 +99,12 @@ const GeneratorOptionsForm: React.FC<GeneratorOptionsFormProps> = ({
     label: string,
     value: T,
     optionsList: { value: T; label: string }[],
-    onUpdate: (newValue: T) => void
+    onUpdate: (newValue: T) => void,
   ) => (
     <div className={styles.formRow}>
-      <Typography variant="body2" component="span" className={styles.label}>{label}</Typography>
+      <Typography variant="body2" component="span" className={styles.label}>
+        {label}
+      </Typography>
       <MuiSelect
         value={value}
         onChange={(e) => onUpdate(e.target.value as T)}
@@ -126,7 +129,9 @@ const GeneratorOptionsForm: React.FC<GeneratorOptionsFormProps> = ({
 
       {/* Target Grade */}
       <div className={styles.formRow}>
-        <Typography variant="body2" component="span" className={styles.label}>Target Grade</Typography>
+        <Typography variant="body2" component="span" className={styles.label}>
+          Target Grade
+        </Typography>
         <MuiSelect
           value={options.targetGrade}
           onChange={(e) => updateOption('targetGrade', e.target.value as number)}
@@ -148,7 +153,9 @@ const GeneratorOptionsForm: React.FC<GeneratorOptionsFormProps> = ({
   const renderQualityFilters = () => (
     <>
       <div className={styles.formRow}>
-        <Typography variant="body2" component="span" className={styles.label}>Min Ascents</Typography>
+        <Typography variant="body2" component="span" className={styles.label}>
+          Min Ascents
+        </Typography>
         <TextField
           type="number"
           size="small"
@@ -160,7 +167,9 @@ const GeneratorOptionsForm: React.FC<GeneratorOptionsFormProps> = ({
       </div>
 
       <div className={styles.formRow}>
-        <Typography variant="body2" component="span" className={styles.label}>Min Rating</Typography>
+        <Typography variant="body2" component="span" className={styles.label}>
+          Min Rating
+        </Typography>
         <TextField
           type="number"
           size="small"
@@ -178,7 +187,9 @@ const GeneratorOptionsForm: React.FC<GeneratorOptionsFormProps> = ({
       {showTallClimbsFilter && (
         <div className={styles.formRow}>
           <MuiTooltip title="Show only climbs that use holds in the bottom 8 rows (only available on 10x12 boards)">
-            <Typography variant="body2" component="span" className={styles.label}>Tall Climbs Only</Typography>
+            <Typography variant="body2" component="span" className={styles.label}>
+              Tall Climbs Only
+            </Typography>
           </MuiTooltip>
           <MuiSwitch
             checked={options.onlyTallClimbs}
@@ -197,11 +208,15 @@ const GeneratorOptionsForm: React.FC<GeneratorOptionsFormProps> = ({
         {renderCommonOptions()}
 
         {renderStepper('Main Set Climbs', volumeOptions.mainSetClimbs, (v) =>
-          onChange({ ...volumeOptions, mainSetClimbs: v })
+          onChange({ ...volumeOptions, mainSetClimbs: v }),
         )}
 
-        {renderStepper('Main Set Variability', volumeOptions.mainSetVariability, (v) =>
-          onChange({ ...volumeOptions, mainSetVariability: v }), 0, 5
+        {renderStepper(
+          'Main Set Variability',
+          volumeOptions.mainSetVariability,
+          (v) => onChange({ ...volumeOptions, mainSetVariability: v }),
+          0,
+          5,
         )}
 
         {renderQualityFilters()}
@@ -216,12 +231,20 @@ const GeneratorOptionsForm: React.FC<GeneratorOptionsFormProps> = ({
       <>
         {renderCommonOptions()}
 
-        {renderStepper('Number of Steps', pyramidOptions.numberOfSteps, (v) =>
-          onChange({ ...pyramidOptions, numberOfSteps: v }), 3, 15
+        {renderStepper(
+          'Number of Steps',
+          pyramidOptions.numberOfSteps,
+          (v) => onChange({ ...pyramidOptions, numberOfSteps: v }),
+          3,
+          15,
         )}
 
-        {renderStepper('Climbs per Step', pyramidOptions.climbsPerStep, (v) =>
-          onChange({ ...pyramidOptions, climbsPerStep: v }), 1, 5
+        {renderStepper(
+          'Climbs per Step',
+          pyramidOptions.climbsPerStep,
+          (v) => onChange({ ...pyramidOptions, climbsPerStep: v }),
+          1,
+          5,
         )}
 
         {renderQualityFilters()}
@@ -236,12 +259,20 @@ const GeneratorOptionsForm: React.FC<GeneratorOptionsFormProps> = ({
       <>
         {renderCommonOptions()}
 
-        {renderStepper('Number of Steps', ladderOptions.numberOfSteps, (v) =>
-          onChange({ ...ladderOptions, numberOfSteps: v }), 3, 15
+        {renderStepper(
+          'Number of Steps',
+          ladderOptions.numberOfSteps,
+          (v) => onChange({ ...ladderOptions, numberOfSteps: v }),
+          3,
+          15,
         )}
 
-        {renderStepper('Climbs per Step', ladderOptions.climbsPerStep, (v) =>
-          onChange({ ...ladderOptions, climbsPerStep: v }), 1, 5
+        {renderStepper(
+          'Climbs per Step',
+          ladderOptions.climbsPerStep,
+          (v) => onChange({ ...ladderOptions, climbsPerStep: v }),
+          1,
+          5,
         )}
 
         {renderQualityFilters()}
@@ -256,8 +287,12 @@ const GeneratorOptionsForm: React.FC<GeneratorOptionsFormProps> = ({
       <>
         {renderCommonOptions()}
 
-        {renderStepper('Number of Climbs', focusOptions.numberOfClimbs, (v) =>
-          onChange({ ...focusOptions, numberOfClimbs: v }), 1, 50
+        {renderStepper(
+          'Number of Climbs',
+          focusOptions.numberOfClimbs,
+          (v) => onChange({ ...focusOptions, numberOfClimbs: v }),
+          1,
+          50,
         )}
 
         {renderQualityFilters()}
@@ -283,17 +318,10 @@ const GeneratorOptionsForm: React.FC<GeneratorOptionsFormProps> = ({
 
   return (
     <div className={styles.container}>
-      <div className={styles.form}>
-        {renderOptionsForm()}
-      </div>
+      <div className={styles.form}>{renderOptionsForm()}</div>
 
       <div className={styles.resetContainer}>
-        <MuiButton
-          variant="text"
-          startIcon={<RefreshOutlined />}
-          onClick={onReset}
-          className={styles.resetButton}
-        >
+        <MuiButton variant="text" startIcon={<RefreshOutlined />} onClick={onReset} className={styles.resetButton}>
           Reset
         </MuiButton>
       </div>

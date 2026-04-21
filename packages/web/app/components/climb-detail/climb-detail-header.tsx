@@ -21,10 +21,7 @@ interface ClimbDetailHeaderProps {
  * Header component for climb detail view.
  * Layout: Grade (left) | Name + details (center) | Spacer (right, balances grade)
  */
-export default function ClimbDetailHeader({
-  climb,
-  communityGrade,
-}: ClimbDetailHeaderProps) {
+export default function ClimbDetailHeader({ climb, communityGrade }: ClimbDetailHeaderProps) {
   const isDark = useIsDarkMode();
   const { formatGrade, getGradeColor, loaded: gradeFormatLoaded } = useGradeFormat();
 
@@ -80,11 +77,7 @@ export default function ClimbDetailHeader({
             {displayDifficulty}
           </Typography>
         ) : (
-          <Typography
-            variant="body2"
-            component="span"
-            sx={{ fontStyle: 'italic', color: 'text.secondary' }}
-          >
+          <Typography variant="body2" component="span" sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
             project
           </Typography>
         )}

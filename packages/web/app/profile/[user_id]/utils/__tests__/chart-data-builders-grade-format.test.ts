@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 
 vi.mock('@/app/lib/board-data', () => ({
   SUPPORTED_BOARDS: ['kilter', 'tension'],
@@ -33,9 +33,30 @@ import type { LogbookEntry } from '../profile-constants';
 // ── Shared test data ───────────────────────────────────────────────────────
 
 const entries: LogbookEntry[] = [
-  { climbed_at: '2025-01-15T10:00:00Z', difficulty: 16, tries: 1, angle: 40, status: 'flash', climbUuid: 'a' },
-  { climbed_at: '2025-01-15T11:00:00Z', difficulty: 22, tries: 3, angle: 40, status: 'send', climbUuid: 'b' },
-  { climbed_at: '2025-01-15T12:00:00Z', difficulty: 17, tries: 1, angle: 40, status: 'flash', climbUuid: 'c' },
+  {
+    climbed_at: '2025-01-15T10:00:00Z',
+    difficulty: 16,
+    tries: 1,
+    angle: 40,
+    status: 'flash',
+    climbUuid: 'a',
+  },
+  {
+    climbed_at: '2025-01-15T11:00:00Z',
+    difficulty: 22,
+    tries: 3,
+    angle: 40,
+    status: 'send',
+    climbUuid: 'b',
+  },
+  {
+    climbed_at: '2025-01-15T12:00:00Z',
+    difficulty: 17,
+    tries: 1,
+    angle: 40,
+    status: 'flash',
+    climbUuid: 'c',
+  },
 ];
 
 // ── buildAggregatedStackedBars with Font format ────────────────────────────

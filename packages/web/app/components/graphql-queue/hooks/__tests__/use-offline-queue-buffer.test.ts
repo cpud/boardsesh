@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 import { useOfflineQueueBuffer } from '../use-offline-queue-buffer';
 import type { ClimbQueueItem } from '../../../queue-control/types';

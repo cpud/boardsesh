@@ -76,9 +76,7 @@ export function useBuildClimbDetailSections({
       title: 'Beta Videos',
       defaultSummary: 'No videos',
       getSummary: () =>
-        uniqueBetaLinks.length > 0
-          ? [`${uniqueBetaLinks.length} video${uniqueBetaLinks.length !== 1 ? 's' : ''}`]
-          : [],
+        uniqueBetaLinks.length > 0 ? [`${uniqueBetaLinks.length} video${uniqueBetaLinks.length !== 1 ? 's' : ''}`] : [],
       lazy: true,
       content: <BetaVideos betaLinks={uniqueBetaLinks} />,
     },
@@ -117,12 +115,7 @@ export function useBuildClimbDetailSections({
       defaultSummary: 'Ascents, quality trends',
       getSummary: () => ['Ascents', 'Quality', 'Trends'],
       lazy: true,
-      content: (
-        <ClimbAnalytics
-          climbUuid={climbUuid}
-          boardType={boardType}
-        />
-      ),
+      content: <ClimbAnalytics climbUuid={climbUuid} boardType={boardType} />,
     },
   ];
 }

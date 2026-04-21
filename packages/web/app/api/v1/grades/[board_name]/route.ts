@@ -14,12 +14,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
         difficulty_name: boardDifficultyGrades.boulderName,
       })
       .from(boardDifficultyGrades)
-      .where(
-        and(
-          eq(boardDifficultyGrades.boardType, board_name),
-          eq(boardDifficultyGrades.isListed, true),
-        ),
-      )
+      .where(and(eq(boardDifficultyGrades.boardType, board_name), eq(boardDifficultyGrades.isListed, true)))
       .orderBy(asc(boardDifficultyGrades.difficulty));
 
     return NextResponse.json(grades);

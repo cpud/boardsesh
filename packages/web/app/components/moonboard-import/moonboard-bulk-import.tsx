@@ -177,58 +177,61 @@ export default function MoonBoardBulkImport({
   const { token: authToken } = useWsAuthToken();
   const listUrl = pathname.replace(/\/import$/, '/list');
 
-  const runDuplicateCheck = useCallback(async (climbs: MoonBoardClimb[]): Promise<DuplicateMatchMap> => {
-    const requestId = ++duplicateCheckRequestIdRef.current;
+  const runDuplicateCheck = useCallback(
+    async (climbs: MoonBoardClimb[]): Promise<DuplicateMatchMap> => {
+      const requestId = ++duplicateCheckRequestIdRef.current;
 
-    if (climbs.length === 0) {
-      setDuplicateMatches({});
-      setIsCheckingDuplicates(false);
-      return {};
-    }
-
-    setIsCheckingDuplicates(true);
-
-    try {
-      const client = createGraphQLHttpClient();
-      const variables: CheckMoonBoardClimbDuplicatesVariables = {
-        input: {
-          layoutId,
-          angle,
-          climbs: climbs.map((climb) => ({
-            clientKey: climb.sourceFile,
-            holds: climb.holds,
-          })),
-        },
-      };
-
-      const response = await client.request<
-        CheckMoonBoardClimbDuplicatesResponse,
-        CheckMoonBoardClimbDuplicatesVariables
-      >(CHECK_MOONBOARD_CLIMB_DUPLICATES_QUERY, variables);
-
-      const matches = Object.fromEntries(
-        response.checkMoonBoardClimbDuplicates.map((match) => [match.clientKey, match]),
-      ) as DuplicateMatchMap;
-
-      if (requestId === duplicateCheckRequestIdRef.current) {
-        setDuplicateMatches(matches);
-      }
-
-      return matches;
-    } catch (error) {
-      console.warn('Failed to check MoonBoard climb duplicates:', error);
-
-      if (requestId === duplicateCheckRequestIdRef.current) {
+      if (climbs.length === 0) {
         setDuplicateMatches({});
+        setIsCheckingDuplicates(false);
+        return {};
       }
 
-      return {};
-    } finally {
-      if (requestId === duplicateCheckRequestIdRef.current) {
-        setIsCheckingDuplicates(false);
+      setIsCheckingDuplicates(true);
+
+      try {
+        const client = createGraphQLHttpClient();
+        const variables: CheckMoonBoardClimbDuplicatesVariables = {
+          input: {
+            layoutId,
+            angle,
+            climbs: climbs.map((climb) => ({
+              clientKey: climb.sourceFile,
+              holds: climb.holds,
+            })),
+          },
+        };
+
+        const response = await client.request<
+          CheckMoonBoardClimbDuplicatesResponse,
+          CheckMoonBoardClimbDuplicatesVariables
+        >(CHECK_MOONBOARD_CLIMB_DUPLICATES_QUERY, variables);
+
+        const matches = Object.fromEntries(
+          response.checkMoonBoardClimbDuplicates.map((match) => [match.clientKey, match]),
+        ) as DuplicateMatchMap;
+
+        if (requestId === duplicateCheckRequestIdRef.current) {
+          setDuplicateMatches(matches);
+        }
+
+        return matches;
+      } catch (error) {
+        console.warn('Failed to check MoonBoard climb duplicates:', error);
+
+        if (requestId === duplicateCheckRequestIdRef.current) {
+          setDuplicateMatches({});
+        }
+
+        return {};
+      } finally {
+        if (requestId === duplicateCheckRequestIdRef.current) {
+          setIsCheckingDuplicates(false);
+        }
       }
-    }
-  }, [angle, layoutId]);
+    },
+    [angle, layoutId],
+  );
 
   useEffect(() => {
     if (state.status !== 'complete') {
@@ -368,7 +371,20 @@ export default function MoonBoardBulkImport({
     } finally {
       setIsSaving(false);
     }
-  }, [state.climbs, layoutId, session, authToken, queryClient, router, listUrl, contributeImages, backendUrl, showMessage, angle, runDuplicateCheck]);
+  }, [
+    state.climbs,
+    layoutId,
+    session,
+    authToken,
+    queryClient,
+    router,
+    listUrl,
+    contributeImages,
+    backendUrl,
+    showMessage,
+    angle,
+    runDuplicateCheck,
+  ]);
 
   const handleRemoveClimb = useCallback((sourceFile: string) => {
     dispatch({ type: 'REMOVE_CLIMB', sourceFile });
@@ -435,7 +451,10 @@ export default function MoonBoardBulkImport({
               '&:hover': { borderColor: 'primary.main' },
             }}
             onClick={() => fileInputRef.current?.click()}
-            onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
             onDrop={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -529,7 +548,9 @@ export default function MoonBoardBulkImport({
                 </Stack>
                 {backendUrl && (
                   <FormControlLabel
-                    control={<MuiCheckbox checked={contributeImages} onChange={(e) => setContributeImages(e.target.checked)} />}
+                    control={
+                      <MuiCheckbox checked={contributeImages} onChange={(e) => setContributeImages(e.target.checked)} />
+                    }
                     label="Contribute images to improve OCR accuracy"
                   />
                 )}
@@ -541,7 +562,13 @@ export default function MoonBoardBulkImport({
           {state.climbs.length > 0 ? (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }} className={styles.climbGrid}>
               {state.climbs.map((climb) => (
-                <Box key={climb.sourceFile} sx={{ width: { xs: '100%', sm: '50%', md: '33.33%', lg: '25%' }, boxSizing: 'border-box' }}>
+                <Box
+                  key={climb.sourceFile}
+                  sx={{
+                    width: { xs: '100%', sm: '50%', md: '33.33%', lg: '25%' },
+                    boxSizing: 'border-box',
+                  }}
+                >
                   <MoonBoardImportCard
                     climb={climb}
                     duplicateMatch={duplicateMatches[climb.sourceFile] ?? null}

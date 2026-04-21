@@ -15,7 +15,6 @@ import { track } from '@vercel/analytics';
 import { themeTokens } from '@/app/theme/theme-config';
 import styles from './search-form.module.css';
 
-
 interface ClimbHoldSearchFormProps {
   boardDetails: BoardDetails;
 }
@@ -46,18 +45,28 @@ const ClimbHoldSearchForm: React.FC<ClimbHoldSearchFormProps> = ({ boardDetails 
   };
 
   const stateItems = [
-    { value: 'ANY', label: 'Include', icon: <CheckCircleOutlined style={{ color: themeTokens.colors.primary }} /> },
-    { value: 'NOT', label: 'Exclude', icon: <CancelOutlined style={{ color: themeTokens.colors.error }} /> },
+    {
+      value: 'ANY',
+      label: 'Include',
+      icon: <CheckCircleOutlined style={{ color: themeTokens.colors.primary }} />,
+    },
+    {
+      value: 'NOT',
+      label: 'Exclude',
+      icon: <CancelOutlined style={{ color: themeTokens.colors.error }} />,
+    },
   ];
 
-  const anyHoldsCount = Object.values(uiSearchParams.holdsFilter || {}).filter(h => h.state === 'ANY').length;
-  const notHoldsCount = Object.values(uiSearchParams.holdsFilter || {}).filter(h => h.state === 'NOT').length;
+  const anyHoldsCount = Object.values(uiSearchParams.holdsFilter || {}).filter((h) => h.state === 'ANY').length;
+  const notHoldsCount = Object.values(uiSearchParams.holdsFilter || {}).filter((h) => h.state === 'NOT').length;
 
   return (
     <div className={styles.holdSearchForm}>
       <div className={styles.holdSearchHeaderCompact}>
         <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', alignItems: 'center' }}>
-          <MuiTypography variant="body2" component="span" color="text.secondary">Tap to:</MuiTypography>
+          <MuiTypography variant="body2" component="span" color="text.secondary">
+            Tap to:
+          </MuiTypography>
           <MuiSelect
             value={selectedState}
             onChange={(e) => {
@@ -72,7 +81,7 @@ const ClimbHoldSearchForm: React.FC<ClimbHoldSearchFormProps> = ({ boardDetails 
             sx={{ minWidth: 120 }}
             MenuProps={{ disableScrollLock: true }}
           >
-            {stateItems.map(item => (
+            {stateItems.map((item) => (
               <MenuItem key={item.value} value={item.value}>
                 <Stack direction="row" spacing={0.5} alignItems="center">
                   {item.icon}
@@ -81,8 +90,20 @@ const ClimbHoldSearchForm: React.FC<ClimbHoldSearchFormProps> = ({ boardDetails 
               </MenuItem>
             ))}
           </MuiSelect>
-          {anyHoldsCount > 0 && <Chip label={`${anyHoldsCount} included`} size="small" sx={{ bgcolor: themeTokens.colors.primary, color: 'common.white' }} />}
-          {notHoldsCount > 0 && <Chip label={`${notHoldsCount} excluded`} size="small" sx={{ bgcolor: themeTokens.colors.error, color: 'common.white' }} />}
+          {anyHoldsCount > 0 && (
+            <Chip
+              label={`${anyHoldsCount} included`}
+              size="small"
+              sx={{ bgcolor: themeTokens.colors.primary, color: 'common.white' }}
+            />
+          )}
+          {notHoldsCount > 0 && (
+            <Chip
+              label={`${notHoldsCount} excluded`}
+              size="small"
+              sx={{ bgcolor: themeTokens.colors.error, color: 'common.white' }}
+            />
+          )}
         </Stack>
       </div>
 

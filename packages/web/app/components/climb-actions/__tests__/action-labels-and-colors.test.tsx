@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import type { Climb, BoardDetails, BoardName } from '@/app/lib/types';
@@ -96,8 +96,7 @@ vi.mock('../../graphql-queue', () => ({
 }));
 
 vi.mock('../../swipeable-drawer/swipeable-drawer', () => ({
-  default: ({ children, open }: { children: React.ReactNode; open: boolean }) =>
-    open ? <div>{children}</div> : null,
+  default: ({ children, open }: { children: React.ReactNode; open: boolean }) => (open ? <div>{children}</div> : null),
 }));
 
 vi.mock('../action-tooltip', () => ({
@@ -164,10 +163,7 @@ function captureActionResult(
 /**
  * Render an action function and return its element for DOM assertions.
  */
-function renderAction(
-  actionFn: (props: ClimbActionProps) => ClimbActionResult,
-  props: ClimbActionProps,
-) {
+function renderAction(actionFn: (props: ClimbActionProps) => ClimbActionResult, props: ClimbActionProps) {
   function TestAction() {
     const result = actionFn(props);
     return <>{result.element}</>;

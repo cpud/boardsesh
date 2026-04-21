@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import type { Climb } from '@/app/lib/types';
@@ -11,9 +11,7 @@ vi.mock('../../board-provider/board-provider-context', () => ({
 }));
 
 vi.mock('@/app/components/ascent-status/ascent-status-icon', () => ({
-  AscentStatusIcon: ({ status }: { status: string }) => (
-    <div data-testid="ascent-status-icon" data-status={status} />
-  ),
+  AscentStatusIcon: ({ status }: { status: string }) => <div data-testid="ascent-status-icon" data-status={status} />,
 }));
 
 vi.mock('@mui/material/Rating', () => ({

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 
 const { mockDb } = vi.hoisted(() => {
   const mockDb = {
@@ -29,9 +29,35 @@ vi.mock('../utils/redis-rate-limiter', () => ({
 
 vi.mock('../db/queries/util/table-select', () => ({
   UNIFIED_TABLES: {
-    climbs: { uuid: 'uuid', layoutId: 'layoutId', boardType: 'boardType', setterUsername: 'setterUsername', name: 'name', description: 'description', frames: 'frames', createdAt: 'createdAt', edgeLeft: 'edgeLeft', edgeRight: 'edgeRight', edgeBottom: 'edgeBottom', edgeTop: 'edgeTop' },
-    climbStats: { climbUuid: 'climbUuid', boardType: 'boardType', angle: 'angle', ascensionistCount: 'ascensionistCount', qualityAverage: 'qualityAverage', difficultyAverage: 'difficultyAverage', displayDifficulty: 'displayDifficulty', benchmarkDifficulty: 'benchmarkDifficulty' },
-    difficultyGrades: { boardType: 'boardType', difficulty: 'difficulty', boulderName: 'boulderName' },
+    climbs: {
+      uuid: 'uuid',
+      layoutId: 'layoutId',
+      boardType: 'boardType',
+      setterUsername: 'setterUsername',
+      name: 'name',
+      description: 'description',
+      frames: 'frames',
+      createdAt: 'createdAt',
+      edgeLeft: 'edgeLeft',
+      edgeRight: 'edgeRight',
+      edgeBottom: 'edgeBottom',
+      edgeTop: 'edgeTop',
+    },
+    climbStats: {
+      climbUuid: 'climbUuid',
+      boardType: 'boardType',
+      angle: 'angle',
+      ascensionistCount: 'ascensionistCount',
+      qualityAverage: 'qualityAverage',
+      difficultyAverage: 'difficultyAverage',
+      displayDifficulty: 'displayDifficulty',
+      benchmarkDifficulty: 'benchmarkDifficulty',
+    },
+    difficultyGrades: {
+      boardType: 'boardType',
+      difficulty: 'difficulty',
+      boulderName: 'boulderName',
+    },
   },
   isValidBoardName: vi.fn().mockReturnValue(true),
 }));
@@ -64,10 +90,22 @@ function createMockChain(resolveValue: unknown = []) {
   const calls: Record<string, unknown[][]> = {};
   const chain: Record<string, unknown> = {};
   const methods = [
-    'select', 'from', 'where', 'leftJoin', 'innerJoin',
-    'groupBy', 'orderBy', 'limit', 'offset',
-    'insert', 'values', 'onConflictDoNothing', 'returning',
-    'delete', 'update', 'set',
+    'select',
+    'from',
+    'where',
+    'leftJoin',
+    'innerJoin',
+    'groupBy',
+    'orderBy',
+    'limit',
+    'offset',
+    'insert',
+    'values',
+    'onConflictDoNothing',
+    'returning',
+    'delete',
+    'update',
+    'set',
   ];
 
   chain.then = (resolve: (value: unknown) => unknown) => Promise.resolve(resolveValue).then(resolve);
@@ -117,15 +155,16 @@ describe('discoverPlaylists resolver', () => {
 
     const { chain: resultsChain, calls: resultsCalls } = createMockChain([
       makePlaylistRow({ uuid: 'pl-1', boardType: 'kilter', name: 'Kilter Playlist' }),
-      makePlaylistRow({ uuid: 'pl-2', boardType: 'tension', name: 'Tension Playlist', id: BigInt(2) }),
+      makePlaylistRow({
+        uuid: 'pl-2',
+        boardType: 'tension',
+        name: 'Tension Playlist',
+        id: BigInt(2),
+      }),
     ]);
     mockDb.select.mockReturnValueOnce(resultsChain);
 
-    const result = await playlistQueries.discoverPlaylists(
-      null,
-      { input: {} },
-      ctx,
-    );
+    const result = await playlistQueries.discoverPlaylists(null, { input: {} }, ctx);
 
     expect(result.totalCount).toBe(2);
     expect(result.playlists).toHaveLength(2);
@@ -151,11 +190,7 @@ describe('discoverPlaylists resolver', () => {
     ]);
     mockDb.select.mockReturnValueOnce(resultsChain);
 
-    const result = await playlistQueries.discoverPlaylists(
-      null,
-      { input: { boardType: 'kilter' } },
-      ctx,
-    );
+    const result = await playlistQueries.discoverPlaylists(null, { input: { boardType: 'kilter' } }, ctx);
 
     expect(result.totalCount).toBe(1);
     expect(result.playlists).toHaveLength(1);
@@ -181,11 +216,7 @@ describe('discoverPlaylists resolver', () => {
     ]);
     mockDb.select.mockReturnValueOnce(resultsChain);
 
-    const result = await playlistQueries.discoverPlaylists(
-      null,
-      { input: { boardType: 'kilter', layoutId: 8 } },
-      ctx,
-    );
+    const result = await playlistQueries.discoverPlaylists(null, { input: { boardType: 'kilter', layoutId: 8 } }, ctx);
 
     expect(result.totalCount).toBe(1);
     expect(result.playlists).toHaveLength(1);
@@ -208,11 +239,7 @@ describe('discoverPlaylists resolver', () => {
     const { chain: resultsChain, calls: resultsCalls } = createMockChain(rows);
     mockDb.select.mockReturnValueOnce(resultsChain);
 
-    const result = await playlistQueries.discoverPlaylists(
-      null,
-      { input: { pageSize: 10, page: 0 } },
-      ctx,
-    );
+    const result = await playlistQueries.discoverPlaylists(null, { input: { pageSize: 10, page: 0 } }, ctx);
 
     expect(result.hasMore).toBe(true);
     expect(result.playlists).toHaveLength(10);
@@ -253,16 +280,10 @@ describe('discoverPlaylists resolver', () => {
     const { chain: countChain } = createMockChain([{ count: 1 }]);
     mockDb.select.mockReturnValueOnce(countChain);
 
-    const { chain: resultsChain } = createMockChain([
-      makePlaylistRow({ uuid: 'pl-1', name: 'Hard Boulders' }),
-    ]);
+    const { chain: resultsChain } = createMockChain([makePlaylistRow({ uuid: 'pl-1', name: 'Hard Boulders' })]);
     mockDb.select.mockReturnValueOnce(resultsChain);
 
-    const result = await playlistQueries.discoverPlaylists(
-      null,
-      { input: { name: 'boulders' } },
-      ctx,
-    );
+    const result = await playlistQueries.discoverPlaylists(null, { input: { name: 'boulders' } }, ctx);
 
     expect(result.playlists).toHaveLength(1);
     expect(result.playlists[0]).toMatchObject({ name: 'Hard Boulders' });
@@ -274,16 +295,10 @@ describe('discoverPlaylists resolver', () => {
     const { chain: countChain } = createMockChain([{ count: 1 }]);
     mockDb.select.mockReturnValueOnce(countChain);
 
-    const { chain: resultsChain } = createMockChain([
-      makePlaylistRow(),
-    ]);
+    const { chain: resultsChain } = createMockChain([makePlaylistRow()]);
     mockDb.select.mockReturnValueOnce(resultsChain);
 
-    const result = await playlistQueries.discoverPlaylists(
-      null,
-      { input: {} },
-      ctx,
-    );
+    const result = await playlistQueries.discoverPlaylists(null, { input: {} }, ctx);
 
     expect(result.playlists).toHaveLength(1);
   });
@@ -300,11 +315,7 @@ describe('discoverPlaylists resolver', () => {
     ]);
     mockDb.select.mockReturnValueOnce(resultsChain);
 
-    const result = await playlistQueries.discoverPlaylists(
-      null,
-      { input: { sortBy: 'popular' } },
-      ctx,
-    );
+    const result = await playlistQueries.discoverPlaylists(null, { input: { sortBy: 'popular' } }, ctx);
 
     expect(result.playlists).toHaveLength(2);
     expect(result.playlists[0]).toMatchObject({ uuid: 'pl-popular' });
@@ -319,17 +330,11 @@ describe('discoverPlaylists resolver', () => {
     const { chain: countChain } = createMockChain([{ count: 50 }]);
     mockDb.select.mockReturnValueOnce(countChain);
 
-    const rows = Array.from({ length: 5 }, (_, i) =>
-      makePlaylistRow({ uuid: `pl-${i}`, id: BigInt(i + 1) }),
-    );
+    const rows = Array.from({ length: 5 }, (_, i) => makePlaylistRow({ uuid: `pl-${i}`, id: BigInt(i + 1) }));
     const { chain: resultsChain, calls: resultsCalls } = createMockChain(rows);
     mockDb.select.mockReturnValueOnce(resultsChain);
 
-    const result = await playlistQueries.discoverPlaylists(
-      null,
-      { input: { page: 2, pageSize: 5 } },
-      ctx,
-    );
+    const result = await playlistQueries.discoverPlaylists(null, { input: { page: 2, pageSize: 5 } }, ctx);
 
     expect(result.playlists).toHaveLength(5);
     expect(result.hasMore).toBe(false);

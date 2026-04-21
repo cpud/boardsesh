@@ -12,9 +12,7 @@ interface QueueControlBarShellProps {
   message?: string;
 }
 
-export default function QueueControlBarShell({
-  message = 'No climb selected',
-}: QueueControlBarShellProps) {
+export default function QueueControlBarShell({ message = 'No climb selected' }: QueueControlBarShellProps) {
   return (
     <div
       id="onboarding-queue-bar"
@@ -31,7 +29,15 @@ export default function QueueControlBarShell({
                 backgroundColor: 'var(--semantic-surface)',
               }}
             >
-              <Box sx={{ display: 'flex', flexWrap: 'nowrap', justifyContent: 'space-between', alignItems: 'center' }} className={styles.row}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'nowrap',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+                className={styles.row}
+              >
                 <Box sx={{ flex: 1 }} className={styles.climbInfoCol}>
                   <div className={styles.climbInfoInner} style={{ gap: themeTokens.spacing[2] }}>
                     <div aria-hidden="true" className={`${styles.boardPreviewContainer} ${styles.shellThumbnail}`} />

@@ -11,9 +11,24 @@ export interface InstagramCaptionInput {
 }
 
 const BOARD_CAPTION_CONFIG: Record<string, { name: string; displayName: string; handle: string; hashtags: string }> = {
-  kilter: { name: 'Kilter Board', displayName: 'Kilter', handle: '@kilterboard', hashtags: '#kilterboard #kiltergrips' },
-  tension: { name: 'Tension Board', displayName: 'Tension', handle: '@tensionclimbing', hashtags: '#tensionboard' },
-  moonboard: { name: 'MoonBoard', displayName: 'MoonBoard', handle: '@moon_climbing', hashtags: '#moonboard' },
+  kilter: {
+    name: 'Kilter Board',
+    displayName: 'Kilter',
+    handle: '@kilterboard',
+    hashtags: '#kilterboard #kiltergrips',
+  },
+  tension: {
+    name: 'Tension Board',
+    displayName: 'Tension',
+    handle: '@tensionclimbing',
+    hashtags: '#tensionboard',
+  },
+  moonboard: {
+    name: 'MoonBoard',
+    displayName: 'MoonBoard',
+    handle: '@moon_climbing',
+    hashtags: '#moonboard',
+  },
 };
 
 export interface CopyAndOpenInstagramResult {
@@ -135,11 +150,7 @@ export function getBoardDisplayName(boardType: string): string {
   return boardType.charAt(0).toUpperCase() + boardType.slice(1);
 }
 
-export function buildInstagramCaption({
-  climbName,
-  angle,
-  boardType = 'kilter',
-}: InstagramCaptionInput): string {
+export function buildInstagramCaption({ climbName, angle, boardType = 'kilter' }: InstagramCaptionInput): string {
   const config = BOARD_CAPTION_CONFIG[boardType] ?? BOARD_CAPTION_CONFIG.kilter;
   return `"${climbName}" @ ${angle}\u00b0 on the ${config.name}.\n${config.handle} ${config.hashtags}`;
 }

@@ -3,10 +3,7 @@ import type { ConnectionContext } from '@boardsesh/shared-schema';
 import { db } from '../../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { requireAuthenticated, validateInput } from '../../shared/helpers';
-import {
-  GetUserPlaylistsInputSchema,
-  GetAllUserPlaylistsInputSchema,
-} from '../../../../validation/schemas';
+import { GetUserPlaylistsInputSchema, GetAllUserPlaylistsInputSchema } from '../../../../validation/schemas';
 import { getPlaylistFollowStats } from '../helpers/follow-stats';
 import { getClimbCounts, formatOwnedPlaylist, type OwnedPlaylistRow } from '../helpers/enrichment';
 
@@ -26,20 +23,18 @@ const PLAYLIST_SELECT = {
   role: dbSchema.playlistOwnership.role,
 } as const;
 
-const PLAYLIST_ORDER = desc(
-  sql`COALESCE(${dbSchema.playlists.lastAccessedAt}, ${dbSchema.playlists.updatedAt})`,
-);
+const PLAYLIST_ORDER = desc(sql`COALESCE(${dbSchema.playlists.lastAccessedAt}, ${dbSchema.playlists.updatedAt})`);
 
 /**
  * Enrich owned playlist rows with climb counts and follow stats.
  */
 async function enrichOwnedPlaylists(playlists: OwnedPlaylistRow[], userId: string) {
-  const countMap = await getClimbCounts(playlists.map(p => p.id));
+  const countMap = await getClimbCounts(playlists.map((p) => p.id));
   const followStats = await getPlaylistFollowStats(
-    playlists.map(p => p.uuid),
+    playlists.map((p) => p.uuid),
     userId,
   );
-  return playlists.map(p => formatOwnedPlaylist(p, countMap, followStats));
+  return playlists.map((p) => formatOwnedPlaylist(p, countMap, followStats));
 }
 
 /**
@@ -58,18 +53,12 @@ export const userPlaylists = async (
   const userPlaylists = await db
     .select(PLAYLIST_SELECT)
     .from(dbSchema.playlists)
-    .innerJoin(
-      dbSchema.playlistOwnership,
-      eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id),
-    )
+    .innerJoin(dbSchema.playlistOwnership, eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id))
     .where(
       and(
         eq(dbSchema.playlistOwnership.userId, userId),
         eq(dbSchema.playlists.boardType, input.boardType),
-        or(
-          eq(dbSchema.playlists.layoutId, input.layoutId),
-          isNull(dbSchema.playlists.layoutId),
-        ),
+        or(eq(dbSchema.playlists.layoutId, input.layoutId), isNull(dbSchema.playlists.layoutId)),
       ),
     )
     .orderBy(PLAYLIST_ORDER);
@@ -98,10 +87,7 @@ export const allUserPlaylists = async (
   }
 
   if (input.layoutId != null) {
-    const layoutCondition = or(
-      eq(dbSchema.playlists.layoutId, input.layoutId),
-      isNull(dbSchema.playlists.layoutId),
-    );
+    const layoutCondition = or(eq(dbSchema.playlists.layoutId, input.layoutId), isNull(dbSchema.playlists.layoutId));
     if (layoutCondition) {
       conditions.push(layoutCondition);
     }
@@ -110,10 +96,7 @@ export const allUserPlaylists = async (
   const playlists = await db
     .select(PLAYLIST_SELECT)
     .from(dbSchema.playlists)
-    .innerJoin(
-      dbSchema.playlistOwnership,
-      eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id),
-    )
+    .innerJoin(dbSchema.playlistOwnership, eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id))
     .where(and(...conditions))
     .orderBy(PLAYLIST_ORDER);
 

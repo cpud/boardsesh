@@ -196,13 +196,7 @@ export function useDrawerDragResize({
     const initialFrac = parseFraction(initialHeight);
     const expandedFrac = parseFraction(expandedHeight);
 
-    const result = computeDragResult(
-      currentHeightPx,
-      viewportHeight,
-      velocity,
-      initialFrac,
-      expandedFrac,
-    );
+    const result = computeDragResult(currentHeightPx, viewportHeight, velocity, initialFrac, expandedFrac);
 
     switch (result) {
       case 'expand':

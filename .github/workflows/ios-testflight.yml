@@ -29,21 +29,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+      - uses: oven-sh/setup-bun@v2
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-
-      - name: Cache bun dependencies
-        uses: actions/cache@v4
+      - uses: voidzero-dev/setup-vp@v1
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('mobile/bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
+          node-version: 'lts'
+          cache: true
 
       - name: Cache CocoaPods
         uses: actions/cache@v4

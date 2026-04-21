@@ -36,10 +36,7 @@ export const getSetterStats = async (
         climb_count: sql<number>`count(*)::int`,
       })
       .from(climbs)
-      .innerJoin(climbStats, and(
-        eq(climbStats.climbUuid, climbs.uuid),
-        eq(climbStats.boardType, params.board_name),
-      ))
+      .innerJoin(climbStats, and(eq(climbStats.climbUuid, climbs.uuid), eq(climbStats.boardType, params.board_name)))
       .where(and(...whereConditions))
       .groupBy(climbs.setterUsername)
       .orderBy(sql`count(*) DESC`)

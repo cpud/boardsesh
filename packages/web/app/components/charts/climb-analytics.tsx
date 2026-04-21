@@ -148,10 +148,10 @@ export default function ClimbAnalytics({ climbUuid, boardType }: ClimbAnalyticsP
     async function fetchHistory() {
       try {
         const client = createGraphQLHttpClient();
-        const data = await client.request<ClimbStatsHistoryResponse>(
-          CLIMB_STATS_HISTORY,
-          { boardName: boardType, climbUuid },
-        );
+        const data = await client.request<ClimbStatsHistoryResponse>(CLIMB_STATS_HISTORY, {
+          boardName: boardType,
+          climbUuid,
+        });
         if (!cancelled) {
           setRows(data.climbStatsHistory);
           const angles = new Set(data.climbStatsHistory.map((r: ClimbStatsHistoryEntry) => r.angle));
@@ -165,7 +165,9 @@ export default function ClimbAnalytics({ climbUuid, boardType }: ClimbAnalyticsP
     }
 
     void fetchHistory();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [climbUuid, boardType]);
 
   const allAngles = useMemo(() => {
@@ -246,23 +248,29 @@ export default function ClimbAnalytics({ climbUuid, boardType }: ClimbAnalyticsP
 
       {ascentsData && ascentsData.labels.length > 0 && (
         <Box>
-          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Ascents Over Time</Typography>
+          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+            Ascents Over Time
+          </Typography>
           <LineChart
             series={buildLineSeries(ascentsData, {
               area: true,
               showMark: false,
               stack: 'ascents',
             })}
-            xAxis={[{
-              data: ascentsData.labels.map(formatMonthLabel),
-              scaleType: 'band' as const,
-              tickLabelStyle: { fontSize: 10 },
-              tickInterval: buildTickInterval(ascentsData.labels.length),
-            }]}
-            yAxis={[{
-              label: 'Ascents',
-              tickLabelStyle: { fontSize: 10 },
-            }]}
+            xAxis={[
+              {
+                data: ascentsData.labels.map(formatMonthLabel),
+                scaleType: 'band' as const,
+                tickLabelStyle: { fontSize: 10 },
+                tickInterval: buildTickInterval(ascentsData.labels.length),
+              },
+            ]}
+            yAxis={[
+              {
+                label: 'Ascents',
+                tickLabelStyle: { fontSize: 10 },
+              },
+            ]}
             height={220}
             margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
             hideLegend={filteredAngles.length <= 1}
@@ -277,19 +285,25 @@ export default function ClimbAnalytics({ climbUuid, boardType }: ClimbAnalyticsP
 
       {qualityData && qualityData.labels.length > 0 && (
         <Box>
-          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Quality Over Time</Typography>
+          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+            Quality Over Time
+          </Typography>
           <LineChart
             series={buildLineSeries(qualityData)}
-            xAxis={[{
-              data: qualityData.labels.map(formatMonthLabel),
-              scaleType: 'band' as const,
-              tickLabelStyle: { fontSize: 10 },
-              tickInterval: buildTickInterval(qualityData.labels.length),
-            }]}
-            yAxis={[{
-              label: 'Rating',
-              tickLabelStyle: { fontSize: 10 },
-            }]}
+            xAxis={[
+              {
+                data: qualityData.labels.map(formatMonthLabel),
+                scaleType: 'band' as const,
+                tickLabelStyle: { fontSize: 10 },
+                tickInterval: buildTickInterval(qualityData.labels.length),
+              },
+            ]}
+            yAxis={[
+              {
+                label: 'Rating',
+                tickLabelStyle: { fontSize: 10 },
+              },
+            ]}
             height={220}
             margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
             hideLegend={filteredAngles.length <= 1}
@@ -301,7 +315,6 @@ export default function ClimbAnalytics({ climbUuid, boardType }: ClimbAnalyticsP
           />
         </Box>
       )}
-
     </Box>
   );
 }

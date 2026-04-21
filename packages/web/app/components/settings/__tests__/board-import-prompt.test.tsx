@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 
@@ -135,24 +135,28 @@ describe('BoardImportPrompt', () => {
       fireEvent.click(dialogSubmit!);
 
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith('/api/internal/aurora-credentials', expect.objectContaining({
-          method: 'POST',
-          body: JSON.stringify({ boardType: 'tension', username: 'myuser', password: 'mypass' }),
-        }));
+        expect(mockFetch).toHaveBeenCalledWith(
+          '/api/internal/aurora-credentials',
+          expect.objectContaining({
+            method: 'POST',
+            body: JSON.stringify({ boardType: 'tension', username: 'myuser', password: 'mypass' }),
+          }),
+        );
       });
 
       await waitFor(() => {
-        expect(mockShowMessage).toHaveBeenCalledWith('Tension account linked. Your data will show up within 12 hours.', 'success');
+        expect(mockShowMessage).toHaveBeenCalledWith(
+          'Tension account linked. Your data will show up within 12 hours.',
+          'success',
+        );
       });
     });
 
     it('shows error when link account fails', async () => {
-      mockFetch
-        .mockResolvedValueOnce(mockCredentialsResponse([]))
-        .mockResolvedValueOnce({
-          ok: false,
-          json: () => Promise.resolve({ error: 'Invalid credentials' }),
-        });
+      mockFetch.mockResolvedValueOnce(mockCredentialsResponse([])).mockResolvedValueOnce({
+        ok: false,
+        json: () => Promise.resolve({ error: 'Invalid credentials' }),
+      });
 
       render(<BoardImportPrompt boardType="tension" />);
 
@@ -197,10 +201,13 @@ describe('BoardImportPrompt', () => {
       fireEvent.click(screen.getByText('Yes, unlink'));
 
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith('/api/internal/aurora-credentials', expect.objectContaining({
-          method: 'DELETE',
-          body: JSON.stringify({ boardType: 'tension' }),
-        }));
+        expect(mockFetch).toHaveBeenCalledWith(
+          '/api/internal/aurora-credentials',
+          expect.objectContaining({
+            method: 'DELETE',
+            body: JSON.stringify({ boardType: 'tension' }),
+          }),
+        );
       });
 
       await waitFor(() => {
@@ -209,12 +216,10 @@ describe('BoardImportPrompt', () => {
     });
 
     it('shows error when unlink fails', async () => {
-      mockFetch
-        .mockResolvedValueOnce(mockCredentialsResponse([tensionCredential]))
-        .mockResolvedValueOnce({
-          ok: false,
-          json: () => Promise.resolve({ error: 'Server error' }),
-        });
+      mockFetch.mockResolvedValueOnce(mockCredentialsResponse([tensionCredential])).mockResolvedValueOnce({
+        ok: false,
+        json: () => Promise.resolve({ error: 'Server error' }),
+      });
 
       render(<BoardImportPrompt boardType="tension" />);
 
@@ -246,7 +251,9 @@ describe('BoardImportPrompt', () => {
       });
 
       const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-      const largeFile = new File(['x'.repeat(201 * 1024 * 1024)], 'big.json', { type: 'application/json' });
+      const largeFile = new File(['x'.repeat(201 * 1024 * 1024)], 'big.json', {
+        type: 'application/json',
+      });
 
       fireEvent.change(fileInput, { target: { files: [largeFile] } });
 
@@ -301,10 +308,7 @@ describe('BoardImportPrompt', () => {
       fireEvent.change(fileInput, { target: { files: [file] } });
 
       await waitFor(() => {
-        expect(mockShowMessage).toHaveBeenCalledWith(
-          expect.stringContaining('Kilter Board Original'),
-          'warning',
-        );
+        expect(mockShowMessage).toHaveBeenCalledWith(expect.stringContaining('Kilter Board Original'), 'warning');
       });
     });
 
@@ -319,7 +323,17 @@ describe('BoardImportPrompt', () => {
 
       const validJson = JSON.stringify({
         user: { username: 'testuser' },
-        ascents: [{ climb: 'c1', angle: 40, count: 1, stars: 3, climbed_at: '2024-01-01', created_at: '2024-01-01', grade: '6a' }],
+        ascents: [
+          {
+            climb: 'c1',
+            angle: 40,
+            count: 1,
+            stars: 3,
+            climbed_at: '2024-01-01',
+            created_at: '2024-01-01',
+            grade: '6a',
+          },
+        ],
         attempts: [],
         circuits: [],
       });
@@ -363,8 +377,13 @@ describe('BoardImportPrompt', () => {
       const validJson = JSON.stringify({
         user: { username: 'testuser' },
         ascents: Array.from({ length: 5 }, (_, i) => ({
-          climb: `c${i}`, angle: 40, count: 1, stars: 3,
-          climbed_at: '2024-01-01', created_at: '2024-01-01', grade: '6a',
+          climb: `c${i}`,
+          angle: 40,
+          count: 1,
+          stars: 3,
+          climbed_at: '2024-01-01',
+          created_at: '2024-01-01',
+          grade: '6a',
         })),
         attempts: [],
         circuits: [],

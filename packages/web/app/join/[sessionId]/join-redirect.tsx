@@ -3,13 +3,12 @@
 import { useEffect } from 'react';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
-import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 
-export default function JoinRedirect({ sessionId, joinUrl }: { sessionId: string; joinUrl: string }) {
+export default function JoinRedirect({ sessionId }: { sessionId: string }) {
   useEffect(() => {
-    window.location.href = joinUrl;
-  }, [joinUrl]);
+    window.location.href = `/api/internal/join/${encodeURIComponent(sessionId)}`;
+  }, [sessionId]);
 
   return (
     <Box
@@ -26,9 +25,6 @@ export default function JoinRedirect({ sessionId, joinUrl }: { sessionId: string
       <Typography variant="body1" color="text.secondary">
         Joining session...
       </Typography>
-      <Link href={joinUrl} variant="body2" color="text.secondary">
-        Tap here if you&apos;re not redirected
-      </Link>
     </Box>
   );
 }

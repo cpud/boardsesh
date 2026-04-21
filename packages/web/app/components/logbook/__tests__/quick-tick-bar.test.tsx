@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import React from 'react';
 import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import type { Angle, BoardDetails, BoardName, Climb } from '@/app/lib/types';
@@ -153,12 +153,8 @@ describe('QuickTickBar', () => {
       const climb = makeClimb({ uuid: 'c1' });
       // Climb is created via makeClimb without userAscents / userAttempts.
       expect(hasPriorHistoryForClimb(climb, [])).toBe(false);
-      expect(
-        hasPriorHistoryForClimb(climb, [makeLogbookEntry({ climb_uuid: 'c1' })]),
-      ).toBe(true);
-      expect(
-        hasPriorHistoryForClimb(climb, [makeLogbookEntry({ climb_uuid: 'other' })]),
-      ).toBe(false);
+      expect(hasPriorHistoryForClimb(climb, [makeLogbookEntry({ climb_uuid: 'c1' })])).toBe(true);
+      expect(hasPriorHistoryForClimb(climb, [makeLogbookEntry({ climb_uuid: 'other' })])).toBe(false);
     });
   });
 
@@ -195,7 +191,6 @@ describe('QuickTickBar', () => {
       render(<QuickTickBar {...defaultProps} />);
       expect(screen.queryByTestId('quick-tick-hint')).toBeNull();
     });
-
   });
 
   describe('save behaviour — history-aware default', () => {
@@ -215,14 +210,14 @@ describe('QuickTickBar', () => {
       expect(call.attemptCount).toBe(1);
       expect(call.climbUuid).toBe('climb-1');
       // Flash saves have a 300ms delay before calling onSave (for button pulse animation).
-      await act(async () => { vi.advanceTimersByTime(300); });
+      await act(async () => {
+        vi.advanceTimersByTime(300);
+      });
       expect(defaultProps.onSave).toHaveBeenCalledTimes(1);
     });
 
     it('saves as send with attemptCount 1 when there is one prior log', async () => {
-      mockLogbookRef.current = [
-        makeLogbookEntry({ uuid: 'p1', climb_uuid: 'climb-1', angle: 40 }),
-      ];
+      mockLogbookRef.current = [makeLogbookEntry({ uuid: 'p1', climb_uuid: 'climb-1', angle: 40 })];
       const ref = React.createRef<QuickTickBarHandle>();
       render(<QuickTickBar ref={ref} {...defaultProps} />);
 
@@ -254,9 +249,7 @@ describe('QuickTickBar', () => {
     });
 
     it('ignores logbook rows for other climbs when deciding flash vs send', async () => {
-      mockLogbookRef.current = [
-        makeLogbookEntry({ uuid: 'other-climb', climb_uuid: 'climb-other', angle: 40 }),
-      ];
+      mockLogbookRef.current = [makeLogbookEntry({ uuid: 'other-climb', climb_uuid: 'climb-other', angle: 40 })];
       const ref = React.createRef<QuickTickBarHandle>();
       render(<QuickTickBar ref={ref} {...defaultProps} />);
 
@@ -437,9 +430,7 @@ describe('QuickTickBar', () => {
       ];
 
       const ref = React.createRef<QuickTickBarHandle>();
-      const { rerender } = render(
-        <QuickTickBar ref={ref} {...defaultProps} currentClimb={originalClimb} />,
-      );
+      const { rerender } = render(<QuickTickBar ref={ref} {...defaultProps} currentClimb={originalClimb} />);
 
       // Simulate another party member advancing the queue mid-tick.
       rerender(<QuickTickBar ref={ref} {...defaultProps} currentClimb={newClimb} />);
@@ -734,9 +725,12 @@ describe('QuickTickBar', () => {
     it('second save is blocked after the first save triggers a re-render with isSaving=true', async () => {
       // Make saveTick hang until we resolve it manually.
       let resolveSave: (() => void) | undefined;
-      mockSaveTick.mockImplementation(() => new Promise<void>((resolve) => {
-        resolveSave = resolve;
-      }));
+      mockSaveTick.mockImplementation(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveSave = resolve;
+          }),
+      );
 
       const ref = React.createRef<QuickTickBarHandle>();
       render(<QuickTickBar ref={ref} {...defaultProps} />);
@@ -772,9 +766,7 @@ describe('QuickTickBar', () => {
     });
 
     it('fires with false on mount when the logbook has prior history for the climb', () => {
-      mockLogbookRef.current = [
-        makeLogbookEntry({ uuid: 'p1', climb_uuid: 'climb-1', angle: 40 }),
-      ];
+      mockLogbookRef.current = [makeLogbookEntry({ uuid: 'p1', climb_uuid: 'climb-1', angle: 40 })];
       const onIsFlashChange = vi.fn();
       render(<QuickTickBar {...defaultProps} onIsFlashChange={onIsFlashChange} />);
 
@@ -785,9 +777,7 @@ describe('QuickTickBar', () => {
       mockLogbookRef.current = [];
       const climbWithHistory = makeClimb({ userAscents: 1, userAttempts: 0 });
       const onIsFlashChange = vi.fn();
-      render(
-        <QuickTickBar {...defaultProps} currentClimb={climbWithHistory} onIsFlashChange={onIsFlashChange} />,
-      );
+      render(<QuickTickBar {...defaultProps} currentClimb={climbWithHistory} onIsFlashChange={onIsFlashChange} />);
 
       expect(onIsFlashChange).toHaveBeenCalledWith(false);
     });
@@ -796,9 +786,7 @@ describe('QuickTickBar', () => {
       mockLogbookRef.current = [];
       const climbWithAttempts = makeClimb({ userAscents: 0, userAttempts: 3 });
       const onIsFlashChange = vi.fn();
-      render(
-        <QuickTickBar {...defaultProps} currentClimb={climbWithAttempts} onIsFlashChange={onIsFlashChange} />,
-      );
+      render(<QuickTickBar {...defaultProps} currentClimb={climbWithAttempts} onIsFlashChange={onIsFlashChange} />);
 
       expect(onIsFlashChange).toHaveBeenCalledWith(false);
     });
@@ -908,13 +896,7 @@ describe('QuickTickBar', () => {
 
     it('does not render save button in expanded mode', () => {
       const onExpandedChange = vi.fn();
-      render(
-        <QuickTickBar
-          {...defaultProps}
-          expanded={true}
-          onExpandedChange={onExpandedChange}
-        />,
-      );
+      render(<QuickTickBar {...defaultProps} expanded={true} onExpandedChange={onExpandedChange} />);
 
       // There should be no "Save tick" button in expanded mode.
       expect(screen.queryByRole('button', { name: /save tick/i })).toBeNull();

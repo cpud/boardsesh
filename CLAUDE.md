@@ -24,6 +24,7 @@ Before working on a specific part of the codebase, check the `docs/` directory f
 - `docs/ai-design-guidelines.md` - Comprehensive UI design guidelines, patterns, and tokens for redesigning components
 
 **Important:**
+
 - Read the relevant documentation first to understand the architecture and design decisions before making changes
 - When making significant changes to documented systems, update the corresponding documentation to keep it in sync
 
@@ -44,11 +45,8 @@ Before working on a specific part of the codebase, check the `docs/` directory f
 The development database uses a **pre-built Docker image** (`ghcr.io/boardsesh/boardsesh-dev-db`) that already contains all Kilter, Tension, and MoonBoard board data, a test user, and social seed data with migrations applied. This means `bun run db:up` is fast — it just pulls the image, starts containers, and runs any newer migrations.
 
 ```bash
-# Start development databases (PostgreSQL, Neon proxy, Redis)
-# First run pulls the pre-built image (~1GB) with all board data included.
-# Subsequent runs start in seconds.
-# Test user: test@boardsesh.com / test
-bun run db:up
+# Install Vite+ CLI (one-time, manages Node.js, linting, formatting, testing)
+curl -fsSL https://vite.plus | bash
 
 # Environment files are in packages/web/:
 # .env.local contains generic config (tracked in git)
@@ -64,11 +62,11 @@ TENSION_SYNC_TOKEN=your_tension_token_here
 # Install all dependencies (from root)
 bun install
 
-# Start web development server
-bun run dev
-
-# Start backend development server
-bun run backend:dev
+# Start everything (databases, backend, web)
+# First run pulls the pre-built image (~1GB) with all board data included.
+# Subsequent runs start in seconds.
+# Test user: test@boardsesh.com / test
+vp run dev
 ```
 
 #### Pre-built database image
@@ -81,19 +79,27 @@ The `boardsesh-dev-db` image is published to GHCR and contains PostgreSQL 17 + P
 
 ### Common Commands (from root)
 
-- `bun run dev` - Start web development server with Turbopack
+This project uses [Vite+](https://viteplus.dev) (`vp`) as its unified toolchain for testing, linting, formatting, and type checking. The `bun run` aliases still work and delegate to `vp` internally.
+
+- `vp check` - Run format, lint, and type checks (or `bun run check`)
+- `vp test` - Run all tests (or `bun run test`)
+- `vp test run` - Run tests once without watch mode (or `bun run test:run`)
+- `vp lint` - Lint all packages (or `bun run lint`)
+- `vp fmt` - Format all files with Oxfmt (or `bun run format`)
+- `vp run dev` - Start development databases, backend, and web server (or `bun run dev`)
+- `vp run dev:backend` - Start database and backend only (or `bun run dev:backend`)
+- `vp run dev:web` - Start database and web server only (or `bun run dev:web`)
+- `vp run db:up` - Start development databases and run migrations only (or `bun run db:up`)
 - `bun run build` - Build all packages
 - `bun run build:web` - Build web package only
 - `bun run build:backend` - Build backend package only
-- `bun run lint` - Run oxlint on web package
 - `bun run typecheck` - Type check all packages (use this instead of build for validation)
 - `bun run typecheck:web` - Type check web package only
 - `bun run typecheck:backend` - Type check backend package only
 - `bun run typecheck:db` - Type check db package only
 - `bun run typecheck:shared` - Type check shared-schema package only
-- `bun run backend:dev` - Start backend in development mode
+- `bun run backend:dev` - Start backend directly without database setup
 - `bun run backend:start` - Start backend in production mode
-- `bun run db:up` - Start development databases, run migrations, and import MoonBoard data (uses pre-built image with Kilter/Tension data)
 
 ### Running E2E Tests
 
@@ -110,6 +116,7 @@ The `boardsesh-dev-db` image is published to GHCR and contains PostgreSQL 17 + P
 ### Creating Database Migrations
 
 **IMPORTANT**: Always use `bunx drizzle-kit generate` from `packages/db/` to create new migrations. This command:
+
 1. Detects schema changes in `packages/db/src/schema/`
 2. Generates the SQL migration file in `packages/db/drizzle/`
 3. Automatically adds the migration to `packages/db/drizzle/meta/_journal.json`
@@ -188,14 +195,17 @@ We are using next.js app router, it's important we try to use server side compon
 
 ### Testing
 
-- Vitest configured but tests not yet implemented
-- Run tests with `bun test` when available
+- Tests use Vitest via Vite+ (`vp test` or `bun run test`)
+- Run `vp test run --reporter=agent` for CI-friendly output
+- Run `vp test --project web` to run only web tests
+- Run `vp test --project backend` to run only backend tests
+- `packages/db` uses Node.js native test runner (`tsx --test`), not Vitest
 
 ## Development Guidelines
 
 ### Important rules
 
-- **Use `bun run typecheck` instead of `bun run build` for TypeScript validation** - Running build interferes with the local dev server and `bunx` commands can mess with lock files. Use the typecheck scripts for validating TypeScript.
+- **Use `vp check` or `bun run typecheck` instead of `bun run build` for validation** - Running build interferes with the local dev server and `bunx` commands can mess with lock files. Use `vp check` to run lint + format + typecheck together, or `bun run typecheck` for type checking only.
 - Always try to use server side rendering wherever possibe. But do note that for some parts such as the QueueList and related components, thats impossible, so dont try to force SSR there.
 - Always use MUI (Material UI) components and their properties.
 - Try to avoid use of the style property

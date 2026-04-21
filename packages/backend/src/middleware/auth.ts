@@ -29,13 +29,7 @@ async function deriveEncryptionKey(secret: string): Promise<Uint8Array> {
     return cachedEncryptionKey;
   }
   const encoder = new TextEncoder();
-  cachedEncryptionKey = await hkdf(
-    'sha256',
-    encoder.encode(secret),
-    '',
-    'NextAuth.js Generated Encryption Key',
-    32
-  );
+  cachedEncryptionKey = await hkdf('sha256', encoder.encode(secret), '', 'NextAuth.js Generated Encryption Key', 32);
   cachedSecret = secret;
   return cachedEncryptionKey;
 }
@@ -110,10 +104,7 @@ export async function validateNextAuthToken(token: string): Promise<AuthResult |
  * Extract auth token from various sources.
  * Checks connection params first, then falls back to URL query params.
  */
-export function extractAuthToken(
-  connectionParams?: Record<string, unknown>,
-  requestUrl?: string
-): string | null {
+export function extractAuthToken(connectionParams?: Record<string, unknown>, requestUrl?: string): string | null {
   // Check connection params (preferred method)
   if (connectionParams?.authToken && typeof connectionParams.authToken === 'string') {
     return connectionParams.authToken;
@@ -139,9 +130,7 @@ export function extractAuthToken(
  * Extract controller API key from connection params.
  * Controllers should pass their API key in connectionParams.controllerApiKey
  */
-export function extractControllerApiKey(
-  connectionParams?: Record<string, unknown>
-): string | null {
+export function extractControllerApiKey(connectionParams?: Record<string, unknown>): string | null {
   if (connectionParams?.controllerApiKey && typeof connectionParams.controllerApiKey === 'string') {
     return connectionParams.controllerApiKey;
   }
@@ -152,15 +141,9 @@ export function extractControllerApiKey(
  * Validate a controller API key and return controller info.
  * Returns null if the API key is invalid or not found.
  */
-export async function validateControllerApiKey(
-  apiKey: string
-): Promise<ControllerAuthResult | null> {
+export async function validateControllerApiKey(apiKey: string): Promise<ControllerAuthResult | null> {
   try {
-    const [controller] = await db
-      .select()
-      .from(esp32Controllers)
-      .where(eq(esp32Controllers.apiKey, apiKey))
-      .limit(1);
+    const [controller] = await db.select().from(esp32Controllers).where(eq(esp32Controllers.apiKey, apiKey)).limit(1);
 
     if (!controller) {
       console.warn('[Auth] Controller API key not found');

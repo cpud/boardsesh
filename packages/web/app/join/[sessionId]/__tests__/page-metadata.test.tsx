@@ -1,21 +1,20 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vite-plus/test';
 
 vi.mock('@/app/lib/seo/dynamic-og-data', () => ({
   getSessionOgSummary: vi.fn(),
 }));
 
 vi.mock('@/app/lib/board-data', () => ({
-  BOULDER_GRADES: [
-    { difficulty_id: 10, font_grade: 'V5' },
-  ],
+  BOULDER_GRADES: [{ difficulty_id: 10, font_grade: 'V5' }],
 }));
 
 vi.mock('@/app/lib/seo/og', () => ({
   OG_IMAGE_WIDTH: 1200,
   OG_IMAGE_HEIGHT: 630,
-  buildVersionedOgImagePath: vi.fn((path: string, params: Record<string, string>, version: string) => (
-    `${path}?sessionId=${params.sessionId}&variant=${params.variant}&v=${version}`
-  )),
+  buildVersionedOgImagePath: vi.fn(
+    (path: string, params: Record<string, string>, version: string) =>
+      `${path}?sessionId=${params.sessionId}&variant=${params.variant}&v=${version}`,
+  ),
 }));
 
 vi.mock('../join-redirect', () => ({
@@ -26,9 +25,7 @@ const pageModule = await import('../page');
 const { getSessionOgSummary } = await import('@/app/lib/seo/dynamic-og-data');
 const getSessionOgSummaryMock = vi.mocked(getSessionOgSummary);
 
-function getOpenGraphImageUrl(
-  image: string | URL | { url: string | URL } | undefined,
-) {
+function getOpenGraphImageUrl(image: string | URL | { url: string | URL } | undefined) {
   if (!image) {
     return undefined;
   }
@@ -56,7 +53,8 @@ describe('join page metadata', () => {
       gradeRows: [{ difficulty: 10, count: 5 }],
       boardLabel: 'Kilter Original 12x12',
       boardAngle: 40,
-      boardPreviewPath: '/api/internal/board-render?board_name=kilter&frames=&thumbnail=1&include_background=1&format=png',
+      boardPreviewPath:
+        '/api/internal/board-render?board_name=kilter&frames=&thumbnail=1&include_background=1&format=png',
       version: 'abc123',
       found: true,
     });
@@ -65,9 +63,7 @@ describe('join page metadata', () => {
       params: Promise.resolve({ sessionId: 'session-123' }),
     });
 
-    const image = Array.isArray(metadata.openGraph?.images)
-      ? metadata.openGraph.images[0]
-      : metadata.openGraph?.images;
+    const image = Array.isArray(metadata.openGraph?.images) ? metadata.openGraph.images[0] : metadata.openGraph?.images;
 
     expect(metadata.title).toBe('Join Alex on the wall | Boardsesh');
     expect(metadata.description).toBe('Kilter Original 12x12 at 40°. 5 sends so far on V5. Get on the wall.');

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 
 vi.mock('@/app/hooks/use-ws-auth-token', () => ({
@@ -127,21 +127,18 @@ describe('useCreateSession', () => {
     });
 
     expect(sessionId).toBe('session-123');
-    expect(mockRequest).toHaveBeenCalledWith(
-      'CREATE_SESSION_MUTATION',
-      {
-        input: {
-          boardPath: '/kilter/1/2/3/40',
-          latitude: 37.7749,
-          longitude: -122.4194,
-          discoverable: true,
-          name: 'Test Session',
-          goal: 'Climb hard',
-          color: '#ff0000',
-          isPermanent: false,
-        },
+    expect(mockRequest).toHaveBeenCalledWith('CREATE_SESSION_MUTATION', {
+      input: {
+        boardPath: '/kilter/1/2/3/40',
+        latitude: 37.7749,
+        longitude: -122.4194,
+        discoverable: true,
+        name: 'Test Session',
+        goal: 'Climb hard',
+        color: '#ff0000',
+        isPermanent: false,
       },
-    );
+    });
   });
 
   it('creates session without geolocation when not discoverable', async () => {
@@ -178,11 +175,9 @@ describe('useCreateSession', () => {
   });
 
   it('falls back to 0,0 when geolocation fails', async () => {
-    mockGeolocation.getCurrentPosition.mockImplementation(
-      (_success: unknown, error: (err: unknown) => void) => {
-        error(new Error('Permission denied'));
-      },
-    );
+    mockGeolocation.getCurrentPosition.mockImplementation((_success: unknown, error: (err: unknown) => void) => {
+      error(new Error('Permission denied'));
+    });
 
     mockRequest.mockResolvedValue({
       createSession: {
@@ -249,7 +244,9 @@ describe('useCreateSession', () => {
   it('sets isCreating during operation', async () => {
     let resolveRequest: (value: unknown) => void;
     mockRequest.mockReturnValue(
-      new Promise((resolve) => { resolveRequest = resolve; }),
+      new Promise((resolve) => {
+        resolveRequest = resolve;
+      }),
     );
 
     const { result } = renderHook(() => useCreateSession());

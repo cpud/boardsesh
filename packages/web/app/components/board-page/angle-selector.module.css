@@ -15,16 +15,16 @@
   background: rgba(255, 255, 255, 0.95);
 }
 
-:global(html[data-theme="dark"]) .anglePill {
+:global(html[data-theme='dark']) .anglePill {
   background: transparent;
   border: none;
   border-radius: 0;
 }
 
-:global(html[data-theme="dark"]) .anglePill:hover {
+:global(html[data-theme='dark']) .anglePill:hover {
   background: transparent;
 }
 
-:global(html[data-theme="dark"]) .anglePill:active {
+:global(html[data-theme='dark']) .anglePill:active {
   background: transparent;
 }

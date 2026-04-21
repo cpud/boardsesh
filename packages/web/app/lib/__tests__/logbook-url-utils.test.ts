@@ -1,9 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import {
-  readFiltersFromQuery,
-  readSortFromQuery,
-  filtersToQueryParams,
-} from '../logbook-url-utils';
+import { describe, it, expect } from 'vite-plus/test';
+import { readFiltersFromQuery, readSortFromQuery, filtersToQueryParams } from '../logbook-url-utils';
 import { parseQueryParamBoolean, parseQueryParamInt } from '../url-utils';
 import { DEFAULT_FILTERS, DEFAULT_SORT, DEFAULT_ANGLE_RANGE } from '../logbook-preferences';
 
@@ -224,7 +220,11 @@ describe('filtersToQueryParams', () => {
   });
 
   it('includes grade range when set', () => {
-    const filters = { ...DEFAULT_FILTERS, minGrade: 10 as number | '', maxGrade: 20 as number | '' };
+    const filters = {
+      ...DEFAULT_FILTERS,
+      minGrade: 10 as number | '',
+      maxGrade: 20 as number | '',
+    };
     const result = filtersToQueryParams('', filters, DEFAULT_SORT, []);
     expect(result.minGrade).toBe('10');
     expect(result.maxGrade).toBe('20');
@@ -266,14 +266,24 @@ describe('filtersToQueryParams', () => {
   });
 
   it('includes custom sort params', () => {
-    const sort = { ...DEFAULT_SORT, mode: 'custom' as const, primaryField: 'climbName' as const, primaryDirection: 'asc' as const };
+    const sort = {
+      ...DEFAULT_SORT,
+      mode: 'custom' as const,
+      primaryField: 'climbName' as const,
+      primaryDirection: 'asc' as const,
+    };
     const result = filtersToQueryParams('', DEFAULT_FILTERS, sort, []);
     expect(result.sort).toBe('climbName');
     expect(result.order).toBe('asc');
   });
 
   it('always emits sort field in custom mode even when default', () => {
-    const sort = { ...DEFAULT_SORT, mode: 'custom' as const, primaryField: 'date' as const, primaryDirection: 'asc' as const };
+    const sort = {
+      ...DEFAULT_SORT,
+      mode: 'custom' as const,
+      primaryField: 'date' as const,
+      primaryDirection: 'asc' as const,
+    };
     const result = filtersToQueryParams('', DEFAULT_FILTERS, sort, []);
     expect(result.sort).toBe('date');
     expect(result.order).toBe('asc');

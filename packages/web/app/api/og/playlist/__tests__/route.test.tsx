@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import { NextRequest } from 'next/server';
 
 const playlistRouteState = vi.hoisted(() => ({
@@ -36,19 +36,21 @@ vi.mock('@/app/lib/string-utils', () => ({
 vi.mock('@/app/lib/seo/og', () => ({
   OG_IMAGE_WIDTH: 1200,
   OG_IMAGE_HEIGHT: 630,
-  createOgImageHeaders: vi.fn(({ contentType, version, serverTiming }: { contentType: string; version?: string; serverTiming?: string }) => ({
-    'Content-Type': contentType,
-    'Cache-Control': version
-      ? 'public, max-age=31536000, s-maxage=31536000, immutable'
-      : 'public, max-age=0, s-maxage=300, stale-while-revalidate=86400',
-    'CDN-Cache-Control': version
-      ? 'public, s-maxage=31536000, immutable'
-      : 'public, s-maxage=300, stale-while-revalidate=86400',
-    'Vercel-CDN-Cache-Control': version
-      ? 'public, s-maxage=31536000, immutable'
-      : 'public, s-maxage=300, stale-while-revalidate=86400',
-    'Server-Timing': serverTiming ?? '',
-  })),
+  createOgImageHeaders: vi.fn(
+    ({ contentType, version, serverTiming }: { contentType: string; version?: string; serverTiming?: string }) => ({
+      'Content-Type': contentType,
+      'Cache-Control': version
+        ? 'public, max-age=31536000, s-maxage=31536000, immutable'
+        : 'public, max-age=0, s-maxage=300, stale-while-revalidate=86400',
+      'CDN-Cache-Control': version
+        ? 'public, s-maxage=31536000, immutable'
+        : 'public, s-maxage=300, stale-while-revalidate=86400',
+      'Vercel-CDN-Cache-Control': version
+        ? 'public, s-maxage=31536000, immutable'
+        : 'public, s-maxage=300, stale-while-revalidate=86400',
+      'Server-Timing': serverTiming ?? '',
+    }),
+  ),
 }));
 
 vi.mock('@vercel/og', () => ({
@@ -97,7 +99,8 @@ describe('api/og/playlist route', () => {
   it('renders a playlist OG image with ASCII-safe fallback markup and truncated copy', async () => {
     playlistRouteState.getPlaylistOgSummaryMock.mockResolvedValue({
       name: 'A very long playlist name that should be shortened for the OG image',
-      description: 'This description is intentionally much longer than the OG image should render so the route has to trim it before handing the tree to ImageResponse.',
+      description:
+        'This description is intentionally much longer than the OG image should render so the route has to trim it before handing the tree to ImageResponse.',
       color: '',
       icon: '',
       isPublic: true,
@@ -114,7 +117,9 @@ describe('api/og/playlist route', () => {
     expect(response.headers.get('Cache-Control')).toContain('immutable');
     expect(textContent).toContain('AV');
     expect(textContent).toContain('A very long playlist name that...');
-    expect(textContent).toContain('This description is intentionally much longer than the OG image should render so the route has to trim it before hand...');
+    expect(textContent).toContain(
+      'This description is intentionally much longer than the OG image should render so the route has to trim it before hand...',
+    );
     expect(textContent).not.toContain('before handing the tree to ImageResponse.');
     expect(textContent).toContain('12');
     expect(textContent).toContain('Kilter');

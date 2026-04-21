@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -45,14 +45,16 @@ function makeSessionFeedItem(id: string): SessionFeedItem {
     sessionId: id,
     sessionType: 'inferred',
     sessionName: null,
-    participants: [{
-      userId: 'user-1',
-      displayName: 'Test User',
-      avatarUrl: null,
-      sends: 3,
-      flashes: 1,
-      attempts: 2,
-    }],
+    participants: [
+      {
+        userId: 'user-1',
+        displayName: 'Test User',
+        avatarUrl: null,
+        sends: 3,
+        flashes: 1,
+        attempts: 2,
+      },
+    ],
     totalSends: 3,
     totalFlashes: 1,
     totalAttempts: 2,
@@ -201,10 +203,9 @@ describe('ActivityFeed', () => {
         sessionGroupedFeed: { sessions: [], cursor: null, hasMore: false },
       });
 
-      render(
-        <ActivityFeed isAuthenticated={true} onFindClimbers={onFindClimbers} />,
-        { wrapper: createWrapper() },
-      );
+      render(<ActivityFeed isAuthenticated={true} onFindClimbers={onFindClimbers} />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(screen.getByText(/Find Climbers/)).toBeTruthy();
@@ -227,10 +228,9 @@ describe('ActivityFeed', () => {
         hasMore: true,
       };
 
-      render(
-        <ActivityFeed isAuthenticated={false} initialFeedResult={initialFeedResult} />,
-        { wrapper: createWrapper() },
-      );
+      render(<ActivityFeed isAuthenticated={false} initialFeedResult={initialFeedResult} />, {
+        wrapper: createWrapper(),
+      });
 
       expect(screen.getByText('init-1')).toBeTruthy();
     });
@@ -249,10 +249,9 @@ describe('ActivityFeed', () => {
         sessionGroupedFeed: { sessions: [], cursor: null, hasMore: false },
       });
 
-      render(
-        <ActivityFeed isAuthenticated={false} boardUuid="board-123" />,
-        { wrapper: createWrapper() },
-      );
+      render(<ActivityFeed isAuthenticated={false} boardUuid="board-123" />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(mockRequest).toHaveBeenCalledWith(

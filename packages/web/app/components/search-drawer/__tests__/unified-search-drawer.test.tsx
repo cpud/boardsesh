@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
@@ -125,12 +125,7 @@ describe('UnifiedSearchDrawer', () => {
 
   it('falls back to the first allowed category when defaultCategory is not in the allow-list', () => {
     render(
-      <UnifiedSearchDrawer
-        open={true}
-        onClose={vi.fn()}
-        defaultCategory="boards"
-        allowedCategories={['users']}
-      />,
+      <UnifiedSearchDrawer open={true} onClose={vi.fn()} defaultCategory="boards" allowedCategories={['users']} />,
     );
 
     // The users search placeholder is shown, confirming the category fell back.
@@ -140,12 +135,7 @@ describe('UnifiedSearchDrawer', () => {
 
   it('never transiently mounts the wrong category results on first render (no flash)', () => {
     render(
-      <UnifiedSearchDrawer
-        open={true}
-        onClose={vi.fn()}
-        defaultCategory="boards"
-        allowedCategories={['users']}
-      />,
+      <UnifiedSearchDrawer open={true} onClose={vi.fn()} defaultCategory="boards" allowedCategories={['users']} />,
     );
 
     // If the fallback ran as a post-render effect, BoardSearchResults would
@@ -176,13 +166,7 @@ describe('UnifiedSearchDrawer', () => {
   });
 
   it('defaults showCloseButton and showCloseButtonOnMobile to false when not provided', () => {
-    render(
-      <UnifiedSearchDrawer
-        open={true}
-        onClose={vi.fn()}
-        defaultCategory="boards"
-      />,
-    );
+    render(<UnifiedSearchDrawer open={true} onClose={vi.fn()} defaultCategory="boards" />);
 
     const last = swipeableDrawerProps[swipeableDrawerProps.length - 1];
     expect(last.showCloseButton).toBe(false);
@@ -203,13 +187,7 @@ describe('UnifiedSearchDrawer', () => {
   });
 
   it('hides the climbs category when boardDetails is not provided', () => {
-    render(
-      <UnifiedSearchDrawer
-        open={true}
-        onClose={vi.fn()}
-        defaultCategory="boards"
-      />,
-    );
+    render(<UnifiedSearchDrawer open={true} onClose={vi.fn()} defaultCategory="boards" />);
 
     expect(screen.queryByText('Climbs')).toBeNull();
   });

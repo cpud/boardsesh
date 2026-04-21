@@ -25,7 +25,6 @@ function formatDistance(meters: number): string {
   return `${(meters / 1000).toFixed(1)}km`;
 }
 
-
 interface BoardScrollCardProps {
   userBoard?: UserBoard;
   storedConfig?: StoredBoardConfig;
@@ -73,7 +72,7 @@ export default function BoardScrollCard({
       if (boardConfigs) {
         const layouts = boardConfigs.layouts[storedConfig.board] || [];
         const layout = layouts.find((l) => l.id === storedConfig.layoutId);
-        cardMeta = layout?.name || (storedConfig.board.charAt(0).toUpperCase() + storedConfig.board.slice(1));
+        cardMeta = layout?.name || storedConfig.board.charAt(0).toUpperCase() + storedConfig.board.slice(1);
       } else {
         cardMeta = storedConfig.board.charAt(0).toUpperCase() + storedConfig.board.slice(1);
       }
@@ -101,25 +100,22 @@ export default function BoardScrollCard({
         className={`${styles.cardSquare} ${selected ? styles.cardSquareSelected : ''} ${disabled ? styles.cardSquareDisabled : ''}`}
       >
         {boardDetails ? (
-          <BoardRenderer
-            mirrored={false}
-            boardDetails={boardDetails}
-            thumbnail
-            fillHeight
-          />
+          <BoardRenderer mirrored={false} boardDetails={boardDetails} thumbnail fillHeight />
         ) : (
           <div className={styles.cardFallback}>
             <DashboardOutlined sx={{ fontSize: iconSize }} />
           </div>
         )}
-        {distanceMeters != null && (
-          <div className={styles.distanceBadge}>{formatDistance(distanceMeters)}</div>
-        )}
+        {distanceMeters != null && <div className={styles.distanceBadge}>{formatDistance(distanceMeters)}</div>}
       </div>
-      <div className={`${styles.cardName} ${selected ? styles.cardNameSelected : ''} ${disabled ? styles.cardNameDisabled : ''}`}>
+      <div
+        className={`${styles.cardName} ${selected ? styles.cardNameSelected : ''} ${disabled ? styles.cardNameDisabled : ''}`}
+      >
         {name}
       </div>
-      {displayMeta && <div className={`${styles.cardMeta} ${disabled ? styles.cardNameDisabled : ''}`}>{displayMeta}</div>}
+      {displayMeta && (
+        <div className={`${styles.cardMeta} ${disabled ? styles.cardNameDisabled : ''}`}>{displayMeta}</div>
+      )}
     </div>
   );
 }

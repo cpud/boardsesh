@@ -9,7 +9,7 @@
  * different image processing pipelines. Hold detection should be consistent.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import path from 'path';
 import { NodeCanvasImageProcessor } from './helpers/node-canvas-processor';
 import { parseWithProcessor } from '../parser';

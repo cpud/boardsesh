@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import React from 'react';
 import type { AscentFeedItem } from '@/app/lib/graphql/operations/ticks';
@@ -102,18 +102,12 @@ vi.mock('@/app/lib/board-data', () => ({
     { difficulty_id: 20, difficulty_name: '7a/V6', v_grade: 'V6' },
     { difficulty_id: 21, difficulty_name: '7a+/V7', v_grade: 'V7' },
   ],
-  getGradesForBoard: () => [
-    { difficulty_id: 20, difficulty_name: '7a/V6', v_grade: 'V6' },
-  ],
+  getGradesForBoard: () => [{ difficulty_id: 20, difficulty_name: '7a/V6', v_grade: 'V6' }],
 }));
 
 vi.mock('@/app/components/activity-feed/ascent-thumbnail', () => ({
   default: ({ onClick }: { onClick?: (e: React.MouseEvent) => void }) => (
-    <button
-      type="button"
-      data-testid="ascent-thumbnail"
-      onClick={(e) => onClick?.(e)}
-    />
+    <button type="button" data-testid="ascent-thumbnail" onClick={(e) => onClick?.(e)} />
   ),
 }));
 
@@ -250,13 +244,7 @@ describe('LogbookFeedItem', () => {
   it('calls onCancelEdit after successful save', async () => {
     updateTickAsyncMock.mockResolvedValue({ uuid: 'tick-1' });
     const onCancelEdit = vi.fn();
-    render(
-      <LogbookFeedItem
-        item={makeItem()}
-        isEditing
-        onCancelEdit={onCancelEdit}
-      />,
-    );
+    render(<LogbookFeedItem item={makeItem()} isEditing onCancelEdit={onCancelEdit} />);
     await act(async () => {
       fireEvent.click(screen.getByLabelText('Save'));
     });
@@ -274,13 +262,7 @@ describe('LogbookFeedItem', () => {
   it('keeps edit open when save fails', async () => {
     updateTickAsyncMock.mockRejectedValue(new Error('boom'));
     const onCancelEdit = vi.fn();
-    render(
-      <LogbookFeedItem
-        item={makeItem()}
-        isEditing
-        onCancelEdit={onCancelEdit}
-      />,
-    );
+    render(<LogbookFeedItem item={makeItem()} isEditing onCancelEdit={onCancelEdit} />);
     await act(async () => {
       fireEvent.click(screen.getByLabelText('Save'));
     });
@@ -295,7 +277,7 @@ describe('LogbookFeedItem', () => {
     expect(screen.getByText('Attempt')).toBeDefined();
   });
 
-  it('nulls quality in save payload when status is attempt', async () => {
+  it('preserves quality in save payload when status is changed to attempt', async () => {
     updateTickAsyncMock.mockResolvedValue({});
     render(<LogbookFeedItem item={makeItem()} isEditing />);
     fireEvent.click(screen.getByLabelText(/Change ascent status/));
@@ -303,9 +285,10 @@ describe('LogbookFeedItem', () => {
     await act(async () => {
       fireEvent.click(screen.getByLabelText('Save'));
     });
+    // The component now preserves the existing quality when changing status to attempt
     expect(updateTickAsyncMock).toHaveBeenCalledWith({
       uuid: 'tick-1',
-      input: expect.objectContaining({ status: 'attempt', quality: null }),
+      input: expect.objectContaining({ status: 'attempt', quality: 4 }),
     });
   });
 
@@ -330,9 +313,7 @@ describe('LogbookFeedItem', () => {
   });
 
   it('tags the container for the swipe-hint when isSwipeHintTarget is true', () => {
-    const { container } = render(
-      <LogbookFeedItem item={makeItem()} isSwipeHintTarget />,
-    );
+    const { container } = render(<LogbookFeedItem item={makeItem()} isSwipeHintTarget />);
     expect(container.querySelector('#onboarding-logbook-card')).not.toBeNull();
   });
 
@@ -368,9 +349,7 @@ describe('LogbookFeedItem', () => {
     const row = container.querySelector('.swipeableContent') as HTMLElement;
     fireEvent.click(row);
     expect(setCurrentClimbMock).toHaveBeenCalledTimes(1);
-    expect(setCurrentClimbMock).toHaveBeenCalledWith(
-      expect.objectContaining({ uuid: 'climb-1', name: 'Test Climb' }),
-    );
+    expect(setCurrentClimbMock).toHaveBeenCalledWith(expect.objectContaining({ uuid: 'climb-1', name: 'Test Climb' }));
     expect(dispatchOpenPlayDrawerMock).not.toHaveBeenCalled();
   });
 
@@ -424,7 +403,10 @@ describe('LogbookFeedItem', () => {
     // Make the mock actually return a Promise so we can assert ordering.
     let resolveSet: (() => void) | undefined;
     setCurrentClimbMock.mockImplementationOnce(
-      () => new Promise<void>((resolve) => { resolveSet = () => resolve(); }),
+      () =>
+        new Promise<void>((resolve) => {
+          resolveSet = () => resolve();
+        }),
     );
     render(<LogbookFeedItem item={makeItem()} />);
     fireEvent.click(screen.getByTestId('ascent-thumbnail'));
@@ -453,9 +435,7 @@ describe('LogbookFeedItem', () => {
   });
 
   it('keeps the comment row container mounted in both modes (U8)', () => {
-    const { container, rerender } = render(
-      <LogbookFeedItem item={makeItem({ comment: '' })} />,
-    );
+    const { container, rerender } = render(<LogbookFeedItem item={makeItem({ comment: '' })} />);
     const emptyRow = container.querySelector('.commentRow');
     expect(emptyRow).not.toBeNull();
 

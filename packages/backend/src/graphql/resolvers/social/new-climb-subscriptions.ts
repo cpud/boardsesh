@@ -9,10 +9,7 @@ import type {
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { requireAuthenticated, applyRateLimit, validateInput } from '../shared/helpers';
-import {
-  NewClimbFeedInputSchema,
-  NewClimbSubscriptionInputSchema,
-} from '../../../validation/schemas';
+import { NewClimbFeedInputSchema, NewClimbSubscriptionInputSchema } from '../../../validation/schemas';
 
 export const newClimbSubscriptionResolvers = {
   Query: {
@@ -20,10 +17,7 @@ export const newClimbSubscriptionResolvers = {
      * Public feed of newly created climbs for a board type + layout.
      * Offset-based pagination for simplicity.
      */
-    newClimbFeed: async (
-      _: unknown,
-      { input }: { input: NewClimbFeedInput },
-    ): Promise<NewClimbFeedResult> => {
+    newClimbFeed: async (_: unknown, { input }: { input: NewClimbFeedInput }): Promise<NewClimbFeedResult> => {
       const validated = validateInput(NewClimbFeedInputSchema, input, 'input');
       const limit = validated.limit ?? 20;
       const offset = validated.offset ?? 0;
@@ -37,7 +31,9 @@ export const newClimbSubscriptionResolvers = {
           angle: dbSchema.boardClimbs.angle,
           frames: dbSchema.boardClimbs.frames,
           createdAt: dbSchema.boardClimbs.createdAt,
-          setterDisplayName: sql<string | null>`COALESCE(${dbSchema.userProfiles.displayName}, ${dbSchema.users.name}, ${dbSchema.boardClimbs.setterUsername})`,
+          setterDisplayName: sql<
+            string | null
+          >`COALESCE(${dbSchema.userProfiles.displayName}, ${dbSchema.users.name}, ${dbSchema.boardClimbs.setterUsername})`,
           setterAvatarUrl: sql<string | null>`COALESCE(${dbSchema.userProfiles.avatarUrl}, ${dbSchema.users.image})`,
           difficultyName: dbSchema.boardDifficultyGrades.boulderName,
         })
@@ -127,7 +123,7 @@ export const newClimbSubscriptionResolvers = {
     subscribeNewClimbs: async (
       _: unknown,
       { input }: { input: NewClimbSubscriptionInput },
-      ctx: ConnectionContext
+      ctx: ConnectionContext,
     ): Promise<boolean> => {
       requireAuthenticated(ctx);
       await applyRateLimit(ctx, 20);
@@ -148,7 +144,7 @@ export const newClimbSubscriptionResolvers = {
     unsubscribeNewClimbs: async (
       _: unknown,
       { input }: { input: NewClimbSubscriptionInput },
-      ctx: ConnectionContext
+      ctx: ConnectionContext,
     ): Promise<boolean> => {
       requireAuthenticated(ctx);
       await applyRateLimit(ctx, 20);

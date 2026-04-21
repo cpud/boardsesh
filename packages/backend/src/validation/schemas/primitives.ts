@@ -15,7 +15,8 @@ export const ExternalUUIDSchema = z.string().min(1, 'UUID cannot be empty').max(
  * Session ID validation schema
  * Allows UUIDs and alphanumeric strings with hyphens (for testing and backwards compatibility)
  */
-export const SessionIdSchema = z.string()
+export const SessionIdSchema = z
+  .string()
   .min(1, 'Session ID cannot be empty')
   .max(100, 'Session ID too long')
   .regex(/^[a-zA-Z0-9-]+$/, 'Session ID must be alphanumeric with hyphens only');
@@ -49,11 +50,12 @@ export const SessionNameSchema = z.string().max(100, 'Session name too long').op
 /**
  * Avatar URL validation schema
  */
-export const AvatarUrlSchema = z.string()
+export const AvatarUrlSchema = z
+  .string()
   .max(500, 'Avatar URL too long')
   .refine(
     (url) => url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/'),
-    'Avatar URL must use http(s) or be a relative path'
+    'Avatar URL must use http(s) or be a relative path',
   )
   .optional();
 
@@ -86,9 +88,7 @@ export const QueueIndexSchema = z.number().int('Index must be an integer').min(0
 /**
  * Queue item identifier schema (for remove/reorder operations)
  */
-export const QueueItemIdSchema = z.string()
-  .min(1, 'Queue item ID cannot be empty')
-  .max(100, 'Queue item ID too long');
+export const QueueItemIdSchema = z.string().min(1, 'Queue item ID cannot be empty').max(100, 'Queue item ID too long');
 
 /**
  * Validate input and throw a user-friendly error if invalid.

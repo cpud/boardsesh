@@ -13,11 +13,5 @@ export const KEY_LENGTH = 32; // 256 bits for AES-256
  * Uses a fixed salt for consistent key derivation across encrypt/decrypt operations
  */
 export function deriveKey(secret: string): Buffer {
-  return crypto.pbkdf2Sync(
-    secret,
-    PBKDF2_SALT,
-    PBKDF2_ITERATIONS,
-    KEY_LENGTH,
-    'sha256'
-  );
+  return crypto.pbkdf2Sync(secret, PBKDF2_SALT, PBKDF2_ITERATIONS, KEY_LENGTH, 'sha256');
 }

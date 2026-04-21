@@ -10,7 +10,13 @@ export async function analyzeGradeOutlier(
   climbUuid: string,
   boardType: string,
   angle: number,
-): Promise<{ isOutlier: boolean; currentGrade: number; neighborAverage: number; neighborCount: number; gradeDifference: number } | null> {
+): Promise<{
+  isOutlier: boolean;
+  currentGrade: number;
+  neighborAverage: number;
+  neighborCount: number;
+  gradeDifference: number;
+} | null> {
   try {
     // Query climb stats across all angles for this climb (unified table)
     const stats = await db.execute(sql`
@@ -21,7 +27,11 @@ export async function analyzeGradeOutlier(
       ORDER BY angle
     `);
 
-    const rows = (stats as unknown as { rows: Array<{ angle: number; display_difficulty: number; ascensionist_count: number }> }).rows;
+    const rows = (
+      stats as unknown as {
+        rows: Array<{ angle: number; display_difficulty: number; ascensionist_count: number }>;
+      }
+    ).rows;
     if (!rows || rows.length < 2) return null;
 
     // Find the current angle's data
@@ -76,22 +86,24 @@ export async function analyzeGradeOutlier(
 /**
  * Check if a proposal has reached the auto-approval threshold.
  */
-export async function checkAutoApproval(proposalId: number, boardType: string, climbUuid: string, angle: number | null): Promise<boolean> {
+export async function checkAutoApproval(
+  proposalId: number,
+  boardType: string,
+  climbUuid: string,
+  angle: number | null,
+): Promise<boolean> {
   const threshold = await resolveCommunitySetting('approval_threshold', climbUuid, angle, boardType);
   const required = parseInt(threshold, 10) || 5;
 
   // Sum weighted upvotes
   const result = await db
     .select({
-      weightedSum: sql<number>`COALESCE(SUM(${dbSchema.proposalVotes.value} * ${dbSchema.proposalVotes.weight}), 0)`.as('weighted_sum'),
+      weightedSum: sql<number>`COALESCE(SUM(${dbSchema.proposalVotes.value} * ${dbSchema.proposalVotes.weight}), 0)`.as(
+        'weighted_sum',
+      ),
     })
     .from(dbSchema.proposalVotes)
-    .where(
-      and(
-        eq(dbSchema.proposalVotes.proposalId, proposalId),
-        sql`${dbSchema.proposalVotes.value} > 0`,
-      ),
-    );
+    .where(and(eq(dbSchema.proposalVotes.proposalId, proposalId), sql`${dbSchema.proposalVotes.value} > 0`));
 
   const weightedSum = Number(result[0]?.weightedSum || 0);
   return weightedSum >= required;

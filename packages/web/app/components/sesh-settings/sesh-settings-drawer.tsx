@@ -23,10 +23,7 @@ import { themeTokens } from '@/app/theme/theme-config';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { useSessionTimer } from '@/app/hooks/use-session-timer';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  GET_SESSION_DETAIL,
-  type GetSessionDetailQueryResponse,
-} from '@/app/lib/graphql/operations/activity-feed';
+import { GET_SESSION_DETAIL, type GetSessionDetailQueryResponse } from '@/app/lib/graphql/operations/activity-feed';
 import { clearClimbSessionCookie } from '@/app/lib/climb-session-cookie';
 import { shareWithFallback } from '@/app/lib/share-utils';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
@@ -81,19 +78,22 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
     });
   }, [shareUrl, sessionId, showMessage]);
 
-  const handleAngleChange = useCallback((newAngle: number) => {
-    if (!boardDetails || angle === undefined) return;
+  const handleAngleChange = useCallback(
+    (newAngle: number) => {
+      if (!boardDetails || angle === undefined) return;
 
-    // Replace the current angle in the URL with the new one
-    // Same pattern as angle-selector.tsx — find by value, not position
-    const pathSegments = pathname.split('/');
-    const angleIndex = pathSegments.findIndex((segment) => segment === angle.toString());
+      // Replace the current angle in the URL with the new one
+      // Same pattern as angle-selector.tsx — find by value, not position
+      const pathSegments = pathname.split('/');
+      const angleIndex = pathSegments.findIndex((segment) => segment === angle.toString());
 
-    if (angleIndex !== -1) {
-      pathSegments[angleIndex] = newAngle.toString();
-      router.push(pathSegments.join('/'));
-    }
-  }, [boardDetails, angle, pathname, router]);
+      if (angleIndex !== -1) {
+        pathSegments[angleIndex] = newAngle.toString();
+        router.push(pathSegments.join('/'));
+      }
+    },
+    [boardDetails, angle, pathname, router],
+  );
 
   const handleStopSession = useCallback(() => {
     deactivateSession();
@@ -175,7 +175,16 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
       voteScore: 0,
       commentCount: 0,
     };
-  }, [activeSession, sessionId, sessionDetail, session?.startedAt, session?.name, session?.goal, users, boardDetails?.board_name]);
+  }, [
+    activeSession,
+    sessionId,
+    sessionDetail,
+    session?.startedAt,
+    session?.name,
+    session?.goal,
+    users,
+    boardDetails?.board_name,
+  ]);
 
   const sessionForView = useMemo<SessionDetail | null>(() => {
     const base = sessionDetail ?? fallbackSession;
@@ -184,12 +193,8 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
     if (!mergedStats) return base;
 
     const mergedTicks = mergedStats.ticks;
-    const firstTickAt = mergedTicks.length > 0
-      ? mergedTicks[mergedTicks.length - 1].climbedAt
-      : base.firstTickAt;
-    const lastTickAt = mergedTicks.length > 0
-      ? mergedTicks[0].climbedAt
-      : base.lastTickAt;
+    const firstTickAt = mergedTicks.length > 0 ? mergedTicks[mergedTicks.length - 1].climbedAt : base.firstTickAt;
+    const lastTickAt = mergedTicks.length > 0 ? mergedTicks[0].climbedAt : base.lastTickAt;
 
     return {
       ...base,
@@ -217,29 +222,30 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
   const timerText = useSessionTimer(session?.startedAt ?? displaySession?.firstTickAt);
 
   const drawerTitle = displaySession
-    ? (displaySession.sessionName || generateSessionName(displaySession.firstTickAt, displaySession.boardTypes))
+    ? displaySession.sessionName || generateSessionName(displaySession.firstTickAt, displaySession.boardTypes)
     : 'Session';
 
-  const inviteContent = !isStopped && shareUrl ? (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
-          Get your crew in by sharing this link or scanning the QR code
-        </Typography>
-        <IconButton onClick={handleShareSession} aria-label="Share session link">
-          <IosShare />
-        </IconButton>
-        <IconButton onClick={() => setShowQr((v) => !v)} aria-label={showQr ? 'Hide QR code' : 'Show QR code'}>
-          <QrCode2Outlined color={showQr ? 'primary' : 'inherit'} />
-        </IconButton>
-      </Box>
-      {showQr && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
-          <QRCodeSVG value={shareUrl} size={180} />
+  const inviteContent =
+    !isStopped && shareUrl ? (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+            Get your crew in by sharing this link or scanning the QR code
+          </Typography>
+          <IconButton onClick={handleShareSession} aria-label="Share session link">
+            <IosShare />
+          </IconButton>
+          <IconButton onClick={() => setShowQr((v) => !v)} aria-label={showQr ? 'Hide QR code' : 'Show QR code'}>
+            <QrCode2Outlined color={showQr ? 'primary' : 'inherit'} />
+          </IconButton>
         </Box>
-      )}
-    </Box>
-  ) : undefined;
+        {showQr && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
+            <QRCodeSVG value={shareUrl} size={180} />
+          </Box>
+        )}
+      </Box>
+    ) : undefined;
 
   if (!activeSession && !isStopped) return null;
 
@@ -249,16 +255,30 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
         <div data-swipe-blocked="" {...dragHandlers} className={drawerCss.dragHeaderWrapper}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             {sessionBoardDetails && (
-              <Box sx={{ width: 36, flexShrink: 0, borderRadius: '6px', overflow: 'hidden', background: 'var(--neutral-100)', aspectRatio: '1' }}>
-                <BoardRenderer
-                  boardDetails={sessionBoardDetails}
-                  mirrored={false}
-                  thumbnail
-                  fillHeight
-                />
+              <Box
+                sx={{
+                  width: 36,
+                  flexShrink: 0,
+                  borderRadius: '6px',
+                  overflow: 'hidden',
+                  background: 'var(--neutral-100)',
+                  aspectRatio: '1',
+                }}
+              >
+                <BoardRenderer boardDetails={sessionBoardDetails} mirrored={false} thumbnail fillHeight />
               </Box>
             )}
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <Typography
+              variant="subtitle1"
+              sx={{
+                fontWeight: 600,
+                flex: 1,
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
               {drawerTitle}
             </Typography>
             {timerText && (
@@ -288,12 +308,7 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
                 <StopCircleOutlined />
               </IconButton>
             ) : (
-              <IconButton
-                size="small"
-                onClick={handleClose}
-                aria-label="Dismiss"
-                sx={{ flexShrink: 0 }}
-              >
+              <IconButton size="small" onClick={handleClose} aria-label="Dismiss" sx={{ flexShrink: 0 }}>
                 <CloseOutlined />
               </IconButton>
             )}
@@ -308,8 +323,15 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
       onTransitionEnd={onTransitionEnd}
       swipeEnabled={false}
       styles={{
-        wrapper: { width: '100%', touchAction: 'pan-y' as const, transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)' },
-        header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
+        wrapper: {
+          width: '100%',
+          touchAction: 'pan-y' as const,
+          transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        },
+        header: {
+          paddingLeft: `${themeTokens.spacing[3]}px`,
+          paddingRight: `${themeTokens.spacing[3]}px`,
+        },
         body: { padding: `${themeTokens.spacing[2]}px 0` },
       }}
     >

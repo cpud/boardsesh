@@ -5,16 +5,16 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 
 const loadingMessages = [
-  "Setting up your board...",
-  "Configuring climb routes...",
-  "Preparing the wall...",
-  "Loading hold sets...",
-  "Almost ready to climb...",
-  "Warming up the LEDs...",
-  "Syncing board configuration...",
-  "Calibrating difficulty grades...",
-  "Getting your climbing groove on...",
-  "Checking route conditions...",
+  'Setting up your board...',
+  'Configuring climb routes...',
+  'Preparing the wall...',
+  'Loading hold sets...',
+  'Almost ready to climb...',
+  'Warming up the LEDs...',
+  'Syncing board configuration...',
+  'Calibrating difficulty grades...',
+  'Getting your climbing groove on...',
+  'Checking route conditions...',
 ];
 
 interface FullPageLoadingOverlayProps {

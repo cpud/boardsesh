@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 
 /**
  * Comprehensive BLE protocol tests validated against:
@@ -39,9 +39,10 @@ function toHex(data: Uint8Array | number[]): string {
 
 /** Decode v3 LED data (3 bytes per LED) from a single framed packet. */
 function decodeLedPositionsV3(input: Uint8Array | string): { position: number; color: number }[] {
-  const bytes = typeof input === 'string'
-    ? Array.from({ length: input.length / 2 }, (_, i) => parseInt(input.substring(i * 2, i * 2 + 2), 16))
-    : Array.from(input);
+  const bytes =
+    typeof input === 'string'
+      ? Array.from({ length: input.length / 2 }, (_, i) => parseInt(input.substring(i * 2, i * 2 + 2), 16))
+      : Array.from(input);
   // SOH(1) Length(1) Checksum(1) STX(1) Command(1) ...ledData... ETX(1)
   const ledData = bytes.slice(5, -1);
   const leds: { position: number; color: number }[] = [];
@@ -56,9 +57,10 @@ function decodeLedPositionsV3(input: Uint8Array | string): { position: number; c
 
 /** Decode v2 LED data (2 bytes per LED) from a single framed packet. */
 function decodeLedPositionsV2(input: Uint8Array | string): { position: number; colorByte: number }[] {
-  const bytes = typeof input === 'string'
-    ? Array.from({ length: input.length / 2 }, (_, i) => parseInt(input.substring(i * 2, i * 2 + 2), 16))
-    : Array.from(input);
+  const bytes =
+    typeof input === 'string'
+      ? Array.from({ length: input.length / 2 }, (_, i) => parseInt(input.substring(i * 2, i * 2 + 2), 16))
+      : Array.from(input);
   const ledData = bytes.slice(5, -1);
   const leds: { position: number; colorByte: number }[] = [];
   for (let i = 0; i < ledData.length; i += 2) {
@@ -181,7 +183,7 @@ describe('§6 Message Framing Protocol', () => {
       const payload = [0x54, 0x2a, 0x00, 0x1c];
       const frame = wrapBytes(payload);
       expect(frame[0]).toBe(0x01); // SOH
-      expect(frame[1]).toBe(4);    // LENGTH = payload.length
+      expect(frame[1]).toBe(4); // LENGTH = payload.length
       expect(frame[2]).toBe(0x65); // CHECKSUM
       expect(frame[3]).toBe(0x02); // STX
       expect(frame.slice(4, 8)).toEqual(payload);
@@ -203,7 +205,7 @@ describe('§6 Message Framing Protocol', () => {
       const maxPayload = new Array(255).fill(0);
       const frame = wrapBytes(maxPayload);
       expect(frame.length).toBe(260); // 255 + 5
-      expect(frame[1]).toBe(255);     // LENGTH
+      expect(frame[1]).toBe(255); // LENGTH
     });
 
     it('handles empty payload', () => {
@@ -628,8 +630,7 @@ describe('§9 BLE Transmission — splitMessages', () => {
   });
 
   it('preserves data content through chunking', () => {
-    const original = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-      11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]);
+    const original = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]);
     const chunks = splitMessages(original);
     const reassembled = new Uint8Array([...chunks[0], ...chunks[1]]);
     expect(Array.from(reassembled)).toEqual(Array.from(original));
@@ -675,7 +676,7 @@ describe('§17 Worked Examples', () => {
     // Verify the frame wrapping is correct
     const frame = wrapBytes(payload);
     expect(frame[0]).toBe(0x01); // SOH
-    expect(frame[1]).toBe(7);    // LENGTH = 7 bytes
+    expect(frame[1]).toBe(7); // LENGTH = 7 bytes
     // checksum verified implicitly by byte-exact Aurora tests
     expect(frame[3]).toBe(0x02); // STX
     expect(frame[4]).toBe(0x50); // P = v2 Single
@@ -720,14 +721,16 @@ describe('getBluetoothPacket — API level selection', () => {
 
   it('throws when any placements are missing', () => {
     const sparse: Record<number, number> = { 1: 39 };
-    expect(() => getBluetoothPacket('p1r42p9999r42', sparse, 'kilter', 3))
-      .toThrow('1 of 2 placements have no LED mapping');
+    expect(() => getBluetoothPacket('p1r42p9999r42', sparse, 'kilter', 3)).toThrow(
+      '1 of 2 placements have no LED mapping',
+    );
   });
 
   it('throws when a hold role is not mapped for the board', () => {
     const positions: Record<number, number> = { 1: 39, 2: 40 };
-    expect(() => getBluetoothPacket('p1r42p2r1', positions, 'kilter', 3))
-      .toThrow('1 of 2 placements have no LED mapping');
+    expect(() => getBluetoothPacket('p1r42p2r1', positions, 'kilter', 3)).toThrow(
+      '1 of 2 placements have no LED mapping',
+    );
   });
 });
 
@@ -755,8 +758,7 @@ describe('getBluetoothPacket — v2 encoding integration', () => {
 
   it('throws when v2 position exceeds 10-bit limit', () => {
     const positions: Record<number, number> = { 1: 39, 2: 1024 };
-    expect(() => getBluetoothPacket('p1r42p2r42', positions, 'kilter', 2))
-      .toThrow('exceeds 10-bit limit');
+    expect(() => getBluetoothPacket('p1r42p2r42', positions, 'kilter', 2)).toThrow('exceeds 10-bit limit');
   });
 });
 
@@ -794,7 +796,7 @@ describe('ledsPerHold — per-board v2 power budget', () => {
   it('Kilter v2 dims more than Tension v2 for the same number of bright LEDs', () => {
     // At high LED counts, Kilter (ledsPerHold=2) should scale down more aggressively
     const leds = Array.from({ length: 40 }, (_, i) => ({ position: i, color: 'FFFFFF' }));
-    const kilterScale = computeV2Scale(leds, 2);  // Kilter
+    const kilterScale = computeV2Scale(leds, 2); // Kilter
     const tensionScale = computeV2Scale(leds, 1); // Tension
     expect(kilterScale).toBeLessThan(tensionScale);
   });
@@ -810,10 +812,20 @@ const AURORA_10x12_HEX = '0113e202545000e3ae01e30400f40300f41700f41600f403';
 const CLIMB_FRAMES = 'p4131r42p4421r42p4669r45p4655r45p4665r45p4678r45';
 
 const CORRECT_8x12_POSITIONS: Record<number, number> = {
-  4131: 39, 4421: 389, 4669: 20, 4655: 19, 4665: 1, 4678: 0,
+  4131: 39,
+  4421: 389,
+  4669: 20,
+  4655: 19,
+  4665: 1,
+  4678: 0,
 };
 const CORRECT_10x12_POSITIONS: Record<number, number> = {
-  4131: 80, 4421: 430, 4669: 4, 4655: 3, 4665: 23, 4678: 22,
+  4131: 80,
+  4421: 430,
+  4669: 4,
+  4655: 3,
+  4665: 23,
+  4678: 22,
 };
 
 describe('Captured Aurora payloads — position verification', () => {
@@ -833,13 +845,14 @@ describe('Captured Aurora payloads — position verification', () => {
 
   it('throws when placements have no LED mapping', () => {
     const sparseLedMap = { 4131: 39, 4421: 389 };
-    expect(() => getBluetoothPacket('p4131r42p4421r42p9999r45', sparseLedMap, 'kilter'))
-      .toThrow('1 of 3 placements have no LED mapping');
+    expect(() => getBluetoothPacket('p4131r42p4421r42p9999r45', sparseLedMap, 'kilter')).toThrow(
+      '1 of 3 placements have no LED mapping',
+    );
   });
 
   it('8x12 kickboard positions match Aurora expectations', () => {
-    expect(CORRECT_8x12_POSITIONS[4678]).toBe(0);  // leftmost y=-8
-    expect(CORRECT_8x12_POSITIONS[4665]).toBe(1);  // leftmost y=-4
+    expect(CORRECT_8x12_POSITIONS[4678]).toBe(0); // leftmost y=-8
+    expect(CORRECT_8x12_POSITIONS[4665]).toBe(1); // leftmost y=-4
     expect(CORRECT_8x12_POSITIONS[4655]).toBe(19); // rightmost y=-4
     expect(CORRECT_8x12_POSITIONS[4669]).toBe(20); // rightmost y=-8
   });
@@ -852,10 +865,16 @@ const CORNERS_12x12_FRAMES = 'p1379r44p1395r44p1447r45p1464r45';
 const CORNERS_8x12_ORIGINAL_FRAMES = 'p1382r44p1392r44p1450r45p1461r45';
 
 const CORRECT_12x12_POSITIONS: Record<number, number> = {
-  1379: 68, 1395: 476, 1447: 0, 1464: 33,
+  1379: 68,
+  1395: 476,
+  1447: 0,
+  1464: 33,
 };
 const CORRECT_8x12_ORIGINAL_POSITIONS: Record<number, number> = {
-  1382: 56, 1392: 311, 1450: 0, 1461: 21,
+  1382: 56,
+  1392: 311,
+  1450: 0,
+  1461: 21,
 };
 
 describe('Kilter Original (Layout 1) — 3rd-party validated payloads (byte-exact)', () => {

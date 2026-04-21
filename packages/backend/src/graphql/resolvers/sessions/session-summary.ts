@@ -10,11 +10,7 @@ import type { SessionSummary } from '@boardsesh/shared-schema';
  */
 export async function generateSessionSummary(sessionId: string): Promise<SessionSummary | null> {
   // Fetch session metadata using Drizzle ORM
-  const sessionRows = await db
-    .select()
-    .from(sessions)
-    .where(eq(sessions.id, sessionId))
-    .limit(1);
+  const sessionRows = await db.select().from(sessions).where(eq(sessions.id, sessionId)).limit(1);
 
   if (sessionRows.length === 0) {
     return null;
@@ -68,10 +64,7 @@ export async function generateSessionSummary(sessionId: string): Promise<Session
           eq(dbSchema.boardDifficultyGrades.boardType, dbSchema.boardseshTicks.boardType),
         ),
       )
-      .leftJoin(
-        dbSchema.boardClimbs,
-        eq(dbSchema.boardClimbs.uuid, dbSchema.boardseshTicks.climbUuid),
-      )
+      .leftJoin(dbSchema.boardClimbs, eq(dbSchema.boardClimbs.uuid, dbSchema.boardseshTicks.climbUuid))
       .where(
         and(
           eq(dbSchema.boardseshTicks.sessionId, sessionId),
@@ -99,13 +92,13 @@ export async function generateSessionSummary(sessionId: string): Promise<Session
     `),
   ]);
 
-  const participantCastRows = (participantRows as unknown as Array<{
+  const participantCastRows = participantRows as unknown as Array<{
     userId: string;
     displayName: string | null;
     avatarUrl: string | null;
     sends: number;
     attempts: number;
-  }>);
+  }>;
 
   // Build grade distribution (filter out null grades using type guard)
   const gradeDistribution = gradeDistRows
@@ -139,9 +132,7 @@ export async function generateSessionSummary(sessionId: string): Promise<Session
   // Calculate duration
   let durationMinutes: number | null = null;
   if (session.startedAt && session.endedAt) {
-    durationMinutes = Math.round(
-      (session.endedAt.getTime() - session.startedAt.getTime()) / 60000
-    );
+    durationMinutes = Math.round((session.endedAt.getTime() - session.startedAt.getTime()) / 60000);
   }
 
   return {

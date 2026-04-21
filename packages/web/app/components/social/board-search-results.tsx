@@ -47,10 +47,9 @@ export default function BoardSearchResults({
     queryKey: ['searchBoards', debouncedQuery, authToken],
     queryFn: async ({ pageParam }) => {
       const client = createGraphQLHttpClient(authToken);
-      const response = await client.request<SearchBoardsQueryResponse, SearchBoardsQueryVariables>(
-        SEARCH_BOARDS,
-        { input: { query: debouncedQuery, limit: 20, offset: pageParam as number } }
-      );
+      const response = await client.request<SearchBoardsQueryResponse, SearchBoardsQueryVariables>(SEARCH_BOARDS, {
+        input: { query: debouncedQuery, limit: 20, offset: pageParam as number },
+      });
       return response.searchBoards;
     },
     initialPageParam: 0,
@@ -62,10 +61,7 @@ export default function BoardSearchResults({
     staleTime: 30 * 1000,
   });
 
-  const results: UserBoard[] = useMemo(
-    () => data?.pages.flatMap((p) => p.boards) ?? [],
-    [data],
-  );
+  const results: UserBoard[] = useMemo(() => data?.pages.flatMap((p) => p.boards) ?? [], [data]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: fetchNextPage,
@@ -73,33 +69,43 @@ export default function BoardSearchResults({
     isFetching: isFetchingNextPage,
   });
 
-  const handleFollowChange = useCallback((boardUuid: string, isFollowing: boolean) => {
-    queryClient.setQueryData<InfiniteData<UserBoardConnection>>(
-      ['searchBoards', debouncedQuery, authToken],
-      (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          pages: old.pages.map((page) => ({
-            ...page,
-            boards: page.boards.map((b) =>
-              b.uuid === boardUuid
-                ? { ...b, isFollowedByMe: isFollowing, followerCount: b.followerCount + (isFollowing ? 1 : -1) }
-                : b
-            ),
-          })),
-        };
-      }
-    );
-  }, [queryClient, debouncedQuery, authToken]);
+  const handleFollowChange = useCallback(
+    (boardUuid: string, isFollowing: boolean) => {
+      queryClient.setQueryData<InfiniteData<UserBoardConnection>>(
+        ['searchBoards', debouncedQuery, authToken],
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              boards: page.boards.map((b) =>
+                b.uuid === boardUuid
+                  ? {
+                      ...b,
+                      isFollowedByMe: isFollowing,
+                      followerCount: b.followerCount + (isFollowing ? 1 : -1),
+                    }
+                  : b,
+              ),
+            })),
+          };
+        },
+      );
+    },
+    [queryClient, debouncedQuery, authToken],
+  );
 
-  const handleBoardClick = useCallback((board: UserBoard) => {
-    if (onBoardSelect) {
-      onBoardSelect(board);
-    } else {
-      setSelectedBoardUuid(board.uuid);
-    }
-  }, [onBoardSelect]);
+  const handleBoardClick = useCallback(
+    (board: UserBoard) => {
+      if (onBoardSelect) {
+        onBoardSelect(board);
+      } else {
+        setSelectedBoardUuid(board.uuid);
+      }
+    },
+    [onBoardSelect],
+  );
 
   if (query.length < 2) {
     return (
@@ -137,17 +143,19 @@ export default function BoardSearchResults({
             key={board.uuid}
             board={board}
             onClick={handleBoardClick}
-            trailingAction={showFollowButton ? (
-              <FollowButton
-                entityId={board.uuid}
-                initialIsFollowing={board.isFollowedByMe}
-                followMutation={FOLLOW_BOARD}
-                unfollowMutation={UNFOLLOW_BOARD}
-                entityLabel="board"
-                getFollowVariables={(id) => ({ input: { boardUuid: id } })}
-                onFollowChange={(isFollowing) => handleFollowChange(board.uuid, isFollowing)}
-              />
-            ) : undefined}
+            trailingAction={
+              showFollowButton ? (
+                <FollowButton
+                  entityId={board.uuid}
+                  initialIsFollowing={board.isFollowedByMe}
+                  followMutation={FOLLOW_BOARD}
+                  unfollowMutation={UNFOLLOW_BOARD}
+                  entityLabel="board"
+                  getFollowVariables={(id) => ({ input: { boardUuid: id } })}
+                  onFollowChange={(isFollowing) => handleFollowChange(board.uuid, isFollowing)}
+                />
+              ) : undefined
+            }
           />
         ))}
       </Stack>

@@ -5,7 +5,7 @@
  * Uses shared expected results from fixtures/expected-results.ts.
  */
 
-import { describe, it } from 'vitest';
+import { describe, it } from 'vite-plus/test';
 import path from 'path';
 import { parseScreenshot } from '../parser';
 import { EXPECTED_RESULTS } from './fixtures/expected-results';

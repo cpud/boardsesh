@@ -203,7 +203,11 @@ export async function handleOcrTestDataUpload(req: IncomingMessage, res: ServerR
       // Validate metadata structure
       if (!isValidOcrMetadata(parsedMetadata)) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid metadata structure: expected layoutId, angle, and climb fields' }));
+        res.end(
+          JSON.stringify({
+            error: 'Invalid metadata structure: expected layoutId, angle, and climb fields',
+          }),
+        );
         resolve();
         return;
       }

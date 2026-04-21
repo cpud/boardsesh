@@ -7,11 +7,7 @@ import { LEADER_ELECTION_SCRIPT } from './lua-scripts';
  * Only succeeds if no leader currently exists.
  * Returns true if this connection became leader.
  */
-export async function tryElectLeader(
-  redis: Redis,
-  connectionId: string,
-  sessionId: string
-): Promise<boolean> {
+export async function tryElectLeader(redis: Redis, connectionId: string, sessionId: string): Promise<boolean> {
   validateSessionId(sessionId);
 
   const result = (await redis.eval(
@@ -20,7 +16,7 @@ export async function tryElectLeader(
     KEYS.sessionLeader(sessionId),
     KEYS.connection(connectionId),
     connectionId,
-    TTL.sessionMembership.toString()
+    TTL.sessionMembership.toString(),
   )) as number;
 
   return result === 1;

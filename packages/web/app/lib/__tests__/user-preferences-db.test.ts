@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import { openDB } from 'idb';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import { getPreference, setPreference, removePreference } from '../user-preferences-db';
 import { DEFAULT_LOGBOOK_PREFERENCES } from '../logbook-preferences';
 
