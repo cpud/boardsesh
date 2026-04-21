@@ -5,6 +5,7 @@ import Stack from '@mui/material/Stack';
 import KeyboardArrowUpOutlined from '@mui/icons-material/KeyboardArrowUpOutlined';
 import KeyboardArrowDownOutlined from '@mui/icons-material/KeyboardArrowDownOutlined';
 import ElectricBoltOutlined from '@mui/icons-material/ElectricBoltOutlined';
+import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import { Angle, Climb, BoardDetails } from '@/app/lib/types';
 import { useBoardProvider } from '../board-provider/board-provider-context';
 import { TENSION_KILTER_GRADES } from '@/app/lib/board-data';
@@ -298,10 +299,15 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
               </div>
             </div>
 
-          {/* Expanded comment */}
+          {/* Comment row — same layout as other labeled rows */}
           {expandedCommentSlot && (
-            <div className={styles.expandedComment}>
-              {expandedCommentSlot}
+            <div className={styles.labeledRow}>
+              <span className={styles.labeledRowLabel}>
+                <ChatBubbleOutlineOutlined sx={{ fontSize: 14 }} />
+              </span>
+              <div className={styles.labeledRowPicker}>
+                {expandedCommentSlot}
+              </div>
             </div>
           )}
           </div>

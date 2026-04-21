@@ -143,9 +143,10 @@
   justify-content: flex-start;
 }
 
-/* Expanded comment — taller for easier editing */
-.expandedComment {
-  padding: 4px 0;
+/* Comment row label — align to top of multiline field */
+.labeledRow:last-of-type .labeledRowLabel {
+  align-self: flex-start;
+  margin-top: 10px;
 }
 
 /* Save button row */
