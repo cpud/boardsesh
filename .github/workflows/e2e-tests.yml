@@ -29,21 +29,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
+      - uses: oven-sh/setup-bun@v2
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-
-      - name: Cache bun dependencies
-        uses: actions/cache@v4
+      - uses: voidzero-dev/setup-vp@v1
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
+          node-version: 'lts'
+          cache: true
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -110,24 +101,15 @@ jobs:
           PROXY_IP=$(getent hosts neon-proxy | awk '{ print $1 }')
           echo "$PROXY_IP db.localtest.me" >> /etc/hosts
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-
       - name: Install unzip (required by setup-bun)
         run: apt-get update && apt-get install -y unzip
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@v2
 
-      - name: Cache bun dependencies
-        uses: actions/cache@v4
+      - uses: voidzero-dev/setup-vp@v1
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
+          node-version: 'lts'
+          cache: true
 
       - name: Cache Next.js build
         uses: actions/cache@v4
