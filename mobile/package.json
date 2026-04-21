@@ -12,6 +12,7 @@
   "dependencies": {
     "@capacitor-community/bluetooth-le": "^8",
     "@capacitor-community/keep-awake": "^8",
+    "@capacitor-community/safe-area": "^8",
     "@capacitor/android": "^8",
     "@capacitor/app": "^8",
     "@capacitor/browser": "^8",
