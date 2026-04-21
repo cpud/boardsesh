@@ -1,14 +1,14 @@
-import { eq, and, or, isNull, desc, sql } from "drizzle-orm";
-import type { ConnectionContext } from "@boardsesh/shared-schema";
-import { db } from "../../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { requireAuthenticated, validateInput } from "../../shared/helpers";
+import { eq, and, or, isNull, desc, sql } from 'drizzle-orm';
+import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { db } from '../../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { requireAuthenticated, validateInput } from '../../shared/helpers';
 import {
   GetUserPlaylistsInputSchema,
   GetAllUserPlaylistsInputSchema,
-} from "../../../../validation/schemas";
-import { getPlaylistFollowStats } from "../helpers/follow-stats";
-import { getClimbCounts, formatOwnedPlaylist, type OwnedPlaylistRow } from "../helpers/enrichment";
+} from '../../../../validation/schemas';
+import { getPlaylistFollowStats } from '../helpers/follow-stats';
+import { getClimbCounts, formatOwnedPlaylist, type OwnedPlaylistRow } from '../helpers/enrichment';
 
 const PLAYLIST_SELECT = {
   id: dbSchema.playlists.id,
@@ -51,7 +51,7 @@ export const userPlaylists = async (
   ctx: ConnectionContext,
 ): Promise<unknown[]> => {
   requireAuthenticated(ctx);
-  validateInput(GetUserPlaylistsInputSchema, input, "input");
+  validateInput(GetUserPlaylistsInputSchema, input, 'input');
 
   const userId = ctx.userId!;
 
@@ -84,7 +84,7 @@ export const allUserPlaylists = async (
   ctx: ConnectionContext,
 ): Promise<unknown[]> => {
   requireAuthenticated(ctx);
-  validateInput(GetAllUserPlaylistsInputSchema, input, "input");
+  validateInput(GetAllUserPlaylistsInputSchema, input, 'input');
 
   const userId = ctx.userId!;
 

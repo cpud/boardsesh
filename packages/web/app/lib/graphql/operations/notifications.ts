@@ -1,11 +1,11 @@
-import { gql } from "graphql-request";
+import { gql } from 'graphql-request';
 import type {
   Notification,
   NotificationConnection,
   GroupedNotificationConnection,
   NotificationType,
   SocialEntityType,
-} from "@boardsesh/shared-schema";
+} from '@boardsesh/shared-schema';
 
 // ============================================
 // Notification Queries
@@ -245,10 +245,10 @@ export interface CommentUpdatesSubscriptionVariables {
 
 export type CommentUpdatesSubscriptionResponse = {
   commentUpdates:
-    | { __typename: "CommentAdded"; comment: import("@boardsesh/shared-schema").Comment }
-    | { __typename: "CommentUpdated"; comment: import("@boardsesh/shared-schema").Comment }
+    | { __typename: 'CommentAdded'; comment: import('@boardsesh/shared-schema').Comment }
+    | { __typename: 'CommentUpdated'; comment: import('@boardsesh/shared-schema').Comment }
     | {
-        __typename: "CommentDeleted";
+        __typename: 'CommentDeleted';
         commentUuid: string;
         entityType: SocialEntityType;
         entityId: string;

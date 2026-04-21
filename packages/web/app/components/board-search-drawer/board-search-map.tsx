@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef, useCallback, useState } from "react";
-import Box from "@mui/material/Box";
-import MuiButton from "@mui/material/Button";
-import MyLocationOutlined from "@mui/icons-material/MyLocationOutlined";
+import React, { useEffect, useRef, useCallback, useState } from 'react';
+import Box from '@mui/material/Box';
+import MuiButton from '@mui/material/Button';
+import MyLocationOutlined from '@mui/icons-material/MyLocationOutlined';
 import type {
   Map as LeafletMap,
   Marker as LeafletMarker,
   LayerGroup as LeafletLayerGroup,
-} from "leaflet";
-import type { UserBoard } from "@boardsesh/shared-schema";
-import { themeTokens } from "@/app/theme/theme-config";
-import markerStyles from "./board-search-map.module.css";
+} from 'leaflet';
+import type { UserBoard } from '@boardsesh/shared-schema';
+import { themeTokens } from '@/app/theme/theme-config';
+import markerStyles from './board-search-map.module.css';
 
 const VIEWPORT_DEBOUNCE_MS = 250;
 const MARKER_SIZE = 16;
@@ -51,7 +51,7 @@ export default function BoardSearchMap({
 }: BoardSearchMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
-  const leafletRef = useRef<typeof import("leaflet") | null>(null);
+  const leafletRef = useRef<typeof import('leaflet') | null>(null);
   const markersLayerRef = useRef<LeafletLayerGroup | null>(null);
   const markersByUuidRef = useRef<Map<string, LeafletMarker>>(new Map());
   const onViewportChangeRef = useRef(onViewportChange);
@@ -87,7 +87,7 @@ export default function BoardSearchMap({
     // import thinking it's dead code: without it, tile panes, zoom controls,
     // and attribution render unstyled.
     // @ts-expect-error — CSS dynamic import handled by Next.js bundler
-    Promise.all([import("leaflet"), import("leaflet/dist/leaflet.css")]).then(([L]) => {
+    Promise.all([import('leaflet'), import('leaflet/dist/leaflet.css')]).then(([L]) => {
       if (cancelled || !containerRef.current) return;
 
       const map = L.map(containerRef.current, {
@@ -95,7 +95,7 @@ export default function BoardSearchMap({
         attributionControl: true,
       }).setView([centerRef.current.lat, centerRef.current.lng], zoomRef.current);
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       }).addTo(map);
@@ -128,12 +128,12 @@ export default function BoardSearchMap({
       // 'zoomend' before 'moveend'; a second handler on 'zoomend' would clear
       // programmaticMoveRef prematurely, letting the 'moveend' fireViewport and
       // the once('moveend') callback both fire, producing two updates per flyTo.
-      map.on("moveend", fireViewport);
+      map.on('moveend', fireViewport);
 
       // Observe container size so we can correct Leaflet's internal size whenever
       // the parent (e.g. bottom-sheet drawer) finishes animating in, rotates, or
       // otherwise resizes. Replaces a flakey setTimeout(250) after mount.
-      if (typeof ResizeObserver !== "undefined" && containerRef.current) {
+      if (typeof ResizeObserver !== 'undefined' && containerRef.current) {
         resizeObserver = new ResizeObserver(() => {
           map.invalidateSize();
         });
@@ -206,12 +206,12 @@ export default function BoardSearchMap({
       const size = markerSize(isSelected);
       const icon = L.divIcon({
         className: markerClassName(isSelected),
-        html: "",
+        html: '',
         iconSize: [size, size],
         iconAnchor: [size / 2, size / 2],
       });
       const marker = L.marker([board.latitude, board.longitude], { icon });
-      marker.on("click", () => onBoardClickRef.current(board));
+      marker.on('click', () => onBoardClickRef.current(board));
       marker.addTo(layer);
       markersByUuidRef.current.set(board.uuid, marker);
     }
@@ -226,7 +226,7 @@ export default function BoardSearchMap({
       const size = markerSize(isSelected);
       const icon = L.divIcon({
         className: markerClassName(isSelected),
-        html: "",
+        html: '',
         iconSize: [size, size],
         iconAnchor: [size / 2, size / 2],
       });
@@ -269,7 +269,7 @@ export default function BoardSearchMap({
     // the final viewport. This relies on Leaflet's stable (but undocumented)
     // FIFO ordering — if that ever changes, fireViewport must not clear the flag
     // before the once() handler has read it.
-    map.once("moveend", () => {
+    map.once('moveend', () => {
       const c = map.getCenter();
       onViewportChangeRef.current({
         lat: Math.round(c.lat * 1000000) / 1000000,
@@ -304,7 +304,7 @@ export default function BoardSearchMap({
   }, [pendingMyLocation, userCoords, mapReady, flyToUserCoords]);
 
   return (
-    <Box data-swipe-blocked="true" sx={{ position: "relative", width: "100%", height: "100%" }}>
+    <Box data-swipe-blocked="true" sx={{ position: 'relative', width: '100%', height: '100%' }}>
       <div ref={containerRef} className={markerStyles.mapContainer} />
       {mapReady && (
         <MuiButton
@@ -313,12 +313,12 @@ export default function BoardSearchMap({
           startIcon={<MyLocationOutlined />}
           onClick={handleUseMyLocation}
           sx={{
-            position: "absolute",
+            position: 'absolute',
             bottom: themeTokens.spacing[2],
             right: themeTokens.spacing[2],
             zIndex: themeTokens.zIndex.dropdown,
             fontSize: `${themeTokens.typography.fontSize.xs}px`,
-            textTransform: "none",
+            textTransform: 'none',
           }}
         >
           My location

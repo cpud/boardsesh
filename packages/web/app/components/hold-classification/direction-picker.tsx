@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useCallback, useRef } from "react";
-import { themeTokens } from "@/app/theme/theme-config";
-import styles from "./direction-picker.module.css";
+import React, { useCallback, useRef } from 'react';
+import { themeTokens } from '@/app/theme/theme-config';
+import styles from './direction-picker.module.css';
 
 interface DirectionPickerProps {
   value: number | null;
@@ -104,10 +104,10 @@ const DirectionPicker: React.FC<DirectionPickerProps> = ({
         ref={circleRef}
         width={size}
         height={size}
-        className={`${styles.picker} ${disabled ? styles.disabled : ""}`}
+        className={`${styles.picker} ${disabled ? styles.disabled : ''}`}
         onClick={handleClick}
         onPointerMove={handlePointerMove}
-        style={{ touchAction: "none" }}
+        style={{ touchAction: 'none' }}
       >
         {/* Outer circle */}
         <circle
@@ -162,7 +162,7 @@ const DirectionPicker: React.FC<DirectionPickerProps> = ({
           cy={center}
           r={radius}
           fill="transparent"
-          style={{ cursor: disabled ? "not-allowed" : "pointer" }}
+          style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
         />
       </svg>
 

@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import { lt, inArray, sql } from "drizzle-orm";
-import { dbz as db } from "@/app/lib/db/db";
-import { feedItems, notifications } from "@boardsesh/db/schema";
+import { NextResponse } from 'next/server';
+import { lt, inArray, sql } from 'drizzle-orm';
+import { dbz as db } from '@/app/lib/db/db';
+import { feedItems, notifications } from '@boardsesh/db/schema';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 const CRON_SECRET = process.env.CRON_SECRET;
@@ -13,9 +13,9 @@ const BATCH_SIZE = 5000;
 const DEADLINE_MS = (maxDuration - 10) * 1000;
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get("authorization");
+  const authHeader = request.headers.get('authorization');
   if (!CRON_SECRET || authHeader !== `Bearer ${CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
@@ -76,7 +76,7 @@ export async function GET(request: Request) {
       notificationsDeleted: notifDeleted,
     });
   } catch (error) {
-    console.error("[Cleanup cron] Error:", error);
-    return NextResponse.json({ error: "Cleanup failed" }, { status: 500 });
+    console.error('[Cleanup cron] Error:', error);
+    return NextResponse.json({ error: 'Cleanup failed' }, { status: 500 });
   }
 }

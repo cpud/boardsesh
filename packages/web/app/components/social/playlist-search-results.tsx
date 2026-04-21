@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
-import React, { useMemo } from "react";
-import Box from "@mui/material/Box";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
-import CircularProgress from "@mui/material/CircularProgress";
-import QueueMusicOutlined from "@mui/icons-material/QueueMusicOutlined";
-import { useRouter, usePathname } from "next/navigation";
-import { getContextAwarePlaylistUrl } from "@/app/lib/url-utils";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
+import React, { useMemo } from 'react';
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import QueueMusicOutlined from '@mui/icons-material/QueueMusicOutlined';
+import { useRouter, usePathname } from 'next/navigation';
+import { getContextAwarePlaylistUrl } from '@/app/lib/url-utils';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   SEARCH_PLAYLISTS,
   type SearchPlaylistsQueryVariables,
   type SearchPlaylistsQueryResponse,
   type DiscoverablePlaylist,
-} from "@/app/lib/graphql/operations";
-import { useDebouncedValue } from "@/app/hooks/use-debounced-value";
-import { useInfiniteScroll } from "@/app/hooks/use-infinite-scroll";
+} from '@/app/lib/graphql/operations';
+import { useDebouncedValue } from '@/app/hooks/use-debounced-value';
+import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
 
 interface PlaylistSearchResultsProps {
   query: string;
@@ -40,7 +40,7 @@ export default function PlaylistSearchResults({ query, authToken }: PlaylistSear
     PlaylistPage,
     Error
   >({
-    queryKey: ["searchPlaylists", debouncedQuery, authToken],
+    queryKey: ['searchPlaylists', debouncedQuery, authToken],
     queryFn: async ({ pageParam }) => {
       const client = createGraphQLHttpClient(authToken);
       const response = await client.request<
@@ -73,7 +73,7 @@ export default function PlaylistSearchResults({ query, authToken }: PlaylistSear
 
   if (query.length < 2) {
     return (
-      <Box sx={{ py: 4, textAlign: "center" }}>
+      <Box sx={{ py: 4, textAlign: 'center' }}>
         <Typography variant="body2" color="text.secondary">
           Type at least 2 characters to search
         </Typography>
@@ -83,7 +83,7 @@ export default function PlaylistSearchResults({ query, authToken }: PlaylistSear
 
   if (isLoading && results.length === 0) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         <CircularProgress />
       </Box>
     );
@@ -91,7 +91,7 @@ export default function PlaylistSearchResults({ query, authToken }: PlaylistSear
 
   if (!isLoading && results.length === 0 && debouncedQuery.length >= 2) {
     return (
-      <Box sx={{ py: 4, textAlign: "center" }}>
+      <Box sx={{ py: 4, textAlign: 'center' }}>
         <Typography variant="body2" color="text.secondary">
           No playlists found for &quot;{debouncedQuery}&quot;
         </Typography>
@@ -109,11 +109,11 @@ export default function PlaylistSearchResults({ query, authToken }: PlaylistSear
             sx={{
               p: 2,
               borderRadius: 2,
-              border: "1px solid var(--neutral-200)",
-              cursor: "pointer",
-              "&:hover": { backgroundColor: "action.hover" },
-              display: "flex",
-              alignItems: "center",
+              border: '1px solid var(--neutral-200)',
+              cursor: 'pointer',
+              '&:hover': { backgroundColor: 'action.hover' },
+              display: 'flex',
+              alignItems: 'center',
               gap: 1.5,
             }}
           >
@@ -122,14 +122,14 @@ export default function PlaylistSearchResults({ query, authToken }: PlaylistSear
                 width: 40,
                 height: 40,
                 borderRadius: 1,
-                backgroundColor: playlist.color || "var(--neutral-200)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                backgroundColor: playlist.color || 'var(--neutral-200)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 flexShrink: 0,
               }}
             >
-              <QueueMusicOutlined sx={{ color: "#fff", fontSize: 20 }} />
+              <QueueMusicOutlined sx={{ color: '#fff', fontSize: 20 }} />
             </Box>
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography variant="body1" noWrap sx={{ fontWeight: 600 }}>
@@ -137,7 +137,7 @@ export default function PlaylistSearchResults({ query, authToken }: PlaylistSear
               </Typography>
               <Typography variant="body2" color="text.secondary" noWrap>
                 {playlist.creatorName} · {playlist.climbCount} climb
-                {playlist.climbCount !== 1 ? "s" : ""}
+                {playlist.climbCount !== 1 ? 's' : ''}
               </Typography>
             </Box>
             <Chip
@@ -151,7 +151,7 @@ export default function PlaylistSearchResults({ query, authToken }: PlaylistSear
       </Stack>
       <Box
         ref={sentinelRef}
-        sx={{ display: "flex", justifyContent: "center", py: 2, minHeight: 20 }}
+        sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}
       >
         {isFetchingNextPage && <CircularProgress size={24} />}
       </Box>

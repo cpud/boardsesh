@@ -1,31 +1,31 @@
-import { eq, and, gte, desc } from "drizzle-orm";
+import { eq, and, gte, desc } from 'drizzle-orm';
 import type {
   BoardName,
   CheckMoonBoardClimbDuplicatesInput,
   ClimbSearchInput,
   ConnectionContext,
-} from "@boardsesh/shared-schema";
-import { SUPPORTED_BOARDS, USER_SPECIFIC_SEARCH_PARAMS } from "@boardsesh/shared-schema";
+} from '@boardsesh/shared-schema';
+import { SUPPORTED_BOARDS, USER_SPECIFIC_SEARCH_PARAMS } from '@boardsesh/shared-schema';
 import type {
   ClimbSearchParams,
   ParsedBoardRouteParameters,
-} from "../../../db/queries/climbs/index";
-import { getClimbByUuid } from "../../../db/queries/climbs/index";
-import { isValidBoardName } from "../../../db/queries/util/table-select";
-import { applyRateLimit, validateInput } from "../shared/helpers";
-import { findMoonBoardDuplicateMatches } from "./moonboard-duplicates";
+} from '../../../db/queries/climbs/index';
+import { getClimbByUuid } from '../../../db/queries/climbs/index';
+import { isValidBoardName } from '../../../db/queries/util/table-select';
+import { applyRateLimit, validateInput } from '../shared/helpers';
+import { findMoonBoardDuplicateMatches } from './moonboard-duplicates';
 import {
   BoardNameSchema,
   CheckMoonBoardClimbDuplicatesInputSchema,
   ClimbSearchInputSchema,
   ExternalUUIDSchema,
-} from "../../../validation/schemas";
-import type { ClimbSearchContext } from "../shared/types";
-import { db } from "../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
+} from '../../../validation/schemas';
+import type { ClimbSearchContext } from '../shared/types';
+import { db } from '../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
 
 // Debug logging flag - only log in development
-const DEBUG = process.env.NODE_ENV === "development";
+const DEBUG = process.env.NODE_ENV === 'development';
 
 export const climbQueries = {
   checkMoonBoardClimbDuplicates: async (
@@ -33,8 +33,8 @@ export const climbQueries = {
     { input }: { input: CheckMoonBoardClimbDuplicatesInput },
     ctx: ConnectionContext,
   ) => {
-    await applyRateLimit(ctx, 60, "moonboard-duplicate-check");
-    const validated = validateInput(CheckMoonBoardClimbDuplicatesInputSchema, input, "input");
+    await applyRateLimit(ctx, 60, 'moonboard-duplicate-check');
+    const validated = validateInput(CheckMoonBoardClimbDuplicatesInputSchema, input, 'input');
     return findMoonBoardDuplicateMatches(validated.layoutId, validated.angle, validated.climbs);
   },
 
@@ -47,18 +47,18 @@ export const climbQueries = {
     { input }: { input: ClimbSearchInput },
     ctx: ConnectionContext,
   ): Promise<ClimbSearchContext> => {
-    validateInput(ClimbSearchInputSchema, input, "input");
+    validateInput(ClimbSearchInputSchema, input, 'input');
 
     // Validate board name
     if (!isValidBoardName(input.boardName)) {
       throw new Error(
-        `Invalid board name: ${input.boardName}. Must be one of: ${SUPPORTED_BOARDS.join(", ")}`,
+        `Invalid board name: ${input.boardName}. Must be one of: ${SUPPORTED_BOARDS.join(', ')}`,
       );
     }
 
     // Parse setIds from comma-separated string
     const setIds = input.setIds
-      .split(",")
+      .split(',')
       .map((id) => parseInt(id.trim(), 10))
       .filter((id) => !isNaN(id));
 
@@ -79,12 +79,12 @@ export const climbQueries = {
       minGrade: input.minGrade,
       maxGrade: input.maxGrade,
       minAscents: input.minAscents,
-      sortBy: input.sortBy ?? "ascents",
-      sortOrder: input.sortOrder ?? "desc",
+      sortBy: input.sortBy ?? 'ascents',
+      sortOrder: input.sortOrder ?? 'desc',
       name: input.name,
       settername: input.setter && input.setter.length > 0 ? input.setter : undefined,
       onlyTallClimbs: input.onlyTallClimbs,
-      holdsFilter: input.holdsFilter as Record<string, "ANY" | "NOT"> | undefined,
+      holdsFilter: input.holdsFilter as Record<string, 'ANY' | 'NOT'> | undefined,
       hideAttempted: input.hideAttempted,
       hideCompleted: input.hideCompleted,
       showOnlyAttempted: input.showOnlyAttempted,
@@ -95,10 +95,10 @@ export const climbQueries = {
 
     if (DEBUG) {
       console.log(
-        "[searchClimbs] onlyDrafts:",
+        '[searchClimbs] onlyDrafts:',
         input.onlyDrafts,
-        "userId:",
-        ctx.isAuthenticated ? ctx.userId : "not authenticated",
+        'userId:',
+        ctx.isAuthenticated ? ctx.userId : 'not authenticated',
       );
     }
 
@@ -120,7 +120,7 @@ export const climbQueries = {
     const hasUserSpecificFilters = USER_SPECIFIC_SEARCH_PARAMS.some(
       (param) => !!searchParams[param as keyof typeof searchParams],
     );
-    const isCacheableBoard = input.boardName !== "moonboard";
+    const isCacheableBoard = input.boardName !== 'moonboard';
 
     // Only resolve userId when user-specific filters are active — otherwise the query
     // results are identical to anonymous and can be served from Redis cache.
@@ -158,22 +158,22 @@ export const climbQueries = {
     },
   ) => {
     // Validate board name
-    validateInput(BoardNameSchema, boardName, "boardName");
+    validateInput(BoardNameSchema, boardName, 'boardName');
 
     if (!isValidBoardName(boardName)) {
       throw new Error(
-        `Invalid board name: ${boardName}. Must be one of: ${SUPPORTED_BOARDS.join(", ")}`,
+        `Invalid board name: ${boardName}. Must be one of: ${SUPPORTED_BOARDS.join(', ')}`,
       );
     }
 
     // Validate all parameters
-    if (layoutId <= 0) throw new Error("Invalid layoutId: must be positive");
-    if (sizeId <= 0) throw new Error("Invalid sizeId: must be positive");
-    if (angle < 0 || angle > 90) throw new Error("Invalid angle: must be between 0 and 90");
-    validateInput(ExternalUUIDSchema, climbUuid, "climbUuid");
+    if (layoutId <= 0) throw new Error('Invalid layoutId: must be positive');
+    if (sizeId <= 0) throw new Error('Invalid sizeId: must be positive');
+    if (angle < 0 || angle > 90) throw new Error('Invalid angle: must be between 0 and 90');
+    validateInput(ExternalUUIDSchema, climbUuid, 'climbUuid');
 
     if (DEBUG)
-      console.log("[climb] Fetching:", { boardName, layoutId, sizeId, setIds, angle, climbUuid });
+      console.log('[climb] Fetching:', { boardName, layoutId, sizeId, setIds, angle, climbUuid });
 
     const climb = await getClimbByUuid({
       board_name: boardName as BoardName,
@@ -193,12 +193,12 @@ export const climbQueries = {
     _: unknown,
     { boardName, climbUuid }: { boardName: string; climbUuid: string },
   ) => {
-    validateInput(BoardNameSchema, boardName, "boardName");
-    validateInput(ExternalUUIDSchema, climbUuid, "climbUuid");
+    validateInput(BoardNameSchema, boardName, 'boardName');
+    validateInput(ExternalUUIDSchema, climbUuid, 'climbUuid');
 
     if (!isValidBoardName(boardName)) {
       throw new Error(
-        `Invalid board name: ${boardName}. Must be one of: ${SUPPORTED_BOARDS.join(", ")}`,
+        `Invalid board name: ${boardName}. Must be one of: ${SUPPORTED_BOARDS.join(', ')}`,
       );
     }
 

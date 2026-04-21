@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 
 // SVG icons for workout types matching the iOS app style
 
@@ -9,7 +9,7 @@ interface IconProps {
   color?: string;
 }
 
-export const VolumeIcon: React.FC<IconProps> = ({ size = 24, color = "currentColor" }) => (
+export const VolumeIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
   <svg
     width={size}
     height={size}
@@ -29,7 +29,7 @@ export const VolumeIcon: React.FC<IconProps> = ({ size = 24, color = "currentCol
   </svg>
 );
 
-export const PyramidIcon: React.FC<IconProps> = ({ size = 24, color = "currentColor" }) => (
+export const PyramidIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
   <svg
     width={size}
     height={size}
@@ -52,7 +52,7 @@ export const PyramidIcon: React.FC<IconProps> = ({ size = 24, color = "currentCo
   </svg>
 );
 
-export const LadderIcon: React.FC<IconProps> = ({ size = 24, color = "currentColor" }) => (
+export const LadderIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
   <svg
     width={size}
     height={size}
@@ -75,7 +75,7 @@ export const LadderIcon: React.FC<IconProps> = ({ size = 24, color = "currentCol
   </svg>
 );
 
-export const GradeFocusIcon: React.FC<IconProps> = ({ size = 24, color = "currentColor" }) => (
+export const GradeFocusIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor' }) => (
   <svg
     width={size}
     height={size}
@@ -91,17 +91,17 @@ export const GradeFocusIcon: React.FC<IconProps> = ({ size = 24, color = "curren
 );
 
 export const getWorkoutIcon = (
-  type: "volume" | "pyramid" | "ladder" | "focus",
+  type: 'volume' | 'pyramid' | 'ladder' | 'focus',
   props?: IconProps,
 ) => {
   switch (type) {
-    case "volume":
+    case 'volume':
       return <VolumeIcon {...props} />;
-    case "pyramid":
+    case 'pyramid':
       return <PyramidIcon {...props} />;
-    case "ladder":
+    case 'ladder':
       return <LadderIcon {...props} />;
-    case "focus":
+    case 'focus':
       return <GradeFocusIcon {...props} />;
     default:
       return <VolumeIcon {...props} />;

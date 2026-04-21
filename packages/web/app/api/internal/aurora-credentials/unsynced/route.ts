@@ -1,9 +1,9 @@
-import { getServerSession } from "next-auth/next";
-import { NextResponse } from "next/server";
-import { getDb } from "@/app/lib/db/db";
-import { auroraCredentials, boardseshTicks, boardClimbs } from "@/app/lib/db/schema";
-import { eq, and, isNull, count } from "drizzle-orm";
-import { authOptions } from "@/app/lib/auth/auth-options";
+import { getServerSession } from 'next-auth/next';
+import { NextResponse } from 'next/server';
+import { getDb } from '@/app/lib/db/db';
+import { auroraCredentials, boardseshTicks, boardClimbs } from '@/app/lib/db/schema';
+import { eq, and, isNull, count } from 'drizzle-orm';
+import { authOptions } from '@/app/lib/auth/auth-options';
 
 export interface UnsyncedCounts {
   kilter: {
@@ -24,7 +24,7 @@ export async function GET() {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const db = getDb();
@@ -46,7 +46,7 @@ export async function GET() {
     for (const cred of credentials) {
       if (!cred.auroraUserId) continue;
 
-      const boardType = cred.boardType as "kilter" | "tension";
+      const boardType = cred.boardType as 'kilter' | 'tension';
 
       // Count unsynced ticks (ascents/bids) for this user from boardsesh_ticks
       // Note: boardsesh_ticks uses NextAuth userId, not Aurora user_id
@@ -74,10 +74,10 @@ export async function GET() {
           ),
         );
 
-      if (boardType === "kilter") {
+      if (boardType === 'kilter') {
         counts.kilter.ascents = ascentResult?.count ?? 0;
         counts.kilter.climbs = climbResult?.count ?? 0;
-      } else if (boardType === "tension") {
+      } else if (boardType === 'tension') {
         counts.tension.ascents = ascentResult?.count ?? 0;
         counts.tension.climbs = climbResult?.count ?? 0;
       }
@@ -85,7 +85,7 @@ export async function GET() {
 
     return NextResponse.json({ counts });
   } catch (error) {
-    console.error("Failed to get unsynced counts:", error);
-    return NextResponse.json({ error: "Failed to get unsynced counts" }, { status: 500 });
+    console.error('Failed to get unsynced counts:', error);
+    return NextResponse.json({ error: 'Failed to get unsynced counts' }, { status: 500 });
   }
 }

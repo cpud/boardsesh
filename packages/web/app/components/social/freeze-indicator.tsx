@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React from "react";
-import Alert from "@mui/material/Alert";
-import LockIcon from "@mui/icons-material/Lock";
+import React from 'react';
+import Alert from '@mui/material/Alert';
+import LockIcon from '@mui/icons-material/Lock';
 
 interface FreezeIndicatorProps {
   reason?: string | null;

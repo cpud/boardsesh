@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import Switch from "@mui/material/Switch";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import MuiButton from "@mui/material/Button";
-import CircularProgress from "@mui/material/CircularProgress";
-import MuiTypography from "@mui/material/Typography";
-import MenuItem from "@mui/material/MenuItem";
-import Alert from "@mui/material/Alert";
-import ListItemText from "@mui/material/ListItemText";
-import Check from "@mui/icons-material/Check";
-import MuiSelect from "@mui/material/Select";
-import type { SelectChangeEvent } from "@mui/material/Select";
-import FormControl from "@mui/material/FormControl";
-import FormHelperText from "@mui/material/FormHelperText";
-import InputLabel from "@mui/material/InputLabel";
-import MapLocationPicker from "./map-location-picker";
+import React, { useState } from 'react';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import MuiButton from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import MuiTypography from '@mui/material/Typography';
+import MenuItem from '@mui/material/MenuItem';
+import Alert from '@mui/material/Alert';
+import ListItemText from '@mui/material/ListItemText';
+import Check from '@mui/icons-material/Check';
+import MuiSelect from '@mui/material/Select';
+import type { SelectChangeEvent } from '@mui/material/Select';
+import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
+import InputLabel from '@mui/material/InputLabel';
+import MapLocationPicker from './map-location-picker';
 
 interface BoardFormFieldValues {
   name: string;
@@ -79,9 +79,9 @@ export default function BoardForm({
   submitLabel,
   initialValues,
   showSlugField = false,
-  slugHelperPrefix = "boardsesh.com/b/",
+  slugHelperPrefix = 'boardsesh.com/b/',
   namePlaceholder,
-  descriptionPlaceholder = "Optional description",
+  descriptionPlaceholder = 'Optional description',
   locationPlaceholder,
   availableAngles,
   configEditable,
@@ -89,7 +89,7 @@ export default function BoardForm({
   onCancel,
 }: BoardFormProps) {
   const [name, setName] = useState(initialValues.name);
-  const [slug, setSlug] = useState(initialValues.slug ?? "");
+  const [slug, setSlug] = useState(initialValues.slug ?? '');
   const [description, setDescription] = useState(initialValues.description);
   const [locationName, setLocationName] = useState(initialValues.locationName);
   const [latitude, setLatitude] = useState<number | null>(initialValues.latitude ?? null);
@@ -102,14 +102,14 @@ export default function BoardForm({
   const [isAngleAdjustable, setIsAngleAdjustable] = useState(
     initialValues.isAngleAdjustable ?? true,
   );
-  const [serialNumber, setSerialNumber] = useState(initialValues.serialNumber ?? "");
+  const [serialNumber, setSerialNumber] = useState(initialValues.serialNumber ?? '');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Config editing state
   const [layoutId, setLayoutId] = useState(initialValues.layoutId);
   const [sizeId, setSizeId] = useState(initialValues.sizeId);
   const [selectedSets, setSelectedSets] = useState<number[]>(
-    initialValues.setIds ? initialValues.setIds.split(",").map(Number) : [],
+    initialValues.setIds ? initialValues.setIds.split(',').map(Number) : [],
   );
 
   const availableSizes =
@@ -144,7 +144,7 @@ export default function BoardForm({
               layoutId,
               sizeId,
               setIds:
-                selectedSets.length > 0 ? selectedSets.sort((a, b) => a - b).join(",") : undefined,
+                selectedSets.length > 0 ? selectedSets.sort((a, b) => a - b).join(',') : undefined,
             }
           : {}),
         serialNumber: serialNumber.trim() || undefined,
@@ -158,20 +158,20 @@ export default function BoardForm({
     <Box
       component="form"
       onSubmit={handleSubmit}
-      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+      sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
     >
       {title && <MuiTypography variant="h6">{title}</MuiTypography>}
 
       {configEditable && (
         <>
-          <Alert severity="info" sx={{ fontSize: "0.8rem" }}>
+          <Alert severity="info" sx={{ fontSize: '0.8rem' }}>
             You can change the board layout because no climbs have been logged yet.
           </Alert>
 
           <FormControl size="small" fullWidth>
             <InputLabel>Layout</InputLabel>
             <MuiSelect
-              value={layoutId ?? ""}
+              value={layoutId ?? ''}
               label="Layout"
               onChange={(e: SelectChangeEvent<number | string>) => {
                 const newLayout = e.target.value as number;
@@ -195,7 +195,7 @@ export default function BoardForm({
             <FormControl size="small" fullWidth>
               <InputLabel>Size</InputLabel>
               <MuiSelect
-                value={sizeId ?? ""}
+                value={sizeId ?? ''}
                 label="Size"
                 onChange={(e: SelectChangeEvent<number | string>) => {
                   setSizeId(e.target.value as number);
@@ -224,23 +224,23 @@ export default function BoardForm({
                   availableSets
                     .filter((s) => selectedSets.includes(s.id))
                     .map((s) => s.name)
-                    .join(", ")
+                    .join(', ')
                 }
               >
                 {availableSets.map(({ id, name: setName }) => (
                   <MenuItem
                     key={id}
                     value={id}
-                    sx={{ display: "flex", justifyContent: "space-between", gap: 1 }}
+                    sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}
                   >
                     <ListItemText
                       primary={setName}
                       primaryTypographyProps={{
-                        color: selectedSets.includes(id) ? "text.primary" : "text.secondary",
+                        color: selectedSets.includes(id) ? 'text.primary' : 'text.secondary',
                       }}
                     />
                     {selectedSets.includes(id) && (
-                      <Check fontSize="small" sx={{ color: "primary.main", flexShrink: 0 }} />
+                      <Check fontSize="small" sx={{ color: 'primary.main', flexShrink: 0 }} />
                     )}
                   </MenuItem>
                 ))}
@@ -265,10 +265,10 @@ export default function BoardForm({
         <TextField
           label="URL Slug"
           value={slug}
-          onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+          onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
           fullWidth
           size="small"
-          helperText={`${slugHelperPrefix}${slug || "..."}`}
+          helperText={`${slugHelperPrefix}${slug || '...'}`}
         />
       )}
 
@@ -373,7 +373,7 @@ export default function BoardForm({
         label="I own this board"
       />
 
-      <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mt: 1 }}>
+      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', mt: 1 }}>
         {onCancel && (
           <MuiButton variant="text" onClick={onCancel} disabled={isSubmitting}>
             Cancel

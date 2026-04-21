@@ -1,21 +1,21 @@
-import { eq, and, or, desc, inArray, sql, count, ilike, gte, lte } from "drizzle-orm";
-import type { ConnectionContext, BoardName } from "@boardsesh/shared-schema";
-import { SUPPORTED_BOARDS } from "@boardsesh/shared-schema";
-import { db } from "../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { requireAuthenticated, applyRateLimit, validateInput } from "../shared/helpers";
+import { eq, and, or, desc, inArray, sql, count, ilike, gte, lte } from 'drizzle-orm';
+import type { ConnectionContext, BoardName } from '@boardsesh/shared-schema';
+import { SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
+import { db } from '../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { requireAuthenticated, applyRateLimit, validateInput } from '../shared/helpers';
 import {
   consensusDifficultyNameExpr,
   consensusDifficultyExpr,
   difficultyNameWithFallbackExpr,
   consensusGradeTable,
   consensusGradeJoinCondition,
-} from "../shared/sql-expressions";
+} from '../shared/sql-expressions';
 import {
   GetTicksInputSchema,
   BoardNameSchema,
   AscentFeedInputSchema,
-} from "../../../validation/schemas";
+} from '../../../validation/schemas';
 
 export const tickQueries = {
   /**
@@ -27,7 +27,7 @@ export const tickQueries = {
     ctx: ConnectionContext,
   ): Promise<unknown[]> => {
     requireAuthenticated(ctx);
-    validateInput(GetTicksInputSchema, input, "input");
+    validateInput(GetTicksInputSchema, input, 'input');
 
     const userId = ctx.userId!;
 
@@ -89,7 +89,7 @@ export const tickQueries = {
     _: unknown,
     { userId, boardType }: { userId: string; boardType: string },
   ): Promise<unknown[]> => {
-    validateInput(BoardNameSchema, boardType, "boardType");
+    validateInput(BoardNameSchema, boardType, 'boardType');
 
     const conditions = [
       eq(dbSchema.boardseshTicks.userId, userId),
@@ -177,17 +177,17 @@ export const tickQueries = {
     hasMore: boolean;
   }> => {
     // Validate and set defaults
-    const validatedInput = validateInput(AscentFeedInputSchema, input || {}, "input");
+    const validatedInput = validateInput(AscentFeedInputSchema, input || {}, 'input');
     const limit = validatedInput.limit ?? 20;
     const offset = validatedInput.offset ?? 0;
     const boardType = validatedInput.boardType;
     const boardTypes = validatedInput.boardTypes;
     const layoutIds = validatedInput.layoutIds;
     const climbName = validatedInput.climbName;
-    const sortBy = validatedInput.sortBy ?? "recent";
-    const sortOrder = validatedInput.sortOrder ?? "desc";
+    const sortBy = validatedInput.sortBy ?? 'recent';
+    const sortOrder = validatedInput.sortOrder ?? 'desc';
     const secondarySortBy = validatedInput.secondarySortBy;
-    const secondarySortOrder = validatedInput.secondarySortOrder ?? "desc";
+    const secondarySortOrder = validatedInput.secondarySortOrder ?? 'desc';
     const minDifficulty = validatedInput.minDifficulty;
     const maxDifficulty = validatedInput.maxDifficulty;
     const minAngle = validatedInput.minAngle;
@@ -198,8 +198,8 @@ export const tickQueries = {
     const legacyStatus = validatedInput.status;
     const statusMode =
       validatedInput.statusMode ??
-      (legacyStatus === "attempt" ? "attempt" : legacyStatus ? "send" : "both");
-    const flashOnly = validatedInput.flashOnly ?? legacyStatus === "flash";
+      (legacyStatus === 'attempt' ? 'attempt' : legacyStatus ? 'send' : 'both');
+    const flashOnly = validatedInput.flashOnly ?? legacyStatus === 'flash';
 
     const resolvedBenchmarkExpr = sql<boolean>`CASE
       WHEN COALESCE(${dbSchema.boardClimbStats.benchmarkDifficulty}, 0) > 0 OR ${dbSchema.boardseshTicks.isBenchmark} = true THEN true
@@ -222,19 +222,19 @@ export const tickQueries = {
       ...(minAngle !== undefined ? [gte(dbSchema.boardseshTicks.angle, minAngle)] : []),
       ...(maxAngle !== undefined ? [lte(dbSchema.boardseshTicks.angle, maxAngle)] : []),
       ...(fromDate ? [gte(dbSchema.boardseshTicks.climbedAt, fromDate)] : []),
-      ...(toDate ? [lte(dbSchema.boardseshTicks.climbedAt, toDate + "T23:59:59.999Z")] : []),
+      ...(toDate ? [lte(dbSchema.boardseshTicks.climbedAt, toDate + 'T23:59:59.999Z')] : []),
     ];
 
-    if (statusMode === "attempt") {
-      tickConditions.push(eq(dbSchema.boardseshTicks.status, "attempt"));
-    } else if (statusMode === "send") {
+    if (statusMode === 'attempt') {
+      tickConditions.push(eq(dbSchema.boardseshTicks.status, 'attempt'));
+    } else if (statusMode === 'send') {
       tickConditions.push(
         flashOnly
-          ? eq(dbSchema.boardseshTicks.status, "flash")
-          : inArray(dbSchema.boardseshTicks.status, ["flash", "send"]),
+          ? eq(dbSchema.boardseshTicks.status, 'flash')
+          : inArray(dbSchema.boardseshTicks.status, ['flash', 'send']),
       );
     } else if (flashOnly) {
-      tickConditions.push(eq(dbSchema.boardseshTicks.status, "flash"));
+      tickConditions.push(eq(dbSchema.boardseshTicks.status, 'flash'));
     }
 
     if (benchmarkOnly) {
@@ -326,40 +326,40 @@ export const tickQueries = {
     const totalCount = Number(countResult[0]?.count || 0);
 
     const buildOrderClause = (field: string, direction: string) => {
-      const dir = direction === "asc" ? "asc" : "desc";
+      const dir = direction === 'asc' ? 'asc' : 'desc';
       switch (field) {
-        case "climbName":
+        case 'climbName':
           return sql`${dbSchema.boardClimbs.name} ${sql.raw(dir)} nulls last`;
-        case "loggedGrade":
-        case "easiest":
-        case "hardest":
+        case 'loggedGrade':
+        case 'easiest':
+        case 'hardest':
           return sql`${dbSchema.boardseshTicks.difficulty} ${sql.raw(dir)} nulls last`;
-        case "consensusGrade":
+        case 'consensusGrade':
           return sql`${consensusDifficultyExpr} ${sql.raw(dir)} nulls last`;
-        case "attemptCount":
-        case "mostAttempts":
+        case 'attemptCount':
+        case 'mostAttempts':
           return sql`${dbSchema.boardseshTicks.attemptCount} ${sql.raw(dir)} nulls last`;
-        case "date":
-        case "recent":
+        case 'date':
+        case 'recent':
         default:
           return sql`${dbSchema.boardseshTicks.climbedAt} ${sql.raw(dir)} nulls last`;
       }
     };
 
     const resolvedPrimarySort =
-      sortBy === "recent"
-        ? { field: "date", direction: sortOrder }
-        : sortBy === "hardest"
-          ? { field: "consensusGrade", direction: "desc" }
-          : sortBy === "easiest"
-            ? { field: "loggedGrade", direction: "asc" }
-            : sortBy === "mostAttempts"
-              ? { field: "attemptCount", direction: "desc" }
+      sortBy === 'recent'
+        ? { field: 'date', direction: sortOrder }
+        : sortBy === 'hardest'
+          ? { field: 'consensusGrade', direction: 'desc' }
+          : sortBy === 'easiest'
+            ? { field: 'loggedGrade', direction: 'asc' }
+            : sortBy === 'mostAttempts'
+              ? { field: 'attemptCount', direction: 'desc' }
               : { field: sortBy, direction: sortOrder };
 
     const resolvedSecondarySort =
-      sortBy === "hardest"
-        ? { field: "loggedGrade", direction: "desc" }
+      sortBy === 'hardest'
+        ? { field: 'loggedGrade', direction: 'desc' }
         : secondarySortBy
           ? { field: secondarySortBy, direction: secondarySortOrder }
           : null;
@@ -396,7 +396,7 @@ export const tickQueries = {
       }) => ({
         uuid: tick.uuid,
         climbUuid: tick.climbUuid,
-        climbName: climbName || "Unknown Climb",
+        climbName: climbName || 'Unknown Climb',
         setterUsername,
         boardType: tick.boardType,
         layoutId,
@@ -414,7 +414,7 @@ export const tickQueries = {
         consensusDifficultyName,
         isBenchmark: Boolean(resolvedIsBenchmark),
         qualityAverage: qualityAverage != null ? Number(qualityAverage) : null,
-        comment: tick.comment || "",
+        comment: tick.comment || '',
         climbedAt: tick.climbedAt,
         frames,
       }),
@@ -444,7 +444,7 @@ export const tickQueries = {
     hasMore: boolean;
   }> => {
     // Validate and set defaults
-    const validatedInput = validateInput(AscentFeedInputSchema, input || {}, "input");
+    const validatedInput = validateInput(AscentFeedInputSchema, input || {}, 'input');
     const limit = validatedInput.limit ?? 20;
     const offset = validatedInput.offset ?? 0;
 
@@ -460,9 +460,9 @@ export const tickQueries = {
     const pageGroups = await db
       .select({
         climbUuid: dbSchema.boardseshTicks.climbUuid,
-        day: dayExpr.as("day"),
+        day: dayExpr.as('day'),
         latestClimbedAt: sql<string>`max(${dbSchema.boardseshTicks.climbedAt})`.as(
-          "latest_climbed_at",
+          'latest_climbed_at',
         ),
       })
       .from(dbSchema.boardseshTicks)
@@ -477,12 +477,12 @@ export const tickQueries = {
       db
         .select({
           climbUuid: dbSchema.boardseshTicks.climbUuid,
-          day: dayExpr.as("day"),
+          day: dayExpr.as('day'),
         })
         .from(dbSchema.boardseshTicks)
         .where(eq(dbSchema.boardseshTicks.userId, userId))
         .groupBy(dbSchema.boardseshTicks.climbUuid, dayExpr)
-        .as("group_keys"),
+        .as('group_keys'),
     );
 
     if (pageGroups.length === 0) {
@@ -515,7 +515,7 @@ export const tickQueries = {
         layoutId: dbSchema.boardClimbs.layoutId,
         frames: dbSchema.boardClimbs.frames,
         difficultyName: difficultyNameWithFallbackExpr,
-        day: dayExpr.as("day"),
+        day: dayExpr.as('day'),
       })
       .from(dbSchema.boardseshTicks)
       .leftJoin(
@@ -610,7 +610,7 @@ export const tickQueries = {
       const item: AscentItem = {
         uuid: tick.uuid,
         climbUuid: tick.climbUuid,
-        climbName: climbName || "Unknown Climb",
+        climbName: climbName || 'Unknown Climb',
         setterUsername,
         boardType: tick.boardType,
         layoutId,
@@ -622,7 +622,7 @@ export const tickQueries = {
         difficulty: tick.difficulty,
         difficultyName,
         isBenchmark: tick.isBenchmark ?? false,
-        comment: tick.comment || "",
+        comment: tick.comment || '',
         climbedAt: tick.climbedAt,
         frames,
       };
@@ -632,7 +632,7 @@ export const tickQueries = {
         group = {
           key,
           climbUuid: tick.climbUuid,
-          climbName: climbName || "Unknown Climb",
+          climbName: climbName || 'Unknown Climb',
           setterUsername,
           boardType: tick.boardType,
           layoutId,
@@ -654,9 +654,9 @@ export const tickQueries = {
 
       group.items.push(item);
 
-      if (tick.status === "flash") {
+      if (tick.status === 'flash') {
         group.flashCount++;
-      } else if (tick.status === "send") {
+      } else if (tick.status === 'send') {
         group.sendCount++;
       } else {
         group.attemptCount++;
@@ -696,9 +696,9 @@ export const tickQueries = {
     { userId }: { userId: string },
     ctx: ConnectionContext,
   ) => {
-    await applyRateLimit(ctx, 10, "userClimbPercentile");
+    await applyRateLimit(ctx, 10, 'userClimbPercentile');
 
-    if (!userId || typeof userId !== "string" || userId.trim() === "") {
+    if (!userId || typeof userId !== 'string' || userId.trim() === '') {
       return { totalDistinctClimbs: 0, percentile: 0, totalActiveUsers: 0 };
     }
 
@@ -764,7 +764,7 @@ export const tickQueries = {
     }>;
   }> => {
     // Validate userId
-    if (!userId || typeof userId !== "string" || userId.trim() === "") {
+    if (!userId || typeof userId !== 'string' || userId.trim() === '') {
       return { totalDistinctClimbs: 0, layoutStats: [] };
     }
 
@@ -789,7 +789,7 @@ export const tickQueries = {
             layoutId: dbSchema.boardClimbs.layoutId,
             difficulty: dbSchema.boardseshTicks.difficulty,
             distinctCount: sql<number>`count(distinct ${dbSchema.boardseshTicks.climbUuid})`.as(
-              "distinct_count",
+              'distinct_count',
             ),
           })
           .from(dbSchema.boardseshTicks)
@@ -837,7 +837,7 @@ export const tickQueries = {
 
       // Process grade results into layout stats
       for (const row of gradeResults) {
-        const layoutKey = `${boardType}-${row.layoutId ?? "unknown"}`;
+        const layoutKey = `${boardType}-${row.layoutId ?? 'unknown'}`;
 
         if (!layoutStatsMap[layoutKey]) {
           layoutStatsMap[layoutKey] = {

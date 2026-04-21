@@ -1,31 +1,31 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useRef, useState, useMemo } from "react";
-import Box from "@mui/material/Box";
-import CircularProgress from "@mui/material/CircularProgress";
-import Typography from "@mui/material/Typography";
-import Alert from "@mui/material/Alert";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import type { InfiniteData } from "@tanstack/react-query";
-import type { Client } from "../graphql-queue/graphql-client";
-import { createGraphQLClient, subscribe } from "../graphql-queue/graphql-client";
-import { getBackendWsUrl } from "@/app/lib/backend-url";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import type { InfiniteData } from '@tanstack/react-query';
+import type { Client } from '../graphql-queue/graphql-client';
+import { createGraphQLClient, subscribe } from '../graphql-queue/graphql-client';
+import { getBackendWsUrl } from '@/app/lib/backend-url';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   GET_NEW_CLIMB_FEED,
   NEW_CLIMB_CREATED_SUBSCRIPTION,
   type GetNewClimbFeedResponse,
   type GetNewClimbFeedVariables,
   type NewClimbCreatedSubscriptionPayload,
-} from "@/app/lib/graphql/operations/new-climb-feed";
+} from '@/app/lib/graphql/operations/new-climb-feed';
 import type {
   NewClimbFeedItem as NewClimbFeedItemType,
   NewClimbFeedResult,
-} from "@boardsesh/shared-schema";
-import NewClimbFeedItem from "./new-climb-feed-item";
-import SubscribeButton from "./subscribe-button";
-import { useWsAuthToken } from "@/app/hooks/use-ws-auth-token";
-import { useInfiniteScroll } from "@/app/hooks/use-infinite-scroll";
+} from '@boardsesh/shared-schema';
+import NewClimbFeedItem from './new-climb-feed-item';
+import SubscribeButton from './subscribe-button';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
 
 interface NewClimbFeedProps {
   boardType: string;
@@ -48,7 +48,7 @@ export default function NewClimbFeed({
   const [subscribed, setSubscribed] = useState(isSubscribed);
   const queryClient = useQueryClient();
 
-  const queryKey = ["newClimbFeed", boardType, layoutId] as const;
+  const queryKey = ['newClimbFeed', boardType, layoutId] as const;
 
   const ensureWsClient = useCallback(() => {
     if (!clientRef.current) {
@@ -122,7 +122,7 @@ export default function NewClimbFeed({
             };
           });
         },
-        error: (err) => console.error("New climb subscription error", err),
+        error: (err) => console.error('New climb subscription error', err),
         complete: () => {},
       },
     );
@@ -135,7 +135,7 @@ export default function NewClimbFeed({
 
   return (
     <Box>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         <Typography variant="h6" fontWeight={700}>
           New Climbs
         </Typography>
@@ -159,7 +159,7 @@ export default function NewClimbFeed({
       ))}
 
       {isLoading && (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
           <CircularProgress size={24} />
         </Box>
       )}
@@ -167,7 +167,7 @@ export default function NewClimbFeed({
       {!isLoading && items.length > 0 && (
         <Box
           ref={sentinelRef}
-          sx={{ display: "flex", justifyContent: "center", py: 2, minHeight: 20 }}
+          sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}
         >
           {isFetchingNextPage && <CircularProgress size={24} />}
         </Box>

@@ -1,16 +1,16 @@
-import React from "react";
-import { notFound } from "next/navigation";
-import { BoardRouteParameters } from "@/app/lib/types";
-import { getBoardDetailsForBoard } from "@/app/lib/board-utils";
-import { parseBoardRouteParamsWithSlugs } from "@/app/lib/url-utils.server";
-import { Metadata } from "next";
-import LikedClimbsViewContent from "./liked-climbs-view-content";
-import styles from "@/app/components/library/playlist-view.module.css";
+import React from 'react';
+import { notFound } from 'next/navigation';
+import { BoardRouteParameters } from '@/app/lib/types';
+import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
+import { parseBoardRouteParamsWithSlugs } from '@/app/lib/url-utils.server';
+import { Metadata } from 'next';
+import LikedClimbsViewContent from './liked-climbs-view-content';
+import styles from '@/app/components/library/playlist-view.module.css';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "Liked Climbs | Boardsesh",
-    description: "View your liked climbs",
+    title: 'Liked Climbs | Boardsesh',
+    description: 'View your liked climbs',
   };
 }
 
@@ -27,7 +27,7 @@ export default async function LikedClimbsPage(props: { params: Promise<BoardRout
       </div>
     );
   } catch (error) {
-    console.error("Error loading liked climbs page:", error);
+    console.error('Error loading liked climbs page:', error);
     notFound();
   }
 }

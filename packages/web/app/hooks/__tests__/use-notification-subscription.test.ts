@@ -1,14 +1,14 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { renderHook } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
+import { renderHook } from '@testing-library/react';
 
 // --- Mocks ---
 
-vi.mock("../use-ws-auth-token", () => ({
+vi.mock('../use-ws-auth-token', () => ({
   useWsAuthToken: vi.fn(),
 }));
 
 const mockShowMessage = vi.fn();
-vi.mock("@/app/components/providers/snackbar-provider", () => ({
+vi.mock('@/app/components/providers/snackbar-provider', () => ({
   useSnackbar: vi.fn(() => ({ showMessage: mockShowMessage })),
 }));
 
@@ -19,58 +19,58 @@ const mockCreateGraphQLClient = vi.fn(() => ({
 }));
 const mockSubscribe = vi.fn(() => mockUnsub);
 
-vi.mock("@/app/components/graphql-queue/graphql-client", () => ({
+vi.mock('@/app/components/graphql-queue/graphql-client', () => ({
   createGraphQLClient: (...args: Parameters<typeof mockCreateGraphQLClient>) =>
     mockCreateGraphQLClient(...args),
   subscribe: (...args: Parameters<typeof mockSubscribe>) => mockSubscribe(...args),
 }));
 
 const mockHttpRequest = vi.fn();
-vi.mock("@/app/lib/graphql/client", () => ({
+vi.mock('@/app/lib/graphql/client', () => ({
   createGraphQLHttpClient: () => ({ request: mockHttpRequest }),
 }));
 
-vi.mock("@/app/lib/graphql/operations", () => ({
-  GET_UNREAD_NOTIFICATION_COUNT: "GET_UNREAD_COUNT",
-  NOTIFICATION_RECEIVED_SUBSCRIPTION: "NOTIFICATION_SUB",
+vi.mock('@/app/lib/graphql/operations', () => ({
+  GET_UNREAD_NOTIFICATION_COUNT: 'GET_UNREAD_COUNT',
+  NOTIFICATION_RECEIVED_SUBSCRIPTION: 'NOTIFICATION_SUB',
 }));
 
-vi.mock("../use-unread-notification-count", () => ({
-  UNREAD_COUNT_QUERY_KEY: ["notifications", "unreadCount"],
+vi.mock('../use-unread-notification-count', () => ({
+  UNREAD_COUNT_QUERY_KEY: ['notifications', 'unreadCount'],
 }));
 
-vi.mock("../use-grouped-notifications", () => ({
-  GROUPED_NOTIFICATIONS_QUERY_KEY: ["notifications", "grouped"],
+vi.mock('../use-grouped-notifications', () => ({
+  GROUPED_NOTIFICATIONS_QUERY_KEY: ['notifications', 'grouped'],
 }));
 
 // Mock QueryClient
 const mockSetQueryData = vi.fn();
 const mockSetQueriesData = vi.fn();
-vi.mock("@tanstack/react-query", () => ({
+vi.mock('@tanstack/react-query', () => ({
   useQueryClient: () => ({
     setQueryData: mockSetQueryData,
     setQueriesData: mockSetQueriesData,
   }),
 }));
 
-import { useWsAuthToken } from "../use-ws-auth-token";
-import { useNotificationSubscription } from "../use-notification-subscription";
+import { useWsAuthToken } from '../use-ws-auth-token';
+import { useNotificationSubscription } from '../use-notification-subscription';
 
 const mockUseWsAuthToken = vi.mocked(useWsAuthToken);
 
-describe("useNotificationSubscription", () => {
+describe('useNotificationSubscription', () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env = { ...originalEnv, NEXT_PUBLIC_WS_URL: "wss://test.example.com" };
+    process.env = { ...originalEnv, NEXT_PUBLIC_WS_URL: 'wss://test.example.com' };
   });
 
   afterEach(() => {
     process.env = originalEnv;
   });
 
-  it("does not subscribe when not authenticated", () => {
+  it('does not subscribe when not authenticated', () => {
     mockUseWsAuthToken.mockReturnValue({
       token: null,
       isAuthenticated: false,
@@ -84,7 +84,7 @@ describe("useNotificationSubscription", () => {
     expect(mockSubscribe).not.toHaveBeenCalled();
   });
 
-  it("does not subscribe when no token", () => {
+  it('does not subscribe when no token', () => {
     mockUseWsAuthToken.mockReturnValue({
       token: null,
       isAuthenticated: true,
@@ -98,10 +98,10 @@ describe("useNotificationSubscription", () => {
     expect(mockSubscribe).not.toHaveBeenCalled();
   });
 
-  it("does not subscribe when no WS URL", () => {
+  it('does not subscribe when no WS URL', () => {
     delete process.env.NEXT_PUBLIC_WS_URL;
     mockUseWsAuthToken.mockReturnValue({
-      token: "test-token",
+      token: 'test-token',
       isAuthenticated: true,
       isLoading: false,
       error: null,
@@ -112,9 +112,9 @@ describe("useNotificationSubscription", () => {
     expect(mockSubscribe).not.toHaveBeenCalled();
   });
 
-  it("creates client and subscribes when authenticated", () => {
+  it('creates client and subscribes when authenticated', () => {
     mockUseWsAuthToken.mockReturnValue({
-      token: "test-token",
+      token: 'test-token',
       isAuthenticated: true,
       isLoading: false,
       error: null,
@@ -124,16 +124,16 @@ describe("useNotificationSubscription", () => {
 
     expect(mockCreateGraphQLClient).toHaveBeenCalledWith(
       expect.objectContaining({
-        url: "wss://test.example.com",
-        authToken: "test-token",
+        url: 'wss://test.example.com',
+        authToken: 'test-token',
       }),
     );
     expect(mockSubscribe).toHaveBeenCalled();
   });
 
-  it("cleans up (unsub + dispose) on unmount", () => {
+  it('cleans up (unsub + dispose) on unmount', () => {
     mockUseWsAuthToken.mockReturnValue({
-      token: "test-token",
+      token: 'test-token',
       isAuthenticated: true,
       isLoading: false,
       error: null,
@@ -147,9 +147,9 @@ describe("useNotificationSubscription", () => {
     expect(mockDispose).toHaveBeenCalled();
   });
 
-  it("cleans up on auth change", () => {
+  it('cleans up on auth change', () => {
     mockUseWsAuthToken.mockReturnValue({
-      token: "token-1",
+      token: 'token-1',
       isAuthenticated: true,
       isLoading: false,
       error: null,
@@ -161,7 +161,7 @@ describe("useNotificationSubscription", () => {
 
     // Change token
     mockUseWsAuthToken.mockReturnValue({
-      token: "token-2",
+      token: 'token-2',
       isAuthenticated: true,
       isLoading: false,
       error: null,
@@ -177,9 +177,9 @@ describe("useNotificationSubscription", () => {
     expect(mockSubscribe).toHaveBeenCalledTimes(2);
   });
 
-  it("increments unread count on notification", () => {
+  it('increments unread count on notification', () => {
     mockUseWsAuthToken.mockReturnValue({
-      token: "test-token",
+      token: 'test-token',
       isAuthenticated: true,
       isLoading: false,
       error: null,
@@ -198,43 +198,43 @@ describe("useNotificationSubscription", () => {
     callbacks.next({
       notificationReceived: {
         notification: {
-          uuid: "notif-1",
-          type: "new_follower",
-          entityType: "user",
-          entityId: "user-1",
-          actorId: "actor-1",
-          actorDisplayName: "Alice",
+          uuid: 'notif-1',
+          type: 'new_follower',
+          entityType: 'user',
+          entityId: 'user-1',
+          actorId: 'actor-1',
+          actorDisplayName: 'Alice',
           actorAvatarUrl: null,
           commentBody: null,
           climbName: null,
           climbUuid: null,
           boardType: null,
-          createdAt: "2025-01-01T00:00:00Z",
+          createdAt: '2025-01-01T00:00:00Z',
         },
       },
     });
 
     // Should increment unread count
     expect(mockSetQueryData).toHaveBeenCalledWith(
-      ["notifications", "unreadCount"],
+      ['notifications', 'unreadCount'],
       expect.any(Function),
     );
 
     // Call the updater function to verify it increments
     const updaterFn = mockSetQueryData.mock.calls.find(
       (call: unknown[]) =>
-        (call[0] as string[])[0] === "notifications" && (call[0] as string[])[1] === "unreadCount",
+        (call[0] as string[])[0] === 'notifications' && (call[0] as string[])[1] === 'unreadCount',
     )?.[1];
 
-    if (typeof updaterFn === "function") {
+    if (typeof updaterFn === 'function') {
       expect(updaterFn(5)).toBe(6);
       expect(updaterFn(undefined)).toBe(1);
     }
   });
 
-  it("shows toast message on notification", () => {
+  it('shows toast message on notification', () => {
     mockUseWsAuthToken.mockReturnValue({
-      token: "test-token",
+      token: 'test-token',
       isAuthenticated: true,
       isLoading: false,
       error: null,
@@ -251,34 +251,34 @@ describe("useNotificationSubscription", () => {
     callbacks.next({
       notificationReceived: {
         notification: {
-          uuid: "notif-1",
-          type: "new_follower",
-          entityType: "user",
-          entityId: "user-1",
-          actorId: "actor-1",
-          actorDisplayName: "Alice",
+          uuid: 'notif-1',
+          type: 'new_follower',
+          entityType: 'user',
+          entityId: 'user-1',
+          actorId: 'actor-1',
+          actorDisplayName: 'Alice',
           actorAvatarUrl: null,
           commentBody: null,
           climbName: null,
           climbUuid: null,
           boardType: null,
-          createdAt: "2025-01-01T00:00:00Z",
+          createdAt: '2025-01-01T00:00:00Z',
         },
       },
     });
 
-    expect(mockShowMessage).toHaveBeenCalledWith("Alice started following you", "info");
+    expect(mockShowMessage).toHaveBeenCalledWith('Alice started following you', 'info');
   });
 
-  it("handles subscription error without throwing", () => {
+  it('handles subscription error without throwing', () => {
     mockUseWsAuthToken.mockReturnValue({
-      token: "test-token",
+      token: 'test-token',
       isAuthenticated: true,
       isLoading: false,
       error: null,
     });
 
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     renderHook(() => useNotificationSubscription());
 
@@ -290,17 +290,17 @@ describe("useNotificationSubscription", () => {
 
     // Should not throw
     expect(() => {
-      callbacks.error(new Error("Subscription error"));
+      callbacks.error(new Error('Subscription error'));
     }).not.toThrow();
 
-    expect(errorSpy).toHaveBeenCalledWith("[Notifications] Subscription error:", expect.any(Error));
+    expect(errorSpy).toHaveBeenCalledWith('[Notifications] Subscription error:', expect.any(Error));
 
     errorSpy.mockRestore();
   });
 
-  it("merges new notification into grouped cache (new group)", () => {
+  it('merges new notification into grouped cache (new group)', () => {
     mockUseWsAuthToken.mockReturnValue({
-      token: "test-token",
+      token: 'test-token',
       isAuthenticated: true,
       isLoading: false,
       error: null,
@@ -317,25 +317,25 @@ describe("useNotificationSubscription", () => {
     callbacks.next({
       notificationReceived: {
         notification: {
-          uuid: "notif-2",
-          type: "comment_reply",
-          entityType: "comment",
-          entityId: "comment-1",
-          actorId: "actor-2",
-          actorDisplayName: "Bob",
-          actorAvatarUrl: "https://example.com/bob.png",
-          commentBody: "Nice climb!",
-          climbName: "Boulder Problem",
-          climbUuid: "climb-1",
-          boardType: "kilter",
-          createdAt: "2025-01-01T00:00:00Z",
+          uuid: 'notif-2',
+          type: 'comment_reply',
+          entityType: 'comment',
+          entityId: 'comment-1',
+          actorId: 'actor-2',
+          actorDisplayName: 'Bob',
+          actorAvatarUrl: 'https://example.com/bob.png',
+          commentBody: 'Nice climb!',
+          climbName: 'Boulder Problem',
+          climbUuid: 'climb-1',
+          boardType: 'kilter',
+          createdAt: '2025-01-01T00:00:00Z',
         },
       },
     });
 
     // Should call setQueriesData for grouped notifications
     expect(mockSetQueriesData).toHaveBeenCalledWith(
-      { queryKey: ["notifications", "grouped"] },
+      { queryKey: ['notifications', 'grouped'] },
       expect.any(Function),
     );
 
@@ -346,14 +346,14 @@ describe("useNotificationSubscription", () => {
         {
           groups: [
             {
-              uuid: "existing-group",
-              type: "new_follower",
-              entityType: "user",
-              entityId: "other-entity",
+              uuid: 'existing-group',
+              type: 'new_follower',
+              entityType: 'user',
+              entityId: 'other-entity',
               actorCount: 1,
-              actors: [{ id: "a1", displayName: "Eve", avatarUrl: null }],
+              actors: [{ id: 'a1', displayName: 'Eve', avatarUrl: null }],
               isRead: true,
-              createdAt: "2024-12-01T00:00:00Z",
+              createdAt: '2024-12-01T00:00:00Z',
               commentBody: null,
             },
           ],
@@ -366,12 +366,12 @@ describe("useNotificationSubscription", () => {
     const updatedData = updaterFn(existingData);
 
     // New group should be prepended to first page
-    expect(updatedData.pages[0].groups[0].uuid).toBe("notif-2");
-    expect(updatedData.pages[0].groups[0].type).toBe("comment_reply");
+    expect(updatedData.pages[0].groups[0].uuid).toBe('notif-2');
+    expect(updatedData.pages[0].groups[0].type).toBe('comment_reply');
     expect(updatedData.pages[0].groups[0].actorCount).toBe(1);
     expect(updatedData.pages[0].groups[0].isRead).toBe(false);
 
     // Existing group should still be present
-    expect(updatedData.pages[0].groups[1].uuid).toBe("existing-group");
+    expect(updatedData.pages[0].groups[1].uuid).toBe('existing-group');
   });
 });

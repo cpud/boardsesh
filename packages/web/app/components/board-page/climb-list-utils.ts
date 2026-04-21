@@ -1,4 +1,4 @@
-import { Climb } from "@/app/lib/types";
+import { Climb } from '@/app/lib/types';
 
 /**
  * Classifies a climb list change to determine how to render it.
@@ -10,14 +10,14 @@ import { Climb } from "@/app/lib/types";
 export function classifyClimbListChange(
   current: Climb[],
   previous: Climb[],
-): "append" | "same" | "replace" {
+): 'append' | 'same' | 'replace' {
   // Detect append (infinite scroll): new list is longer and starts with the same first item
   const isAppend =
     current.length > previous.length &&
     previous.length > 0 &&
     current[0]?.uuid === previous[0]?.uuid;
 
-  if (isAppend) return "append";
+  if (isAppend) return 'append';
 
   // Detect same data with a new reference (e.g. SSR→client handoff, useMemo recomputation)
   const isSameData =
@@ -26,9 +26,9 @@ export function classifyClimbListChange(
       (current[0]?.uuid === previous[0]?.uuid &&
         current[current.length - 1]?.uuid === previous[previous.length - 1]?.uuid));
 
-  if (isSameData) return "same";
+  if (isSameData) return 'same';
 
-  return "replace";
+  return 'replace';
 }
 
 /**

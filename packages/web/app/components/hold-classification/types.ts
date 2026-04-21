@@ -1,4 +1,4 @@
-import { BoardDetails } from "@/app/lib/types";
+import { BoardDetails } from '@/app/lib/types';
 
 /**
  * All available hold types with their display labels
@@ -7,34 +7,34 @@ import { BoardDetails } from "@/app/lib/types";
  */
 export const HOLD_TYPE_OPTIONS = [
   {
-    value: "jug",
-    label: "Jug",
-    description: "Large, positive holds",
+    value: 'jug',
+    label: 'Jug',
+    description: 'Large, positive holds',
     excludeBoards: [] as string[],
   },
   {
-    value: "sloper",
-    label: "Sloper",
-    description: "Rounded, friction-dependent holds",
+    value: 'sloper',
+    label: 'Sloper',
+    description: 'Rounded, friction-dependent holds',
     excludeBoards: [] as string[],
   },
   {
-    value: "pinch",
-    label: "Pinch",
-    description: "Holds requiring thumb opposition",
+    value: 'pinch',
+    label: 'Pinch',
+    description: 'Holds requiring thumb opposition',
     excludeBoards: [] as string[],
   },
   {
-    value: "crimp",
-    label: "Crimp",
-    description: "Small edges requiring finger strength",
+    value: 'crimp',
+    label: 'Crimp',
+    description: 'Small edges requiring finger strength',
     excludeBoards: [] as string[],
   },
   {
-    value: "pocket",
-    label: "Pocket",
-    description: "Holds for one or more fingers",
-    excludeBoards: ["kilter"],
+    value: 'pocket',
+    label: 'Pocket',
+    description: 'Holds for one or more fingers',
+    excludeBoards: ['kilter'],
   },
 ] as const;
 
@@ -42,7 +42,7 @@ export const HOLD_TYPE_OPTIONS = [
  * Hold type classification options
  * Derived from HOLD_TYPE_OPTIONS to ensure type safety
  */
-export type HoldType = (typeof HOLD_TYPE_OPTIONS)[number]["value"];
+export type HoldType = (typeof HOLD_TYPE_OPTIONS)[number]['value'];
 
 /**
  * Hold type display information

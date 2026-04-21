@@ -1,34 +1,34 @@
-"use client";
+'use client';
 
-import React, { useMemo } from "react";
-import Box from "@mui/material/Box";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import ListItemText from "@mui/material/ListItemText";
-import MuiAvatar from "@mui/material/Avatar";
-import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
-import CircularProgress from "@mui/material/CircularProgress";
-import Link from "next/link";
-import { PersonOutlined } from "@mui/icons-material";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import FollowButton from "@/app/components/ui/follow-button";
+import React, { useMemo } from 'react';
+import Box from '@mui/material/Box';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import MuiAvatar from '@mui/material/Avatar';
+import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import Link from 'next/link';
+import { PersonOutlined } from '@mui/icons-material';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import FollowButton from '@/app/components/ui/follow-button';
 import {
   FOLLOW_USER,
   UNFOLLOW_USER,
   FOLLOW_SETTER,
   UNFOLLOW_SETTER,
-} from "@/app/lib/graphql/operations";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
+} from '@/app/lib/graphql/operations';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   SEARCH_USERS_AND_SETTERS,
   type SearchUsersAndSettersQueryVariables,
   type SearchUsersAndSettersQueryResponse,
-} from "@/app/lib/graphql/operations";
-import type { UnifiedSearchResult, UnifiedSearchConnection } from "@boardsesh/shared-schema";
-import { useDebouncedValue } from "@/app/hooks/use-debounced-value";
-import { useInfiniteScroll } from "@/app/hooks/use-infinite-scroll";
+} from '@/app/lib/graphql/operations';
+import type { UnifiedSearchResult, UnifiedSearchConnection } from '@boardsesh/shared-schema';
+import { useDebouncedValue } from '@/app/hooks/use-debounced-value';
+import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
 
 interface UserSearchResultsProps {
   query: string;
@@ -42,7 +42,7 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
     UnifiedSearchConnection,
     Error
   >({
-    queryKey: ["searchUsersAndSetters", debouncedQuery, authToken],
+    queryKey: ['searchUsersAndSetters', debouncedQuery, authToken],
     queryFn: async ({ pageParam }) => {
       const client = createGraphQLHttpClient(authToken);
       const response = await client.request<
@@ -75,7 +75,7 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
 
   if (query.length < 2) {
     return (
-      <Box sx={{ py: 4, textAlign: "center" }}>
+      <Box sx={{ py: 4, textAlign: 'center' }}>
         <Typography variant="body2" color="text.secondary">
           Type at least 2 characters to search
         </Typography>
@@ -85,7 +85,7 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
 
   if (isLoading && results.length === 0) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         <CircularProgress />
       </Box>
     );
@@ -93,7 +93,7 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
 
   if (!isLoading && results.length === 0 && debouncedQuery.length >= 2) {
     return (
-      <Box sx={{ py: 4, textAlign: "center" }}>
+      <Box sx={{ py: 4, textAlign: 'center' }}>
         <Typography variant="body2" color="text.secondary">
           No users or setters found for &quot;{debouncedQuery}&quot;
         </Typography>
@@ -112,9 +112,9 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
                 component={Link}
                 href={`/profile/${result.user.id}`}
                 sx={{
-                  textDecoration: "none",
-                  color: "inherit",
-                  "&:hover": { backgroundColor: "action.hover" },
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  '&:hover': { backgroundColor: 'action.hover' },
                 }}
                 secondaryAction={
                   <FollowButton
@@ -136,11 +136,11 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
                   </MuiAvatar>
                 </ListItemAvatar>
                 <ListItemText
-                  primary={result.user.displayName || "User"}
+                  primary={result.user.displayName || 'User'}
                   secondary={
                     <Box
                       component="span"
-                      sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap" }}
+                      sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}
                     >
                       {result.recentAscentCount > 0 && (
                         <Typography variant="caption" component="span" color="text.secondary">
@@ -150,7 +150,7 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
                       {result.setter && (
                         <Typography variant="caption" component="span" color="text.secondary">
                           {result.setter.climbCount} climb
-                          {result.setter.climbCount !== 1 ? "s" : ""} set
+                          {result.setter.climbCount !== 1 ? 's' : ''} set
                         </Typography>
                       )}
                     </Box>
@@ -167,9 +167,9 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
                 component={Link}
                 href={`/setter/${encodeURIComponent(result.setter.username)}`}
                 sx={{
-                  textDecoration: "none",
-                  color: "inherit",
-                  "&:hover": { backgroundColor: "action.hover" },
+                  textDecoration: 'none',
+                  color: 'inherit',
+                  '&:hover': { backgroundColor: 'action.hover' },
                 }}
                 secondaryAction={
                   <FollowButton
@@ -192,10 +192,10 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
                   secondary={
                     <Box
                       component="span"
-                      sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap" }}
+                      sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}
                     >
                       <Typography variant="caption" component="span" color="text.secondary">
-                        {result.setter.climbCount} climb{result.setter.climbCount !== 1 ? "s" : ""}
+                        {result.setter.climbCount} climb{result.setter.climbCount !== 1 ? 's' : ''}
                       </Typography>
                       {result.setter.boardTypes.map((bt) => (
                         <Chip
@@ -203,7 +203,7 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
                           label={bt.charAt(0).toUpperCase() + bt.slice(1)}
                           size="small"
                           variant="outlined"
-                          sx={{ height: 20, fontSize: "0.7rem" }}
+                          sx={{ height: 20, fontSize: '0.7rem' }}
                         />
                       ))}
                     </Box>
@@ -218,7 +218,7 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
       </List>
       <Box
         ref={sentinelRef}
-        sx={{ display: "flex", justifyContent: "center", py: 2, minHeight: 20 }}
+        sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}
       >
         {isFetchingNextPage && <CircularProgress size={24} />}
       </Box>

@@ -1,5 +1,5 @@
-import { useState, useEffect, Dispatch } from "react";
-import type { QueueAction, ClimbQueue, ClimbQueueItem } from "../../queue-control/types";
+import { useState, useEffect, Dispatch } from 'react';
+import type { QueueAction, ClimbQueue, ClimbQueueItem } from '../../queue-control/types';
 
 interface UseQueueRestorationParams {
   isPersistentSessionActive: boolean;
@@ -43,7 +43,7 @@ export function useQueueRestoration({
     if (isPersistentSessionActive && persistentSession.hasConnected) {
       if (persistentSession.queue.length > 0 || persistentSession.currentClimbQueueItem) {
         dispatch({
-          type: "INITIAL_QUEUE_DATA",
+          type: 'INITIAL_QUEUE_DATA',
           payload: {
             queue: persistentSession.queue as Parameters<typeof dispatch>[0] extends {
               payload: infer P;
@@ -78,7 +78,7 @@ export function useQueueRestoration({
       (persistentSession.localQueue.length > 0 || persistentSession.localCurrentClimbQueueItem)
     ) {
       dispatch({
-        type: "INITIAL_QUEUE_DATA",
+        type: 'INITIAL_QUEUE_DATA',
         payload: {
           queue: persistentSession.localQueue as unknown as ClimbQueue,
           currentClimbQueueItem:

@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
-import { renderHook, act } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import { renderHook, act } from '@testing-library/react';
 
 const mockToggleFavorite = vi.fn().mockResolvedValue(true);
 const mockOpenAuthModal = vi.fn();
 
-vi.mock("../use-favorite", () => ({
+vi.mock('../use-favorite', () => ({
   useFavorite: vi.fn(() => ({
     isFavorited: false,
     isLoading: false,
@@ -13,16 +13,16 @@ vi.mock("../use-favorite", () => ({
   })),
 }));
 
-vi.mock("@/app/components/providers/auth-modal-provider", () => ({
+vi.mock('@/app/components/providers/auth-modal-provider', () => ({
   useAuthModal: () => ({ openAuthModal: mockOpenAuthModal }),
 }));
 
-import { useDoubleTapFavorite } from "../use-double-tap-favorite";
-import { useFavorite } from "../use-favorite";
+import { useDoubleTapFavorite } from '../use-double-tap-favorite';
+import { useFavorite } from '../use-favorite';
 
 const mockedUseFavorite = vi.mocked(useFavorite);
 
-describe("useDoubleTapFavorite", () => {
+describe('useDoubleTapFavorite', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockedUseFavorite.mockReturnValue({
@@ -33,8 +33,8 @@ describe("useDoubleTapFavorite", () => {
     });
   });
 
-  it("returns expected shape", () => {
-    const { result } = renderHook(() => useDoubleTapFavorite({ climbUuid: "test-uuid" }));
+  it('returns expected shape', () => {
+    const { result } = renderHook(() => useDoubleTapFavorite({ climbUuid: 'test-uuid' }));
 
     expect(result.current).toEqual(
       expect.objectContaining({
@@ -47,7 +47,7 @@ describe("useDoubleTapFavorite", () => {
     );
   });
 
-  it("shows auth modal when unauthenticated", () => {
+  it('shows auth modal when unauthenticated', () => {
     mockedUseFavorite.mockReturnValue({
       isFavorited: false,
       isLoading: false,
@@ -55,22 +55,22 @@ describe("useDoubleTapFavorite", () => {
       isAuthenticated: false,
     });
 
-    const { result } = renderHook(() => useDoubleTapFavorite({ climbUuid: "test-uuid" }));
+    const { result } = renderHook(() => useDoubleTapFavorite({ climbUuid: 'test-uuid' }));
 
     act(() => {
       result.current.handleDoubleTap();
     });
 
     expect(mockOpenAuthModal).toHaveBeenCalledWith({
-      title: "Sign in to like climbs",
-      description: "Save your favorite climbs so you can find them later.",
+      title: 'Sign in to like climbs',
+      description: 'Save your favorite climbs so you can find them later.',
     });
     expect(result.current.showHeart).toBe(false);
     expect(mockToggleFavorite).not.toHaveBeenCalled();
   });
 
-  it("toggles favorite and shows heart when not yet favorited", () => {
-    const { result } = renderHook(() => useDoubleTapFavorite({ climbUuid: "test-uuid" }));
+  it('toggles favorite and shows heart when not yet favorited', () => {
+    const { result } = renderHook(() => useDoubleTapFavorite({ climbUuid: 'test-uuid' }));
 
     act(() => {
       result.current.handleDoubleTap();
@@ -80,7 +80,7 @@ describe("useDoubleTapFavorite", () => {
     expect(mockToggleFavorite).toHaveBeenCalledTimes(1);
   });
 
-  it("shows heart but does NOT unfavorite when already favorited", () => {
+  it('shows heart but does NOT unfavorite when already favorited', () => {
     mockedUseFavorite.mockReturnValue({
       isFavorited: true,
       isLoading: false,
@@ -88,7 +88,7 @@ describe("useDoubleTapFavorite", () => {
       isAuthenticated: true,
     });
 
-    const { result } = renderHook(() => useDoubleTapFavorite({ climbUuid: "test-uuid" }));
+    const { result } = renderHook(() => useDoubleTapFavorite({ climbUuid: 'test-uuid' }));
 
     act(() => {
       result.current.handleDoubleTap();
@@ -98,8 +98,8 @@ describe("useDoubleTapFavorite", () => {
     expect(mockToggleFavorite).not.toHaveBeenCalled();
   });
 
-  it("dismissHeart resets showHeart to false", () => {
-    const { result } = renderHook(() => useDoubleTapFavorite({ climbUuid: "test-uuid" }));
+  it('dismissHeart resets showHeart to false', () => {
+    const { result } = renderHook(() => useDoubleTapFavorite({ climbUuid: 'test-uuid' }));
 
     act(() => {
       result.current.handleDoubleTap();
@@ -112,7 +112,7 @@ describe("useDoubleTapFavorite", () => {
     expect(result.current.showHeart).toBe(false);
   });
 
-  it("passes isFavorited and toggleFavorite through from useFavorite", () => {
+  it('passes isFavorited and toggleFavorite through from useFavorite', () => {
     mockedUseFavorite.mockReturnValue({
       isFavorited: true,
       isLoading: false,
@@ -120,7 +120,7 @@ describe("useDoubleTapFavorite", () => {
       isAuthenticated: true,
     });
 
-    const { result } = renderHook(() => useDoubleTapFavorite({ climbUuid: "test-uuid" }));
+    const { result } = renderHook(() => useDoubleTapFavorite({ climbUuid: 'test-uuid' }));
 
     expect(result.current.isFavorited).toBe(true);
     expect(result.current.toggleFavorite).toBeDefined();

@@ -1,5 +1,5 @@
-import { useCallback, useRef } from "react";
-import { execute, Client } from "../../graphql-queue/graphql-client";
+import { useCallback, useRef } from 'react';
+import { execute, Client } from '../../graphql-queue/graphql-client';
 import {
   ADD_QUEUE_ITEM,
   REMOVE_QUEUE_ITEM,
@@ -7,10 +7,10 @@ import {
   MIRROR_CURRENT_CLIMB,
   SET_QUEUE,
   REPLACE_QUEUE_ITEM,
-} from "@boardsesh/shared-schema";
-import type { ClimbQueueItem as LocalClimbQueueItem } from "../../queue-control/types";
-import type { Session } from "../types";
-import { toClimbQueueItemInput } from "../types";
+} from '@boardsesh/shared-schema';
+import type { ClimbQueueItem as LocalClimbQueueItem } from '../../queue-control/types';
+import type { Session } from '../types';
+import { toClimbQueueItemInput } from '../types';
 
 interface UseQueueMutationsArgs {
   client: Client | null;
@@ -70,7 +70,7 @@ async function executeWithLatestWins<TArgs>(
       try {
         await executeFn(next);
       } catch (error) {
-        console.error("Failed to send coalesced mutation:", error);
+        console.error('Failed to send coalesced mutation:', error);
       }
     }
     refs.inFlight = false;
@@ -96,7 +96,7 @@ export function useQueueMutations({
   >({ inFlight: false, pending: null });
 
   const addQueueItem = useCallback(async (item: LocalClimbQueueItem, position?: number) => {
-    if (!clientRef.current || !sessionRef.current) throw new Error("Not connected to session");
+    if (!clientRef.current || !sessionRef.current) throw new Error('Not connected to session');
     await execute(clientRef.current, {
       query: ADD_QUEUE_ITEM,
       variables: { item: toClimbQueueItemInput(item), position },
@@ -104,7 +104,7 @@ export function useQueueMutations({
   }, []);
 
   const removeQueueItem = useCallback(async (uuid: string) => {
-    if (!clientRef.current || !sessionRef.current) throw new Error("Not connected to session");
+    if (!clientRef.current || !sessionRef.current) throw new Error('Not connected to session');
     await execute(clientRef.current, {
       query: REMOVE_QUEUE_ITEM,
       variables: { uuid },
@@ -117,13 +117,13 @@ export function useQueueMutations({
       shouldAddToQueue?: boolean,
       correlationId?: string,
     ) => {
-      if (!clientRef.current || !sessionRef.current) throw new Error("Not connected to session");
+      if (!clientRef.current || !sessionRef.current) throw new Error('Not connected to session');
       await executeWithLatestWins(
         setCurrentClimbRefs.current,
         { item, shouldAddToQueue, correlationId },
         async (args) => {
           if (!clientRef.current || !sessionRef.current)
-            throw new Error("Not connected to session");
+            throw new Error('Not connected to session');
           await execute(clientRef.current, {
             query: SET_CURRENT_CLIMB,
             variables: {
@@ -140,7 +140,7 @@ export function useQueueMutations({
             execute(clientRef.current, {
               query: ADD_QUEUE_ITEM,
               variables: { item: toClimbQueueItemInput(superseded.item) },
-            }).catch((err: unknown) => console.error("Failed to add superseded queue item:", err));
+            }).catch((err: unknown) => console.error('Failed to add superseded queue item:', err));
           }
         },
       );
@@ -149,7 +149,7 @@ export function useQueueMutations({
   );
 
   const mirrorCurrentClimb = useCallback(async (mirrored: boolean) => {
-    if (!clientRef.current || !sessionRef.current) throw new Error("Not connected to session");
+    if (!clientRef.current || !sessionRef.current) throw new Error('Not connected to session');
     await execute(clientRef.current, {
       query: MIRROR_CURRENT_CLIMB,
       variables: { mirrored },
@@ -161,7 +161,7 @@ export function useQueueMutations({
       newQueue: LocalClimbQueueItem[],
       newCurrentClimbQueueItem?: LocalClimbQueueItem | null,
     ) => {
-      if (!clientRef.current || !sessionRef.current) throw new Error("Not connected to session");
+      if (!clientRef.current || !sessionRef.current) throw new Error('Not connected to session');
       await execute(clientRef.current, {
         query: SET_QUEUE,
         variables: {
@@ -176,7 +176,7 @@ export function useQueueMutations({
   );
 
   const replaceQueueItem = useCallback(async (uuid: string, item: LocalClimbQueueItem) => {
-    if (!clientRef.current || !sessionRef.current) throw new Error("Not connected to session");
+    if (!clientRef.current || !sessionRef.current) throw new Error('Not connected to session');
     await execute(clientRef.current, {
       query: REPLACE_QUEUE_ITEM,
       variables: { uuid, item: toClimbQueueItemInput(item) },

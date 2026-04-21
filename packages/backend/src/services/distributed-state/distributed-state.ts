@@ -1,13 +1,13 @@
-import type Redis from "ioredis";
-import { v4 as uuidv4 } from "uuid";
-import type { SessionUser } from "@boardsesh/shared-schema";
-import { KEYS, type DistributedConnection } from "./constants";
+import type Redis from 'ioredis';
+import { v4 as uuidv4 } from 'uuid';
+import type { SessionUser } from '@boardsesh/shared-schema';
+import { KEYS, type DistributedConnection } from './constants';
 import {
   registerConnection,
   getConnection,
   removeConnection,
   updateUsername,
-} from "./connection-ops";
+} from './connection-ops';
 import {
   joinSession,
   leaveSession,
@@ -20,13 +20,13 @@ import {
   hasSessionMembers,
   cleanupStaleSessionMembers,
   cleanupEmptySession,
-} from "./session-ops";
+} from './session-ops';
 import {
   updateHeartbeat,
   discoverDeadInstances,
   cleanupDeadInstanceConnections,
   cleanupInstanceConnections,
-} from "./heartbeat";
+} from './heartbeat';
 
 /**
  * DistributedStateManager provides cross-instance state management for:
@@ -77,7 +77,7 @@ export class DistributedStateManager {
 
     // Clean up connections from dead instances asynchronously on startup
     this.cleanupDeadInstanceConnections().catch((err) => {
-      console.error("[DistributedState] Startup dead instance cleanup failed:", err);
+      console.error('[DistributedState] Startup dead instance cleanup failed:', err);
     });
 
     console.log(`[DistributedState] Started with instance ID: ${this.instanceId.slice(0, 8)}`);
@@ -226,14 +226,14 @@ export class DistributedStateManager {
 
     const pipeline = this.redis.pipeline();
     for (const connId of connectionIds) {
-      pipeline.hget(KEYS.connection(connId), "sessionId");
+      pipeline.hget(KEYS.connection(connId), 'sessionId');
     }
     const results = await pipeline.exec();
 
     const sessionIds = new Set<string>();
     if (results) {
       for (const [err, sessionId] of results) {
-        if (!err && sessionId && typeof sessionId === "string" && sessionId !== "") {
+        if (!err && sessionId && typeof sessionId === 'string' && sessionId !== '') {
           sessionIds.add(sessionId);
         }
       }
@@ -257,7 +257,7 @@ export class DistributedStateManager {
         this.consecutiveHeartbeatFailures = 0;
       }
       if (!this.isHealthy) {
-        console.log("[DistributedState] Redis connection restored, marking as healthy");
+        console.log('[DistributedState] Redis connection restored, marking as healthy');
         this.isHealthy = true;
       }
 
@@ -266,16 +266,16 @@ export class DistributedStateManager {
       if (this.heartbeatCount % this.cleanupEveryNHeartbeats === 0) {
         // Clean up connections from dead backend instances
         this.cleanupDeadInstanceConnections().catch((err) => {
-          console.error("[DistributedState] Periodic dead instance cleanup failed:", err);
+          console.error('[DistributedState] Periodic dead instance cleanup failed:', err);
         });
         // Clean up stale members from sessions this instance participates in
         this.cleanupActiveSessionMembers().catch((err) => {
-          console.error("[DistributedState] Periodic active session cleanup failed:", err);
+          console.error('[DistributedState] Periodic active session cleanup failed:', err);
         });
       }
     } catch (err) {
       this.consecutiveHeartbeatFailures++;
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
 
       if (this.consecutiveHeartbeatFailures >= this.maxHeartbeatFailures) {
         if (this.isHealthy) {

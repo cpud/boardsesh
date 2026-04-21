@@ -1077,9 +1077,9 @@ The firmware browser UI is served as a single-page application:
     <script>
       // All communication goes through local ESP32 endpoints
       // ESP32 proxies to backend via GraphQL WebSocket
-      let currentVersion = "";
+      let currentVersion = '';
       let firmwareData = { stable: [], beta: [], alpha: [] };
-      let activeChannel = "stable";
+      let activeChannel = 'stable';
 
       async function init() {
         await fetchStatus();
@@ -1088,11 +1088,11 @@ The firmware browser UI is served as a single-page application:
       }
 
       async function fetchStatus() {
-        const res = await fetch("/api/firmware/status");
+        const res = await fetch('/api/firmware/status');
         const data = await res.json();
         currentVersion = data.currentVersion;
-        document.getElementById("channel-select").value = data.channel;
-        document.getElementById("current-info").innerHTML = `
+        document.getElementById('channel-select').value = data.channel;
+        document.getElementById('current-info').innerHTML = `
                 <div class="version">${data.currentVersion}</div>
                 <div class="meta">Board: ${data.boardType} | Channel: ${data.channel}</div>
             `;
@@ -1101,58 +1101,58 @@ The firmware browser UI is served as a single-page application:
 
       async function fetchFirmware() {
         // Fetch from local ESP32 endpoint (cached from GraphQL)
-        const res = await fetch("/api/firmware/available");
+        const res = await fetch('/api/firmware/available');
         firmwareData = await res.json();
         renderFirmwareList();
       }
 
       function renderFirmwareList() {
         const list = firmwareData[activeChannel] || [];
-        const container = document.getElementById("firmware-list");
+        const container = document.getElementById('firmware-list');
 
         if (list.length === 0) {
-          container.innerHTML = "<p>No firmware available in this channel.</p>";
+          container.innerHTML = '<p>No firmware available in this channel.</p>';
           return;
         }
 
         container.innerHTML = list
           .map(
             (fw) => `
-                <div class="firmware-item ${fw.version === currentVersion ? "current" : ""}">
+                <div class="firmware-item ${fw.version === currentVersion ? 'current' : ''}">
                     <div class="version">
                         ${fw.version}
-                        ${fw.version === currentVersion ? '<span style="color: #4ecca3;"> (current)</span>' : ""}
+                        ${fw.version === currentVersion ? '<span style="color: #4ecca3;"> (current)</span>' : ''}
                     </div>
                     <div class="meta">
                         ${new Date(fw.createdAt).toLocaleDateString()}
-                        ${fw.binarySize ? ` • ${(fw.binarySize / 1024).toFixed(0)} KB` : ""}
+                        ${fw.binarySize ? ` • ${(fw.binarySize / 1024).toFixed(0)} KB` : ''}
                     </div>
                     ${
                       fw.prNumber
                         ? `
                         <div class="pr-info">
-                            <strong>PR #${fw.prNumber}</strong>: ${fw.prTitle || "No title"}
-                            <div class="meta">by ${fw.prAuthor || "unknown"}</div>
+                            <strong>PR #${fw.prNumber}</strong>: ${fw.prTitle || 'No title'}
+                            <div class="meta">by ${fw.prAuthor || 'unknown'}</div>
                         </div>
                     `
-                        : ""
+                        : ''
                     }
-                    ${fw.releaseNotes ? `<div class="meta" style="margin-top: 8px;">${fw.releaseNotes}</div>` : ""}
+                    ${fw.releaseNotes ? `<div class="meta" style="margin-top: 8px;">${fw.releaseNotes}</div>` : ''}
                     <button class="btn" style="margin-top: 8px;"
-                            onclick="installFirmware(${JSON.stringify(fw).replace(/"/g, "&quot;")})"
-                            ${fw.version === currentVersion ? "disabled" : ""}>
-                        ${fw.version === currentVersion ? "Installed" : "Install"}
+                            onclick="installFirmware(${JSON.stringify(fw).replace(/"/g, '&quot;')})"
+                            ${fw.version === currentVersion ? 'disabled' : ''}>
+                        ${fw.version === currentVersion ? 'Installed' : 'Install'}
                     </button>
                 </div>
             `,
           )
-          .join("");
+          .join('');
       }
 
       function showChannel(channel) {
         activeChannel = channel;
-        document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
-        event.target.classList.add("active");
+        document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+        event.target.classList.add('active');
         renderFirmwareList();
       }
 
@@ -1163,54 +1163,54 @@ The firmware browser UI is served as a single-page application:
           return;
         }
 
-        const res = await fetch("/api/firmware/install", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const res = await fetch('/api/firmware/install', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(fw),
         });
 
         if (res.ok) {
-          showStatus("updating", "Starting firmware update...");
+          showStatus('updating', 'Starting firmware update...');
         } else {
-          showStatus("error", "Failed to start update");
+          showStatus('error', 'Failed to start update');
         }
       }
 
       async function changeChannel(channel) {
-        await fetch("/api/firmware/channel", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        await fetch('/api/firmware/channel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ channel }),
         });
         fetchStatus();
       }
 
       function updateStatusDisplay(data) {
-        if (data.state === "DOWNLOADING" || data.state === "INSTALLING") {
-          showStatus("updating", `${data.state}: ${data.progress}%`);
-        } else if (data.state === "SUCCESS") {
-          showStatus("success", "Update complete! Device will reboot.");
-        } else if (data.state === "FAILED") {
-          showStatus("error", "Update failed. Please try again.");
+        if (data.state === 'DOWNLOADING' || data.state === 'INSTALLING') {
+          showStatus('updating', `${data.state}: ${data.progress}%`);
+        } else if (data.state === 'SUCCESS') {
+          showStatus('success', 'Update complete! Device will reboot.');
+        } else if (data.state === 'FAILED') {
+          showStatus('error', 'Update failed. Please try again.');
         } else {
           hideStatus();
         }
       }
 
       function showStatus(type, message) {
-        const el = document.getElementById("update-status");
+        const el = document.getElementById('update-status');
         el.className = `status ${type}`;
         el.textContent = message;
-        el.style.display = "block";
+        el.style.display = 'block';
       }
 
       function hideStatus() {
-        document.getElementById("update-status").style.display = "none";
+        document.getElementById('update-status').style.display = 'none';
       }
 
       function pollStatus() {
         setInterval(async () => {
-          const res = await fetch("/api/firmware/status");
+          const res = await fetch('/api/firmware/status');
           const data = await res.json();
           updateStatusDisplay(data);
         }, 2000);
@@ -1229,9 +1229,9 @@ All firmware operations use GraphQL (no REST endpoints):
 ```typescript
 // packages/backend/src/graphql/resolvers/firmware/queries.ts
 
-import { db } from "../../../db";
-import { esp32FirmwareReleases } from "../../../db/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { db } from '../../../db';
+import { esp32FirmwareReleases } from '../../../db/schema';
+import { eq, desc, and } from 'drizzle-orm';
 
 export const firmwareQueries = {
   // Used by ESP32 WebUI to browse available firmware
@@ -1245,7 +1245,7 @@ export const firmwareQueries = {
         .where(
           and(
             eq(esp32FirmwareReleases.boardType, boardType),
-            eq(esp32FirmwareReleases.channel, "stable"),
+            eq(esp32FirmwareReleases.channel, 'stable'),
             eq(esp32FirmwareReleases.isActive, true),
           ),
         )
@@ -1258,7 +1258,7 @@ export const firmwareQueries = {
         .where(
           and(
             eq(esp32FirmwareReleases.boardType, boardType),
-            eq(esp32FirmwareReleases.channel, "beta"),
+            eq(esp32FirmwareReleases.channel, 'beta'),
             eq(esp32FirmwareReleases.isActive, true),
           ),
         )
@@ -1271,7 +1271,7 @@ export const firmwareQueries = {
         .where(
           and(
             eq(esp32FirmwareReleases.boardType, boardType),
-            eq(esp32FirmwareReleases.channel, "alpha"),
+            eq(esp32FirmwareReleases.channel, 'alpha'),
             eq(esp32FirmwareReleases.isActive, true),
           ),
         )
@@ -1314,8 +1314,8 @@ export const firmwareMutations = {
 
     // Calculate version code
     let versionCode: number;
-    if (channel === "STABLE") {
-      const [major, minor, patch] = version.split(".").map(Number);
+    if (channel === 'STABLE') {
+      const [major, minor, patch] = version.split('.').map(Number);
       versionCode = major * 10000 + minor * 100 + patch;
     } else {
       versionCode = Math.floor(Date.now() / 1000);
@@ -1367,7 +1367,7 @@ export const firmwareMutations = {
       .from(esp32FirmwareReleases)
       .where(
         and(
-          eq(esp32FirmwareReleases.channel, "alpha"),
+          eq(esp32FirmwareReleases.channel, 'alpha'),
           eq(esp32FirmwareReleases.prNumber, prNumber),
         ),
       )
@@ -1400,12 +1400,12 @@ name: Firmware Build
 on:
   pull_request:
     paths:
-      - "packages/board-controller/esp32/**"
+      - 'packages/board-controller/esp32/**'
   push:
     branches:
       - main
     paths:
-      - "packages/board-controller/esp32/**"
+      - 'packages/board-controller/esp32/**'
   release:
     types: [published]
 
@@ -1425,7 +1425,7 @@ jobs:
       - name: Setup PlatformIO
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
       - run: pip install platformio
 

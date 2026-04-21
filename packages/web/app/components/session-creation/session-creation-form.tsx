@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
-import Stack from "@mui/material/Stack";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
-import CircularProgress from "@mui/material/CircularProgress";
-import PlayCircleOutlineOutlined from "@mui/icons-material/PlayCircleOutlineOutlined";
+import React, { useState } from 'react';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
+import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import PlayCircleOutlineOutlined from '@mui/icons-material/PlayCircleOutlineOutlined';
 
 const COLOR_OPTIONS = [
-  "#F44336",
-  "#E91E63",
-  "#9C27B0",
-  "#673AB7",
-  "#3F51B5",
-  "#2196F3",
-  "#00BCD4",
-  "#009688",
-  "#4CAF50",
-  "#8BC34A",
-  "#FF9800",
-  "#FF5722",
+  '#F44336',
+  '#E91E63',
+  '#9C27B0',
+  '#673AB7',
+  '#3F51B5',
+  '#2196F3',
+  '#00BCD4',
+  '#009688',
+  '#4CAF50',
+  '#8BC34A',
+  '#FF9800',
+  '#FF5722',
 ];
 
 export interface SessionCreationFormData {
@@ -54,13 +54,13 @@ export default function SessionCreationForm({
   onSubmit,
   isGymAdmin = false,
   isSubmitting = false,
-  submitLabel = "Sesh",
+  submitLabel = 'Sesh',
   headerContent,
   isAnonymous = false,
   renderSubmit,
 }: SessionCreationFormProps) {
-  const [name, setName] = useState("");
-  const [goal, setGoal] = useState("");
+  const [name, setName] = useState('');
+  const [goal, setGoal] = useState('');
   const [color, setColor] = useState<string | undefined>(undefined);
   const [isPermanent, setIsPermanent] = useState(false);
   const [discoverable, setDiscoverable] = useState(false);
@@ -76,8 +76,8 @@ export default function SessionCreationForm({
       });
 
       // Reset form state only after successful submit
-      setName("");
-      setGoal("");
+      setName('');
+      setGoal('');
       setColor(undefined);
       setIsPermanent(false);
       setDiscoverable(false);
@@ -119,7 +119,7 @@ export default function SessionCreationForm({
         <Typography variant="body2" color="text.secondary" gutterBottom>
           Session color
         </Typography>
-        <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
+        <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
           {COLOR_OPTIONS.map((c) => (
             <Chip
               key={c}
@@ -129,14 +129,14 @@ export default function SessionCreationForm({
                 bgcolor: c,
                 width: 32,
                 height: 32,
-                borderRadius: "50%",
-                border: color === c ? "3px solid" : "2px solid transparent",
-                borderColor: color === c ? "common.white" : "transparent",
-                "& .MuiChip-label": { display: "none" },
-                cursor: "pointer",
-                "&:hover": { bgcolor: c },
-                "&:focus": { bgcolor: c },
-                "&:active": { bgcolor: c },
+                borderRadius: '50%',
+                border: color === c ? '3px solid' : '2px solid transparent',
+                borderColor: color === c ? 'common.white' : 'transparent',
+                '& .MuiChip-label': { display: 'none' },
+                cursor: 'pointer',
+                '&:hover': { bgcolor: c },
+                '&:focus': { bgcolor: c },
+                '&:active': { bgcolor: c },
               }}
               label=""
             />
@@ -145,7 +145,7 @@ export default function SessionCreationForm({
       </Box>
 
       {!isAnonymous && (
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Stack spacing={0}>
             <Typography variant="body2" component="span" fontWeight={600}>
               Discoverable by nearby climbers
@@ -154,7 +154,7 @@ export default function SessionCreationForm({
               variant="body2"
               component="span"
               color="text.secondary"
-              sx={{ fontSize: "12px" }}
+              sx={{ fontSize: '12px' }}
             >
               Others nearby can find and join your session
             </Typography>

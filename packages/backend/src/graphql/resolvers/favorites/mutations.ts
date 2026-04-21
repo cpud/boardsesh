@@ -1,13 +1,13 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and } from 'drizzle-orm';
 import type {
   ConnectionContext,
   ToggleFavoriteInput,
   ToggleFavoriteResult,
-} from "@boardsesh/shared-schema";
-import { db } from "../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { requireAuthenticated, validateInput } from "../shared/helpers";
-import { ToggleFavoriteInputSchema } from "../../../validation/schemas";
+} from '@boardsesh/shared-schema';
+import { db } from '../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { requireAuthenticated, validateInput } from '../shared/helpers';
+import { ToggleFavoriteInputSchema } from '../../../validation/schemas';
 
 export const favoriteMutations = {
   /**
@@ -20,7 +20,7 @@ export const favoriteMutations = {
     ctx: ConnectionContext,
   ): Promise<ToggleFavoriteResult> => {
     requireAuthenticated(ctx);
-    validateInput(ToggleFavoriteInputSchema, input, "input");
+    validateInput(ToggleFavoriteInputSchema, input, 'input');
 
     const userId = ctx.userId!;
 

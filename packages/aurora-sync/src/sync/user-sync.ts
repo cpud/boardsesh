@@ -1,18 +1,18 @@
-import { userSync } from "../api/user-sync-api";
-import { SyncOptions, USER_TABLES, UserSyncData, AuroraBoardName } from "../api/types";
-import { eq, and, inArray, sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/neon-serverless";
-import type { NeonDatabase } from "drizzle-orm/neon-serverless";
-import type { Pool } from "@neondatabase/serverless";
-import { UNIFIED_TABLES } from "../db/table-select";
+import { userSync } from '../api/user-sync-api';
+import { SyncOptions, USER_TABLES, UserSyncData, AuroraBoardName } from '../api/types';
+import { eq, and, inArray, sql } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/neon-serverless';
+import type { NeonDatabase } from 'drizzle-orm/neon-serverless';
+import type { Pool } from '@neondatabase/serverless';
+import { UNIFIED_TABLES } from '../db/table-select';
 import {
   boardseshTicks,
   playlists,
   playlistClimbs,
   playlistOwnership,
-} from "@boardsesh/db/schema/app";
-import { randomUUID } from "crypto";
-import { convertQuality } from "./convert-quality";
+} from '@boardsesh/db/schema/app';
+import { randomUUID } from 'crypto';
+import { convertQuality } from './convert-quality';
 
 // Batch size for bulk inserts
 const BATCH_SIZE = 100;
@@ -53,7 +53,7 @@ async function upsertTableData(
   log(`  Upserting ${data.length} rows for ${tableName} in batches of ${BATCH_SIZE}`);
 
   switch (tableName) {
-    case "users": {
+    case 'users': {
       const usersSchema = UNIFIED_TABLES.users;
       await processBatches(data, BATCH_SIZE, async (batch) => {
         const values = batch.map((item) => ({
@@ -75,7 +75,7 @@ async function upsertTableData(
       break;
     }
 
-    case "walls": {
+    case 'walls': {
       const wallsSchema = UNIFIED_TABLES.walls;
       await processBatches(data, BATCH_SIZE, async (batch) => {
         const values = batch.map((item) => ({
@@ -111,7 +111,7 @@ async function upsertTableData(
       break;
     }
 
-    case "draft_climbs": {
+    case 'draft_climbs': {
       const climbsSchema = UNIFIED_TABLES.climbs;
       await processBatches(data, BATCH_SIZE, async (batch) => {
         const values = batch.map((item) => ({
@@ -119,9 +119,9 @@ async function upsertTableData(
           uuid: item.uuid,
           layoutId: Number(item.layout_id),
           setterId: Number(auroraUserId),
-          setterUsername: item.setter_username || "",
-          name: item.name || "Untitled Draft",
-          description: item.description || "",
+          setterUsername: item.setter_username || '',
+          name: item.name || 'Untitled Draft',
+          description: item.description || '',
           hsm: Number(item.hsm),
           edgeLeft: Number(item.edge_left),
           edgeRight: Number(item.edge_right),
@@ -130,7 +130,7 @@ async function upsertTableData(
           angle: item.angle != null && !isNaN(Number(item.angle)) ? Number(item.angle) : null,
           framesCount: Number(item.frames_count || 1),
           framesPace: Number(item.frames_pace || 0),
-          frames: item.frames || "",
+          frames: item.frames || '',
           isDraft: true,
           isListed: false,
           createdAt: item.created_at || new Date().toISOString(),
@@ -166,7 +166,7 @@ async function upsertTableData(
       break;
     }
 
-    case "ascents": {
+    case 'ascents': {
       // Ascents are now only written to boardsesh_ticks (legacy ascents tables have been dropped)
       if (nextAuthUserId) {
         const now = new Date().toISOString();
@@ -178,19 +178,19 @@ async function upsertTableData(
             climbUuid: item.climb_uuid,
             angle: Number(item.angle),
             isMirror: Boolean(item.is_mirror),
-            status: (Number(item.attempt_id) === 1 ? "flash" : "send") as
-              | "flash"
-              | "send"
-              | "attempt",
+            status: (Number(item.attempt_id) === 1 ? 'flash' : 'send') as
+              | 'flash'
+              | 'send'
+              | 'attempt',
             attemptCount: Number(item.bid_count || 1),
             quality: convertQuality(item.quality ? Number(item.quality) : null),
             difficulty: item.difficulty ? Number(item.difficulty) : null,
             isBenchmark: Boolean(item.is_benchmark || 0),
-            comment: item.comment || "",
+            comment: item.comment || '',
             climbedAt: new Date(item.climbed_at).toISOString(),
             createdAt: item.created_at ? new Date(item.created_at).toISOString() : now,
             updatedAt: now,
-            auroraType: "ascents" as const,
+            auroraType: 'ascents' as const,
             auroraId: item.uuid,
             auroraSyncedAt: now,
           }));
@@ -217,12 +217,12 @@ async function upsertTableData(
         });
       } else {
         log(`  Skipping ascents sync: no NextAuth user ID provided`);
-        return { synced: 0, skipped: data.length, skippedReason: "No NextAuth user ID provided" };
+        return { synced: 0, skipped: data.length, skippedReason: 'No NextAuth user ID provided' };
       }
       break;
     }
 
-    case "bids": {
+    case 'bids': {
       // Bids are now only written to boardsesh_ticks (legacy bids tables have been dropped)
       if (nextAuthUserId) {
         const now = new Date().toISOString();
@@ -234,16 +234,16 @@ async function upsertTableData(
             climbUuid: item.climb_uuid,
             angle: Number(item.angle),
             isMirror: Boolean(item.is_mirror),
-            status: "attempt" as const,
+            status: 'attempt' as const,
             attemptCount: Number(item.bid_count || 1),
             quality: null,
             difficulty: null,
             isBenchmark: false,
-            comment: item.comment || "",
+            comment: item.comment || '',
             climbedAt: new Date(item.climbed_at).toISOString(),
             createdAt: new Date(item.created_at).toISOString(),
             updatedAt: now,
-            auroraType: "bids" as const,
+            auroraType: 'bids' as const,
             auroraId: item.uuid,
             auroraSyncedAt: now,
           }));
@@ -266,12 +266,12 @@ async function upsertTableData(
         });
       } else {
         log(`  Skipping bids sync: no NextAuth user ID provided`);
-        return { synced: 0, skipped: data.length, skippedReason: "No NextAuth user ID provided" };
+        return { synced: 0, skipped: data.length, skippedReason: 'No NextAuth user ID provided' };
       }
       break;
     }
 
-    case "tags": {
+    case 'tags': {
       // Tags have a composite key, need special handling
       const tagsSchema = UNIFIED_TABLES.tags;
       await processBatches(data, BATCH_SIZE, async (batch) => {
@@ -307,7 +307,7 @@ async function upsertTableData(
       break;
     }
 
-    case "circuits": {
+    case 'circuits': {
       const circuitsSchema = UNIFIED_TABLES.circuits;
 
       // 1. Write to unified circuits table (batched)
@@ -351,11 +351,11 @@ async function upsertTableData(
               uuid: item.uuid, // Use same UUID as Aurora circuit
               boardType: boardName,
               layoutId: null, // Nullable for Aurora-synced circuits
-              name: item.name || "Untitled Circuit",
+              name: item.name || 'Untitled Circuit',
               description: item.description || null,
               isPublic: Boolean(item.is_public),
               color: formattedColor,
-              auroraType: "circuits",
+              auroraType: 'circuits',
               auroraId: item.uuid,
               auroraSyncedAt: new Date(),
               createdAt: item.created_at ? new Date(item.created_at) : new Date(),
@@ -364,7 +364,7 @@ async function upsertTableData(
             .onConflictDoUpdate({
               target: playlists.auroraId,
               set: {
-                name: item.name || "Untitled Circuit",
+                name: item.name || 'Untitled Circuit',
                 description: item.description || null,
                 isPublic: Boolean(item.is_public),
                 color: formattedColor,
@@ -380,7 +380,7 @@ async function upsertTableData(
             .values({
               playlistId: playlist.id,
               userId: nextAuthUserId,
-              role: "owner",
+              role: 'owner',
             })
             .onConflictDoNothing();
 
@@ -397,7 +397,7 @@ async function upsertTableData(
               const climbAngle = climb.angle ?? null;
               const climbPosition = climb.position ?? i;
 
-              if (typeof climbUuid === "string") {
+              if (typeof climbUuid === 'string') {
                 await db.insert(playlistClimbs).values({
                   playlistId: playlist.id,
                   climbUuid: climbUuid,
@@ -537,7 +537,7 @@ export async function syncUserData(
     );
 
     // Ensure all user tables have a sync entry (default to 1970 if not synced)
-    const defaultTimestamp = "1970-01-01 00:00:00.000000";
+    const defaultTimestamp = '1970-01-01 00:00:00.000000';
 
     syncParams.userSyncs = tables.map((tableName) => ({
       table_name: tableName,
@@ -565,7 +565,7 @@ export async function syncUserData(
       // Process this batch in a transaction
       const client = await pool.connect();
       try {
-        await client.query("BEGIN");
+        await client.query('BEGIN');
 
         // Create a drizzle instance for this transaction
         const tx = drizzle(client);
@@ -602,11 +602,11 @@ export async function syncUserData(
         }
 
         // Update user_syncs table with new sync times from this batch
-        if (syncResults["user_syncs"]) {
-          await updateUserSyncs(tx, board, syncResults["user_syncs"]);
+        if (syncResults['user_syncs']) {
+          await updateUserSyncs(tx, board, syncResults['user_syncs']);
 
           // Update sync params for next iteration with new timestamps
-          const newUserSyncs = syncResults["user_syncs"].map(
+          const newUserSyncs = syncResults['user_syncs'].map(
             (sync: { table_name: string; last_synchronized_at: string }) => ({
               table_name: sync.table_name,
               last_synchronized_at: sync.last_synchronized_at,
@@ -620,14 +620,14 @@ export async function syncUserData(
           };
         }
 
-        await client.query("COMMIT");
+        await client.query('COMMIT');
       } catch (error) {
-        await client.query("ROLLBACK");
+        await client.query('ROLLBACK');
         // Extract meaningful error message from PostgreSQL/Drizzle errors
         const errorMessage =
           error instanceof Error
-            ? error.message.includes("violates foreign key constraint")
-              ? `FK constraint violation: ${error.message.split("violates foreign key constraint")[1]?.split('"')[1] || "unknown"}`
+            ? error.message.includes('violates foreign key constraint')
+              ? `FK constraint violation: ${error.message.split('violates foreign key constraint')[1]?.split('"')[1] || 'unknown'}`
               : error.message.slice(0, 2000)
             : String(error).slice(0, 2000);
         log(`Database error: ${errorMessage}`);

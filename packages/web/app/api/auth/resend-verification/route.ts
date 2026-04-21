@@ -1,14 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/app/lib/db/db";
-import * as schema from "@/app/lib/db/schema";
-import { eq } from "drizzle-orm";
-import { z } from "zod";
-import { sendVerificationEmail } from "@/app/lib/email/email-service";
-import { checkRateLimit, getClientIp } from "@/app/lib/auth/rate-limiter";
+import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '@/app/lib/db/db';
+import * as schema from '@/app/lib/db/schema';
+import { eq } from 'drizzle-orm';
+import { z } from 'zod';
+import { sendVerificationEmail } from '@/app/lib/email/email-service';
+import { checkRateLimit, getClientIp } from '@/app/lib/auth/rate-limiter';
 
 // Zod schema for email validation
 const resendVerificationSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().email('Invalid email address'),
 });
 
 // Minimum response time to prevent timing attacks
@@ -27,7 +27,7 @@ async function consistentDelay(startTime: number): Promise<void> {
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
   const genericMessage =
-    "If an account exists and needs verification, a verification email will be sent";
+    'If an account exists and needs verification, a verification email will be sent';
 
   try {
     // Rate limiting - 5 requests per minute per IP
@@ -37,11 +37,11 @@ export async function POST(request: NextRequest) {
     if (rateLimitResult.limited) {
       await consistentDelay(startTime);
       return NextResponse.json(
-        { error: "Too many requests. Please try again later." },
+        { error: 'Too many requests. Please try again later.' },
         {
           status: 429,
           headers: {
-            "Retry-After": String(rateLimitResult.retryAfterSeconds),
+            'Retry-After': String(rateLimitResult.retryAfterSeconds),
           },
         },
       );
@@ -89,14 +89,14 @@ export async function POST(request: NextRequest) {
       });
     });
 
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
     await sendVerificationEmail(email, token, baseUrl);
 
     await consistentDelay(startTime);
     return NextResponse.json({ message: genericMessage }, { status: 200 });
   } catch (error) {
-    console.error("Resend verification error:", error);
+    console.error('Resend verification error:', error);
     await consistentDelay(startTime);
-    return NextResponse.json({ error: "Failed to send verification email" }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to send verification email' }, { status: 500 });
   }
 }

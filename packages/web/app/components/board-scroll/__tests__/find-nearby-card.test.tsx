@@ -1,20 +1,20 @@
-import { describe, it, expect, vi } from "vite-plus/test";
-import { render } from "@testing-library/react";
-import React from "react";
+import { describe, it, expect, vi } from 'vite-plus/test';
+import { render } from '@testing-library/react';
+import React from 'react';
 
 // Mock BoardRenderer
-vi.mock("../../board-renderer/board-renderer", () => ({
+vi.mock('../../board-renderer/board-renderer', () => ({
   default: () => <div data-testid="board-renderer" />,
 }));
 
 // Mock getBoardDetails
-vi.mock("@/app/lib/board-constants", () => ({
+vi.mock('@/app/lib/board-constants', () => ({
   getBoardDetails: vi.fn(() => ({
-    board_name: "kilter",
+    board_name: 'kilter',
     layout_id: 1,
     size_id: 10,
     set_ids: [1, 20],
-    images_to_holds: { "test.png": [] },
+    images_to_holds: { 'test.png': [] },
     holdsData: [],
     edge_left: 0,
     edge_right: 144,
@@ -27,7 +27,7 @@ vi.mock("@/app/lib/board-constants", () => ({
 }));
 
 // Mock CSS modules
-vi.mock("../board-scroll.module.css", () => ({
+vi.mock('../board-scroll.module.css', () => ({
   default: new Proxy(
     {},
     {
@@ -36,14 +36,14 @@ vi.mock("../board-scroll.module.css", () => ({
   ),
 }));
 
-import FindNearbyCard from "../find-nearby-card";
+import FindNearbyCard from '../find-nearby-card';
 
-describe("FindNearbyCard", () => {
+describe('FindNearbyCard', () => {
   it('renders idle state with "Find nearby" text and location icon', () => {
     const onClick = vi.fn();
     const { getByText, container } = render(<FindNearbyCard onClick={onClick} />);
 
-    expect(getByText("Find nearby")).toBeDefined();
+    expect(getByText('Find nearby')).toBeDefined();
     expect(container.querySelector('[data-testid="LocationOnOutlinedIcon"]')).toBeDefined();
   });
 
@@ -51,7 +51,7 @@ describe("FindNearbyCard", () => {
     const onClick = vi.fn();
     const { getByText, container } = render(<FindNearbyCard onClick={onClick} status="loading" />);
 
-    expect(getByText("Finding boards…")).toBeDefined();
+    expect(getByText('Finding boards…')).toBeDefined();
     expect(container.querySelector('[role="progressbar"]')).toBeDefined();
   });
 
@@ -61,9 +61,9 @@ describe("FindNearbyCard", () => {
       <FindNearbyCard onClick={onClick} status="geo-denied" />,
     );
 
-    const label = getByText("Location unavailable");
+    const label = getByText('Location unavailable');
     expect(label).toBeDefined();
-    expect(label.className).toContain("cardNameError");
+    expect(label.className).toContain('cardNameError');
     expect(container.querySelector('[data-testid="LocationOffOutlinedIcon"]')).toBeDefined();
   });
 
@@ -71,9 +71,9 @@ describe("FindNearbyCard", () => {
     const onClick = vi.fn();
     const { getByText, container } = render(<FindNearbyCard onClick={onClick} status="error" />);
 
-    const label = getByText("Failed to load nearby boards");
+    const label = getByText('Failed to load nearby boards');
     expect(label).toBeDefined();
-    expect(label.className).toContain("cardNameError");
+    expect(label.className).toContain('cardNameError');
     expect(container.querySelector('[data-testid="ErrorOutlineOutlinedIcon"]')).toBeDefined();
   });
 
@@ -83,44 +83,44 @@ describe("FindNearbyCard", () => {
       <FindNearbyCard onClick={onClick} status="no-results" />,
     );
 
-    const label = getByText("No nearby boards found");
+    const label = getByText('No nearby boards found');
     expect(label).toBeDefined();
-    expect(label.className).toContain("cardNameDisabled");
+    expect(label.className).toContain('cardNameDisabled');
     expect(container.querySelector('[data-testid="SearchOffOutlinedIcon"]')).toBeDefined();
   });
 
-  it("applies disabled styling to card square for all error/no-results states", () => {
+  it('applies disabled styling to card square for all error/no-results states', () => {
     const onClick = vi.fn();
 
-    for (const status of ["geo-denied", "error", "no-results"] as const) {
+    for (const status of ['geo-denied', 'error', 'no-results'] as const) {
       const { container, unmount } = render(<FindNearbyCard onClick={onClick} status={status} />);
-      expect(container.querySelector(".cardSquareDisabled")).not.toBeNull();
+      expect(container.querySelector('.cardSquareDisabled')).not.toBeNull();
       unmount();
     }
   });
 
-  it("does not apply disabled styling in idle and loading states", () => {
+  it('does not apply disabled styling in idle and loading states', () => {
     const onClick = vi.fn();
 
-    for (const status of ["idle", "loading"] as const) {
+    for (const status of ['idle', 'loading'] as const) {
       const { container, unmount } = render(<FindNearbyCard onClick={onClick} status={status} />);
-      expect(container.querySelector(".cardSquareDisabled")).toBeNull();
+      expect(container.querySelector('.cardSquareDisabled')).toBeNull();
       unmount();
     }
   });
 
-  it("calls onClick in idle state", () => {
+  it('calls onClick in idle state', () => {
     const onClick = vi.fn();
     const { getByText } = render(<FindNearbyCard onClick={onClick} />);
 
-    getByText("Find nearby").parentElement!.click();
+    getByText('Find nearby').parentElement!.click();
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
-  it("does not call onClick in geo-denied, error, or no-results states", () => {
+  it('does not call onClick in geo-denied, error, or no-results states', () => {
     const onClick = vi.fn();
 
-    for (const status of ["geo-denied", "error", "no-results"] as const) {
+    for (const status of ['geo-denied', 'error', 'no-results'] as const) {
       const { getByText, unmount } = render(<FindNearbyCard onClick={onClick} status={status} />);
       getByText(getByText(/.+/).textContent!).parentElement!.click();
       unmount();
@@ -129,18 +129,18 @@ describe("FindNearbyCard", () => {
     expect(onClick).not.toHaveBeenCalled();
   });
 
-  it("renders BoardRenderer for greyed-out board preview", () => {
+  it('renders BoardRenderer for greyed-out board preview', () => {
     const onClick = vi.fn();
     const { getByTestId } = render(<FindNearbyCard onClick={onClick} />);
 
-    expect(getByTestId("board-renderer")).toBeDefined();
+    expect(getByTestId('board-renderer')).toBeDefined();
   });
 
-  it("small size variant applies correct class", () => {
+  it('small size variant applies correct class', () => {
     const onClick = vi.fn();
     const { getByText } = render(<FindNearbyCard onClick={onClick} size="small" />);
 
-    const cardRoot = getByText("Find nearby").parentElement!;
-    expect(cardRoot.className).toContain("cardScrollSmall");
+    const cardRoot = getByText('Find nearby').parentElement!;
+    expect(cardRoot.className).toContain('cardScrollSmall');
   });
 });

@@ -105,13 +105,13 @@
 }
 
 /* Hide number input spinners for cleaner look */
-.panelContent :global(input[type="number"]::-webkit-outer-spin-button),
-.panelContent :global(input[type="number"]::-webkit-inner-spin-button) {
+.panelContent :global(input[type='number']::-webkit-outer-spin-button),
+.panelContent :global(input[type='number']::-webkit-inner-spin-button) {
   -webkit-appearance: none;
   margin: 0;
 }
 
-.panelContent :global(input[type="number"]) {
+.panelContent :global(input[type='number']) {
   -moz-appearance: textfield;
 }
 

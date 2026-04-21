@@ -1,5 +1,5 @@
-import { redisClientManager } from "../redis/client";
-import { checkRateLimit } from "./rate-limiter";
+import { redisClientManager } from '../redis/client';
+import { checkRateLimit } from './rate-limiter';
 
 /**
  * Lua script for atomic INCR + EXPIRE.
@@ -59,12 +59,12 @@ export async function checkRateLimitRedis(
     }
   } catch (err) {
     // If the error is our rate limit error, re-throw it
-    if (err instanceof Error && err.message.startsWith("Rate limit exceeded")) {
+    if (err instanceof Error && err.message.startsWith('Rate limit exceeded')) {
       throw err;
     }
     // Otherwise Redis failed — fall back to in-memory
     console.warn(
-      "[RateLimit] Redis unavailable, falling back to in-memory:",
+      '[RateLimit] Redis unavailable, falling back to in-memory:',
       (err as Error).message,
     );
     checkRateLimit(`${userId}:${operation}`, maxRequests, windowMs);

@@ -1,65 +1,65 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useRef } from "react";
-import Box from "@mui/material/Box";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import MuiAlert from "@mui/material/Alert";
-import AlertTitle from "@mui/material/AlertTitle";
-import Chip from "@mui/material/Chip";
-import Stack from "@mui/material/Stack";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
-import LinearProgress from "@mui/material/LinearProgress";
-import { ConfirmPopover } from "@/app/components/ui/confirm-popover";
-import { useSnackbar } from "@/app/components/providers/snackbar-provider";
-import { LoadingSpinner } from "@/app/components/ui/loading-spinner";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import TextField from "@mui/material/TextField";
-import CircularProgress from "@mui/material/CircularProgress";
-import CheckCircleOutlined from "@mui/icons-material/CheckCircleOutlined";
-import WarningAmberOutlined from "@mui/icons-material/WarningAmberOutlined";
-import AccessTimeOutlined from "@mui/icons-material/AccessTimeOutlined";
-import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
-import LinkOutlined from "@mui/icons-material/LinkOutlined";
-import SyncOutlined from "@mui/icons-material/SyncOutlined";
-import WarningOutlined from "@mui/icons-material/WarningOutlined";
-import EmailOutlined from "@mui/icons-material/EmailOutlined";
-import FileUploadOutlined from "@mui/icons-material/FileUploadOutlined";
-import RadioButtonUncheckedOutlined from "@mui/icons-material/RadioButtonUncheckedOutlined";
-import { useSession } from "next-auth/react";
-import type { AuroraCredentialStatus } from "@/app/api/internal/aurora-credentials/route";
-import type { UnsyncedCounts } from "@/app/api/internal/aurora-credentials/unsynced/route";
-import type { ImportResult } from "@/app/lib/data-sync/aurora/json-import";
-import { streamImport } from "@/app/lib/data-sync/aurora/json-import-stream";
+import React, { useState, useEffect, useRef } from 'react';
+import Box from '@mui/material/Box';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import MuiAlert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import Chip from '@mui/material/Chip';
+import Stack from '@mui/material/Stack';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import LinearProgress from '@mui/material/LinearProgress';
+import { ConfirmPopover } from '@/app/components/ui/confirm-popover';
+import { useSnackbar } from '@/app/components/providers/snackbar-provider';
+import { LoadingSpinner } from '@/app/components/ui/loading-spinner';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import TextField from '@mui/material/TextField';
+import CircularProgress from '@mui/material/CircularProgress';
+import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
+import WarningAmberOutlined from '@mui/icons-material/WarningAmberOutlined';
+import AccessTimeOutlined from '@mui/icons-material/AccessTimeOutlined';
+import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
+import LinkOutlined from '@mui/icons-material/LinkOutlined';
+import SyncOutlined from '@mui/icons-material/SyncOutlined';
+import WarningOutlined from '@mui/icons-material/WarningOutlined';
+import EmailOutlined from '@mui/icons-material/EmailOutlined';
+import FileUploadOutlined from '@mui/icons-material/FileUploadOutlined';
+import RadioButtonUncheckedOutlined from '@mui/icons-material/RadioButtonUncheckedOutlined';
+import { useSession } from 'next-auth/react';
+import type { AuroraCredentialStatus } from '@/app/api/internal/aurora-credentials/route';
+import type { UnsyncedCounts } from '@/app/api/internal/aurora-credentials/unsynced/route';
+import type { ImportResult } from '@/app/lib/data-sync/aurora/json-import';
+import { streamImport } from '@/app/lib/data-sync/aurora/json-import-stream';
 import {
   parseAuroraExport,
   type AuroraExportPreview,
   type StrippedExportData,
-} from "@/app/lib/data-sync/aurora/parse-aurora-export";
-import styles from "./aurora-credentials-section.module.css";
+} from '@/app/lib/data-sync/aurora/parse-aurora-export';
+import styles from './aurora-credentials-section.module.css';
 
 interface BoardUnsyncedCounts {
   ascents: number;
   climbs: number;
 }
 
-export type ImportPhase = "preview" | "importing" | "complete" | "error";
+export type ImportPhase = 'preview' | 'importing' | 'complete' | 'error';
 
 export type ImportStep =
-  | "climbs"
-  | "resolving"
-  | "dedup"
-  | "ascents"
-  | "attempts"
-  | "circuits"
-  | "sessions";
+  | 'climbs'
+  | 'resolving'
+  | 'dedup'
+  | 'ascents'
+  | 'attempts'
+  | 'circuits'
+  | 'sessions';
 
 export interface ImportProgress {
   step: ImportStep;
@@ -69,29 +69,29 @@ export interface ImportProgress {
 }
 
 export const STEP_ORDER: ImportStep[] = [
-  "climbs",
-  "resolving",
-  "dedup",
-  "ascents",
-  "attempts",
-  "circuits",
-  "sessions",
+  'climbs',
+  'resolving',
+  'dedup',
+  'ascents',
+  'attempts',
+  'circuits',
+  'sessions',
 ];
 
 export const STEP_LABELS: Record<ImportStep, string> = {
-  climbs: "Importing draft climbs",
-  resolving: "Resolving climb names",
-  dedup: "Checking for duplicates",
-  ascents: "Importing ascents",
-  attempts: "Importing attempts",
-  circuits: "Importing circuits",
-  sessions: "Building sessions",
+  climbs: 'Importing draft climbs',
+  resolving: 'Resolving climb names',
+  dedup: 'Checking for duplicates',
+  ascents: 'Importing ascents',
+  attempts: 'Importing attempts',
+  circuits: 'Importing circuits',
+  sessions: 'Building sessions',
 };
 
 function buildKilterDataRequestMailto(userName?: string | null, userEmail?: string | null): string {
-  const name = userName || "[YOUR NAME]";
-  const email = userEmail || "[YOUR EMAIL]";
-  const subject = "Kilterboard data";
+  const name = userName || '[YOUR NAME]';
+  const email = userEmail || '[YOUR EMAIL]';
+  const subject = 'Kilterboard data';
   const body = `Hey there!
 
 Ex-app user here. I was wondering if I could get a copy of my data so I can save my logbooks and other data for personal tracking records.
@@ -106,7 +106,7 @@ ${name}`;
 }
 
 export interface BoardCredentialCardProps {
-  boardType: "kilter" | "tension";
+  boardType: 'kilter' | 'tension';
   credential: AuroraCredentialStatus | null;
   unsyncedCounts: BoardUnsyncedCounts;
   onAdd: () => void;
@@ -132,19 +132,19 @@ export function BoardCredentialCard({
 }: BoardCredentialCardProps) {
   const boardName = boardType.charAt(0).toUpperCase() + boardType.slice(1);
   const totalUnsynced = unsyncedCounts.ascents + unsyncedCounts.climbs;
-  const isKilter = boardType === "kilter";
+  const isKilter = boardType === 'kilter';
 
   const getSyncStatusTag = () => {
     if (!credential) return null;
 
     switch (credential.syncStatus) {
-      case "active":
+      case 'active':
         return (
           <Chip icon={<CheckCircleOutlined />} label="Connected" size="small" color="success" />
         );
-      case "error":
+      case 'error':
         return <Chip icon={<WarningAmberOutlined />} label="Error" size="small" color="error" />;
-      case "expired":
+      case 'expired':
         return <Chip icon={<AccessTimeOutlined />} label="Expired" size="small" color="warning" />;
       default:
         return <Chip icon={<SyncOutlined />} label="Syncing" size="small" color="primary" />;
@@ -152,9 +152,9 @@ export function BoardCredentialCard({
   };
 
   const formatLastSync = (dateString: string | null) => {
-    if (!dateString) return "Never";
+    if (!dateString) return 'Never';
     const date = new Date(dateString);
-    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
   };
 
   if (!credential) {
@@ -194,7 +194,7 @@ export function BoardCredentialCard({
               </Button>
             )}
             <Button
-              variant={isKilter ? "contained" : "outlined"}
+              variant={isKilter ? 'contained' : 'outlined'}
               startIcon={isImporting ? <CircularProgress size={16} /> : <FileUploadOutlined />}
               onClick={onImportJson}
               disabled={isImporting}
@@ -255,13 +255,13 @@ export function BoardCredentialCard({
               icon={<WarningOutlined />}
               className={styles.unsyncedAlert}
             >
-              <AlertTitle>{`${totalUnsynced} item${totalUnsynced > 1 ? "s" : ""} pending sync`}</AlertTitle>
+              <AlertTitle>{`${totalUnsynced} item${totalUnsynced > 1 ? 's' : ''} pending sync`}</AlertTitle>
               <Typography variant="body2" component="span" color="text.secondary">
                 {unsyncedCounts.ascents > 0 &&
-                  `${unsyncedCounts.ascents} ascent${unsyncedCounts.ascents > 1 ? "s" : ""}`}
-                {unsyncedCounts.ascents > 0 && unsyncedCounts.climbs > 0 && ", "}
+                  `${unsyncedCounts.ascents} ascent${unsyncedCounts.ascents > 1 ? 's' : ''}`}
+                {unsyncedCounts.ascents > 0 && unsyncedCounts.climbs > 0 && ', '}
                 {unsyncedCounts.climbs > 0 &&
-                  `${unsyncedCounts.climbs} climb${unsyncedCounts.climbs > 1 ? "s" : ""}`}
+                  `${unsyncedCounts.climbs} climb${unsyncedCounts.climbs > 1 ? 's' : ''}`}
               </Typography>
             </MuiAlert>
           )}
@@ -272,7 +272,7 @@ export function BoardCredentialCard({
             description={`Are you sure you want to unlink your ${boardName} account?`}
             onConfirm={onRemove}
             okText="Yes, unlink"
-            okButtonProps={{ color: "error" }}
+            okButtonProps={{ color: 'error' }}
           >
             <Button
               color="error"
@@ -317,7 +317,7 @@ export function ImportProgressSteps({ progress }: { progress: ImportProgress | n
               {isPending && <RadioButtonUncheckedOutlined color="disabled" fontSize="small" />}
               <Typography
                 variant="body2"
-                color={isPending ? "text.disabled" : "text.primary"}
+                color={isPending ? 'text.disabled' : 'text.primary'}
                 fontWeight={isActive ? 600 : 400}
               >
                 {STEP_LABELS[step]}
@@ -328,11 +328,11 @@ export function ImportProgressSteps({ progress }: { progress: ImportProgress | n
               <LinearProgress
                 variant="determinate"
                 value={progressPercent}
-                sx={{ ml: "32px", mr: 1, mt: 0.5 }}
+                sx={{ ml: '32px', mr: 1, mt: 0.5 }}
               />
             )}
             {isActive && !hasCounts && (
-              <LinearProgress variant="indeterminate" sx={{ ml: "32px", mr: 1, mt: 0.5 }} />
+              <LinearProgress variant="indeterminate" sx={{ ml: '32px', mr: 1, mt: 0.5 }} />
             )}
           </div>
         );
@@ -348,14 +348,14 @@ export default function AuroraCredentialsSection() {
   const [unsyncedCounts, setUnsyncedCounts] = useState<UnsyncedCounts | null>(null);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedBoard, setSelectedBoard] = useState<"kilter" | "tension">("kilter");
+  const [selectedBoard, setSelectedBoard] = useState<'kilter' | 'tension'>('kilter');
   const [isSaving, setIsSaving] = useState(false);
   const [removingBoard, setRemovingBoard] = useState<string | null>(null);
-  const [formValues, setFormValues] = useState({ username: "", password: "" });
+  const [formValues, setFormValues] = useState({ username: '', password: '' });
 
   // Import state
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [importingBoard, setImportingBoard] = useState<"kilter" | "tension" | null>(null);
+  const [importingBoard, setImportingBoard] = useState<'kilter' | 'tension' | null>(null);
   const [importPreview, setAuroraExportPreview] = useState<AuroraExportPreview | null>(null);
   const [importRawData, setImportRawData] = useState<StrippedExportData | null>(null);
   const [importPhase, setImportPhase] = useState<ImportPhase | null>(null);
@@ -366,13 +366,13 @@ export default function AuroraCredentialsSection() {
 
   const fetchCredentials = async () => {
     try {
-      const response = await fetch("/api/internal/aurora-credentials");
+      const response = await fetch('/api/internal/aurora-credentials');
       if (response.ok) {
         const data = await response.json();
         setCredentials(data.credentials);
       }
     } catch (error) {
-      console.error("Failed to fetch credentials:", error);
+      console.error('Failed to fetch credentials:', error);
     } finally {
       setLoading(false);
     }
@@ -380,13 +380,13 @@ export default function AuroraCredentialsSection() {
 
   const fetchUnsyncedCounts = async () => {
     try {
-      const response = await fetch("/api/internal/aurora-credentials/unsynced");
+      const response = await fetch('/api/internal/aurora-credentials/unsynced');
       if (response.ok) {
         const data = await response.json();
         setUnsyncedCounts(data.counts);
       }
     } catch (error) {
-      console.error("Failed to fetch unsynced counts:", error);
+      console.error('Failed to fetch unsynced counts:', error);
     }
   };
 
@@ -395,23 +395,23 @@ export default function AuroraCredentialsSection() {
     fetchUnsyncedCounts();
   }, []);
 
-  const handleAddClick = (boardType: "kilter" | "tension") => {
+  const handleAddClick = (boardType: 'kilter' | 'tension') => {
     setSelectedBoard(boardType);
-    setFormValues({ username: "", password: "" });
+    setFormValues({ username: '', password: '' });
     setIsModalOpen(true);
   };
 
   const handleModalCancel = () => {
     setIsModalOpen(false);
-    setFormValues({ username: "", password: "" });
+    setFormValues({ username: '', password: '' });
   };
 
   const handleSaveCredentials = async (values: { username: string; password: string }) => {
     setIsSaving(true);
     try {
-      const response = await fetch("/api/internal/aurora-credentials", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/internal/aurora-credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           boardType: selectedBoard,
           username: values.username,
@@ -421,45 +421,45 @@ export default function AuroraCredentialsSection() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to save credentials");
+        throw new Error(error.error || 'Failed to save credentials');
       }
 
-      if (selectedBoard === "tension") {
-        showMessage("Tension account linked. Your data will show up within 12 hours.", "success");
+      if (selectedBoard === 'tension') {
+        showMessage('Tension account linked. Your data will show up within 12 hours.', 'success');
       } else {
         showMessage(
           `${selectedBoard.charAt(0).toUpperCase() + selectedBoard.slice(1)} account linked successfully`,
-          "success",
+          'success',
         );
       }
       setIsModalOpen(false);
-      setFormValues({ username: "", password: "" });
+      setFormValues({ username: '', password: '' });
       await fetchCredentials();
     } catch (error) {
-      showMessage(error instanceof Error ? error.message : "Failed to link account", "error");
+      showMessage(error instanceof Error ? error.message : 'Failed to link account', 'error');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleRemove = async (boardType: "kilter" | "tension") => {
+  const handleRemove = async (boardType: 'kilter' | 'tension') => {
     setRemovingBoard(boardType);
     try {
-      const response = await fetch("/api/internal/aurora-credentials", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/internal/aurora-credentials', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ boardType }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to remove credentials");
+        throw new Error(error.error || 'Failed to remove credentials');
       }
 
-      showMessage("Account unlinked successfully", "success");
+      showMessage('Account unlinked successfully', 'success');
       await fetchCredentials();
     } catch (error) {
-      showMessage(error instanceof Error ? error.message : "Failed to unlink account", "error");
+      showMessage(error instanceof Error ? error.message : 'Failed to unlink account', 'error');
     } finally {
       setRemovingBoard(null);
     }
@@ -477,7 +477,7 @@ export default function AuroraCredentialsSection() {
     setImportError(null);
   };
 
-  const handleImportClick = (boardType: "kilter" | "tension") => {
+  const handleImportClick = (boardType: 'kilter' | 'tension') => {
     setImportingBoard(boardType);
     fileInputRef.current?.click();
   };
@@ -490,11 +490,11 @@ export default function AuroraCredentialsSection() {
     const maxSizeBytes = 200 * 1024 * 1024;
     if (file.size > maxSizeBytes) {
       showMessage(
-        "File is too large (max 200MB). Please check you selected the correct file.",
-        "error",
+        'File is too large (max 200MB). Please check you selected the correct file.',
+        'error',
       );
       setImportingBoard(null);
-      event.target.value = "";
+      event.target.value = '';
       return;
     }
 
@@ -505,36 +505,36 @@ export default function AuroraCredentialsSection() {
         const parsed = parseAuroraExport(json, importingBoard);
 
         if (parsed.boardWarning) {
-          showMessage(parsed.boardWarning, "warning");
+          showMessage(parsed.boardWarning, 'warning');
         }
 
         setImportRawData(parsed.data);
         setAuroraExportPreview(parsed.preview);
-        setImportPhase("preview");
+        setImportPhase('preview');
       } catch (err) {
         showMessage(
           err instanceof Error
             ? err.message
-            : "Failed to parse JSON file. Please check the file format.",
-          "error",
+            : 'Failed to parse JSON file. Please check the file format.',
+          'error',
         );
         setImportingBoard(null);
       }
     };
     reader.onerror = () => {
-      showMessage("Failed to read file. Please try again.", "error");
+      showMessage('Failed to read file. Please try again.', 'error');
       setImportingBoard(null);
     };
     reader.readAsText(file);
 
     // Reset input so the same file can be re-selected
-    event.target.value = "";
+    event.target.value = '';
   };
 
   const handleImportConfirm = async () => {
     if (!importingBoard || !importRawData) return;
 
-    setImportPhase("importing");
+    setImportPhase('importing');
     setImportProgress(null);
     setAuroraExportPreview(null);
     receivedCompleteRef.current = false;
@@ -542,32 +542,32 @@ export default function AuroraCredentialsSection() {
     try {
       await streamImport(importingBoard, importRawData, (event) => {
         switch (event.type) {
-          case "progress":
+          case 'progress':
             setImportProgress({
               step: event.step,
-              message: "message" in event ? event.message : undefined,
-              current: "current" in event ? event.current : undefined,
-              total: "total" in event ? event.total : undefined,
+              message: 'message' in event ? event.message : undefined,
+              current: 'current' in event ? event.current : undefined,
+              total: 'total' in event ? event.total : undefined,
             });
             break;
-          case "complete":
+          case 'complete':
             receivedCompleteRef.current = true;
             setImportResult(event.results);
-            setImportPhase("complete");
+            setImportPhase('complete');
             {
               const totalImported =
                 event.results.climbs.imported +
                 event.results.ascents.imported +
                 event.results.attempts.imported +
                 event.results.circuits.imported;
-              showMessage(`Successfully imported ${totalImported} items`, "success");
+              showMessage(`Successfully imported ${totalImported} items`, 'success');
             }
             break;
-          case "error":
+          case 'error':
             receivedCompleteRef.current = true;
             setImportError(event.error);
-            setImportPhase("error");
-            showMessage(event.error, "error");
+            setImportPhase('error');
+            showMessage(event.error, 'error');
             break;
         }
       });
@@ -575,49 +575,49 @@ export default function AuroraCredentialsSection() {
       // If stream ended without a complete/error event (e.g. server timeout)
       if (!receivedCompleteRef.current) {
         setImportError(
-          "Import was interrupted. The server may have timed out. Your data may have been partially imported.",
+          'Import was interrupted. The server may have timed out. Your data may have been partially imported.',
         );
-        setImportPhase("error");
-        showMessage("Import was interrupted", "error");
+        setImportPhase('error');
+        showMessage('Import was interrupted', 'error');
       }
     } catch (error) {
-      const msg = error instanceof Error ? error.message : "Import failed";
+      const msg = error instanceof Error ? error.message : 'Import failed';
       setImportError(msg);
-      setImportPhase("error");
-      showMessage(msg, "error");
+      setImportPhase('error');
+      showMessage(msg, 'error');
     } finally {
       setImportRawData(null);
     }
   };
 
   const handleImportDialogClose = () => {
-    if (importPhase === "importing") return;
+    if (importPhase === 'importing') return;
     resetImportState();
   };
 
-  const getCredentialForBoard = (boardType: "kilter" | "tension") => {
+  const getCredentialForBoard = (boardType: 'kilter' | 'tension') => {
     return credentials.find((c) => c.boardType === boardType) || null;
   };
 
-  const isImporting = importPhase === "importing";
+  const isImporting = importPhase === 'importing';
   const isImportDialogOpen =
-    importPhase === "preview" ||
-    importPhase === "importing" ||
-    importPhase === "complete" ||
-    importPhase === "error";
+    importPhase === 'preview' ||
+    importPhase === 'importing' ||
+    importPhase === 'complete' ||
+    importPhase === 'error';
 
   const getImportDialogTitle = () => {
     switch (importPhase) {
-      case "preview":
-        return "Import Aurora Data";
-      case "importing":
-        return "Importing Aurora Data...";
-      case "complete":
-        return "Import Complete";
-      case "error":
-        return "Import Failed";
+      case 'preview':
+        return 'Import Aurora Data';
+      case 'importing':
+        return 'Importing Aurora Data...';
+      case 'complete':
+        return 'Import Complete';
+      case 'error':
+        return 'Import Failed';
       default:
-        return "";
+        return '';
     }
   };
 
@@ -652,25 +652,25 @@ export default function AuroraCredentialsSection() {
           <Stack spacing={2} className={styles.cardsContainer}>
             <BoardCredentialCard
               boardType="kilter"
-              credential={getCredentialForBoard("kilter")}
+              credential={getCredentialForBoard('kilter')}
               unsyncedCounts={unsyncedCounts?.kilter ?? { ascents: 0, climbs: 0 }}
-              onAdd={() => handleAddClick("kilter")}
-              onRemove={() => handleRemove("kilter")}
-              onImportJson={() => handleImportClick("kilter")}
-              isRemoving={removingBoard === "kilter"}
-              isImporting={isImporting && importingBoard === "kilter"}
+              onAdd={() => handleAddClick('kilter')}
+              onRemove={() => handleRemove('kilter')}
+              onImportJson={() => handleImportClick('kilter')}
+              isRemoving={removingBoard === 'kilter'}
+              isImporting={isImporting && importingBoard === 'kilter'}
               userName={session?.user?.name}
               userEmail={session?.user?.email}
             />
             <BoardCredentialCard
               boardType="tension"
-              credential={getCredentialForBoard("tension")}
+              credential={getCredentialForBoard('tension')}
               unsyncedCounts={unsyncedCounts?.tension ?? { ascents: 0, climbs: 0 }}
-              onAdd={() => handleAddClick("tension")}
-              onRemove={() => handleRemove("tension")}
-              onImportJson={() => handleImportClick("tension")}
-              isRemoving={removingBoard === "tension"}
-              isImporting={isImporting && importingBoard === "tension"}
+              onAdd={() => handleAddClick('tension')}
+              onRemove={() => handleRemove('tension')}
+              onImportJson={() => handleImportClick('tension')}
+              isRemoving={removingBoard === 'tension'}
+              isImporting={isImporting && importingBoard === 'tension'}
             />
           </Stack>
         </CardContent>
@@ -708,7 +708,7 @@ export default function AuroraCredentialsSection() {
               if (!vals.username || !vals.password) return;
               handleSaveCredentials(vals);
             }}
-            sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
+            sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}
           >
             <TextField
               label="Username"
@@ -740,7 +740,7 @@ export default function AuroraCredentialsSection() {
               startIcon={isSaving ? <CircularProgress size={16} /> : undefined}
               fullWidth
             >
-              {isSaving ? "Linking..." : "Link Account"}
+              {isSaving ? 'Linking...' : 'Link Account'}
             </Button>
           </Box>
         </DialogContent>
@@ -757,14 +757,14 @@ export default function AuroraCredentialsSection() {
         <DialogTitle>{getImportDialogTitle()}</DialogTitle>
         <DialogContent>
           {/* Preview phase */}
-          {importPhase === "preview" && importPreview && (
+          {importPhase === 'preview' && importPreview && (
             <>
               <Typography
                 variant="body2"
                 color="text.secondary"
                 className={styles.modalDescription}
               >
-                Import data from <strong>{importPreview.username}</strong> to{" "}
+                Import data from <strong>{importPreview.username}</strong> to{' '}
                 <strong>
                   {importingBoard?.charAt(0).toUpperCase()}
                   {importingBoard?.slice(1)}
@@ -795,10 +795,10 @@ export default function AuroraCredentialsSection() {
           )}
 
           {/* Importing phase */}
-          {importPhase === "importing" && <ImportProgressSteps progress={importProgress} />}
+          {importPhase === 'importing' && <ImportProgressSteps progress={importProgress} />}
 
           {/* Complete phase */}
-          {importPhase === "complete" && importResult && (
+          {importPhase === 'complete' && importResult && (
             <>
               <List dense>
                 {(importResult.climbs.imported > 0 || importResult.climbs.failed > 0) && (
@@ -832,7 +832,7 @@ export default function AuroraCredentialsSection() {
                 <MuiAlert severity="warning" className={styles.unsyncedAlert}>
                   <AlertTitle>
                     {importResult.unresolvedClimbs.length} climb
-                    {importResult.unresolvedClimbs.length > 1 ? "s" : ""} could not be matched
+                    {importResult.unresolvedClimbs.length > 1 ? 's' : ''} could not be matched
                   </AlertTitle>
                   <div className={styles.unresolvedList}>
                     {importResult.unresolvedClimbs.slice(0, 20).map((name) => (
@@ -852,7 +852,7 @@ export default function AuroraCredentialsSection() {
           )}
 
           {/* Error phase */}
-          {importPhase === "error" && importError && (
+          {importPhase === 'error' && importError && (
             <MuiAlert severity="error">
               <AlertTitle>Import failed</AlertTitle>
               {importError}
@@ -861,7 +861,7 @@ export default function AuroraCredentialsSection() {
         </DialogContent>
 
         {/* Actions vary by phase */}
-        {importPhase === "preview" && (
+        {importPhase === 'preview' && (
           <DialogActions>
             <Button onClick={handleImportDialogClose}>Cancel</Button>
             <Button variant="contained" onClick={handleImportConfirm}>
@@ -869,7 +869,7 @@ export default function AuroraCredentialsSection() {
             </Button>
           </DialogActions>
         )}
-        {(importPhase === "complete" || importPhase === "error") && (
+        {(importPhase === 'complete' || importPhase === 'error') && (
           <DialogActions>
             <Button variant="contained" onClick={handleImportDialogClose}>
               Close

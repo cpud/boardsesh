@@ -6,13 +6,13 @@
  * Also migrates orphaned votes/comments that reference ungrouped session IDs
  * (like "ug:userId:groupNumber") to the corresponding inferred session IDs.
  */
-import "dotenv/config";
-import { db } from "../db/client";
-import { sql } from "drizzle-orm";
-import { runInferredSessionBuilderBatched } from "../jobs/inferred-session-builder";
+import 'dotenv/config';
+import { db } from '../db/client';
+import { sql } from 'drizzle-orm';
+import { runInferredSessionBuilderBatched } from '../jobs/inferred-session-builder';
 
 async function main() {
-  console.log("=== Backfill Inferred Sessions ===");
+  console.log('=== Backfill Inferred Sessions ===');
 
   // Check how many unassigned ticks exist
   const [{ count: unassignedCount }] = await db
@@ -26,7 +26,7 @@ async function main() {
   console.log(`Found ${unassignedCount} unassigned ticks`);
 
   if (Number(unassignedCount) === 0) {
-    console.log("No unassigned ticks to process");
+    console.log('No unassigned ticks to process');
   } else {
     // Process in batches until all ticks are assigned
     let totalAssigned = 0;
@@ -50,7 +50,7 @@ async function main() {
   }
 
   // Migrate orphaned votes/comments with "ug:" entity IDs
-  console.log("\n=== Migrating orphaned ug: entity references ===");
+  console.log('\n=== Migrating orphaned ug: entity references ===');
 
   const [voteResult] = await db
     .execute(sql`
@@ -72,10 +72,10 @@ async function main() {
 
   if (Number(voteResult.count) > 0 || Number(commentResult.count) > 0) {
     console.log(
-      "Note: These ug: references cannot be automatically migrated to inferred session IDs",
+      'Note: These ug: references cannot be automatically migrated to inferred session IDs',
     );
-    console.log("because the mapping depends on the original ungrouped session computation.");
-    console.log("Consider manually reviewing and either deleting or migrating these entries.");
+    console.log('because the mapping depends on the original ungrouped session computation.');
+    console.log('Consider manually reviewing and either deleting or migrating these entries.');
   }
 
   // Verify final state
@@ -93,6 +93,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error("Backfill failed:", err);
+  console.error('Backfill failed:', err);
   process.exit(1);
 });

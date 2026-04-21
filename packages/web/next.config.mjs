@@ -1,51 +1,51 @@
-import { withSentryConfig } from "@sentry/nextjs";
-import createWithVercelToolbar from "@vercel/toolbar/plugins/next";
+import { withSentryConfig } from '@sentry/nextjs';
+import createWithVercelToolbar from '@vercel/toolbar/plugins/next';
 // next.config.js
 
 const withVercelToolbar = createWithVercelToolbar();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "standalone",
+  output: 'standalone',
   typescript: {
     // ignoreBuildErrors: true,
   },
   // Transpile internal monorepo packages from TypeScript source
   // This eliminates the need to pre-build packages before running the web app
   transpilePackages: [
-    "@boardsesh/board-constants",
-    "@boardsesh/shared-schema",
-    "@boardsesh/db",
-    "@boardsesh/crypto",
-    "@boardsesh/moonboard-ocr",
+    '@boardsesh/board-constants',
+    '@boardsesh/shared-schema',
+    '@boardsesh/db',
+    '@boardsesh/crypto',
+    '@boardsesh/moonboard-ocr',
   ],
   // Empty turbopack config to silence warning about webpack config
   turbopack: {},
   experimental: {
-    optimizePackageImports: ["@mui/material", "@mui/icons-material", "@mui/material-nextjs"],
+    optimizePackageImports: ['@mui/material', '@mui/icons-material', '@mui/material-nextjs'],
   },
   // Include WASM binary in standalone output for serverless functions.
   // Both paths needed: monorepo root (hoisted deps) and local node_modules (symlink).
   outputFileTracingIncludes: {
-    "/api/internal/board-render": [
-      "./node_modules/@boardsesh/board-renderer-wasm/pkg/*.wasm",
-      "../../node_modules/@boardsesh/board-renderer-wasm/pkg/*.wasm",
-      "./public/images/**",
+    '/api/internal/board-render': [
+      './node_modules/@boardsesh/board-renderer-wasm/pkg/*.wasm',
+      '../../node_modules/@boardsesh/board-renderer-wasm/pkg/*.wasm',
+      './public/images/**',
     ],
   },
   async headers() {
     return [
       {
-        source: "/.well-known/apple-app-site-association",
-        headers: [{ key: "Content-Type", value: "application/json" }],
+        source: '/.well-known/apple-app-site-association',
+        headers: [{ key: 'Content-Type', value: 'application/json' }],
       },
       {
-        source: "/:path*",
+        source: '/:path*',
         headers: [
-          { key: "X-Frame-Options", value: "SAMEORIGIN" },
-          { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
-          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
         ],
       },
     ];
@@ -54,28 +54,28 @@ const nextConfig = {
     return [
       // Redirect old playlist routes to /playlists
       {
-        source: "/my-library",
-        destination: "/playlists",
+        source: '/my-library',
+        destination: '/playlists',
         permanent: true,
       },
       {
-        source: "/my-library/:path*",
-        destination: "/playlists/:path*",
+        source: '/my-library/:path*',
+        destination: '/playlists/:path*',
         permanent: true,
       },
       {
-        source: "/:board/:layout/:size/:set/:angle/playlist/:uuid",
-        destination: "/playlists/:uuid",
+        source: '/:board/:layout/:size/:set/:angle/playlist/:uuid',
+        destination: '/playlists/:uuid',
         permanent: true,
       },
       {
-        source: "/crusher/:user_id",
-        destination: "/profile/:user_id",
+        source: '/crusher/:user_id',
+        destination: '/profile/:user_id',
         permanent: true,
       },
       {
-        source: "/logbook",
-        destination: "/playlists",
+        source: '/logbook',
+        destination: '/playlists',
         permanent: true,
       },
     ];
@@ -87,9 +87,9 @@ export default withVercelToolbar(
     // For all available options, see:
     // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
-    org: "boardsesh",
+    org: 'boardsesh',
 
-    project: "boardsesh",
+    project: 'boardsesh',
 
     // Only print logs for uploading source maps in CI
     silent: !process.env.CI,
@@ -104,7 +104,7 @@ export default withVercelToolbar(
     // This can increase your server load as well as your hosting bill.
     // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
     // side errors will fail.
-    tunnelRoute: "/monitoring",
+    tunnelRoute: '/monitoring',
 
     webpack: {
       // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)

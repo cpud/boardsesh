@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import React from "react";
-import MuiCard from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
-import MuiLink from "@mui/material/Link";
+import React from 'react';
+import MuiCard from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import MuiLink from '@mui/material/Link';
 import {
   GitHub,
   GroupOutlined,
   FavoriteBorderOutlined,
   ApiOutlined,
   RocketLaunchOutlined,
-} from "@mui/icons-material";
-import Box from "@mui/material/Box";
-import Stack from "@mui/material/Stack";
-import Logo from "@/app/components/brand/logo";
-import BackButton from "@/app/components/back-button";
-import styles from "./about.module.css";
+} from '@mui/icons-material';
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import Logo from '@/app/components/brand/logo';
+import BackButton from '@/app/components/back-button';
+import styles from './about.module.css';
 
 export default function AboutContent() {
   return (
@@ -74,31 +74,31 @@ export default function AboutContent() {
                   <li>
                     <Typography variant="body2" component="span" fontWeight={600}>
                       Queue management.
-                    </Typography>{" "}
+                    </Typography>{' '}
                     Take turns without the awkward &quot;who&apos;s next?&quot;
                   </li>
                   <li>
                     <Typography variant="body2" component="span" fontWeight={600}>
                       Party Mode.
-                    </Typography>{" "}
+                    </Typography>{' '}
                     Share a session and climb together in real time
                   </li>
                   <li>
                     <Typography variant="body2" component="span" fontWeight={600}>
                       Multi-board.
-                    </Typography>{" "}
+                    </Typography>{' '}
                     Works with Kilter, Tension, MoonBoard, and more
                   </li>
                   <li>
                     <Typography variant="body2" component="span" fontWeight={600}>
                       Community-driven.
-                    </Typography>{" "}
+                    </Typography>{' '}
                     Built and improved by people who actually climb
                   </li>
                   <li>
                     <Typography variant="body2" component="span" fontWeight={600}>
                       Self-hostable.
-                    </Typography>{" "}
+                    </Typography>{' '}
                     Run your own instance if that&apos;s your thing
                   </li>
                 </ul>

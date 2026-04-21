@@ -23,8 +23,8 @@ import {
   boardTags,
   boardUserSyncs,
   boardSharedSyncs,
-} from "@/lib/db/schema";
-import { AuroraBoardName } from "@/app/lib/api-wrappers/aurora/types";
+} from '@/lib/db/schema';
+import { AuroraBoardName } from '@/app/lib/api-wrappers/aurora/types';
 
 // Re-export AuroraBoardName as BoardName for backward compatibility within this module
 export type BoardName = AuroraBoardName;
@@ -76,7 +76,7 @@ export function getUnifiedTable<K extends keyof UnifiedTableSet>(tableName: K): 
 /**
  * Board name type that includes all supported boards (kilter, tension, moonboard, decoy, touchstone, grasshopper)
  */
-export type UnifiedBoardName = BoardName | "moonboard";
+export type UnifiedBoardName = BoardName | 'moonboard';
 
 /**
  * Check if a board name is valid (includes all supported boards)
@@ -85,12 +85,12 @@ export type UnifiedBoardName = BoardName | "moonboard";
  */
 export function isValidBoardName(boardName: string): boardName is UnifiedBoardName {
   return (
-    boardName === "kilter" ||
-    boardName === "tension" ||
-    boardName === "moonboard" ||
-    boardName === "decoy" ||
-    boardName === "touchstone" ||
-    boardName === "grasshopper"
+    boardName === 'kilter' ||
+    boardName === 'tension' ||
+    boardName === 'moonboard' ||
+    boardName === 'decoy' ||
+    boardName === 'touchstone' ||
+    boardName === 'grasshopper'
   );
 }
 

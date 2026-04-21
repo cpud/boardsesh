@@ -1,24 +1,24 @@
-import { useCallback, useState, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
 import type {
   SubscriptionQueueEvent,
   SessionEvent,
   SessionLiveStats,
-} from "@boardsesh/shared-schema";
-import type { ClimbQueueItem as LocalClimbQueueItem } from "../../queue-control/types";
-import { evaluateQueueEventSequence, insertQueueItemIdempotent } from "../event-utils";
-import type { SharedRefs } from "../types";
-import { DEBUG } from "../types";
+} from '@boardsesh/shared-schema';
+import type { ClimbQueueItem as LocalClimbQueueItem } from '../../queue-control/types';
+import { evaluateQueueEventSequence, insertQueueItemIdempotent } from '../event-utils';
+import type { SharedRefs } from '../types';
+import { DEBUG } from '../types';
 
 interface UseEventProcessorArgs {
   refs: Pick<
     SharedRefs,
-    | "lastReceivedSequenceRef"
-    | "triggerResyncRef"
-    | "lastCorruptionResyncRef"
-    | "isFilteringCorruptedItemsRef"
-    | "queueEventSubscribersRef"
-    | "sessionEventSubscribersRef"
-    | "offlineBufferRef"
+    | 'lastReceivedSequenceRef'
+    | 'triggerResyncRef'
+    | 'lastCorruptionResyncRef'
+    | 'isFilteringCorruptedItemsRef'
+    | 'queueEventSubscribersRef'
+    | 'sessionEventSubscribersRef'
+    | 'offlineBufferRef'
   >;
 }
 
@@ -88,11 +88,11 @@ export function useEventProcessor({
     (event: SubscriptionQueueEvent) => {
       // Sequence validation for stale/gap detection (use ref to avoid stale closure).
       // FullSync always resets local state and sequence tracking.
-      if (event.__typename !== "FullSync") {
+      if (event.__typename !== 'FullSync') {
         const lastSeq = lastReceivedSequenceRef.current;
         const sequenceDecision = evaluateQueueEventSequence(lastSeq, event.sequence);
 
-        if (sequenceDecision === "ignore-stale") {
+        if (sequenceDecision === 'ignore-stale') {
           if (DEBUG) {
             console.log(
               `[PersistentSession] Ignoring stale/duplicate event with sequence ${event.sequence} ` +
@@ -102,7 +102,7 @@ export function useEventProcessor({
           return;
         }
 
-        if (sequenceDecision === "gap") {
+        if (sequenceDecision === 'gap') {
           console.warn(
             `[PersistentSession] Sequence gap detected: expected ${lastSeq! + 1}, got ${event.sequence}. ` +
               `Triggering resync.`,
@@ -115,7 +115,7 @@ export function useEventProcessor({
       }
 
       switch (event.__typename) {
-        case "FullSync": {
+        case 'FullSync': {
           const serverQueue = (event.state.queue as LocalClimbQueueItem[]).filter(
             (item) => item != null,
           );
@@ -135,10 +135,10 @@ export function useEventProcessor({
           setLastReceivedStateHash(event.state.stateHash);
           break;
         }
-        case "QueueItemAdded":
+        case 'QueueItemAdded':
           if (event.addedItem == null) {
             console.error(
-              "[PersistentSession] Received QueueItemAdded with null/undefined item, skipping",
+              '[PersistentSession] Received QueueItemAdded with null/undefined item, skipping',
             );
             updateLastReceivedSequence(event.sequence);
             break;
@@ -152,11 +152,11 @@ export function useEventProcessor({
           });
           updateLastReceivedSequence(event.sequence);
           break;
-        case "QueueItemRemoved":
+        case 'QueueItemRemoved':
           setQueueState((prev) => prev.filter((item) => item.uuid !== event.uuid));
           updateLastReceivedSequence(event.sequence);
           break;
-        case "QueueReordered":
+        case 'QueueReordered':
           setQueueState((prev) => {
             const newQueue = [...prev];
             const [item] = newQueue.splice(event.oldIndex, 1);
@@ -165,11 +165,11 @@ export function useEventProcessor({
           });
           updateLastReceivedSequence(event.sequence);
           break;
-        case "CurrentClimbChanged":
+        case 'CurrentClimbChanged':
           setCurrentClimbQueueItem(event.currentItem as LocalClimbQueueItem | null);
           updateLastReceivedSequence(event.sequence);
           break;
-        case "ClimbMirrored":
+        case 'ClimbMirrored':
           setCurrentClimbQueueItem((prev) => {
             if (!prev) return prev;
             return {
@@ -201,7 +201,7 @@ export function useEventProcessor({
     (event: SessionEvent) => {
       // This is handled externally by the session lifecycle hook via setSession
       // We only handle stats updates here and forward to subscribers
-      if (event.__typename === "SessionStatsUpdated") {
+      if (event.__typename === 'SessionStatsUpdated') {
         setLiveSessionStats({
           sessionId: event.sessionId,
           totalSends: event.totalSends,

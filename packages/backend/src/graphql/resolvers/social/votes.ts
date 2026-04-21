@@ -1,15 +1,15 @@
-import { eq, and, inArray } from "drizzle-orm";
-import type { ConnectionContext, SocialEntityType } from "@boardsesh/shared-schema";
-import { db } from "../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { requireAuthenticated, applyRateLimit, validateInput } from "../shared/helpers";
+import { eq, and, inArray } from 'drizzle-orm';
+import type { ConnectionContext, SocialEntityType } from '@boardsesh/shared-schema';
+import { db } from '../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { requireAuthenticated, applyRateLimit, validateInput } from '../shared/helpers';
 import {
   VoteInputSchema,
   BulkVoteSummaryInputSchema,
   SocialEntityTypeSchema,
-} from "../../../validation/schemas";
-import { validateEntityExists } from "./entity-validation";
-import { publishSocialEvent } from "../../../events/index";
+} from '../../../validation/schemas';
+import { validateEntityExists } from './entity-validation';
+import { publishSocialEvent } from '../../../events/index';
 
 async function getVoteSummary(
   entityType: SocialEntityType,
@@ -70,7 +70,7 @@ export const socialVoteQueries = {
     const validatedType = validateInput(
       SocialEntityTypeSchema,
       entityType,
-      "entityType",
+      'entityType',
     ) as SocialEntityType;
     const authenticatedUserId = ctx.isAuthenticated ? ctx.userId : null;
 
@@ -78,7 +78,7 @@ export const socialVoteQueries = {
   },
 
   bulkVoteSummaries: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
-    const validated = validateInput(BulkVoteSummaryInputSchema, input, "input");
+    const validated = validateInput(BulkVoteSummaryInputSchema, input, 'input');
     const { entityType, entityIds } = validated;
     const authenticatedUserId = ctx.isAuthenticated ? ctx.userId : null;
 
@@ -146,9 +146,9 @@ export const socialVoteQueries = {
 export const socialVoteMutations = {
   vote: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
-    await applyRateLimit(ctx, 30, "vote");
+    await applyRateLimit(ctx, 30, 'vote');
 
-    const validated = validateInput(VoteInputSchema, input, "input");
+    const validated = validateInput(VoteInputSchema, input, 'input');
     const { entityType, entityId, value } = validated;
     const userId = ctx.userId!;
 
@@ -191,13 +191,13 @@ export const socialVoteMutations = {
     // Only notify on first vote, not on direction changes or toggle-off
     if (isFirstVote) {
       publishSocialEvent({
-        type: "vote.cast",
+        type: 'vote.cast',
         actorId: userId,
         entityType,
         entityId,
         timestamp: Date.now(),
         metadata: { value: String(value) },
-      }).catch((err) => console.error("[Votes] Failed to publish social event:", err));
+      }).catch((err) => console.error('[Votes] Failed to publish social event:', err));
     }
 
     return getVoteSummary(entityType as SocialEntityType, entityId, userId);

@@ -1,21 +1,21 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { renderHook, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useQueueDataFetching } from "../../hooks/use-queue-data-fetching";
-import { ParsedBoardRouteParameters, SearchRequestPagination, Climb } from "@/app/lib/types";
-import { ClimbQueue } from "../../types";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
+import { renderHook, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useQueueDataFetching } from '../../hooks/use-queue-data-fetching';
+import { ParsedBoardRouteParameters, SearchRequestPagination, Climb } from '@/app/lib/types';
+import { ClimbQueue } from '../../types';
 import {
   useBoardProvider,
   useOptionalBoardProvider,
-} from "../../../board-provider/board-provider-context";
-import React from "react";
+} from '../../../board-provider/board-provider-context';
+import React from 'react';
 
 // Mock dependencies
-vi.mock("@/app/lib/url-utils", () => ({
-  searchParamsToUrlParams: vi.fn(() => new URLSearchParams("page=1")),
+vi.mock('@/app/lib/url-utils', () => ({
+  searchParamsToUrlParams: vi.fn(() => new URLSearchParams('page=1')),
 }));
 
-vi.mock("../../../board-provider/board-provider-context", () => ({
+vi.mock('../../../board-provider/board-provider-context', () => ({
   useBoardProvider: vi.fn(() => ({
     getLogbook: vi.fn().mockResolvedValue(true),
   })),
@@ -24,41 +24,41 @@ vi.mock("../../../board-provider/board-provider-context", () => ({
   })),
 }));
 
-vi.mock("@/app/hooks/use-ws-auth-token", () => ({
+vi.mock('@/app/hooks/use-ws-auth-token', () => ({
   useWsAuthToken: vi.fn(() => ({
-    token: "mock-token",
+    token: 'mock-token',
     isAuthenticated: true,
     isLoading: false,
     error: null,
   })),
 }));
 
-vi.mock("../../board-page/constants", () => ({
+vi.mock('../../board-page/constants', () => ({
   PAGE_LIMIT: 20,
 }));
 
 // Mock GraphQL client
 const mockGraphQLRequest = vi.fn();
-vi.mock("@/app/lib/graphql/client", () => ({
+vi.mock('@/app/lib/graphql/client', () => ({
   createGraphQLHttpClient: vi.fn(() => ({
     request: mockGraphQLRequest,
   })),
 }));
 
 // Set environment variable for GraphQL client
-process.env.NEXT_PUBLIC_WS_URL = "ws://localhost:4000/graphql";
+process.env.NEXT_PUBLIC_WS_URL = 'ws://localhost:4000/graphql';
 
 // Mock history.replaceState
-Object.defineProperty(window, "history", {
+Object.defineProperty(window, 'history', {
   value: {
     replaceState: vi.fn(),
   },
   writable: true,
 });
 
-Object.defineProperty(window, "location", {
+Object.defineProperty(window, 'location', {
   value: {
-    pathname: "/test/path",
+    pathname: '/test/path',
   },
   writable: true,
 });
@@ -67,17 +67,17 @@ const mockUseBoardProvider = vi.mocked(useBoardProvider);
 const mockUseOptionalBoardProvider = vi.mocked(useOptionalBoardProvider);
 
 const mockClimb: Climb = {
-  uuid: "climb-1",
-  setter_username: "setter1",
-  name: "Test Climb",
-  description: "A test climb",
-  frames: "",
+  uuid: 'climb-1',
+  setter_username: 'setter1',
+  name: 'Test Climb',
+  description: 'A test climb',
+  frames: '',
   angle: 40,
   ascensionist_count: 5,
-  difficulty: "7",
-  quality_average: "3.5",
+  difficulty: '7',
+  quality_average: '3.5',
   stars: 3,
-  difficulty_error: "",
+  difficulty_error: '',
   mirrored: false,
   benchmark_difficulty: null,
   userAscents: 0,
@@ -92,13 +92,13 @@ const mockSearchParams: SearchRequestPagination = {
   minAscents: 1,
   minGrade: 1,
   minRating: 1,
-  sortBy: "quality",
-  sortOrder: "desc",
-  name: "",
+  sortBy: 'quality',
+  sortOrder: 'desc',
+  name: '',
   onlyClassics: false,
   onlyTallClimbs: false,
   settername: [],
-  setternameSuggestion: "",
+  setternameSuggestion: '',
   holdsFilter: {},
   hideAttempted: false,
   hideCompleted: false,
@@ -109,7 +109,7 @@ const mockSearchParams: SearchRequestPagination = {
 };
 
 const mockParsedParams: ParsedBoardRouteParameters = {
-  board_name: "kilter",
+  board_name: 'kilter',
   layout_id: 1,
   size_id: 1,
   set_ids: [1],
@@ -130,11 +130,11 @@ const createWrapper = () => {
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
-  Wrapper.displayName = "QueryClientWrapper";
+  Wrapper.displayName = 'QueryClientWrapper';
   return Wrapper;
 };
 
-describe("useQueueDataFetching", () => {
+describe('useQueueDataFetching', () => {
   const mockSetHasDoneFirstFetch = vi.fn();
   const mockGetLogbook = vi.fn().mockResolvedValue(true);
 
@@ -151,7 +151,7 @@ describe("useQueueDataFetching", () => {
       saveTick: vi.fn(),
       saveClimb: vi.fn(),
       updateClimb: vi.fn(),
-      boardName: "kilter",
+      boardName: 'kilter',
     });
 
     mockUseOptionalBoardProvider.mockReturnValue({
@@ -164,7 +164,7 @@ describe("useQueueDataFetching", () => {
       saveTick: vi.fn(),
       saveClimb: vi.fn(),
       updateClimb: vi.fn(),
-      boardName: "kilter",
+      boardName: 'kilter',
     });
 
     mockUseOptionalBoardProvider.mockReturnValue({
@@ -177,7 +177,7 @@ describe("useQueueDataFetching", () => {
       saveTick: vi.fn(),
       saveClimb: vi.fn(),
       updateClimb: vi.fn(),
-      boardName: "kilter",
+      boardName: 'kilter',
     });
 
     // Mock GraphQL client requests
@@ -185,7 +185,7 @@ describe("useQueueDataFetching", () => {
       const query = String(document);
 
       // Check which query is being made
-      if (query.includes("searchClimbs")) {
+      if (query.includes('searchClimbs')) {
         // Search climbs query
         return {
           searchClimbs: {
@@ -194,7 +194,7 @@ describe("useQueueDataFetching", () => {
             hasMore: true,
           },
         };
-      } else if (query.includes("favorites")) {
+      } else if (query.includes('favorites')) {
         // Favorites query
         return {
           favorites: [],
@@ -210,7 +210,7 @@ describe("useQueueDataFetching", () => {
     vi.clearAllMocks();
   });
 
-  it("should return climb search results and suggested climbs", async () => {
+  it('should return climb search results and suggested climbs', async () => {
     const { result } = renderHook(
       () =>
         useQueueDataFetching({
@@ -233,12 +233,12 @@ describe("useQueueDataFetching", () => {
     expect(result.current.hasMoreResults).toBe(true);
   });
 
-  it("should filter out climbs already in queue from suggestions", async () => {
+  it('should filter out climbs already in queue from suggestions', async () => {
     const queueWithClimb: ClimbQueue = [
       {
         climb: mockClimb,
-        addedBy: "user1",
-        uuid: "queue-item-1",
+        addedBy: 'user1',
+        uuid: 'queue-item-1',
         suggested: false,
       },
     ];
@@ -263,7 +263,7 @@ describe("useQueueDataFetching", () => {
     expect(result.current.suggestedClimbs).toEqual([]);
   });
 
-  it("should call setHasDoneFirstFetch when first results are available", async () => {
+  it('should call setHasDoneFirstFetch when first results are available', async () => {
     renderHook(
       () =>
         useQueueDataFetching({
@@ -282,7 +282,7 @@ describe("useQueueDataFetching", () => {
     });
   });
 
-  it("should not call setHasDoneFirstFetch if already done", async () => {
+  it('should not call setHasDoneFirstFetch if already done', async () => {
     const { result } = renderHook(
       () =>
         useQueueDataFetching({
@@ -303,7 +303,7 @@ describe("useQueueDataFetching", () => {
     expect(mockSetHasDoneFirstFetch).not.toHaveBeenCalled();
   });
 
-  it("should call getLogbook with climb UUIDs", async () => {
+  it('should call getLogbook with climb UUIDs', async () => {
     renderHook(
       () =>
         useQueueDataFetching({
@@ -318,11 +318,11 @@ describe("useQueueDataFetching", () => {
     );
 
     await waitFor(() => {
-      expect(mockGetLogbook).toHaveBeenCalledWith(["climb-1"]);
+      expect(mockGetLogbook).toHaveBeenCalledWith(['climb-1']);
     });
   });
 
-  it("should handle empty search results", async () => {
+  it('should handle empty search results', async () => {
     mockGraphQLRequest.mockResolvedValue({
       searchClimbs: {
         climbs: [],
@@ -353,7 +353,7 @@ describe("useQueueDataFetching", () => {
     expect(result.current.hasMoreResults).toBe(false);
   });
 
-  it("should calculate hasMoreResults correctly when there are more results", async () => {
+  it('should calculate hasMoreResults correctly when there are more results', async () => {
     mockGraphQLRequest.mockResolvedValue({
       searchClimbs: {
         climbs: Array(20).fill(mockClimb),
@@ -380,7 +380,7 @@ describe("useQueueDataFetching", () => {
     });
   });
 
-  it("should handle no more results case", async () => {
+  it('should handle no more results case', async () => {
     mockGraphQLRequest.mockResolvedValue({
       searchClimbs: {
         climbs: Array(10).fill(mockClimb),
@@ -407,13 +407,13 @@ describe("useQueueDataFetching", () => {
     });
   });
 
-  it("should combine UUIDs from search results and queue", async () => {
-    const anotherClimb: Climb = { ...mockClimb, uuid: "climb-2" };
+  it('should combine UUIDs from search results and queue', async () => {
+    const anotherClimb: Climb = { ...mockClimb, uuid: 'climb-2' };
     const queueWithClimb: ClimbQueue = [
       {
         climb: anotherClimb,
-        addedBy: "user1",
-        uuid: "queue-item-1",
+        addedBy: 'user1',
+        uuid: 'queue-item-1',
         suggested: false,
       },
     ];
@@ -432,7 +432,7 @@ describe("useQueueDataFetching", () => {
     );
 
     await waitFor(() => {
-      expect(mockGetLogbook).toHaveBeenCalledWith(["climb-1", "climb-2"]);
+      expect(mockGetLogbook).toHaveBeenCalledWith(['climb-1', 'climb-2']);
     });
   });
 });

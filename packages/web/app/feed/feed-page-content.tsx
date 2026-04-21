@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import React, { useCallback, useMemo, useState } from "react";
-import Box from "@mui/material/Box";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import ActivityFeed from "@/app/components/activity-feed/activity-feed";
-import ProposalFeed from "@/app/components/activity-feed/proposal-feed";
-import CommentFeed from "@/app/components/activity-feed/comment-feed";
-import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { useCallback, useMemo, useState } from 'react';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import ActivityFeed from '@/app/components/activity-feed/activity-feed';
+import ProposalFeed from '@/app/components/activity-feed/proposal-feed';
+import CommentFeed from '@/app/components/activity-feed/comment-feed';
+import { useSession } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-import BoardFilterStrip from "@/app/components/board-scroll/board-filter-strip";
-import type { SessionFeedResult } from "@boardsesh/shared-schema";
-import type { UserBoard } from "@boardsesh/shared-schema";
-import { useMyBoards } from "@/app/hooks/use-my-boards";
-import UnifiedSearchDrawer from "@/app/components/search-drawer/unified-search-drawer";
+import BoardFilterStrip from '@/app/components/board-scroll/board-filter-strip';
+import type { SessionFeedResult } from '@boardsesh/shared-schema';
+import type { UserBoard } from '@boardsesh/shared-schema';
+import { useMyBoards } from '@/app/hooks/use-my-boards';
+import UnifiedSearchDrawer from '@/app/components/search-drawer/unified-search-drawer';
 
-type FeedTab = "sessions" | "proposals" | "comments";
-const VALID_TABS: FeedTab[] = ["sessions", "proposals", "comments"];
+type FeedTab = 'sessions' | 'proposals' | 'comments';
+const VALID_TABS: FeedTab[] = ['sessions', 'proposals', 'comments'];
 
 interface FeedPageContentProps {
   initialTab?: FeedTab;
@@ -28,7 +28,7 @@ interface FeedPageContentProps {
 }
 
 export default function FeedPageContent({
-  initialTab = "sessions",
+  initialTab = 'sessions',
   initialBoardUuid,
   initialFeedResult,
   isAuthenticatedSSR,
@@ -40,9 +40,9 @@ export default function FeedPageContent({
 
   // Trust the SSR hint during the loading phase to prevent flash of unauthenticated content
   const isAuthenticated =
-    status === "authenticated"
+    status === 'authenticated'
       ? true
-      : status === "loading"
+      : status === 'loading'
         ? (isAuthenticatedSSR ?? false)
         : false;
   const { boards: myBoards, isLoading: isLoadingBoards } = useMyBoards(
@@ -52,11 +52,11 @@ export default function FeedPageContent({
   );
 
   // Read state from URL params (with fallbacks to server-provided initial values)
-  const tabParam = searchParams.get("tab");
+  const tabParam = searchParams.get('tab');
   const activeTab: FeedTab = VALID_TABS.includes(tabParam as FeedTab)
     ? (tabParam as FeedTab)
     : initialTab;
-  const selectedBoardUuid = searchParams.get("board") || initialBoardUuid || null;
+  const selectedBoardUuid = searchParams.get('board') || initialBoardUuid || null;
   const [findClimbersOpen, setFindClimbersOpen] = useState(false);
 
   // Helper: update a URL param via shallow navigation
@@ -64,7 +64,7 @@ export default function FeedPageContent({
     (key: string, value: string | null) => {
       const params = new URLSearchParams(searchParams.toString());
       // Default tab is 'sessions', don't put in URL
-      if (key === "tab" && value === "sessions") {
+      if (key === 'tab' && value === 'sessions') {
         params.delete(key);
       } else if (value) {
         params.set(key, value);
@@ -72,18 +72,18 @@ export default function FeedPageContent({
         params.delete(key);
       }
       const qs = params.toString();
-      router.push(qs ? `/feed?${qs}` : "/feed", { scroll: false });
+      router.push(qs ? `/feed?${qs}` : '/feed', { scroll: false });
     },
     [router, searchParams],
   );
 
   const handleTabChange = (_: React.SyntheticEvent, value: FeedTab) => {
-    updateParam("tab", value);
+    updateParam('tab', value);
   };
 
   const handleBoardSelect = useCallback(
     (board: UserBoard | null) => {
-      updateParam("board", board?.uuid ?? null);
+      updateParam('board', board?.uuid ?? null);
     },
     [updateParam],
   );
@@ -96,16 +96,16 @@ export default function FeedPageContent({
   return (
     <Box
       sx={{
-        minHeight: "100dvh",
-        display: "flex",
-        flexDirection: "column",
-        pb: "calc(120px + env(safe-area-inset-bottom, 0px))",
+        minHeight: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        pb: 'calc(120px + env(safe-area-inset-bottom, 0px))',
       }}
     >
       {/* Feed */}
       <Box
         component="main"
-        sx={{ flex: 1, px: 2, py: 2, pt: "calc(var(--global-header-height) + 16px)" }}
+        sx={{ flex: 1, px: 2, py: 2, pt: 'calc(var(--global-header-height) + 16px)' }}
       >
         {isAuthenticated && (
           <BoardFilterStrip
@@ -127,7 +127,7 @@ export default function FeedPageContent({
           <Tab label="Comments" value="comments" />
         </Tabs>
 
-        {activeTab === "sessions" && (
+        {activeTab === 'sessions' && (
           <ActivityFeed
             isAuthenticated={isAuthenticated}
             boardUuid={selectedBoardUuid}
@@ -136,11 +136,11 @@ export default function FeedPageContent({
           />
         )}
 
-        {activeTab === "proposals" && (
+        {activeTab === 'proposals' && (
           <ProposalFeed isAuthenticated={isAuthenticated} boardUuid={selectedBoardUuid} />
         )}
 
-        {activeTab === "comments" && (
+        {activeTab === 'comments' && (
           <CommentFeed isAuthenticated={isAuthenticated} boardUuid={selectedBoardUuid} />
         )}
       </Box>

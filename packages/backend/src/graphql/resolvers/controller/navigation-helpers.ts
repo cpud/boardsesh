@@ -2,8 +2,8 @@ import type {
   ClimbQueueItem,
   QueueNavigationItem,
   QueueNavigationContext,
-} from "@boardsesh/shared-schema";
-import { getGradeColor } from "./grade-colors";
+} from '@boardsesh/shared-schema';
+import { getGradeColor } from './grade-colors';
 
 /**
  * Build a minimal navigation item from a queue item for ESP32 display

@@ -1,4 +1,4 @@
-import { createContext, useContext, useSyncExternalStore, useRef, useMemo, useEffect } from "react";
+import { createContext, useContext, useSyncExternalStore, useRef, useMemo, useEffect } from 'react';
 
 /**
  * Lightweight external store for the selected climb UUID.

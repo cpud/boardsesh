@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React from "react";
-import CheckOutlined from "@mui/icons-material/CheckOutlined";
-import ElectricBoltOutlined from "@mui/icons-material/ElectricBoltOutlined";
-import styles from "./tick-icon.module.css";
+import React from 'react';
+import CheckOutlined from '@mui/icons-material/CheckOutlined';
+import ElectricBoltOutlined from '@mui/icons-material/ElectricBoltOutlined';
+import styles from './tick-icon.module.css';
 
 interface TickIconProps {
   isFlash: boolean;
@@ -14,7 +14,7 @@ export const TickIcon: React.FC<TickIconProps> = ({ isFlash }) => {
 };
 
 interface TickButtonWithLabelProps {
-  label: "flash" | "tick" | "attempt" | "save";
+  label: 'flash' | 'tick' | 'attempt' | 'save';
   children: React.ReactNode;
 }
 

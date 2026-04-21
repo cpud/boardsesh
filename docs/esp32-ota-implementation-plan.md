@@ -194,8 +194,8 @@ name: Firmware Alpha Build
 on:
   pull_request:
     paths:
-      - "packages/board-controller/esp32/**"
-      - "embedded/**"
+      - 'packages/board-controller/esp32/**'
+      - 'embedded/**'
 
 jobs:
   build:
@@ -253,8 +253,8 @@ on:
   push:
     branches: [main]
     paths:
-      - "packages/board-controller/esp32/**"
-      - "embedded/**"
+      - 'packages/board-controller/esp32/**'
+      - 'embedded/**'
 
 jobs:
   build:
@@ -303,10 +303,10 @@ on:
   workflow_dispatch:
     inputs:
       beta_tag:
-        description: "Beta tag to promote (e.g., beta/abc1234)"
+        description: 'Beta tag to promote (e.g., beta/abc1234)'
         required: true
       version:
-        description: "Semantic version (e.g., 1.2.3)"
+        description: 'Semantic version (e.g., 1.2.3)'
         required: true
 
 jobs:
@@ -353,7 +353,7 @@ name: Cleanup Alpha Releases
 
 on:
   schedule:
-    - cron: "0 0 * * 0" # Weekly on Sunday
+    - cron: '0 0 * * 0' # Weekly on Sunday
   workflow_dispatch:
 
 jobs:

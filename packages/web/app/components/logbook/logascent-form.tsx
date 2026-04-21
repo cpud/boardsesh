@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import MuiRating from "@mui/material/Rating";
-import Chip from "@mui/material/Chip";
-import MuiTooltip from "@mui/material/Tooltip";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import CircularProgress from "@mui/material/CircularProgress";
-import Stack from "@mui/material/Stack";
-import Box from "@mui/material/Box";
-import MuiSelect from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import ToggleButton from "@mui/material/ToggleButton";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import InfoOutlined from "@mui/icons-material/InfoOutlined";
-import { track } from "@vercel/analytics";
-import { Climb, BoardDetails } from "@/app/lib/types";
-import { useBoardProvider, TickStatus } from "../board-provider/board-provider-context";
-import { TENSION_KILTER_GRADES, ANGLES } from "@/app/lib/board-data";
-import { isInstagramUrl } from "@/app/lib/instagram-url";
+import React, { useEffect, useState } from 'react';
+import MuiRating from '@mui/material/Rating';
+import Chip from '@mui/material/Chip';
+import MuiTooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import CircularProgress from '@mui/material/CircularProgress';
+import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
+import MuiSelect from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import InfoOutlined from '@mui/icons-material/InfoOutlined';
+import { track } from '@vercel/analytics';
+import { Climb, BoardDetails } from '@/app/lib/types';
+import { useBoardProvider, TickStatus } from '../board-provider/board-provider-context';
+import { TENSION_KILTER_GRADES, ANGLES } from '@/app/lib/board-data';
+import { isInstagramUrl } from '@/app/lib/instagram-url';
 
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
-type LogType = "ascent" | "attempt";
+type LogType = 'ascent' | 'attempt';
 
 interface LogAscentFormValues {
   date: dayjs.Dayjs;
@@ -38,13 +38,13 @@ interface LogAscentFormValues {
 
 // Helper to determine tick status from attempt count (for ascents)
 const getAscentStatus = (attempts: number): TickStatus => {
-  return attempts === 1 ? "flash" : "send";
+  return attempts === 1 ? 'flash' : 'send';
 };
 
 // Helper to determine tick status based on log type
 const getTickStatus = (logType: LogType, attempts: number): TickStatus => {
-  if (logType === "attempt") {
-    return "attempt";
+  if (logType === 'attempt') {
+    return 'attempt';
   }
   return getAscentStatus(attempts);
 };
@@ -77,7 +77,7 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
   const [formValues, setFormValues] = useState<LogAscentFormValues>(getInitialValues);
   const [isMirrored, setIsMirrored] = useState(!!currentClimb?.mirrored);
   const [isSaving, setIsSaving] = useState(false);
-  const [logType, setLogType] = useState<LogType>("ascent");
+  const [logType, setLogType] = useState<LogType>('ascent');
 
   // TODO: Tension spray doesnt support mirroring
   const showMirrorTag = boardDetails.supportsMirroring;
@@ -100,31 +100,31 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
   };
 
   const videoUrlError =
-    logType === "ascent" && formValues.videoUrl && !isInstagramUrl(formValues.videoUrl)
-      ? "Needs to be an Instagram post or reel URL"
+    logType === 'ascent' && formValues.videoUrl && !isInstagramUrl(formValues.videoUrl)
+      ? 'Needs to be an Instagram post or reel URL'
       : null;
 
   // Validation function matching backend rules
   const validateTickInput = (values: LogAscentFormValues): string | null => {
     // Attempts don't need flash/send validation
-    if (logType === "attempt") {
+    if (logType === 'attempt') {
       return null;
     }
 
     const status = getTickStatus(logType, values.attempts);
 
     // Flash requires attemptCount === 1
-    if (status === "flash" && values.attempts !== 1) {
-      return "Flash requires exactly 1 attempt";
+    if (status === 'flash' && values.attempts !== 1) {
+      return 'Flash requires exactly 1 attempt';
     }
 
     // Send requires attemptCount > 1
-    if (status === "send" && values.attempts <= 1) {
-      return "Send requires more than 1 attempt";
+    if (status === 'send' && values.attempts <= 1) {
+      return 'Send requires more than 1 attempt';
     }
 
     if (values.videoUrl && !isInstagramUrl(values.videoUrl)) {
-      return "Needs to be an Instagram post or reel URL";
+      return 'Needs to be an Instagram post or reel URL';
     }
 
     return null; // Valid
@@ -138,7 +138,7 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
     // Client-side validation
     const validationError = validateTickInput(values);
     if (validationError) {
-      console.error("Validation error:", validationError);
+      console.error('Validation error:', validationError);
       return;
     }
 
@@ -154,31 +154,31 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
         isMirror: isMirrored,
         status,
         attemptCount: values.attempts,
-        quality: logType === "ascent" && values.quality ? values.quality : undefined,
-        difficulty: logType === "ascent" ? values.difficulty : undefined,
+        quality: logType === 'ascent' && values.quality ? values.quality : undefined,
+        difficulty: logType === 'ascent' ? values.difficulty : undefined,
         isBenchmark: false,
-        comment: values.notes || "",
+        comment: values.notes || '',
         climbedAt: values.date.toISOString(),
         layoutId: boardDetails.layout_id,
         sizeId: boardDetails.size_id,
         setIds: Array.isArray(boardDetails.set_ids)
-          ? boardDetails.set_ids.join(",")
+          ? boardDetails.set_ids.join(',')
           : String(boardDetails.set_ids),
-        videoUrl: logType === "ascent" && trimmedVideoUrl ? trimmedVideoUrl : undefined,
+        videoUrl: logType === 'ascent' && trimmedVideoUrl ? trimmedVideoUrl : undefined,
       });
 
-      track("Tick Logged", {
-        boardLayout: boardDetails.layout_name || "",
+      track('Tick Logged', {
+        boardLayout: boardDetails.layout_name || '',
         status,
       });
 
       setFormValues(getInitialValues());
-      setLogType("ascent");
+      setLogType('ascent');
       onClose();
     } catch (error) {
-      console.error("Failed to save tick:", error);
-      track("Tick Save Failed", {
-        boardLayout: boardDetails.layout_name || "",
+      console.error('Failed to save tick:', error);
+      track('Tick Save Failed', {
+        boardLayout: boardDetails.layout_name || '',
       });
     } finally {
       setIsSaving(false);
@@ -205,22 +205,22 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
         </ToggleButtonGroup>
       </Box>
 
-      <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
         <Typography sx={{ width: 120, flexShrink: 0 }}>Boulder</Typography>
         <Box sx={{ flex: 1 }}>
           <Stack direction="row" spacing={1}>
-            <strong>{currentClimb?.name || "N/A"}</strong>
+            <strong>{currentClimb?.name || 'N/A'}</strong>
             {showMirrorTag && (
               <Stack direction="row" spacing={0.5}>
                 <Chip
                   label="Mirrored"
                   size="small"
-                  color={isMirrored ? "secondary" : undefined}
-                  sx={{ cursor: "pointer", margin: 0 }}
+                  color={isMirrored ? 'secondary' : undefined}
+                  sx={{ cursor: 'pointer', margin: 0 }}
                   onClick={handleMirrorToggle}
                 />
                 <MuiTooltip title="Click the tag to toggle whether you completed this climb on the mirrored side">
-                  <InfoOutlined sx={{ color: "var(--neutral-400)", cursor: "pointer" }} />
+                  <InfoOutlined sx={{ color: 'var(--neutral-400)', cursor: 'pointer' }} />
                 </MuiTooltip>
               </Stack>
             )}
@@ -228,19 +228,19 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
         </Box>
       </Box>
 
-      <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
         <Typography sx={{ width: 120, flexShrink: 0 }}>Date and Time</Typography>
         <Box sx={{ flex: 1 }}>
           <DateTimePicker
             value={formValues.date}
             onChange={(val) => setFormValues((prev) => ({ ...prev, date: val || dayjs() }))}
-            views={["year", "month", "day", "hours", "minutes"]}
-            slotProps={{ textField: { size: "small" } }}
+            views={['year', 'month', 'day', 'hours', 'minutes']}
+            slotProps={{ textField: { size: 'small' } }}
           />
         </Box>
       </Box>
 
-      <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
         <Typography sx={{ width: 120, flexShrink: 0 }}>Angle</Typography>
         <Box sx={{ flex: 1 }}>
           <MuiSelect
@@ -258,7 +258,7 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
         </Box>
       </Box>
 
-      <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
         <Typography sx={{ width: 120, flexShrink: 0 }}>Attempts</Typography>
         <Box sx={{ flex: 1 }}>
           <TextField
@@ -274,8 +274,8 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
         </Box>
       </Box>
 
-      {logType === "ascent" && (
-        <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
+      {logType === 'ascent' && (
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
           <Typography sx={{ width: 120, flexShrink: 0 }}>Quality</Typography>
           <Box sx={{ flex: 1 }}>
             <MuiRating
@@ -287,8 +287,8 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
         </Box>
       )}
 
-      {logType === "ascent" && (
-        <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
+      {logType === 'ascent' && (
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
           <Typography sx={{ width: 120, flexShrink: 0 }}>Difficulty</Typography>
           <Box sx={{ flex: 1 }}>
             <MuiSelect
@@ -309,7 +309,7 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
         </Box>
       )}
 
-      <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
         <Typography sx={{ width: 120, flexShrink: 0 }}>Notes</Typography>
         <Box sx={{ flex: 1 }}>
           <TextField
@@ -318,14 +318,14 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
             variant="outlined"
             size="small"
             fullWidth
-            value={formValues.notes || ""}
+            value={formValues.notes || ''}
             onChange={(e) => setFormValues((prev) => ({ ...prev, notes: e.target.value }))}
           />
         </Box>
       </Box>
 
-      {logType === "ascent" && (
-        <Box sx={{ display: "flex", alignItems: "flex-start", mb: 1.5 }}>
+      {logType === 'ascent' && (
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 1.5 }}>
           <Typography sx={{ width: 120, flexShrink: 0, pt: 1 }}>Video</Typography>
           <Box sx={{ flex: 1 }}>
             <TextField
@@ -333,11 +333,11 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
               variant="outlined"
               size="small"
               fullWidth
-              value={formValues.videoUrl || ""}
+              value={formValues.videoUrl || ''}
               onChange={(e) => setFormValues((prev) => ({ ...prev, videoUrl: e.target.value }))}
               error={!!videoUrlError}
               helperText={
-                videoUrlError ?? "Paste a reel link so others can see your beta. (Optional)"
+                videoUrlError ?? 'Paste a reel link so others can see your beta. (Optional)'
               }
             />
           </Box>

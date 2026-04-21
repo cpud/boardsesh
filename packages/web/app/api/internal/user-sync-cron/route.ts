@@ -1,14 +1,14 @@
-import { NextResponse } from "next/server";
-import { syncUserData } from "@/app/lib/data-sync/aurora/user-sync";
-import { getPool } from "@/app/lib/db/db";
-import { drizzle } from "drizzle-orm/neon-serverless";
-import { eq, and, or, isNotNull, asc } from "drizzle-orm";
-import { decrypt, encrypt } from "@boardsesh/crypto";
-import * as schema from "@/app/lib/db/schema";
-import AuroraClimbingClient from "@/app/lib/api-wrappers/aurora-rest-client/aurora-rest-client";
-import { AuroraBoardName } from "@/app/lib/api-wrappers/aurora/types";
+import { NextResponse } from 'next/server';
+import { syncUserData } from '@/app/lib/data-sync/aurora/user-sync';
+import { getPool } from '@/app/lib/db/db';
+import { drizzle } from 'drizzle-orm/neon-serverless';
+import { eq, and, or, isNotNull, asc } from 'drizzle-orm';
+import { decrypt, encrypt } from '@boardsesh/crypto';
+import * as schema from '@/app/lib/db/schema';
+import AuroraClimbingClient from '@/app/lib/api-wrappers/aurora-rest-client/aurora-rest-client';
+import { AuroraBoardName } from '@/app/lib/api-wrappers/aurora/types';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // 5 minutes max
 
 const CRON_SECRET = process.env.CRON_SECRET;
@@ -22,9 +22,9 @@ interface SyncResult {
 export async function GET(request: Request) {
   try {
     // Auth check
-    const authHeader = request.headers.get("authorization");
-    if (process.env.VERCEL_ENV !== "development" && authHeader !== `Bearer ${CRON_SECRET}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authHeader = request.headers.get('authorization');
+    if (process.env.VERCEL_ENV !== 'development' && authHeader !== `Bearer ${CRON_SECRET}`) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const pool = getPool();
@@ -42,8 +42,8 @@ export async function GET(request: Request) {
           .where(
             and(
               or(
-                eq(schema.auroraCredentials.syncStatus, "active"),
-                eq(schema.auroraCredentials.syncStatus, "error"),
+                eq(schema.auroraCredentials.syncStatus, 'active'),
+                eq(schema.auroraCredentials.syncStatus, 'error'),
               ),
               isNotNull(schema.auroraCredentials.encryptedUsername),
               isNotNull(schema.auroraCredentials.encryptedPassword),
@@ -58,7 +58,7 @@ export async function GET(request: Request) {
     }
 
     if (credentials.length === 0) {
-      console.log("[User Sync Cron] No users to sync");
+      console.log('[User Sync Cron] No users to sync');
       return NextResponse.json({
         success: true,
         results: { total: 0, successful: 0, failed: 0, errors: [] },
@@ -98,7 +98,7 @@ export async function GET(request: Request) {
           username = decrypt(cred.encryptedUsername);
           password = decrypt(cred.encryptedPassword);
         } catch (decryptError) {
-          const errorMsg = `Failed to decrypt credentials: ${decryptError instanceof Error ? decryptError.message : "Unknown error"}`;
+          const errorMsg = `Failed to decrypt credentials: ${decryptError instanceof Error ? decryptError.message : 'Unknown error'}`;
           console.error(`[User Sync Cron] ${errorMsg} for user ${cred.userId} (${cred.boardType})`);
 
           results.failed++;
@@ -115,7 +115,7 @@ export async function GET(request: Request) {
             await updateDb
               .update(schema.auroraCredentials)
               .set({
-                syncStatus: "error",
+                syncStatus: 'error',
                 syncError: errorMsg,
                 updatedAt: new Date(),
               })
@@ -141,7 +141,7 @@ export async function GET(request: Request) {
         try {
           loginResponse = await auroraClient.signIn(username, password);
         } catch (loginError) {
-          const errorMsg = `Failed to login: ${loginError instanceof Error ? loginError.message : "Unknown error"}`;
+          const errorMsg = `Failed to login: ${loginError instanceof Error ? loginError.message : 'Unknown error'}`;
           console.error(`[User Sync Cron] ${errorMsg} for user ${cred.userId} (${cred.boardType})`);
 
           results.failed++;
@@ -158,7 +158,7 @@ export async function GET(request: Request) {
             await updateDb
               .update(schema.auroraCredentials)
               .set({
-                syncStatus: "error",
+                syncStatus: 'error',
                 syncError: errorMsg,
                 updatedAt: new Date(),
               })
@@ -176,7 +176,7 @@ export async function GET(request: Request) {
         }
 
         if (!loginResponse.token) {
-          const errorMsg = "Login succeeded but no token returned";
+          const errorMsg = 'Login succeeded but no token returned';
           console.error(`[User Sync Cron] ${errorMsg} for user ${cred.userId} (${cred.boardType})`);
           results.failed++;
           results.errors.push({ userId: cred.userId, boardType: cred.boardType, error: errorMsg });
@@ -208,7 +208,7 @@ export async function GET(request: Request) {
 
         // Wait for Aurora session replication across their backend servers
         // Testing if this fixes the 404 errors on Vercel (works locally)
-        console.log("[User Sync Cron] Waiting 5 seconds for Aurora session replication...");
+        console.log('[User Sync Cron] Waiting 5 seconds for Aurora session replication...');
         await new Promise((resolve) => setTimeout(resolve, 5000));
 
         console.log(`[User Sync Cron] Syncing user ${cred.userId} for ${boardType}...`);
@@ -224,7 +224,7 @@ export async function GET(request: Request) {
             .update(schema.auroraCredentials)
             .set({
               lastSyncAt: new Date(),
-              syncStatus: "active",
+              syncStatus: 'active',
               syncError: null,
               updatedAt: new Date(),
             })
@@ -242,7 +242,7 @@ export async function GET(request: Request) {
         console.log(`[User Sync Cron] ✓ Successfully synced user ${cred.userId} for ${boardType}`);
       } catch (error) {
         results.failed++;
-        const errorMsg = error instanceof Error ? error.message : "Unknown error";
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
         results.errors.push({
           userId: cred.userId,
           boardType: cred.boardType,
@@ -256,7 +256,7 @@ export async function GET(request: Request) {
           await updateDb
             .update(schema.auroraCredentials)
             .set({
-              syncStatus: "error",
+              syncStatus: 'error',
               syncError: errorMsg,
               updatedAt: new Date(),
             })
@@ -288,11 +288,11 @@ export async function GET(request: Request) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("[User Sync Cron] Cron job failed:", error);
+    console.error('[User Sync Cron] Cron job failed:', error);
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 },
     );

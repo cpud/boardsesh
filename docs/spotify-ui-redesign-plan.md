@@ -352,12 +352,12 @@ Updated `boardPreviewContainerStyle`:
 ```tsx
 const boardPreviewContainerStyle = {
   width: 36, // Reduced from 48 for compact bar
-  height: "auto",
+  height: 'auto',
   flexShrink: 0,
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  overflow: "hidden",
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  overflow: 'hidden',
 };
 ```
 
@@ -1238,7 +1238,7 @@ Each function internally handles the slug-vs-numeric check. All 20+ call sites b
     <Tooltip title="Added via Bluetooth">
       <Avatar
         size="small"
-        style={{ backgroundColor: "transparent" }}
+        style={{ backgroundColor: 'transparent' }}
         icon={<BluetoothIcon style={{ color: themeTokens.neutral[400] }} />}
       />
     </Tooltip>

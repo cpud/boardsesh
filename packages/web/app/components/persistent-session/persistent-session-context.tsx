@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useCallback, useMemo, useRef, useEffect } from "react";
-import { usePathname } from "next/navigation";
-import type { SubscriptionQueueEvent, SessionEvent } from "@boardsesh/shared-schema";
-import type { ClimbQueueItem as LocalClimbQueueItem } from "../queue-control/types";
-import { useWsAuthToken } from "@/app/hooks/use-ws-auth-token";
-import { usePartyProfile } from "../party-manager/party-profile-context";
-import { isBoardRoutePath } from "@/app/lib/board-route-paths";
+import React, { createContext, useContext, useCallback, useMemo, useRef, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import type { SubscriptionQueueEvent, SessionEvent } from '@boardsesh/shared-schema';
+import type { ClimbQueueItem as LocalClimbQueueItem } from '../queue-control/types';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { usePartyProfile } from '../party-manager/party-profile-context';
+import { isBoardRoutePath } from '@/app/lib/board-route-paths';
 
 import type {
   PersistentSessionContextType,
@@ -15,12 +15,12 @@ import type {
   Session,
   ActiveSessionInfo,
   SharedRefs,
-} from "./types";
-import { useEventProcessor } from "./hooks/use-event-processor";
-import { useQueueStorage } from "./hooks/use-queue-storage";
-import { useQueueMutations } from "./hooks/use-queue-mutations";
-import { useSessionSubscriptions } from "./hooks/use-session-subscriptions";
-import { useSessionLifecycle } from "./hooks/use-session-lifecycle";
+} from './types';
+import { useEventProcessor } from './hooks/use-event-processor';
+import { useQueueStorage } from './hooks/use-queue-storage';
+import { useQueueMutations } from './hooks/use-queue-mutations';
+import { useSessionSubscriptions } from './hooks/use-session-subscriptions';
+import { useSessionLifecycle } from './hooks/use-session-lifecycle';
 
 // Re-export types for backwards compatibility
 export type {
@@ -29,7 +29,7 @@ export type {
   PersistentSessionStateType,
   Session,
   ActiveSessionInfo,
-} from "./types";
+} from './types';
 
 // Split contexts: actions (stable) vs state (changes frequently)
 const PersistentSessionActionsContext = createContext<PersistentSessionActionsType | undefined>(
@@ -258,7 +258,7 @@ export const PersistentSessionProvider: React.FC<{ children: React.ReactNode }> 
 export function usePersistentSessionActions() {
   const context = useContext(PersistentSessionActionsContext);
   if (!context) {
-    throw new Error("usePersistentSessionActions must be used within a PersistentSessionProvider");
+    throw new Error('usePersistentSessionActions must be used within a PersistentSessionProvider');
   }
   return context;
 }
@@ -266,7 +266,7 @@ export function usePersistentSessionActions() {
 export function usePersistentSessionState() {
   const context = useContext(PersistentSessionStateContext);
   if (!context) {
-    throw new Error("usePersistentSessionState must be used within a PersistentSessionProvider");
+    throw new Error('usePersistentSessionState must be used within a PersistentSessionProvider');
   }
   return context;
 }
@@ -276,7 +276,7 @@ export function usePersistentSessionState() {
 export function usePersistentSession() {
   const context = useContext(PersistentSessionContext);
   if (!context) {
-    throw new Error("usePersistentSession must be used within a PersistentSessionProvider");
+    throw new Error('usePersistentSession must be used within a PersistentSessionProvider');
   }
   return context;
 }

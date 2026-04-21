@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import React, { useState, useMemo, useCallback } from "react";
-import Box from "@mui/material/Box";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
-import { useInfiniteQuery, useQueryClient, type InfiniteData } from "@tanstack/react-query";
-import BoardCard from "@/app/components/board-entity/board-card";
-import BoardDetail from "@/app/components/board-entity/board-detail";
-import FollowButton from "@/app/components/ui/follow-button";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
+import React, { useState, useMemo, useCallback } from 'react';
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import { useInfiniteQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
+import BoardCard from '@/app/components/board-entity/board-card';
+import BoardDetail from '@/app/components/board-entity/board-detail';
+import FollowButton from '@/app/components/ui/follow-button';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   SEARCH_BOARDS,
   FOLLOW_BOARD,
   UNFOLLOW_BOARD,
   type SearchBoardsQueryVariables,
   type SearchBoardsQueryResponse,
-} from "@/app/lib/graphql/operations";
-import type { UserBoard, UserBoardConnection } from "@boardsesh/shared-schema";
-import { useDebouncedValue } from "@/app/hooks/use-debounced-value";
-import { useInfiniteScroll } from "@/app/hooks/use-infinite-scroll";
+} from '@/app/lib/graphql/operations';
+import type { UserBoard, UserBoardConnection } from '@boardsesh/shared-schema';
+import { useDebouncedValue } from '@/app/hooks/use-debounced-value';
+import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
 
 interface BoardSearchResultsProps {
   query: string;
@@ -44,7 +44,7 @@ export default function BoardSearchResults({
     UserBoardConnection,
     Error
   >({
-    queryKey: ["searchBoards", debouncedQuery, authToken],
+    queryKey: ['searchBoards', debouncedQuery, authToken],
     queryFn: async ({ pageParam }) => {
       const client = createGraphQLHttpClient(authToken);
       const response = await client.request<SearchBoardsQueryResponse, SearchBoardsQueryVariables>(
@@ -73,7 +73,7 @@ export default function BoardSearchResults({
   const handleFollowChange = useCallback(
     (boardUuid: string, isFollowing: boolean) => {
       queryClient.setQueryData<InfiniteData<UserBoardConnection>>(
-        ["searchBoards", debouncedQuery, authToken],
+        ['searchBoards', debouncedQuery, authToken],
         (old) => {
           if (!old) return old;
           return {
@@ -110,7 +110,7 @@ export default function BoardSearchResults({
 
   if (query.length < 2) {
     return (
-      <Box sx={{ py: 4, textAlign: "center" }}>
+      <Box sx={{ py: 4, textAlign: 'center' }}>
         <Typography variant="body2" color="text.secondary">
           Type at least 2 characters to search
         </Typography>
@@ -120,7 +120,7 @@ export default function BoardSearchResults({
 
   if (isLoading && results.length === 0) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         <CircularProgress />
       </Box>
     );
@@ -128,7 +128,7 @@ export default function BoardSearchResults({
 
   if (!isLoading && results.length === 0 && debouncedQuery.length >= 2) {
     return (
-      <Box sx={{ py: 4, textAlign: "center" }}>
+      <Box sx={{ py: 4, textAlign: 'center' }}>
         <Typography variant="body2" color="text.secondary">
           No boards found for &quot;{debouncedQuery}&quot;
         </Typography>
@@ -162,13 +162,13 @@ export default function BoardSearchResults({
       </Stack>
       <Box
         ref={sentinelRef}
-        sx={{ display: "flex", justifyContent: "center", py: 2, minHeight: 20 }}
+        sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}
       >
         {isFetchingNextPage && <CircularProgress size={24} />}
       </Box>
       {!onBoardSelect && (
         <BoardDetail
-          boardUuid={selectedBoardUuid ?? ""}
+          boardUuid={selectedBoardUuid ?? ''}
           open={!!selectedBoardUuid}
           onClose={() => setSelectedBoardUuid(null)}
           anchor="top"

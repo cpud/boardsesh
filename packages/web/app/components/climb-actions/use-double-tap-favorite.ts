@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useRef, useEffect } from "react";
-import { useFavorite } from "./use-favorite";
-import { useAuthModal } from "@/app/components/providers/auth-modal-provider";
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { useFavorite } from './use-favorite';
+import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 
 interface UseDoubleTapFavoriteOptions {
   climbUuid: string;
@@ -42,8 +42,8 @@ export function useDoubleTapFavorite({
   const handleDoubleTap = useCallback(() => {
     if (!isAuthenticated) {
       openAuthModal({
-        title: "Sign in to like climbs",
-        description: "Save your favorite climbs so you can find them later.",
+        title: 'Sign in to like climbs',
+        description: 'Save your favorite climbs so you can find them later.',
       });
       return;
     }

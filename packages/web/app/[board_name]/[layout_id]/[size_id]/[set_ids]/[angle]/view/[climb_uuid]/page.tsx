@@ -1,22 +1,22 @@
-import React from "react";
-import { notFound, permanentRedirect } from "next/navigation";
-import { BoardRouteParametersWithUuid } from "@/app/lib/types";
-import { getClimb } from "@/app/lib/data/queries";
-import { getBoardDetailsForBoard } from "@/app/lib/board-utils";
+import React from 'react';
+import { notFound, permanentRedirect } from 'next/navigation';
+import { BoardRouteParametersWithUuid } from '@/app/lib/types';
+import { getClimb } from '@/app/lib/data/queries';
+import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import {
   constructClimbViewUrl,
   isUuidOnly,
   constructClimbViewUrlWithSlugs,
   tryConstructSlugViewUrl,
-} from "@/app/lib/url-utils";
-import { parseRouteParams } from "@/app/lib/url-utils.server";
+} from '@/app/lib/url-utils';
+import { parseRouteParams } from '@/app/lib/url-utils.server';
 
-import { Metadata } from "next";
-import { fetchClimbDetailData } from "@/app/lib/data/climb-detail-data.server";
-import ClimbDetailPageServer from "@/app/components/climb-detail/climb-detail-page.server";
-import { scheduleOverlayWarming } from "@/app/lib/warm-overlay-cache";
-import { buildOgBoardRenderUrl } from "@/app/components/board-renderer/util";
-import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/app/lib/seo/og";
+import { Metadata } from 'next';
+import { fetchClimbDetailData } from '@/app/lib/data/climb-detail-data.server';
+import ClimbDetailPageServer from '@/app/components/climb-detail/climb-detail-page.server';
+import { scheduleOverlayWarming } from '@/app/lib/warm-overlay-cache';
+import { buildOgBoardRenderUrl } from '@/app/components/board-renderer/util';
+import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from '@/app/lib/seo/og';
 
 export async function generateMetadata(props: {
   params: Promise<BoardRouteParametersWithUuid>;
@@ -31,8 +31,8 @@ export async function generateMetadata(props: {
     ]);
 
     const climbName = currentClimb.name || `${boardDetails.board_name} Climb`;
-    const climbGrade = currentClimb.difficulty || "Unknown Grade";
-    const setter = currentClimb.setter_username || "Unknown Setter";
+    const climbGrade = currentClimb.difficulty || 'Unknown Grade';
+    const setter = currentClimb.setter_username || 'Unknown Setter';
     const description = `${climbName} - ${climbGrade} by ${setter}. Quality: ${currentClimb.quality_average || 0}/5. Ascents: ${currentClimb.ascensionist_count || 0}`;
     const climbUrl =
       tryConstructSlugViewUrl(
@@ -53,7 +53,7 @@ export async function generateMetadata(props: {
       openGraph: {
         title: `${climbName} - ${climbGrade}`,
         description,
-        type: "website",
+        type: 'website',
         url: climbUrl,
         images: [
           {
@@ -65,7 +65,7 @@ export async function generateMetadata(props: {
         ],
       },
       twitter: {
-        card: "summary_large_image",
+        card: 'summary_large_image',
         title: `${climbName} - ${climbGrade}`,
         description,
         images: [ogImagePath],
@@ -73,8 +73,8 @@ export async function generateMetadata(props: {
     };
   } catch {
     return {
-      title: "Climb View | Boardsesh",
-      description: "View climb details and beta videos",
+      title: 'Climb View | Boardsesh',
+      description: 'View climb details and beta videos',
     };
   }
 }
@@ -89,13 +89,13 @@ export default async function DynamicResultsPage(props: {
 
     if (isNumericFormat || isUuidOnly(params.climb_uuid)) {
       const currentClimb = await getClimb(parsedParams);
-      const layouts = await import("@/app/lib/data/queries").then((m) =>
+      const layouts = await import('@/app/lib/data/queries').then((m) =>
         m.getLayouts(parsedParams.board_name),
       );
-      const sizes = await import("@/app/lib/data/queries").then((m) =>
+      const sizes = await import('@/app/lib/data/queries').then((m) =>
         m.getSizes(parsedParams.board_name, parsedParams.layout_id),
       );
-      const sets = await import("@/app/lib/data/queries").then((m) =>
+      const sets = await import('@/app/lib/data/queries').then((m) =>
         m.getSets(parsedParams.board_name, parsedParams.layout_id, parsedParams.size_id),
       );
 
@@ -132,7 +132,7 @@ export default async function DynamicResultsPage(props: {
       notFound();
     }
 
-    scheduleOverlayWarming({ boardDetails, climbs: [currentClimb], variant: "full" });
+    scheduleOverlayWarming({ boardDetails, climbs: [currentClimb], variant: 'full' });
 
     const climbWithProcessedData = {
       ...currentClimb,
@@ -154,10 +154,10 @@ export default async function DynamicResultsPage(props: {
   } catch (error) {
     // Re-throw Next.js internal errors (permanentRedirect, notFound, etc.) so they
     // are handled correctly instead of being replaced by a 404.
-    if (error !== null && typeof error === "object" && "digest" in error) {
+    if (error !== null && typeof error === 'object' && 'digest' in error) {
       throw error;
     }
-    console.error("Error fetching results or climb:", error);
+    console.error('Error fetching results or climb:', error);
     notFound();
   }
 }

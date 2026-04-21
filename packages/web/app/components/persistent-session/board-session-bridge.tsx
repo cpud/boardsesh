@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import React, { useEffect, useMemo } from "react";
-import { usePathname } from "next/navigation";
+import React, { useEffect, useMemo } from 'react';
+import { usePathname } from 'next/navigation';
 import {
   usePersistentSessionState,
   usePersistentSessionActions,
-} from "./persistent-session-context";
-import { BoardDetails, ParsedBoardRouteParameters } from "@/app/lib/types";
-import { getBaseBoardPath } from "@/app/lib/url-utils";
-import { getClimbSessionCookie } from "@/app/lib/climb-session-cookie";
+} from './persistent-session-context';
+import { BoardDetails, ParsedBoardRouteParameters } from '@/app/lib/types';
+import { getBaseBoardPath } from '@/app/lib/url-utils';
+import { getClimbSessionCookie } from '@/app/lib/climb-session-cookie';
 
 interface BoardSessionBridgeProps {
   boardDetails: BoardDetails;
@@ -56,7 +56,7 @@ const BoardSessionBridge: React.FC<BoardSessionBridgeProps> = ({
       // This ensures session continuity when navigating between climbs or changing angles
       const activeSessionBasePath = activeSession?.boardPath
         ? getBaseBoardPath(activeSession.boardPath)
-        : "";
+        : '';
       if (
         activeSession?.sessionId !== sessionIdFromCookie ||
         activeSessionBasePath !== baseBoardPath

@@ -11,15 +11,15 @@
  * Generated at: 2026-04-09T01:29:55.490Z
  */
 
-import type { BoardName } from "@boardsesh/shared-schema";
-import type { HoldTuple, LayoutData, ProductSizeData, SetData } from "../types";
+import type { BoardName } from '@boardsesh/shared-schema';
+import type { HoldTuple, LayoutData, ProductSizeData, SetData } from '../types';
 
 export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeData>> = {
   kilter: {
     7: {
       id: 7,
-      name: "12 x 14",
-      description: "Commerical",
+      name: '12 x 14',
+      description: 'Commerical',
       edgeLeft: 0,
       edgeRight: 144,
       edgeBottom: 0,
@@ -28,8 +28,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     8: {
       id: 8,
-      name: "8 x 12",
-      description: "Home",
+      name: '8 x 12',
+      description: 'Home',
       edgeLeft: 24,
       edgeRight: 120,
       edgeBottom: 0,
@@ -38,8 +38,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     10: {
       id: 10,
-      name: "12 x 12 with kickboard",
-      description: "Square",
+      name: '12 x 12 with kickboard',
+      description: 'Square',
       edgeLeft: 0,
       edgeRight: 144,
       edgeBottom: 0,
@@ -48,8 +48,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     11: {
       id: 11,
-      name: "Full Wall",
-      description: "",
+      name: 'Full Wall',
+      description: '',
       edgeLeft: 0,
       edgeRight: 210,
       edgeBottom: 0,
@@ -58,8 +58,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     12: {
       id: 12,
-      name: "5 Holds",
-      description: "4 bolt-ons + 1 screw-on",
+      name: '5 Holds',
+      description: '4 bolt-ons + 1 screw-on',
       edgeLeft: -8,
       edgeRight: 8,
       edgeBottom: 0,
@@ -68,8 +68,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     13: {
       id: 13,
-      name: "10 x 10",
-      description: "",
+      name: '10 x 10',
+      description: '',
       edgeLeft: -60,
       edgeRight: 60,
       edgeBottom: -12,
@@ -78,8 +78,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     14: {
       id: 14,
-      name: "7 x 10",
-      description: "Small",
+      name: '7 x 10',
+      description: 'Small',
       edgeLeft: 28,
       edgeRight: 116,
       edgeBottom: 36,
@@ -88,8 +88,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     15: {
       id: 15,
-      name: "Spire",
-      description: "",
+      name: 'Spire',
+      description: '',
       edgeLeft: 0,
       edgeRight: 128,
       edgeBottom: -16,
@@ -98,8 +98,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     16: {
       id: 16,
-      name: "Full",
-      description: "",
+      name: 'Full',
+      description: '',
       edgeLeft: 0,
       edgeRight: 198,
       edgeBottom: 0,
@@ -108,8 +108,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     17: {
       id: 17,
-      name: "7x10",
-      description: "Full Ride LED Kit",
+      name: '7x10',
+      description: 'Full Ride LED Kit',
       edgeLeft: -44,
       edgeRight: 44,
       edgeBottom: 24,
@@ -118,8 +118,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     18: {
       id: 18,
-      name: "7x10",
-      description: "Mainline LED Kit",
+      name: '7x10',
+      description: 'Mainline LED Kit',
       edgeLeft: -44,
       edgeRight: 44,
       edgeBottom: 24,
@@ -128,8 +128,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     19: {
       id: 19,
-      name: "7x10",
-      description: "Auxiliary LED Kit",
+      name: '7x10',
+      description: 'Auxiliary LED Kit',
       edgeLeft: -44,
       edgeRight: 44,
       edgeBottom: 24,
@@ -138,8 +138,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     20: {
       id: 20,
-      name: "10 x 12",
-      description: "",
+      name: '10 x 12',
+      description: '',
       edgeLeft: -60,
       edgeRight: 60,
       edgeBottom: -12,
@@ -148,8 +148,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     21: {
       id: 21,
-      name: "10x10",
-      description: "Full Ride LED Kit",
+      name: '10x10',
+      description: 'Full Ride LED Kit',
       edgeLeft: -56,
       edgeRight: 56,
       edgeBottom: 24,
@@ -158,8 +158,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     22: {
       id: 22,
-      name: "10x10",
-      description: "Mainline LED Kit",
+      name: '10x10',
+      description: 'Mainline LED Kit',
       edgeLeft: -56,
       edgeRight: 56,
       edgeBottom: 24,
@@ -168,8 +168,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     23: {
       id: 23,
-      name: "8x12",
-      description: "Full Ride LED Kit",
+      name: '8x12',
+      description: 'Full Ride LED Kit',
       edgeLeft: -44,
       edgeRight: 44,
       edgeBottom: -12,
@@ -178,8 +178,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     24: {
       id: 24,
-      name: "8x12",
-      description: "Mainline LED Kit",
+      name: '8x12',
+      description: 'Mainline LED Kit',
       edgeLeft: -44,
       edgeRight: 44,
       edgeBottom: -12,
@@ -188,8 +188,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     25: {
       id: 25,
-      name: "10x12",
-      description: "Full Ride LED Kit",
+      name: '10x12',
+      description: 'Full Ride LED Kit',
       edgeLeft: -56,
       edgeRight: 56,
       edgeBottom: -12,
@@ -198,8 +198,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     26: {
       id: 26,
-      name: "10x12",
-      description: "Mainline LED Kit",
+      name: '10x12',
+      description: 'Mainline LED Kit',
       edgeLeft: -56,
       edgeRight: 56,
       edgeBottom: -12,
@@ -208,8 +208,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     27: {
       id: 27,
-      name: "12 x 12 without kickboard",
-      description: "Square",
+      name: '12 x 12 without kickboard',
+      description: 'Square',
       edgeLeft: 0,
       edgeRight: 144,
       edgeBottom: 12,
@@ -218,8 +218,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     28: {
       id: 28,
-      name: "16 x 12",
-      description: "Super Wide",
+      name: '16 x 12',
+      description: 'Super Wide',
       edgeLeft: -24,
       edgeRight: 168,
       edgeBottom: 0,
@@ -228,8 +228,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     29: {
       id: 29,
-      name: "10x10",
-      description: "Auxiliary LED Kit",
+      name: '10x10',
+      description: 'Auxiliary LED Kit',
       edgeLeft: -56,
       edgeRight: 56,
       edgeBottom: 24,
@@ -240,8 +240,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
   tension: {
     1: {
       id: 1,
-      name: "Full Wall",
-      description: "Rows: KB1, KB2, 1-18 Columns: A-K",
+      name: 'Full Wall',
+      description: 'Rows: KB1, KB2, 1-18 Columns: A-K',
       edgeLeft: 0,
       edgeRight: 96,
       edgeBottom: 0,
@@ -250,8 +250,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     2: {
       id: 2,
-      name: "Half Kickboard",
-      description: "Rows: KB2, 1-18 Columns: A-K",
+      name: 'Half Kickboard',
+      description: 'Rows: KB2, 1-18 Columns: A-K',
       edgeLeft: 0,
       edgeRight: 96,
       edgeBottom: 4,
@@ -260,8 +260,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     3: {
       id: 3,
-      name: "No Kickboard",
-      description: "Rows: 1-18 Columns: A-K",
+      name: 'No Kickboard',
+      description: 'Rows: 1-18 Columns: A-K',
       edgeLeft: 0,
       edgeRight: 96,
       edgeBottom: 8,
@@ -270,8 +270,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     4: {
       id: 4,
-      name: "Short",
-      description: "Rows: 1-15 Columns: A-K",
+      name: 'Short',
+      description: 'Rows: 1-15 Columns: A-K',
       edgeLeft: 0,
       edgeRight: 96,
       edgeBottom: 8,
@@ -280,8 +280,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     5: {
       id: 5,
-      name: "Short & Narrow",
-      description: "Rows: 1-15 Columns: B.5-I.5",
+      name: 'Short & Narrow',
+      description: 'Rows: 1-15 Columns: B.5-I.5',
       edgeLeft: 16,
       edgeRight: 80,
       edgeBottom: 8,
@@ -290,8 +290,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     6: {
       id: 6,
-      name: "12 high x 12 wide",
-      description: "",
+      name: '12 high x 12 wide',
+      description: '',
       edgeLeft: -68,
       edgeRight: 68,
       edgeBottom: 0,
@@ -300,8 +300,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     7: {
       id: 7,
-      name: "10 high x 12 wide",
-      description: "",
+      name: '10 high x 12 wide',
+      description: '',
       edgeLeft: -68,
       edgeRight: 68,
       edgeBottom: 0,
@@ -310,8 +310,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     8: {
       id: 8,
-      name: "12 high x 8 wide",
-      description: "",
+      name: '12 high x 8 wide',
+      description: '',
       edgeLeft: -44,
       edgeRight: 44,
       edgeBottom: 0,
@@ -320,8 +320,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     9: {
       id: 9,
-      name: "10 high x 8 wide",
-      description: "",
+      name: '10 high x 8 wide',
+      description: '',
       edgeLeft: -44,
       edgeRight: 44,
       edgeBottom: 0,
@@ -332,8 +332,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
   decoy: {
     1: {
       id: 1,
-      name: "12 x 12",
-      description: "",
+      name: '12 x 12',
+      description: '',
       edgeLeft: -68,
       edgeRight: 68,
       edgeBottom: 0,
@@ -342,8 +342,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     2: {
       id: 2,
-      name: "8 x 12",
-      description: "",
+      name: '8 x 12',
+      description: '',
       edgeLeft: -44,
       edgeRight: 44,
       edgeBottom: 0,
@@ -352,8 +352,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     3: {
       id: 3,
-      name: "8 x 10",
-      description: "",
+      name: '8 x 10',
+      description: '',
       edgeLeft: -44,
       edgeRight: 44,
       edgeBottom: 0,
@@ -364,8 +364,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
   touchstone: {
     1: {
       id: 1,
-      name: "Full Size",
-      description: "",
+      name: 'Full Size',
+      description: '',
       edgeLeft: -72,
       edgeRight: 72,
       edgeBottom: -12,
@@ -376,8 +376,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
   grasshopper: {
     1: {
       id: 1,
-      name: "GrandMaster",
-      description: "12 x 12",
+      name: 'GrandMaster',
+      description: '12 x 12',
       edgeLeft: -68,
       edgeRight: 68,
       edgeBottom: 0,
@@ -386,8 +386,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     2: {
       id: 2,
-      name: "Master",
-      description: "8 x 12",
+      name: 'Master',
+      description: '8 x 12',
       edgeLeft: -44,
       edgeRight: 44,
       edgeBottom: 0,
@@ -396,8 +396,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     3: {
       id: 3,
-      name: "Ninja",
-      description: "8 x 10",
+      name: 'Ninja',
+      description: '8 x 10',
       edgeLeft: -44,
       edgeRight: 44,
       edgeBottom: 0,
@@ -406,8 +406,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     4: {
       id: 4,
-      name: "GrandMaster",
-      description: "12 x 12 with Tweeners",
+      name: 'GrandMaster',
+      description: '12 x 12 with Tweeners',
       edgeLeft: -68,
       edgeRight: 68,
       edgeBottom: 0,
@@ -416,8 +416,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     5: {
       id: 5,
-      name: "Master",
-      description: "8 x 12 with Tweeners",
+      name: 'Master',
+      description: '8 x 12 with Tweeners',
       edgeLeft: -44,
       edgeRight: 44,
       edgeBottom: 0,
@@ -426,8 +426,8 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
     },
     6: {
       id: 6,
-      name: "Ninja",
-      description: "8 x 10 with Tweeners",
+      name: 'Ninja',
+      description: '8 x 10 with Tweeners',
       edgeLeft: -44,
       edgeRight: 44,
       edgeBottom: 0,
@@ -440,252 +440,252 @@ export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeD
 
 export const LAYOUTS: Record<BoardName, Record<number, LayoutData>> = {
   kilter: {
-    1: { id: 1, name: "Kilter Board Original", productId: 1 },
-    8: { id: 8, name: "Kilter Board Homewall", productId: 7 },
+    1: { id: 1, name: 'Kilter Board Original', productId: 1 },
+    8: { id: 8, name: 'Kilter Board Homewall', productId: 7 },
   },
   tension: {
-    9: { id: 9, name: "Original Layout", productId: 4 },
-    10: { id: 10, name: "Tension Board 2 Mirror", productId: 5 },
-    11: { id: 11, name: "Tension Board 2 Spray", productId: 5 },
+    9: { id: 9, name: 'Original Layout', productId: 4 },
+    10: { id: 10, name: 'Tension Board 2 Mirror', productId: 5 },
+    11: { id: 11, name: 'Tension Board 2 Spray', productId: 5 },
   },
   decoy: {
-    2: { id: 2, name: "Dungeon Trainer", productId: 1 },
+    2: { id: 2, name: 'Dungeon Trainer', productId: 1 },
   },
   touchstone: {
-    1: { id: 1, name: "Winter 2020", productId: 1 },
+    1: { id: 1, name: 'Winter 2020', productId: 1 },
   },
   grasshopper: {
-    1: { id: 1, name: "Grasshopper 2020", productId: 1 },
+    1: { id: 1, name: 'Grasshopper 2020', productId: 1 },
   },
   moonboard: {},
 };
 
 export const SETS: Record<BoardName, Record<string, SetData[]>> = {
   kilter: {
-    "1-7": [
-      { id: 1, name: "Bolt Ons" },
-      { id: 20, name: "Screw Ons" },
+    '1-7': [
+      { id: 1, name: 'Bolt Ons' },
+      { id: 20, name: 'Screw Ons' },
     ],
-    "1-8": [
-      { id: 1, name: "Bolt Ons" },
-      { id: 20, name: "Screw Ons" },
+    '1-8': [
+      { id: 1, name: 'Bolt Ons' },
+      { id: 20, name: 'Screw Ons' },
     ],
-    "1-10": [
-      { id: 1, name: "Bolt Ons" },
-      { id: 20, name: "Screw Ons" },
+    '1-10': [
+      { id: 1, name: 'Bolt Ons' },
+      { id: 20, name: 'Screw Ons' },
     ],
-    "1-14": [
-      { id: 1, name: "Bolt Ons" },
-      { id: 20, name: "Screw Ons" },
+    '1-14': [
+      { id: 1, name: 'Bolt Ons' },
+      { id: 20, name: 'Screw Ons' },
     ],
-    "1-27": [
-      { id: 1, name: "Bolt Ons" },
-      { id: 20, name: "Screw Ons" },
+    '1-27': [
+      { id: 1, name: 'Bolt Ons' },
+      { id: 20, name: 'Screw Ons' },
     ],
-    "1-28": [
-      { id: 1, name: "Bolt Ons" },
-      { id: 20, name: "Screw Ons" },
+    '1-28': [
+      { id: 1, name: 'Bolt Ons' },
+      { id: 20, name: 'Screw Ons' },
     ],
-    "2-11": [{ id: 21, name: "JUUL All" }],
-    "3-12": [{ id: 22, name: "Demo Holds" }],
-    "4-13": [{ id: 23, name: "BKB All" }],
-    "4-20": [{ id: 23, name: "BKB All" }],
-    "5-15": [{ id: 24, name: "Spire All" }],
-    "6-16": [{ id: 25, name: "Orbit" }],
-    "7-16": [{ id: 25, name: "Orbit" }],
-    "8-17": [
-      { id: 26, name: "Mainline" },
-      { id: 27, name: "Auxiliary" },
+    '2-11': [{ id: 21, name: 'JUUL All' }],
+    '3-12': [{ id: 22, name: 'Demo Holds' }],
+    '4-13': [{ id: 23, name: 'BKB All' }],
+    '4-20': [{ id: 23, name: 'BKB All' }],
+    '5-15': [{ id: 24, name: 'Spire All' }],
+    '6-16': [{ id: 25, name: 'Orbit' }],
+    '7-16': [{ id: 25, name: 'Orbit' }],
+    '8-17': [
+      { id: 26, name: 'Mainline' },
+      { id: 27, name: 'Auxiliary' },
     ],
-    "8-18": [{ id: 26, name: "Mainline" }],
-    "8-19": [{ id: 27, name: "Auxiliary" }],
-    "8-21": [
-      { id: 26, name: "Mainline" },
-      { id: 27, name: "Auxiliary" },
+    '8-18': [{ id: 26, name: 'Mainline' }],
+    '8-19': [{ id: 27, name: 'Auxiliary' }],
+    '8-21': [
+      { id: 26, name: 'Mainline' },
+      { id: 27, name: 'Auxiliary' },
     ],
-    "8-22": [{ id: 26, name: "Mainline" }],
-    "8-23": [
-      { id: 26, name: "Mainline" },
-      { id: 27, name: "Auxiliary" },
-      { id: 28, name: "Mainline Kickboard" },
-      { id: 29, name: "Auxiliary Kickboard" },
+    '8-22': [{ id: 26, name: 'Mainline' }],
+    '8-23': [
+      { id: 26, name: 'Mainline' },
+      { id: 27, name: 'Auxiliary' },
+      { id: 28, name: 'Mainline Kickboard' },
+      { id: 29, name: 'Auxiliary Kickboard' },
     ],
-    "8-24": [
-      { id: 26, name: "Mainline" },
-      { id: 28, name: "Mainline Kickboard" },
-      { id: 29, name: "Auxiliary Kickboard" },
+    '8-24': [
+      { id: 26, name: 'Mainline' },
+      { id: 28, name: 'Mainline Kickboard' },
+      { id: 29, name: 'Auxiliary Kickboard' },
     ],
-    "8-25": [
-      { id: 26, name: "Mainline" },
-      { id: 27, name: "Auxiliary" },
-      { id: 28, name: "Mainline Kickboard" },
-      { id: 29, name: "Auxiliary Kickboard" },
+    '8-25': [
+      { id: 26, name: 'Mainline' },
+      { id: 27, name: 'Auxiliary' },
+      { id: 28, name: 'Mainline Kickboard' },
+      { id: 29, name: 'Auxiliary Kickboard' },
     ],
-    "8-26": [
-      { id: 26, name: "Mainline" },
-      { id: 28, name: "Mainline Kickboard" },
-      { id: 29, name: "Auxiliary Kickboard" },
+    '8-26': [
+      { id: 26, name: 'Mainline' },
+      { id: 28, name: 'Mainline Kickboard' },
+      { id: 29, name: 'Auxiliary Kickboard' },
     ],
-    "8-29": [{ id: 27, name: "Auxiliary" }],
+    '8-29': [{ id: 27, name: 'Auxiliary' }],
   },
   tension: {
-    "9-1": [
-      { id: 8, name: "Set A" },
-      { id: 9, name: "Set B" },
-      { id: 10, name: "Set C" },
-      { id: 11, name: "Foot Set" },
+    '9-1': [
+      { id: 8, name: 'Set A' },
+      { id: 9, name: 'Set B' },
+      { id: 10, name: 'Set C' },
+      { id: 11, name: 'Foot Set' },
     ],
-    "9-2": [
-      { id: 8, name: "Set A" },
-      { id: 9, name: "Set B" },
-      { id: 10, name: "Set C" },
-      { id: 11, name: "Foot Set" },
+    '9-2': [
+      { id: 8, name: 'Set A' },
+      { id: 9, name: 'Set B' },
+      { id: 10, name: 'Set C' },
+      { id: 11, name: 'Foot Set' },
     ],
-    "9-3": [
-      { id: 8, name: "Set A" },
-      { id: 9, name: "Set B" },
-      { id: 10, name: "Set C" },
-      { id: 11, name: "Foot Set" },
+    '9-3': [
+      { id: 8, name: 'Set A' },
+      { id: 9, name: 'Set B' },
+      { id: 10, name: 'Set C' },
+      { id: 11, name: 'Foot Set' },
     ],
-    "9-4": [
-      { id: 8, name: "Set A" },
-      { id: 9, name: "Set B" },
-      { id: 10, name: "Set C" },
-      { id: 11, name: "Foot Set" },
+    '9-4': [
+      { id: 8, name: 'Set A' },
+      { id: 9, name: 'Set B' },
+      { id: 10, name: 'Set C' },
+      { id: 11, name: 'Foot Set' },
     ],
-    "9-5": [
-      { id: 8, name: "Set A" },
-      { id: 9, name: "Set B" },
-      { id: 10, name: "Set C" },
-      { id: 11, name: "Foot Set" },
+    '9-5': [
+      { id: 8, name: 'Set A' },
+      { id: 9, name: 'Set B' },
+      { id: 10, name: 'Set C' },
+      { id: 11, name: 'Foot Set' },
     ],
-    "10-6": [
-      { id: 12, name: "Wood" },
-      { id: 13, name: "Plastic" },
+    '10-6': [
+      { id: 12, name: 'Wood' },
+      { id: 13, name: 'Plastic' },
     ],
-    "10-7": [
-      { id: 12, name: "Wood" },
-      { id: 13, name: "Plastic" },
+    '10-7': [
+      { id: 12, name: 'Wood' },
+      { id: 13, name: 'Plastic' },
     ],
-    "10-8": [
-      { id: 12, name: "Wood" },
-      { id: 13, name: "Plastic" },
+    '10-8': [
+      { id: 12, name: 'Wood' },
+      { id: 13, name: 'Plastic' },
     ],
-    "10-9": [
-      { id: 12, name: "Wood" },
-      { id: 13, name: "Plastic" },
+    '10-9': [
+      { id: 12, name: 'Wood' },
+      { id: 13, name: 'Plastic' },
     ],
-    "11-6": [
-      { id: 12, name: "Wood" },
-      { id: 13, name: "Plastic" },
+    '11-6': [
+      { id: 12, name: 'Wood' },
+      { id: 13, name: 'Plastic' },
     ],
-    "11-7": [
-      { id: 12, name: "Wood" },
-      { id: 13, name: "Plastic" },
+    '11-7': [
+      { id: 12, name: 'Wood' },
+      { id: 13, name: 'Plastic' },
     ],
-    "11-8": [
-      { id: 12, name: "Wood" },
-      { id: 13, name: "Plastic" },
+    '11-8': [
+      { id: 12, name: 'Wood' },
+      { id: 13, name: 'Plastic' },
     ],
-    "11-9": [
-      { id: 12, name: "Wood" },
-      { id: 13, name: "Plastic" },
+    '11-9': [
+      { id: 12, name: 'Wood' },
+      { id: 13, name: 'Plastic' },
     ],
   },
   decoy: {
-    "1-1": [{ id: 1, name: "All Holds" }],
-    "1-2": [{ id: 1, name: "All Holds" }],
-    "1-3": [{ id: 1, name: "All Holds" }],
-    "2-1": [
-      { id: 2, name: "Foundation" },
-      { id: 3, name: "Footholds 1" },
-      { id: 4, name: "Footholds 2" },
-      { id: 5, name: "Rollies" },
-      { id: 6, name: "Pacos" },
-      { id: 7, name: "Schist" },
-      { id: 8, name: "Incuts" },
-      { id: 9, name: "Sams" },
-      { id: 10, name: "Flat Edge" },
-      { id: 11, name: "Pinches" },
-      { id: 12, name: "Limestone" },
-      { id: 13, name: "Limestone Feet" },
-      { id: 14, name: "Limestone Feet 12x12" },
-      { id: 15, name: "Foundation 12x12" },
-      { id: 16, name: "Pacos 12x12" },
-      { id: 17, name: "Rollies 12x12" },
-      { id: 18, name: "Sams 12x12" },
-      { id: 19, name: "Schist 12x12" },
-      { id: 20, name: "Foundation Feet 12x12" },
+    '1-1': [{ id: 1, name: 'All Holds' }],
+    '1-2': [{ id: 1, name: 'All Holds' }],
+    '1-3': [{ id: 1, name: 'All Holds' }],
+    '2-1': [
+      { id: 2, name: 'Foundation' },
+      { id: 3, name: 'Footholds 1' },
+      { id: 4, name: 'Footholds 2' },
+      { id: 5, name: 'Rollies' },
+      { id: 6, name: 'Pacos' },
+      { id: 7, name: 'Schist' },
+      { id: 8, name: 'Incuts' },
+      { id: 9, name: 'Sams' },
+      { id: 10, name: 'Flat Edge' },
+      { id: 11, name: 'Pinches' },
+      { id: 12, name: 'Limestone' },
+      { id: 13, name: 'Limestone Feet' },
+      { id: 14, name: 'Limestone Feet 12x12' },
+      { id: 15, name: 'Foundation 12x12' },
+      { id: 16, name: 'Pacos 12x12' },
+      { id: 17, name: 'Rollies 12x12' },
+      { id: 18, name: 'Sams 12x12' },
+      { id: 19, name: 'Schist 12x12' },
+      { id: 20, name: 'Foundation Feet 12x12' },
     ],
-    "2-2": [
-      { id: 2, name: "Foundation" },
-      { id: 3, name: "Footholds 1" },
-      { id: 4, name: "Footholds 2" },
-      { id: 5, name: "Rollies" },
-      { id: 6, name: "Pacos" },
-      { id: 7, name: "Schist" },
-      { id: 8, name: "Incuts" },
-      { id: 9, name: "Sams" },
-      { id: 10, name: "Flat Edge" },
-      { id: 11, name: "Pinches" },
-      { id: 12, name: "Limestone" },
-      { id: 13, name: "Limestone Feet" },
+    '2-2': [
+      { id: 2, name: 'Foundation' },
+      { id: 3, name: 'Footholds 1' },
+      { id: 4, name: 'Footholds 2' },
+      { id: 5, name: 'Rollies' },
+      { id: 6, name: 'Pacos' },
+      { id: 7, name: 'Schist' },
+      { id: 8, name: 'Incuts' },
+      { id: 9, name: 'Sams' },
+      { id: 10, name: 'Flat Edge' },
+      { id: 11, name: 'Pinches' },
+      { id: 12, name: 'Limestone' },
+      { id: 13, name: 'Limestone Feet' },
     ],
-    "2-3": [
-      { id: 2, name: "Foundation" },
-      { id: 3, name: "Footholds 1" },
-      { id: 4, name: "Footholds 2" },
-      { id: 5, name: "Rollies" },
-      { id: 6, name: "Pacos" },
-      { id: 7, name: "Schist" },
-      { id: 8, name: "Incuts" },
-      { id: 9, name: "Sams" },
-      { id: 10, name: "Flat Edge" },
-      { id: 11, name: "Pinches" },
-      { id: 12, name: "Limestone" },
-      { id: 13, name: "Limestone Feet" },
+    '2-3': [
+      { id: 2, name: 'Foundation' },
+      { id: 3, name: 'Footholds 1' },
+      { id: 4, name: 'Footholds 2' },
+      { id: 5, name: 'Rollies' },
+      { id: 6, name: 'Pacos' },
+      { id: 7, name: 'Schist' },
+      { id: 8, name: 'Incuts' },
+      { id: 9, name: 'Sams' },
+      { id: 10, name: 'Flat Edge' },
+      { id: 11, name: 'Pinches' },
+      { id: 12, name: 'Limestone' },
+      { id: 13, name: 'Limestone Feet' },
     ],
   },
   touchstone: {
-    "1-1": [{ id: 1, name: "All Holds" }],
+    '1-1': [{ id: 1, name: 'All Holds' }],
   },
   grasshopper: {
-    "1-1": [
-      { id: 1, name: "Engage" },
-      { id: 2, name: "Flow" },
-      { id: 3, name: "Power" },
+    '1-1': [
+      { id: 1, name: 'Engage' },
+      { id: 2, name: 'Flow' },
+      { id: 3, name: 'Power' },
     ],
-    "1-2": [
-      { id: 1, name: "Engage" },
-      { id: 2, name: "Flow" },
-      { id: 3, name: "Power" },
+    '1-2': [
+      { id: 1, name: 'Engage' },
+      { id: 2, name: 'Flow' },
+      { id: 3, name: 'Power' },
     ],
-    "1-3": [
-      { id: 1, name: "Engage" },
-      { id: 2, name: "Flow" },
-      { id: 3, name: "Power" },
+    '1-3': [
+      { id: 1, name: 'Engage' },
+      { id: 2, name: 'Flow' },
+      { id: 3, name: 'Power' },
     ],
-    "1-4": [
-      { id: 1, name: "Engage" },
-      { id: 2, name: "Flow" },
-      { id: 3, name: "Power" },
-      { id: 4, name: "Gradient" },
-      { id: 5, name: "Dimension" },
-      { id: 6, name: "Tweeners" },
+    '1-4': [
+      { id: 1, name: 'Engage' },
+      { id: 2, name: 'Flow' },
+      { id: 3, name: 'Power' },
+      { id: 4, name: 'Gradient' },
+      { id: 5, name: 'Dimension' },
+      { id: 6, name: 'Tweeners' },
     ],
-    "1-5": [
-      { id: 1, name: "Engage" },
-      { id: 2, name: "Flow" },
-      { id: 3, name: "Power" },
-      { id: 4, name: "Gradient" },
-      { id: 6, name: "Tweeners" },
+    '1-5': [
+      { id: 1, name: 'Engage' },
+      { id: 2, name: 'Flow' },
+      { id: 3, name: 'Power' },
+      { id: 4, name: 'Gradient' },
+      { id: 6, name: 'Tweeners' },
     ],
-    "1-6": [
-      { id: 1, name: "Engage" },
-      { id: 2, name: "Flow" },
-      { id: 3, name: "Power" },
-      { id: 4, name: "Gradient" },
-      { id: 6, name: "Tweeners" },
+    '1-6': [
+      { id: 1, name: 'Engage' },
+      { id: 2, name: 'Flow' },
+      { id: 3, name: 'Power' },
+      { id: 4, name: 'Gradient' },
+      { id: 6, name: 'Tweeners' },
     ],
   },
   moonboard: {},
@@ -693,170 +693,170 @@ export const SETS: Record<BoardName, Record<string, SetData[]>> = {
 
 export const IMAGE_FILENAMES: Record<BoardName, Record<string, string>> = {
   kilter: {
-    "1-7-1": "product_sizes_layouts_sets/36-1.png",
-    "1-7-20": "product_sizes_layouts_sets/38-1.png",
-    "1-8-1": "product_sizes_layouts_sets/39-1.png",
-    "1-8-20": "product_sizes_layouts_sets/41-1.png",
-    "1-10-1": "product_sizes_layouts_sets/45-1.png",
-    "1-10-20": "product_sizes_layouts_sets/46-1.png",
-    "1-14-1": "product_sizes_layouts_sets/50-1.png",
-    "1-14-20": "product_sizes_layouts_sets/51-1.png",
-    "1-27-1": "product_sizes_layouts_sets/77-1.png",
-    "1-27-20": "product_sizes_layouts_sets/78-1.png",
-    "1-28-1": "product_sizes_layouts_sets/original-16x12-bolt-ons-v2.png",
-    "1-28-20": "product_sizes_layouts_sets/original-16x12-screw-ons-v2.png",
-    "2-11-21": "product_sizes_layouts_sets/47.png",
-    "3-12-22": "product_sizes_layouts_sets/48.png",
-    "4-13-23": "product_sizes_layouts_sets/49.png",
-    "4-20-23": "product_sizes_layouts_sets/59.png",
-    "5-15-24": "product_sizes_layouts_sets/15_5_24.png",
-    "6-16-25": "product_sizes_layouts_sets/53.png",
-    "7-16-25": "product_sizes_layouts_sets/54.png",
-    "8-17-26": "product_sizes_layouts_sets/55-v2.png",
-    "8-17-27": "product_sizes_layouts_sets/56-v3.png",
-    "8-18-26": "product_sizes_layouts_sets/55-v2.png",
-    "8-19-27": "product_sizes_layouts_sets/56-v3.png",
-    "8-21-26": "product_sizes_layouts_sets/60-v3.png",
-    "8-21-27": "product_sizes_layouts_sets/61-v3.png",
-    "8-22-26": "product_sizes_layouts_sets/60-v3.png",
-    "8-23-26": "product_sizes_layouts_sets/63-v3.png",
-    "8-23-27": "product_sizes_layouts_sets/64-v3.png",
-    "8-23-28": "product_sizes_layouts_sets/65-v2.png",
-    "8-23-29": "product_sizes_layouts_sets/66-v2.png",
-    "8-24-26": "product_sizes_layouts_sets/63-v3.png",
-    "8-24-28": "product_sizes_layouts_sets/65-v2.png",
-    "8-24-29": "product_sizes_layouts_sets/66-v2.png",
-    "8-25-26": "product_sizes_layouts_sets/70-v2.png",
-    "8-25-27": "product_sizes_layouts_sets/71-v3.png",
-    "8-25-28": "product_sizes_layouts_sets/72.png",
-    "8-25-29": "product_sizes_layouts_sets/73.png",
-    "8-26-26": "product_sizes_layouts_sets/70-v2.png",
-    "8-26-28": "product_sizes_layouts_sets/72.png",
-    "8-26-29": "product_sizes_layouts_sets/73.png",
-    "8-29-27": "product_sizes_layouts_sets/61-v3.png",
+    '1-7-1': 'product_sizes_layouts_sets/36-1.png',
+    '1-7-20': 'product_sizes_layouts_sets/38-1.png',
+    '1-8-1': 'product_sizes_layouts_sets/39-1.png',
+    '1-8-20': 'product_sizes_layouts_sets/41-1.png',
+    '1-10-1': 'product_sizes_layouts_sets/45-1.png',
+    '1-10-20': 'product_sizes_layouts_sets/46-1.png',
+    '1-14-1': 'product_sizes_layouts_sets/50-1.png',
+    '1-14-20': 'product_sizes_layouts_sets/51-1.png',
+    '1-27-1': 'product_sizes_layouts_sets/77-1.png',
+    '1-27-20': 'product_sizes_layouts_sets/78-1.png',
+    '1-28-1': 'product_sizes_layouts_sets/original-16x12-bolt-ons-v2.png',
+    '1-28-20': 'product_sizes_layouts_sets/original-16x12-screw-ons-v2.png',
+    '2-11-21': 'product_sizes_layouts_sets/47.png',
+    '3-12-22': 'product_sizes_layouts_sets/48.png',
+    '4-13-23': 'product_sizes_layouts_sets/49.png',
+    '4-20-23': 'product_sizes_layouts_sets/59.png',
+    '5-15-24': 'product_sizes_layouts_sets/15_5_24.png',
+    '6-16-25': 'product_sizes_layouts_sets/53.png',
+    '7-16-25': 'product_sizes_layouts_sets/54.png',
+    '8-17-26': 'product_sizes_layouts_sets/55-v2.png',
+    '8-17-27': 'product_sizes_layouts_sets/56-v3.png',
+    '8-18-26': 'product_sizes_layouts_sets/55-v2.png',
+    '8-19-27': 'product_sizes_layouts_sets/56-v3.png',
+    '8-21-26': 'product_sizes_layouts_sets/60-v3.png',
+    '8-21-27': 'product_sizes_layouts_sets/61-v3.png',
+    '8-22-26': 'product_sizes_layouts_sets/60-v3.png',
+    '8-23-26': 'product_sizes_layouts_sets/63-v3.png',
+    '8-23-27': 'product_sizes_layouts_sets/64-v3.png',
+    '8-23-28': 'product_sizes_layouts_sets/65-v2.png',
+    '8-23-29': 'product_sizes_layouts_sets/66-v2.png',
+    '8-24-26': 'product_sizes_layouts_sets/63-v3.png',
+    '8-24-28': 'product_sizes_layouts_sets/65-v2.png',
+    '8-24-29': 'product_sizes_layouts_sets/66-v2.png',
+    '8-25-26': 'product_sizes_layouts_sets/70-v2.png',
+    '8-25-27': 'product_sizes_layouts_sets/71-v3.png',
+    '8-25-28': 'product_sizes_layouts_sets/72.png',
+    '8-25-29': 'product_sizes_layouts_sets/73.png',
+    '8-26-26': 'product_sizes_layouts_sets/70-v2.png',
+    '8-26-28': 'product_sizes_layouts_sets/72.png',
+    '8-26-29': 'product_sizes_layouts_sets/73.png',
+    '8-29-27': 'product_sizes_layouts_sets/61-v3.png',
   },
   tension: {
-    "9-1-8": "product_sizes_layouts_sets/1.png",
-    "9-1-9": "product_sizes_layouts_sets/2.png",
-    "9-1-10": "product_sizes_layouts_sets/3.png",
-    "9-1-11": "product_sizes_layouts_sets/4.png",
-    "9-2-8": "product_sizes_layouts_sets/5.png",
-    "9-2-9": "product_sizes_layouts_sets/6.png",
-    "9-2-10": "product_sizes_layouts_sets/7.png",
-    "9-2-11": "product_sizes_layouts_sets/8.png",
-    "9-3-8": "product_sizes_layouts_sets/9.png",
-    "9-3-9": "product_sizes_layouts_sets/10.png",
-    "9-3-10": "product_sizes_layouts_sets/11.png",
-    "9-3-11": "product_sizes_layouts_sets/12.png",
-    "9-4-8": "product_sizes_layouts_sets/13.png",
-    "9-4-9": "product_sizes_layouts_sets/14.png",
-    "9-4-10": "product_sizes_layouts_sets/15.png",
-    "9-4-11": "product_sizes_layouts_sets/16.png",
-    "9-5-8": "product_sizes_layouts_sets/17.png",
-    "9-5-9": "product_sizes_layouts_sets/18.png",
-    "9-5-10": "product_sizes_layouts_sets/19.png",
-    "9-5-11": "product_sizes_layouts_sets/20.png",
-    "10-6-12": "product_sizes_layouts_sets/21-2.png",
-    "10-6-13": "product_sizes_layouts_sets/22-2.png",
-    "10-7-12": "product_sizes_layouts_sets/23.png",
-    "10-7-13": "product_sizes_layouts_sets/24-2.png",
-    "10-8-12": "product_sizes_layouts_sets/25.png",
-    "10-8-13": "product_sizes_layouts_sets/26.png",
-    "10-9-12": "product_sizes_layouts_sets/27.png",
-    "10-9-13": "product_sizes_layouts_sets/28.png",
-    "11-6-12": "product_sizes_layouts_sets/12x12-tb2-wood.png",
-    "11-6-13": "product_sizes_layouts_sets/12x12-tb2-plastic.png",
-    "11-7-12": "product_sizes_layouts_sets/12x10-tb2-wood.png",
-    "11-7-13": "product_sizes_layouts_sets/12x10-tb2-plastic.png",
-    "11-8-12": "product_sizes_layouts_sets/8x12-tb2-wood.png",
-    "11-8-13": "product_sizes_layouts_sets/8x12-tb2-plastic.png",
-    "11-9-12": "product_sizes_layouts_sets/8x10-tb2-wood.png",
-    "11-9-13": "product_sizes_layouts_sets/8x10-tb2-plastic.png",
+    '9-1-8': 'product_sizes_layouts_sets/1.png',
+    '9-1-9': 'product_sizes_layouts_sets/2.png',
+    '9-1-10': 'product_sizes_layouts_sets/3.png',
+    '9-1-11': 'product_sizes_layouts_sets/4.png',
+    '9-2-8': 'product_sizes_layouts_sets/5.png',
+    '9-2-9': 'product_sizes_layouts_sets/6.png',
+    '9-2-10': 'product_sizes_layouts_sets/7.png',
+    '9-2-11': 'product_sizes_layouts_sets/8.png',
+    '9-3-8': 'product_sizes_layouts_sets/9.png',
+    '9-3-9': 'product_sizes_layouts_sets/10.png',
+    '9-3-10': 'product_sizes_layouts_sets/11.png',
+    '9-3-11': 'product_sizes_layouts_sets/12.png',
+    '9-4-8': 'product_sizes_layouts_sets/13.png',
+    '9-4-9': 'product_sizes_layouts_sets/14.png',
+    '9-4-10': 'product_sizes_layouts_sets/15.png',
+    '9-4-11': 'product_sizes_layouts_sets/16.png',
+    '9-5-8': 'product_sizes_layouts_sets/17.png',
+    '9-5-9': 'product_sizes_layouts_sets/18.png',
+    '9-5-10': 'product_sizes_layouts_sets/19.png',
+    '9-5-11': 'product_sizes_layouts_sets/20.png',
+    '10-6-12': 'product_sizes_layouts_sets/21-2.png',
+    '10-6-13': 'product_sizes_layouts_sets/22-2.png',
+    '10-7-12': 'product_sizes_layouts_sets/23.png',
+    '10-7-13': 'product_sizes_layouts_sets/24-2.png',
+    '10-8-12': 'product_sizes_layouts_sets/25.png',
+    '10-8-13': 'product_sizes_layouts_sets/26.png',
+    '10-9-12': 'product_sizes_layouts_sets/27.png',
+    '10-9-13': 'product_sizes_layouts_sets/28.png',
+    '11-6-12': 'product_sizes_layouts_sets/12x12-tb2-wood.png',
+    '11-6-13': 'product_sizes_layouts_sets/12x12-tb2-plastic.png',
+    '11-7-12': 'product_sizes_layouts_sets/12x10-tb2-wood.png',
+    '11-7-13': 'product_sizes_layouts_sets/12x10-tb2-plastic.png',
+    '11-8-12': 'product_sizes_layouts_sets/8x12-tb2-wood.png',
+    '11-8-13': 'product_sizes_layouts_sets/8x12-tb2-plastic.png',
+    '11-9-12': 'product_sizes_layouts_sets/8x10-tb2-wood.png',
+    '11-9-13': 'product_sizes_layouts_sets/8x10-tb2-plastic.png',
   },
   decoy: {
-    "1-1-1": "product_sizes_layouts_sets/1.png",
-    "1-2-1": "product_sizes_layouts_sets/2.png",
-    "1-3-1": "product_sizes_layouts_sets/3.png",
-    "2-1-2": "product_sizes_layouts_sets/4.png",
-    "2-1-3": "product_sizes_layouts_sets/5.png",
-    "2-1-4": "product_sizes_layouts_sets/6.png",
-    "2-1-5": "product_sizes_layouts_sets/7.png",
-    "2-1-6": "product_sizes_layouts_sets/8.png",
-    "2-1-7": "product_sizes_layouts_sets/9.png",
-    "2-1-8": "product_sizes_layouts_sets/10.png",
-    "2-1-9": "product_sizes_layouts_sets/11.png",
-    "2-1-10": "product_sizes_layouts_sets/12.png",
-    "2-1-11": "product_sizes_layouts_sets/13-2.png",
-    "2-1-12": "product_sizes_layouts_sets/12x12_lime.png",
-    "2-1-13": "product_sizes_layouts_sets/12x12_lime_foot.png",
-    "2-1-14": "product_sizes_layouts_sets/12x12_lime_foot_12x12.png",
-    "2-1-15": "product_sizes_layouts_sets/12x12_foundation_12x12.png",
-    "2-1-16": "product_sizes_layouts_sets/12x12_pacos_12x12.png",
-    "2-1-17": "product_sizes_layouts_sets/12x12_rollies_12x12.png",
-    "2-1-18": "product_sizes_layouts_sets/12x12_sams_12x12.png",
-    "2-1-19": "product_sizes_layouts_sets/12x12_schist_12x12.png",
-    "2-1-20": "product_sizes_layouts_sets/12x12_foundation_feet_12x12.png",
-    "2-2-2": "product_sizes_layouts_sets/14.png",
-    "2-2-3": "product_sizes_layouts_sets/15.png",
-    "2-2-4": "product_sizes_layouts_sets/16.png",
-    "2-2-5": "product_sizes_layouts_sets/17.png",
-    "2-2-6": "product_sizes_layouts_sets/18.png",
-    "2-2-7": "product_sizes_layouts_sets/19.png",
-    "2-2-8": "product_sizes_layouts_sets/20.png",
-    "2-2-9": "product_sizes_layouts_sets/21.png",
-    "2-2-10": "product_sizes_layouts_sets/22.png",
-    "2-2-11": "product_sizes_layouts_sets/23-2.png",
-    "2-2-12": "product_sizes_layouts_sets/8x12_lime.png",
-    "2-2-13": "product_sizes_layouts_sets/8x12_lime_foot.png",
-    "2-3-2": "product_sizes_layouts_sets/24.png",
-    "2-3-3": "product_sizes_layouts_sets/25.png",
-    "2-3-4": "product_sizes_layouts_sets/26.png",
-    "2-3-5": "product_sizes_layouts_sets/27.png",
-    "2-3-6": "product_sizes_layouts_sets/28.png",
-    "2-3-7": "product_sizes_layouts_sets/29.png",
-    "2-3-8": "product_sizes_layouts_sets/30.png",
-    "2-3-9": "product_sizes_layouts_sets/31.png",
-    "2-3-10": "product_sizes_layouts_sets/32.png",
-    "2-3-11": "product_sizes_layouts_sets/33-2.png",
-    "2-3-12": "product_sizes_layouts_sets/8x10_lime.png",
-    "2-3-13": "product_sizes_layouts_sets/8x10_lime_foot.png",
+    '1-1-1': 'product_sizes_layouts_sets/1.png',
+    '1-2-1': 'product_sizes_layouts_sets/2.png',
+    '1-3-1': 'product_sizes_layouts_sets/3.png',
+    '2-1-2': 'product_sizes_layouts_sets/4.png',
+    '2-1-3': 'product_sizes_layouts_sets/5.png',
+    '2-1-4': 'product_sizes_layouts_sets/6.png',
+    '2-1-5': 'product_sizes_layouts_sets/7.png',
+    '2-1-6': 'product_sizes_layouts_sets/8.png',
+    '2-1-7': 'product_sizes_layouts_sets/9.png',
+    '2-1-8': 'product_sizes_layouts_sets/10.png',
+    '2-1-9': 'product_sizes_layouts_sets/11.png',
+    '2-1-10': 'product_sizes_layouts_sets/12.png',
+    '2-1-11': 'product_sizes_layouts_sets/13-2.png',
+    '2-1-12': 'product_sizes_layouts_sets/12x12_lime.png',
+    '2-1-13': 'product_sizes_layouts_sets/12x12_lime_foot.png',
+    '2-1-14': 'product_sizes_layouts_sets/12x12_lime_foot_12x12.png',
+    '2-1-15': 'product_sizes_layouts_sets/12x12_foundation_12x12.png',
+    '2-1-16': 'product_sizes_layouts_sets/12x12_pacos_12x12.png',
+    '2-1-17': 'product_sizes_layouts_sets/12x12_rollies_12x12.png',
+    '2-1-18': 'product_sizes_layouts_sets/12x12_sams_12x12.png',
+    '2-1-19': 'product_sizes_layouts_sets/12x12_schist_12x12.png',
+    '2-1-20': 'product_sizes_layouts_sets/12x12_foundation_feet_12x12.png',
+    '2-2-2': 'product_sizes_layouts_sets/14.png',
+    '2-2-3': 'product_sizes_layouts_sets/15.png',
+    '2-2-4': 'product_sizes_layouts_sets/16.png',
+    '2-2-5': 'product_sizes_layouts_sets/17.png',
+    '2-2-6': 'product_sizes_layouts_sets/18.png',
+    '2-2-7': 'product_sizes_layouts_sets/19.png',
+    '2-2-8': 'product_sizes_layouts_sets/20.png',
+    '2-2-9': 'product_sizes_layouts_sets/21.png',
+    '2-2-10': 'product_sizes_layouts_sets/22.png',
+    '2-2-11': 'product_sizes_layouts_sets/23-2.png',
+    '2-2-12': 'product_sizes_layouts_sets/8x12_lime.png',
+    '2-2-13': 'product_sizes_layouts_sets/8x12_lime_foot.png',
+    '2-3-2': 'product_sizes_layouts_sets/24.png',
+    '2-3-3': 'product_sizes_layouts_sets/25.png',
+    '2-3-4': 'product_sizes_layouts_sets/26.png',
+    '2-3-5': 'product_sizes_layouts_sets/27.png',
+    '2-3-6': 'product_sizes_layouts_sets/28.png',
+    '2-3-7': 'product_sizes_layouts_sets/29.png',
+    '2-3-8': 'product_sizes_layouts_sets/30.png',
+    '2-3-9': 'product_sizes_layouts_sets/31.png',
+    '2-3-10': 'product_sizes_layouts_sets/32.png',
+    '2-3-11': 'product_sizes_layouts_sets/33-2.png',
+    '2-3-12': 'product_sizes_layouts_sets/8x10_lime.png',
+    '2-3-13': 'product_sizes_layouts_sets/8x10_lime_foot.png',
   },
   touchstone: {
-    "1-1-1": "product_sizes_layouts_sets/1-v4.png",
+    '1-1-1': 'product_sizes_layouts_sets/1-v4.png',
   },
   grasshopper: {
-    "1-1-1": "product_sizes_layouts_sets/1_v3.png",
-    "1-1-2": "product_sizes_layouts_sets/12x12-2020-flow.png",
-    "1-1-3": "product_sizes_layouts_sets/3_v3.png",
-    "1-2-1": "product_sizes_layouts_sets/8x12-2020-engage.png",
-    "1-2-2": "product_sizes_layouts_sets/8x12-2020-flow.png",
-    "1-2-3": "product_sizes_layouts_sets/8x12-2020-power.png",
-    "1-3-1": "product_sizes_layouts_sets/8x10-2020-engage.png",
-    "1-3-2": "product_sizes_layouts_sets/8x10-2020-flow.png",
-    "1-3-3": "product_sizes_layouts_sets/8x10-2020-power.png",
-    "1-4-1": "product_sizes_layouts_sets/1_v3.png",
-    "1-4-2": "product_sizes_layouts_sets/12x12-2020-flow.png",
-    "1-4-3": "product_sizes_layouts_sets/3_v3.png",
-    "1-4-4": "product_sizes_layouts_sets/13_v2.png",
-    "1-4-5": "product_sizes_layouts_sets/14.png",
-    "1-4-6": "product_sizes_layouts_sets/12x12-2020-tweeners-v2.png",
-    "1-5-1": "product_sizes_layouts_sets/8x12-2020-engage.png",
-    "1-5-2": "product_sizes_layouts_sets/8x12-2020-flow.png",
-    "1-5-3": "product_sizes_layouts_sets/8x12-2020-power.png",
-    "1-5-4": "product_sizes_layouts_sets/8x12-2020-gradient.png",
-    "1-5-6": "product_sizes_layouts_sets/8x12-2020-tweeners-v2.png",
-    "1-6-1": "product_sizes_layouts_sets/8x10-2020-engage.png",
-    "1-6-2": "product_sizes_layouts_sets/8x10-2020-flow.png",
-    "1-6-3": "product_sizes_layouts_sets/8x10-2020-power.png",
-    "1-6-4": "product_sizes_layouts_sets/8x10-2020-gradient.png",
-    "1-6-6": "product_sizes_layouts_sets/8x10-2020-tweeners-v2.png",
+    '1-1-1': 'product_sizes_layouts_sets/1_v3.png',
+    '1-1-2': 'product_sizes_layouts_sets/12x12-2020-flow.png',
+    '1-1-3': 'product_sizes_layouts_sets/3_v3.png',
+    '1-2-1': 'product_sizes_layouts_sets/8x12-2020-engage.png',
+    '1-2-2': 'product_sizes_layouts_sets/8x12-2020-flow.png',
+    '1-2-3': 'product_sizes_layouts_sets/8x12-2020-power.png',
+    '1-3-1': 'product_sizes_layouts_sets/8x10-2020-engage.png',
+    '1-3-2': 'product_sizes_layouts_sets/8x10-2020-flow.png',
+    '1-3-3': 'product_sizes_layouts_sets/8x10-2020-power.png',
+    '1-4-1': 'product_sizes_layouts_sets/1_v3.png',
+    '1-4-2': 'product_sizes_layouts_sets/12x12-2020-flow.png',
+    '1-4-3': 'product_sizes_layouts_sets/3_v3.png',
+    '1-4-4': 'product_sizes_layouts_sets/13_v2.png',
+    '1-4-5': 'product_sizes_layouts_sets/14.png',
+    '1-4-6': 'product_sizes_layouts_sets/12x12-2020-tweeners-v2.png',
+    '1-5-1': 'product_sizes_layouts_sets/8x12-2020-engage.png',
+    '1-5-2': 'product_sizes_layouts_sets/8x12-2020-flow.png',
+    '1-5-3': 'product_sizes_layouts_sets/8x12-2020-power.png',
+    '1-5-4': 'product_sizes_layouts_sets/8x12-2020-gradient.png',
+    '1-5-6': 'product_sizes_layouts_sets/8x12-2020-tweeners-v2.png',
+    '1-6-1': 'product_sizes_layouts_sets/8x10-2020-engage.png',
+    '1-6-2': 'product_sizes_layouts_sets/8x10-2020-flow.png',
+    '1-6-3': 'product_sizes_layouts_sets/8x10-2020-power.png',
+    '1-6-4': 'product_sizes_layouts_sets/8x10-2020-gradient.png',
+    '1-6-6': 'product_sizes_layouts_sets/8x10-2020-tweeners-v2.png',
   },
   moonboard: {},
 };
 
 export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
   kilter: {
-    "1-1": [
+    '1-1': [
       [1073, null, 136, 8],
       [1074, null, 128, 8],
       [1075, null, 120, 8],
@@ -1346,7 +1346,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [4793, null, 160, 144],
       [4794, null, 160, 152],
     ],
-    "1-20": [
+    '1-20': [
       [1447, null, 140, 4],
       [1448, null, 132, 4],
       [1449, null, 124, 4],
@@ -1552,7 +1552,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [4844, null, 148, 132],
       [4845, null, 164, 132],
     ],
-    "2-21": [
+    '2-21': [
       [1600, null, 6, 104],
       [1601, null, 6, 96],
       [1602, null, 10, 92],
@@ -2026,14 +2026,14 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [2070, null, 204, 96],
       [2071, null, 204, 104],
     ],
-    "3-22": [
+    '3-22': [
       [2072, 2075, -4, 4],
       [2073, 2076, -4, 12],
       [2074, 2074, 0, 8],
       [2075, 2072, 4, 4],
       [2076, 2073, 4, 12],
     ],
-    "4-23": [
+    '4-23': [
       [2077, null, 56, -8],
       [2078, null, 52, -4],
       [2079, null, 48, -8],
@@ -2444,7 +2444,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [4485, null, 44, 140],
       [4486, null, 52, 140],
     ],
-    "5-24": [
+    '5-24': [
       [2421, null, 4, 36],
       [2422, null, 4, 44],
       [2423, null, 4, 52],
@@ -2990,7 +2990,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [2963, null, 12, -4],
       [2964, null, 4, -12],
     ],
-    "6-25": [
+    '6-25': [
       [2965, null, 73, 48],
       [2966, null, 70, 51],
       [2967, null, 67, 46],
@@ -3665,7 +3665,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [3636, null, 94, 55],
       [3637, null, 91, 46],
     ],
-    "7-25": [
+    '7-25': [
       [3638, null, 7, 26],
       [3639, null, 7, 52],
       [3640, null, 7, 68],
@@ -4146,7 +4146,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [4115, null, 192, 94],
       [4116, null, 192, 112],
     ],
-    "8-26": [
+    '8-26': [
       [4117, null, -40, 28],
       [4118, null, -40, 36],
       [4119, null, -40, 44],
@@ -4382,7 +4382,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [4554, null, 48, 12],
       [4555, null, 48, 4],
     ],
-    "8-27": [
+    '8-27': [
       [4132, null, -36, 136],
       [4133, null, -36, 128],
       [4134, null, -36, 120],
@@ -4622,7 +4622,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [4652, null, 52, 16],
       [4653, null, 52, 24],
     ],
-    "8-28": [
+    '8-28': [
       [4654, null, 48, -4],
       [4655, null, 40, -4],
       [4656, null, 32, -4],
@@ -4637,7 +4637,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [4665, null, -40, -4],
       [4666, null, -48, -4],
     ],
-    "8-29": [
+    '8-29': [
       [4667, null, -52, -8],
       [4668, null, 44, -8],
       [4669, null, 36, -8],
@@ -4655,7 +4655,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
     ],
   },
   tension: {
-    "9-8": [
+    '9-8': [
       [1, 2, 16, 152],
       [2, 1, 80, 152],
       [3, 4, 16, 32],
@@ -4739,7 +4739,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [82, 83, 32, 152],
       [83, 82, 64, 152],
     ],
-    "9-9": [
+    '9-9': [
       [84, 85, 16, 56],
       [85, 84, 80, 56],
       [86, 87, 8, 152],
@@ -4824,7 +4824,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [165, 165, 48, 128],
       [166, 166, 48, 88],
     ],
-    "9-10": [
+    '9-10': [
       [167, 168, 20, 132],
       [168, 167, 76, 132],
       [169, 170, 20, 76],
@@ -4910,7 +4910,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [249, 250, 36, 76],
       [250, 249, 60, 76],
     ],
-    "9-11": [
+    '9-11': [
       [72, 72, 48, 16],
       [251, 252, 8, 88],
       [252, 251, 88, 88],
@@ -4966,7 +4966,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [302, 301, 56, 16],
       [303, 303, 48, 8],
     ],
-    "10-12": [
+    '10-12': [
       [304, 304, 0, 20],
       [305, 305, 0, 44],
       [306, 306, 0, 52],
@@ -5210,7 +5210,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [544, 426, 64, 100],
       [545, 427, 64, 116],
     ],
-    "10-13": [
+    '10-13': [
       [546, 546, 0, 4],
       [547, 547, 0, 12],
       [548, 548, 0, 28],
@@ -5468,7 +5468,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [800, 678, 64, 132],
       [801, 679, 64, 140],
     ],
-    "11-12": [
+    '11-12': [
       [802, null, -64, 4],
       [803, 1037, -64, 20],
       [804, 1039, -64, 36],
@@ -5712,7 +5712,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [1042, null, 64, 92],
       [1043, null, 64, 108],
     ],
-    "11-13": [
+    '11-13': [
       [1044, 1291, -64, 12],
       [1045, null, -64, 28],
       [1046, 1292, -64, 44],
@@ -5972,7 +5972,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
     ],
   },
   decoy: {
-    "1-1": [
+    '1-1': [
       [1, 561, -64, 4],
       [2, 562, -64, 12],
       [3, 563, -64, 20],
@@ -6552,7 +6552,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [577, 17, 64, 132],
       [578, 18, 64, 140],
     ],
-    "2-2": [
+    '2-2': [
       [579, 639, -40, 44],
       [580, 640, -40, 68],
       [581, 641, -40, 100],
@@ -6619,7 +6619,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [642, 582, 40, 124],
       [643, 583, 40, 140],
     ],
-    "2-3": [
+    '2-3': [
       [644, 662, -40, 28],
       [645, 663, -40, 36],
       [646, 659, -32, 4],
@@ -6641,7 +6641,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [662, 644, 40, 28],
       [663, 645, 40, 36],
     ],
-    "2-4": [
+    '2-4': [
       [664, 682, -40, 4],
       [665, 683, -40, 20],
       [666, 681, -32, 28],
@@ -6663,7 +6663,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [682, 664, 40, 4],
       [683, 665, 40, 20],
     ],
-    "2-5": [
+    '2-5': [
       [684, 706, -40, 60],
       [685, 707, -40, 92],
       [686, 708, -40, 116],
@@ -6691,7 +6691,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [708, 686, 40, 116],
       [709, 687, 40, 132],
     ],
-    "2-6": [
+    '2-6': [
       [710, 736, -40, 52],
       [711, 737, -40, 84],
       [712, 734, -32, 44],
@@ -6721,7 +6721,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [736, 710, 40, 52],
       [737, 711, 40, 84],
     ],
-    "2-7": [
+    '2-7': [
       [738, 763, -40, 76],
       [739, 764, -40, 108],
       [740, 760, -32, 100],
@@ -6750,7 +6750,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [763, 738, 40, 76],
       [764, 739, 40, 108],
     ],
-    "2-8": [
+    '2-8': [
       [765, 783, -36, 80],
       [766, 784, -36, 96],
       [767, 782, -28, 48],
@@ -6772,7 +6772,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [783, 765, 36, 80],
       [784, 766, 36, 96],
     ],
-    "2-9": [
+    '2-9': [
       [785, 824, -36, 32],
       [786, 825, -36, 56],
       [787, 826, -36, 128],
@@ -6816,7 +6816,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [825, 786, 36, 56],
       [826, 787, 36, 128],
     ],
-    "2-10": [
+    '2-10': [
       [827, 845, -36, 88],
       [828, 846, -36, 104],
       [829, 843, -28, 40],
@@ -6838,7 +6838,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [845, 827, 36, 88],
       [846, 828, 36, 104],
     ],
-    "2-11": [
+    '2-11': [
       [847, 865, -36, 40],
       [848, 866, -36, 112],
       [849, 863, -28, 56],
@@ -6860,7 +6860,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [865, 847, 36, 40],
       [866, 848, 36, 112],
     ],
-    "2-12": [
+    '2-12': [
       [867, 875, -36, 64],
       [868, 876, -36, 72],
       [869, 877, -20, 104],
@@ -6878,7 +6878,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [881, 873, 8, 36],
       [882, 874, 4, 64],
     ],
-    "2-13": [
+    '2-13': [
       [883, 888, -40, 12],
       [884, 889, -24, 12],
       [885, 890, -24, 28],
@@ -6890,7 +6890,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [891, 886, 12, 16],
       [892, 887, 8, 28],
     ],
-    "2-14": [
+    '2-14': [
       [893, 898, -60, 16],
       [894, 899, -60, 32],
       [895, 900, -60, 80],
@@ -6902,7 +6902,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [901, 896, 52, 8],
       [902, 897, 48, 20],
     ],
-    "2-15": [
+    '2-15': [
       [934, 949, -64, 44],
       [935, 950, -64, 76],
       [936, 951, -64, 124],
@@ -6934,7 +6934,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [962, 947, 48, 132],
       [963, 948, 32, 36],
     ],
-    "2-16": [
+    '2-16': [
       [964, 977, -64, 60],
       [965, 978, -64, 100],
       [966, 979, -64, 116],
@@ -6962,7 +6962,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [988, 975, 48, 124],
       [989, 976, 48, 140],
     ],
-    "2-17": [
+    '2-17': [
       [990, 1003, -64, 36],
       [991, 1004, -64, 52],
       [992, 1005, -64, 68],
@@ -6990,7 +6990,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [1014, 1001, 48, 100],
       [1015, 1002, 48, 116],
     ],
-    "2-18": [
+    '2-18': [
       [1016, 1025, -60, 72],
       [1017, 1026, -60, 96],
       [1018, 1027, -60, 104],
@@ -7010,7 +7010,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [1032, 1023, 44, 80],
       [1033, 1024, 44, 112],
     ],
-    "2-19": [
+    '2-19': [
       [1034, 1041, -60, 64],
       [1035, 1042, -52, 64],
       [1036, 1043, -52, 88],
@@ -7026,7 +7026,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [1046, 1039, 44, 96],
       [1047, 1040, 36, 120],
     ],
-    "2-20": [
+    '2-20': [
       [1048, 1058, -64, 4],
       [1049, 1059, -64, 12],
       [1050, 1060, -64, 28],
@@ -7050,7 +7050,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
     ],
   },
   touchstone: {
-    "1-1": [
+    '1-1': [
       [1, 596, -68, 4],
       [2, 597, -68, 12],
       [3, 598, -68, 20],
@@ -7702,7 +7702,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
     ],
   },
   grasshopper: {
-    "1-1": [
+    '1-1': [
       [11, 189, -40, 44],
       [14, 192, -40, 20],
       [16, 194, -40, 4],
@@ -7734,7 +7734,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [192, 14, 40, 20],
       [194, 16, 40, 4],
     ],
-    "1-2": [
+    '1-2': [
       [9, 187, -40, 60],
       [15, 193, -40, 12],
       [19, 163, -32, 20],
@@ -7767,7 +7767,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [187, 9, 40, 60],
       [193, 15, 40, 12],
     ],
-    "1-3": [
+    '1-3': [
       [1, 179, -40, 124],
       [2, 180, -40, 116],
       [3, 181, -40, 108],
@@ -7902,7 +7902,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [190, 12, 40, 36],
       [191, 13, 40, 28],
     ],
-    "1-4": [
+    '1-4': [
       [195, 210, -20, 8],
       [196, 211, -36, 8],
       [197, 212, -20, 24],
@@ -7936,7 +7936,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [333, 334, -12, 72],
       [334, 333, 12, 72],
     ],
-    "1-5": [
+    '1-5': [
       [225, 279, -40, 132],
       [226, 280, -40, 140],
       [227, 281, -48, 4],
@@ -8046,7 +8046,7 @@ export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
       [331, 277, 64, 132],
       [332, 278, 64, 140],
     ],
-    "1-6": [
+    '1-6': [
       [335, 401, -60, 16],
       [336, 402, -60, 24],
       [337, 403, -60, 112],

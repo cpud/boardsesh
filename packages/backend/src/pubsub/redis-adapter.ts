@@ -4,16 +4,16 @@ import type {
   NotificationEvent,
   CommentEvent,
   NewClimbCreatedEvent,
-} from "@boardsesh/shared-schema";
-import type Redis from "ioredis";
-import { v4 as uuidv4 } from "uuid";
+} from '@boardsesh/shared-schema';
+import type Redis from 'ioredis';
+import { v4 as uuidv4 } from 'uuid';
 
 // Channel naming convention
-const QUEUE_CHANNEL_PREFIX = "boardsesh:queue:";
-const SESSION_CHANNEL_PREFIX = "boardsesh:session:";
-const NOTIFICATION_CHANNEL_PREFIX = "boardsesh:notifications:";
-const COMMENT_CHANNEL_PREFIX = "boardsesh:comments:";
-const NEW_CLIMB_CHANNEL_PREFIX = "boardsesh:new-climbs:";
+const QUEUE_CHANNEL_PREFIX = 'boardsesh:queue:';
+const SESSION_CHANNEL_PREFIX = 'boardsesh:session:';
+const NOTIFICATION_CHANNEL_PREFIX = 'boardsesh:notifications:';
+const COMMENT_CHANNEL_PREFIX = 'boardsesh:comments:';
+const NEW_CLIMB_CHANNEL_PREFIX = 'boardsesh:new-climbs:';
 
 interface RedisMessage {
   instanceId: string;
@@ -62,7 +62,7 @@ export function createRedisPubSubAdapter(publisher: Redis, subscriber: Redis): R
     null;
 
   // Set up message handler
-  subscriber.on("message", (channel: string, message: string) => {
+  subscriber.on('message', (channel: string, message: string) => {
     try {
       const parsed = JSON.parse(message) as RedisMessage;
 
@@ -102,7 +102,7 @@ export function createRedisPubSubAdapter(publisher: Redis, subscriber: Redis): R
         }
       }
     } catch (error) {
-      console.error("[Redis] Failed to parse message:", error);
+      console.error('[Redis] Failed to parse message:', error);
     }
   });
 

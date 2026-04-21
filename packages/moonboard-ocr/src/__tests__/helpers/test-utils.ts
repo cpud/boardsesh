@@ -2,9 +2,9 @@
  * Shared test utilities for validating parser results.
  */
 
-import { expect } from "vite-plus/test";
-import type { ParseResult } from "../../types";
-import type { ExpectedClimbResult } from "../fixtures/expected-results";
+import { expect } from 'vite-plus/test';
+import type { ParseResult } from '../../types';
+import type { ExpectedClimbResult } from '../fixtures/expected-results';
 
 export interface ValidationOptions {
   /** Whether to validate OCR fields (name, setter, grades) */
@@ -36,7 +36,7 @@ export function validateParseResult(
         const keyWords = expected.name
           .split(/\s+/)
           .filter((w) => w.length > 2)
-          .map((w) => w.replace(/[^A-Za-z0-9]/g, "")); // Remove punctuation
+          .map((w) => w.replace(/[^A-Za-z0-9]/g, '')); // Remove punctuation
 
         for (const word of keyWords) {
           if (word.length > 0) {

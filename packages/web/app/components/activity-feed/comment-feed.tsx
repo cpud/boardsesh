@@ -1,43 +1,43 @@
-"use client";
+'use client';
 
-import React, { useMemo } from "react";
-import Box from "@mui/material/Box";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
-import Avatar from "@mui/material/Avatar";
-import MuiButton from "@mui/material/Button";
-import ErrorOutline from "@mui/icons-material/ErrorOutline";
-import ChatBubbleOutlineOutlined from "@mui/icons-material/ChatBubbleOutlineOutlined";
-import PersonOutlined from "@mui/icons-material/PersonOutlined";
-import Link from "next/link";
+import React, { useMemo } from 'react';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import Avatar from '@mui/material/Avatar';
+import MuiButton from '@mui/material/Button';
+import ErrorOutline from '@mui/icons-material/ErrorOutline';
+import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import PersonOutlined from '@mui/icons-material/PersonOutlined';
+import Link from 'next/link';
 
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { EmptyState } from "@/app/components/ui/empty-state";
-import { useWsAuthToken } from "@/app/hooks/use-ws-auth-token";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { EmptyState } from '@/app/components/ui/empty-state';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   GET_GLOBAL_COMMENT_FEED,
   type GetGlobalCommentFeedResponse,
-} from "@/app/lib/graphql/operations/comments-votes";
-import type { Comment as CommentType, CommentConnection } from "@boardsesh/shared-schema";
-import VoteButton from "@/app/components/social/vote-button";
-import FeedItemSkeleton from "./feed-item-skeleton";
-import { useInfiniteScroll } from "@/app/hooks/use-infinite-scroll";
+} from '@/app/lib/graphql/operations/comments-votes';
+import type { Comment as CommentType, CommentConnection } from '@boardsesh/shared-schema';
+import VoteButton from '@/app/components/social/vote-button';
+import FeedItemSkeleton from './feed-item-skeleton';
+import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
 
 dayjs.extend(relativeTime);
 
 const ENTITY_TYPE_LABELS: Record<string, string> = {
-  session: "a session",
-  climb: "a climb",
-  proposal: "a proposal",
-  tick: "an ascent",
-  comment: "a comment",
-  board: "a board",
-  gym: "a gym",
-  playlist_climb: "a playlist climb",
+  session: 'a session',
+  climb: 'a climb',
+  proposal: 'a proposal',
+  tick: 'an ascent',
+  comment: 'a comment',
+  board: 'a board',
+  gym: 'a gym',
+  playlist_climb: 'a playlist climb',
 };
 
 interface CommentFeedProps {
@@ -48,7 +48,7 @@ interface CommentFeedProps {
 export default function CommentFeed({ isAuthenticated, boardUuid }: CommentFeedProps) {
   const { token, isLoading: authLoading } = useWsAuthToken();
 
-  const queryKey = ["globalCommentFeed", boardUuid] as const;
+  const queryKey = ['globalCommentFeed', boardUuid] as const;
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } =
     useInfiniteQuery<CommentConnection, Error>({
@@ -91,7 +91,7 @@ export default function CommentFeed({ isAuthenticated, boardUuid }: CommentFeedP
     return (
       <Box
         data-testid="comment-feed"
-        sx={{ display: "flex", flexDirection: "column", gap: "12px" }}
+        sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
       >
         <FeedItemSkeleton />
         <FeedItemSkeleton />
@@ -101,7 +101,7 @@ export default function CommentFeed({ isAuthenticated, boardUuid }: CommentFeedP
   }
 
   return (
-    <Box data-testid="comment-feed" sx={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+    <Box data-testid="comment-feed" sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       {error && (
         <EmptyState
           icon={<ErrorOutline fontSize="inherit" />}
@@ -126,7 +126,7 @@ export default function CommentFeed({ isAuthenticated, boardUuid }: CommentFeedP
           <Box
             ref={sentinelRef}
             data-testid="comment-feed-sentinel"
-            sx={{ display: "flex", flexDirection: "column", gap: "12px", py: 2, minHeight: 20 }}
+            sx={{ display: 'flex', flexDirection: 'column', gap: '12px', py: 2, minHeight: 20 }}
           >
             {isFetchingNextPage && (
               <>
@@ -147,9 +147,9 @@ function CommentFeedCard({ comment }: { comment: CommentType }) {
 
   return (
     <Card data-testid="comment-feed-item" sx={{ borderRadius: 2 }}>
-      <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
+      <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
         {/* User header */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
           <Avatar
             src={comment.userAvatarUrl ?? undefined}
             sx={{ width: 32, height: 32 }}
@@ -164,12 +164,12 @@ function CommentFeedCard({ comment }: { comment: CommentType }) {
               fontWeight={600}
               component={Link}
               href={`/profile/${comment.userId}`}
-              sx={{ textDecoration: "none", color: "text.primary" }}
+              sx={{ textDecoration: 'none', color: 'text.primary' }}
             >
-              {comment.userDisplayName || "User"}
+              {comment.userDisplayName || 'User'}
             </Typography>
             <Typography variant="body2" component="span" color="text.secondary">
-              {" "}
+              {' '}
               commented on {entityLabel}
             </Typography>
           </Box>
@@ -182,9 +182,9 @@ function CommentFeedCard({ comment }: { comment: CommentType }) {
         {comment.body && (
           <Box
             sx={{
-              bgcolor: "action.hover",
-              borderLeft: "3px solid",
-              borderColor: "divider",
+              bgcolor: 'action.hover',
+              borderLeft: '3px solid',
+              borderColor: 'divider',
               borderRadius: 1,
               px: 1.5,
               py: 1,
@@ -198,7 +198,7 @@ function CommentFeedCard({ comment }: { comment: CommentType }) {
         )}
 
         {/* Vote + reply count */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
           <VoteButton
             entityType="comment"
             entityId={comment.uuid}
@@ -208,7 +208,7 @@ function CommentFeedCard({ comment }: { comment: CommentType }) {
           />
           {comment.replyCount > 0 && (
             <Typography variant="caption" color="text.secondary">
-              {comment.replyCount} {comment.replyCount === 1 ? "reply" : "replies"}
+              {comment.replyCount} {comment.replyCount === 1 ? 'reply' : 'replies'}
             </Typography>
           )}
         </Box>

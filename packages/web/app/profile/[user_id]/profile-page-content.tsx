@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import React, { useMemo } from "react";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
-import MuiCard from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import TimelineOutlined from "@mui/icons-material/TimelineOutlined";
-import FitnessCenterOutlined from "@mui/icons-material/FitnessCenterOutlined";
-import ShowChartOutlined from "@mui/icons-material/ShowChartOutlined";
-import { EmptyState } from "@/app/components/ui/empty-state";
-import { ProfileHeaderShareInjector } from "@/app/components/profile-header-bridge/profile-header-bridge-context";
-import { CssBarChart } from "@/app/components/charts/css-bar-chart";
-import { useGradeFormat } from "@/app/hooks/use-grade-format";
-import type { GetUserProfileStatsQueryResponse } from "@/app/lib/graphql/operations/ticks";
-import styles from "./profile-page.module.css";
-import { useProfileData } from "./hooks/use-profile-data";
-import { buildWeeklyBars } from "./utils/chart-data-builders";
-import UserCard from "./components/user-card";
-import ProfileNavCard from "./components/profile-nav-card";
-import type { UserProfile, LogbookEntry } from "./utils/profile-constants";
+import React, { useMemo } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import MuiCard from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import TimelineOutlined from '@mui/icons-material/TimelineOutlined';
+import FitnessCenterOutlined from '@mui/icons-material/FitnessCenterOutlined';
+import ShowChartOutlined from '@mui/icons-material/ShowChartOutlined';
+import { EmptyState } from '@/app/components/ui/empty-state';
+import { ProfileHeaderShareInjector } from '@/app/components/profile-header-bridge/profile-header-bridge-context';
+import { CssBarChart } from '@/app/components/charts/css-bar-chart';
+import { useGradeFormat } from '@/app/hooks/use-grade-format';
+import type { GetUserProfileStatsQueryResponse } from '@/app/lib/graphql/operations/ticks';
+import styles from './profile-page.module.css';
+import { useProfileData } from './hooks/use-profile-data';
+import { buildWeeklyBars } from './utils/chart-data-builders';
+import UserCard from './components/user-card';
+import ProfileNavCard from './components/profile-nav-card';
+import type { UserProfile, LogbookEntry } from './utils/profile-constants';
 
 interface ProfilePageContentProps {
   userId: string;
   initialProfile?: UserProfile | null;
-  initialProfileStats?: GetUserProfileStatsQueryResponse["userProfileStats"] | null;
+  initialProfileStats?: GetUserProfileStatsQueryResponse['userProfileStats'] | null;
   initialAllBoardsTicks?: Record<string, LogbookEntry[]>;
   initialLogbook?: LogbookEntry[];
   initialIsOwnProfile?: boolean;
@@ -59,8 +59,8 @@ export default function ProfilePageContent({
     if (allTicks.length === 0) return null;
     const now = new Date();
     const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
-    const fromDate = threeMonthsAgo.toISOString().split("T")[0];
-    const toDate = now.toISOString().split("T")[0];
+    const fromDate = threeMonthsAgo.toISOString().split('T')[0];
+    const toDate = now.toISOString().split('T')[0];
     return buildWeeklyBars(allTicks, fromDate, toDate, gradeFormat);
   }, [initialAllBoardsTicks, gradeFormat]);
 
@@ -112,7 +112,7 @@ export default function ProfilePageContent({
                 variant="body2"
                 component="span"
                 fontWeight={600}
-                sx={{ mb: 1, display: "block" }}
+                sx={{ mb: 1, display: 'block' }}
               >
                 Last 3 months
               </Typography>
@@ -128,13 +128,13 @@ export default function ProfilePageContent({
         )}
 
         {/* Navigation cards */}
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           <ProfileNavCard
             title="Statistics"
             subtitle={
               statisticsSummary.totalAscents > 0
                 ? `${statisticsSummary.totalAscents} problems sent`
-                : "Grades, progression, and more"
+                : 'Grades, progression, and more'
             }
             href={`/profile/${userId}/statistics`}
             icon={<ShowChartOutlined />}
@@ -147,7 +147,7 @@ export default function ProfilePageContent({
           />
           <ProfileNavCard
             title="Created Climbs"
-            subtitle={isOwnProfile ? "Climbs you created" : "Climbs they created"}
+            subtitle={isOwnProfile ? 'Climbs you created' : 'Climbs they created'}
             href={`/profile/${userId}/climbs`}
             icon={<FitnessCenterOutlined />}
           />

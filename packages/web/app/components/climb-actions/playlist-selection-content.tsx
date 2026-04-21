@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
-import React, { useCallback, useState } from "react";
-import MuiButton from "@mui/material/Button";
-import CircularProgress from "@mui/material/CircularProgress";
-import MuiTypography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import Box from "@mui/material/Box";
-import MuiList from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import Stack from "@mui/material/Stack";
-import AddOutlined from "@mui/icons-material/AddOutlined";
-import CheckOutlined from "@mui/icons-material/CheckOutlined";
-import { track } from "@vercel/analytics";
-import { usePlaylists } from "./use-playlists";
-import { useAuthModal } from "@/app/components/providers/auth-modal-provider";
-import type { Playlist } from "./playlists-batch-context";
-import type { BoardDetails } from "@/app/lib/types";
-import { themeTokens } from "@/app/theme/theme-config";
-import { useSnackbar } from "../providers/snackbar-provider";
-import { isValidHexColor } from "@/app/lib/color-utils";
+import React, { useCallback, useState } from 'react';
+import MuiButton from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import MuiTypography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import Box from '@mui/material/Box';
+import MuiList from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import Stack from '@mui/material/Stack';
+import AddOutlined from '@mui/icons-material/AddOutlined';
+import CheckOutlined from '@mui/icons-material/CheckOutlined';
+import { track } from '@vercel/analytics';
+import { usePlaylists } from './use-playlists';
+import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
+import type { Playlist } from './playlists-batch-context';
+import type { BoardDetails } from '@/app/lib/types';
+import { themeTokens } from '@/app/theme/theme-config';
+import { useSnackbar } from '../providers/snackbar-provider';
+import { isValidHexColor } from '@/app/lib/color-utils';
 
 interface PlaylistSelectionContentProps {
   climbUuid: string;
@@ -36,9 +36,9 @@ export default function PlaylistSelectionContent({
   const { openAuthModal } = useAuthModal();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [createFormValues, setCreateFormValues] = useState({
-    name: "",
-    description: "",
-    color: "",
+    name: '',
+    description: '',
+    color: '',
   });
   const [creatingPlaylist, setCreatingPlaylist] = useState(false);
 
@@ -62,16 +62,16 @@ export default function PlaylistSelectionContent({
       try {
         if (isInPlaylist) {
           await removeFromPlaylist(playlistId);
-          showMessage("Removed from playlist", "success");
-          track("Remove from Playlist", {
+          showMessage('Removed from playlist', 'success');
+          track('Remove from Playlist', {
             boardName: boardDetails.board_name,
             climbUuid,
             playlistId,
           });
         } else {
           await addToPlaylist(playlistId);
-          showMessage("Added to playlist", "success");
-          track("Add to Playlist", {
+          showMessage('Added to playlist', 'success');
+          track('Add to Playlist', {
             boardName: boardDetails.board_name,
             climbUuid,
             playlistId,
@@ -79,8 +79,8 @@ export default function PlaylistSelectionContent({
         }
       } catch {
         showMessage(
-          isInPlaylist ? "Failed to remove from playlist" : "Failed to add to playlist",
-          "error",
+          isInPlaylist ? 'Failed to remove from playlist' : 'Failed to add to playlist',
+          'error',
         );
       }
     },
@@ -90,15 +90,15 @@ export default function PlaylistSelectionContent({
   const handleCreatePlaylist = useCallback(async () => {
     try {
       if (!createFormValues.name.trim()) {
-        showMessage("Please enter a playlist name", "error");
+        showMessage('Please enter a playlist name', 'error');
         return;
       }
       if (createFormValues.name.length > 100) {
-        showMessage("Name too long", "error");
+        showMessage('Name too long', 'error');
         return;
       }
       if (createFormValues.description.length > 500) {
-        showMessage("Description too long", "error");
+        showMessage('Description too long', 'error');
         return;
       }
 
@@ -117,17 +117,17 @@ export default function PlaylistSelectionContent({
 
       await addToPlaylist(newPlaylist.uuid);
 
-      showMessage(`Created playlist "${createFormValues.name}"`, "success");
-      track("Create Playlist", {
+      showMessage(`Created playlist "${createFormValues.name}"`, 'success');
+      track('Create Playlist', {
         boardName: boardDetails.board_name,
         playlistName: createFormValues.name,
       });
 
-      setCreateFormValues({ name: "", description: "", color: "" });
+      setCreateFormValues({ name: '', description: '', color: '' });
       setShowCreateForm(false);
       onDone?.();
     } catch {
-      showMessage("Failed to create playlist", "error");
+      showMessage('Failed to create playlist', 'error');
     } finally {
       setCreatingPlaylist(false);
     }
@@ -142,7 +142,7 @@ export default function PlaylistSelectionContent({
 
   const handlePlaylistItemKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLLIElement>, playlistId: string, isInPlaylist: boolean) => {
-      if (event.key === "Enter" || event.key === " ") {
+      if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
         void handleTogglePlaylist(playlistId, isInPlaylist);
       }
@@ -169,7 +169,7 @@ export default function PlaylistSelectionContent({
       </Box>
 
       {!isAuthenticated ? (
-        <Stack spacing={1} sx={{ width: "100%", textAlign: "center", py: themeTokens.spacing[1] }}>
+        <Stack spacing={1} sx={{ width: '100%', textAlign: 'center', py: themeTokens.spacing[1] }}>
           <MuiTypography
             component="span"
             color="text.secondary"
@@ -181,8 +181,8 @@ export default function PlaylistSelectionContent({
             variant="contained"
             onClick={() =>
               openAuthModal({
-                title: "Sign in to create playlists",
-                description: "Sign in to organize your climbs into custom playlists.",
+                title: 'Sign in to create playlists',
+                description: 'Sign in to organize your climbs into custom playlists.',
               })
             }
             fullWidth
@@ -192,7 +192,7 @@ export default function PlaylistSelectionContent({
           </MuiButton>
         </Stack>
       ) : playlists.length === 0 && !showCreateForm ? (
-        <Stack spacing={1} sx={{ width: "100%", textAlign: "center", py: themeTokens.spacing[1] }}>
+        <Stack spacing={1} sx={{ width: '100%', textAlign: 'center', py: themeTokens.spacing[1] }}>
           <MuiTypography
             component="span"
             color="text.secondary"
@@ -232,24 +232,24 @@ export default function PlaylistSelectionContent({
                         role="button"
                         tabIndex={0}
                         aria-pressed={isInPlaylist}
-                        aria-label={`${isInPlaylist ? "Remove from" : "Add to"} playlist ${playlist.name}`}
+                        aria-label={`${isInPlaylist ? 'Remove from' : 'Add to'} playlist ${playlist.name}`}
                         sx={{
                           padding: `${themeTokens.spacing[2]}px ${themeTokens.spacing[2]}px`,
-                          cursor: "pointer",
+                          cursor: 'pointer',
                           borderLeft: validColor
                             ? `3px solid ${validColor}`
-                            : "3px solid transparent",
+                            : '3px solid transparent',
                           borderRadius: `${themeTokens.borderRadius.sm}px`,
                           mb: 0.5,
                           backgroundColor: isInPlaylist
-                            ? "var(--semantic-selected-light)"
+                            ? 'var(--semantic-selected-light)'
                             : undefined,
                         }}
                       >
                         <Stack
                           direction="row"
                           spacing={1}
-                          sx={{ width: "100%", justifyContent: "space-between" }}
+                          sx={{ width: '100%', justifyContent: 'space-between' }}
                         >
                           <Stack spacing={0}>
                             <MuiTypography
@@ -264,7 +264,7 @@ export default function PlaylistSelectionContent({
                               color="text.secondary"
                               sx={{ fontSize: themeTokens.typography.fontSize.sm }}
                             >
-                              {playlist.climbCount} {playlist.climbCount === 1 ? "climb" : "climbs"}
+                              {playlist.climbCount} {playlist.climbCount === 1 ? 'climb' : 'climbs'}
                             </MuiTypography>
                           </Stack>
                           {isInPlaylist && (
@@ -293,7 +293,7 @@ export default function PlaylistSelectionContent({
 
           {showCreateForm && (
             <div>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Box>
                   <MuiTypography variant="body2" fontWeight={600} sx={{ mb: 0.5, fontSize: 12 }}>
                     Playlist Name
@@ -333,7 +333,7 @@ export default function PlaylistSelectionContent({
                   </MuiTypography>
                   <TextField
                     type="color"
-                    value={createFormValues.color || "#000000"}
+                    value={createFormValues.color || '#000000'}
                     onChange={(e) =>
                       setCreateFormValues((prev) => ({ ...prev, color: e.target.value }))
                     }
@@ -345,14 +345,14 @@ export default function PlaylistSelectionContent({
               <Stack
                 direction="row"
                 spacing={1}
-                sx={{ width: "100%", justifyContent: "flex-end", mt: themeTokens.spacing[2] }}
+                sx={{ width: '100%', justifyContent: 'flex-end', mt: themeTokens.spacing[2] }}
               >
                 <MuiButton
                   variant="outlined"
                   size="small"
                   onClick={() => {
                     setShowCreateForm(false);
-                    setCreateFormValues({ name: "", description: "", color: "" });
+                    setCreateFormValues({ name: '', description: '', color: '' });
                   }}
                 >
                   Cancel

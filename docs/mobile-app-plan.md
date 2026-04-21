@@ -278,13 +278,13 @@ async function syncClimbDatabase(boardName: BoardName) {
   const db = await getLocalDatabase(boardName);
   await db.transaction(async (tx) => {
     for (const climb of climbs) {
-      await tx.run("INSERT OR REPLACE INTO board_climbs ...", climb);
+      await tx.run('INSERT OR REPLACE INTO board_climbs ...', climb);
     }
     for (const stat of stats) {
-      await tx.run("INSERT OR REPLACE INTO board_climb_stats ...", stat);
+      await tx.run('INSERT OR REPLACE INTO board_climb_stats ...', stat);
     }
     for (const uuid of deletedUuids) {
-      await tx.run("DELETE FROM board_climbs WHERE uuid = ?", [uuid]);
+      await tx.run('DELETE FROM board_climbs WHERE uuid = ?', [uuid]);
     }
   });
 
@@ -455,43 +455,43 @@ boardsesh/
 ### capacitor.config.ts
 
 ```typescript
-import type { CapacitorConfig } from "@capacitor/cli";
+import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: "com.boardsesh.app",
-  appName: "Boardsesh",
+  appId: 'com.boardsesh.app',
+  appName: 'Boardsesh',
   // Hosted mode: load from production URL
   server: {
-    url: "https://boardsesh.com",
+    url: 'https://boardsesh.com',
     // Allow navigation within the app's domain
-    allowNavigation: ["boardsesh.com", "*.boardsesh.com"],
+    allowNavigation: ['boardsesh.com', '*.boardsesh.com'],
   },
   ios: {
     // Use WKWebView (default, supports modern JS)
-    contentInset: "automatic",
-    backgroundColor: "#121212", // Match dark theme
-    preferredContentMode: "mobile",
+    contentInset: 'automatic',
+    backgroundColor: '#121212', // Match dark theme
+    preferredContentMode: 'mobile',
   },
   android: {
     // Allow mixed content for dev
     allowMixedContent: true,
-    backgroundColor: "#121212",
+    backgroundColor: '#121212',
   },
   plugins: {
     StatusBar: {
-      style: "dark",
-      backgroundColor: "#121212",
+      style: 'dark',
+      backgroundColor: '#121212',
     },
     Keyboard: {
-      resize: "body",
+      resize: 'body',
       resizeOnFullScreen: true,
     },
     SplashScreen: {
       launchAutoHide: true,
-      androidScaleType: "CENTER_CROP",
+      androidScaleType: 'CENTER_CROP',
       splashFullScreen: true,
       splashImmersive: true,
-      backgroundColor: "#121212",
+      backgroundColor: '#121212',
     },
   },
 };
@@ -525,9 +525,9 @@ The BLE abstraction layer in `packages/web/app/lib/ble/` should:
 // packages/web/app/lib/ble/capacitor-adapter.ts
 // Access the plugin via the injected bridge, not via npm import
 async function getBleClient() {
-  if (!isCapacitor()) throw new Error("Not in Capacitor");
+  if (!isCapacitor()) throw new Error('Not in Capacitor');
   // The plugin JS is injected by the native shell
-  const { BleClient } = await import("@capacitor-community/bluetooth-le");
+  const { BleClient } = await import('@capacitor-community/bluetooth-le');
   return BleClient;
 }
 ```
@@ -559,12 +559,12 @@ The web app needs minimal changes to work well inside the Capacitor shell. All c
 ```typescript
 // packages/web/app/lib/capacitor.ts
 export const isCapacitor = (): boolean =>
-  typeof window !== "undefined" && window.Capacitor !== undefined;
+  typeof window !== 'undefined' && window.Capacitor !== undefined;
 
 export const isNativeApp = (): boolean => isCapacitor() && window.Capacitor?.isNativePlatform();
 
-export const getPlatform = (): "ios" | "android" | "web" =>
-  isCapacitor() ? (window.Capacitor?.getPlatform() as "ios" | "android") : "web";
+export const getPlatform = (): 'ios' | 'android' | 'web' =>
+  isCapacitor() ? (window.Capacitor?.getPlatform() as 'ios' | 'android') : 'web';
 ```
 
 ### 2. BLE Abstraction Layer
@@ -616,10 +616,10 @@ The app layout's top app bar and bottom navigation need to respect these insets.
 Configure Capacitor's App plugin to handle deep links:
 
 ```typescript
-import { App } from "@capacitor/app";
+import { App } from '@capacitor/app';
 
 // Listen for deep links (boardsesh://climb/xxx, universal links)
-App.addListener("appUrlOpen", ({ url }) => {
+App.addListener('appUrlOpen', ({ url }) => {
   const path = new URL(url).pathname;
   router.push(path);
 });
@@ -957,11 +957,11 @@ export interface BleConnection {
 
 ```typescript
 // packages/web/app/lib/ble/capacitor-adapter.ts
-import { BleClient, numberToUUID } from "@capacitor-community/bluetooth-le";
+import { BleClient, numberToUUID } from '@capacitor-community/bluetooth-le';
 
-const AURORA_SERVICE_UUID = "4488b571-7806-4df6-bcff-a2897e4953ff";
-const UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-const UART_WRITE_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+const AURORA_SERVICE_UUID = '4488b571-7806-4df6-bcff-a2897e4953ff';
+const UART_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+const UART_WRITE_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
 
 export class CapacitorBleAdapter implements BluetoothAdapter {
   private deviceId: string | null = null;
@@ -1014,7 +1014,7 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
   }
 
   async write(data: Uint8Array): Promise<void> {
-    if (!this.deviceId) throw new Error("Not connected");
+    if (!this.deviceId) throw new Error('Not connected');
 
     // Adapter owns chunking — callers pass the full packet from getBluetoothPacket().
     // Chunk size based on negotiated MTU (default 20 bytes).
@@ -1053,7 +1053,7 @@ For day-to-day development, the Capacitor app points at the local dev server ins
 const config: CapacitorConfig = {
   ...baseConfig,
   server: {
-    url: "http://LOCAL_IP:3000", // Use machine's LAN IP, not localhost
+    url: 'http://LOCAL_IP:3000', // Use machine's LAN IP, not localhost
     cleartext: true, // Allow HTTP for local dev
   },
 };
@@ -1133,7 +1133,7 @@ name: Mobile Build
 on:
   push:
     paths:
-      - "packages/mobile/**"
+      - 'packages/mobile/**'
     branches: [main]
 
 jobs:

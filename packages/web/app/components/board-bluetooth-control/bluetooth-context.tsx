@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { track } from "@vercel/analytics";
-import { useBoardBluetooth } from "./use-board-bluetooth";
-import { useCurrentClimb } from "../graphql-queue";
-import type { BoardDetails } from "@/app/lib/types";
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { track } from '@vercel/analytics';
+import { useBoardBluetooth } from './use-board-bluetooth';
+import { useCurrentClimb } from '../graphql-queue';
+import type { BoardDetails } from '@/app/lib/types';
 import {
   isCapacitor,
   isCapacitorWebView,
   waitForCapacitor,
   CAPACITOR_BRIDGE_TIMEOUT_MS,
-} from "@/app/lib/ble/capacitor-utils";
-import { registerBluetoothConnection } from "./bluetooth-status-store";
+} from '@/app/lib/ble/capacitor-utils';
+import { registerBluetoothConnection } from './bluetooth-status-store';
 
 interface BluetoothContextValue {
   isConnected: boolean;
@@ -69,20 +69,20 @@ function BluetoothAutoSender({
         if (controller.signal.aborted) return;
 
         if (result === true) {
-          track("Climb Sent to Board Success", {
+          track('Climb Sent to Board Success', {
             climbUuid: currentClimbQueueItem.climb?.uuid,
             boardLayout: layoutName,
           });
         } else if (result === false) {
-          track("Climb Sent to Board Failure", {
+          track('Climb Sent to Board Failure', {
             climbUuid: currentClimbQueueItem.climb?.uuid,
             boardLayout: layoutName,
           });
         }
       } catch (error) {
         if (controller.signal.aborted) return;
-        console.error("Error sending climb to board:", error);
-        track("Climb Sent to Board Failure", {
+        console.error('Error sending climb to board:', error);
+        track('Climb Sent to Board Failure', {
           climbUuid: currentClimbQueueItem.climb?.uuid,
           boardLayout: layoutName,
         });
@@ -118,7 +118,7 @@ export function BluetoothProvider({
     if (isCapacitor()) {
       // Bridge already available — confirmed native environment
       setIsBluetoothSupported(true);
-    } else if (typeof navigator !== "undefined" && !!navigator.bluetooth) {
+    } else if (typeof navigator !== 'undefined' && !!navigator.bluetooth) {
       // Web Bluetooth API present (Chrome, Edge, etc.)
       setIsBluetoothSupported(true);
     } else if (isCapacitorWebView()) {
@@ -136,9 +136,9 @@ export function BluetoothProvider({
     }
 
     if (
-      typeof navigator !== "undefined" &&
+      typeof navigator !== 'undefined' &&
       /iPhone|iPad|iPod/i.test(
-        navigator.userAgent || (navigator as { vendor?: string }).vendor || "",
+        navigator.userAgent || (navigator as { vendor?: string }).vendor || '',
       )
     ) {
       setIsIOS(true);
@@ -174,7 +174,7 @@ export function BluetoothProvider({
       {isConnected && (
         <BluetoothAutoSender
           sendFramesToBoard={sendFramesToBoard}
-          layoutName={boardDetails.layout_name ?? ""}
+          layoutName={boardDetails.layout_name ?? ''}
         />
       )}
       {children}
@@ -185,7 +185,7 @@ export function BluetoothProvider({
 export function useBluetoothContext() {
   const context = useContext(BluetoothContext);
   if (!context) {
-    throw new Error("useBluetoothContext must be used within a BluetoothProvider");
+    throw new Error('useBluetoothContext must be used within a BluetoothProvider');
   }
   return context;
 }

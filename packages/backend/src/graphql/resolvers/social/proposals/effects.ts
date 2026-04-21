@@ -1,6 +1,6 @@
-import { eq, and, sql, desc } from "drizzle-orm";
-import { db } from "../../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
+import { eq, and, sql, desc } from 'drizzle-orm';
+import { db } from '../../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
 
 /**
  * Apply the effect of an approved proposal to the climb community/classic status.
@@ -8,7 +8,7 @@ import * as dbSchema from "@boardsesh/db/schema";
 export async function applyProposalEffect(
   proposal: typeof dbSchema.climbProposals.$inferSelect,
 ): Promise<void> {
-  if (proposal.type === "grade" || proposal.type === "benchmark") {
+  if (proposal.type === 'grade' || proposal.type === 'benchmark') {
     // UPSERT climb_community_status
     const [existing] = await db
       .select()
@@ -27,10 +27,10 @@ export async function applyProposalEffect(
       lastProposalId: proposal.id,
     };
 
-    if (proposal.type === "grade") {
+    if (proposal.type === 'grade') {
       updates.communityGrade = proposal.proposedValue;
-    } else if (proposal.type === "benchmark") {
-      updates.isBenchmark = proposal.proposedValue === "true";
+    } else if (proposal.type === 'benchmark') {
+      updates.isBenchmark = proposal.proposedValue === 'true';
     }
 
     if (existing) {
@@ -43,12 +43,12 @@ export async function applyProposalEffect(
         climbUuid: proposal.climbUuid,
         boardType: proposal.boardType,
         angle: proposal.angle!,
-        communityGrade: proposal.type === "grade" ? proposal.proposedValue : null,
-        isBenchmark: proposal.type === "benchmark" ? proposal.proposedValue === "true" : false,
+        communityGrade: proposal.type === 'grade' ? proposal.proposedValue : null,
+        isBenchmark: proposal.type === 'benchmark' ? proposal.proposedValue === 'true' : false,
         lastProposalId: proposal.id,
       });
     }
-  } else if (proposal.type === "classic") {
+  } else if (proposal.type === 'classic') {
     // UPSERT climb_classic_status
     const [existing] = await db
       .select()
@@ -65,7 +65,7 @@ export async function applyProposalEffect(
       await db
         .update(dbSchema.climbClassicStatus)
         .set({
-          isClassic: proposal.proposedValue === "true",
+          isClassic: proposal.proposedValue === 'true',
           updatedAt: new Date(),
           lastProposalId: proposal.id,
         })
@@ -74,7 +74,7 @@ export async function applyProposalEffect(
       await db.insert(dbSchema.climbClassicStatus).values({
         climbUuid: proposal.climbUuid,
         boardType: proposal.boardType,
-        isClassic: proposal.proposedValue === "true",
+        isClassic: proposal.proposedValue === 'true',
         lastProposalId: proposal.id,
       });
     }
@@ -89,13 +89,13 @@ export async function applyProposalEffect(
 export async function revertProposalEffect(
   proposal: typeof dbSchema.climbProposals.$inferSelect,
 ): Promise<void> {
-  if (proposal.type === "grade" || proposal.type === "benchmark") {
+  if (proposal.type === 'grade' || proposal.type === 'benchmark') {
     // Find the most recent other approved proposal of the same type for this climb+angle
     const conditions = [
       eq(dbSchema.climbProposals.climbUuid, proposal.climbUuid),
       eq(dbSchema.climbProposals.boardType, proposal.boardType),
       eq(dbSchema.climbProposals.type, proposal.type),
-      eq(dbSchema.climbProposals.status, "approved"),
+      eq(dbSchema.climbProposals.status, 'approved'),
       sql`${dbSchema.climbProposals.id} != ${proposal.id}`,
     ];
     if (proposal.angle != null) {
@@ -127,10 +127,10 @@ export async function revertProposalEffect(
         lastProposalId: previousProposal?.id || null,
       };
 
-      if (proposal.type === "grade") {
+      if (proposal.type === 'grade') {
         updates.communityGrade = previousProposal?.proposedValue || null;
-      } else if (proposal.type === "benchmark") {
-        updates.isBenchmark = previousProposal ? previousProposal.proposedValue === "true" : false;
+      } else if (proposal.type === 'benchmark') {
+        updates.isBenchmark = previousProposal ? previousProposal.proposedValue === 'true' : false;
       }
 
       await db
@@ -138,7 +138,7 @@ export async function revertProposalEffect(
         .set(updates)
         .where(eq(dbSchema.climbCommunityStatus.id, existing.id));
     }
-  } else if (proposal.type === "classic") {
+  } else if (proposal.type === 'classic') {
     // Find the most recent other approved classic proposal for this climb
     const [previousProposal] = await db
       .select()
@@ -147,8 +147,8 @@ export async function revertProposalEffect(
         and(
           eq(dbSchema.climbProposals.climbUuid, proposal.climbUuid),
           eq(dbSchema.climbProposals.boardType, proposal.boardType),
-          eq(dbSchema.climbProposals.type, "classic"),
-          eq(dbSchema.climbProposals.status, "approved"),
+          eq(dbSchema.climbProposals.type, 'classic'),
+          eq(dbSchema.climbProposals.status, 'approved'),
           sql`${dbSchema.climbProposals.id} != ${proposal.id}`,
         ),
       )
@@ -168,7 +168,7 @@ export async function revertProposalEffect(
 
     if (existing) {
       const classicUpdates: Record<string, unknown> = {
-        isClassic: previousProposal ? previousProposal.proposedValue === "true" : false,
+        isClassic: previousProposal ? previousProposal.proposedValue === 'true' : false,
         updatedAt: new Date(),
         lastProposalId: previousProposal?.id || null,
       };

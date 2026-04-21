@@ -1,10 +1,10 @@
-import React, { useMemo } from "react";
-import { getImageUrl } from "./util";
-import { BoardDetails } from "@/app/lib/types";
-import BoardLitupHolds from "./board-litup-holds";
-import { LitUpHoldsMap } from "./types";
-import styles from "./board-renderer.module.css";
-import MoonBoardRenderer from "../moonboard-renderer/moonboard-renderer";
+import React, { useMemo } from 'react';
+import { getImageUrl } from './util';
+import { BoardDetails } from '@/app/lib/types';
+import BoardLitupHolds from './board-litup-holds';
+import { LitUpHoldsMap } from './types';
+import styles from './board-renderer.module.css';
+import MoonBoardRenderer from '../moonboard-renderer/moonboard-renderer';
 
 export type BoardProps = {
   boardDetails: BoardDetails;
@@ -28,7 +28,7 @@ const BoardRenderer = React.memo(
     mirrored,
     onHoldClick,
   }: BoardProps) => {
-    const isMoonBoard = boardDetails.board_name === "moonboard" && !!boardDetails.layoutFolder;
+    const isMoonBoard = boardDetails.board_name === 'moonboard' && !!boardDetails.layoutFolder;
 
     // Delegate to MoonBoardRenderer for Moonboard (uses grid-based rendering)
     if (isMoonBoard) {
@@ -54,7 +54,7 @@ const BoardRenderer = React.memo(
 
     // Only compute maxHeight when not using fillHeight - memoized to prevent recreation
     const svgStyle = useMemo(
-      () => (fillHeight ? undefined : { maxHeight: maxHeight ?? (thumbnail ? "10vh" : "55vh") }),
+      () => (fillHeight ? undefined : { maxHeight: maxHeight ?? (thumbnail ? '10vh' : '55vh') }),
       [fillHeight, maxHeight, thumbnail],
     );
 
@@ -134,6 +134,6 @@ const BoardRenderer = React.memo(
   },
 );
 
-BoardRenderer.displayName = "BoardRenderer";
+BoardRenderer.displayName = 'BoardRenderer';
 
 export default BoardRenderer;

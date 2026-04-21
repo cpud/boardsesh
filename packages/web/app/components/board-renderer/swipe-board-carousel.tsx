@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef, useCallback, useState } from "react";
-import BoardImageLayers from "./board-image-layers";
-import BoardCanvasRenderer from "./board-canvas-renderer";
+import React, { useEffect, useRef, useCallback, useState } from 'react';
+import BoardImageLayers from './board-image-layers';
+import BoardCanvasRenderer from './board-canvas-renderer';
 import {
   useCardSwipeNavigation,
   EXIT_DURATION,
   SNAP_BACK_DURATION,
   ENTER_ANIMATION_DURATION,
-} from "@/app/hooks/use-card-swipe-navigation";
-import type { BoardDetails } from "@/app/lib/types";
-import { useCanvasRendererReady } from "@/app/lib/board-render-worker/worker-manager";
-import { useDoubleTap } from "@/app/lib/hooks/use-double-tap";
-import ZoomableBoard from "./zoomable-board";
-import ZoomHint from "./zoom-hint";
-import styles from "./swipe-board-carousel.module.css";
+} from '@/app/hooks/use-card-swipe-navigation';
+import type { BoardDetails } from '@/app/lib/types';
+import { useCanvasRendererReady } from '@/app/lib/board-render-worker/worker-manager';
+import { useDoubleTap } from '@/app/lib/hooks/use-double-tap';
+import ZoomableBoard from './zoomable-board';
+import ZoomHint from './zoom-hint';
+import styles from './swipe-board-carousel.module.css';
 
 interface ClimbBoardData {
   frames: string;
@@ -95,15 +95,15 @@ const SwipeBoardCarousel = React.memo<SwipeBoardCarouselProps>(
     }, [enterDirection, clearEnterAnimation]);
 
     const getSwipeTransition = () => {
-      if (enterDirection) return "none";
+      if (enterDirection) return 'none';
       if (isAnimating) return `transform ${EXIT_DURATION}ms ease-out`;
       if (swipeOffset === 0) return `transform ${SNAP_BACK_DURATION}ms ease`;
-      return "none";
+      return 'none';
     };
 
     const showPeek = swipeOffset !== 0 || isAnimating;
     const peekIsNext =
-      animationDirection === "left" || (animationDirection === null && swipeOffset < 0);
+      animationDirection === 'left' || (animationDirection === null && swipeOffset < 0);
     const peekClimb = peekIsNext ? nextClimb : previousClimb;
 
     const getPeekTransform = () => {
@@ -139,8 +139,8 @@ const SwipeBoardCarousel = React.memo<SwipeBoardCarouselProps>(
           e.preventDefault();
         }
       };
-      el.addEventListener("touchmove", handler, { passive: false });
-      return () => el.removeEventListener("touchmove", handler);
+      el.addEventListener('touchmove', handler, { passive: false });
+      return () => el.removeEventListener('touchmove', handler);
     }, [isHorizontalSwipeRef]);
 
     // Merge swipe ref, double-tap ref, and carousel ref into one callback ref
@@ -164,7 +164,7 @@ const SwipeBoardCarousel = React.memo<SwipeBoardCarouselProps>(
             frames={climb.frames}
             mirrored={!!climb.mirrored}
             contain
-            style={{ width: "100%", height: "100%" }}
+            style={{ width: '100%', height: '100%' }}
           />
         );
       }
@@ -174,14 +174,14 @@ const SwipeBoardCarousel = React.memo<SwipeBoardCarouselProps>(
           frames={climb.frames}
           mirrored={!!climb.mirrored}
           contain
-          style={{ width: "100%", height: "100%" }}
+          style={{ width: '100%', height: '100%' }}
         />
       );
     };
 
     return (
       <div
-        className={`${styles.carouselContainer} ${className ?? ""}`}
+        className={`${styles.carouselContainer} ${className ?? ''}`}
         style={
           fillContainer
             ? undefined
@@ -219,6 +219,6 @@ const SwipeBoardCarousel = React.memo<SwipeBoardCarouselProps>(
     );
   },
 );
-SwipeBoardCarousel.displayName = "SwipeBoardCarousel";
+SwipeBoardCarousel.displayName = 'SwipeBoardCarousel';
 
 export default SwipeBoardCarousel;

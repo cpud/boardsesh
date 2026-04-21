@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import React from "react";
-import { PropsWithChildren } from "react";
-import Badge from "@mui/material/Badge";
-import MuiButton from "@mui/material/Button";
-import Box from "@mui/material/Box";
-import { DeleteOutlined } from "@mui/icons-material";
-import { track } from "@vercel/analytics";
-import { BoardDetails } from "@/app/lib/types";
+import React from 'react';
+import { PropsWithChildren } from 'react';
+import Badge from '@mui/material/Badge';
+import MuiButton from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import { DeleteOutlined } from '@mui/icons-material';
+import { track } from '@vercel/analytics';
+import { BoardDetails } from '@/app/lib/types';
 
-import QueueList from "@/app/components/queue-control/queue-list";
-import { useQueueActions, useQueueList } from "@/app/components/graphql-queue";
-import { ConfirmPopover } from "@/app/components/ui/confirm-popover";
-import styles from "./layout-client.module.css";
+import QueueList from '@/app/components/queue-control/queue-list';
+import { useQueueActions, useQueueList } from '@/app/components/graphql-queue';
+import { ConfirmPopover } from '@/app/components/ui/confirm-popover';
+import styles from './layout-client.module.css';
 
 interface PlayLayoutClientProps {
   boardDetails: BoardDetails;
@@ -24,8 +24,8 @@ const QueueSidebar: React.FC<{ boardDetails: BoardDetails }> = ({ boardDetails }
 
   const handleClearQueue = () => {
     setQueue([]);
-    track("Queue Cleared", {
-      boardLayout: boardDetails.layout_name || "",
+    track('Queue Cleared', {
+      boardLayout: boardDetails.layout_name || '',
       itemsCleared: queue.length,
     });
   };
@@ -39,7 +39,7 @@ const QueueSidebar: React.FC<{ boardDetails: BoardDetails }> = ({ boardDetails }
             max={99}
             invisible={queue.length === 0}
             color="primary"
-            sx={{ "& .MuiBadge-badge": { right: -8, top: 0 } }}
+            sx={{ '& .MuiBadge-badge': { right: -8, top: 0 } }}
           >
             Queue
           </Badge>
@@ -56,7 +56,7 @@ const QueueSidebar: React.FC<{ boardDetails: BoardDetails }> = ({ boardDetails }
               variant="text"
               startIcon={<DeleteOutlined />}
               size="small"
-              sx={{ color: "var(--neutral-400)" }}
+              sx={{ color: 'var(--neutral-400)' }}
             >
               Clear
             </MuiButton>

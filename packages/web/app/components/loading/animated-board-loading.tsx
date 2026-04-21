@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useMemo } from "react";
-import Typography from "@mui/material/Typography";
-import BoardRenderer from "../board-renderer/board-renderer";
-import { BoardDetails } from "@/app/lib/types";
-import { LitUpHoldsMap } from "../board-renderer/types";
-import { themeTokens } from "@/app/theme/theme-config";
+import React, { useState, useEffect, useMemo } from 'react';
+import Typography from '@mui/material/Typography';
+import BoardRenderer from '../board-renderer/board-renderer';
+import { BoardDetails } from '@/app/lib/types';
+import { LitUpHoldsMap } from '../board-renderer/types';
+import { themeTokens } from '@/app/theme/theme-config';
 
 const loadingMessages = [
-  "Setting up your board...",
-  "Configuring climb routes...",
-  "Preparing the wall...",
-  "Loading hold sets...",
-  "Almost ready to climb...",
-  "Warming up the LEDs...",
-  "Syncing board configuration...",
-  "Calibrating difficulty grades...",
-  "Getting your climbing groove on...",
-  "Checking route conditions...",
+  'Setting up your board...',
+  'Configuring climb routes...',
+  'Preparing the wall...',
+  'Loading hold sets...',
+  'Almost ready to climb...',
+  'Warming up the LEDs...',
+  'Syncing board configuration...',
+  'Calibrating difficulty grades...',
+  'Getting your climbing groove on...',
+  'Checking route conditions...',
 ];
 
 interface AnimatedBoardLoadingProps {
@@ -73,7 +73,7 @@ const AnimatedBoardLoading: React.FC<AnimatedBoardLoadingProps> = ({
         const colorIndex = Math.floor(normalizedDiff * 3);
 
         holdsMap[hold.id] = {
-          state: "HAND",
+          state: 'HAND',
           color: colors[colorIndex] || colors[0],
           displayColor: colors[colorIndex] || colors[0],
         };
@@ -116,9 +116,9 @@ const AnimatedBoardLoading: React.FC<AnimatedBoardLoadingProps> = ({
         style={{
           width: size,
           height: size,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
         <BoardRenderer
@@ -135,28 +135,28 @@ const AnimatedBoardLoading: React.FC<AnimatedBoardLoadingProps> = ({
   return (
     <div
       style={{
-        position: "fixed",
+        position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.85)",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
         zIndex: 9999,
-        gap: "32px",
+        gap: '32px',
       }}
     >
       {boardDetails ? (
         <div
           style={{
-            width: "250px",
-            height: "250px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            width: '250px',
+            height: '250px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           <BoardRenderer
@@ -170,12 +170,12 @@ const AnimatedBoardLoading: React.FC<AnimatedBoardLoadingProps> = ({
         // Show a spinning circle instead of dots when no board details
         <div
           style={{
-            width: "80px",
-            height: "80px",
-            border: "4px solid rgba(6, 182, 212, 0.2)", // primary color at 20% opacity
+            width: '80px',
+            height: '80px',
+            border: '4px solid rgba(6, 182, 212, 0.2)', // primary color at 20% opacity
             borderTop: `4px solid ${themeTokens.colors.primary}`,
-            borderRadius: "50%",
-            animation: "spin 1s linear infinite",
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
           }}
         />
       )}
@@ -184,11 +184,11 @@ const AnimatedBoardLoading: React.FC<AnimatedBoardLoadingProps> = ({
         variant="body2"
         component="span"
         style={{
-          color: "white",
+          color: 'white',
           fontSize: themeTokens.typography.fontSize.lg,
-          textAlign: "center",
+          textAlign: 'center',
           opacity: 0.95,
-          maxWidth: "350px",
+          maxWidth: '350px',
           lineHeight: themeTokens.typography.lineHeight.normal,
           fontWeight: themeTokens.typography.fontWeight.medium,
         }}

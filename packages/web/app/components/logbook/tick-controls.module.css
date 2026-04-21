@@ -265,16 +265,16 @@
 }
 
 @media (hover: hover) {
-  :global(html[data-theme="dark"]) .pickerItem:hover {
+  :global(html[data-theme='dark']) .pickerItem:hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
 }
 
-:global(html[data-theme="dark"]) .pickerItem:focus-visible {
+:global(html[data-theme='dark']) .pickerItem:focus-visible {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-:global(html[data-theme="dark"]) .pickerItemSelected {
+:global(html[data-theme='dark']) .pickerItemSelected {
   background-color: rgba(255, 255, 255, 0.15);
 }
 

@@ -1,11 +1,11 @@
-import type { BoardName } from "@/app/lib/types";
+import type { BoardName } from '@/app/lib/types';
 import {
   isCapacitor,
   isCapacitorWebView,
   waitForCapacitor,
   CAPACITOR_BRIDGE_TIMEOUT_MS,
-} from "./capacitor-utils";
-import type { BluetoothAdapter } from "./types";
+} from './capacitor-utils';
+import type { BluetoothAdapter } from './types';
 
 // Cache the detected adapter class after the first call so subsequent
 // connection attempts skip platform detection and bridge polling entirely.
@@ -28,12 +28,12 @@ export async function createBluetoothAdapter(boardName: BoardName): Promise<Blue
   }
 
   if (isCapacitor()) {
-    const { CapacitorBleAdapter } = await import("./capacitor-adapter");
+    const { CapacitorBleAdapter } = await import('./capacitor-adapter');
     cachedFactory = async (nextBoardName) => new CapacitorBleAdapter(nextBoardName);
     return new CapacitorBleAdapter(boardName);
   }
 
-  const { WebBluetoothAdapter } = await import("./web-adapter");
+  const { WebBluetoothAdapter } = await import('./web-adapter');
   cachedFactory = async (nextBoardName) => new WebBluetoothAdapter(nextBoardName);
   return new WebBluetoothAdapter(boardName);
 }

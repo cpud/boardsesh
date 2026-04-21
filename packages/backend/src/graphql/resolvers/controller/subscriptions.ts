@@ -8,18 +8,18 @@ import type {
   ControllerQueueItem,
   ControllerQueueSync,
   ClimbQueueItem,
-} from "@boardsesh/shared-schema";
-import { db } from "../../../db/client";
-import { esp32Controllers } from "@boardsesh/db/schema/app";
-import { eq } from "drizzle-orm";
-import { pubsub } from "../../../pubsub/index";
-import { roomManager } from "../../../services/room-manager";
-import { createAsyncIterator } from "../shared/async-iterators";
-import { getLedPlacements } from "@boardsesh/board-constants/led-placements";
-import { convertLitUpHoldsStringToMap } from "../../../db/queries/util/hold-state";
-import { requireControllerAuth } from "../shared/helpers";
-import { getGradeColor } from "./grade-colors";
-import { buildNavigationContext, findClimbIndex } from "./navigation-helpers";
+} from '@boardsesh/shared-schema';
+import { db } from '../../../db/client';
+import { esp32Controllers } from '@boardsesh/db/schema/app';
+import { eq } from 'drizzle-orm';
+import { pubsub } from '../../../pubsub/index';
+import { roomManager } from '../../../services/room-manager';
+import { createAsyncIterator } from '../shared/async-iterators';
+import { getLedPlacements } from '@boardsesh/board-constants/led-placements';
+import { convertLitUpHoldsStringToMap } from '../../../db/queries/util/hold-state';
+import { requireControllerAuth } from '../shared/helpers';
+import { getGradeColor } from './grade-colors';
+import { buildNavigationContext, findClimbIndex } from './navigation-helpers';
 
 // LED color mapping for hold states (matches web app colors)
 const HOLD_STATE_COLORS: Record<string, { r: number; g: number; b: number }> = {
@@ -55,7 +55,7 @@ function buildControllerQueueSync(
     : -1;
 
   return {
-    __typename: "ControllerQueueSync",
+    __typename: 'ControllerQueueSync',
     queue: queue.map(buildControllerQueueItem),
     currentIndex,
   };
@@ -70,7 +70,7 @@ function climbToLedCommands(
   boardName: BoardName,
   ledPlacements: Record<number, number>,
 ): LedCommand[] {
-  const litUpHoldsMap = convertLitUpHoldsStringToMap(climb.frames || "", boardName)[0] || {};
+  const litUpHoldsMap = convertLitUpHoldsStringToMap(climb.frames || '', boardName)[0] || {};
   const commands: LedCommand[] = [];
 
   for (const [placementIdStr, holdInfo] of Object.entries(litUpHoldsMap)) {
@@ -126,7 +126,7 @@ export const controllerSubscriptions = {
         .returning();
 
       if (!controller) {
-        throw new Error("Controller not registered. Register via web UI first.");
+        throw new Error('Controller not registered. Register via web UI first.');
       }
 
       // Build numeric boardPath from controller's registered config
@@ -161,14 +161,14 @@ export const controllerSubscriptions = {
           const navigation = buildNavigationContext(queueState.queue, -1);
 
           return {
-            __typename: "LedUpdate",
+            __typename: 'LedUpdate',
             commands: [],
             boardPath,
             clientId,
             // If clientId matches controller, this is an unknown BLE climb - show "Unknown Climb"
-            climbName: clientId ? "Unknown Climb" : undefined,
-            climbGrade: clientId ? "?" : undefined,
-            gradeColor: clientId ? "#888888" : undefined,
+            climbName: clientId ? 'Unknown Climb' : undefined,
+            climbGrade: clientId ? '?' : undefined,
+            gradeColor: clientId ? '#888888' : undefined,
             navigation,
           };
         }
@@ -185,7 +185,7 @@ export const controllerSubscriptions = {
         const navigation = buildNavigationContext(queueState.queue, currentIndex);
 
         return {
-          __typename: "LedUpdate",
+          __typename: 'LedUpdate',
           commands,
           queueItemUuid: currentItemUuid,
           climbUuid: climb.uuid,
@@ -209,9 +209,9 @@ export const controllerSubscriptions = {
         return pubsub.subscribeQueue(sessionId, (queueEvent) => {
           // Handle queue modification events - send ControllerQueueSync
           if (
-            queueEvent.__typename === "QueueItemAdded" ||
-            queueEvent.__typename === "QueueItemRemoved" ||
-            queueEvent.__typename === "QueueReordered"
+            queueEvent.__typename === 'QueueItemAdded' ||
+            queueEvent.__typename === 'QueueItemRemoved' ||
+            queueEvent.__typename === 'QueueReordered'
           ) {
             // Queue the async work to ensure ordering
             eventQueue = eventQueue.then(async () => {
@@ -232,15 +232,15 @@ export const controllerSubscriptions = {
           // Handle current climb changes and full sync
           // Always send LedUpdate with clientId - ESP32 uses clientId to decide whether to disconnect BLE client
           if (
-            queueEvent.__typename === "CurrentClimbChanged" ||
-            queueEvent.__typename === "FullSync"
+            queueEvent.__typename === 'CurrentClimbChanged' ||
+            queueEvent.__typename === 'FullSync'
           ) {
             // Extract clientId from the event (null for FullSync or system-initiated changes)
             const eventClientId =
-              queueEvent.__typename === "CurrentClimbChanged" ? queueEvent.clientId : null;
+              queueEvent.__typename === 'CurrentClimbChanged' ? queueEvent.clientId : null;
 
             const currentItem =
-              queueEvent.__typename === "CurrentClimbChanged"
+              queueEvent.__typename === 'CurrentClimbChanged'
                 ? queueEvent.item
                 : queueEvent.state.currentClimbQueueItem;
             const climb = currentItem?.climb;
@@ -301,7 +301,7 @@ export const controllerSubscriptions = {
           db.update(esp32Controllers)
             .set({ lastSeenAt: new Date() })
             .where(eq(esp32Controllers.id, controller.id))
-            .catch((err) => console.error("[Controller] lastSeenAt update failed:", err));
+            .catch((err) => console.error('[Controller] lastSeenAt update failed:', err));
         }
 
         yield { controllerEvents: event };
@@ -315,14 +315,14 @@ export const controllerSubscriptions = {
  */
 export const controllerEventResolver = {
   __resolveType(obj: ControllerEvent) {
-    if ("commands" in obj) {
-      return "LedUpdate";
+    if ('commands' in obj) {
+      return 'LedUpdate';
     }
-    if ("timestamp" in obj) {
-      return "ControllerPing";
+    if ('timestamp' in obj) {
+      return 'ControllerPing';
     }
-    if ("queue" in obj && "currentIndex" in obj) {
-      return "ControllerQueueSync";
+    if ('queue' in obj && 'currentIndex' in obj) {
+      return 'ControllerQueueSync';
     }
     return null;
   },

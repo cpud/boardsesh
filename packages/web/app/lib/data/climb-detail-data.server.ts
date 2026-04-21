@@ -1,8 +1,8 @@
-import { dbz } from "@/app/lib/db/db";
-import { eq, and } from "drizzle-orm";
-import type { BetaLink } from "@/app/lib/api-wrappers/sync-api-types";
-import { UNIFIED_TABLES } from "@/app/lib/db/queries/util/table-select";
-import { climbCommunityStatus } from "@/app/lib/db/schema";
+import { dbz } from '@/app/lib/db/db';
+import { eq, and } from 'drizzle-orm';
+import type { BetaLink } from '@/app/lib/api-wrappers/sync-api-types';
+import { UNIFIED_TABLES } from '@/app/lib/db/queries/util/table-select';
+import { climbCommunityStatus } from '@/app/lib/db/schema';
 
 interface FetchClimbDetailDataParams {
   boardName: string;

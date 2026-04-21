@@ -1,34 +1,34 @@
-import type Redis from "ioredis";
-import type { ClimbQueueItem, SessionUser } from "@boardsesh/shared-schema";
-import { RedisSessionStore } from "../redis-session-store";
-import type { Session } from "../../db/schema";
+import type Redis from 'ioredis';
+import type { ClimbQueueItem, SessionUser } from '@boardsesh/shared-schema';
+import { RedisSessionStore } from '../redis-session-store';
+import type { Session } from '../../db/schema';
 import {
   DistributedStateManager,
   initializeDistributedState,
   shutdownDistributedState,
   forceResetDistributedState,
-} from "../distributed-state";
-import type { ConnectedClient, DiscoverableSession, QueueState } from "./types";
-import { WriteScheduler } from "./write-scheduler";
+} from '../distributed-state';
+import type { ConnectedClient, DiscoverableSession, QueueState } from './types';
+import { WriteScheduler } from './write-scheduler';
 import {
   updateQueueState as updateQueueStateFn,
   updateQueueStateImmediate as updateQueueStateImmediateFn,
   updateQueueOnly as updateQueueOnlyFn,
   getQueueState as getQueueStateFn,
-} from "./queue-state";
+} from './queue-state';
 import {
   registerClient as registerClientFn,
   joinSession as joinSessionFn,
   leaveSession as leaveSessionFn,
   removeClient as removeClientFn,
-} from "./client-lifecycle";
+} from './client-lifecycle';
 import {
   getSessionById as getSessionByIdFn,
   createDiscoverableSession as createDiscoverableSessionFn,
   findNearbySessions as findNearbySessionsFn,
   getUserSessions as getUserSessionsFn,
   endSession as endSessionFn,
-} from "./session-discovery";
+} from './session-discovery';
 
 class RoomManager {
   private clients: Map<string, ConnectedClient> = new Map();
@@ -71,13 +71,13 @@ class RoomManager {
   async initialize(redis?: Redis): Promise<void> {
     if (redis) {
       this.redisStore = new RedisSessionStore(redis);
-      console.log("[RoomManager] Redis session storage enabled");
+      console.log('[RoomManager] Redis session storage enabled');
 
       this.distributedState = initializeDistributedState(redis);
       this.distributedState.start();
-      console.log("[RoomManager] Distributed state enabled for multi-instance support");
+      console.log('[RoomManager] Distributed state enabled for multi-instance support');
     } else {
-      console.log("[RoomManager] Redis not available - using Postgres only mode (single instance)");
+      console.log('[RoomManager] Redis not available - using Postgres only mode (single instance)');
     }
   }
 
@@ -87,7 +87,7 @@ class RoomManager {
   async shutdown(): Promise<void> {
     await this.flushPendingWrites();
     await shutdownDistributedState();
-    console.log("[RoomManager] Shutdown complete");
+    console.log('[RoomManager] Shutdown complete');
   }
 
   /**

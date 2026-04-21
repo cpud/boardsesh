@@ -1,10 +1,10 @@
-import { randomUUID } from "crypto";
-import { buildSessionStatsUpdatedEvent } from "./live-session-stats";
-import { pubsub } from "../../../pubsub/index";
-import { redisClientManager } from "../../../redis/client";
+import { randomUUID } from 'crypto';
+import { buildSessionStatsUpdatedEvent } from './live-session-stats';
+import { pubsub } from '../../../pubsub/index';
+import { redisClientManager } from '../../../redis/client';
 
 const DEBOUNCE_MS = 2000;
-const REDIS_KEY_PREFIX = "boardsesh:debounce:stats:";
+const REDIS_KEY_PREFIX = 'boardsesh:debounce:stats:';
 
 /**
  * Local timers used to schedule the publish after the debounce window.
@@ -40,7 +40,7 @@ export function publishDebouncedSessionStats(sessionId: string): void {
   // SET key value PX ms — always overwrites, so the last caller wins.
   if (redisClientManager.isRedisConnected()) {
     const { publisher } = redisClientManager.getClients();
-    publisher.set(redisKey, nonce, "PX", DEBOUNCE_MS + 500).catch((err) => {
+    publisher.set(redisKey, nonce, 'PX', DEBOUNCE_MS + 500).catch((err) => {
       console.error(`[debouncedStats] Redis SET failed for ${sessionId}:`, err);
     });
   }

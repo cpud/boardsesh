@@ -1,40 +1,40 @@
-"use client";
+'use client';
 
-import React, { useRef, useState, useCallback, useMemo } from "react";
-import IconButton from "@mui/material/IconButton";
-import dynamic from "next/dynamic";
-import MoreHorizOutlined from "@mui/icons-material/MoreHorizOutlined";
-import AddOutlined from "@mui/icons-material/AddOutlined";
-import CheckOutlined from "@mui/icons-material/CheckOutlined";
-import LocalOfferOutlined from "@mui/icons-material/LocalOfferOutlined";
-import { track } from "@vercel/analytics";
-import { Climb, BoardDetails } from "@/app/lib/types";
-import ClimbThumbnail from "./climb-thumbnail";
-import ClimbTitle, { type ClimbTitleProps } from "./climb-title";
-import DrawerClimbHeader from "./drawer-climb-header";
-import { AscentStatus } from "./ascent-status";
-import { ClimbActions } from "../climb-actions";
-import { useDoubleTapFavorite } from "../climb-actions/use-double-tap-favorite";
-import HeartAnimationOverlay from "./heart-animation-overlay";
-import PlaylistSelectionContent from "../climb-actions/playlist-selection-content";
-import { useSwipeActions } from "@/app/hooks/use-swipe-actions";
-import { useDrawerDragResize } from "@/app/hooks/use-drawer-drag-resize";
-import { useDoubleTap } from "@/app/lib/hooks/use-double-tap";
-import { themeTokens } from "@/app/theme/theme-config";
-import { getGradeTintColor } from "@/app/lib/grade-colors";
-import { getExcludedClimbActions } from "@/app/lib/climb-action-utils";
-import { useIsClimbSelected } from "../board-page/selected-climb-store";
-import { InlineListTickBar } from "../logbook/inline-list-tick-bar";
-import { useOptionalBoardProvider } from "../board-provider/board-provider-context";
-import { useSnackbar } from "../providers/snackbar-provider";
-import styles from "./climb-list-item.module.css";
-import ascentStyles from "./ascent-status.module.css";
-import drawerCss from "../swipeable-drawer/swipeable-drawer.module.css";
+import React, { useRef, useState, useCallback, useMemo } from 'react';
+import IconButton from '@mui/material/IconButton';
+import dynamic from 'next/dynamic';
+import MoreHorizOutlined from '@mui/icons-material/MoreHorizOutlined';
+import AddOutlined from '@mui/icons-material/AddOutlined';
+import CheckOutlined from '@mui/icons-material/CheckOutlined';
+import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
+import { track } from '@vercel/analytics';
+import { Climb, BoardDetails } from '@/app/lib/types';
+import ClimbThumbnail from './climb-thumbnail';
+import ClimbTitle, { type ClimbTitleProps } from './climb-title';
+import DrawerClimbHeader from './drawer-climb-header';
+import { AscentStatus } from './ascent-status';
+import { ClimbActions } from '../climb-actions';
+import { useDoubleTapFavorite } from '../climb-actions/use-double-tap-favorite';
+import HeartAnimationOverlay from './heart-animation-overlay';
+import PlaylistSelectionContent from '../climb-actions/playlist-selection-content';
+import { useSwipeActions } from '@/app/hooks/use-swipe-actions';
+import { useDrawerDragResize } from '@/app/hooks/use-drawer-drag-resize';
+import { useDoubleTap } from '@/app/lib/hooks/use-double-tap';
+import { themeTokens } from '@/app/theme/theme-config';
+import { getGradeTintColor } from '@/app/lib/grade-colors';
+import { getExcludedClimbActions } from '@/app/lib/climb-action-utils';
+import { useIsClimbSelected } from '../board-page/selected-climb-store';
+import { InlineListTickBar } from '../logbook/inline-list-tick-bar';
+import { useOptionalBoardProvider } from '../board-provider/board-provider-context';
+import { useSnackbar } from '../providers/snackbar-provider';
+import styles from './climb-list-item.module.css';
+import ascentStyles from './ascent-status.module.css';
+import drawerCss from '../swipeable-drawer/swipeable-drawer.module.css';
 
-const SwipeableDrawer = dynamic(() => import("../swipeable-drawer/swipeable-drawer"), {
+const SwipeableDrawer = dynamic(() => import('../swipeable-drawer/swipeable-drawer'), {
   ssr: false,
 });
-const QueueDrawer = dynamic(() => import("../play-view/queue-drawer"), { ssr: false });
+const QueueDrawer = dynamic(() => import('../play-view/queue-drawer'), { ssr: false });
 
 // Keep swipe visuals aligned with gesture max distance
 const MAX_GESTURE_SWIPE = 180;
@@ -48,23 +48,23 @@ const LONG_SWIPE_THRESHOLD = 150;
 
 // Static style objects (no reactive deps, hoisted out of component to avoid per-render allocation)
 const swipeActionLayerBaseStyle: React.CSSProperties = {
-  position: "absolute",
+  position: 'absolute',
   inset: 0,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start",
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-start',
   paddingLeft: themeTokens.spacing[4],
-  willChange: "opacity",
+  willChange: 'opacity',
 };
 
 const rightSwipeActionLayerBaseStyle: React.CSSProperties = {
-  position: "absolute",
+  position: 'absolute',
   inset: 0,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-end",
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-end',
   paddingRight: themeTokens.spacing[4],
-  willChange: "opacity",
+  willChange: 'opacity',
 };
 
 // Static initial styles for action layers — opacity updated via direct DOM manipulation during swipe
@@ -84,63 +84,63 @@ const rightActionLayerDefaultStyle: React.CSSProperties = {
   ...rightSwipeActionLayerBaseStyle,
   backgroundColor: themeTokens.colors.success,
   opacity: 0,
-  transition: "opacity 120ms ease-out",
+  transition: 'opacity 120ms ease-out',
 };
 
 const rightActionLayerConfirmedStyle: React.CSSProperties = {
   ...rightSwipeActionLayerBaseStyle,
   backgroundColor: themeTokens.colors.success,
   opacity: 0,
-  transition: "opacity 120ms ease-out",
+  transition: 'opacity 120ms ease-out',
 };
 
 const defaultLeftActionStyle: React.CSSProperties = {
-  position: "absolute",
+  position: 'absolute',
   left: 0,
   top: 0,
   bottom: 0,
   width: SHORT_ACTION_WIDTH,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start",
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-start',
   paddingLeft: themeTokens.spacing[3],
   opacity: 0,
-  visibility: "hidden",
-  overflow: "hidden",
+  visibility: 'hidden',
+  overflow: 'hidden',
 };
 
 const defaultRightActionStyle: React.CSSProperties = {
-  position: "absolute",
+  position: 'absolute',
   right: 0,
   top: 0,
   bottom: 0,
   width: RIGHT_ACTION_WIDTH,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-end",
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-end',
   paddingRight: themeTokens.spacing[3],
   opacity: 0,
-  visibility: "hidden",
-  overflow: "hidden",
+  visibility: 'hidden',
+  overflow: 'hidden',
 };
 
-const iconStyle: React.CSSProperties = { color: "white", fontSize: 20 };
+const iconStyle: React.CSSProperties = { color: 'white', fontSize: 20 };
 
 const thumbnailStyle: React.CSSProperties = {
   width: themeTokens.spacing[16],
   flexShrink: 0,
-  position: "relative",
+  position: 'relative',
 };
 
 const centerStyle: React.CSSProperties = { flex: 1, minWidth: 0 };
 
-const iconButtonStyle: React.CSSProperties = { flexShrink: 0, color: "var(--neutral-400)" };
+const iconButtonStyle: React.CSSProperties = { flexShrink: 0, color: 'var(--neutral-400)' };
 
 const actionsDrawerStyles = {
   wrapper: {
-    width: "100%",
-    touchAction: "pan-y" as const,
-    transition: "height 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    width: '100%',
+    touchAction: 'pan-y' as const,
+    transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   },
   body: { padding: `${themeTokens.spacing[2]}px 0` },
   header: {
@@ -150,7 +150,7 @@ const actionsDrawerStyles = {
 } as const;
 
 const playlistDrawerStyles = {
-  wrapper: { height: "auto", maxHeight: "70vh", width: "100%" },
+  wrapper: { height: 'auto', maxHeight: '70vh', width: '100%' },
   body: { padding: 0 },
   header: {
     paddingLeft: `${themeTokens.spacing[3]}px`,
@@ -197,7 +197,7 @@ type ClimbListItemProps = {
   /** When true, prefer SSR image layers over the canvas renderer for this item. */
   preferImageLayers?: boolean;
   /** Set fetchpriority="high" for LCP-critical images */
-  fetchPriority?: "high" | "low" | "auto";
+  fetchPriority?: 'high' | 'low' | 'auto';
   /** Handler for thumbnail clicks. When set, stops propagation so the row onClick doesn't also fire. */
   onThumbnailClick?: () => void;
   /** When provided, the item delegates opening the actions drawer to the parent instead of rendering its own. */
@@ -292,7 +292,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     // Swipe left (right action): add to queue
     const handleDefaultSwipeLeft = useCallback(() => {
       addToQueueRef.current?.(climb);
-      track("Add to Queue", { source: "swipe" });
+      track('Add to Queue', { source: 'swipe' });
     }, [climb]);
 
     // Swipe right short (left action): open playlist selector
@@ -441,7 +441,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     }, []);
 
     const handleTickError = useCallback(() => {
-      showMessage("Couldn't save your tick — it's saved as a draft", "error");
+      showMessage("Couldn't save your tick — it's saved as a draft", 'error');
     }, [showMessage]);
 
     // --- Actions drawer drag-to-resize (Spotify-style) ---
@@ -477,34 +477,34 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     );
 
     const excludeActions = useMemo(
-      () => (boardDetails ? getExcludedClimbActions(boardDetails.board_name, "list") : []),
+      () => (boardDetails ? getExcludedClimbActions(boardDetails.board_name, 'list') : []),
       [boardDetails],
     );
 
     // Memoize style objects to prevent recreation on every render
     const containerStyle = useMemo(
       () => ({
-        position: "relative" as const,
-        overflow: "hidden" as const,
-        ...(unsupported || needsBiggerBoard ? { opacity: 0.5, filter: "grayscale(80%)" } : {}),
+        position: 'relative' as const,
+        overflow: 'hidden' as const,
+        ...(unsupported || needsBiggerBoard ? { opacity: 0.5, filter: 'grayscale(80%)' } : {}),
       }),
       [unsupported, needsBiggerBoard],
     );
 
     const rightOverrideActionStyle = useMemo(
       () => ({
-        position: "absolute" as const,
+        position: 'absolute' as const,
         right: 0,
         top: 0,
         bottom: 0,
         width: rightActionRevealWidth,
         backgroundColor: swipeRightAction?.color ?? themeTokens.colors.error,
-        display: "flex" as const,
-        alignItems: "center" as const,
-        justifyContent: "flex-end" as const,
+        display: 'flex' as const,
+        alignItems: 'center' as const,
+        justifyContent: 'flex-end' as const,
         paddingRight: themeTokens.spacing[4],
         opacity: 0,
-        visibility: "hidden" as const,
+        visibility: 'hidden' as const,
       }),
       [rightActionRevealWidth, swipeRightAction?.color],
     );
@@ -512,19 +512,19 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     const resolvedBg =
       backgroundColor ??
       (selected
-        ? (getGradeTintColor(climb.difficulty, "light", isDark) ?? "var(--semantic-selected)")
-        : "transparent");
+        ? (getGradeTintColor(climb.difficulty, 'light', isDark) ?? 'var(--semantic-selected)')
+        : 'transparent');
 
     const swipeableContentStyle = useMemo(
       () => ({
-        display: "flex" as const,
-        alignItems: "center" as const,
+        display: 'flex' as const,
+        alignItems: 'center' as const,
         padding: contentPadding ?? `${themeTokens.spacing[2]}px ${themeTokens.spacing[2]}px`,
         gap: themeTokens.spacing[3],
         backgroundColor: resolvedBg,
-        borderBottom: "1px solid var(--neutral-200)",
-        cursor: "pointer" as const,
-        userSelect: "none" as const,
+        borderBottom: '1px solid var(--neutral-200)',
+        cursor: 'pointer' as const,
+        userSelect: 'none' as const,
         opacity: contentOpacity ?? 1,
       }),
       [resolvedBg, contentOpacity, contentPadding],
@@ -534,7 +534,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     const resolvedTitleProps = useMemo<Partial<ClimbTitleProps>>(
       () =>
         titleProps ?? {
-          gradePosition: "right",
+          gradePosition: 'right',
           showSetterInfo: true,
           titleFontSize: themeTokens.typography.fontSize.xl,
           favorited: isFavorited,
@@ -782,6 +782,6 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
   },
 );
 
-ClimbListItem.displayName = "ClimbListItem";
+ClimbListItem.displayName = 'ClimbListItem';
 
 export default ClimbListItem;

@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import React, { useCallback } from "react";
-import FavoriteBorderOutlined from "@mui/icons-material/FavoriteBorderOutlined";
-import Favorite from "@mui/icons-material/Favorite";
-import { track } from "@vercel/analytics";
-import { ClimbActionProps, ClimbActionResult } from "../types";
-import { useFavorite } from "../use-favorite";
-import { useAuthModal } from "@/app/components/providers/auth-modal-provider";
-import { themeTokens } from "@/app/theme/theme-config";
+import React, { useCallback } from 'react';
+import FavoriteBorderOutlined from '@mui/icons-material/FavoriteBorderOutlined';
+import Favorite from '@mui/icons-material/Favorite';
+import { track } from '@vercel/analytics';
+import { ClimbActionProps, ClimbActionResult } from '../types';
+import { useFavorite } from '../use-favorite';
+import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
+import { themeTokens } from '@/app/theme/theme-config';
 import {
   buildActionResult,
   computeActionDisplay,
   ActionListElement,
-} from "../action-view-renderer";
+} from '../action-view-renderer';
 
 export function FavoriteAction({
   climb,
   boardDetails,
   angle,
   viewMode,
-  size = "default",
+  size = 'default',
   showLabel,
   disabled,
   className,
@@ -34,9 +34,9 @@ export function FavoriteAction({
 
   const handleAuthSuccess = useCallback(async () => {
     try {
-      const response = await fetch("/api/internal/favorites", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/internal/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           boardName: boardDetails.board_name,
           climbUuid: climb.uuid,
@@ -44,10 +44,10 @@ export function FavoriteAction({
         }),
       });
       if (response.ok) {
-        track("Favorite Toggle", {
+        track('Favorite Toggle', {
           boardName: boardDetails.board_name,
           climbUuid: climb.uuid,
-          action: "favorited",
+          action: 'favorited',
         });
       }
     } catch {
@@ -62,7 +62,7 @@ export function FavoriteAction({
 
       if (!isAuthenticated) {
         openAuthModal({
-          title: "Sign in to save favorites",
+          title: 'Sign in to save favorites',
           description: `Sign in to save "${climb.name}" to your favorites.`,
           onSuccess: handleAuthSuccess,
         });
@@ -71,10 +71,10 @@ export function FavoriteAction({
 
       try {
         const newState = await toggleFavorite();
-        track("Favorite Toggle", {
+        track('Favorite Toggle', {
           boardName: boardDetails.board_name,
           climbUuid: climb.uuid,
-          action: newState ? "favorited" : "unfavorited",
+          action: newState ? 'favorited' : 'unfavorited',
         });
         onComplete?.();
       } catch {
@@ -93,7 +93,7 @@ export function FavoriteAction({
     ],
   );
 
-  const label = isFavorited ? "Favorited" : "Favorite";
+  const label = isFavorited ? 'Favorited' : 'Favorite';
   const HeartIcon = isFavorited ? Favorite : FavoriteBorderOutlined;
   const iconStyle = isFavorited
     ? { color: themeTokens.colors.error, fontSize: iconSize }
@@ -101,7 +101,7 @@ export function FavoriteAction({
   const listIcon = <HeartIcon sx={{ fontSize: iconSize }} />;
 
   return buildActionResult({
-    key: "favorite",
+    key: 'favorite',
     label,
     icon: <HeartIcon sx={iconStyle} />,
     onClick: handleClick,

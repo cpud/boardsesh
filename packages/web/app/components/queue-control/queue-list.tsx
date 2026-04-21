@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, {
   useEffect,
   useState,
@@ -7,56 +7,56 @@ import React, {
   useImperativeHandle,
   forwardRef,
   useMemo,
-} from "react";
-import { useVirtualizer } from "@tanstack/react-virtual";
-import Skeleton from "@mui/material/Skeleton";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
-import Stack from "@mui/material/Stack";
-import MuiDivider from "@mui/material/Divider";
-import SwipeableDrawer from "../swipeable-drawer/swipeable-drawer";
-import drawerCss from "../swipeable-drawer/swipeable-drawer.module.css";
-import LoginOutlined from "@mui/icons-material/LoginOutlined";
+} from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import Skeleton from '@mui/material/Skeleton';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
+import MuiDivider from '@mui/material/Divider';
+import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
+import drawerCss from '../swipeable-drawer/swipeable-drawer.module.css';
+import LoginOutlined from '@mui/icons-material/LoginOutlined';
 import {
   useQueueActions,
   useCurrentClimbUuid,
   useQueueList,
   useSearchData,
   useSessionData,
-} from "../graphql-queue";
-import { Climb, BoardDetails } from "@/app/lib/types";
-import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder";
-import { usePathname, useRouter, useParams } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useIsDarkMode } from "@/app/hooks/use-is-dark-mode";
-import { useDrawerDragResize } from "@/app/hooks/use-drawer-drag-resize";
-import QueueClimbListItem from "./queue-climb-list-item";
-import { dispatchOpenPlayDrawer } from "./play-drawer-event";
-import ClimbListItem from "../climb-card/climb-list-item";
-import DrawerClimbHeader from "../climb-card/drawer-climb-header";
-import { ClimbActions } from "../climb-actions";
-import PlaylistSelectionContent from "../climb-actions/playlist-selection-content";
-import { getExcludedClimbActions } from "@/app/lib/climb-action-utils";
-import { themeTokens } from "@/app/theme/theme-config";
-import { useOptionalBoardProvider } from "../board-provider/board-provider-context";
-import { LogAscentDrawer } from "../logbook/log-ascent-drawer";
-import { useAuthModal } from "@/app/components/providers/auth-modal-provider";
-import { ClimbQueueItem } from "./types";
-import { isClimbEditable } from "./is-climb-editable";
-import styles from "./queue-list.module.css";
+} from '../graphql-queue';
+import { Climb, BoardDetails } from '@/app/lib/types';
+import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
+import { extractClosestEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
+import { reorder } from '@atlaskit/pragmatic-drag-and-drop/reorder';
+import { usePathname, useRouter, useParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
+import { useDrawerDragResize } from '@/app/hooks/use-drawer-drag-resize';
+import QueueClimbListItem from './queue-climb-list-item';
+import { dispatchOpenPlayDrawer } from './play-drawer-event';
+import ClimbListItem from '../climb-card/climb-list-item';
+import DrawerClimbHeader from '../climb-card/drawer-climb-header';
+import { ClimbActions } from '../climb-actions';
+import PlaylistSelectionContent from '../climb-actions/playlist-selection-content';
+import { getExcludedClimbActions } from '@/app/lib/climb-action-utils';
+import { themeTokens } from '@/app/theme/theme-config';
+import { useOptionalBoardProvider } from '../board-provider/board-provider-context';
+import { LogAscentDrawer } from '../logbook/log-ascent-drawer';
+import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
+import { ClimbQueueItem } from './types';
+import { isClimbEditable } from './is-climb-editable';
+import styles from './queue-list.module.css';
 
 // Discriminated union for all possible rows in the flat virtualized list
 type FlatRow =
-  | { type: "history-item"; item: ClimbQueueItem; queueIndex: number }
-  | { type: "history-divider" }
-  | { type: "current-item"; item: ClimbQueueItem; queueIndex: number }
-  | { type: "future-item"; item: ClimbQueueItem; queueIndex: number }
-  | { type: "suggestion-header" }
-  | { type: "suggestion"; climb: Climb }
-  | { type: "loading" }
-  | { type: "end-message" };
+  | { type: 'history-item'; item: ClimbQueueItem; queueIndex: number }
+  | { type: 'history-divider' }
+  | { type: 'current-item'; item: ClimbQueueItem; queueIndex: number }
+  | { type: 'future-item'; item: ClimbQueueItem; queueIndex: number }
+  | { type: 'suggestion-header' }
+  | { type: 'suggestion'; climb: Climb }
+  | { type: 'loading' }
+  | { type: 'end-message' };
 
 export type QueueListHandle = {
   scrollToCurrentClimb: () => void;
@@ -166,7 +166,7 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
     );
 
     const excludeActions = useMemo(
-      () => getExcludedClimbActions(boardDetails.board_name, "list"),
+      () => getExcludedClimbActions(boardDetails.board_name, 'list'),
       [boardDetails.board_name],
     );
 
@@ -195,7 +195,7 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
           if (isNaN(sourceIndex) || isNaN(targetIndex)) return;
 
           const edge = extractClosestEdge(target.data);
-          let finalIndex = edge === "bottom" ? targetIndex + 1 : targetIndex;
+          let finalIndex = edge === 'bottom' ? targetIndex + 1 : targetIndex;
 
           // Adjust for the fact that removing the source item shifts indices
           if (sourceIndex < finalIndex) {
@@ -218,7 +218,7 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
     // Memoize suggested item title props — match queue item layout (grade on right)
     const suggestedTitleProps = useMemo(
       () => ({
-        gradePosition: "right" as const,
+        gradePosition: 'right' as const,
         showSetterInfo: true,
         titleFontSize: themeTokens.typography.fontSize.xl,
       }),
@@ -243,9 +243,9 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
           if (historyItems.length > 2 && i === scrollToHistoryIndex) {
             scrollTargetIdx = rows.length;
           }
-          rows.push({ type: "history-item", item: historyItems[i], queueIndex: i });
+          rows.push({ type: 'history-item', item: historyItems[i], queueIndex: i });
         }
-        rows.push({ type: "history-divider" });
+        rows.push({ type: 'history-divider' });
       }
 
       // Current item
@@ -253,7 +253,7 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
         if (!showHistory || historyItems.length <= 2) {
           scrollTargetIdx = rows.length;
         }
-        rows.push({ type: "current-item", item: currentItem, queueIndex: currentIndex });
+        rows.push({ type: 'current-item', item: currentItem, queueIndex: currentIndex });
       }
 
       // Future items
@@ -262,21 +262,21 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
         if (i === 0 && !currentItem && (!showHistory || historyItems.length <= 2)) {
           scrollTargetIdx = rows.length;
         }
-        rows.push({ type: "future-item", item: futureItems[i], queueIndex: originalIndex });
+        rows.push({ type: 'future-item', item: futureItems[i], queueIndex: originalIndex });
       }
 
       // Suggestions section (only when active and not viewOnlyMode)
       if (active && !viewOnlyMode) {
-        rows.push({ type: "suggestion-header" });
+        rows.push({ type: 'suggestion-header' });
         for (let i = 0; i < suggestedClimbs.length; i++) {
-          rows.push({ type: "suggestion", climb: suggestedClimbs[i] });
+          rows.push({ type: 'suggestion', climb: suggestedClimbs[i] });
         }
         // Loading or end message
         if (suggestedClimbs.length > 0 || isFetchingClimbs || isFetchingNextPage) {
           if (isFetchingClimbs || isFetchingNextPage) {
-            rows.push({ type: "loading" });
+            rows.push({ type: 'loading' });
           } else if (!hasMoreResults && suggestedClimbs.length > 0) {
-            rows.push({ type: "end-message" });
+            rows.push({ type: 'end-message' });
           }
         }
       }
@@ -310,13 +310,13 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
         const row = flatRows[index];
         if (!row) return 102;
         switch (row.type) {
-          case "history-divider":
+          case 'history-divider':
             return 17;
-          case "suggestion-header":
+          case 'suggestion-header':
             return 36;
-          case "loading":
+          case 'loading':
             return 220;
-          case "end-message":
+          case 'end-message':
             return 52;
           default:
             return 102;
@@ -327,20 +327,20 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
         const row = flatRows[index];
         if (!row) return index;
         switch (row.type) {
-          case "history-item":
-          case "current-item":
-          case "future-item":
+          case 'history-item':
+          case 'current-item':
+          case 'future-item':
             return `q-${row.item.uuid}`;
-          case "suggestion":
+          case 'suggestion':
             return `s-${row.climb.uuid}`;
-          case "history-divider":
-            return "divider";
-          case "suggestion-header":
-            return "suggestion-header";
-          case "loading":
-            return "loading";
-          case "end-message":
-            return "end-message";
+          case 'history-divider':
+            return 'divider';
+          case 'suggestion-header':
+            return 'suggestion-header';
+          case 'loading':
+            return 'loading';
+          case 'end-message':
+            return 'end-message';
         }
       },
     });
@@ -356,8 +356,8 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
         scrollToCurrentClimb: () => {
           if (scrollTargetFlatIndex >= 0) {
             virtualizerRef.current.scrollToIndex(scrollTargetFlatIndex, {
-              align: "start",
-              behavior: "smooth",
+              align: 'start',
+              behavior: 'smooth',
             });
           }
         },
@@ -370,8 +370,8 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
         <div
           style={{
             height: virtualizer.getTotalSize(),
-            width: "100%",
-            position: "relative",
+            width: '100%',
+            position: 'relative',
           }}
         >
           {virtualizer.getVirtualItems().map((virtualItem) => {
@@ -384,15 +384,15 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
                 ref={virtualizer.measureElement}
                 data-index={virtualItem.index}
                 style={{
-                  position: "absolute",
+                  position: 'absolute',
                   top: 0,
                   left: 0,
-                  width: "100%",
+                  width: '100%',
                   transform: `translateY(${virtualItem.start}px)`,
-                  contain: "layout style paint",
+                  contain: 'layout style paint',
                 }}
               >
-                {row.type === "history-item" && (
+                {row.type === 'history-item' && (
                   <QueueClimbListItem
                     item={row.item}
                     index={row.queueIndex}
@@ -412,8 +412,8 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
                     isEditable={canEditClimb(row.item.climb)}
                   />
                 )}
-                {row.type === "history-divider" && <MuiDivider className={styles.historyDivider} />}
-                {row.type === "current-item" && (
+                {row.type === 'history-divider' && <MuiDivider className={styles.historyDivider} />}
+                {row.type === 'current-item' && (
                   <QueueClimbListItem
                     item={row.item}
                     index={row.queueIndex}
@@ -433,7 +433,7 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
                     isEditable={canEditClimb(row.item.climb)}
                   />
                 )}
-                {row.type === "future-item" && (
+                {row.type === 'future-item' && (
                   <QueueClimbListItem
                     item={row.item}
                     index={row.queueIndex}
@@ -453,14 +453,14 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
                     isEditable={canEditClimb(row.item.climb)}
                   />
                 )}
-                {row.type === "suggestion-header" && (
+                {row.type === 'suggestion-header' && (
                   <div className={styles.suggestedSectionHeader}>
                     <Typography variant="overline" color="text.secondary">
                       Suggestions
                     </Typography>
                   </div>
                 )}
-                {row.type === "suggestion" && (
+                {row.type === 'suggestion' && (
                   <ClimbListItem
                     climb={row.climb}
                     boardDetails={boardDetails}
@@ -473,7 +473,7 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
                     addToQueue={addToQueue}
                   />
                 )}
-                {row.type === "loading" && (
+                {row.type === 'loading' && (
                   <div className={styles.loadMoreContainer} style={loadMoreSkeletonStyle}>
                     {[1, 2, 3].map((i) => (
                       <div key={i} className={styles.loadMoreSkeletonRow}>
@@ -496,7 +496,7 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
                     ))}
                   </div>
                 )}
-                {row.type === "end-message" && (
+                {row.type === 'end-message' && (
                   <div className={styles.noMoreSuggestions}>
                     <Typography variant="body2" color="text.disabled">
                       That's all for now
@@ -522,11 +522,11 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
             placement="bottom"
             onClose={closeTickDrawer}
             open={tickDrawerVisible}
-            styles={{ wrapper: { height: "50%" } }}
+            styles={{ wrapper: { height: '50%' } }}
           >
             <Stack
               spacing={3}
-              sx={{ width: "100%", textAlign: "center", padding: `${themeTokens.spacing[6]}px 0` }}
+              sx={{ width: '100%', textAlign: 'center', padding: `${themeTokens.spacing[6]}px 0` }}
             >
               <Typography
                 variant="body2"
@@ -544,8 +544,8 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
                 startIcon={<LoginOutlined />}
                 onClick={() =>
                   openAuthModal({
-                    title: "Sign in to record ticks",
-                    description: "Create an account to log your climbs and track your progress.",
+                    title: 'Sign in to record ticks',
+                    description: 'Create an account to log your climbs and track your progress.',
                   })
                 }
                 fullWidth
@@ -615,15 +615,15 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
 // Static drawer styles — hoisted to avoid per-render allocation
 const actionsDrawerStyles = {
   wrapper: {
-    width: "100%",
-    touchAction: "pan-y" as const,
-    transition: "height 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    width: '100%',
+    touchAction: 'pan-y' as const,
+    transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   },
   body: { padding: `${themeTokens.spacing[2]}px 0` },
 } as const;
 
 const playlistDrawerStyles = {
-  wrapper: { height: "auto", maxHeight: "70vh", width: "100%" },
+  wrapper: { height: 'auto', maxHeight: '70vh', width: '100%' },
   body: { padding: 0 },
   header: {
     paddingLeft: `${themeTokens.spacing[3]}px`,
@@ -631,6 +631,6 @@ const playlistDrawerStyles = {
   },
 } as const;
 
-QueueList.displayName = "QueueList";
+QueueList.displayName = 'QueueList';
 
 export default React.memo(QueueList);

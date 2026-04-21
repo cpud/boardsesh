@@ -4,9 +4,9 @@ import type {
   NotificationEvent,
   CommentEvent,
   NewClimbCreatedEvent,
-} from "@boardsesh/shared-schema";
-import { redisClientManager } from "../redis/client";
-import { createRedisPubSubAdapter, type RedisPubSubAdapter } from "./redis-adapter";
+} from '@boardsesh/shared-schema';
+import { redisClientManager } from '../redis/client';
+import { createRedisPubSubAdapter, type RedisPubSubAdapter } from './redis-adapter';
 
 type QueueSubscriber = (event: QueueEvent) => void;
 type SessionSubscriber = (event: SessionEvent) => void;
@@ -58,7 +58,7 @@ class PubSub {
       const connected = await redisClientManager.connect();
 
       if (!connected) {
-        throw new Error("Redis is configured but connection failed");
+        throw new Error('Redis is configured but connection failed');
       }
 
       const { publisher, subscriber } = redisClientManager.getClients();
@@ -67,7 +67,7 @@ class PubSub {
 
       console.log(`[PubSub] Redis mode enabled (instance: ${this.redisAdapter.getInstanceId()})`);
     } else {
-      console.log("[PubSub] Local-only mode (single instance - no REDIS_URL configured)");
+      console.log('[PubSub] Local-only mode (single instance - no REDIS_URL configured)');
     }
 
     this.initialized = true;
@@ -233,7 +233,7 @@ class PubSub {
       // Set TTL (5 minutes)
       await publisher.expire(bufferKey, EVENT_BUFFER_TTL);
     } catch (error) {
-      console.error("[PubSub] Failed to store event in buffer:", error);
+      console.error('[PubSub] Failed to store event in buffer:', error);
       // Don't throw - event buffering is optional (will fallback to full sync)
     }
   }
@@ -245,7 +245,7 @@ class PubSub {
    */
   async getEventsSince(sessionId: string, sinceSequence: number): Promise<QueueEvent[]> {
     if (!this.redisAdapter) {
-      throw new Error("Event buffer requires Redis");
+      throw new Error('Event buffer requires Redis');
     }
 
     try {
@@ -264,7 +264,7 @@ class PubSub {
             events.push(event);
           }
         } catch (parseError) {
-          console.error("[PubSub] Failed to parse buffered event:", parseError);
+          console.error('[PubSub] Failed to parse buffered event:', parseError);
         }
       }
 
@@ -273,7 +273,7 @@ class PubSub {
 
       return events;
     } catch (error) {
-      console.error("[PubSub] Failed to retrieve events from buffer:", error);
+      console.error('[PubSub] Failed to retrieve events from buffer:', error);
       throw error;
     }
   }
@@ -301,7 +301,7 @@ class PubSub {
     // Also publish to Redis if available
     if (this.redisAdapter) {
       this.redisAdapter.publishQueueEvent(sessionId, event).catch((error) => {
-        console.error("[PubSub] Redis queue publish failed:", error);
+        console.error('[PubSub] Redis queue publish failed:', error);
         // Log but don't throw - local dispatch already succeeded
         // Health check will report Redis as unhealthy if connection is lost
       });
@@ -323,7 +323,7 @@ class PubSub {
     // Also publish to Redis if available
     if (this.redisAdapter) {
       this.redisAdapter.publishSessionEvent(sessionId, event).catch((error) => {
-        console.error("[PubSub] Redis session publish failed:", error);
+        console.error('[PubSub] Redis session publish failed:', error);
         // Log but don't throw - local dispatch already succeeded
         // Health check will report Redis as unhealthy if connection is lost
       });
@@ -337,7 +337,7 @@ class PubSub {
         try {
           callback(event);
         } catch (error) {
-          console.error("Error in queue subscriber:", error);
+          console.error('Error in queue subscriber:', error);
         }
       }
     }
@@ -350,7 +350,7 @@ class PubSub {
         try {
           callback(event);
         } catch (error) {
-          console.error("Error in session subscriber:", error);
+          console.error('Error in session subscriber:', error);
         }
       }
     }
@@ -412,7 +412,7 @@ class PubSub {
 
     if (this.redisAdapter) {
       this.redisAdapter.publishNotificationEvent(userId, event).catch((error) => {
-        console.error("[PubSub] Redis notification publish failed:", error);
+        console.error('[PubSub] Redis notification publish failed:', error);
       });
     }
   }
@@ -424,7 +424,7 @@ class PubSub {
         try {
           callback(event);
         } catch (error) {
-          console.error("Error in notification subscriber:", error);
+          console.error('Error in notification subscriber:', error);
         }
       }
     }
@@ -482,7 +482,7 @@ class PubSub {
 
     if (this.redisAdapter) {
       this.redisAdapter.publishCommentEvent(entityKey, event).catch((error) => {
-        console.error("[PubSub] Redis comment publish failed:", error);
+        console.error('[PubSub] Redis comment publish failed:', error);
       });
     }
   }
@@ -494,7 +494,7 @@ class PubSub {
         try {
           callback(event);
         } catch (error) {
-          console.error("Error in comment subscriber:", error);
+          console.error('Error in comment subscriber:', error);
         }
       }
     }
@@ -550,7 +550,7 @@ class PubSub {
 
     if (this.redisAdapter) {
       this.redisAdapter.publishNewClimbEvent(channelKey, event).catch((error) => {
-        console.error("[PubSub] Redis new climb publish failed:", error);
+        console.error('[PubSub] Redis new climb publish failed:', error);
       });
     }
   }
@@ -565,7 +565,7 @@ class PubSub {
         try {
           callback(event);
         } catch (error) {
-          console.error("Error in new climb subscriber:", error);
+          console.error('Error in new climb subscriber:', error);
         }
       }
     }
@@ -577,7 +577,7 @@ class PubSub {
    */
   private ensureRedisIfRequired(): void {
     if (this.redisRequired && !this.isRedisConnected()) {
-      throw new Error("Redis is required but not connected");
+      throw new Error('Redis is required but not connected');
     }
   }
 

@@ -812,8 +812,8 @@ transition: background 150ms ease;
 ### Search Footer Button
 
 ```css
-variant: "contained";
-size: "large";
+variant: 'contained';
+size: 'large';
 border-radius: 12px;
 height: 48px;
 padding: 0 24px;
@@ -849,7 +849,7 @@ These are explicitly prohibited in the Boardsesh codebase:
 ### Theme Tokens (TypeScript)
 
 ```typescript
-import { themeTokens } from "@/app/theme/theme-config";
+import { themeTokens } from '@/app/theme/theme-config';
 
 // Usage
 themeTokens.colors.primary; // '#8C4A52'
@@ -882,7 +882,7 @@ import {
   getGradeTintColor,
   getSoftGradeColor,
   getGradeTextColor,
-} from "@/app/lib/grade-colors";
+} from '@/app/lib/grade-colors';
 ```
 
 ### CSS Module Co-location
@@ -902,8 +902,8 @@ import {
   Button as MuiButton,
   Badge as MuiBadge,
   CircularProgress,
-} from "@mui/material";
-import { FavoriteBorderOutlined, CheckOutlined } from "@mui/icons-material";
+} from '@mui/material';
+import { FavoriteBorderOutlined, CheckOutlined } from '@mui/icons-material';
 ```
 
 ### Typical Component File Structure

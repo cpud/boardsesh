@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import React, { useState, useCallback } from "react";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import MuiButton from "@mui/material/Button";
-import MuiAvatar from "@mui/material/Avatar";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import ListItemText from "@mui/material/ListItemText";
-import CircularProgress from "@mui/material/CircularProgress";
-import { PersonOutlined } from "@mui/icons-material";
-import Link from "next/link";
-import SwipeableDrawer from "@/app/components/swipeable-drawer/swipeable-drawer";
-import FollowButton from "@/app/components/ui/follow-button";
-import { FOLLOW_USER, UNFOLLOW_USER } from "@/app/lib/graphql/operations";
-import { useWsAuthToken } from "@/app/hooks/use-ws-auth-token";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
+import React, { useState, useCallback } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import MuiButton from '@mui/material/Button';
+import MuiAvatar from '@mui/material/Avatar';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import CircularProgress from '@mui/material/CircularProgress';
+import { PersonOutlined } from '@mui/icons-material';
+import Link from 'next/link';
+import SwipeableDrawer from '@/app/components/swipeable-drawer/swipeable-drawer';
+import FollowButton from '@/app/components/ui/follow-button';
+import { FOLLOW_USER, UNFOLLOW_USER } from '@/app/lib/graphql/operations';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   GET_FOLLOWERS,
   GET_FOLLOWING,
@@ -24,8 +24,8 @@ import {
   type GetFollowersQueryResponse,
   type GetFollowingQueryVariables,
   type GetFollowingQueryResponse,
-} from "@/app/lib/graphql/operations";
-import type { PublicUserProfile } from "@boardsesh/shared-schema";
+} from '@/app/lib/graphql/operations';
+import type { PublicUserProfile } from '@boardsesh/shared-schema';
 
 interface FollowerCountProps {
   userId: string;
@@ -33,7 +33,7 @@ interface FollowerCountProps {
   followingCount: number;
 }
 
-type DrawerMode = "followers" | "following" | null;
+type DrawerMode = 'followers' | 'following' | null;
 
 export default function FollowerCount({
   userId,
@@ -48,12 +48,12 @@ export default function FollowerCount({
   const { token } = useWsAuthToken();
 
   const fetchUsers = useCallback(
-    async (mode: "followers" | "following", offset = 0) => {
+    async (mode: 'followers' | 'following', offset = 0) => {
       setLoading(true);
       try {
         const client = createGraphQLHttpClient(token);
 
-        if (mode === "followers") {
+        if (mode === 'followers') {
           const response = await client.request<
             GetFollowersQueryResponse,
             GetFollowersQueryVariables
@@ -79,7 +79,7 @@ export default function FollowerCount({
           setTotalCount(response.following.totalCount);
         }
       } catch (error) {
-        console.error("Failed to fetch users:", error);
+        console.error('Failed to fetch users:', error);
       } finally {
         setLoading(false);
       }
@@ -87,7 +87,7 @@ export default function FollowerCount({
     [userId, token],
   );
 
-  const handleOpen = (mode: "followers" | "following") => {
+  const handleOpen = (mode: 'followers' | 'following') => {
     setDrawerMode(mode);
     setUsers([]);
     fetchUsers(mode);
@@ -101,21 +101,21 @@ export default function FollowerCount({
 
   return (
     <>
-      <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
         <Typography
           variant="body2"
           component="button"
-          onClick={() => handleOpen("followers")}
+          onClick={() => handleOpen('followers')}
           sx={{
-            cursor: "pointer",
-            background: "none",
-            border: "none",
+            cursor: 'pointer',
+            background: 'none',
+            border: 'none',
             padding: 0,
-            color: "text.primary",
-            "&:hover": { textDecoration: "underline" },
+            color: 'text.primary',
+            '&:hover': { textDecoration: 'underline' },
           }}
         >
-          <strong>{followerCount}</strong> {followerCount === 1 ? "follower" : "followers"}
+          <strong>{followerCount}</strong> {followerCount === 1 ? 'follower' : 'followers'}
         </Typography>
         <Typography variant="body2" color="text.secondary">
           ·
@@ -123,14 +123,14 @@ export default function FollowerCount({
         <Typography
           variant="body2"
           component="button"
-          onClick={() => handleOpen("following")}
+          onClick={() => handleOpen('following')}
           sx={{
-            cursor: "pointer",
-            background: "none",
-            border: "none",
+            cursor: 'pointer',
+            background: 'none',
+            border: 'none',
             padding: 0,
-            color: "text.primary",
-            "&:hover": { textDecoration: "underline" },
+            color: 'text.primary',
+            '&:hover': { textDecoration: 'underline' },
           }}
         >
           <strong>{followingCount}</strong> following
@@ -138,23 +138,23 @@ export default function FollowerCount({
       </Box>
 
       <SwipeableDrawer
-        title={drawerMode === "followers" ? "Followers" : "Following"}
+        title={drawerMode === 'followers' ? 'Followers' : 'Following'}
         placement="bottom"
         open={drawerMode !== null}
         onClose={() => setDrawerMode(null)}
         styles={{
-          wrapper: { height: "60vh" },
+          wrapper: { height: '60vh' },
           body: { padding: 0 },
         }}
       >
         {loading && users.length === 0 ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
             <CircularProgress />
           </Box>
         ) : users.length === 0 ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
             <Typography variant="body2" color="text.secondary">
-              {drawerMode === "followers" ? "No followers yet" : "Not following anyone"}
+              {drawerMode === 'followers' ? 'No followers yet' : 'Not following anyone'}
             </Typography>
           </Box>
         ) : (
@@ -166,9 +166,9 @@ export default function FollowerCount({
                   component={Link}
                   href={`/profile/${user.id}`}
                   sx={{
-                    textDecoration: "none",
-                    color: "inherit",
-                    "&:hover": { backgroundColor: "action.hover" },
+                    textDecoration: 'none',
+                    color: 'inherit',
+                    '&:hover': { backgroundColor: 'action.hover' },
                   }}
                   secondaryAction={
                     <FollowButton
@@ -187,7 +187,7 @@ export default function FollowerCount({
                     </MuiAvatar>
                   </ListItemAvatar>
                   <ListItemText
-                    primary={user.displayName || "User"}
+                    primary={user.displayName || 'User'}
                     secondary={`${user.followerCount} followers`}
                   />
                 </ListItem>
@@ -196,7 +196,7 @@ export default function FollowerCount({
             {hasMore && (
               <Box sx={{ p: 2 }}>
                 <MuiButton onClick={handleLoadMore} disabled={loading} variant="outlined" fullWidth>
-                  {loading ? "Loading..." : `Load more (${users.length} of ${totalCount})`}
+                  {loading ? 'Loading...' : `Load more (${users.length} of ${totalCount})`}
                 </MuiButton>
               </Box>
             )}

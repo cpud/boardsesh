@@ -1,16 +1,16 @@
-import { eq, asc, and, sql } from "drizzle-orm";
-import type { Grade, Angle } from "@boardsesh/shared-schema";
-import { db } from "../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { validateInput } from "../shared/helpers";
-import { BoardNameSchema } from "../../../validation/schemas";
+import { eq, asc, and, sql } from 'drizzle-orm';
+import type { Grade, Angle } from '@boardsesh/shared-schema';
+import { db } from '../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { validateInput } from '../shared/helpers';
+import { BoardNameSchema } from '../../../validation/schemas';
 
 export const boardQueries = {
   /**
    * Get difficulty grades for a specific board type
    */
   grades: async (_: unknown, { boardName }: { boardName: string }): Promise<Grade[]> => {
-    validateInput(BoardNameSchema, boardName, "boardName");
+    validateInput(BoardNameSchema, boardName, 'boardName');
 
     // Use unified table with board_type filter
     const grades = await db
@@ -29,7 +29,7 @@ export const boardQueries = {
 
     return grades.map((g) => ({
       difficultyId: g.difficultyId,
-      name: g.name || "",
+      name: g.name || '',
     }));
   },
 
@@ -40,7 +40,7 @@ export const boardQueries = {
     _: unknown,
     { boardName, layoutId }: { boardName: string; layoutId: number },
   ): Promise<Angle[]> => {
-    validateInput(BoardNameSchema, boardName, "boardName");
+    validateInput(BoardNameSchema, boardName, 'boardName');
 
     // Use raw SQL with unified tables
     // This query joins layouts to products to get available angles for a layout

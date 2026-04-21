@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - "board-controller/**"
-      - ".github/workflows/board-controller-docker.yml"
+      - 'board-controller/**'
+      - '.github/workflows/board-controller-docker.yml'
   release:
     types: [published]
 

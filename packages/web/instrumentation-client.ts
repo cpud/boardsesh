@@ -2,14 +2,14 @@
 // The added config here will be used whenever a users loads a page in their browser.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
-import * as Sentry from "@sentry/nextjs";
+import * as Sentry from '@sentry/nextjs';
 
 // Only enable Sentry on boardsesh.com to avoid polluting error tracking
 const isProductionDomain =
-  typeof window !== "undefined" && window.location.hostname.includes("boardsesh.com");
+  typeof window !== 'undefined' && window.location.hostname.includes('boardsesh.com');
 
 Sentry.init({
-  dsn: "https://f55e6626faf787ae5291ad75b010ea14@o4510644927660032.ingest.us.sentry.io/4510644930150400",
+  dsn: 'https://f55e6626faf787ae5291ad75b010ea14@o4510644927660032.ingest.us.sentry.io/4510644930150400',
 
   // Only send errors when running on boardsesh.com
   enabled: isProductionDomain,
@@ -28,10 +28,10 @@ Sentry.init({
 
     // Ignore browser extension errors (runtime.sendMessage, etc.)
     if (
-      errorMessage.includes("runtime.sendMessage") ||
-      errorMessage.includes("Extension context invalidated") ||
-      errorMessage.includes("message channel closed") ||
-      errorMessage.includes("message port closed")
+      errorMessage.includes('runtime.sendMessage') ||
+      errorMessage.includes('Extension context invalidated') ||
+      errorMessage.includes('message channel closed') ||
+      errorMessage.includes('message port closed')
     ) {
       return null;
     }
@@ -39,16 +39,16 @@ Sentry.init({
     // Ignore Safari/WebKit "Load failed" errors caused by in-flight fetch requests
     // being aborted during page navigation (e.g., RSC fetches interrupted by route changes)
     if (
-      errorMessage === "Load failed" ||
-      errorMessage === "Failed to fetch" ||
-      errorMessage === "cancelled"
+      errorMessage === 'Load failed' ||
+      errorMessage === 'Failed to fetch' ||
+      errorMessage === 'cancelled'
     ) {
       return null;
     }
 
     // Ignore DuckDuckGo browser-internal feature detection errors
     // (e.g., "feature named `pageContext` was not found")
-    if (errorMessage.includes("feature named") && errorMessage.includes("was not found")) {
+    if (errorMessage.includes('feature named') && errorMessage.includes('was not found')) {
       return null;
     }
 

@@ -1,24 +1,24 @@
-import { pgTable, text, timestamp, index, primaryKey } from "drizzle-orm/pg-core";
-import { boardSessions } from "./sessions";
-import { users } from "../auth/users";
+import { pgTable, text, timestamp, index, primaryKey } from 'drizzle-orm/pg-core';
+import { boardSessions } from './sessions';
+import { users } from '../auth/users';
 
 // Tracks which authenticated users have participated in a session.
 // One row per (session, user) — permanent historical record, never deleted on disconnect.
 export const boardSessionParticipants = pgTable(
-  "board_session_participants",
+  'board_session_participants',
   {
-    sessionId: text("session_id")
-      .references(() => boardSessions.id, { onDelete: "cascade" })
+    sessionId: text('session_id')
+      .references(() => boardSessions.id, { onDelete: 'cascade' })
       .notNull(),
-    userId: text("user_id")
-      .references(() => users.id, { onDelete: "cascade" })
+    userId: text('user_id')
+      .references(() => users.id, { onDelete: 'cascade' })
       .notNull(),
-    joinedAt: timestamp("joined_at").defaultNow().notNull(),
+    joinedAt: timestamp('joined_at').defaultNow().notNull(),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.sessionId, table.userId] }),
-    sessionIdx: index("board_session_participants_session_idx").on(table.sessionId),
-    userIdx: index("board_session_participants_user_idx").on(table.userId),
+    sessionIdx: index('board_session_participants_session_idx').on(table.sessionId),
+    userIdx: index('board_session_participants_user_idx').on(table.userId),
   }),
 );
 

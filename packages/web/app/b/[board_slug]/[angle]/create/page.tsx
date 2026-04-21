@@ -1,18 +1,18 @@
-import React from "react";
-import { notFound } from "next/navigation";
-import { resolveBoardBySlug, boardToRouteParams } from "@/app/lib/board-slug-utils";
-import { getBoardDetails } from "@/app/lib/board-constants";
-import { getClimb } from "@/app/lib/data/queries";
-import CreateClimbForm from "@/app/components/create-climb/create-climb-form";
-import { MOONBOARD_LAYOUTS, MOONBOARD_SETS, MoonBoardLayoutKey } from "@/app/lib/moonboard-config";
-import type { Climb } from "@/app/lib/types";
-import { Metadata } from "next";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/lib/auth/auth-options";
+import React from 'react';
+import { notFound } from 'next/navigation';
+import { resolveBoardBySlug, boardToRouteParams } from '@/app/lib/board-slug-utils';
+import { getBoardDetails } from '@/app/lib/board-constants';
+import { getClimb } from '@/app/lib/data/queries';
+import CreateClimbForm from '@/app/components/create-climb/create-climb-form';
+import { MOONBOARD_LAYOUTS, MOONBOARD_SETS, MoonBoardLayoutKey } from '@/app/lib/moonboard-config';
+import type { Climb } from '@/app/lib/types';
+import { Metadata } from 'next';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/lib/auth/auth-options';
 
 export const metadata: Metadata = {
-  title: "Create Climb | Boardsesh",
-  description: "Create a new climb on your climbing board",
+  title: 'Create Climb | Boardsesh',
+  description: 'Create a new climb on your climbing board',
 };
 
 function getMoonBoardLayoutInfo(layoutId: number) {
@@ -47,7 +47,7 @@ export default async function BoardSlugCreatePage(props: CreatePageProps) {
 
   const parsedParams = boardToRouteParams(board, Number(params.angle));
 
-  if (parsedParams.board_name === "moonboard") {
+  if (parsedParams.board_name === 'moonboard') {
     const layoutInfo = getMoonBoardLayoutInfo(parsedParams.layout_id);
     if (!layoutInfo) {
       return <div>Invalid MoonBoard layout</div>;
@@ -89,13 +89,13 @@ export default async function BoardSlugCreatePage(props: CreatePageProps) {
       } else {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id || loaded.userId !== session.user.id) {
-          editClimbError = "You can only edit your own climbs.";
+          editClimbError = 'You can only edit your own climbs.';
         } else {
           editClimb = loaded;
         }
       }
     } catch (error) {
-      console.error("Failed to load edit climb:", error);
+      console.error('Failed to load edit climb:', error);
       editClimbError =
         "We couldn't load that climb. It may have been deleted or belongs to a different board.";
     }

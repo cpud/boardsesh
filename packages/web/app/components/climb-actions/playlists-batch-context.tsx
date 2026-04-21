@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React, { useMemo } from "react";
-import { createTypedContext } from "@/app/lib/create-typed-context";
-import type { Playlist } from "@/app/lib/graphql/operations/playlists";
+import React, { useMemo } from 'react';
+import { createTypedContext } from '@/app/lib/create-typed-context';
+import type { Playlist } from '@/app/lib/graphql/operations/playlists';
 
 // Re-export Playlist type for convenience
-export type { Playlist } from "@/app/lib/graphql/operations/playlists";
+export type { Playlist } from '@/app/lib/graphql/operations/playlists';
 
 interface PlaylistsContextValue {
   playlists: Playlist[];
@@ -23,7 +23,7 @@ interface PlaylistsContextValue {
   refreshPlaylists: () => Promise<void>;
 }
 
-const [PlaylistsCtx, usePlaylistsContext] = createTypedContext<PlaylistsContextValue>("Playlists");
+const [PlaylistsCtx, usePlaylistsContext] = createTypedContext<PlaylistsContextValue>('Playlists');
 
 export const PlaylistsContext = PlaylistsCtx;
 export { usePlaylistsContext };

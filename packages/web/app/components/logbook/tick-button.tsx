@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import React, { useState, useMemo } from "react";
-import { Angle, Climb, BoardDetails } from "@/app/lib/types";
-import { useBoardProvider } from "../board-provider/board-provider-context";
-import MuiBadge from "@mui/material/Badge";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import Stack from "@mui/material/Stack";
-import SwipeableDrawer from "../swipeable-drawer/swipeable-drawer";
-import LoginOutlined from "@mui/icons-material/LoginOutlined";
-import AppsOutlined from "@mui/icons-material/AppsOutlined";
-import { track } from "@vercel/analytics";
-import { LogAscentDrawer } from "./log-ascent-drawer";
-import { useAuthModal } from "@/app/components/providers/auth-modal-provider";
-import { constructClimbInfoUrl } from "@/app/lib/url-utils";
-import { openExternalUrl } from "@/app/lib/open-external-url";
-import { themeTokens } from "@/app/theme/theme-config";
-import { PersonFallingIcon } from "@/app/components/icons/person-falling-icon";
-import { useAlwaysTickInApp } from "@/app/hooks/use-always-tick-in-app";
-import { TickIcon, TickButtonWithLabel } from "./tick-icon";
+import React, { useState, useMemo } from 'react';
+import { Angle, Climb, BoardDetails } from '@/app/lib/types';
+import { useBoardProvider } from '../board-provider/board-provider-context';
+import MuiBadge from '@mui/material/Badge';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
+import LoginOutlined from '@mui/icons-material/LoginOutlined';
+import AppsOutlined from '@mui/icons-material/AppsOutlined';
+import { track } from '@vercel/analytics';
+import { LogAscentDrawer } from './log-ascent-drawer';
+import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
+import { constructClimbInfoUrl } from '@/app/lib/url-utils';
+import { openExternalUrl } from '@/app/lib/open-external-url';
+import { themeTokens } from '@/app/theme/theme-config';
+import { PersonFallingIcon } from '@/app/components/icons/person-falling-icon';
+import { useAlwaysTickInApp } from '@/app/hooks/use-always-tick-in-app';
+import { TickIcon, TickButtonWithLabel } from './tick-icon';
 
 interface TickButtonProps {
   angle: Angle;
@@ -32,7 +32,7 @@ interface TickButtonProps {
   /** Whether the current tick will be logged as a flash (no prior history, 1 try). */
   isFlash?: boolean;
   /** The currently selected ascent type in the expanded tick bar. */
-  ascentType?: "flash" | "send" | "attempt";
+  ascentType?: 'flash' | 'send' | 'attempt';
 }
 
 export const TickButton: React.FC<TickButtonProps> = ({
@@ -57,8 +57,8 @@ export const TickButton: React.FC<TickButtonProps> = ({
   );
 
   const showDrawer = (e?: React.MouseEvent<HTMLButtonElement>) => {
-    track("Tick Button Clicked", {
-      boardLayout: boardDetails.layout_name || "",
+    track('Tick Button Clicked', {
+      boardLayout: boardDetails.layout_name || '',
       existingAscentCount: badgeCount,
     });
 
@@ -102,35 +102,35 @@ export const TickButton: React.FC<TickButtonProps> = ({
       badgeContent={badgeCount > 0 ? badgeCount : 0}
       max={100}
       sx={{
-        "& .MuiBadge-badge": {
+        '& .MuiBadge-badge': {
           backgroundColor: hasSuccessfulAscent
             ? themeTokens.colors.success
             : themeTokens.colors.error,
-          color: "common.white",
+          color: 'common.white',
         },
       }}
     >
       <IconButton
         id="button-tick"
         onClick={showDrawer}
-        aria-label={tickBarActive ? "Save tick" : "Log ascent"}
+        aria-label={tickBarActive ? 'Save tick' : 'Log ascent'}
         sx={
           tickBarActive
             ? {
                 backgroundColor:
-                  ascentType === "attempt"
+                  ascentType === 'attempt'
                     ? themeTokens.colors.error
-                    : ascentType === "flash" || isFlash
+                    : ascentType === 'flash' || isFlash
                       ? themeTokens.colors.amber
                       : themeTokens.colors.success,
                 color:
-                  ascentType === "flash" || isFlash ? themeTokens.neutral[900] : "common.white",
-                transition: "background-color 150ms ease, color 150ms ease",
-                "&:hover": {
+                  ascentType === 'flash' || isFlash ? themeTokens.neutral[900] : 'common.white',
+                transition: 'background-color 150ms ease, color 150ms ease',
+                '&:hover': {
                   backgroundColor:
-                    ascentType === "attempt"
+                    ascentType === 'attempt'
                       ? themeTokens.colors.error
-                      : ascentType === "flash" || isFlash
+                      : ascentType === 'flash' || isFlash
                         ? themeTokens.colors.amber
                         : themeTokens.colors.successHover,
                 },
@@ -138,17 +138,17 @@ export const TickButton: React.FC<TickButtonProps> = ({
             : { opacity: themeTokens.opacity.subtle }
         }
       >
-        {tickBarActive && ascentType === "attempt" ? (
+        {tickBarActive && ascentType === 'attempt' ? (
           <PersonFallingIcon />
         ) : (
-          <TickIcon isFlash={tickBarActive ? !!(ascentType === "flash" || isFlash) : false} />
+          <TickIcon isFlash={tickBarActive ? !!(ascentType === 'flash' || isFlash) : false} />
         )}
       </IconButton>
     </MuiBadge>
   );
 
   const tickLabel =
-    ascentType === "attempt" ? "attempt" : ascentType === "flash" || isFlash ? "flash" : "tick";
+    ascentType === 'attempt' ? 'attempt' : ascentType === 'flash' || isFlash ? 'flash' : 'tick';
 
   return (
     <>
@@ -167,9 +167,9 @@ export const TickButton: React.FC<TickButtonProps> = ({
           placement="bottom"
           onClose={closeDrawer}
           open={drawerVisible}
-          styles={{ wrapper: { height: "60%" } }}
+          styles={{ wrapper: { height: '60%' } }}
         >
-          <Stack spacing={3} sx={{ width: "100%", textAlign: "center", padding: "24px 0" }}>
+          <Stack spacing={3} sx={{ width: '100%', textAlign: 'center', padding: '24px 0' }}>
             <Typography variant="body2" component="span" fontWeight={600} sx={{ fontSize: 16 }}>
               Sign in to record ticks
             </Typography>
@@ -181,8 +181,8 @@ export const TickButton: React.FC<TickButtonProps> = ({
               startIcon={<LoginOutlined />}
               onClick={() =>
                 openAuthModal({
-                  title: "Sign in to record ticks",
-                  description: "Create an account to log your climbs and track your progress.",
+                  title: 'Sign in to record ticks',
+                  description: 'Create an account to log your climbs and track your progress.',
                 })
               }
               fullWidth

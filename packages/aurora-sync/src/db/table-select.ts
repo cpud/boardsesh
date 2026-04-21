@@ -15,8 +15,8 @@ import {
   boardBetaLinks,
   boardWalls,
   boardTags,
-} from "@boardsesh/db/schema/boards";
-import { AuroraBoardName } from "../api/types";
+} from '@boardsesh/db/schema/boards';
+import { AuroraBoardName } from '../api/types';
 
 // Re-export AuroraBoardName as BoardName for backward compatibility within this module
 export type BoardName = AuroraBoardName;
@@ -58,13 +58,13 @@ export function getUnifiedTable<K extends keyof UnifiedTableSet>(tableName: K): 
  * @returns True if the board name is valid
  */
 export function isValidBoardName(boardName: string): boardName is BoardName {
-  return boardName === "kilter" || boardName === "tension";
+  return boardName === 'kilter' || boardName === 'tension';
 }
 
 /**
  * Extended board name type that includes moonboard for unified tables
  */
-export type UnifiedBoardName = BoardName | "moonboard";
+export type UnifiedBoardName = BoardName | 'moonboard';
 
 /**
  * Check if a board name is valid for unified tables (includes moonboard)
@@ -72,7 +72,7 @@ export type UnifiedBoardName = BoardName | "moonboard";
  * @returns True if the board name is valid for unified tables
  */
 export function isValidUnifiedBoardName(boardName: string): boardName is UnifiedBoardName {
-  return boardName === "kilter" || boardName === "tension" || boardName === "moonboard";
+  return boardName === 'kilter' || boardName === 'tension' || boardName === 'moonboard';
 }
 
 export default {

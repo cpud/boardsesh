@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React, { createContext, useCallback, useContext, useState } from "react";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
-import Button from "@mui/material/Button";
-import type { AlertColor } from "@mui/material/Alert";
+import React, { createContext, useCallback, useContext, useState } from 'react';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
+import type { AlertColor } from '@mui/material/Alert';
 
 type SnackbarAction = {
   label: string;
@@ -57,14 +57,14 @@ export function SnackbarProvider({ children }: { children: React.ReactNode }) {
           open
           autoHideDuration={msg.duration ?? 3000}
           onClose={() => handleClose(msg.key)}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
-          sx={{ top: "calc(8px + env(safe-area-inset-top, 0px)) !important" }}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          sx={{ top: 'calc(8px + env(safe-area-inset-top, 0px)) !important' }}
         >
           <Alert
             onClose={() => handleClose(msg.key)}
             severity={msg.severity}
             variant="filled"
-            sx={{ width: "100%" }}
+            sx={{ width: '100%' }}
             action={
               msg.action ? (
                 <Button

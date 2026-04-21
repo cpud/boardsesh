@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React, { useMemo } from "react";
-import { LabelOutlined, FavoriteOutlined } from "@mui/icons-material";
-import { getBoardDetailsForPlaylist } from "@/app/lib/board-config-for-playlist";
-import { themeTokens } from "@/app/theme/theme-config";
-import BoardImageLayers from "../board-renderer/board-image-layers";
-import styles from "./library.module.css";
+import React, { useMemo } from 'react';
+import { LabelOutlined, FavoriteOutlined } from '@mui/icons-material';
+import { getBoardDetailsForPlaylist } from '@/app/lib/board-config-for-playlist';
+import { themeTokens } from '@/app/theme/theme-config';
+import BoardImageLayers from '../board-renderer/board-image-layers';
+import styles from './library.module.css';
 
 const PLAYLIST_COLORS = [
   themeTokens.colors.primary,
@@ -24,13 +24,13 @@ const isValidHexColor = (color: string): boolean => {
 
 /** Convert a hex color like "#FF6600" to "255, 102, 0" for use in rgba(). */
 function hexToRgb(hex: string): string {
-  const cleaned = hex.replace("#", "");
+  const cleaned = hex.replace('#', '');
   const full =
     cleaned.length === 3
       ? cleaned
-          .split("")
+          .split('')
           .map((c) => c + c)
-          .join("")
+          .join('')
       : cleaned;
   const r = parseInt(full.substring(0, 2), 16);
   const g = parseInt(full.substring(2, 4), 16);
@@ -46,7 +46,7 @@ export type PlaylistPreviewSquareProps = {
   isLikedClimbs?: boolean;
   index?: number;
   className?: string;
-  fetchPriority?: "high" | "low" | "auto";
+  fetchPriority?: 'high' | 'low' | 'auto';
 };
 
 export default function PlaylistPreviewSquare({
@@ -75,7 +75,7 @@ export default function PlaylistPreviewSquare({
   // Liked climbs: use the gradient, no board preview
   if (isLikedClimbs) {
     return (
-      <div className={`${styles.previewContainer} ${styles.likedGradient} ${className ?? ""}`}>
+      <div className={`${styles.previewContainer} ${styles.likedGradient} ${className ?? ''}`}>
         <div className={styles.previewIconLayer}>
           <FavoriteOutlined className={styles.previewIcon} />
         </div>
@@ -87,7 +87,7 @@ export default function PlaylistPreviewSquare({
   if (!hasBoardPreview) {
     return (
       <div
-        className={`${styles.previewContainer} ${className ?? ""}`}
+        className={`${styles.previewContainer} ${className ?? ''}`}
         style={{
           background: `linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.08) 100%), ${backgroundColor}`,
         }}
@@ -104,16 +104,16 @@ export default function PlaylistPreviewSquare({
   }
 
   // Board preview with frosted glass overlay
-  const rgbColor = backgroundColor ? hexToRgb(backgroundColor) : "0, 0, 0";
+  const rgbColor = backgroundColor ? hexToRgb(backgroundColor) : '0, 0, 0';
 
   return (
-    <div className={`${styles.previewContainer} ${className ?? ""}`}>
+    <div className={`${styles.previewContainer} ${className ?? ''}`}>
       <div className={styles.previewBoardLayer}>
         <BoardImageLayers
           boardDetails={boardDetails}
           mirrored={false}
           thumbnail
-          style={{ width: "100%", height: "100%" }}
+          style={{ width: '100%', height: '100%' }}
           fetchPriority={fetchPriority}
         />
       </div>

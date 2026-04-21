@@ -1,14 +1,14 @@
-import { describe, it, expect, vi } from "vite-plus/test";
-import { fireEvent, render, screen } from "@testing-library/react";
-import React from "react";
-import type { BoardDetails, Climb } from "@/app/lib/types";
+import { describe, it, expect, vi } from 'vite-plus/test';
+import { fireEvent, render, screen } from '@testing-library/react';
+import React from 'react';
+import type { BoardDetails, Climb } from '@/app/lib/types';
 
-let mockPathname = "/b/moonrise-gym/40/list";
+let mockPathname = '/b/moonrise-gym/40/list';
 
-import ClimbThumbnail from "../climb-thumbnail";
+import ClimbThumbnail from '../climb-thumbnail';
 
 const boardDetails = {
-  board_name: "kilter",
+  board_name: 'kilter',
   layout_id: 1,
   size_id: 2,
   set_ids: [3, 4],
@@ -20,29 +20,29 @@ const boardDetails = {
   edge_top: 100,
   boardHeight: 100,
   boardWidth: 100,
-  layout_name: "Homewall",
-  size_name: "8x12 Full Ride",
-  size_description: "Main",
-  set_names: ["Main Kicker", "Aux Kicker"],
+  layout_name: 'Homewall',
+  size_name: '8x12 Full Ride',
+  size_description: 'Main',
+  set_names: ['Main Kicker', 'Aux Kicker'],
 } as BoardDetails;
 
 const climb = {
-  uuid: "ABC123",
-  name: "Moon Landing",
+  uuid: 'ABC123',
+  name: 'Moon Landing',
   angle: 40,
-  setter_username: "setter",
-  description: "",
-  frames: "",
+  setter_username: 'setter',
+  description: '',
+  frames: '',
   ascensionist_count: 0,
-  difficulty: "V4",
-  quality_average: "3",
+  difficulty: 'V4',
+  quality_average: '3',
   stars: 0,
-  difficulty_error: "0",
+  difficulty_error: '0',
   benchmark_difficulty: null,
 } as Climb;
 
-describe("ClimbThumbnail", () => {
-  it("fires onClick when a climb is present", () => {
+describe('ClimbThumbnail', () => {
+  it('fires onClick when a climb is present', () => {
     const onClick = vi.fn();
     render(
       <ClimbThumbnail
@@ -52,11 +52,11 @@ describe("ClimbThumbnail", () => {
         onClick={onClick}
       />,
     );
-    fireEvent.click(screen.getByRole("button"));
+    fireEvent.click(screen.getByRole('button'));
     expect(onClick).toHaveBeenCalledOnce();
   });
 
-  it("does not expose a button when there is no climb", () => {
+  it('does not expose a button when there is no climb', () => {
     render(
       <ClimbThumbnail
         boardDetails={boardDetails}
@@ -65,6 +65,6 @@ describe("ClimbThumbnail", () => {
         onClick={vi.fn()}
       />,
     );
-    expect(screen.queryByRole("button")).toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
   });
 });

@@ -1,9 +1,9 @@
-import "server-only";
-import { getDb } from "@/app/lib/db/db";
-import * as schema from "@/app/lib/db/schema";
-import { eq, and, count } from "drizzle-orm";
-import { getUserBoardMappings } from "@/app/lib/auth/user-board-mappings";
-import type { UserProfile } from "./utils/profile-constants";
+import 'server-only';
+import { getDb } from '@/app/lib/db/db';
+import * as schema from '@/app/lib/db/schema';
+import { eq, and, count } from 'drizzle-orm';
+import { getUserBoardMappings } from '@/app/lib/auth/user-board-mappings';
+import type { UserProfile } from './utils/profile-constants';
 
 export async function getProfileData(
   userId: string,
@@ -45,12 +45,12 @@ export async function getProfileData(
 
   const credentials = mappings.map((m) => ({
     boardType: m.boardType,
-    auroraUsername: m.boardUsername || "",
+    auroraUsername: m.boardUsername || '',
   }));
 
   return {
     id: user.id,
-    email: isOwnProfile ? (user.email ?? "") : undefined,
+    email: isOwnProfile ? (user.email ?? '') : undefined,
     name: user.name,
     image: user.image,
     profile: profile

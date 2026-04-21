@@ -1,31 +1,31 @@
-"use client";
+'use client';
 
-import React, { useCallback, useRef, useState } from "react";
-import MuiButton from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import Stack from "@mui/material/Stack";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
-import EditOutlined from "@mui/icons-material/EditOutlined";
-import CloseOutlined from "@mui/icons-material/CloseOutlined";
-import HistoryOutlined from "@mui/icons-material/HistoryOutlined";
-import { useQueueActions, useQueueList, useSessionData } from "../graphql-queue";
-import QueueList, { QueueListHandle } from "../queue-control/queue-list";
-import SwipeableDrawer from "../swipeable-drawer/swipeable-drawer";
-import { usePullToClose } from "@/app/lib/hooks/pull-to-close";
-import { useDrawerDragResize } from "@/app/hooks/use-drawer-drag-resize";
-import { themeTokens } from "@/app/theme/theme-config";
-import type { BoardDetails } from "@/app/lib/types";
-import styles from "./play-view-drawer.module.css";
-import drawerStyles from "../swipeable-drawer/swipeable-drawer.module.css";
+import React, { useCallback, useRef, useState } from 'react';
+import MuiButton from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
+import EditOutlined from '@mui/icons-material/EditOutlined';
+import CloseOutlined from '@mui/icons-material/CloseOutlined';
+import HistoryOutlined from '@mui/icons-material/HistoryOutlined';
+import { useQueueActions, useQueueList, useSessionData } from '../graphql-queue';
+import QueueList, { QueueListHandle } from '../queue-control/queue-list';
+import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
+import { usePullToClose } from '@/app/lib/hooks/pull-to-close';
+import { useDrawerDragResize } from '@/app/hooks/use-drawer-drag-resize';
+import { themeTokens } from '@/app/theme/theme-config';
+import type { BoardDetails } from '@/app/lib/types';
+import styles from './play-view-drawer.module.css';
+import drawerStyles from '../swipeable-drawer/swipeable-drawer.module.css';
 
 const QUEUE_DRAWER_STYLES = {
   wrapper: {
-    touchAction: "pan-y" as const,
-    transition: "height 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    touchAction: 'pan-y' as const,
+    transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   },
-  body: { padding: 0, overflow: "hidden" as const, touchAction: "pan-y" as const },
+  body: { padding: 0, overflow: 'hidden' as const, touchAction: 'pan-y' as const },
 } as const;
 
 export interface QueueDrawerProps {
@@ -128,8 +128,8 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
       if (transitionOpen) {
         // Clear any leftover inline styles from a custom pull-to-close gesture
         if (queuePaperRef.current) {
-          queuePaperRef.current.style.transform = "";
-          queuePaperRef.current.style.transition = "";
+          queuePaperRef.current.style.transform = '';
+          queuePaperRef.current.style.transition = '';
         }
         setTimeout(() => {
           queueListRef.current?.scrollToCurrentClimb();
@@ -162,11 +162,11 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
         </div>
         <Box
           sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
             padding: `${themeTokens.spacing[4]}px ${themeTokens.spacing[6]}px`,
-            borderBottom: "1px solid var(--neutral-200)",
+            borderBottom: '1px solid var(--neutral-200)',
           }}
         >
           <Typography
@@ -179,7 +179,7 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
           >
             Queue
           </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {queue.length > 0 &&
               !viewOnlyMode &&
               (isEditMode ? (
@@ -187,7 +187,7 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
                   <MuiButton
                     variant="text"
                     startIcon={<DeleteOutlined />}
-                    sx={{ color: "var(--neutral-400)" }}
+                    sx={{ color: 'var(--neutral-400)' }}
                     onClick={() => {
                       setQueue([]);
                       handleExitEditMode();
@@ -204,7 +204,7 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
                   <IconButton
                     color="default"
                     onClick={() => setShowHistory((prev) => !prev)}
-                    sx={showHistory ? { border: "1px solid", borderColor: "divider" } : undefined}
+                    sx={showHistory ? { border: '1px solid', borderColor: 'divider' } : undefined}
                   >
                     <HistoryOutlined />
                   </IconButton>
@@ -220,7 +220,7 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
         <div
           ref={queueScrollCallbackRef}
           className={styles.queueScrollContainer}
-          style={{ touchAction: "pan-y" }}
+          style={{ touchAction: 'pan-y' }}
           onTouchStart={handleQueueSwipeStart}
           onTouchMove={handleQueueSwipeMove}
           onTouchEnd={handleQueueSwipeEnd}
@@ -238,7 +238,7 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
         {isEditMode && selectedItems.size > 0 && (
           <div className={styles.bulkRemoveBar}>
             <MuiButton variant="contained" color="error" fullWidth onClick={handleBulkRemove}>
-              Remove {selectedItems.size} {selectedItems.size === 1 ? "item" : "items"}
+              Remove {selectedItems.size} {selectedItems.size === 1 ? 'item' : 'items'}
             </MuiButton>
           </div>
         )}

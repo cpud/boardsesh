@@ -1,10 +1,10 @@
-import { eq, and, desc, sql } from "drizzle-orm";
-import type { ConnectionContext } from "@boardsesh/shared-schema";
-import { db } from "../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { requireAuthenticated, validateInput } from "../shared/helpers";
-import { ActivityFeedInputSchema } from "../../../validation/schemas";
-import { encodeCursor, decodeCursor } from "../../../utils/feed-cursor";
+import { eq, and, desc, sql } from 'drizzle-orm';
+import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { db } from '../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { requireAuthenticated, validateInput } from '../shared/helpers';
+import { ActivityFeedInputSchema } from '../../../validation/schemas';
+import { encodeCursor, decodeCursor } from '../../../utils/feed-cursor';
 
 function mapFeedItemToGraphQL(row: typeof dbSchema.feedItems.$inferSelect) {
   const meta = (row.metadata || {}) as Record<string, unknown>;
@@ -65,14 +65,14 @@ function mapTickRowToFeedItem({
 }: TickJoinRow) {
   return {
     id: tick.id.toString(),
-    type: "ascent" as const,
-    entityType: "tick" as const,
+    type: 'ascent' as const,
+    entityType: 'tick' as const,
     entityId: tick.uuid,
     boardUuid: null,
     actorId: tick.userId,
     actorDisplayName: userDisplayName || userName || null,
     actorAvatarUrl: userAvatarUrl || userImage || null,
-    climbName: climbName || "Unknown Climb",
+    climbName: climbName || 'Unknown Climb',
     climbUuid: tick.climbUuid,
     boardType: tick.boardType,
     layoutId,
@@ -106,7 +106,7 @@ export const activityFeedQueries = {
     requireAuthenticated(ctx);
     const myUserId = ctx.userId!;
 
-    const validatedInput = validateInput(ActivityFeedInputSchema, input || {}, "input");
+    const validatedInput = validateInput(ActivityFeedInputSchema, input || {}, 'input');
     const limit = validatedInput.limit ?? 20;
 
     // Build base conditions
@@ -158,7 +158,7 @@ export const activityFeedQueries = {
    * Returns cursor-based pagination using the ActivityFeedItem shape.
    */
   trendingFeed: async (_: unknown, { input }: { input?: Record<string, unknown> }) => {
-    const validatedInput = validateInput(ActivityFeedInputSchema, input || {}, "input");
+    const validatedInput = validateInput(ActivityFeedInputSchema, input || {}, 'input');
     const limit = validatedInput.limit ?? 20;
 
     // Build conditions - only successful ascents for trending

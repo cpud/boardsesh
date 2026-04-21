@@ -5,18 +5,18 @@
  *   bun run --filter=@boardsesh/board-constants generate
  */
 
-import { execFileSync } from "child_process";
-import { existsSync, writeFileSync } from "fs";
-import { join } from "path";
-import { fileURLToPath } from "url";
-import { config } from "dotenv";
+import { execFileSync } from 'child_process';
+import { existsSync, writeFileSync } from 'fs';
+import { join } from 'path';
+import { fileURLToPath } from 'url';
+import { config } from 'dotenv';
 
-const __dirname = fileURLToPath(new URL(".", import.meta.url));
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const ENV_PATHS = [
-  join(__dirname, "../.env.local"),
-  join(__dirname, "../../web/.env.local"),
-  join(__dirname, "../../backend/.env.development"),
+  join(__dirname, '../.env.local'),
+  join(__dirname, '../../web/.env.local'),
+  join(__dirname, '../../backend/.env.development'),
 ];
 
 for (const envPath of ENV_PATHS) {
@@ -89,11 +89,11 @@ type GeneratedBoardData = {
   holePlacements: HolePlacement[];
 };
 
-const BOARD_NAMES = ["kilter", "tension", "decoy", "touchstone", "grasshopper"] as const;
+const BOARD_NAMES = ['kilter', 'tension', 'decoy', 'touchstone', 'grasshopper'] as const;
 type GeneratedBoardName = (typeof BOARD_NAMES)[number];
 
-const PRODUCT_OUTPUT_PATH = join(__dirname, "../src/generated/product-sizes-data.ts");
-const LED_OUTPUT_PATH = join(__dirname, "../src/generated/led-placements-data.ts");
+const PRODUCT_OUTPUT_PATH = join(__dirname, '../src/generated/product-sizes-data.ts');
+const LED_OUTPUT_PATH = join(__dirname, '../src/generated/led-placements-data.ts');
 
 function getPostgresConfig(): PostgresConfig {
   const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
@@ -101,20 +101,20 @@ function getPostgresConfig(): PostgresConfig {
   if (connectionString) {
     const url = new URL(connectionString);
     return {
-      host: url.hostname || process.env.POSTGRES_HOST || "localhost",
-      port: url.port || process.env.POSTGRES_PORT || "5432",
-      user: decodeURIComponent(url.username || process.env.POSTGRES_USER || "postgres"),
-      password: decodeURIComponent(url.password || process.env.POSTGRES_PASSWORD || "password"),
-      database: url.pathname.replace(/^\//, "") || process.env.POSTGRES_DATABASE || "main",
+      host: url.hostname || process.env.POSTGRES_HOST || 'localhost',
+      port: url.port || process.env.POSTGRES_PORT || '5432',
+      user: decodeURIComponent(url.username || process.env.POSTGRES_USER || 'postgres'),
+      password: decodeURIComponent(url.password || process.env.POSTGRES_PASSWORD || 'password'),
+      database: url.pathname.replace(/^\//, '') || process.env.POSTGRES_DATABASE || 'main',
     };
   }
 
   return {
-    host: process.env.POSTGRES_HOST || "localhost",
-    port: process.env.POSTGRES_PORT || "5432",
-    user: process.env.POSTGRES_USER || "postgres",
-    password: process.env.POSTGRES_PASSWORD || "password",
-    database: process.env.POSTGRES_DATABASE || "main",
+    host: process.env.POSTGRES_HOST || 'localhost',
+    port: process.env.POSTGRES_PORT || '5432',
+    user: process.env.POSTGRES_USER || 'postgres',
+    password: process.env.POSTGRES_PASSWORD || 'password',
+    database: process.env.POSTGRES_DATABASE || 'main',
   };
 }
 
@@ -122,27 +122,27 @@ const postgresConfig = getPostgresConfig();
 
 function runPsqlQuery(query: string): string {
   return execFileSync(
-    "psql",
+    'psql',
     [
-      "-h",
+      '-h',
       postgresConfig.host,
-      "-p",
+      '-p',
       postgresConfig.port,
-      "-U",
+      '-U',
       postgresConfig.user,
-      "-d",
+      '-d',
       postgresConfig.database,
-      "-t",
-      "-A",
-      "-F",
-      "|",
-      "-R",
-      "~~~",
-      "-c",
+      '-t',
+      '-A',
+      '-F',
+      '|',
+      '-R',
+      '~~~',
+      '-c',
       query,
     ],
     {
-      encoding: "utf-8",
+      encoding: 'utf-8',
       env: {
         ...process.env,
         PGPASSWORD: postgresConfig.password,
@@ -154,11 +154,11 @@ function runPsqlQuery(query: string): string {
 function parseRows<T>(result: string, mapRow: (parts: string[]) => T): T[] {
   return result
     .trim()
-    .split("~~~")
-    .filter((line) => line.length > 0 && !line.startsWith("\n"))
+    .split('~~~')
+    .filter((line) => line.length > 0 && !line.startsWith('\n'))
     .map((line) => line.trim())
     .filter((line) => line.length > 0)
-    .map((line) => mapRow(line.split("|")));
+    .map((line) => mapRow(line.split('|')));
 }
 
 function querySizes(boardName: GeneratedBoardName): ProductSize[] {
@@ -248,22 +248,22 @@ function queryHolePlacements(boardName: GeneratedBoardName): HolePlacement[] {
 }
 
 function escapeString(value: string): string {
-  return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+  return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
 function assertBoardDataIsComplete(boardName: GeneratedBoardName, data: GeneratedBoardData): void {
   const missing: string[] = [];
 
-  if (data.sizes.length === 0) missing.push("product sizes");
-  if (data.layouts.length === 0) missing.push("layouts");
-  if (data.sets.length === 0) missing.push("set mappings");
-  if (data.imageFilenames.length === 0) missing.push("image filenames");
-  if (data.ledPlacements.length === 0) missing.push("LED placements");
-  if (data.holePlacements.length === 0) missing.push("hole placements");
+  if (data.sizes.length === 0) missing.push('product sizes');
+  if (data.layouts.length === 0) missing.push('layouts');
+  if (data.sets.length === 0) missing.push('set mappings');
+  if (data.imageFilenames.length === 0) missing.push('image filenames');
+  if (data.ledPlacements.length === 0) missing.push('LED placements');
+  if (data.holePlacements.length === 0) missing.push('hole placements');
 
   if (missing.length > 0) {
     throw new Error(
-      `Refusing to generate board constants with incomplete ${boardName} data. Missing: ${missing.join(", ")}.`,
+      `Refusing to generate board constants with incomplete ${boardName} data. Missing: ${missing.join(', ')}.`,
     );
   }
 }
@@ -274,7 +274,7 @@ function generateSizesTypeScript(boardName: GeneratedBoardName, sizes: ProductSi
       (size) =>
         `    ${size.id}: { id: ${size.id}, name: '${escapeString(size.name)}', description: '${escapeString(size.description)}', edgeLeft: ${size.edgeLeft}, edgeRight: ${size.edgeRight}, edgeBottom: ${size.edgeBottom}, edgeTop: ${size.edgeTop}, productId: ${size.productId} },`,
     )
-    .join("\n");
+    .join('\n');
 
   return `  ${boardName}: {\n${entries}\n  }`;
 }
@@ -285,7 +285,7 @@ function generateLayoutsTypeScript(boardName: GeneratedBoardName, layouts: Layou
       (layout) =>
         `    ${layout.id}: { id: ${layout.id}, name: '${escapeString(layout.name)}', productId: ${layout.productId} },`,
     )
-    .join("\n");
+    .join('\n');
 
   return `  ${boardName}: {\n${entries}\n  }`;
 }
@@ -303,10 +303,10 @@ function generateSetsTypeScript(boardName: GeneratedBoardName, sets: SetMapping[
     .map(([key, setList]) => {
       const setArray = setList
         .map((set) => `{ id: ${set.id}, name: '${escapeString(set.name)}' }`)
-        .join(", ");
+        .join(', ');
       return `    '${key}': [${setArray}],`;
     })
-    .join("\n");
+    .join('\n');
 
   return `  ${boardName}: {\n${entries}\n  }`;
 }
@@ -320,7 +320,7 @@ function generateImageFilenamesTypeScript(
       (mapping) =>
         `    '${mapping.layoutId}-${mapping.sizeId}-${mapping.setId}': '${escapeString(mapping.imageFilename)}',`,
     )
-    .join("\n");
+    .join('\n');
 
   return `  ${boardName}: {\n${entries}\n  }`;
 }
@@ -346,12 +346,12 @@ function generateHolePlacementsTypeScript(
     .map(([key, holds]) => {
       const holdsArray = holds
         .map(
-          ([id, mirrorId, x, y]) => `[${id}, ${mirrorId === null ? "null" : mirrorId}, ${x}, ${y}]`,
+          ([id, mirrorId, x, y]) => `[${id}, ${mirrorId === null ? 'null' : mirrorId}, ${x}, ${y}]`,
         )
-        .join(", ");
+        .join(', ');
       return `    '${key}': [${holdsArray}],`;
     })
-    .join("\n");
+    .join('\n');
 
   return `  ${boardName}: {\n${entries}\n  }`;
 }
@@ -372,10 +372,10 @@ function generateLedPlacementsTypeScript(
     .map(([key, ledMap]) => {
       const ledEntries = Object.entries(ledMap)
         .map(([placementId, position]) => `${placementId}: ${position}`)
-        .join(", ");
+        .join(', ');
       return `    '${key}': { ${ledEntries} },`;
     })
-    .join("\n");
+    .join('\n');
 
   return `  ${boardName}: {\n${entries}\n  }`;
 }
@@ -402,47 +402,47 @@ import type { BoardName } from '@boardsesh/shared-schema';
 import type { HoldTuple, LayoutData, ProductSizeData, SetData } from '../types';
 
 export const AURORA_PRODUCT_SIZES: Record<BoardName, Record<number, ProductSizeData>> = {
-${generateSizesTypeScript("kilter", boardData.kilter.sizes)},
-${generateSizesTypeScript("tension", boardData.tension.sizes)},
-${generateSizesTypeScript("decoy", boardData.decoy.sizes)},
-${generateSizesTypeScript("touchstone", boardData.touchstone.sizes)},
-${generateSizesTypeScript("grasshopper", boardData.grasshopper.sizes)},
+${generateSizesTypeScript('kilter', boardData.kilter.sizes)},
+${generateSizesTypeScript('tension', boardData.tension.sizes)},
+${generateSizesTypeScript('decoy', boardData.decoy.sizes)},
+${generateSizesTypeScript('touchstone', boardData.touchstone.sizes)},
+${generateSizesTypeScript('grasshopper', boardData.grasshopper.sizes)},
   moonboard: {},
 };
 
 export const LAYOUTS: Record<BoardName, Record<number, LayoutData>> = {
-${generateLayoutsTypeScript("kilter", boardData.kilter.layouts)},
-${generateLayoutsTypeScript("tension", boardData.tension.layouts)},
-${generateLayoutsTypeScript("decoy", boardData.decoy.layouts)},
-${generateLayoutsTypeScript("touchstone", boardData.touchstone.layouts)},
-${generateLayoutsTypeScript("grasshopper", boardData.grasshopper.layouts)},
+${generateLayoutsTypeScript('kilter', boardData.kilter.layouts)},
+${generateLayoutsTypeScript('tension', boardData.tension.layouts)},
+${generateLayoutsTypeScript('decoy', boardData.decoy.layouts)},
+${generateLayoutsTypeScript('touchstone', boardData.touchstone.layouts)},
+${generateLayoutsTypeScript('grasshopper', boardData.grasshopper.layouts)},
   moonboard: {},
 };
 
 export const SETS: Record<BoardName, Record<string, SetData[]>> = {
-${generateSetsTypeScript("kilter", boardData.kilter.sets)},
-${generateSetsTypeScript("tension", boardData.tension.sets)},
-${generateSetsTypeScript("decoy", boardData.decoy.sets)},
-${generateSetsTypeScript("touchstone", boardData.touchstone.sets)},
-${generateSetsTypeScript("grasshopper", boardData.grasshopper.sets)},
+${generateSetsTypeScript('kilter', boardData.kilter.sets)},
+${generateSetsTypeScript('tension', boardData.tension.sets)},
+${generateSetsTypeScript('decoy', boardData.decoy.sets)},
+${generateSetsTypeScript('touchstone', boardData.touchstone.sets)},
+${generateSetsTypeScript('grasshopper', boardData.grasshopper.sets)},
   moonboard: {},
 };
 
 export const IMAGE_FILENAMES: Record<BoardName, Record<string, string>> = {
-${generateImageFilenamesTypeScript("kilter", boardData.kilter.imageFilenames)},
-${generateImageFilenamesTypeScript("tension", boardData.tension.imageFilenames)},
-${generateImageFilenamesTypeScript("decoy", boardData.decoy.imageFilenames)},
-${generateImageFilenamesTypeScript("touchstone", boardData.touchstone.imageFilenames)},
-${generateImageFilenamesTypeScript("grasshopper", boardData.grasshopper.imageFilenames)},
+${generateImageFilenamesTypeScript('kilter', boardData.kilter.imageFilenames)},
+${generateImageFilenamesTypeScript('tension', boardData.tension.imageFilenames)},
+${generateImageFilenamesTypeScript('decoy', boardData.decoy.imageFilenames)},
+${generateImageFilenamesTypeScript('touchstone', boardData.touchstone.imageFilenames)},
+${generateImageFilenamesTypeScript('grasshopper', boardData.grasshopper.imageFilenames)},
   moonboard: {},
 };
 
 export const HOLE_PLACEMENTS: Record<BoardName, Record<string, HoldTuple[]>> = {
-${generateHolePlacementsTypeScript("kilter", boardData.kilter.holePlacements)},
-${generateHolePlacementsTypeScript("tension", boardData.tension.holePlacements)},
-${generateHolePlacementsTypeScript("decoy", boardData.decoy.holePlacements)},
-${generateHolePlacementsTypeScript("touchstone", boardData.touchstone.holePlacements)},
-${generateHolePlacementsTypeScript("grasshopper", boardData.grasshopper.holePlacements)},
+${generateHolePlacementsTypeScript('kilter', boardData.kilter.holePlacements)},
+${generateHolePlacementsTypeScript('tension', boardData.tension.holePlacements)},
+${generateHolePlacementsTypeScript('decoy', boardData.decoy.holePlacements)},
+${generateHolePlacementsTypeScript('touchstone', boardData.touchstone.holePlacements)},
+${generateHolePlacementsTypeScript('grasshopper', boardData.grasshopper.holePlacements)},
   moonboard: {},
 };
 `;
@@ -467,11 +467,11 @@ function generateLedDataFile(boardData: Record<GeneratedBoardName, GeneratedBoar
 import type { BoardName } from '@boardsesh/shared-schema';
 
 export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, number>>> = {
-${generateLedPlacementsTypeScript("kilter", boardData.kilter.ledPlacements)},
-${generateLedPlacementsTypeScript("tension", boardData.tension.ledPlacements)},
-${generateLedPlacementsTypeScript("decoy", boardData.decoy.ledPlacements)},
-${generateLedPlacementsTypeScript("touchstone", boardData.touchstone.ledPlacements)},
-${generateLedPlacementsTypeScript("grasshopper", boardData.grasshopper.ledPlacements)},
+${generateLedPlacementsTypeScript('kilter', boardData.kilter.ledPlacements)},
+${generateLedPlacementsTypeScript('tension', boardData.tension.ledPlacements)},
+${generateLedPlacementsTypeScript('decoy', boardData.decoy.ledPlacements)},
+${generateLedPlacementsTypeScript('touchstone', boardData.touchstone.ledPlacements)},
+${generateLedPlacementsTypeScript('grasshopper', boardData.grasshopper.ledPlacements)},
   moonboard: {},
 };
 `;
@@ -494,12 +494,12 @@ function main(): void {
   }
 
   console.log(`Writing ${PRODUCT_OUTPUT_PATH}...`);
-  writeFileSync(PRODUCT_OUTPUT_PATH, generateProductDataFile(boardData), "utf-8");
+  writeFileSync(PRODUCT_OUTPUT_PATH, generateProductDataFile(boardData), 'utf-8');
 
   console.log(`Writing ${LED_OUTPUT_PATH}...`);
-  writeFileSync(LED_OUTPUT_PATH, generateLedDataFile(boardData), "utf-8");
+  writeFileSync(LED_OUTPUT_PATH, generateLedDataFile(boardData), 'utf-8');
 
-  console.log("Board constants generated.");
+  console.log('Board constants generated.');
 }
 
 main();

@@ -1,31 +1,31 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useCallback } from "react";
-import Box from "@mui/material/Box";
-import Avatar from "@mui/material/Avatar";
-import MuiTypography from "@mui/material/Typography";
-import Tab from "@mui/material/Tab";
-import Tabs from "@mui/material/Tabs";
-import Divider from "@mui/material/Divider";
-import MuiButton from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogActions from "@mui/material/DialogActions";
-import CircularProgress from "@mui/material/CircularProgress";
-import LocationOnOutlined from "@mui/icons-material/LocationOnOutlined";
-import EditOutlined from "@mui/icons-material/EditOutlined";
-import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
-import FitnessCenterOutlined from "@mui/icons-material/FitnessCenterOutlined";
-import PersonOutlined from "@mui/icons-material/PersonOutlined";
-import PeopleOutlined from "@mui/icons-material/PeopleOutlined";
-import ChatBubbleOutlined from "@mui/icons-material/ChatBubbleOutlineOutlined";
-import type { Gym } from "@boardsesh/shared-schema";
-import SwipeableDrawer from "@/app/components/swipeable-drawer/swipeable-drawer";
-import { useWsAuthToken } from "@/app/hooks/use-ws-auth-token";
-import { useSnackbar } from "@/app/components/providers/snackbar-provider";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
+import React, { useState, useEffect, useCallback } from 'react';
+import Box from '@mui/material/Box';
+import Avatar from '@mui/material/Avatar';
+import MuiTypography from '@mui/material/Typography';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import Divider from '@mui/material/Divider';
+import MuiButton from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import CircularProgress from '@mui/material/CircularProgress';
+import LocationOnOutlined from '@mui/icons-material/LocationOnOutlined';
+import EditOutlined from '@mui/icons-material/EditOutlined';
+import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
+import FitnessCenterOutlined from '@mui/icons-material/FitnessCenterOutlined';
+import PersonOutlined from '@mui/icons-material/PersonOutlined';
+import PeopleOutlined from '@mui/icons-material/PeopleOutlined';
+import ChatBubbleOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import type { Gym } from '@boardsesh/shared-schema';
+import SwipeableDrawer from '@/app/components/swipeable-drawer/swipeable-drawer';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { useSnackbar } from '@/app/components/providers/snackbar-provider';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   GET_GYM,
   DELETE_GYM,
@@ -35,20 +35,20 @@ import {
   type GetGymQueryVariables,
   type DeleteGymMutationVariables,
   type DeleteGymMutationResponse,
-} from "@/app/lib/graphql/operations";
-import { useSession } from "next-auth/react";
-import { themeTokens } from "@/app/theme/theme-config";
-import FollowButton from "@/app/components/ui/follow-button";
-import EditGymForm from "./edit-gym-form";
-import GymMemberManagement from "./gym-member-management";
-import CommentSection from "@/app/components/social/comment-section";
+} from '@/app/lib/graphql/operations';
+import { useSession } from 'next-auth/react';
+import { themeTokens } from '@/app/theme/theme-config';
+import FollowButton from '@/app/components/ui/follow-button';
+import EditGymForm from './edit-gym-form';
+import GymMemberManagement from './gym-member-management';
+import CommentSection from '@/app/components/social/comment-section';
 
 interface GymDetailProps {
   gymUuid: string;
   open: boolean;
   onClose: () => void;
   onDeleted?: () => void;
-  anchor?: "top" | "bottom";
+  anchor?: 'top' | 'bottom';
 }
 
 export default function GymDetail({
@@ -56,7 +56,7 @@ export default function GymDetail({
   open,
   onClose,
   onDeleted,
-  anchor = "bottom",
+  anchor = 'bottom',
 }: GymDetailProps) {
   const [gym, setGym] = useState<Gym | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -79,7 +79,7 @@ export default function GymDetail({
       });
       setGym(data.gym ?? null);
     } catch (error) {
-      console.error("Failed to fetch gym:", error);
+      console.error('Failed to fetch gym:', error);
     } finally {
       setIsLoading(false);
     }
@@ -94,7 +94,7 @@ export default function GymDetail({
   }, [open, fetchGym]);
 
   const isOwner = !!currentUserId && gym?.ownerId === currentUserId;
-  const isOwnerOrAdmin = isOwner || gym?.myRole === "admin";
+  const isOwnerOrAdmin = isOwner || gym?.myRole === 'admin';
 
   const handleDeleteConfirm = async () => {
     if (!token || !gym) return;
@@ -106,12 +106,12 @@ export default function GymDetail({
       await client.request<DeleteGymMutationResponse, DeleteGymMutationVariables>(DELETE_GYM, {
         gymUuid: gym.uuid,
       });
-      showMessage("Gym deleted", "success");
+      showMessage('Gym deleted', 'success');
       onDeleted?.();
       onClose();
     } catch (error) {
-      console.error("Failed to delete gym:", error);
-      showMessage("Failed to delete gym", "error");
+      console.error('Failed to delete gym:', error);
+      showMessage('Failed to delete gym', 'error');
     } finally {
       setIsDeleting(false);
     }
@@ -129,18 +129,18 @@ export default function GymDetail({
         open={open}
         onClose={onClose}
         height="90dvh"
-        styles={{ body: { padding: 0, overflow: "hidden" } }}
+        styles={{ body: { padding: 0, overflow: 'hidden' } }}
       >
         {isLoading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", flex: 1 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
             <CircularProgress />
           </Box>
         ) : !gym ? (
-          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", flex: 1 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
             <MuiTypography color="text.secondary">Gym not found</MuiTypography>
           </Box>
         ) : isEditing ? (
-          <Box sx={{ px: 2, pb: 2, overflow: "auto", flex: 1 }}>
+          <Box sx={{ px: 2, pb: 2, overflow: 'auto', flex: 1 }}>
             <EditGymForm
               gym={gym}
               onSuccess={handleEditSuccess}
@@ -153,9 +153,9 @@ export default function GymDetail({
             <Box sx={{ px: 2, pb: 2 }}>
               <Box
                 sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between',
                   gap: 1,
                 }}
               >
@@ -167,8 +167,8 @@ export default function GymDetail({
                     {gym.name}
                   </MuiTypography>
                   {gym.address && (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.5 }}>
-                      <LocationOnOutlined sx={{ fontSize: 16, color: "var(--neutral-400)" }} />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                      <LocationOnOutlined sx={{ fontSize: 16, color: 'var(--neutral-400)' }} />
                       <MuiTypography variant="body2" color="text.secondary">
                         {gym.address}
                       </MuiTypography>
@@ -178,7 +178,7 @@ export default function GymDetail({
               </Box>
 
               {/* Owner info */}
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5 }}>
                 <Avatar
                   src={gym.ownerAvatarUrl ?? undefined}
                   sx={{ width: 24, height: 24, fontSize: 11 }}
@@ -191,13 +191,13 @@ export default function GymDetail({
               </Box>
 
               {gym.description && (
-                <MuiTypography variant="body2" sx={{ mt: 1.5, color: "var(--neutral-600)" }}>
+                <MuiTypography variant="body2" sx={{ mt: 1.5, color: 'var(--neutral-600)' }}>
                   {gym.description}
                 </MuiTypography>
               )}
 
               {/* Stats */}
-              <Box sx={{ display: "flex", gap: 2.5, mt: 2, flexWrap: "wrap" }}>
+              <Box sx={{ display: 'flex', gap: 2.5, mt: 2, flexWrap: 'wrap' }}>
                 <StatChip
                   icon={<FitnessCenterOutlined sx={{ fontSize: 16 }} />}
                   value={gym.boardCount}
@@ -221,7 +221,7 @@ export default function GymDetail({
               </Box>
 
               {/* Actions */}
-              <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
+              <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
                 {!isOwner && (
                   <FollowButton
                     entityId={gym.uuid}
@@ -240,7 +240,7 @@ export default function GymDetail({
                       size="small"
                       startIcon={<EditOutlined />}
                       onClick={() => setIsEditing(true)}
-                      sx={{ textTransform: "none" }}
+                      sx={{ textTransform: 'none' }}
                     >
                       Edit
                     </MuiButton>
@@ -251,9 +251,9 @@ export default function GymDetail({
                       startIcon={<DeleteOutlined />}
                       onClick={() => setShowDeleteDialog(true)}
                       disabled={isDeleting}
-                      sx={{ textTransform: "none" }}
+                      sx={{ textTransform: 'none' }}
                     >
-                      {isDeleting ? <CircularProgress size={16} /> : "Delete"}
+                      {isDeleting ? <CircularProgress size={16} /> : 'Delete'}
                     </MuiButton>
                   </>
                 )}
@@ -264,12 +264,12 @@ export default function GymDetail({
 
             {/* Tabs */}
             <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} sx={{ px: 2 }}>
-              <Tab label="Members" sx={{ textTransform: "none" }} />
-              <Tab label="Comments" sx={{ textTransform: "none" }} />
+              <Tab label="Members" sx={{ textTransform: 'none' }} />
+              <Tab label="Comments" sx={{ textTransform: 'none' }} />
             </Tabs>
 
             {/* Tab content */}
-            <Box sx={{ flex: 1, overflow: "auto", px: 2, py: 2 }}>
+            <Box sx={{ flex: 1, overflow: 'auto', px: 2, py: 2 }}>
               {activeTab === 0 && (
                 <GymMemberManagement gymUuid={gym.uuid} isOwnerOrAdmin={isOwnerOrAdmin} />
               )}
@@ -302,8 +302,8 @@ export default function GymDetail({
 
 function StatChip({ icon, value, label }: { icon: React.ReactNode; value: number; label: string }) {
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-      <Box sx={{ color: "var(--neutral-400)", display: "flex" }}>{icon}</Box>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+      <Box sx={{ color: 'var(--neutral-400)', display: 'flex' }}>{icon}</Box>
       <MuiTypography
         variant="body2"
         sx={{ fontWeight: themeTokens.typography.fontWeight.semibold }}

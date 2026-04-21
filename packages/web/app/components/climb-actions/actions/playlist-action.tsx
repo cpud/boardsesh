@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import React, { useState, useCallback } from "react";
-import MuiButton from "@mui/material/Button";
-import CircularProgress from "@mui/material/CircularProgress";
-import MuiTypography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import Box from "@mui/material/Box";
-import MuiList from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import MuiBadge from "@mui/material/Badge";
-import Stack from "@mui/material/Stack";
-import { ActionTooltip } from "../action-tooltip";
-import LocalOfferOutlined from "@mui/icons-material/LocalOfferOutlined";
-import AddOutlined from "@mui/icons-material/AddOutlined";
-import CheckOutlined from "@mui/icons-material/CheckOutlined";
-import CloseOutlined from "@mui/icons-material/CloseOutlined";
-import { track } from "@vercel/analytics";
-import type { ClimbActionProps, ClimbActionResult } from "../types";
-import { usePlaylists } from "../use-playlists";
-import { useAuthModal } from "@/app/components/providers/auth-modal-provider";
-import type { Playlist } from "../playlists-batch-context";
-import { themeTokens } from "@/app/theme/theme-config";
-import { useSnackbar } from "../../providers/snackbar-provider";
+import React, { useState, useCallback } from 'react';
+import MuiButton from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import MuiTypography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import Box from '@mui/material/Box';
+import MuiList from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import MuiBadge from '@mui/material/Badge';
+import Stack from '@mui/material/Stack';
+import { ActionTooltip } from '../action-tooltip';
+import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
+import AddOutlined from '@mui/icons-material/AddOutlined';
+import CheckOutlined from '@mui/icons-material/CheckOutlined';
+import CloseOutlined from '@mui/icons-material/CloseOutlined';
+import { track } from '@vercel/analytics';
+import type { ClimbActionProps, ClimbActionResult } from '../types';
+import { usePlaylists } from '../use-playlists';
+import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
+import type { Playlist } from '../playlists-batch-context';
+import { themeTokens } from '@/app/theme/theme-config';
+import { useSnackbar } from '../../providers/snackbar-provider';
 
 // Validate hex color format to prevent CSS injection
 const isValidHexColor = (color: string): boolean => {
@@ -33,7 +33,7 @@ export function PlaylistAction({
   boardDetails,
   angle,
   viewMode,
-  size = "default",
+  size = 'default',
   showLabel,
   disabled,
   className,
@@ -41,15 +41,15 @@ export function PlaylistAction({
   onOpenPlaylistSelector,
 }: ClimbActionProps): ClimbActionResult {
   // Playlists not supported for moonboard yet
-  const isMoonboard = boardDetails.board_name === "moonboard";
+  const isMoonboard = boardDetails.board_name === 'moonboard';
 
   const { openAuthModal } = useAuthModal();
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [createFormValues, setCreateFormValues] = useState({
-    name: "",
-    description: "",
-    color: "",
+    name: '',
+    description: '',
+    color: '',
   });
   const [creatingPlaylist, setCreatingPlaylist] = useState(false);
 
@@ -73,13 +73,13 @@ export function PlaylistAction({
 
       if (!isAuthenticated) {
         openAuthModal({
-          title: "Sign in to create playlists",
-          description: "Sign in to organize your climbs into custom playlists.",
+          title: 'Sign in to create playlists',
+          description: 'Sign in to organize your climbs into custom playlists.',
         });
         return;
       }
 
-      if (viewMode === "list" && onOpenPlaylistSelector) {
+      if (viewMode === 'list' && onOpenPlaylistSelector) {
         onOpenPlaylistSelector();
         onComplete?.();
         return;
@@ -97,16 +97,16 @@ export function PlaylistAction({
       try {
         if (isInPlaylist) {
           await removeFromPlaylist(playlistId);
-          showMessage("Removed from playlist", "success");
-          track("Remove from Playlist", {
+          showMessage('Removed from playlist', 'success');
+          track('Remove from Playlist', {
             boardName: boardDetails.board_name,
             climbUuid: climb.uuid,
             playlistId,
           });
         } else {
           await addToPlaylist(playlistId);
-          showMessage("Added to playlist", "success");
-          track("Add to Playlist", {
+          showMessage('Added to playlist', 'success');
+          track('Add to Playlist', {
             boardName: boardDetails.board_name,
             climbUuid: climb.uuid,
             playlistId,
@@ -116,8 +116,8 @@ export function PlaylistAction({
         // Note: No need to call refreshPlaylists() - optimistic updates handle state
       } catch (error) {
         showMessage(
-          isInPlaylist ? "Failed to remove from playlist" : "Failed to add to playlist",
-          "error",
+          isInPlaylist ? 'Failed to remove from playlist' : 'Failed to add to playlist',
+          'error',
         );
       }
     },
@@ -135,15 +135,15 @@ export function PlaylistAction({
     try {
       // Inline validation
       if (!createFormValues.name.trim()) {
-        showMessage("Please enter a playlist name", "error");
+        showMessage('Please enter a playlist name', 'error');
         return;
       }
       if (createFormValues.name.length > 100) {
-        showMessage("Name too long", "error");
+        showMessage('Name too long', 'error');
         return;
       }
       if (createFormValues.description.length > 500) {
-        showMessage("Description too long", "error");
+        showMessage('Description too long', 'error');
         return;
       }
 
@@ -165,18 +165,18 @@ export function PlaylistAction({
       // Automatically add current climb to new playlist
       await addToPlaylist(newPlaylist.uuid);
 
-      showMessage(`Created playlist "${createFormValues.name}"`, "success");
-      track("Create Playlist", {
+      showMessage(`Created playlist "${createFormValues.name}"`, 'success');
+      track('Create Playlist', {
         boardName: boardDetails.board_name,
         playlistName: createFormValues.name,
       });
 
-      setCreateFormValues({ name: "", description: "", color: "" });
+      setCreateFormValues({ name: '', description: '', color: '' });
       setShowCreateForm(false);
       onComplete?.();
       // Note: No need to call refreshPlaylists() - optimistic updates handle state
     } catch (error) {
-      showMessage("Failed to create playlist", "error");
+      showMessage('Failed to create playlist', 'error');
     } finally {
       setCreatingPlaylist(false);
     }
@@ -192,14 +192,14 @@ export function PlaylistAction({
   const inlineContent = (
     <div
       style={{
-        position: "absolute",
+        position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
         padding: themeTokens.spacing[3],
-        backgroundColor: "var(--semantic-surface-overlay)",
-        overflow: "auto",
+        backgroundColor: 'var(--semantic-surface-overlay)',
+        overflow: 'auto',
         zIndex: themeTokens.zIndex.dropdown,
       }}
       onClick={(e) => e.stopPropagation()}
@@ -212,7 +212,7 @@ export function PlaylistAction({
       {playlists.length === 0 && !showCreateForm ? (
         <Stack
           spacing={1}
-          style={{ width: "100%", textAlign: "center", padding: themeTokens.spacing[2] }}
+          style={{ width: '100%', textAlign: 'center', padding: themeTokens.spacing[2] }}
         >
           <MuiTypography variant="body2" component="span" color="text.secondary">
             No playlists yet
@@ -245,21 +245,21 @@ export function PlaylistAction({
                         onClick={() => handleTogglePlaylist(playlist.uuid, isInPlaylist)}
                         sx={{
                           padding: `${themeTokens.spacing[1] + 2}px ${themeTokens.spacing[2]}px`,
-                          cursor: "pointer",
+                          cursor: 'pointer',
                           borderLeft: validColor
                             ? `3px solid ${validColor}`
-                            : "3px solid transparent",
+                            : '3px solid transparent',
                           borderRadius: `${themeTokens.borderRadius.sm}px`,
                           mb: 0.5,
                           backgroundColor: isInPlaylist
-                            ? "var(--semantic-selected-light)"
+                            ? 'var(--semantic-selected-light)'
                             : undefined,
                         }}
                       >
                         <Stack
                           direction="row"
                           spacing={1}
-                          sx={{ width: "100%", justifyContent: "space-between" }}
+                          sx={{ width: '100%', justifyContent: 'space-between' }}
                         >
                           <Stack spacing={0}>
                             <MuiTypography
@@ -276,7 +276,7 @@ export function PlaylistAction({
                               color="text.secondary"
                               sx={{ fontSize: 11 }}
                             >
-                              {playlist.climbCount} {playlist.climbCount === 1 ? "climb" : "climbs"}
+                              {playlist.climbCount} {playlist.climbCount === 1 ? 'climb' : 'climbs'}
                             </MuiTypography>
                           </Stack>
                           {isInPlaylist && (
@@ -305,7 +305,7 @@ export function PlaylistAction({
 
           {showCreateForm && (
             <div>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Box>
                   <MuiTypography variant="body2" fontWeight={600} sx={{ mb: 0.5, fontSize: 12 }}>
                     Playlist Name
@@ -345,7 +345,7 @@ export function PlaylistAction({
                   </MuiTypography>
                   <TextField
                     type="color"
-                    value={createFormValues.color || "#000000"}
+                    value={createFormValues.color || '#000000'}
                     onChange={(e) =>
                       setCreateFormValues((prev) => ({ ...prev, color: e.target.value }))
                     }
@@ -357,14 +357,14 @@ export function PlaylistAction({
               <Stack
                 direction="row"
                 spacing={1}
-                style={{ width: "100%", justifyContent: "flex-end" }}
+                style={{ width: '100%', justifyContent: 'flex-end' }}
               >
                 <MuiButton
                   variant="outlined"
                   size="small"
                   onClick={() => {
                     setShowCreateForm(false);
-                    setCreateFormValues({ name: "", description: "", color: "" });
+                    setCreateFormValues({ name: '', description: '', color: '' });
                   }}
                 >
                   Cancel
@@ -386,15 +386,15 @@ export function PlaylistAction({
     </div>
   );
 
-  const label = "Add to Playlist";
-  const shouldShowLabel = showLabel ?? (viewMode === "button" || viewMode === "dropdown");
-  const iconSize = size === "small" ? 14 : size === "large" ? 20 : 16;
+  const label = 'Add to Playlist';
+  const shouldShowLabel = showLabel ?? (viewMode === 'button' || viewMode === 'dropdown');
+  const iconSize = size === 'small' ? 14 : size === 'large' ? 20 : 16;
 
   const inPlaylistCount = playlistsContainingClimb.size;
   const icon = popoverOpen ? (
     <CloseOutlined sx={{ fontSize: iconSize }} />
   ) : inPlaylistCount > 0 ? (
-    <MuiBadge badgeContent={inPlaylistCount} sx={{ "& .MuiBadge-badge": { top: 2, right: -2 } }}>
+    <MuiBadge badgeContent={inPlaylistCount} sx={{ '& .MuiBadge-badge': { top: 2, right: -2 } }}>
       <LocalOfferOutlined sx={{ fontSize: iconSize }} />
     </MuiBadge>
   ) : (
@@ -404,7 +404,7 @@ export function PlaylistAction({
   // Icon mode - for Card actions (renders inline content below when expanded)
   const iconElement = (
     <ActionTooltip title={label}>
-      <span onClick={handleClick} style={{ cursor: "pointer" }} className={className}>
+      <span onClick={handleClick} style={{ cursor: 'pointer' }} className={className}>
         {icon}
       </span>
     </ActionTooltip>
@@ -416,7 +416,7 @@ export function PlaylistAction({
       variant="outlined"
       startIcon={icon}
       onClick={handleClick}
-      size={size === "large" ? "large" : "small"}
+      size={size === 'large' ? 'large' : 'small'}
       disabled={disabled}
       className={className}
     >
@@ -426,7 +426,7 @@ export function PlaylistAction({
 
   // Menu item for dropdown
   const menuItem = {
-    key: "playlist",
+    key: 'playlist',
     label: inPlaylistCount > 0 ? `${label} (${inPlaylistCount})` : label,
     icon: <LocalOfferOutlined />,
     onClick: () => handleClick(),
@@ -445,7 +445,7 @@ export function PlaylistAction({
       disabled={disabled}
       sx={{
         height: 48,
-        justifyContent: "flex-start",
+        justifyContent: 'flex-start',
         paddingLeft: `${themeTokens.spacing[4]}px`,
         fontSize: themeTokens.typography.fontSize.base,
       }}
@@ -456,17 +456,17 @@ export function PlaylistAction({
 
   let element: React.ReactNode;
   switch (viewMode) {
-    case "icon":
+    case 'icon':
       element = iconElement;
       break;
-    case "button":
-    case "compact":
+    case 'button':
+    case 'compact':
       element = buttonElement;
       break;
-    case "list":
+    case 'list':
       element = listElement;
       break;
-    case "dropdown":
+    case 'dropdown':
       element = null;
       break;
     default:
@@ -477,7 +477,7 @@ export function PlaylistAction({
     element,
     expandedContent,
     menuItem,
-    key: "playlist",
+    key: 'playlist',
     available: !isMoonboard,
   };
 }

@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React, { useState, useCallback, useMemo, useEffect, useRef } from "react";
-import MuiButton from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
-import Rating from "@mui/material/Rating";
-import LinearProgress from "@mui/material/LinearProgress";
-import CircularProgress from "@mui/material/CircularProgress";
-import { useSnackbar } from "@/app/components/providers/snackbar-provider";
-import SwipeableDrawer from "../swipeable-drawer/swipeable-drawer";
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import MuiButton from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Rating from '@mui/material/Rating';
+import LinearProgress from '@mui/material/LinearProgress';
+import CircularProgress from '@mui/material/CircularProgress';
+import { useSnackbar } from '@/app/components/providers/snackbar-provider';
+import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
 import {
   ArrowBackOutlined,
   ArrowForwardOutlined,
@@ -15,21 +15,21 @@ import {
   CheckCircle,
   OpenInFullOutlined,
   CompressOutlined,
-} from "@mui/icons-material";
-import { useSession } from "next-auth/react";
-import { BoardDetails } from "@/app/lib/types";
-import { HoldRenderData } from "../board-renderer/types";
-import { getImageUrl } from "../board-renderer/util";
-import { themeTokens } from "@/app/theme/theme-config";
+} from '@mui/icons-material';
+import { useSession } from 'next-auth/react';
+import { BoardDetails } from '@/app/lib/types';
+import { HoldRenderData } from '../board-renderer/types';
+import { getImageUrl } from '../board-renderer/util';
+import { themeTokens } from '@/app/theme/theme-config';
 import {
   HoldClassificationWizardProps,
   HoldType,
   HoldClassification,
   HOLD_TYPE_OPTIONS,
   StoredHoldClassification,
-} from "./types";
-import DirectionPicker from "./direction-picker";
-import styles from "./hold-classification-wizard.module.css";
+} from './types';
+import DirectionPicker from './direction-picker';
+import styles from './hold-classification-wizard.module.css';
 
 // Typography destructuring removed - using MUI Typography directly
 
@@ -75,7 +75,7 @@ const HoldView: React.FC<HoldViewProps> = ({ hold, boardDetails, expanded = fals
     <svg
       viewBox={viewBox}
       preserveAspectRatio="xMidYMid meet"
-      style={{ width: "100%", height: "100%" }}
+      style={{ width: '100%', height: '100%' }}
     >
       {/* Board background images */}
       {Object.keys(boardDetails.images_to_holds).map((imageUrl) => (
@@ -103,7 +103,7 @@ const HoldView: React.FC<HoldViewProps> = ({ hold, boardDetails, expanded = fals
         stroke={themeTokens.colors.primary}
         strokeWidth={outerStrokeWidth}
         fill="none"
-        strokeDasharray={expanded ? "8 8" : "4 4"}
+        strokeDasharray={expanded ? '8 8' : '4 4'}
         opacity={0.5}
       />
     </svg>
@@ -175,7 +175,7 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
         setClassifications(classMap);
       }
     } catch (error) {
-      console.error("Failed to load classifications:", error);
+      console.error('Failed to load classifications:', error);
     } finally {
       setLoading(false);
     }
@@ -183,7 +183,7 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
 
   // Load existing classifications when the wizard opens
   useEffect(() => {
-    if (open && sessionStatus === "authenticated" && boardDetails) {
+    if (open && sessionStatus === 'authenticated' && boardDetails) {
       loadClassifications();
     }
     if (open) {
@@ -197,9 +197,9 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
     async (holdId: number, classification: HoldClassification) => {
       setSaving(true);
       try {
-        const response = await fetch("/api/internal/hold-classifications", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const response = await fetch('/api/internal/hold-classifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             boardType: boardDetails.board_name,
             layoutId: boardDetails.layout_id,
@@ -213,11 +213,11 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
         });
 
         if (!response.ok) {
-          throw new Error("Failed to save classification");
+          throw new Error('Failed to save classification');
         }
       } catch (error) {
-        console.error("Failed to save classification:", error);
-        showMessage("Failed to save classification", "error");
+        console.error('Failed to save classification:', error);
+        showMessage('Failed to save classification', 'error');
       } finally {
         setSaving(false);
       }
@@ -390,8 +390,8 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
         placement="bottom"
         fullHeight
         styles={{
-          wrapper: { height: "100dvh" },
-          header: { paddingTop: "max(16px, env(safe-area-inset-top))" },
+          wrapper: { height: '100dvh' },
+          header: { paddingTop: 'max(16px, env(safe-area-inset-top))' },
         }}
       >
         <div className={styles.loadingContainer}>
@@ -414,8 +414,8 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
         placement="bottom"
         fullHeight
         styles={{
-          wrapper: { height: "100dvh" },
-          header: { paddingTop: "max(16px, env(safe-area-inset-top))" },
+          wrapper: { height: '100dvh' },
+          header: { paddingTop: 'max(16px, env(safe-area-inset-top))' },
         }}
       >
         <div className={styles.emptyState}>
@@ -440,8 +440,8 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
         placement="bottom"
         fullHeight
         styles={{
-          wrapper: { height: "100dvh" },
-          header: { paddingTop: "max(16px, env(safe-area-inset-top))" },
+          wrapper: { height: '100dvh' },
+          header: { paddingTop: 'max(16px, env(safe-area-inset-top))' },
         }}
       >
         <div className={styles.completeContainer}>
@@ -471,14 +471,14 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
       placement="bottom"
       fullHeight
       styles={{
-        wrapper: { height: "100dvh" },
+        wrapper: { height: '100dvh' },
         header: {
-          borderBottom: "1px solid var(--neutral-200)",
-          paddingTop: "max(16px, env(safe-area-inset-top))",
+          borderBottom: '1px solid var(--neutral-200)',
+          paddingTop: 'max(16px, env(safe-area-inset-top))',
         },
         body: {
           padding: 16,
-          overflow: "auto",
+          overflow: 'auto',
         },
       }}
     >
@@ -491,13 +491,13 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
           <LinearProgress
             variant="determinate"
             value={progress}
-            sx={{ "& .MuiLinearProgress-bar": { backgroundColor: themeTokens.colors.primary } }}
+            sx={{ '& .MuiLinearProgress-bar': { backgroundColor: themeTokens.colors.primary } }}
           />
         </div>
 
         {/* Hold view (zoomed in on the board) */}
         <div
-          className={`${styles.holdViewSection} ${isHoldViewExpanded ? styles.holdViewExpanded : ""}`}
+          className={`${styles.holdViewSection} ${isHoldViewExpanded ? styles.holdViewExpanded : ''}`}
         >
           <div className={styles.holdViewContainer}>
             {currentHold && (
@@ -515,7 +515,7 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
             startIcon={isHoldViewExpanded ? <CompressOutlined /> : <OpenInFullOutlined />}
             onClick={() => setIsHoldViewExpanded(!isHoldViewExpanded)}
           >
-            {isHoldViewExpanded ? "Collapse" : "Show full board"}
+            {isHoldViewExpanded ? 'Collapse' : 'Show full board'}
           </MuiButton>
         </div>
 
@@ -533,7 +533,7 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
                   className={`${styles.holdTypeItem} ${
                     currentClassification.holdType === option.value
                       ? styles.holdTypeItemSelected
-                      : ""
+                      : ''
                   }`}
                   onClick={() => handleHoldTypeSelect(option.value)}
                 >
@@ -614,7 +614,7 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
             onClick={handleNext}
             disabled={saving}
           >
-            {currentIndex === holds.length - 1 ? "Finish" : "Next"}
+            {currentIndex === holds.length - 1 ? 'Finish' : 'Next'}
           </MuiButton>
         </div>
       </div>

@@ -1,7 +1,7 @@
-import { getDb } from "@/app/lib/db/db";
-import { boardDifficultyGrades } from "@/app/lib/db/schema";
-import { eq, and, asc } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { getDb } from '@/app/lib/db/db';
+import { boardDifficultyGrades } from '@/app/lib/db/schema';
+import { eq, and, asc } from 'drizzle-orm';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   _request: NextRequest,
@@ -26,9 +26,9 @@ export async function GET(
       .orderBy(asc(boardDifficultyGrades.difficulty));
 
     return NextResponse.json(grades, {
-      headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800" },
+      headers: { 'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800' },
     });
   } catch {
-    return NextResponse.json({ error: "Failed to fetch grades" }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch grades' }, { status: 500 });
   }
 }

@@ -1,7 +1,7 @@
-import { v4 as uuidv4 } from "uuid";
-import type { RedisSessionStore } from "../redis-session-store";
-import type { Session } from "../../db/schema";
-import { getQueueState } from "./queue-state";
+import { v4 as uuidv4 } from 'uuid';
+import type { RedisSessionStore } from '../redis-session-store';
+import type { Session } from '../../db/schema';
+import { getQueueState } from './queue-state';
 
 /**
  * Get the Redis lock key for session restoration.
@@ -88,7 +88,7 @@ async function restoreFromPostgres(
   getSessionById: (id: string) => Promise<Session | null>,
 ): Promise<boolean> {
   const pgSession = await getSessionById(sessionId);
-  if (pgSession && pgSession.status !== "ended") {
+  if (pgSession && pgSession.status !== 'ended') {
     console.log(`[RoomManager] Restoring session ${sessionId} from Postgres (dormant session)`);
     const queueState = await getQueueState(sessionId, redisStore);
     await redisStore.saveSession({

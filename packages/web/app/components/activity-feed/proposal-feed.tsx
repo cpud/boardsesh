@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import React, { useMemo } from "react";
-import Box from "@mui/material/Box";
-import MuiButton from "@mui/material/Button";
-import ErrorOutline from "@mui/icons-material/ErrorOutline";
-import GavelOutlined from "@mui/icons-material/GavelOutlined";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { EmptyState } from "@/app/components/ui/empty-state";
-import { useWsAuthToken } from "@/app/hooks/use-ws-auth-token";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
+import React, { useMemo } from 'react';
+import Box from '@mui/material/Box';
+import MuiButton from '@mui/material/Button';
+import ErrorOutline from '@mui/icons-material/ErrorOutline';
+import GavelOutlined from '@mui/icons-material/GavelOutlined';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { EmptyState } from '@/app/components/ui/empty-state';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   BROWSE_PROPOSALS,
   type BrowseProposalsVariables,
   type BrowseProposalsResponse,
-} from "@/app/lib/graphql/operations/proposals";
-import type { Proposal, ProposalConnection } from "@boardsesh/shared-schema";
-import ProposalCard from "@/app/components/social/proposal-card";
-import FeedItemSkeleton from "./feed-item-skeleton";
-import { useInfiniteScroll } from "@/app/hooks/use-infinite-scroll";
+} from '@/app/lib/graphql/operations/proposals';
+import type { Proposal, ProposalConnection } from '@boardsesh/shared-schema';
+import ProposalCard from '@/app/components/social/proposal-card';
+import FeedItemSkeleton from './feed-item-skeleton';
+import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
 
 interface ProposalFeedProps {
   isAuthenticated: boolean;
@@ -28,7 +28,7 @@ export default function ProposalFeed({ isAuthenticated, boardUuid }: ProposalFee
   const { token, isLoading: authLoading } = useWsAuthToken();
   const PAGE_SIZE = 20;
 
-  const queryKey = ["proposalFeed", boardUuid] as const;
+  const queryKey = ['proposalFeed', boardUuid] as const;
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } =
     useInfiniteQuery<ProposalConnection, Error>({
@@ -70,7 +70,7 @@ export default function ProposalFeed({ isAuthenticated, boardUuid }: ProposalFee
     return (
       <Box
         data-testid="proposal-feed"
-        sx={{ display: "flex", flexDirection: "column", gap: "12px" }}
+        sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
       >
         <FeedItemSkeleton />
         <FeedItemSkeleton />
@@ -80,7 +80,7 @@ export default function ProposalFeed({ isAuthenticated, boardUuid }: ProposalFee
   }
 
   return (
-    <Box data-testid="proposal-feed" sx={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+    <Box data-testid="proposal-feed" sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       {error && (
         <EmptyState
           icon={<ErrorOutline fontSize="inherit" />}
@@ -104,7 +104,7 @@ export default function ProposalFeed({ isAuthenticated, boardUuid }: ProposalFee
           <Box
             ref={sentinelRef}
             data-testid="proposal-feed-sentinel"
-            sx={{ display: "flex", flexDirection: "column", gap: "12px", py: 2, minHeight: 20 }}
+            sx={{ display: 'flex', flexDirection: 'column', gap: '12px', py: 2, minHeight: 20 }}
           >
             {isFetchingNextPage && (
               <>

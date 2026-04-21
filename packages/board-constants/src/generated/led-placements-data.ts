@@ -11,11 +11,11 @@
  * Generated at: 2026-04-09T01:29:55.497Z
  */
 
-import type { BoardName } from "@boardsesh/shared-schema";
+import type { BoardName } from '@boardsesh/shared-schema';
 
 export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, number>>> = {
   kilter: {
-    "1-7": {
+    '1-7': {
       1073: 1,
       1074: 3,
       1075: 5,
@@ -544,7 +544,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       1598: 420,
       1599: 477,
     },
-    "1-8": {
+    '1-8': {
       1076: 1,
       1077: 3,
       1078: 5,
@@ -857,7 +857,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       1597: 257,
       1598: 308,
     },
-    "1-10": {
+    '1-10': {
       1073: 1,
       1074: 3,
       1075: 5,
@@ -1335,7 +1335,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       1598: 378,
       1599: 429,
     },
-    "1-14": {
+    '1-14': {
       1144: 0,
       1145: 41,
       1146: 42,
@@ -1562,7 +1562,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       1596: 143,
       1597: 185,
     },
-    "1-27": {
+    '1-27': {
       1090: 0,
       1091: 58,
       1092: 59,
@@ -2005,7 +2005,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       1598: 342,
       1599: 393,
     },
-    "1-28": {
+    '1-28': {
       1073: 7,
       1074: 9,
       1075: 11,
@@ -2648,7 +2648,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       4844: 587,
       4845: 638,
     },
-    "2-11": {
+    '2-11': {
       1600: 0,
       1601: 1,
       1602: 2,
@@ -3122,8 +3122,8 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       2070: 470,
       2071: 471,
     },
-    "3-12": { 2072: 0, 2073: 1, 2074: 2, 2075: 3, 2076: 4 },
-    "4-13": {
+    '3-12': { 2072: 0, 2073: 1, 2074: 2, 2075: 3, 2076: 4 },
+    '4-13': {
       2077: 0,
       2078: 1,
       2079: 2,
@@ -3469,7 +3469,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       2419: 343,
       2420: 344,
     },
-    "4-20": {
+    '4-20': {
       2077: 0,
       2078: 1,
       2079: 2,
@@ -3880,7 +3880,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       4485: 382,
       4486: 383,
     },
-    "5-15": {
+    '5-15': {
       2421: 0,
       2422: 1,
       2423: 2,
@@ -4426,7 +4426,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       2963: 545,
       2964: 546,
     },
-    "6-16": {
+    '6-16': {
       2965: 0,
       2966: 1,
       2967: 2,
@@ -5101,7 +5101,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       3636: 672,
       3637: 673,
     },
-    "7-16": {
+    '7-16': {
       3638: 21,
       3639: 27,
       3640: 31,
@@ -5582,7 +5582,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       4115: 369,
       4116: 367,
     },
-    "8-17": {
+    '8-17': {
       4117: 0,
       4118: 1,
       4119: 2,
@@ -5889,7 +5889,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       4420: 303,
       4421: 304,
     },
-    "8-18": {
+    '8-18': {
       4117: 0,
       4118: 1,
       4119: 2,
@@ -6056,7 +6056,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       4420: 163,
       4421: 164,
     },
-    "8-19": {
+    '8-19': {
       4132: 13,
       4133: 12,
       4134: 11,
@@ -6198,7 +6198,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       4405: 138,
       4406: 139,
     },
-    "8-21": {
+    '8-21': {
       4117: 57,
       4118: 56,
       4119: 55,
@@ -6591,7 +6591,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       4610: 389,
       4611: 390,
     },
-    "8-22": {
+    '8-22': {
       4117: 29,
       4118: 28,
       4119: 27,
@@ -6788,7 +6788,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       4515: 181,
       4516: 180,
     },
-    "8-23": {
+    '8-23': {
       4117: 25,
       4118: 26,
       4119: 27,
@@ -7179,7 +7179,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       4677: 17,
       4678: 19,
     },
-    "8-24": {
+    '8-24': {
       4117: 25,
       4118: 26,
       4119: 27,
@@ -7400,7 +7400,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       4677: 17,
       4678: 19,
     },
-    "8-25": {
+    '8-25': {
       4117: 94,
       4118: 93,
       4119: 92,
@@ -7901,7 +7901,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       4679: 24,
       4680: 0,
     },
-    "8-26": {
+    '8-26': {
       4117: 60,
       4118: 59,
       4119: 58,
@@ -8164,7 +8164,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       4679: 24,
       4680: 0,
     },
-    "8-29": {
+    '8-29': {
       4132: 41,
       4133: 40,
       4134: 39,
@@ -8364,7 +8364,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
     },
   },
   tension: {
-    "9-1": {
+    '9-1': {
       1: 74,
       2: 354,
       3: 59,
@@ -8669,7 +8669,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       302: 232,
       303: 10,
     },
-    "9-2": {
+    '9-2': {
       1: 74,
       2: 354,
       3: 59,
@@ -8964,7 +8964,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       302: 232,
       303: 10,
     },
-    "9-3": {
+    '9-3': {
       1: 74,
       2: 354,
       3: 59,
@@ -9248,7 +9248,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       301: 162,
       302: 232,
     },
-    "9-4": {
+    '9-4': {
       3: 31,
       4: 263,
       5: 118,
@@ -9491,7 +9491,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       301: 116,
       302: 174,
     },
-    "9-5": {
+    '9-5': {
       5: 84,
       6: 142,
       7: 113,
@@ -9660,7 +9660,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       301: 86,
       302: 144,
     },
-    "10-6": {
+    '10-6': {
       304: 282,
       305: 285,
       306: 286,
@@ -10160,7 +10160,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       800: 576,
       801: 577,
     },
-    "10-7": {
+    '10-7': {
       304: 234,
       305: 237,
       306: 238,
@@ -10569,7 +10569,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       797: 475,
       798: 477,
     },
-    "10-8": {
+    '10-8': {
       304: 177,
       305: 180,
       306: 181,
@@ -10899,7 +10899,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       757: 366,
       758: 367,
     },
-    "10-9": {
+    '10-9': {
       304: 147,
       305: 150,
       306: 151,
@@ -11168,7 +11168,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       754: 300,
       755: 303,
     },
-    "11-6": {
+    '11-6': {
       802: 0,
       803: 2,
       804: 4,
@@ -11668,7 +11668,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       1298: 576,
       1299: 577,
     },
-    "11-7": {
+    '11-7': {
       802: 0,
       803: 2,
       804: 4,
@@ -12077,7 +12077,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       1296: 476,
       1297: 478,
     },
-    "11-8": {
+    '11-8': {
       843: 2,
       844: 4,
       845: 5,
@@ -12407,7 +12407,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       1256: 366,
       1257: 367,
     },
-    "11-9": {
+    '11-9': {
       843: 2,
       844: 4,
       845: 5,
@@ -12678,7 +12678,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
     },
   },
   decoy: {
-    "1-1": {
+    '1-1': {
       1: 0,
       2: 1,
       3: 2,
@@ -13258,7 +13258,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       577: 576,
       578: 577,
     },
-    "1-2": {
+    '1-2': {
       106: 0,
       107: 1,
       108: 2,
@@ -13628,7 +13628,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       472: 366,
       473: 367,
     },
-    "1-3": {
+    '1-3': {
       106: 0,
       107: 1,
       108: 2,
@@ -13935,7 +13935,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       469: 303,
       470: 304,
     },
-    "2-1": {
+    '2-1': {
       579: 110,
       580: 113,
       581: 117,
@@ -14395,7 +14395,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       1066: 491,
       1067: 493,
     },
-    "2-2": {
+    '2-2': {
       579: 5,
       580: 8,
       581: 12,
@@ -14715,7 +14715,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       1040: 20,
       1047: 335,
     },
-    "2-3": {
+    '2-3': {
       579: 5,
       580: 8,
       581: 12,
@@ -14984,7 +14984,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
     },
   },
   touchstone: {
-    "1-1": {
+    '1-1': {
       1: 36,
       2: 37,
       3: 38,
@@ -15636,7 +15636,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
     },
   },
   grasshopper: {
-    "1-1": {
+    '1-1': {
       1: 56,
       2: 57,
       3: 58,
@@ -15940,7 +15940,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       331: 304,
       332: 305,
     },
-    "1-2": {
+    '1-2': {
       1: 15,
       2: 14,
       3: 13,
@@ -16140,7 +16140,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       279: 196,
       280: 197,
     },
-    "1-3": {
+    '1-3': {
       2: 14,
       3: 13,
       4: 12,
@@ -16307,7 +16307,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       193: 151,
       194: 150,
     },
-    "1-4": {
+    '1-4': {
       1: 120,
       2: 119,
       3: 118,
@@ -16775,7 +16775,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       465: 299,
       466: 298,
     },
-    "1-5": {
+    '1-5': {
       1: 15,
       2: 14,
       3: 13,
@@ -17113,7 +17113,7 @@ export const LED_PLACEMENTS: Record<BoardName, Record<string, Record<number, num
       465: 194,
       466: 193,
     },
-    "1-6": {
+    '1-6': {
       2: 14,
       3: 13,
       4: 12,

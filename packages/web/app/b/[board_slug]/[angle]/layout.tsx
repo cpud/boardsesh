@@ -1,23 +1,23 @@
-import React from "react";
-import { PropsWithChildren } from "react";
-import { notFound } from "next/navigation";
-import { Metadata } from "next";
-import { resolveBoardBySlug, boardToRouteParams } from "@/app/lib/board-slug-utils";
-import { getBoardDetailsForBoard } from "@/app/lib/board-utils";
-import BoardSeshHeader from "@/app/components/board-page/header";
-import { GraphQLQueueProvider } from "@/app/components/graphql-queue";
-import { ConnectionSettingsProvider } from "@/app/components/connection-manager/connection-settings-context";
-import { WebSocketConnectionProvider } from "@/app/components/connection-manager/websocket-connection-provider";
-import { PartyProvider } from "@/app/components/party-manager/party-context";
-import { BoardSessionBridge } from "@/app/components/persistent-session";
-import { BluetoothProvider } from "@/app/components/board-bluetooth-control/bluetooth-context";
-import { UISearchParamsProvider } from "@/app/components/queue-control/ui-searchparams-provider";
-import { BoardProvider } from "@/app/components/board-provider/board-provider-context";
-import { QueueBridgeInjector } from "@/app/components/queue-control/queue-bridge-context";
-import LastUsedBoardTracker from "@/app/components/board-page/last-used-board-tracker";
+import React from 'react';
+import { PropsWithChildren } from 'react';
+import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
+import { resolveBoardBySlug, boardToRouteParams } from '@/app/lib/board-slug-utils';
+import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
+import BoardSeshHeader from '@/app/components/board-page/header';
+import { GraphQLQueueProvider } from '@/app/components/graphql-queue';
+import { ConnectionSettingsProvider } from '@/app/components/connection-manager/connection-settings-context';
+import { WebSocketConnectionProvider } from '@/app/components/connection-manager/websocket-connection-provider';
+import { PartyProvider } from '@/app/components/party-manager/party-context';
+import { BoardSessionBridge } from '@/app/components/persistent-session';
+import { BluetoothProvider } from '@/app/components/board-bluetooth-control/bluetooth-context';
+import { UISearchParamsProvider } from '@/app/components/queue-control/ui-searchparams-provider';
+import { BoardProvider } from '@/app/components/board-provider/board-provider-context';
+import { QueueBridgeInjector } from '@/app/components/queue-control/queue-bridge-context';
+import LastUsedBoardTracker from '@/app/components/board-page/last-used-board-tracker';
 
-import { constructBoardSlugListUrl } from "@/app/lib/url-utils";
-import { themeTokens } from "@/app/theme/theme-config";
+import { constructBoardSlugListUrl } from '@/app/lib/url-utils';
+import { themeTokens } from '@/app/theme/theme-config';
 
 interface BoardSlugRouteParams {
   board_slug: string;
@@ -32,14 +32,14 @@ export async function generateMetadata(props: {
   try {
     const board = await resolveBoardBySlug(params.board_slug);
     if (!board) {
-      return { title: "Board Not Found | Boardsesh" };
+      return { title: 'Board Not Found | Boardsesh' };
     }
 
     return {
       title: `${board.name} | Boardsesh`,
     };
   } catch {
-    return { title: "Boardsesh" };
+    return { title: 'Boardsesh' };
   }
 }
 
@@ -64,18 +64,18 @@ export default async function BoardSlugLayout(
   return (
     <div
       style={{
-        minHeight: "100dvh",
-        display: "flex",
-        flexDirection: "column",
+        minHeight: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
         padding: 0,
-        background: "var(--semantic-surface)",
+        background: 'var(--semantic-surface)',
       }}
     >
       <LastUsedBoardTracker
         url={listUrl}
         boardName={boardDetails.board_name}
-        layoutName={boardDetails.layout_name || ""}
-        sizeName={boardDetails.size_name || ""}
+        layoutName={boardDetails.layout_name || ''}
+        sizeName={boardDetails.size_name || ''}
         sizeDescription={boardDetails.size_description}
         setNames={boardDetails.set_names || []}
         angle={angle}
@@ -97,8 +97,8 @@ export default async function BoardSlugLayout(
                           flex: 1,
                           paddingLeft: `${themeTokens.spacing[2]}px`,
                           paddingRight: `${themeTokens.spacing[2]}px`,
-                          paddingTop: "var(--global-header-height)",
-                          paddingBottom: "calc(120px + env(safe-area-inset-bottom, 0px))",
+                          paddingTop: 'var(--global-header-height)',
+                          paddingBottom: 'calc(120px + env(safe-area-inset-bottom, 0px))',
                         }}
                       >
                         <BoardSeshHeader

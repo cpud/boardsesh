@@ -1,6 +1,6 @@
-import { eq, and, inArray, sql } from "drizzle-orm";
-import { db } from "../../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
+import { eq, and, inArray, sql } from 'drizzle-orm';
+import { db } from '../../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
 
 /** Raw playlist row shape from owned-playlist queries (userPlaylists, allUserPlaylists). */
 export interface OwnedPlaylistRow {
@@ -116,12 +116,12 @@ export async function verifyPlaylistAccess(
     .limit(1);
 
   if (playlistResult.length === 0) {
-    throw new Error("Playlist not found or access denied");
+    throw new Error('Playlist not found or access denied');
   }
 
   if (!playlistResult[0].isPublic) {
     if (!userId) {
-      throw new Error("Playlist not found or access denied");
+      throw new Error('Playlist not found or access denied');
     }
 
     const ownershipResult = await db
@@ -136,7 +136,7 @@ export async function verifyPlaylistAccess(
       .limit(1);
 
     if (ownershipResult.length === 0) {
-      throw new Error("Playlist not found or access denied");
+      throw new Error('Playlist not found or access denied');
     }
   }
 

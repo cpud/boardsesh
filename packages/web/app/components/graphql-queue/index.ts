@@ -1,6 +1,6 @@
 // GraphQL Queue - New graphql-ws based queue management
-export { createGraphQLClient, execute, subscribe } from "./graphql-client";
-export type { Client } from "./graphql-client";
+export { createGraphQLClient, execute, subscribe } from './graphql-client';
+export type { Client } from './graphql-client';
 
 export {
   GraphQLQueueProvider,
@@ -28,15 +28,15 @@ export {
   QueueListContext,
   SearchContext,
   SessionContext,
-} from "./QueueContext";
+} from './QueueContext';
 export type {
   GraphQLQueueContextType,
   GraphQLQueueActionsType,
   GraphQLQueueDataType,
-} from "./types";
+} from './types';
 export type {
   CurrentClimbDataType,
   QueueListDataType,
   SearchDataType,
   SessionDataType,
-} from "./types";
+} from './types';

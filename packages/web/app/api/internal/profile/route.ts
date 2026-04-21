@@ -1,19 +1,19 @@
-import { getServerSession } from "next-auth/next";
-import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/app/lib/db/db";
-import * as schema from "@/app/lib/db/schema";
-import { eq } from "drizzle-orm";
-import { z } from "zod";
-import { authOptions } from "@/app/lib/auth/auth-options";
+import { getServerSession } from 'next-auth/next';
+import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '@/app/lib/db/db';
+import * as schema from '@/app/lib/db/schema';
+import { eq } from 'drizzle-orm';
+import { z } from 'zod';
+import { authOptions } from '@/app/lib/auth/auth-options';
 
 const updateProfileSchema = z.object({
   displayName: z
     .string()
-    .max(100, "Display name must be less than 100 characters")
+    .max(100, 'Display name must be less than 100 characters')
     .optional()
     .nullable(),
-  avatarUrl: z.string().url("Invalid avatar URL").optional().nullable(),
-  instagramUrl: z.string().url("Invalid Instagram URL").optional().nullable(),
+  avatarUrl: z.string().url('Invalid avatar URL').optional().nullable(),
+  instagramUrl: z.string().url('Invalid Instagram URL').optional().nullable(),
 });
 
 export async function GET() {
@@ -21,7 +21,7 @@ export async function GET() {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const db = getDb();
@@ -46,7 +46,7 @@ export async function GET() {
     ]);
 
     if (users.length === 0) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     const user = users[0];
@@ -68,8 +68,8 @@ export async function GET() {
         : null,
     });
   } catch (error) {
-    console.error("Failed to get profile:", error);
-    return NextResponse.json({ error: "Failed to get profile" }, { status: 500 });
+    console.error('Failed to get profile:', error);
+    return NextResponse.json({ error: 'Failed to get profile' }, { status: 500 });
   }
 }
 
@@ -78,7 +78,7 @@ export async function PUT(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -138,7 +138,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to update profile:", error);
-    return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });
+    console.error('Failed to update profile:', error);
+    return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
   }
 }

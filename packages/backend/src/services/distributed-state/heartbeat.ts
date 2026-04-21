@@ -1,7 +1,7 @@
-import type Redis from "ioredis";
-import { KEYS, TTL } from "./constants";
-import { cleanupStaleSessionMembers } from "./session-ops";
-import { removeConnection, getConnection } from "./connection-ops";
+import type Redis from 'ioredis';
+import { KEYS, TTL } from './constants';
+import { cleanupStaleSessionMembers } from './session-ops';
+import { removeConnection, getConnection } from './connection-ops';
 
 /**
  * Update instance heartbeat in Redis.
@@ -24,11 +24,11 @@ export async function updateHeartbeat(redis: Redis, instanceId: string): Promise
  */
 export async function discoverDeadInstances(redis: Redis, instanceId: string): Promise<string[]> {
   const deadInstances: string[] = [];
-  let cursor = "0";
-  const pattern = "boardsesh:instance:*:conns";
+  let cursor = '0';
+  const pattern = 'boardsesh:instance:*:conns';
 
   do {
-    const [nextCursor, keys] = await redis.scan(cursor, "MATCH", pattern, "COUNT", 100);
+    const [nextCursor, keys] = await redis.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
     cursor = nextCursor;
 
     for (const key of keys) {
@@ -44,7 +44,7 @@ export async function discoverDeadInstances(redis: Redis, instanceId: string): P
         deadInstances.push(foundInstanceId);
       }
     }
-  } while (cursor !== "0");
+  } while (cursor !== '0');
 
   return deadInstances;
 }
@@ -68,7 +68,7 @@ export async function cleanupDeadInstanceConnections(
   }
 
   console.log(
-    `[DistributedState] Found ${deadInstances.length} dead instances: ${deadInstances.map((id) => id.slice(0, 8)).join(", ")}`,
+    `[DistributedState] Found ${deadInstances.length} dead instances: ${deadInstances.map((id) => id.slice(0, 8)).join(', ')}`,
   );
 
   const allStaleConnections: string[] = [];
@@ -90,14 +90,14 @@ export async function cleanupDeadInstanceConnections(
     const sessionConnections = new Map<string, string[]>();
     const pipeline = redis.pipeline();
     for (const connId of connectionIds) {
-      pipeline.hget(KEYS.connection(connId), "sessionId");
+      pipeline.hget(KEYS.connection(connId), 'sessionId');
     }
     const results = await pipeline.exec();
 
     if (results) {
       for (let i = 0; i < connectionIds.length; i++) {
         const [err, sessionId] = results[i] as [Error | null, string | null];
-        if (!err && sessionId && sessionId !== "") {
+        if (!err && sessionId && sessionId !== '') {
           const conns = sessionConnections.get(sessionId) || [];
           conns.push(connectionIds[i]);
           sessionConnections.set(sessionId, conns);
@@ -159,7 +159,7 @@ export async function cleanupInstanceConnections(redis: Redis, instanceId: strin
   const failedConnectionIds: string[] = [];
   for (let i = 0; i < results.length; i++) {
     const result = results[i];
-    if (result.status === "rejected") {
+    if (result.status === 'rejected') {
       console.error(
         `[DistributedState] Failed to remove connection ${connectionIds[i].slice(0, 8)} during cleanup:`,
         result.reason,
@@ -180,7 +180,7 @@ export async function cleanupInstanceConnections(redis: Redis, instanceId: strin
     try {
       await cleanupMulti.exec();
     } catch (err) {
-      console.error("[DistributedState] Failed to force cleanup connections:", err);
+      console.error('[DistributedState] Failed to force cleanup connections:', err);
     }
   }
 

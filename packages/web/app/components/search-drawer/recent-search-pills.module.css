@@ -97,10 +97,10 @@
   white-space: nowrap;
 }
 
-:global(html[data-theme="dark"]) .pillShadowIcon {
+:global(html[data-theme='dark']) .pillShadowIcon {
   color: rgba(255, 255, 255, 0.12);
 }
 
-:global(html[data-theme="dark"]) .pillShadowLabel {
+:global(html[data-theme='dark']) .pillShadowLabel {
   background: rgba(255, 255, 255, 0.12);
 }

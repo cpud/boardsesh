@@ -25,7 +25,7 @@ export async function createAsyncIterator<T>(
       // Bounded queue: drop oldest events if queue is full
       if (queue.length >= MAX_SUBSCRIPTION_QUEUE_SIZE) {
         queue.shift(); // Drop oldest
-        console.warn("[Subscription] Queue full, dropping oldest event");
+        console.warn('[Subscription] Queue full, dropping oldest event');
       }
       queue.push(value);
     }
@@ -79,7 +79,7 @@ export async function createEagerAsyncIterator<T>(
       // Bounded queue: drop oldest events if queue is full
       if (queue.length >= MAX_SUBSCRIPTION_QUEUE_SIZE) {
         queue.shift(); // Drop oldest
-        console.warn("[Subscription] Queue full, dropping oldest event");
+        console.warn('[Subscription] Queue full, dropping oldest event');
       }
       queue.push(value);
     }

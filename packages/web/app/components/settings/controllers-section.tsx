@@ -1,37 +1,37 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useMemo } from "react";
-import Box from "@mui/material/Box";
-import Stack from "@mui/material/Stack";
-import MuiSelect from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import Chip from "@mui/material/Chip";
-import MuiAlert from "@mui/material/Alert";
-import AlertTitle from "@mui/material/AlertTitle";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import { ConfirmPopover } from "@/app/components/ui/confirm-popover";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import TextField from "@mui/material/TextField";
-import CircularProgress from "@mui/material/CircularProgress";
-import CheckCircleOutlined from "@mui/icons-material/CheckCircleOutlined";
-import AccessTimeOutlined from "@mui/icons-material/AccessTimeOutlined";
-import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
-import AddOutlined from "@mui/icons-material/AddOutlined";
-import ContentCopyOutlined from "@mui/icons-material/ContentCopyOutlined";
-import WarningOutlined from "@mui/icons-material/WarningOutlined";
-import type { ControllerInfo } from "@/app/api/internal/controllers/route";
-import { getBoardSelectorOptions } from "@/app/lib/board-constants";
-import { BoardName } from "@/app/lib/types";
-import styles from "./controllers-section.module.css";
-import { useSnackbar } from "@/app/components/providers/snackbar-provider";
+import React, { useState, useEffect, useMemo } from 'react';
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import MuiSelect from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Chip from '@mui/material/Chip';
+import MuiAlert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import { ConfirmPopover } from '@/app/components/ui/confirm-popover';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import TextField from '@mui/material/TextField';
+import CircularProgress from '@mui/material/CircularProgress';
+import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
+import AccessTimeOutlined from '@mui/icons-material/AccessTimeOutlined';
+import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
+import AddOutlined from '@mui/icons-material/AddOutlined';
+import ContentCopyOutlined from '@mui/icons-material/ContentCopyOutlined';
+import WarningOutlined from '@mui/icons-material/WarningOutlined';
+import type { ControllerInfo } from '@/app/api/internal/controllers/route';
+import { getBoardSelectorOptions } from '@/app/lib/board-constants';
+import { BoardName } from '@/app/lib/types';
+import styles from './controllers-section.module.css';
+import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 
 // Get board config data (synchronous - from generated data)
 const boardSelectorOptions = getBoardSelectorOptions();
@@ -56,17 +56,17 @@ function ControllerCard({ controller, onRemove, isRemoving }: ControllerCardProp
   };
 
   const formatLastSeen = (dateString: string | null) => {
-    if (!dateString) return "Never";
+    if (!dateString) return 'Never';
     const date = new Date(dateString);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMinutes = Math.floor(diffMs / 60000);
 
-    if (diffMinutes < 1) return "Just now";
-    if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes > 1 ? "s" : ""} ago`;
+    if (diffMinutes < 1) return 'Just now';
+    if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
     const diffHours = Math.floor(diffMinutes / 60);
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
   };
 
   return (
@@ -74,7 +74,7 @@ function ControllerCard({ controller, onRemove, isRemoving }: ControllerCardProp
       <CardContent>
         <div className={styles.cardHeader}>
           <Typography variant="h5" sx={{ margin: 0 }}>
-            {controller.name || "Unnamed Controller"}
+            {controller.name || 'Unnamed Controller'}
           </Typography>
           {getStatusTag()}
         </div>
@@ -108,7 +108,7 @@ function ControllerCard({ controller, onRemove, isRemoving }: ControllerCardProp
           onConfirm={onRemove}
           okText="Yes, delete"
           cancelText="Cancel"
-          okButtonProps={{ color: "error" }}
+          okButtonProps={{ color: 'error' }}
         >
           <Button
             color="error"
@@ -138,9 +138,9 @@ function ApiKeySuccessModal({ isOpen, apiKey, controllerName, onClose }: ApiKeyS
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(apiKey);
-      showMessage("API key copied to clipboard", "success");
+      showMessage('API key copied to clipboard', 'success');
     } catch {
-      showMessage("Failed to copy - please select and copy manually", "error");
+      showMessage('Failed to copy - please select and copy manually', 'error');
     }
   };
 
@@ -154,7 +154,7 @@ function ApiKeySuccessModal({ isOpen, apiKey, controllerName, onClose }: ApiKeyS
           re-register the controller.
         </MuiAlert>
         <Typography variant="body1" component="p">
-          Your controller <strong>{controllerName || "Unnamed Controller"}</strong> has been
+          Your controller <strong>{controllerName || 'Unnamed Controller'}</strong> has been
           registered.
         </Typography>
         <Typography variant="body1" component="p" color="text.secondary">
@@ -167,7 +167,7 @@ function ApiKeySuccessModal({ isOpen, apiKey, controllerName, onClose }: ApiKeyS
           fullWidth
           variant="outlined"
           size="small"
-          slotProps={{ input: { readOnly: true, style: { fontFamily: "monospace" } } }}
+          slotProps={{ input: { readOnly: true, style: { fontFamily: 'monospace' } } }}
           sx={{ marginBottom: 1 }}
         />
         <Button
@@ -194,7 +194,7 @@ export default function ControllersSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
-  const [formValues, setFormValues] = useState({ name: "" });
+  const [formValues, setFormValues] = useState({ name: '' });
   const { showMessage } = useSnackbar();
 
   // Board configuration selection state
@@ -227,17 +227,17 @@ export default function ControllersSection() {
 
   // Success state for showing API key
   const [successApiKey, setSuccessApiKey] = useState<string | null>(null);
-  const [successControllerName, setSuccessControllerName] = useState("");
+  const [successControllerName, setSuccessControllerName] = useState('');
 
   const fetchControllers = async () => {
     try {
-      const response = await fetch("/api/internal/controllers");
+      const response = await fetch('/api/internal/controllers');
       if (response.ok) {
         const data = await response.json();
         setControllers(data.controllers);
       }
     } catch (error) {
-      console.error("Failed to fetch controllers:", error);
+      console.error('Failed to fetch controllers:', error);
     } finally {
       setLoading(false);
     }
@@ -248,7 +248,7 @@ export default function ControllersSection() {
   }, []);
 
   const handleAddClick = () => {
-    setFormValues({ name: "" });
+    setFormValues({ name: '' });
     setSelectedBoard(undefined);
     setSelectedLayout(undefined);
     setSelectedSize(undefined);
@@ -258,7 +258,7 @@ export default function ControllersSection() {
 
   const handleModalCancel = () => {
     setIsModalOpen(false);
-    setFormValues({ name: "" });
+    setFormValues({ name: '' });
     setSelectedBoard(undefined);
     setSelectedLayout(undefined);
     setSelectedSize(undefined);
@@ -302,38 +302,38 @@ export default function ControllersSection() {
   }) => {
     setIsSaving(true);
     try {
-      const response = await fetch("/api/internal/controllers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/internal/controllers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: values.name,
           boardName: values.boardName,
           layoutId: values.layoutId,
           sizeId: values.sizeId,
-          setIds: Array.isArray(values.setIds) ? values.setIds.join(",") : values.setIds,
+          setIds: Array.isArray(values.setIds) ? values.setIds.join(',') : values.setIds,
         }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to register controller");
+        throw new Error(error.error || 'Failed to register controller');
       }
 
       const data = await response.json();
 
       // Close the registration modal
       setIsModalOpen(false);
-      setFormValues({ name: "" });
+      setFormValues({ name: '' });
 
       // Show the API key success modal
       setSuccessApiKey(data.apiKey);
-      setSuccessControllerName(values.name || "");
+      setSuccessControllerName(values.name || '');
 
       await fetchControllers();
     } catch (error) {
       showMessage(
-        error instanceof Error ? error.message : "Failed to register controller",
-        "error",
+        error instanceof Error ? error.message : 'Failed to register controller',
+        'error',
       );
     } finally {
       setIsSaving(false);
@@ -343,21 +343,21 @@ export default function ControllersSection() {
   const handleRemove = async (controllerId: string) => {
     setRemovingId(controllerId);
     try {
-      const response = await fetch("/api/internal/controllers", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/internal/controllers', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ controllerId }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to delete controller");
+        throw new Error(error.error || 'Failed to delete controller');
       }
 
-      showMessage("Controller deleted successfully", "success");
+      showMessage('Controller deleted successfully', 'success');
       await fetchControllers();
     } catch (error) {
-      showMessage(error instanceof Error ? error.message : "Failed to delete controller", "error");
+      showMessage(error instanceof Error ? error.message : 'Failed to delete controller', 'error');
     } finally {
       setRemovingId(null);
     }
@@ -365,7 +365,7 @@ export default function ControllersSection() {
 
   const handleSuccessClose = () => {
     setSuccessApiKey(null);
-    setSuccessControllerName("");
+    setSuccessControllerName('');
   };
 
   if (loading) {
@@ -452,7 +452,7 @@ export default function ControllersSection() {
                 setIds: selectedSets,
               });
             }}
-            sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
+            sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}
           >
             <TextField
               label="Controller Name (optional)"
@@ -468,7 +468,7 @@ export default function ControllersSection() {
             <FormControl fullWidth required>
               <InputLabel>Board Type</InputLabel>
               <MuiSelect
-                value={selectedBoard || ""}
+                value={selectedBoard || ''}
                 label="Board Type"
                 onChange={(e) => handleBoardChange(e.target.value as BoardName)}
               >
@@ -480,7 +480,7 @@ export default function ControllersSection() {
             <FormControl fullWidth required disabled={!selectedBoard}>
               <InputLabel>Layout</InputLabel>
               <MuiSelect
-                value={selectedLayout ?? ""}
+                value={selectedLayout ?? ''}
                 label="Layout"
                 onChange={(e) => handleLayoutChange(e.target.value as number)}
               >
@@ -495,7 +495,7 @@ export default function ControllersSection() {
             <FormControl fullWidth required disabled={!selectedLayout}>
               <InputLabel>Size</InputLabel>
               <MuiSelect
-                value={selectedSize ?? ""}
+                value={selectedSize ?? ''}
                 label="Size"
                 onChange={(e) => handleSizeChange(e.target.value as number)}
               >
@@ -530,7 +530,7 @@ export default function ControllersSection() {
               startIcon={isSaving ? <CircularProgress size={16} /> : undefined}
               fullWidth
             >
-              {isSaving ? "Registering..." : "Register Controller"}
+              {isSaving ? 'Registering...' : 'Register Controller'}
             </Button>
           </Box>
         </DialogContent>
@@ -538,7 +538,7 @@ export default function ControllersSection() {
 
       <ApiKeySuccessModal
         isOpen={!!successApiKey}
-        apiKey={successApiKey || ""}
+        apiKey={successApiKey || ''}
         controllerName={successControllerName}
         onClose={handleSuccessClose}
       />

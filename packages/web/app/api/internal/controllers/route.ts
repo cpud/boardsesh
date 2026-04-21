@@ -1,15 +1,15 @@
-import { getServerSession } from "next-auth/next";
-import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/app/lib/db/db";
-import { esp32Controllers } from "@boardsesh/db/schema/app";
-import { eq, and } from "drizzle-orm";
-import { z } from "zod";
-import { authOptions } from "@/app/lib/auth/auth-options";
-import { randomBytes } from "crypto";
+import { getServerSession } from 'next-auth/next';
+import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '@/app/lib/db/db';
+import { esp32Controllers } from '@boardsesh/db/schema/app';
+import { eq, and } from 'drizzle-orm';
+import { z } from 'zod';
+import { authOptions } from '@/app/lib/auth/auth-options';
+import { randomBytes } from 'crypto';
 
 const registerControllerSchema = z.object({
   name: z.string().max(100).optional(),
-  boardName: z.enum(["kilter", "tension"]),
+  boardName: z.enum(['kilter', 'tension']),
   layoutId: z.number().int().positive(),
   sizeId: z.number().int().positive(),
   setIds: z.string().min(1),
@@ -38,7 +38,7 @@ const ONLINE_THRESHOLD_MS = 60 * 1000;
  * Generate a secure random API key
  */
 function generateApiKey(): string {
-  return randomBytes(32).toString("hex");
+  return randomBytes(32).toString('hex');
 }
 
 /**
@@ -49,7 +49,7 @@ export async function GET() {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const db = getDb();
@@ -77,8 +77,8 @@ export async function GET() {
 
     return NextResponse.json({ controllers: controllerList });
   } catch (error) {
-    console.error("Failed to get controllers:", error);
-    return NextResponse.json({ error: "Failed to get controllers" }, { status: 500 });
+    console.error('Failed to get controllers:', error);
+    return NextResponse.json({ error: 'Failed to get controllers' }, { status: 500 });
   }
 }
 
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -139,8 +139,8 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Failed to register controller:", error);
-    return NextResponse.json({ error: "Failed to register controller" }, { status: 500 });
+    console.error('Failed to register controller:', error);
+    return NextResponse.json({ error: 'Failed to register controller' }, { status: 500 });
   }
 }
 
@@ -152,7 +152,7 @@ export async function DELETE(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -177,7 +177,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to delete controller:", error);
-    return NextResponse.json({ error: "Failed to delete controller" }, { status: 500 });
+    console.error('Failed to delete controller:', error);
+    return NextResponse.json({ error: 'Failed to delete controller' }, { status: 500 });
   }
 }

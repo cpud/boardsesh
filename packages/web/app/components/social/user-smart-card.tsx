@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import MuiCard from "@mui/material/Card";
-import CardActionArea from "@mui/material/CardActionArea";
-import CardContent from "@mui/material/CardContent";
-import MuiAvatar from "@mui/material/Avatar";
-import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
-import Skeleton from "@mui/material/Skeleton";
-import Box from "@mui/material/Box";
-import { PersonOutlined, ArrowForwardIos } from "@mui/icons-material";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import MuiCard from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
+import CardContent from '@mui/material/CardContent';
+import MuiAvatar from '@mui/material/Avatar';
+import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
+import Skeleton from '@mui/material/Skeleton';
+import Box from '@mui/material/Box';
+import { PersonOutlined, ArrowForwardIos } from '@mui/icons-material';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   GET_USER_PROFILE_STATS,
   type GetUserProfileStatsQueryVariables,
   type GetUserProfileStatsQueryResponse,
-} from "@/app/lib/graphql/operations";
-import { getDifficultyMapping, sortGrades } from "@/app/profile/[user_id]/utils/profile-constants";
+} from '@/app/lib/graphql/operations';
+import { getDifficultyMapping, sortGrades } from '@/app/profile/[user_id]/utils/profile-constants';
 import {
   V_GRADE_COLORS,
   FONT_GRADE_COLORS,
   getGradeColorWithOpacity,
-} from "@/app/lib/grade-colors";
-import { useGradeFormat } from "@/app/hooks/use-grade-format";
-import styles from "./user-smart-card.module.css";
+} from '@/app/lib/grade-colors';
+import { useGradeFormat } from '@/app/hooks/use-grade-format';
+import styles from './user-smart-card.module.css';
 
 interface UserSmartCardProps {
   userId: string;
@@ -53,7 +53,7 @@ interface GradeBar {
   color: string;
 }
 
-const CHIP_SX = { height: 20, fontSize: "0.7rem" } as const;
+const CHIP_SX = { height: 20, fontSize: '0.7rem' } as const;
 
 export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardProps) {
   const router = useRouter();
@@ -61,7 +61,7 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [totalClimbs, setTotalClimbs] = useState(0);
   const [rawStats, setRawStats] = useState<
-    GetUserProfileStatsQueryResponse["userProfileStats"] | null
+    GetUserProfileStatsQueryResponse['userProfileStats'] | null
   >(null);
   const [loading, setLoading] = useState(true);
 
@@ -120,7 +120,7 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
     return sortedGradeKeys.map((grade) => {
       const count = gradeAgg[grade];
       const hex = V_GRADE_COLORS[grade] ?? FONT_GRADE_COLORS[grade.toLowerCase()];
-      const color = hex ? getGradeColorWithOpacity(hex, 0.4) : "rgba(200, 200, 200, 0.4)";
+      const color = hex ? getGradeColorWithOpacity(hex, 0.4) : 'rgba(200, 200, 200, 0.4)';
       return { grade, count, color };
     });
   }, [rawStats, gradeFormat]);
@@ -130,7 +130,7 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
     [gradeBars],
   );
 
-  const displayName = profile?.profile?.displayName || profile?.name || "Climber";
+  const displayName = profile?.profile?.displayName || profile?.name || 'Climber';
   const avatarUrl = profile?.profile?.avatarUrl || profile?.image;
 
   if (loading) {
@@ -174,8 +174,8 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
               </div>
 
               <Typography variant="caption" component="span" color="text.secondary">
-                {profile.followerCount} follower{profile.followerCount !== 1 ? "s" : ""}
-                {" · "}
+                {profile.followerCount} follower{profile.followerCount !== 1 ? 's' : ''}
+                {' · '}
                 {profile.followingCount} following
               </Typography>
 
@@ -207,7 +207,7 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
                 color="text.secondary"
                 className={styles.chartLabel}
               >
-                {totalClimbs} distinct climb{totalClimbs !== 1 ? "s" : ""}
+                {totalClimbs} distinct climb{totalClimbs !== 1 ? 's' : ''}
               </Typography>
 
               <div className={styles.gradeBarContainer}>
@@ -232,7 +232,7 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
                       <Skeleton
                         variant="text"
                         width={20}
-                        sx={{ display: "inline-block", fontSize: "inherit" }}
+                        sx={{ display: 'inline-block', fontSize: 'inherit' }}
                       />
                     )}
                   </span>

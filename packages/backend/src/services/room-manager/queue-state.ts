@@ -1,11 +1,11 @@
-import type { ClimbQueueItem } from "@boardsesh/shared-schema";
-import { db } from "../../db/client";
-import { sessionQueues } from "../../db/schema";
-import { eq, and, sql } from "drizzle-orm";
-import type { RedisSessionStore } from "../redis-session-store";
-import { computeQueueStateHash } from "../../utils/hash";
-import { VersionConflictError, type QueueState } from "./types";
-import { WriteScheduler, writeQueueStateToPostgres } from "./write-scheduler";
+import type { ClimbQueueItem } from '@boardsesh/shared-schema';
+import { db } from '../../db/client';
+import { sessionQueues } from '../../db/schema';
+import { eq, and, sql } from 'drizzle-orm';
+import type { RedisSessionStore } from '../redis-session-store';
+import { computeQueueStateHash } from '../../utils/hash';
+import { VersionConflictError, type QueueState } from './types';
+import { WriteScheduler, writeQueueStateToPostgres } from './write-scheduler';
 
 /**
  * Update queue state with Redis as source of truth and debounced Postgres writes.
@@ -17,7 +17,7 @@ export async function updateQueueState(
   expectedVersion: number | undefined,
   redisStore: RedisSessionStore | null,
   writeScheduler: WriteScheduler,
-  distributedState: import("../distributed-state").DistributedStateManager | null,
+  distributedState: import('../distributed-state').DistributedStateManager | null,
 ): Promise<{ version: number; sequence: number; stateHash: string }> {
   // Get current version and sequence from Redis if available, otherwise from Postgres
   let currentVersion = expectedVersion;
@@ -215,7 +215,7 @@ export async function updateQueueOnly(
   expectedVersion: number | undefined,
   redisStore: RedisSessionStore | null,
   writeScheduler: WriteScheduler,
-  distributedState: import("../distributed-state").DistributedStateManager | null,
+  distributedState: import('../distributed-state').DistributedStateManager | null,
 ): Promise<{ version: number; sequence: number; stateHash: string }> {
   // Get current state from Redis (source of truth for real-time sync)
   let currentVersion = 0;

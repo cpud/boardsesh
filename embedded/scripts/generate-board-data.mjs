@@ -16,20 +16,20 @@
  *   bun run controller:codegen:board-data
  */
 
-import * as fs from "fs";
-import * as path from "path";
-import { fileURLToPath } from "url";
+import * as fs from 'fs';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
 
 // ESM-compatible __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Path configuration
-const PROJECT_ROOT = path.join(__dirname, "../..");
-const WEB_LIB = path.join(PROJECT_ROOT, "packages/web/app/lib");
-const BOARD_CONSTANTS_GENERATED = path.join(PROJECT_ROOT, "packages/board-constants/src/generated");
-const IMAGES_BASE = path.join(PROJECT_ROOT, "packages/web/public/images");
-const OUTPUT_DIR = path.join(__dirname, "../libs/board-data/src");
+const PROJECT_ROOT = path.join(__dirname, '../..');
+const WEB_LIB = path.join(PROJECT_ROOT, 'packages/web/app/lib');
+const BOARD_CONSTANTS_GENERATED = path.join(PROJECT_ROOT, 'packages/board-constants/src/generated');
+const IMAGES_BASE = path.join(PROJECT_ROOT, 'packages/web/public/images');
+const OUTPUT_DIR = path.join(__dirname, '../libs/board-data/src');
 
 // Target image dimensions for the 480x800 display
 const MAX_IMAGE_WIDTH = 460;
@@ -37,7 +37,7 @@ const MAX_IMAGE_HEIGHT = 560;
 const JPEG_QUALITY = 85;
 
 // Only generate for these boards (skip moonboard)
-const BOARD_NAMES = ["kilter", "tension"];
+const BOARD_NAMES = ['kilter', 'tension'];
 
 /**
  * Extract a JavaScript object/array literal from TypeScript source by
@@ -57,26 +57,26 @@ function extractJsObject(content, varName) {
   const startIdx = match.index + match[0].length;
   let depth = 0;
   let inString = false;
-  let stringChar = "";
+  let stringChar = '';
   let i = startIdx;
 
   for (; i < content.length; i++) {
     const ch = content[i];
     if (inString) {
-      if (ch === "\\") {
+      if (ch === '\\') {
         i++;
         continue;
       }
       if (ch === stringChar) inString = false;
       continue;
     }
-    if (ch === "'" || ch === '"' || ch === "`") {
+    if (ch === "'" || ch === '"' || ch === '`') {
       inString = true;
       stringChar = ch;
       continue;
     }
-    if (ch === "{" || ch === "[") depth++;
-    if (ch === "}" || ch === "]") {
+    if (ch === '{' || ch === '[') depth++;
+    if (ch === '}' || ch === ']') {
       depth--;
       if (depth === 0) {
         i++;
@@ -87,11 +87,11 @@ function extractJsObject(content, varName) {
 
   const objStr = content.substring(startIdx, i);
   // Remove trailing semicolons and 'as const'
-  const cleaned = objStr.replace(/\s*as\s+const\s*;?\s*$/, "").replace(/;\s*$/, "");
+  const cleaned = objStr.replace(/\s*as\s+const\s*;?\s*$/, '').replace(/;\s*$/, '');
   try {
     // Indirect eval to parse the extracted object literal.
     // SAFETY: input is from local generated TS data files, not user input.
-    return (0, eval)("(" + cleaned + ")");
+    return (0, eval)('(' + cleaned + ')');
   } catch (e) {
     console.error(`Failed to parse ${varName}:`, e.message);
     return null;
@@ -102,27 +102,27 @@ function extractJsObject(content, varName) {
  * Load all required data from the TypeScript source files
  */
 function loadBoardData() {
-  console.log("Loading board data from TypeScript source files...");
+  console.log('Loading board data from TypeScript source files...');
 
   // Read raw file contents
   const productSizesContent = fs.readFileSync(
-    path.join(BOARD_CONSTANTS_GENERATED, "product-sizes-data.ts"),
-    "utf-8",
+    path.join(BOARD_CONSTANTS_GENERATED, 'product-sizes-data.ts'),
+    'utf-8',
   );
   const ledPlacementsContent = fs.readFileSync(
-    path.join(BOARD_CONSTANTS_GENERATED, "led-placements-data.ts"),
-    "utf-8",
+    path.join(BOARD_CONSTANTS_GENERATED, 'led-placements-data.ts'),
+    'utf-8',
   );
-  const boardDataContent = fs.readFileSync(path.join(WEB_LIB, "board-data.ts"), "utf-8");
+  const boardDataContent = fs.readFileSync(path.join(WEB_LIB, 'board-data.ts'), 'utf-8');
 
   // Extract data objects
-  const PRODUCT_SIZES = extractJsObject(productSizesContent, "PRODUCT_SIZES");
-  const LAYOUTS = extractJsObject(productSizesContent, "LAYOUTS");
-  const SETS = extractJsObject(productSizesContent, "SETS");
-  const IMAGE_FILENAMES = extractJsObject(productSizesContent, "IMAGE_FILENAMES");
-  const HOLE_PLACEMENTS = extractJsObject(productSizesContent, "HOLE_PLACEMENTS");
-  const LED_PLACEMENTS = extractJsObject(ledPlacementsContent, "LED_PLACEMENTS");
-  const BOARD_IMAGE_DIMENSIONS = extractJsObject(boardDataContent, "BOARD_IMAGE_DIMENSIONS");
+  const PRODUCT_SIZES = extractJsObject(productSizesContent, 'PRODUCT_SIZES');
+  const LAYOUTS = extractJsObject(productSizesContent, 'LAYOUTS');
+  const SETS = extractJsObject(productSizesContent, 'SETS');
+  const IMAGE_FILENAMES = extractJsObject(productSizesContent, 'IMAGE_FILENAMES');
+  const HOLE_PLACEMENTS = extractJsObject(productSizesContent, 'HOLE_PLACEMENTS');
+  const LED_PLACEMENTS = extractJsObject(ledPlacementsContent, 'LED_PLACEMENTS');
+  const BOARD_IMAGE_DIMENSIONS = extractJsObject(boardDataContent, 'BOARD_IMAGE_DIMENSIONS');
 
   if (
     !PRODUCT_SIZES ||
@@ -132,7 +132,7 @@ function loadBoardData() {
     !LED_PLACEMENTS ||
     !BOARD_IMAGE_DIMENSIONS
   ) {
-    throw new Error("Failed to load one or more required data objects");
+    throw new Error('Failed to load one or more required data objects');
   }
 
   console.log(
@@ -170,7 +170,7 @@ function enumerateConfigs(data) {
     const sets = data.SETS[boardName] || {};
 
     for (const [layoutSizeKey, setList] of Object.entries(sets)) {
-      const [layoutIdStr, sizeIdStr] = layoutSizeKey.split("-");
+      const [layoutIdStr, sizeIdStr] = layoutSizeKey.split('-');
       const layoutId = parseInt(layoutIdStr);
       const sizeId = parseInt(sizeIdStr);
 
@@ -178,7 +178,7 @@ function enumerateConfigs(data) {
       const setIds = setList.map((s) => s.id).sort((a, b) => a - b);
 
       // Build config key (no angle): "kilter/1/7/1,20"
-      const configKey = `${boardName}/${layoutId}/${sizeId}/${setIds.join(",")}`;
+      const configKey = `${boardName}/${layoutId}/${sizeId}/${setIds.join(',')}`;
 
       // Get image filenames for each set
       const imageFiles = [];
@@ -238,7 +238,7 @@ function enumerateConfigs(data) {
  * e.g., "kilter/1/7/1,20" -> "kilter_1_7_1_20"
  */
 function sanitizeId(configKey) {
-  return configKey.replace(/[/,]/g, "_");
+  return configKey.replace(/[/,]/g, '_');
 }
 
 /**
@@ -304,7 +304,7 @@ function computeHoldMap(config, targetWidth, targetHeight) {
  * Composite multiple PNG layers and convert to JPEG buffer
  */
 async function compositeAndResize(config) {
-  const sharp = (await import("sharp")).default;
+  const sharp = (await import('sharp')).default;
   const { boardName, imageFiles, boardImageDimensions } = config;
 
   // Get dimensions from first image
@@ -340,7 +340,7 @@ async function compositeAndResize(config) {
   // We must materialize the base to a buffer first because sharp's composite
   // requires overlay dimensions to match the already-realized base image.
   let baseBuffer = await sharp(existingPaths[0])
-    .resize(srcWidth, srcHeight, { fit: "fill", kernel: "lanczos3" })
+    .resize(srcWidth, srcHeight, { fit: 'fill', kernel: 'lanczos3' })
     .png()
     .toBuffer();
 
@@ -349,17 +349,17 @@ async function compositeAndResize(config) {
     const overlays = [];
     for (const p of existingPaths.slice(1)) {
       const resizedOverlay = await sharp(p)
-        .resize(srcWidth, srcHeight, { fit: "fill", kernel: "lanczos3" })
+        .resize(srcWidth, srcHeight, { fit: 'fill', kernel: 'lanczos3' })
         .png()
         .toBuffer();
-      overlays.push({ input: resizedOverlay, blend: "over" });
+      overlays.push({ input: resizedOverlay, blend: 'over' });
     }
     baseBuffer = await sharp(baseBuffer).composite(overlays).png().toBuffer();
   }
 
   // Resize composited image to target dimensions and convert to JPEG
   const jpegBuffer = await sharp(baseBuffer)
-    .resize(targetWidth, targetHeight, { fit: "fill", kernel: "lanczos3" })
+    .resize(targetWidth, targetHeight, { fit: 'fill', kernel: 'lanczos3' })
     .jpeg({ quality: JPEG_QUALITY })
     .toBuffer();
 
@@ -369,14 +369,14 @@ async function compositeAndResize(config) {
 /**
  * Format a byte array as a C++ array initializer
  */
-function formatByteArray(buffer, indent = "    ") {
+function formatByteArray(buffer, indent = '    ') {
   const bytes = Array.from(buffer);
   const lines = [];
   for (let i = 0; i < bytes.length; i += 16) {
     const chunk = bytes.slice(i, i + 16);
-    lines.push(indent + chunk.map((b) => "0x" + b.toString(16).padStart(2, "0")).join(", "));
+    lines.push(indent + chunk.map((b) => '0x' + b.toString(16).padStart(2, '0')).join(', '));
   }
-  return lines.join(",\n");
+  return lines.join(',\n');
 }
 
 /**
@@ -407,7 +407,7 @@ function generateImageHeader(configResults) {
     content += `// ${result.configKey} (${result.width}x${result.height}, ${result.buffer.length} bytes)\n`;
     content += `static const uint8_t image_${id}[] PROGMEM = {\n`;
     content += formatByteArray(result.buffer);
-    content += "\n};\n\n";
+    content += '\n};\n\n';
   }
 
   return content;
@@ -495,8 +495,8 @@ function generateDataCpp(configResults) {
       content += `// ${result.configKey}: ${result.holdMap.length} holds\n`;
       content += `static const HoldMapEntry holds_${id}[] PROGMEM = {\n`;
       const entries = result.holdMap.map((h) => `    {${h.ledPosition}, ${h.cx}, ${h.cy}, ${h.r}}`);
-      content += entries.join(",\n");
-      content += "\n};\n\n";
+      content += entries.join(',\n');
+      content += '\n};\n\n';
     }
   }
 
@@ -531,8 +531,8 @@ const BoardConfig* findBoardConfig(const char* configKey) {
 }
 
 async function main() {
-  console.log("Board Data Code Generator");
-  console.log("=========================\n");
+  console.log('Board Data Code Generator');
+  console.log('=========================\n');
 
   // Load source data
   const data = loadBoardData();
@@ -551,7 +551,7 @@ async function main() {
     try {
       const imageResult = await compositeAndResize(config);
       if (!imageResult) {
-        console.log("SKIPPED (no images)");
+        console.log('SKIPPED (no images)');
         continue;
       }
 
@@ -580,7 +580,7 @@ async function main() {
   console.log(`Total holds: ${totalHolds}`);
 
   // Generate output files
-  console.log("\nGenerating C++ source files...");
+  console.log('\nGenerating C++ source files...');
 
   // Ensure output directory exists
   if (!fs.existsSync(OUTPUT_DIR)) {
@@ -589,7 +589,7 @@ async function main() {
 
   // Generate image data header
   const imageHeader = generateImageHeader(results);
-  const imageHeaderPath = path.join(OUTPUT_DIR, "board_image_data.h");
+  const imageHeaderPath = path.join(OUTPUT_DIR, 'board_image_data.h');
   fs.writeFileSync(imageHeaderPath, imageHeader);
   console.log(
     `  Written: ${imageHeaderPath} (${(imageHeader.length / 1024).toFixed(0)} KB source)`,
@@ -597,13 +597,13 @@ async function main() {
 
   // Generate hold data header (types + declarations only)
   const holdHeader = generateHoldHeader(results);
-  const holdHeaderPath = path.join(OUTPUT_DIR, "board_hold_data.h");
+  const holdHeaderPath = path.join(OUTPUT_DIR, 'board_hold_data.h');
   fs.writeFileSync(holdHeaderPath, holdHeader);
   console.log(`  Written: ${holdHeaderPath} (${(holdHeader.length / 1024).toFixed(0)} KB source)`);
 
   // Generate board data implementation (all data arrays + lookup)
   const dataCpp = generateDataCpp(results);
-  const dataCppPath = path.join(OUTPUT_DIR, "board_data.cpp");
+  const dataCppPath = path.join(OUTPUT_DIR, 'board_data.cpp');
   fs.writeFileSync(dataCppPath, dataCpp);
   console.log(`  Written: ${dataCppPath} (${(dataCpp.length / 1024).toFixed(0)} KB source)`);
 
@@ -616,10 +616,10 @@ async function main() {
   }
   console.log(`\nJPEG validation: ${validJpegs}/${results.length} valid`);
 
-  console.log("\nDone!");
+  console.log('\nDone!');
 }
 
 main().catch((err) => {
-  console.error("Fatal error:", err);
+  console.error('Fatal error:', err);
   process.exit(1);
 });

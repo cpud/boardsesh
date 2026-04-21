@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, {
   useEffect,
   useCallback,
@@ -7,59 +7,59 @@ import React, {
   useRef,
   useImperativeHandle,
   forwardRef,
-} from "react";
-import IconButton from "@mui/material/IconButton";
-import Box from "@mui/material/Box";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
-import AlertTitle from "@mui/material/AlertTitle";
-import AppsOutlined from "@mui/icons-material/AppsOutlined";
-import FormatListBulletedOutlined from "@mui/icons-material/FormatListBulletedOutlined";
-import { usePathname } from "next/navigation";
-import { track } from "@vercel/analytics";
-import dynamic from "next/dynamic";
-import { useIsDarkMode } from "@/app/hooks/use-is-dark-mode";
-import { useDrawerDragResize } from "@/app/hooks/use-drawer-drag-resize";
-import drawerCss from "../swipeable-drawer/swipeable-drawer.module.css";
-import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { Climb, BoardDetails } from "@/app/lib/types";
-import ErrorBoundary from "../error-boundary";
-import ClimbListItem from "../climb-card/climb-list-item";
-import { ClimbCardSkeleton, ClimbListItemSkeleton } from "./board-page-skeleton";
-import { themeTokens } from "@/app/theme/theme-config";
-import { getPreference, setPreference } from "@/app/lib/user-preferences-db";
-import { useInfiniteScroll } from "@/app/hooks/use-infinite-scroll";
-import { classifyClimbListChange } from "./climb-list-utils";
-import SwipeHintOrchestrator from "./swipe-hint-orchestrator";
-import { getExcludedClimbActions } from "@/app/lib/climb-action-utils";
-import { SelectionStoreContext, useSelectionStore } from "./selected-climb-store";
-import { dispatchOpenPlayDrawer } from "../queue-control/play-drawer-event";
-import listStyles from "./climbs-list.module.css";
+} from 'react';
+import IconButton from '@mui/material/IconButton';
+import Box from '@mui/material/Box';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import AppsOutlined from '@mui/icons-material/AppsOutlined';
+import FormatListBulletedOutlined from '@mui/icons-material/FormatListBulletedOutlined';
+import { usePathname } from 'next/navigation';
+import { track } from '@vercel/analytics';
+import dynamic from 'next/dynamic';
+import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
+import { useDrawerDragResize } from '@/app/hooks/use-drawer-drag-resize';
+import drawerCss from '../swipeable-drawer/swipeable-drawer.module.css';
+import { useWindowVirtualizer } from '@tanstack/react-virtual';
+import { Climb, BoardDetails } from '@/app/lib/types';
+import ErrorBoundary from '../error-boundary';
+import ClimbListItem from '../climb-card/climb-list-item';
+import { ClimbCardSkeleton, ClimbListItemSkeleton } from './board-page-skeleton';
+import { themeTokens } from '@/app/theme/theme-config';
+import { getPreference, setPreference } from '@/app/lib/user-preferences-db';
+import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
+import { classifyClimbListChange } from './climb-list-utils';
+import SwipeHintOrchestrator from './swipe-hint-orchestrator';
+import { getExcludedClimbActions } from '@/app/lib/climb-action-utils';
+import { SelectionStoreContext, useSelectionStore } from './selected-climb-store';
+import { dispatchOpenPlayDrawer } from '../queue-control/play-drawer-event';
+import listStyles from './climbs-list.module.css';
 
-const SwipeableDrawer = dynamic(() => import("../swipeable-drawer/swipeable-drawer"), {
+const SwipeableDrawer = dynamic(() => import('../swipeable-drawer/swipeable-drawer'), {
   ssr: false,
 });
-const QueueDrawer = dynamic(() => import("../play-view/queue-drawer"), { ssr: false });
-const DrawerClimbHeader = dynamic(() => import("../climb-card/drawer-climb-header"), {
+const QueueDrawer = dynamic(() => import('../play-view/queue-drawer'), { ssr: false });
+const DrawerClimbHeader = dynamic(() => import('../climb-card/drawer-climb-header'), {
   ssr: false,
 });
-const ClimbActions = dynamic(() => import("../climb-actions/climb-actions"), { ssr: false });
+const ClimbActions = dynamic(() => import('../climb-actions/climb-actions'), { ssr: false });
 const PlaylistSelectionContent = dynamic(
-  () => import("../climb-actions/playlist-selection-content"),
+  () => import('../climb-actions/playlist-selection-content'),
   { ssr: false },
 );
-const ClimbCard = dynamic(() => import("../climb-card/climb-card"), { ssr: false });
+const ClimbCard = dynamic(() => import('../climb-card/climb-card'), { ssr: false });
 
-type ViewMode = "grid" | "list";
+type ViewMode = 'grid' | 'list';
 
-const VIEW_MODE_PREFERENCE_KEY = "climbListViewMode";
+const VIEW_MODE_PREFERENCE_KEY = 'climbListViewMode';
 
 // Static drawer style objects (hoisted to avoid per-render allocation)
 const sharedDrawerStyles = {
   wrapper: {
-    width: "100%",
-    touchAction: "pan-y" as const,
-    transition: "height 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    width: '100%',
+    touchAction: 'pan-y' as const,
+    transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   },
   body: { padding: `${themeTokens.spacing[2]}px 0` },
   header: {
@@ -69,7 +69,7 @@ const sharedDrawerStyles = {
 } as const;
 
 const sharedPlaylistDrawerStyles = {
-  wrapper: { height: "auto", maxHeight: "70vh", width: "100%" },
+  wrapper: { height: 'auto', maxHeight: '70vh', width: '100%' },
   body: { padding: 0 },
   header: {
     paddingLeft: `${themeTokens.spacing[3]}px`,
@@ -94,7 +94,7 @@ const SharedDrawers = React.memo(
     ({ boardDetails, resolveBoardDetails }, ref) => {
       const pathname = usePathname();
       const [activeDrawerClimb, setActiveDrawerClimb] = useState<Climb | null>(null);
-      const [drawerMode, setDrawerMode] = useState<"actions" | "playlist" | null>(null);
+      const [drawerMode, setDrawerMode] = useState<'actions' | 'playlist' | null>(null);
 
       // Queue list drawer state
       const [isQueueListOpen, setIsQueueListOpen] = useState(false);
@@ -104,11 +104,11 @@ const SharedDrawers = React.memo(
         () => ({
           openActions: (climb: Climb) => {
             setActiveDrawerClimb(climb);
-            setDrawerMode("actions");
+            setDrawerMode('actions');
           },
           openPlaylistSelector: (climb: Climb) => {
             setActiveDrawerClimb(climb);
-            setDrawerMode("playlist");
+            setDrawerMode('playlist');
           },
         }),
         [],
@@ -117,16 +117,16 @@ const SharedDrawers = React.memo(
       const handleCloseDrawer = useCallback(() => setDrawerMode(null), []);
 
       const { paperRef: actionsPaperRef, dragHandlers: actionsDragHandlers } = useDrawerDragResize({
-        open: drawerMode === "actions",
+        open: drawerMode === 'actions',
         onClose: handleCloseDrawer,
       });
-      const handleSwitchToPlaylist = useCallback(() => setDrawerMode("playlist"), []);
+      const handleSwitchToPlaylist = useCallback(() => setDrawerMode('playlist'), []);
       const handleDrawerTransitionEnd = useCallback((open: boolean) => {
         if (!open) setActiveDrawerClimb(null);
       }, []);
 
       const excludeActions = useMemo(
-        () => getExcludedClimbActions(boardDetails.board_name, "list"),
+        () => getExcludedClimbActions(boardDetails.board_name, 'list'),
         [boardDetails.board_name],
       );
 
@@ -165,7 +165,7 @@ const SharedDrawers = React.memo(
             }
             height="60%"
             paperRef={actionsPaperRef}
-            open={drawerMode === "actions"}
+            open={drawerMode === 'actions'}
             onClose={handleCloseDrawer}
             onTransitionEnd={handleDrawerTransitionEnd}
             swipeEnabled={false}
@@ -196,7 +196,7 @@ const SharedDrawers = React.memo(
               ) : undefined
             }
             placement="bottom"
-            open={drawerMode === "playlist"}
+            open={drawerMode === 'playlist'}
             onClose={handleCloseDrawer}
             onTransitionEnd={handleDrawerTransitionEnd}
             styles={sharedPlaylistDrawerStyles}
@@ -223,7 +223,7 @@ const SharedDrawers = React.memo(
     },
   ),
 );
-SharedDrawers.displayName = "SharedDrawers";
+SharedDrawers.displayName = 'SharedDrawers';
 
 export type ClimbsListProps = {
   boardDetails: BoardDetails;
@@ -254,11 +254,11 @@ const ClimbsListSkeleton = ({
   aspectRatio: number;
   viewMode: ViewMode;
 }) => {
-  if (viewMode === "list") {
+  if (viewMode === 'list') {
     return Array.from({ length: 10 }, (_, i) => <ClimbListItemSkeleton key={i} />);
   }
   return Array.from({ length: 10 }, (_, i) => (
-    <Box key={i} sx={{ width: { xs: "100%", lg: "50%" } }}>
+    <Box key={i} sx={{ width: { xs: '100%', lg: '50%' } }}>
       <ClimbCardSkeleton aspectRatio={aspectRatio} />
     </Box>
   ));
@@ -296,7 +296,7 @@ const GridClimbItem = React.memo(function GridClimbItem({
   }, [onClimbClickByIndex, index, needsBiggerBoard, onNeedsBiggerBoard]);
   return (
     <>
-      <div {...(index === 0 ? { id: "onboarding-climb-card" } : {})}>
+      <div {...(index === 0 ? { id: 'onboarding-climb-card' } : {})}>
         <ClimbCard
           climb={climb}
           boardDetails={boardDetails}
@@ -347,7 +347,7 @@ const ClimbsList = ({
 
     const changeType = classifyClimbListChange(climbs, prevClimbs);
 
-    if (changeType === "append" || changeType === "same") {
+    if (changeType === 'append' || changeType === 'same') {
       // Show all items immediately — no batching for appended pages or unchanged data
       setVisibleCount(climbs.length);
     } else if (climbs.length > INITIAL_BATCH) {
@@ -364,7 +364,7 @@ const ClimbsList = ({
 
   const visibleClimbs = useMemo(() => climbs.slice(0, visibleCount), [climbs, visibleCount]);
 
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
 
@@ -373,7 +373,7 @@ const ClimbsList = ({
 
   useEffect(() => {
     getPreference<ViewMode>(VIEW_MODE_PREFERENCE_KEY).then((stored) => {
-      if (stored === "grid" || stored === "list") {
+      if (stored === 'grid' || stored === 'list') {
         setViewMode(stored);
       }
     });
@@ -382,14 +382,14 @@ const ClimbsList = ({
   const handleViewModeChange = useCallback((mode: ViewMode) => {
     setViewMode(mode);
     setPreference(VIEW_MODE_PREFERENCE_KEY, mode).catch(() => {});
-    track("View Mode Changed", { mode });
+    track('View Mode Changed', { mode });
   }, []);
 
-  const handleListView = useCallback(() => handleViewModeChange("list"), [handleViewModeChange]);
-  const handleGridView = useCallback(() => handleViewModeChange("grid"), [handleViewModeChange]);
+  const handleListView = useCallback(() => handleViewModeChange('list'), [handleViewModeChange]);
+  const handleGridView = useCallback(() => handleViewModeChange('grid'), [handleViewModeChange]);
 
   const handleLoadMore = useCallback(() => {
-    track("Infinite Scroll Load More", {
+    track('Infinite Scroll Load More', {
       currentCount: climbs.length,
       hasMore,
     });
@@ -409,7 +409,7 @@ const ClimbsList = ({
       const climb = climbs[index];
       if (climb) {
         onClimbSelectRef.current?.(climb);
-        track("Climb List Row Clicked", { climbUuid: climb.uuid });
+        track('Climb List Row Clicked', { climbUuid: climb.uuid });
       }
     },
     [climbs],
@@ -422,7 +422,7 @@ const ClimbsList = ({
       if (climb) {
         onClimbSelectRef.current?.(climb);
         dispatchOpenPlayDrawer();
-        track("Climb List Cover Clicked", { climbUuid: climb.uuid });
+        track('Climb List Cover Clicked', { climbUuid: climb.uuid });
       }
     },
     [climbs],
@@ -447,15 +447,15 @@ const ClimbsList = ({
   const handleCloseBiggerBoard = useCallback(() => setBiggerBoardOpen(false), []);
 
   const handleOpenActions = useCallback((climb: Climb) => {
-    if (process.env.NODE_ENV !== "production" && !drawerRef.current) {
-      console.warn("SharedDrawers ref not attached — openActions is a no-op");
+    if (process.env.NODE_ENV !== 'production' && !drawerRef.current) {
+      console.warn('SharedDrawers ref not attached — openActions is a no-op');
     }
     drawerRef.current?.openActions(climb);
   }, []);
 
   const handleOpenPlaylistSelector = useCallback((climb: Climb) => {
-    if (process.env.NODE_ENV !== "production" && !drawerRef.current) {
-      console.warn("SharedDrawers ref not attached — openPlaylistSelector is a no-op");
+    if (process.env.NODE_ENV !== 'production' && !drawerRef.current) {
+      console.warn('SharedDrawers ref not attached — openPlaylistSelector is a no-op');
     }
     drawerRef.current?.openPlaylistSelector(climb);
   }, []);
@@ -463,8 +463,8 @@ const ClimbsList = ({
   // Memoize sx prop objects to prevent recreation on every render
   const headerContainerSx = useMemo(
     () => ({
-      display: "flex",
-      alignItems: "center",
+      display: 'flex',
+      alignItems: 'center',
       gap: `${themeTokens.spacing[2]}px`,
       padding: `${themeTokens.spacing[2]}px ${themeTokens.spacing[3]}px`,
       minHeight: 40,
@@ -476,15 +476,15 @@ const ClimbsList = ({
     () => ({
       flex: 1,
       minWidth: 0,
-      overflow: "hidden",
+      overflow: 'hidden',
     }),
     [],
   );
 
   const rightControlsSx = useMemo(
     () => ({
-      display: "flex",
-      alignItems: "center",
+      display: 'flex',
+      alignItems: 'center',
       gap: `${themeTokens.spacing[2]}px`,
       flexShrink: 0,
     }),
@@ -493,26 +493,26 @@ const ClimbsList = ({
 
   const viewModeToggleBoxSx = useMemo(
     () => ({
-      display: "flex",
-      gap: "2px",
+      display: 'flex',
+      gap: '2px',
       flexShrink: 0,
     }),
     [],
   );
 
   const listButtonSx = useMemo(
-    () => ({ padding: "4px", opacity: viewMode === "list" ? 1 : 0.4 }),
+    () => ({ padding: '4px', opacity: viewMode === 'list' ? 1 : 0.4 }),
     [viewMode],
   );
   const gridButtonSx = useMemo(
-    () => ({ padding: "4px", opacity: viewMode === "grid" ? 1 : 0.4 }),
+    () => ({ padding: '4px', opacity: viewMode === 'grid' ? 1 : 0.4 }),
     [viewMode],
   );
 
   const gridContainerSx = useMemo(
     () => ({
-      display: "flex",
-      flexWrap: "wrap" as const,
+      display: 'flex',
+      flexWrap: 'wrap' as const,
       gap: `${themeTokens.spacing[4]}px`,
     }),
     [],
@@ -520,7 +520,7 @@ const ClimbsList = ({
 
   const cardBoxSx = useMemo(
     () => ({
-      width: { xs: "100%", lg: `calc(50% - ${themeTokens.spacing[4] / 2}px)` },
+      width: { xs: '100%', lg: `calc(50% - ${themeTokens.spacing[4] / 2}px)` },
     }),
     [],
   );
@@ -528,16 +528,16 @@ const ClimbsList = ({
   const sentinelBoxSx = useMemo(
     () => ({
       minHeight: `${themeTokens.spacing[5]}px`,
-      mt: viewMode === "grid" ? `${themeTokens.spacing[4]}px` : 0,
+      mt: viewMode === 'grid' ? `${themeTokens.spacing[4]}px` : 0,
     }),
     [viewMode],
   );
 
   const noMoreClimbsBoxSx = useMemo(
     () => ({
-      textAlign: "center" as const,
+      textAlign: 'center' as const,
       padding: `${themeTokens.spacing[5]}px`,
-      color: "var(--neutral-400)",
+      color: 'var(--neutral-400)',
     }),
     [],
   );
@@ -567,7 +567,7 @@ const ClimbsList = ({
   // Virtualizer-based infinite scroll for list mode
   const lastVirtualItem = virtualItems[virtualItems.length - 1];
   useEffect(() => {
-    if (viewMode !== "list" || !lastVirtualItem) return;
+    if (viewMode !== 'list' || !lastVirtualItem) return;
     if (lastVirtualItem.index >= visibleClimbs.length - 5 && hasMore && !isFetching) {
       handleLoadMore();
     }
@@ -606,7 +606,7 @@ const ClimbsList = ({
         </Box>
 
         <ErrorBoundary recoverable>
-          {viewMode === "grid" ? (
+          {viewMode === 'grid' ? (
             /* Grid (card) mode — not virtualized */
             <Box sx={gridContainerSx} translate="no">
               {visibleClimbs.map((climb, index) => (
@@ -643,9 +643,9 @@ const ClimbsList = ({
                 <div
                   style={{
                     height: virtualizer.getTotalSize(),
-                    width: "100%",
-                    position: "relative",
-                    backgroundColor: "inherit",
+                    width: '100%',
+                    position: 'relative',
+                    backgroundColor: 'inherit',
                   }}
                 >
                   {virtualItems.map((virtualItem) => {
@@ -657,14 +657,14 @@ const ClimbsList = ({
                         key={virtualItem.key}
                         ref={virtualizer.measureElement}
                         data-index={virtualItem.index}
-                        {...(index === 0 ? { id: "onboarding-climb-card" } : {})}
+                        {...(index === 0 ? { id: 'onboarding-climb-card' } : {})}
                         style={{
-                          position: "absolute",
+                          position: 'absolute',
                           top: 0,
                           left: 0,
-                          width: "100%",
+                          width: '100%',
                           transform: `translateY(${virtualItem.start}px)`,
-                          contain: "layout style paint",
+                          contain: 'layout style paint',
                         }}
                       >
                         <ClimbListItem
@@ -673,7 +673,7 @@ const ClimbsList = ({
                           pathname={pathname}
                           isDark={isDark}
                           preferImageLayers={index < initialImageCount}
-                          fetchPriority={index === 0 ? "high" : undefined}
+                          fetchPriority={index === 0 ? 'high' : undefined}
                           onSelect={() => handleClimbClickByIndex(index)}
                           onThumbnailClick={() => handleClimbThumbnailClickByIndex(index)}
                           disableSwipe={!hydrated}
@@ -694,13 +694,13 @@ const ClimbsList = ({
           )}
         </ErrorBoundary>
 
-        {viewMode === "list" && climbs.length > 0 && <SwipeHintOrchestrator />}
+        {viewMode === 'list' && climbs.length > 0 && <SwipeHintOrchestrator />}
 
         {/* Sentinel for infinite scroll — only needed for grid mode (list mode uses virtualizer) */}
-        <Box ref={viewMode === "grid" ? sentinelRef : undefined} sx={sentinelBoxSx}>
+        <Box ref={viewMode === 'grid' ? sentinelRef : undefined} sx={sentinelBoxSx}>
           {isFetching &&
             climbs.length > 0 &&
-            (viewMode === "grid" ? (
+            (viewMode === 'grid' ? (
               <Box sx={gridContainerSx}>
                 <ClimbsListSkeleton
                   aspectRatio={boardDetails.boardWidth / boardDetails.boardHeight}
@@ -733,7 +733,7 @@ const ClimbsList = ({
           open={biggerBoardOpen}
           autoHideDuration={4000}
           onClose={handleCloseBiggerBoard}
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
           <Alert severity="warning" onClose={handleCloseBiggerBoard} variant="filled">
             <AlertTitle>Won&apos;t fit your board</AlertTitle>

@@ -1,13 +1,13 @@
-import { eq, and, or, isNull, inArray, sql } from "drizzle-orm";
-import type { ConnectionContext } from "@boardsesh/shared-schema";
-import { db } from "../../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { requireAuthenticated, validateInput } from "../../shared/helpers";
+import { eq, and, or, isNull, inArray, sql } from 'drizzle-orm';
+import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { db } from '../../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { requireAuthenticated, validateInput } from '../../shared/helpers';
 import {
   GetPlaylistsForClimbInputSchema,
   GetPlaylistsForClimbsInputSchema,
-} from "../../../../validation/schemas";
-import { getPlaylistFollowStats } from "../helpers/follow-stats";
+} from '../../../../validation/schemas';
+import { getPlaylistFollowStats } from '../helpers/follow-stats';
 
 /**
  * Get a specific playlist by ID.
@@ -107,7 +107,7 @@ export const playlistsForClimb = async (
   ctx: ConnectionContext,
 ): Promise<string[]> => {
   requireAuthenticated(ctx);
-  validateInput(GetPlaylistsForClimbInputSchema, input, "input");
+  validateInput(GetPlaylistsForClimbInputSchema, input, 'input');
 
   const userId = ctx.userId!;
 
@@ -141,7 +141,7 @@ export const playlistsForClimbs = async (
   ctx: ConnectionContext,
 ): Promise<Array<{ climbUuid: string; playlistUuids: string[] }>> => {
   requireAuthenticated(ctx);
-  validateInput(GetPlaylistsForClimbsInputSchema, input, "input");
+  validateInput(GetPlaylistsForClimbsInputSchema, input, 'input');
 
   const userId = ctx.userId!;
 

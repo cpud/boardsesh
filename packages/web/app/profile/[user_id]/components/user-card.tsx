@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import React from "react";
-import MuiAvatar from "@mui/material/Avatar";
-import MuiCard from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import { PersonOutlined, Instagram } from "@mui/icons-material";
-import FollowButton from "@/app/components/ui/follow-button";
-import FollowerCount from "@/app/components/social/follower-count";
-import { FOLLOW_USER, UNFOLLOW_USER } from "@/app/lib/graphql/operations";
-import type { UserProfile } from "../utils/profile-constants";
-import styles from "../profile-page.module.css";
+import React from 'react';
+import MuiAvatar from '@mui/material/Avatar';
+import MuiCard from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import { PersonOutlined, Instagram } from '@mui/icons-material';
+import FollowButton from '@/app/components/ui/follow-button';
+import FollowerCount from '@/app/components/social/follower-count';
+import { FOLLOW_USER, UNFOLLOW_USER } from '@/app/lib/graphql/operations';
+import type { UserProfile } from '../utils/profile-constants';
+import styles from '../profile-page.module.css';
 
 export interface UserCardProps {
   userId: string;
@@ -26,7 +26,7 @@ export default function UserCard({
   isOwnProfile,
   onProfileUpdate,
 }: UserCardProps) {
-  const displayName = profile.profile?.displayName || profile.name || "Climber";
+  const displayName = profile.profile?.displayName || profile.name || 'Climber';
   const avatarUrl = profile.profile?.avatarUrl || profile.image;
   const instagramUrl = profile.profile?.instagramUrl;
 
@@ -38,7 +38,7 @@ export default function UserCard({
             {!avatarUrl && <PersonOutlined />}
           </MuiAvatar>
           <div className={styles.profileDetails}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Typography variant="h6" component="h4" className={styles.displayName}>
                 {displayName}
               </Typography>
@@ -72,7 +72,7 @@ export default function UserCard({
             )}
             {instagramUrl && (
               <a
-                href={instagramUrl.startsWith("http") ? instagramUrl : `https://${instagramUrl}`}
+                href={instagramUrl.startsWith('http') ? instagramUrl : `https://${instagramUrl}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.instagramLink}
@@ -80,8 +80,8 @@ export default function UserCard({
                 <Instagram className={styles.instagramIcon} />
                 <span>
                   {instagramUrl
-                    .replace(/^https?:\/\/(www\.)?instagram\.com\//, "@")
-                    .replace(/\/$/, "")}
+                    .replace(/^https?:\/\/(www\.)?instagram\.com\//, '@')
+                    .replace(/\/$/, '')}
                 </span>
               </a>
             )}

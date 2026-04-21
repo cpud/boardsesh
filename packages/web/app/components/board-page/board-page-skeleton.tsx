@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import React from "react";
-import Box from "@mui/material/Box";
-import MuiCard from "@mui/material/Card";
-import CardHeader from "@mui/material/CardHeader";
-import CardContent from "@mui/material/CardContent";
-import CardActions from "@mui/material/CardActions";
-import MuiSkeleton from "@mui/material/Skeleton";
-import InfoOutlined from "@mui/icons-material/InfoOutlined";
-import CallSplitOutlined from "@mui/icons-material/CallSplitOutlined";
-import FavoriteBorderOutlined from "@mui/icons-material/FavoriteBorderOutlined";
-import AddCircleOutlined from "@mui/icons-material/AddCircleOutlined";
-import { themeTokens } from "@/app/theme/theme-config";
-import styles from "./board-page-skeleton.module.css";
+import React from 'react';
+import Box from '@mui/material/Box';
+import MuiCard from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import CardContent from '@mui/material/CardContent';
+import CardActions from '@mui/material/CardActions';
+import MuiSkeleton from '@mui/material/Skeleton';
+import InfoOutlined from '@mui/icons-material/InfoOutlined';
+import CallSplitOutlined from '@mui/icons-material/CallSplitOutlined';
+import FavoriteBorderOutlined from '@mui/icons-material/FavoriteBorderOutlined';
+import AddCircleOutlined from '@mui/icons-material/AddCircleOutlined';
+import { themeTokens } from '@/app/theme/theme-config';
+import styles from './board-page-skeleton.module.css';
 
 type BoardPageSkeletonProps = {
   aspectRatio?: number; // width/height ratio from boardDetails
@@ -22,9 +22,9 @@ type BoardPageSkeletonProps = {
  * Skeleton that mimics the ClimbCard title structure (horizontal layout with V grade)
  */
 const ClimbCardTitleSkeleton = () => (
-  <Box sx={{ display: "flex", gap: "12px", alignItems: "center" }}>
+  <Box sx={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
     {/* Left side: Name and info stacked */}
-    <Box sx={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1, minWidth: 0 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: 0 }}>
       <MuiSkeleton
         variant="rounded"
         width="60%"
@@ -54,9 +54,9 @@ const BoardRendererSkeleton = ({ aspectRatio }: { aspectRatio?: number }) => (
     variant="rounded"
     animation="wave"
     sx={{
-      width: "100%",
-      minHeight: "40vh",
-      aspectRatio: aspectRatio ? `${aspectRatio}` : "1 / 1.1",
+      width: '100%',
+      minHeight: '40vh',
+      aspectRatio: aspectRatio ? `${aspectRatio}` : '1 / 1.1',
     }}
   />
 );
@@ -67,21 +67,21 @@ const BoardRendererSkeleton = ({ aspectRatio }: { aspectRatio?: number }) => (
 const ClimbCardSkeleton = ({ aspectRatio }: { aspectRatio?: number }) => (
   <MuiCard
     sx={{
-      backgroundColor: "var(--semantic-surface)",
+      backgroundColor: 'var(--semantic-surface)',
     }}
   >
     <CardHeader
       title={<ClimbCardTitleSkeleton />}
-      sx={{ paddingTop: "8px", paddingBottom: "6px" }}
+      sx={{ paddingTop: '8px', paddingBottom: '6px' }}
     />
-    <CardContent sx={{ p: "6px", display: "flex", justifyContent: "center" }}>
+    <CardContent sx={{ p: '6px', display: 'flex', justifyContent: 'center' }}>
       <BoardRendererSkeleton aspectRatio={aspectRatio} />
     </CardContent>
-    <CardActions sx={{ justifyContent: "space-around" }}>
-      <InfoOutlined key="info" sx={{ color: "var(--neutral-300)" }} />
-      <CallSplitOutlined key="fork" sx={{ color: "var(--neutral-300)" }} />
-      <FavoriteBorderOutlined key="heart" sx={{ color: "var(--neutral-300)" }} />
-      <AddCircleOutlined key="plus" sx={{ color: "var(--neutral-300)" }} />
+    <CardActions sx={{ justifyContent: 'space-around' }}>
+      <InfoOutlined key="info" sx={{ color: 'var(--neutral-300)' }} />
+      <CallSplitOutlined key="fork" sx={{ color: 'var(--neutral-300)' }} />
+      <FavoriteBorderOutlined key="heart" sx={{ color: 'var(--neutral-300)' }} />
+      <AddCircleOutlined key="plus" sx={{ color: 'var(--neutral-300)' }} />
     </CardActions>
   </MuiCard>
 );
@@ -92,11 +92,11 @@ const ClimbCardSkeleton = ({ aspectRatio }: { aspectRatio?: number }) => (
 const ClimbListItemSkeleton = () => (
   <div
     style={{
-      display: "flex",
-      alignItems: "center",
+      display: 'flex',
+      alignItems: 'center',
       padding: `${themeTokens.spacing[2]}px ${themeTokens.spacing[3]}px`,
       gap: themeTokens.spacing[3],
-      backgroundColor: "var(--semantic-surface)",
+      backgroundColor: 'var(--semantic-surface)',
       borderBottom: `1px solid var(--neutral-200)`,
     }}
   >
@@ -106,7 +106,7 @@ const ClimbListItemSkeleton = () => (
     </div>
 
     {/* Center: Name and setter lines */}
-    <Box sx={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1, minWidth: 0 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: 0 }}>
       <MuiSkeleton
         variant="rounded"
         width="55%"
@@ -125,7 +125,7 @@ const ClimbListItemSkeleton = () => (
 
     {/* Right: Ascent + Grade placeholder - matches ClimbListItem flex container */}
     <div
-      style={{ display: "flex", alignItems: "center", gap: themeTokens.spacing[1], flexShrink: 0 }}
+      style={{ display: 'flex', alignItems: 'center', gap: themeTokens.spacing[1], flexShrink: 0 }}
     >
       <MuiSkeleton variant="rounded" width={24} height={24} animation="wave" />
     </div>

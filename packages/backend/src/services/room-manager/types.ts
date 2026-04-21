@@ -1,4 +1,4 @@
-import type { ClimbQueueItem } from "@boardsesh/shared-schema";
+import type { ClimbQueueItem } from '@boardsesh/shared-schema';
 
 // Custom error for version conflicts
 export class VersionConflictError extends Error {
@@ -6,7 +6,7 @@ export class VersionConflictError extends Error {
     super(
       `Version conflict for session ${sessionId}. Expected version ${expectedVersion} but it was updated by another operation.`,
     );
-    this.name = "VersionConflictError";
+    this.name = 'VersionConflictError';
   }
 }
 
@@ -56,10 +56,10 @@ export interface PendingWrite {
  * Check if an error is a PostgreSQL foreign key violation (error code 23503).
  */
 export function isForeignKeyViolation(error: unknown): boolean {
-  if (error && typeof error === "object") {
+  if (error && typeof error === 'object') {
     const pgError = error as { code?: string; message?: string };
-    if (pgError.code === "23503") return true;
-    if (pgError.message?.includes("foreign key constraint")) return true;
+    if (pgError.code === '23503') return true;
+    if (pgError.message?.includes('foreign key constraint')) return true;
   }
   return false;
 }

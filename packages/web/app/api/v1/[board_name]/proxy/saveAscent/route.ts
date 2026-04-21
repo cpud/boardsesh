@@ -1,11 +1,11 @@
 // app/api/v1/[board_name]/proxy/saveAscent/route.ts
-import { saveAscent } from "@/app/lib/api-wrappers/aurora/saveAscent";
-import { AuroraBoardName } from "@/app/lib/api-wrappers/aurora/types";
-import { BoardOnlyRouteParameters } from "@/app/lib/types";
-import { NextResponse } from "next/server";
-import { z } from "zod";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/lib/auth/auth-options";
+import { saveAscent } from '@/app/lib/api-wrappers/aurora/saveAscent';
+import { AuroraBoardName } from '@/app/lib/api-wrappers/aurora/types';
+import { BoardOnlyRouteParameters } from '@/app/lib/types';
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/lib/auth/auth-options';
 
 const saveAscentSchema = z.object({
   token: z.string().min(1),
@@ -31,9 +31,9 @@ export async function POST(request: Request, props: { params: Promise<BoardOnlyR
   const params = await props.params;
 
   // MoonBoard doesn't use Aurora APIs
-  if (params.board_name === "moonboard") {
+  if (params.board_name === 'moonboard') {
     return NextResponse.json(
-      { error: "MoonBoard does not support this endpoint" },
+      { error: 'MoonBoard does not support this endpoint' },
       { status: 400 },
     );
   }
@@ -43,7 +43,7 @@ export async function POST(request: Request, props: { params: Promise<BoardOnlyR
   // Get NextAuth session
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
 
   try {
@@ -59,7 +59,7 @@ export async function POST(request: Request, props: { params: Promise<BoardOnlyR
     );
     return NextResponse.json(response);
   } catch (error) {
-    console.error("SaveAscent error details:", {
+    console.error('SaveAscent error details:', {
       error: error instanceof Error ? error.message : error,
       stack: error instanceof Error ? error.stack : undefined,
       board_name,
@@ -67,12 +67,12 @@ export async function POST(request: Request, props: { params: Promise<BoardOnlyR
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Invalid request data", details: error.issues },
+        { error: 'Invalid request data', details: error.issues },
         { status: 400 },
       );
     }
 
     // Only database errors should reach here now
-    return NextResponse.json({ error: "Failed to save ascent" }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to save ascent' }, { status: 500 });
   }
 }

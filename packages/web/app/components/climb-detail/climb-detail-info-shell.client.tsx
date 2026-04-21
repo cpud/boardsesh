@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React from "react";
-import ClimbCard from "@/app/components/climb-card/climb-card";
-import ClimbDetailShellClient from "./climb-detail-shell.client";
-import { useBuildClimbDetailSections } from "./build-climb-detail-sections";
-import { useDoubleTapFavorite } from "@/app/components/climb-actions/use-double-tap-favorite";
-import HeartAnimationOverlay from "@/app/components/climb-card/heart-animation-overlay";
-import type { BetaLink } from "@/app/lib/api-wrappers/sync-api-types";
-import type { BoardDetails, Climb } from "@/app/lib/types";
+import React from 'react';
+import ClimbCard from '@/app/components/climb-card/climb-card';
+import ClimbDetailShellClient from './climb-detail-shell.client';
+import { useBuildClimbDetailSections } from './build-climb-detail-sections';
+import { useDoubleTapFavorite } from '@/app/components/climb-actions/use-double-tap-favorite';
+import HeartAnimationOverlay from '@/app/components/climb-card/heart-animation-overlay';
+import type { BetaLink } from '@/app/lib/api-wrappers/sync-api-types';
+import type { BoardDetails, Climb } from '@/app/lib/types';
 
 interface ClimbDetailInfoShellClientProps {
   climb: Climb;

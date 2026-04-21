@@ -1,46 +1,46 @@
-"use client";
+'use client';
 
-import React, { useState, useCallback } from "react";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import MuiSelect, { type SelectChangeEvent } from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import MuiSwitch from "@mui/material/Switch";
-import MuiTypography from "@mui/material/Typography";
-import MuiButton from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import InputAdornment from "@mui/material/InputAdornment";
-import Slider from "@mui/material/Slider";
-import Stack from "@mui/material/Stack";
-import SearchOutlined from "@mui/icons-material/SearchOutlined";
-import ArrowUpwardOutlined from "@mui/icons-material/ArrowUpwardOutlined";
-import FilterListOutlined from "@mui/icons-material/FilterListOutlined";
-import ClearOutlined from "@mui/icons-material/ClearOutlined";
-import { BOULDER_GRADES } from "@/app/lib/board-data";
-import { DEFAULT_ANGLE_RANGE, DEFAULT_FILTERS, DEFAULT_SORT } from "@/app/lib/logbook-preferences";
+import React, { useState, useCallback } from 'react';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import MuiSelect, { type SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import MuiSwitch from '@mui/material/Switch';
+import MuiTypography from '@mui/material/Typography';
+import MuiButton from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
+import Slider from '@mui/material/Slider';
+import Stack from '@mui/material/Stack';
+import SearchOutlined from '@mui/icons-material/SearchOutlined';
+import ArrowUpwardOutlined from '@mui/icons-material/ArrowUpwardOutlined';
+import FilterListOutlined from '@mui/icons-material/FilterListOutlined';
+import ClearOutlined from '@mui/icons-material/ClearOutlined';
+import { BOULDER_GRADES } from '@/app/lib/board-data';
+import { DEFAULT_ANGLE_RANGE, DEFAULT_FILTERS, DEFAULT_SORT } from '@/app/lib/logbook-preferences';
 import type {
   LogbookFilterState,
   LogbookSortState,
   SortField,
   SortDirection,
-} from "@/app/lib/logbook-preferences";
-import type { UserBoard } from "@boardsesh/shared-schema";
-import CollapsibleSection from "@/app/components/collapsible-section/collapsible-section";
-import type { CollapsibleSectionConfig } from "@/app/components/collapsible-section/collapsible-section";
-import SwipeableDrawer from "@/app/components/swipeable-drawer/swipeable-drawer";
-import { themeTokens } from "@/app/theme/theme-config";
-import BoardFilterStrip from "../board-scroll/board-filter-strip";
-import styles from "../search-drawer/accordion-search-form.module.css";
-import headerStyles from "../global-header/global-header.module.css";
-import footerStyles from "../search-drawer/search-form.module.css";
+} from '@/app/lib/logbook-preferences';
+import type { UserBoard } from '@boardsesh/shared-schema';
+import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
+import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
+import SwipeableDrawer from '@/app/components/swipeable-drawer/swipeable-drawer';
+import { themeTokens } from '@/app/theme/theme-config';
+import BoardFilterStrip from '../board-scroll/board-filter-strip';
+import styles from '../search-drawer/accordion-search-form.module.css';
+import headerStyles from '../global-header/global-header.module.css';
+import footerStyles from '../search-drawer/search-form.module.css';
 
 interface LogbookSearchFormProps {
   searchText: string;
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  minGrade: number | "";
-  maxGrade: number | "";
-  onMinGradeChange: (value: number | "") => void;
-  onMaxGradeChange: (value: number | "") => void;
+  minGrade: number | '';
+  maxGrade: number | '';
+  onMinGradeChange: (value: number | '') => void;
+  onMaxGradeChange: (value: number | '') => void;
   sortState: LogbookSortState;
   onSortChange: (sort: LogbookSortState) => void;
   boards: UserBoard[];
@@ -57,13 +57,13 @@ function getResultTypeSummary(filters: LogbookFilterState): string[] {
   if (filters.includeSends && filters.includeAttempts) {
     // default — no summary
   } else if (filters.includeSends) {
-    parts.push("Sends only");
+    parts.push('Sends only');
   } else if (filters.includeAttempts) {
-    parts.push("Attempts only");
+    parts.push('Attempts only');
   }
 
-  if (filters.flashOnly) parts.push("Flash only");
-  if (filters.benchmarkOnly) parts.push("Benchmark only");
+  if (filters.flashOnly) parts.push('Flash only');
+  if (filters.benchmarkOnly) parts.push('Benchmark only');
 
   return parts;
 }
@@ -72,8 +72,8 @@ function getDateAngleSummary(filters: LogbookFilterState): string[] {
   const parts: string[] = [];
 
   if (filters.fromDate || filters.toDate) {
-    const from = filters.fromDate || "...";
-    const to = filters.toDate || "...";
+    const from = filters.fromDate || '...';
+    const to = filters.toDate || '...';
     parts.push(`${from} \u2013 ${to}`);
   }
 
@@ -88,13 +88,13 @@ function getDateAngleSummary(filters: LogbookFilterState): string[] {
 
 function countActiveFilters(
   filters: LogbookFilterState,
-  minGrade: number | "",
-  maxGrade: number | "",
+  minGrade: number | '',
+  maxGrade: number | '',
   sortState: LogbookSortState,
 ): number {
   let count = 0;
-  if (minGrade !== "") count++;
-  if (maxGrade !== "") count++;
+  if (minGrade !== '') count++;
+  if (maxGrade !== '') count++;
   if (!filters.includeSends || !filters.includeAttempts) count++;
   if (filters.flashOnly) count++;
   if (filters.benchmarkOnly) count++;
@@ -105,7 +105,7 @@ function countActiveFilters(
     filters.angleRange[1] !== DEFAULT_ANGLE_RANGE[1]
   )
     count++;
-  if (sortState.mode === "custom") count++;
+  if (sortState.mode === 'custom') count++;
   return count;
 }
 
@@ -134,8 +134,8 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
   const handleClearAll = useCallback(() => {
-    onMinGradeChange("");
-    onMaxGradeChange("");
+    onMinGradeChange('');
+    onMaxGradeChange('');
     onSortChange(DEFAULT_SORT);
     onFiltersChange(() => DEFAULT_FILTERS);
   }, [onMinGradeChange, onMaxGradeChange, onSortChange, onFiltersChange]);
@@ -143,7 +143,7 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
   const handleSortFieldChange = (e: SelectChangeEvent) => {
     onSortChange({
       ...sortState,
-      mode: "custom",
+      mode: 'custom',
       primaryField: e.target.value as SortField,
     });
   };
@@ -151,7 +151,7 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
   const handleSortDirectionChange = (e: SelectChangeEvent) => {
     onSortChange({
       ...sortState,
-      mode: "custom",
+      mode: 'custom',
       primaryDirection: e.target.value as SortDirection,
     });
   };
@@ -162,10 +162,10 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
   // reconciliation and cause unexpected unmount/remount cycles.
   const makeBoardsSectionConfig = useCallback(
     (): CollapsibleSectionConfig => ({
-      key: "boards",
-      label: "Boards",
-      title: "Filter by Board",
-      defaultSummary: "All boards",
+      key: 'boards',
+      label: 'Boards',
+      title: 'Filter by Board',
+      defaultSummary: 'All boards',
       getSummary: () => {
         if (selectedBoards.length === 0) return [];
         const names = selectedBoards.map((b) => b.name);
@@ -189,10 +189,10 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
   const sections: CollapsibleSectionConfig[] = [
     makeBoardsSectionConfig(),
     {
-      key: "resultType",
-      label: "Result Type",
-      title: "Result Type",
-      defaultSummary: "All",
+      key: 'resultType',
+      label: 'Result Type',
+      title: 'Result Type',
+      defaultSummary: 'All',
       getSummary: () => getResultTypeSummary(filters),
       content: (
         <div className={styles.switchGroup}>
@@ -255,10 +255,10 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
       ),
     },
     {
-      key: "dateAngle",
-      label: "Date & Angle",
-      title: "Date & Angle Range",
-      defaultSummary: "Any",
+      key: 'dateAngle',
+      label: 'Date & Angle',
+      title: 'Date & Angle Range',
+      defaultSummary: 'Any',
       getSummary: () => getDateAngleSummary(filters),
       content: (
         <div className={styles.panelContent}>
@@ -300,8 +300,8 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
               max={70}
               step={5}
               marks={[
-                { value: 0, label: "0\u00B0" },
-                { value: 70, label: "70\u00B0" },
+                { value: 0, label: '0\u00B0' },
+                { value: 70, label: '70\u00B0' },
               ]}
               valueLabelDisplay="auto"
               valueLabelFormat={(v) => `${v}\u00B0`}
@@ -320,8 +320,8 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
           <Stack direction="row" spacing={1}>
             <FilterListOutlined sx={{ color: themeTokens.colors.primary }} />
             <MuiTypography variant="body2" component="span" color="text.secondary">
-              <span className={footerStyles.resultBadge}>{activeFilterCount}</span> active{" "}
-              {activeFilterCount === 1 ? "filter" : "filters"}
+              <span className={footerStyles.resultBadge}>{activeFilterCount}</span> active{' '}
+              {activeFilterCount === 1 ? 'filter' : 'filters'}
             </MuiTypography>
           </Stack>
         </div>
@@ -330,7 +330,7 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
           variant="text"
           startIcon={<ClearOutlined />}
           onClick={handleClearAll}
-          sx={{ textTransform: "none" }}
+          sx={{ textTransform: 'none' }}
         >
           Clear All
         </MuiButton>
@@ -343,7 +343,7 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
       <div className={styles.formWrapper}>
         <div className={styles.primaryContent}>
           <div className={styles.panelContent}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <TextField
                 value={searchText}
                 onChange={onSearchChange}
@@ -386,8 +386,8 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
             padding: `0 ${themeTokens.spacing[4]}px ${themeTokens.spacing[4]}px`,
             backgroundColor: `var(--semantic-background, ${themeTokens.neutral[100]})`,
           },
-          footer: { padding: 0, border: "none" },
-          header: { display: "none" },
+          footer: { padding: 0, border: 'none' },
+          header: { display: 'none' },
           mask: { backgroundColor: themeTokens.semantic.overlayDark },
         }}
       >
@@ -420,10 +420,10 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
                 <span className={styles.fieldLabel}>Grade Range</span>
                 <div className={styles.gradeRow}>
                   <MuiSelect
-                    value={minGrade === "" ? "" : minGrade}
-                    onChange={(e: SelectChangeEvent<number | "">) => {
+                    value={minGrade === '' ? '' : minGrade}
+                    onChange={(e: SelectChangeEvent<number | ''>) => {
                       const val = e.target.value;
-                      onMinGradeChange(val === "" ? "" : (val as number));
+                      onMinGradeChange(val === '' ? '' : (val as number));
                     }}
                     className={styles.fullWidth}
                     size="small"
@@ -438,10 +438,10 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
                     ))}
                   </MuiSelect>
                   <MuiSelect
-                    value={maxGrade === "" ? "" : maxGrade}
-                    onChange={(e: SelectChangeEvent<number | "">) => {
+                    value={maxGrade === '' ? '' : maxGrade}
+                    onChange={(e: SelectChangeEvent<number | ''>) => {
                       const val = e.target.value;
-                      onMaxGradeChange(val === "" ? "" : (val as number));
+                      onMaxGradeChange(val === '' ? '' : (val as number));
                     }}
                     className={styles.fullWidth}
                     size="small"

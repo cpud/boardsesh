@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useSession } from "next-auth/react";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSession } from 'next-auth/react';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   GET_USER_TICKS,
   type GetUserTicksQueryVariables,
@@ -12,17 +12,17 @@ import {
   type GetUserProfileStatsQueryResponse,
   GET_USER_CLIMB_PERCENTILE,
   type GetUserClimbPercentileQueryResponse,
-} from "@/app/lib/graphql/operations";
-import { useSnackbar } from "@/app/components/providers/snackbar-provider";
-import { useGradeFormat } from "@/app/hooks/use-grade-format";
+} from '@/app/lib/graphql/operations';
+import { useSnackbar } from '@/app/components/providers/snackbar-provider';
+import { useGradeFormat } from '@/app/hooks/use-grade-format';
 import {
   type UserProfile,
   type LogbookEntry,
   type UnifiedTimeframeType,
   BOARD_TYPES,
   getDifficultyMapping,
-} from "../utils/profile-constants";
-import { getGradeColor, getGradeTextColor } from "@/app/lib/grade-colors";
+} from '../utils/profile-constants';
+import { getGradeColor, getGradeTextColor } from '@/app/lib/grade-colors';
 import {
   filterLogbookByTimeframe,
   buildAggregatedStackedBars,
@@ -30,11 +30,11 @@ import {
   buildAggregatedFlashRedpointBars,
   buildStatisticsSummary,
   buildVPointsTimeline,
-} from "../utils/chart-data-builders";
+} from '../utils/chart-data-builders';
 
 interface InitialData {
   initialProfile?: UserProfile;
-  initialProfileStats?: GetUserProfileStatsQueryResponse["userProfileStats"];
+  initialProfileStats?: GetUserProfileStatsQueryResponse['userProfileStats'];
   initialAllBoardsTicks?: Record<string, LogbookEntry[]>;
   initialLogbook?: LogbookEntry[];
   initialIsOwnProfile?: boolean;
@@ -51,16 +51,16 @@ export function useProfileData(userId: string, initialData?: InitialData) {
   );
   const [notFound, setNotFound] = useState(initialData?.initialNotFound ?? false);
   const [profile, setProfile] = useState<UserProfile | null>(initialData?.initialProfile ?? null);
-  const [selectedBoard, setSelectedBoard] = useState<string>("all");
-  const [unifiedTimeframe, setUnifiedTimeframe] = useState<UnifiedTimeframeType>("all");
-  const [fromDate, setFromDate] = useState<string>("");
-  const [toDate, setToDate] = useState<string>("");
+  const [selectedBoard, setSelectedBoard] = useState<string>('all');
+  const [unifiedTimeframe, setUnifiedTimeframe] = useState<UnifiedTimeframeType>('all');
+  const [fromDate, setFromDate] = useState<string>('');
+  const [toDate, setToDate] = useState<string>('');
   const [allBoardsTicks, setAllBoardsTicks] = useState<Record<string, LogbookEntry[]>>(
     initialData?.initialAllBoardsTicks ?? {},
   );
   const [loadingAggregated, setLoadingAggregated] = useState(!initialData?.initialAllBoardsTicks);
   const [profileStats, setProfileStats] = useState<
-    GetUserProfileStatsQueryResponse["userProfileStats"] | null
+    GetUserProfileStatsQueryResponse['userProfileStats'] | null
   >(initialData?.initialProfileStats ?? null);
   const [loadingProfileStats, setLoadingProfileStats] = useState(!initialData?.initialProfileStats);
   const [percentile, setPercentile] = useState<{
@@ -82,7 +82,7 @@ export function useProfileData(userId: string, initialData?: InitialData) {
         setNotFound(true);
         return;
       }
-      if (!response.ok) throw new Error("Failed to fetch profile");
+      if (!response.ok) throw new Error('Failed to fetch profile');
       const data = await response.json();
       setProfile({
         id: data.id,
@@ -96,8 +96,8 @@ export function useProfileData(userId: string, initialData?: InitialData) {
         isFollowedByMe: data.isFollowedByMe ?? false,
       });
     } catch (error) {
-      console.error("Failed to fetch profile:", error);
-      showMessage("Failed to load profile data", "error");
+      console.error('Failed to fetch profile:', error);
+      showMessage('Failed to load profile data', 'error');
     } finally {
       setLoading(false);
     }
@@ -129,7 +129,7 @@ export function useProfileData(userId: string, initialData?: InitialData) {
       );
       setAllBoardsTicks(results);
     } catch (error) {
-      console.error("Error fetching all boards ticks:", error);
+      console.error('Error fetching all boards ticks:', error);
       setAllBoardsTicks({});
     } finally {
       setLoadingAggregated(false);
@@ -147,7 +147,7 @@ export function useProfileData(userId: string, initialData?: InitialData) {
       );
       setProfileStats(response.userProfileStats);
     } catch (error) {
-      console.error("Error fetching profile stats:", error);
+      console.error('Error fetching profile stats:', error);
       setProfileStats(null);
     } finally {
       setLoadingProfileStats(false);
@@ -185,7 +185,7 @@ export function useProfileData(userId: string, initialData?: InitialData) {
 
   // Filter allBoardsTicks by selected board
   const filteredBoardsTicks = useMemo<Record<string, LogbookEntry[]>>(() => {
-    if (selectedBoard === "all") return allBoardsTicks;
+    if (selectedBoard === 'all') return allBoardsTicks;
     return { [selectedBoard]: allBoardsTicks[selectedBoard] || [] };
   }, [allBoardsTicks, selectedBoard]);
 
@@ -243,24 +243,24 @@ export function useProfileData(userId: string, initialData?: InitialData) {
 
     for (const tick of allTicks) {
       if (tick.difficulty == null) continue;
-      if (tick.status === "send" || tick.status === "flash") {
+      if (tick.status === 'send' || tick.status === 'flash') {
         if (tick.difficulty > maxSendDifficulty) maxSendDifficulty = tick.difficulty;
       }
-      if (tick.status === "flash") {
+      if (tick.status === 'flash') {
         if (tick.difficulty > maxFlashDifficulty) maxFlashDifficulty = tick.difficulty;
       }
     }
 
-    const makeHighlight = (difficulty: number, status: "send" | "flash") => {
+    const makeHighlight = (difficulty: number, status: 'send' | 'flash') => {
       const label = mapping[difficulty] ?? `${difficulty}`;
-      const color = getGradeColor(label) ?? "var(--neutral-200)";
+      const color = getGradeColor(label) ?? 'var(--neutral-200)';
       const textColor = getGradeTextColor(color);
       return { label, color, textColor, status };
     };
 
     return {
-      hardestSend: maxSendDifficulty >= 0 ? makeHighlight(maxSendDifficulty, "send") : null,
-      hardestFlash: maxFlashDifficulty >= 0 ? makeHighlight(maxFlashDifficulty, "flash") : null,
+      hardestSend: maxSendDifficulty >= 0 ? makeHighlight(maxSendDifficulty, 'send') : null,
+      hardestFlash: maxFlashDifficulty >= 0 ? makeHighlight(maxFlashDifficulty, 'flash') : null,
     };
   }, [filteredBoardsTicks, gradeFormat]);
 

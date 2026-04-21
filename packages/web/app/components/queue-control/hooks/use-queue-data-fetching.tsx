@@ -1,21 +1,21 @@
-import { useCallback, useRef, useEffect, useMemo } from "react";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { PAGE_LIMIT } from "../../board-page/constants";
-import { ClimbQueue } from "../types";
+import { useCallback, useRef, useEffect, useMemo } from 'react';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { PAGE_LIMIT } from '../../board-page/constants';
+import { ClimbQueue } from '../types';
 import {
   ParsedBoardRouteParameters,
   SearchRequestPagination,
   SearchClimbsResult,
-} from "@/app/lib/types";
-import { useOptionalBoardProvider } from "../../board-provider/board-provider-context";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
+} from '@/app/lib/types';
+import { useOptionalBoardProvider } from '../../board-provider/board-provider-context';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   SEARCH_CLIMBS,
   SEARCH_CLIMBS_COUNT,
   type ClimbSearchResponse,
   type ClimbSearchCountResponse,
-} from "@/app/lib/graphql/operations/climb-search";
-import { useWsAuthToken } from "@/app/hooks/use-ws-auth-token";
+} from '@/app/lib/graphql/operations/climb-search';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 
 interface UseQueueDataFetchingProps {
   searchParams: SearchRequestPagination;
@@ -37,7 +37,7 @@ export const useQueueDataFetching = ({
   const getLogbook = useOptionalBoardProvider()?.getLogbook;
   // Use wsAuthToken for GraphQL backend auth (NextAuth session token)
   const { token: wsAuthToken } = useWsAuthToken();
-  const fetchedUuidsRef = useRef<string>("");
+  const fetchedUuidsRef = useRef<string>('');
 
   // Create a stable query key with flattened primitive values to avoid object reference changes
   const queryKey = useMemo(() => {
@@ -46,11 +46,11 @@ export const useQueueDataFetching = ({
     // Flatten to primitives for stable key
     const stableFilterKey = JSON.stringify(paramsWithoutPage);
     return [
-      "climbSearch",
+      'climbSearch',
       parsedParams.board_name,
       parsedParams.layout_id,
       parsedParams.size_id,
-      parsedParams.set_ids.join(","),
+      parsedParams.set_ids.join(','),
       parsedParams.angle,
       stableFilterKey,
     ] as const;
@@ -62,14 +62,14 @@ export const useQueueDataFetching = ({
       boardName: parsedParams.board_name,
       layoutId: parsedParams.layout_id,
       sizeId: parsedParams.size_id,
-      setIds: parsedParams.set_ids.join(","),
+      setIds: parsedParams.set_ids.join(','),
       angle: parsedParams.angle,
       gradeAccuracy: searchParams.gradeAccuracy ? String(searchParams.gradeAccuracy) : undefined,
       minGrade: searchParams.minGrade || undefined,
       maxGrade: searchParams.maxGrade || undefined,
       minAscents: searchParams.minAscents || undefined,
-      sortBy: searchParams.sortBy || "ascents",
-      sortOrder: searchParams.sortOrder || "desc",
+      sortBy: searchParams.sortBy || 'ascents',
+      sortOrder: searchParams.sortOrder || 'desc',
       name: searchParams.name || undefined,
       setter:
         searchParams.settername && searchParams.settername.length > 0
@@ -80,7 +80,7 @@ export const useQueueDataFetching = ({
         searchParams.holdsFilter && Object.keys(searchParams.holdsFilter).length > 0
           ? Object.fromEntries(
               Object.entries(searchParams.holdsFilter).map(([key, value]) => [
-                key.replace("hold_", ""),
+                key.replace('hold_', ''),
                 value.state,
               ]),
             )
@@ -121,7 +121,7 @@ export const useQueueDataFetching = ({
           hasMore: result.searchClimbs.hasMore,
         };
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         console.error(`[GraphQL] Search climbs error for ${parsedParams.board_name}:`, error);
         throw new Error(`Failed to fetch climbs: ${errorMessage}`);
       }
@@ -147,7 +147,7 @@ export const useQueueDataFetching = ({
       boardName: parsedParams.board_name,
       layoutId: parsedParams.layout_id,
       sizeId: parsedParams.size_id,
-      setIds: parsedParams.set_ids.join(","),
+      setIds: parsedParams.set_ids.join(','),
       angle: parsedParams.angle,
       gradeAccuracy: countSearchParams.gradeAccuracy
         ? String(countSearchParams.gradeAccuracy)
@@ -155,8 +155,8 @@ export const useQueueDataFetching = ({
       minGrade: countSearchParams.minGrade || undefined,
       maxGrade: countSearchParams.maxGrade || undefined,
       minAscents: countSearchParams.minAscents || undefined,
-      sortBy: countSearchParams.sortBy || "ascents",
-      sortOrder: countSearchParams.sortOrder || "desc",
+      sortBy: countSearchParams.sortBy || 'ascents',
+      sortOrder: countSearchParams.sortOrder || 'desc',
       name: countSearchParams.name || undefined,
       setter:
         countSearchParams.settername && countSearchParams.settername.length > 0
@@ -167,7 +167,7 @@ export const useQueueDataFetching = ({
         countSearchParams.holdsFilter && Object.keys(countSearchParams.holdsFilter).length > 0
           ? Object.fromEntries(
               Object.entries(countSearchParams.holdsFilter).map(([key, value]) => [
-                key.replace("hold_", ""),
+                key.replace('hold_', ''),
                 value.state,
               ]),
             )
@@ -185,11 +185,11 @@ export const useQueueDataFetching = ({
   const countQueryKey = useMemo(() => {
     const { page: _, ...paramsWithoutPage } = countSearchParams;
     return [
-      "climbSearchCount",
+      'climbSearchCount',
       parsedParams.board_name,
       parsedParams.layout_id,
       parsedParams.size_id,
-      parsedParams.set_ids.join(","),
+      parsedParams.set_ids.join(','),
       parsedParams.angle,
       JSON.stringify(paramsWithoutPage),
     ] as const;

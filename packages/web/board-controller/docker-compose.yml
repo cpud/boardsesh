@@ -1,11 +1,11 @@
-version: "3.8"
+version: '3.8'
 
 services:
   board-controller:
     image: ghcr.io/boardsesh/boardsesh-board-controller:latest
     build: .
     ports:
-      - "8000:8000"
+      - '8000:8000'
     volumes:
       # Persistent database storage
       - ./data:/app/data
@@ -36,7 +36,7 @@ services:
   board-controller-web-only:
     build: .
     ports:
-      - "8001:8000"
+      - '8001:8000'
     volumes:
       - ./data-web:/app/data
     environment:
@@ -54,7 +54,7 @@ services:
       - BOARD_SET=screw_bolt
       - BOARD_ANGLE=40
     restart: unless-stopped
-    command: ["python", "main.py", "--no-bluetooth", "--host", "0.0.0.0", "--port", "8000"]
+    command: ['python', 'main.py', '--no-bluetooth', '--host', '0.0.0.0', '--port', '8000']
     profiles:
       - web-only
 

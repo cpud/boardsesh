@@ -1,8 +1,8 @@
-import { db } from "../../../db/client";
-import { sessions } from "../../../db/schema";
-import * as dbSchema from "@boardsesh/db/schema";
-import { eq, and, inArray, sql, count, desc, isNotNull } from "drizzle-orm";
-import type { SessionSummary } from "@boardsesh/shared-schema";
+import { db } from '../../../db/client';
+import { sessions } from '../../../db/schema';
+import * as dbSchema from '@boardsesh/db/schema';
+import { eq, and, inArray, sql, count, desc, isNotNull } from 'drizzle-orm';
+import type { SessionSummary } from '@boardsesh/shared-schema';
 
 /**
  * Generate a summary for a session including grade distribution,
@@ -40,7 +40,7 @@ export async function generateSessionSummary(sessionId: string): Promise<Session
       .where(
         and(
           eq(dbSchema.boardseshTicks.sessionId, sessionId),
-          inArray(dbSchema.boardseshTicks.status, ["flash", "send"]),
+          inArray(dbSchema.boardseshTicks.status, ['flash', 'send']),
           isNotNull(dbSchema.boardseshTicks.difficulty),
         ),
       )
@@ -74,7 +74,7 @@ export async function generateSessionSummary(sessionId: string): Promise<Session
       .where(
         and(
           eq(dbSchema.boardseshTicks.sessionId, sessionId),
-          inArray(dbSchema.boardseshTicks.status, ["flash", "send"]),
+          inArray(dbSchema.boardseshTicks.status, ['flash', 'send']),
           isNotNull(dbSchema.boardseshTicks.difficulty),
         ),
       )
@@ -117,7 +117,7 @@ export async function generateSessionSummary(sessionId: string): Promise<Session
     const h = hardestRows[0];
     hardestClimb = {
       climbUuid: h.climbUuid,
-      climbName: h.climbName || "Unknown climb",
+      climbName: h.climbName || 'Unknown climb',
       grade: h.grade || `V${h.difficulty}`,
     };
   }

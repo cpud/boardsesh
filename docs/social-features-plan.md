@@ -2188,15 +2188,15 @@ interface SocialEvent {
 }
 
 type SocialEventType =
-  | "comment.created"
-  | "comment.reply"
-  | "vote.cast"
-  | "follow.created"
-  | "climb.created"
-  | "proposal.created"
-  | "proposal.voted"
-  | "proposal.approved"
-  | "proposal.rejected";
+  | 'comment.created'
+  | 'comment.reply'
+  | 'vote.cast'
+  | 'follow.created'
+  | 'climb.created'
+  | 'proposal.created'
+  | 'proposal.voted'
+  | 'proposal.approved'
+  | 'proposal.rejected';
 ```
 
 **Metadata examples:**
@@ -2214,9 +2214,9 @@ Mutations publish events to the stream **after** completing the primary write. T
 ```typescript
 // In addComment mutation, after INSERT:
 await eventBroker.publish({
-  type: "comment.created",
+  type: 'comment.created',
   actorId: ctx.userId,
-  entityType: "tick",
+  entityType: 'tick',
   entityId: tickUuid,
   timestamp: Date.now(),
   metadata: { commentUuid: comment.uuid },
@@ -2258,8 +2258,8 @@ The consumer runs as part of each backend instance using Redis consumer groups:
 ### 5.6 Consumer Group Configuration
 
 ```typescript
-const STREAM_KEY = "boardsesh:events";
-const CONSUMER_GROUP = "notification-workers";
+const STREAM_KEY = 'boardsesh:events';
+const CONSUMER_GROUP = 'notification-workers';
 const CONSUMER_NAME = `instance-${instanceId}`; // Unique per backend instance
 const BATCH_SIZE = 50; // Process up to 50 events per read
 const BLOCK_MS = 5000; // Block for 5s waiting for new events

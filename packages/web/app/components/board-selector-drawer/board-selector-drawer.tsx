@@ -1,29 +1,29 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import MuiSelect, { SelectChangeEvent } from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import CircularProgress from "@mui/material/CircularProgress";
-import CollapsibleSection from "@/app/components/collapsible-section/collapsible-section";
-import type { CollapsibleSectionConfig } from "@/app/components/collapsible-section/collapsible-section";
-import { useRouter } from "next/navigation";
-import SwipeableDrawer from "../swipeable-drawer/swipeable-drawer";
-import { BoardConfigData } from "@/app/lib/server-board-configs";
-import { BoardName } from "@/app/lib/types";
-import { BOARD_NAME_PREFIX_REGEX } from "@/app/lib/board-constants";
-import { SUPPORTED_BOARDS, ANGLES } from "@/app/lib/board-data";
-import { getDefaultSizeForLayout } from "@/app/lib/board-constants";
-import { constructClimbListWithSlugs, constructBoardSlugListUrl } from "@/app/lib/url-utils";
-import { saveBoardConfig, StoredBoardConfig } from "@/app/lib/saved-boards-db";
-import type { UserBoard } from "@boardsesh/shared-schema";
-import { useBoardSwitchGuard } from "@/app/components/board-lock/use-board-switch-guard";
-import type { BoardRouteIdentity } from "@/app/lib/types";
+import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MuiSelect, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import CircularProgress from '@mui/material/CircularProgress';
+import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
+import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
+import { useRouter } from 'next/navigation';
+import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
+import { BoardConfigData } from '@/app/lib/server-board-configs';
+import { BoardName } from '@/app/lib/types';
+import { BOARD_NAME_PREFIX_REGEX } from '@/app/lib/board-constants';
+import { SUPPORTED_BOARDS, ANGLES } from '@/app/lib/board-data';
+import { getDefaultSizeForLayout } from '@/app/lib/board-constants';
+import { constructClimbListWithSlugs, constructBoardSlugListUrl } from '@/app/lib/url-utils';
+import { saveBoardConfig, StoredBoardConfig } from '@/app/lib/saved-boards-db';
+import type { UserBoard } from '@boardsesh/shared-schema';
+import { useBoardSwitchGuard } from '@/app/components/board-lock/use-board-switch-guard';
+import type { BoardRouteIdentity } from '@/app/lib/types';
 
-const CreateBoardForm = lazy(() => import("../board-entity/create-board-form"));
+const CreateBoardForm = lazy(() => import('../board-entity/create-board-form'));
 
 interface BoardConfigSelectsProps {
   selectedBoard: BoardName | undefined;
@@ -57,11 +57,11 @@ function BoardConfigSelects({
   onAngleChange,
 }: BoardConfigSelectsProps) {
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
       <FormControl fullWidth size="small">
         <InputLabel>Board</InputLabel>
         <MuiSelect
-          value={selectedBoard || ""}
+          value={selectedBoard || ''}
           label="Board"
           onChange={(e: SelectChangeEvent) => onBoardChange(e.target.value as BoardName)}
         >
@@ -76,7 +76,7 @@ function BoardConfigSelects({
       <FormControl fullWidth size="small">
         <InputLabel>Layout</InputLabel>
         <MuiSelect
-          value={selectedLayout ?? ""}
+          value={selectedLayout ?? ''}
           label="Layout"
           onChange={(e: SelectChangeEvent<number | string>) =>
             onLayoutChange(e.target.value as number)
@@ -91,11 +91,11 @@ function BoardConfigSelects({
         </MuiSelect>
       </FormControl>
 
-      {selectedBoard !== "moonboard" && (
+      {selectedBoard !== 'moonboard' && (
         <FormControl fullWidth size="small">
           <InputLabel>Size</InputLabel>
           <MuiSelect
-            value={selectedSize ?? ""}
+            value={selectedSize ?? ''}
             label="Size"
             onChange={(e: SelectChangeEvent<number | string>) =>
               onSizeChange(e.target.value as number)
@@ -151,7 +151,7 @@ interface BoardSelectorDrawerProps {
   onClose: () => void;
   onTransitionEnd?: (open: boolean) => void;
   boardConfigs: BoardConfigData;
-  placement?: "top" | "bottom";
+  placement?: 'top' | 'bottom';
   onBoardSelected?: (url: string, config?: StoredBoardConfig) => void;
 }
 
@@ -160,7 +160,7 @@ export default function BoardSelectorDrawer({
   onClose,
   onTransitionEnd,
   boardConfigs,
-  placement = "bottom",
+  placement = 'bottom',
   onBoardSelected,
 }: BoardSelectorDrawerProps) {
   const router = useRouter();
@@ -292,7 +292,7 @@ export default function BoardSelectorDrawer({
 
     const layout = layouts.find((l) => l.id === selectedLayout);
     const size = sizes.find((s) => s.id === selectedSize);
-    const suggestedName = `${layout?.name || ""} ${size?.name || ""}`.trim();
+    const suggestedName = `${layout?.name || ''} ${size?.name || ''}`.trim();
 
     const config: StoredBoardConfig = {
       name: suggestedName || `${selectedBoard} board`,
@@ -348,7 +348,7 @@ export default function BoardSelectorDrawer({
   // for top placement only. Pass swipeEnabled explicitly so the showCloseButton
   // linkage doesn't also disable swipe (see swipeable-drawer.tsx:77).
   const topDrawerDismissProps =
-    placement === "top" ? ({ showCloseButton: false as const, swipeEnabled: true } as const) : {};
+    placement === 'top' ? ({ showCloseButton: false as const, swipeEnabled: true } as const) : {};
 
   return (
     <>
@@ -361,7 +361,7 @@ export default function BoardSelectorDrawer({
         onTransitionEnd={onTransitionEnd}
         height="85dvh"
       >
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <BoardConfigSelects
             selectedBoard={selectedBoard}
             selectedLayout={selectedLayout}
@@ -378,7 +378,7 @@ export default function BoardSelectorDrawer({
             onAngleChange={setSelectedAngle}
           />
 
-          <Box sx={{ display: "flex", gap: 1 }}>
+          <Box sx={{ display: 'flex', gap: 1 }}>
             <Button
               variant="outlined"
               size="large"
@@ -411,21 +411,21 @@ export default function BoardSelectorDrawer({
           onClose={() => setShowCreateBoardForm(false)}
           height="85dvh"
         >
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <CollapsibleSection
               sections={[
                 {
-                  key: "config",
-                  label: "Board config",
-                  title: "Board config",
-                  defaultSummary: "Select a board",
+                  key: 'config',
+                  label: 'Board config',
+                  title: 'Board config',
+                  defaultSummary: 'Select a board',
                   getSummary: () => {
                     const parts: string[] = [];
                     if (selectedBoard)
                       parts.push(selectedBoard.charAt(0).toUpperCase() + selectedBoard.slice(1));
                     const layout = layouts.find((l) => l.id === selectedLayout);
                     if (layout) {
-                      const cleanName = layout.name.replace(BOARD_NAME_PREFIX_REGEX, "").trim();
+                      const cleanName = layout.name.replace(BOARD_NAME_PREFIX_REGEX, '').trim();
                       if (cleanName) parts.push(cleanName);
                     }
                     const size = sizes.find((s) => s.id === selectedSize);
@@ -455,7 +455,7 @@ export default function BoardSelectorDrawer({
             />
             <Suspense
               fallback={
-                <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                   <CircularProgress size={32} />
                 </Box>
               }
@@ -464,7 +464,7 @@ export default function BoardSelectorDrawer({
                 boardType={selectedBoard}
                 layoutId={selectedLayout}
                 sizeId={selectedSize}
-                setIds={selectedSets.join(",")}
+                setIds={selectedSets.join(',')}
                 defaultAngle={selectedAngle}
                 onSuccess={(board: UserBoard) => {
                   setShowCreateBoardForm(false);

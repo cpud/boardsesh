@@ -1,11 +1,11 @@
-import { BoardName } from "../../types";
-import { SaveClimbOptions } from "./types";
-import { generateUuid } from "./util";
-import { dbz } from "@/app/lib/db/db";
-import { UNIFIED_TABLES } from "@/app/lib/db/queries/util/table-select";
-import { boardClimbStats } from "@boardsesh/db/schema";
-import { populateDenormalizedColumns } from "@boardsesh/db/queries";
-import dayjs from "dayjs";
+import { BoardName } from '../../types';
+import { SaveClimbOptions } from './types';
+import { generateUuid } from './util';
+import { dbz } from '@/app/lib/db/db';
+import { UNIFIED_TABLES } from '@/app/lib/db/queries/util/table-select';
+import { boardClimbStats } from '@boardsesh/db/schema';
+import { populateDenormalizedColumns } from '@boardsesh/db/queries';
+import dayjs from 'dayjs';
 
 /**
  * Saves a climb to the local database only.
@@ -23,7 +23,7 @@ export async function saveClimb(
   options: SaveClimbOptions,
 ): Promise<SaveClimbResponse> {
   const uuid = generateUuid();
-  const createdAt = dayjs().format("YYYY-MM-DD HH:mm:ss");
+  const createdAt = dayjs().format('YYYY-MM-DD HH:mm:ss');
   const isListed = !options.is_draft;
 
   const { climbs } = UNIFIED_TABLES;
@@ -38,7 +38,7 @@ export async function saveClimb(
       setterId: null, // No Aurora user ID
       setterUsername: options.setter_username || null,
       name: options.name,
-      description: options.description || "",
+      description: options.description || '',
       angle: options.angle,
       framesCount: options.frames_count || 1,
       framesPace: options.frames_pace || 0,
@@ -57,7 +57,7 @@ export async function saveClimb(
         setterId: null,
         setterUsername: options.setter_username || null,
         name: options.name,
-        description: options.description || "",
+        description: options.description || '',
         angle: options.angle,
         framesCount: options.frames_count || 1,
         framesPace: options.frames_pace || 0,

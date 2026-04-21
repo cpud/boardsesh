@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { connectionManager, ConnectionState } from "./websocket-connection-manager";
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { connectionManager, ConnectionState } from './websocket-connection-manager';
 
 interface ConnectionContextValue {
   state: ConnectionState;
@@ -41,7 +41,7 @@ export const WebSocketConnectionProvider: React.FC<{ children: React.ReactNode }
 };
 
 const IDLE_FALLBACK: ConnectionContextValue = {
-  state: "idle",
+  state: 'idle',
   lastActivity: null,
   name: null,
   error: null,

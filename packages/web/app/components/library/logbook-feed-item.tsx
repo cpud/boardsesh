@@ -1,68 +1,68 @@
-"use client";
+'use client';
 
-import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import IconButton from "@mui/material/IconButton";
-import MenuItem from "@mui/material/MenuItem";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import Typography from "@mui/material/Typography";
-import Divider from "@mui/material/Divider";
-import TextField from "@mui/material/TextField";
-import InputAdornment from "@mui/material/InputAdornment";
-import ButtonBase from "@mui/material/ButtonBase";
-import Popover from "@mui/material/Popover";
-import ElectricBoltOutlined from "@mui/icons-material/ElectricBoltOutlined";
-import MoreHorizOutlined from "@mui/icons-material/MoreHorizOutlined";
-import EditOutlined from "@mui/icons-material/EditOutlined";
-import DeleteOutlined from "@mui/icons-material/DeleteOutlined";
-import ChatBubbleOutlineOutlined from "@mui/icons-material/ChatBubbleOutlineOutlined";
-import CheckOutlined from "@mui/icons-material/CheckOutlined";
-import SaveOutlined from "@mui/icons-material/SaveOutlined";
-import CloseOutlined from "@mui/icons-material/CloseOutlined";
-import { PersonFallingIcon } from "@/app/components/icons/person-falling-icon";
-import CircularProgress from "@mui/material/CircularProgress";
-import InstagramIcon from "@mui/icons-material/Instagram";
-import LinkOutlined from "@mui/icons-material/LinkOutlined";
-import dynamic from "next/dynamic";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { track } from "@vercel/analytics";
-import type { AscentFeedItem } from "@/app/lib/graphql/operations/ticks";
-import type { BoardDetails, BoardName } from "@/app/lib/types";
-import { useOptionalQueueActions } from "@/app/components/graphql-queue";
-import { dispatchOpenPlayDrawer } from "@/app/components/queue-control/play-drawer-event";
-import { AscentStatusIcon } from "@/app/components/ascent-status/ascent-status-icon";
-import { ClimbActions } from "@/app/components/climb-actions";
-import DrawerClimbHeader from "@/app/components/climb-card/drawer-climb-header";
-import { useSwipeActions } from "@/app/hooks/use-swipe-actions";
-import { useDrawerDragResize } from "@/app/hooks/use-drawer-drag-resize";
-import { useIsDarkMode } from "@/app/hooks/use-is-dark-mode";
-import { useGradeFormat } from "@/app/hooks/use-grade-format";
-import { useUpdateTick } from "@/app/hooks/use-update-tick";
-import { themeTokens } from "@/app/theme/theme-config";
-import { getDefaultBoardConfig } from "@/app/lib/default-board-configs";
-import { getBoardDetailsForBoard } from "@/app/lib/board-utils";
-import { getExcludedClimbActions } from "@/app/lib/climb-action-utils";
-import { TENSION_KILTER_GRADES, getGradesForBoard } from "@/app/lib/board-data";
-import AscentThumbnail from "@/app/components/activity-feed/ascent-thumbnail";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import IconButton from '@mui/material/IconButton';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import ButtonBase from '@mui/material/ButtonBase';
+import Popover from '@mui/material/Popover';
+import ElectricBoltOutlined from '@mui/icons-material/ElectricBoltOutlined';
+import MoreHorizOutlined from '@mui/icons-material/MoreHorizOutlined';
+import EditOutlined from '@mui/icons-material/EditOutlined';
+import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
+import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import CheckOutlined from '@mui/icons-material/CheckOutlined';
+import SaveOutlined from '@mui/icons-material/SaveOutlined';
+import CloseOutlined from '@mui/icons-material/CloseOutlined';
+import { PersonFallingIcon } from '@/app/components/icons/person-falling-icon';
+import CircularProgress from '@mui/material/CircularProgress';
+import InstagramIcon from '@mui/icons-material/Instagram';
+import LinkOutlined from '@mui/icons-material/LinkOutlined';
+import dynamic from 'next/dynamic';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { track } from '@vercel/analytics';
+import type { AscentFeedItem } from '@/app/lib/graphql/operations/ticks';
+import type { BoardDetails, BoardName } from '@/app/lib/types';
+import { useOptionalQueueActions } from '@/app/components/graphql-queue';
+import { dispatchOpenPlayDrawer } from '@/app/components/queue-control/play-drawer-event';
+import { AscentStatusIcon } from '@/app/components/ascent-status/ascent-status-icon';
+import { ClimbActions } from '@/app/components/climb-actions';
+import DrawerClimbHeader from '@/app/components/climb-card/drawer-climb-header';
+import { useSwipeActions } from '@/app/hooks/use-swipe-actions';
+import { useDrawerDragResize } from '@/app/hooks/use-drawer-drag-resize';
+import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
+import { useGradeFormat } from '@/app/hooks/use-grade-format';
+import { useUpdateTick } from '@/app/hooks/use-update-tick';
+import { themeTokens } from '@/app/theme/theme-config';
+import { getDefaultBoardConfig } from '@/app/lib/default-board-configs';
+import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
+import { getExcludedClimbActions } from '@/app/lib/climb-action-utils';
+import { TENSION_KILTER_GRADES, getGradesForBoard } from '@/app/lib/board-data';
+import AscentThumbnail from '@/app/components/activity-feed/ascent-thumbnail';
 import {
   InlineStarPicker,
   InlineGradePicker,
   InlineTriesPicker,
   type ExpandedControl,
-} from "../logbook/tick-controls";
-import { ascentFeedItemToClimb } from "./ascent-to-climb";
-import ascentStyles from "@/app/components/climb-card/ascent-status.module.css";
-import drawerCss from "@/app/components/swipeable-drawer/swipeable-drawer.module.css";
-import styles from "./logbook-feed-item.module.css";
+} from '../logbook/tick-controls';
+import { ascentFeedItemToClimb } from './ascent-to-climb';
+import ascentStyles from '@/app/components/climb-card/ascent-status.module.css';
+import drawerCss from '@/app/components/swipeable-drawer/swipeable-drawer.module.css';
+import styles from './logbook-feed-item.module.css';
 
-const SwipeableDrawer = dynamic(() => import("../swipeable-drawer/swipeable-drawer"), {
+const SwipeableDrawer = dynamic(() => import('../swipeable-drawer/swipeable-drawer'), {
   ssr: false,
 });
-const PostToInstagramDialog = dynamic(() => import("./post-to-instagram-dialog"), { ssr: false });
+const PostToInstagramDialog = dynamic(() => import('./post-to-instagram-dialog'), { ssr: false });
 const AttachBetaLinkDialog = dynamic(
   () =>
-    import("@/app/components/beta-videos/attach-beta-link-dialog").then((m) => ({
+    import('@/app/components/beta-videos/attach-beta-link-dialog').then((m) => ({
       default: m.AttachBetaLinkDialog,
     })),
   { ssr: false },
@@ -72,16 +72,16 @@ dayjs.extend(relativeTime);
 
 // Layout name mapping
 const layoutNames: Record<string, string> = {
-  "kilter-1": "Kilter Original",
-  "kilter-8": "Kilter Homewall",
-  "tension-9": "Tension Classic",
-  "tension-10": "Tension 2 Mirror",
-  "tension-11": "Tension 2 Spray",
-  "moonboard-1": "MoonBoard 2010",
-  "moonboard-2": "MoonBoard 2016",
-  "moonboard-3": "MoonBoard 2024",
-  "moonboard-4": "MoonBoard Masters 2017",
-  "moonboard-5": "MoonBoard Masters 2019",
+  'kilter-1': 'Kilter Original',
+  'kilter-8': 'Kilter Homewall',
+  'tension-9': 'Tension Classic',
+  'tension-10': 'Tension 2 Mirror',
+  'tension-11': 'Tension 2 Spray',
+  'moonboard-1': 'MoonBoard 2010',
+  'moonboard-2': 'MoonBoard 2016',
+  'moonboard-3': 'MoonBoard 2024',
+  'moonboard-4': 'MoonBoard Masters 2017',
+  'moonboard-5': 'MoonBoard Masters 2019',
 };
 
 const getLayoutDisplayName = (boardType: string, layoutId: number | null): string => {
@@ -99,11 +99,11 @@ const RIGHT_ACTION_WIDTH = 120;
 
 const commentBoxSx = {
   fontSize: themeTokens.typography.fontSize.xs,
-  whiteSpace: "pre-wrap",
-  overflowWrap: "anywhere",
-  wordBreak: "break-word",
-  color: "text.primary",
-  backgroundColor: "var(--neutral-100)",
+  whiteSpace: 'pre-wrap',
+  overflowWrap: 'anywhere',
+  wordBreak: 'break-word',
+  color: 'text.primary',
+  backgroundColor: 'var(--neutral-100)',
   borderRadius: `${themeTokens.borderRadius.sm}px`,
   padding: `${themeTokens.spacing[1]}px ${themeTokens.spacing[2]}px`,
   marginTop: `${themeTokens.spacing[1]}px`,
@@ -112,24 +112,24 @@ const commentBoxSx = {
 const nameSx = {
   fontSize: themeTokens.typography.fontSize.xl,
   fontWeight: themeTokens.typography.fontWeight.bold,
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
 } as const;
 
 const subtitleSx = {
   fontSize: themeTokens.typography.fontSize.xs,
   fontWeight: themeTokens.typography.fontWeight.normal,
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
 } as const;
 
 const actionsDrawerStyles = {
   wrapper: {
-    width: "100%",
-    touchAction: "pan-y" as const,
-    transition: "height 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    width: '100%',
+    touchAction: 'pan-y' as const,
+    transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   },
   body: { padding: `${themeTokens.spacing[2]}px 0` },
   header: {
@@ -176,14 +176,14 @@ function LogbookGradeRow({
   const consensusColor = consensusDifficultyName
     ? getGradeColor(consensusDifficultyName, isDark)
     : undefined;
-  const consensusLabel = consensusFormatted ?? consensusDifficultyName ?? "\u2014";
+  const consensusLabel = consensusFormatted ?? consensusDifficultyName ?? '\u2014';
   const consensusStarsLabel =
-    qualityAverage != null ? Math.round(qualityAverage).toString() : "\u2014";
+    qualityAverage != null ? Math.round(qualityAverage).toString() : '\u2014';
 
   // For non-editing mode, use item values directly
   const userFormatted = difficultyName ? formatGrade(difficultyName) : null;
   const userColor = difficultyName ? getGradeColor(difficultyName, isDark) : undefined;
-  const userLabel = userFormatted ?? (difficultyName || "\u2014");
+  const userLabel = userFormatted ?? (difficultyName || '\u2014');
 
   // For editing mode, look up the editDifficulty in TENSION_KILTER_GRADES
   const editGradeName = useMemo(() => {
@@ -194,7 +194,7 @@ function LogbookGradeRow({
 
   const editGradeFormatted = editGradeName ? formatGrade(editGradeName) : null;
   const editGradeColor = editGradeName ? getGradeColor(editGradeName, isDark) : undefined;
-  const editGradeLabel = editGradeFormatted ?? (editGradeName || "\u2014");
+  const editGradeLabel = editGradeFormatted ?? (editGradeName || '\u2014');
 
   const handleToggle = useCallback(
     (control: ExpandedControl) => {
@@ -207,7 +207,7 @@ function LogbookGradeRow({
   return (
     <div className={styles.gradeRow}>
       {/* Consensus stars */}
-      <div className={`${styles.statCell} ${isEditing ? styles.dimmed : ""}`}>
+      <div className={`${styles.statCell} ${isEditing ? styles.dimmed : ''}`}>
         <span
           className={styles.statValue}
           style={{ color: themeTokens.colors.amber }}
@@ -217,15 +217,15 @@ function LogbookGradeRow({
       {/* User stars */}
       {isEditing ? (
         <ButtonBase
-          onClick={() => handleToggle("stars")}
-          aria-label={`Quality: ${editQuality ?? "none"}`}
+          onClick={() => handleToggle('stars')}
+          aria-label={`Quality: ${editQuality ?? 'none'}`}
           className={styles.statCell}
           disableRipple={false}
         >
           <span
             className={styles.statValue}
             style={{ color: themeTokens.colors.amber }}
-          >{`\u2605${editQuality ?? "\u2014"}`}</span>
+          >{`\u2605${editQuality ?? '\u2014'}`}</span>
           <span className={styles.statLabel}>user</span>
         </ButtonBase>
       ) : (
@@ -233,12 +233,12 @@ function LogbookGradeRow({
           <span
             className={styles.statValue}
             style={{ color: themeTokens.colors.amber }}
-          >{`\u2605${quality ?? "\u2014"}`}</span>
+          >{`\u2605${quality ?? '\u2014'}`}</span>
           <span className={styles.statLabel}>user</span>
         </div>
       )}
       {/* Consensus grade */}
-      <div className={`${styles.gradeCell} ${isEditing ? styles.dimmed : ""}`}>
+      <div className={`${styles.gradeCell} ${isEditing ? styles.dimmed : ''}`}>
         <span className={styles.statValue} style={{ color: consensusColor }}>
           {consensusLabel}
         </span>
@@ -248,7 +248,7 @@ function LogbookGradeRow({
       {isEditing ? (
         <ButtonBase
           ref={gradeButtonRef}
-          onClick={() => handleToggle("grade")}
+          onClick={() => handleToggle('grade')}
           aria-label="Select logged grade"
           className={styles.gradeCell}
           disableRipple={false}
@@ -270,7 +270,7 @@ function LogbookGradeRow({
       {isEditing ? (
         <ButtonBase
           ref={triesButtonRef}
-          onClick={() => handleToggle("tries")}
+          onClick={() => handleToggle('tries')}
           aria-label={`Tries: ${editAttemptCount}`}
           className={styles.statCell}
           disableRipple={false}
@@ -327,8 +327,8 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
     const { mutateAsync: updateTickAsync, isPending: isSaving } = useUpdateTick();
     const grades = useMemo(() => getGradesForBoard(item.boardType as BoardName), [item.boardType]);
 
-    const [editStatus, setEditStatus] = useState<"flash" | "send" | "attempt">("send");
-    const [editComment, setEditComment] = useState("");
+    const [editStatus, setEditStatus] = useState<'flash' | 'send' | 'attempt'>('send');
+    const [editComment, setEditComment] = useState('');
     const [commentFocused, setCommentFocused] = useState(false);
     const [editQuality, setEditQuality] = useState<number | null>(null);
     const [editDifficulty, setEditDifficulty] = useState<number | undefined>(undefined);
@@ -436,7 +436,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
       setStatusAnchorEl(null);
     }, []);
 
-    const handleStatusSelect = useCallback((status: "flash" | "send" | "attempt") => {
+    const handleStatusSelect = useCallback((status: 'flash' | 'send' | 'attempt') => {
       setEditStatus(status);
       setStatusAnchorEl(null);
     }, []);
@@ -448,16 +448,16 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
       if (isEditing || !queueActions) return;
       try {
         await queueActions.setCurrentClimb(climb);
-        track("Logbook Row Clicked", { climbUuid: climb.uuid });
+        track('Logbook Row Clicked', { climbUuid: climb.uuid });
       } catch (err) {
-        console.error("Failed to set active climb from logbook row", err);
+        console.error('Failed to set active climb from logbook row', err);
       }
     }, [isEditing, queueActions, climb]);
 
     const handleRowKeyDown = useCallback(
       (e: React.KeyboardEvent) => {
         if (isEditing || !queueActions) return;
-        if (e.key !== "Enter" && e.key !== " ") return;
+        if (e.key !== 'Enter' && e.key !== ' ') return;
         if (e.target !== e.currentTarget) return;
         e.preventDefault();
         void handleRowClick();
@@ -472,9 +472,9 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
         try {
           await queueActions.setCurrentClimb(climb);
           dispatchOpenPlayDrawer();
-          track("Logbook Thumbnail Clicked", { climbUuid: climb.uuid });
+          track('Logbook Thumbnail Clicked', { climbUuid: climb.uuid });
         } catch (err) {
-          console.error("Failed to set active climb from logbook thumbnail", err);
+          console.error('Failed to set active climb from logbook thumbnail', err);
         }
       },
       [isEditing, queueActions, climb],
@@ -499,7 +499,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
     }, [item.boardType, item.layoutId]);
 
     const excludeActions = useMemo(
-      () => (boardDetails ? getExcludedClimbActions(boardDetails.board_name, "list") : []),
+      () => (boardDetails ? getExcludedClimbActions(boardDetails.board_name, 'list') : []),
       [boardDetails],
     );
 
@@ -511,7 +511,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
       if (showBoardType) {
         parts.push(getLayoutDisplayName(item.boardType, item.layoutId));
       }
-      return parts.join(" \u00b7 ");
+      return parts.join(' \u00b7 ');
     }, [item.climbedAt, item.angle, showBoardType, item.boardType, item.layoutId]);
 
     // --- Swipe actions ---
@@ -529,10 +529,10 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
     const leftLayerElRef = useRef<HTMLDivElement | null>(null);
 
     const handleSwipeZoneChange = useCallback(
-      (zone: import("@/app/hooks/use-swipe-actions").SwipeZone) => {
+      (zone: import('@/app/hooks/use-swipe-actions').SwipeZone) => {
         const el = leftLayerElRef.current;
         if (!el) return;
-        if (zone === "right-long") {
+        if (zone === 'right-long') {
           el.classList.add(styles.deleteReady);
         } else {
           el.classList.remove(styles.deleteReady);
@@ -620,7 +620,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
       <>
         <div
           className={styles.container}
-          id={isSwipeHintTarget ? "onboarding-logbook-card" : undefined}
+          id={isSwipeHintTarget ? 'onboarding-logbook-card' : undefined}
         >
           {/* aria-hidden: the 3-dot menu exposes Delete to assistive tech. */}
           <div ref={leftActionCombinedRef} className={styles.leftActionLayer} aria-hidden="true">
@@ -643,7 +643,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
             ref={contentCombinedRef}
             className={styles.swipeableContent}
             data-swipe-content=""
-            role={!isEditing && queueActions ? "button" : undefined}
+            role={!isEditing && queueActions ? 'button' : undefined}
             tabIndex={!isEditing && queueActions ? 0 : undefined}
             aria-label={
               !isEditing && queueActions ? `Set ${item.climbName} as active climb` : undefined
@@ -694,16 +694,16 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
                 {isEditing && (
                   <div
                     className={
-                      styles.pickerPanel + (expandedControl ? " " + styles.pickerPanelExpanded : "")
+                      styles.pickerPanel + (expandedControl ? ' ' + styles.pickerPanelExpanded : '')
                     }
                   >
                     <div className={styles.pickerPanelContent}>
-                      {renderedControl === "stars" && (
+                      {renderedControl === 'stars' && (
                         <div className={styles.compactStarPicker}>
                           <InlineStarPicker quality={editQuality} onSelect={handleStarSelect} />
                         </div>
                       )}
-                      {renderedControl === "grade" && (
+                      {renderedControl === 'grade' && (
                         <InlineGradePicker
                           grades={grades}
                           currentGradeId={editDifficulty}
@@ -712,7 +712,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
                           gradeButtonRef={gradeButtonRef}
                         />
                       )}
-                      {renderedControl === "tries" && (
+                      {renderedControl === 'tries' && (
                         <InlineTriesPicker
                           attemptCount={editAttemptCount}
                           onSelect={handleTriesSelect}
@@ -750,7 +750,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
                     sx={{
                       width: 44,
                       height: 44,
-                      color: "text.disabled",
+                      color: 'text.disabled',
                     }}
                   >
                     <CloseOutlined sx={{ fontSize: 18 }} />
@@ -764,8 +764,8 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
                       width: 44,
                       height: 44,
                       backgroundColor: themeTokens.colors.success,
-                      color: "common.white",
-                      "&:hover": { backgroundColor: themeTokens.colors.success },
+                      color: 'common.white',
+                      '&:hover': { backgroundColor: themeTokens.colors.success },
                     }}
                   >
                     {isSaving ? (
@@ -812,7 +812,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
                     onFocus={handleCommentFocus}
                     onBlur={handleCommentBlur}
                     slotProps={{
-                      htmlInput: { maxLength: 2000, "aria-label": "Edit tick comment" },
+                      htmlInput: { maxLength: 2000, 'aria-label': 'Edit tick comment' },
                       input: {
                         startAdornment: (
                           <InputAdornment position="start">
@@ -822,11 +822,11 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
                       },
                     }}
                     sx={{
-                      "& .MuiOutlinedInput-root": {
+                      '& .MuiOutlinedInput-root': {
                         borderRadius: `${themeTokens.borderRadius.md}px`,
-                        backgroundColor: "var(--input-bg)",
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "var(--neutral-200)",
+                        backgroundColor: 'var(--input-bg)',
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'var(--neutral-200)',
                         },
                       },
                     }}
@@ -844,22 +844,22 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
           open={Boolean(statusAnchorEl)}
           anchorEl={statusAnchorEl}
           onClose={handleStatusClose}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
-          transformOrigin={{ vertical: "bottom", horizontal: "center" }}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
-          <MenuItem onClick={() => handleStatusSelect("flash")}>
+          <MenuItem onClick={() => handleStatusSelect('flash')}>
             <ListItemIcon>
               <ElectricBoltOutlined sx={{ color: themeTokens.colors.amber }} />
             </ListItemIcon>
             <ListItemText>Flash</ListItemText>
           </MenuItem>
-          <MenuItem onClick={() => handleStatusSelect("send")}>
+          <MenuItem onClick={() => handleStatusSelect('send')}>
             <ListItemIcon>
               <CheckOutlined sx={{ color: themeTokens.colors.success }} />
             </ListItemIcon>
             <ListItemText>Send</ListItemText>
           </MenuItem>
-          <MenuItem onClick={() => handleStatusSelect("attempt")}>
+          <MenuItem onClick={() => handleStatusSelect('attempt')}>
             <ListItemIcon>
               <PersonFallingIcon sx={{ color: themeTokens.colors.error }} />
             </ListItemIcon>
@@ -897,9 +897,9 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
               </MenuItem>
             )}
             {onDelete && (
-              <MenuItem onClick={handleDrawerDelete} sx={{ color: "error.main" }}>
+              <MenuItem onClick={handleDrawerDelete} sx={{ color: 'error.main' }}>
                 <ListItemIcon>
-                  <DeleteOutlined sx={{ color: "error.main" }} fontSize="small" />
+                  <DeleteOutlined sx={{ color: 'error.main' }} fontSize="small" />
                 </ListItemIcon>
                 <ListItemText>Delete log</ListItemText>
               </MenuItem>
@@ -964,6 +964,6 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
   },
 );
 
-LogbookFeedItem.displayName = "LogbookFeedItem";
+LogbookFeedItem.displayName = 'LogbookFeedItem';
 
 export default LogbookFeedItem;

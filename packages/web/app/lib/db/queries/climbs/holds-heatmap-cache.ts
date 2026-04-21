@@ -1,7 +1,7 @@
-import { unstable_cache } from "next/cache";
-import { sortObjectKeys } from "@/app/lib/cache-utils";
-import { ParsedBoardRouteParameters, SearchRequestPagination } from "@/app/lib/types";
-import { getHoldHeatmapData, HoldHeatmapData } from "./holds-heatmap";
+import { unstable_cache } from 'next/cache';
+import { sortObjectKeys } from '@/app/lib/cache-utils';
+import { ParsedBoardRouteParameters, SearchRequestPagination } from '@/app/lib/types';
+import { getHoldHeatmapData, HoldHeatmapData } from './holds-heatmap';
 
 /**
  * Cache duration for heatmap queries (in seconds).
@@ -27,11 +27,11 @@ export async function cachedGetHoldHeatmapData(
   // Build explicit cache key with board identifiers as separate segments
   // so cache hits/misses are correctly differentiated by board configuration.
   const cacheKey = [
-    "heatmap",
+    'heatmap',
     params.board_name,
     String(params.layout_id),
     String(params.size_id),
-    params.set_ids.join(","),
+    params.set_ids.join(','),
     String(params.angle),
     // Sorted JSON of the filter subset that affects the query result.
     JSON.stringify(
@@ -57,7 +57,7 @@ export async function cachedGetHoldHeatmapData(
     cacheKey,
     {
       revalidate: CACHE_DURATION_HEATMAP,
-      tags: ["heatmap"],
+      tags: ['heatmap'],
     },
   );
 

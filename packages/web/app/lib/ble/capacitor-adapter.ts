@@ -1,18 +1,18 @@
-import type { BoardName } from "@/app/lib/types";
-import type { BleConnection, BluetoothAdapter } from "./types";
+import type { BoardName } from '@/app/lib/types';
+import type { BleConnection, BluetoothAdapter } from './types';
 import {
   AURORA_OPTIONAL_SERVICE_UUIDS,
   AURORA_SCAN_SERVICE_UUIDS,
-} from "@/app/components/board-bluetooth-control/bluetooth-aurora";
+} from '@/app/components/board-bluetooth-control/bluetooth-aurora';
 import {
   MOONBOARD_OPTIONAL_SERVICE_UUIDS,
   MOONBOARD_SCAN_SERVICE_UUIDS,
-} from "@/app/components/board-bluetooth-control/bluetooth-moonboard";
+} from '@/app/components/board-bluetooth-control/bluetooth-moonboard';
 import {
   MAX_BLUETOOTH_MESSAGE_SIZE,
   UART_SERVICE_UUID,
   UART_WRITE_CHARACTERISTIC_UUID,
-} from "@/app/components/board-bluetooth-control/bluetooth-shared";
+} from '@/app/components/board-bluetooth-control/bluetooth-shared';
 
 const DEFAULT_MTU = MAX_BLUETOOTH_MESSAGE_SIZE;
 
@@ -46,7 +46,7 @@ interface CapacitorBlePlugin {
   }): Promise<void>;
   requestMtu(options: { deviceId: string; mtu: number }): Promise<{ value: number }>;
   addListener(
-    eventName: "disconnected",
+    eventName: 'disconnected',
     callback: (data: { deviceId: string }) => void,
   ): Promise<PluginListenerHandle>;
 }
@@ -54,7 +54,7 @@ interface CapacitorBlePlugin {
 function getBlePlugin(): CapacitorBlePlugin {
   const plugin = window.Capacitor?.Plugins?.BluetoothLe;
   if (!plugin) {
-    throw new Error("Capacitor BluetoothLe plugin not available");
+    throw new Error('Capacitor BluetoothLe plugin not available');
   }
   return plugin as CapacitorBlePlugin;
 }
@@ -78,14 +78,14 @@ export function _resetInitCache(): void {
 /** Convert a Uint8Array to the continuous hex string the raw plugin expects (v8+) */
 function toHexString(data: Uint8Array): string {
   return Array.from(data)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 export class CapacitorBleAdapter implements BluetoothAdapter {
-  constructor(private readonly boardName: BoardName = "kilter") {}
+  constructor(private readonly boardName: BoardName = 'kilter') {}
 
   private deviceId: string | null = null;
   private disconnectCallback: (() => void) | null = null;
@@ -108,11 +108,11 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
     const ble = getBlePlugin();
 
     const services =
-      this.boardName === "moonboard"
+      this.boardName === 'moonboard'
         ? [...MOONBOARD_SCAN_SERVICE_UUIDS]
         : [...AURORA_SCAN_SERVICE_UUIDS];
     const optionalServices =
-      this.boardName === "moonboard"
+      this.boardName === 'moonboard'
         ? [...MOONBOARD_OPTIONAL_SERVICE_UUIDS]
         : [...AURORA_OPTIONAL_SERVICE_UUIDS];
 
@@ -139,7 +139,7 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
     this.deviceId = device.deviceId;
 
     // Listen for unexpected disconnections from the native CoreBluetooth layer
-    this.disconnectListenerHandle = await ble.addListener("disconnected", (data) => {
+    this.disconnectListenerHandle = await ble.addListener('disconnected', (data) => {
       if (data.deviceId === this.deviceId) {
         this.deviceId = null;
         this.disconnectListenerHandle = null;
@@ -174,7 +174,7 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
 
   async write(data: Uint8Array, signal?: AbortSignal): Promise<void> {
     if (!this.deviceId) {
-      throw new Error("Not connected");
+      throw new Error('Not connected');
     }
 
     const ble = getBlePlugin();
@@ -189,7 +189,7 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
     for (let i = 0; i < fullHex.length; i += hexChunkSize) {
       // Check abort signal before each chunk to stop sending stale climbs
       if (signal?.aborted) {
-        throw new DOMException("Write aborted", "AbortError");
+        throw new DOMException('Write aborted', 'AbortError');
       }
 
       // Add a small delay between chunks when using the minimum MTU

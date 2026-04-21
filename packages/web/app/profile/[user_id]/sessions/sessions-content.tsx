@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React from "react";
-import { useSession } from "next-auth/react";
-import ProfileSubPageLayout from "../components/profile-sub-page-layout";
-import ActivityFeed from "@/app/components/activity-feed/activity-feed";
+import React from 'react';
+import { useSession } from 'next-auth/react';
+import ProfileSubPageLayout from '../components/profile-sub-page-layout';
+import ActivityFeed from '@/app/components/activity-feed/activity-feed';
 
 interface ProfileSessionsContentProps {
   userId: string;
@@ -16,9 +16,9 @@ export default function ProfileSessionsContent({
 }: ProfileSessionsContentProps) {
   const { status } = useSession();
   const isAuthenticated =
-    status === "authenticated"
+    status === 'authenticated'
       ? true
-      : status === "loading"
+      : status === 'loading'
         ? (isAuthenticatedSSR ?? false)
         : false;
 

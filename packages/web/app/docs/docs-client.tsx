@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * API Documentation Page
@@ -11,32 +11,32 @@
  * - WebSocket connection guide
  */
 
-import { Suspense, lazy, useState } from "react";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import MuiAlert from "@mui/material/Alert";
-import AlertTitle from "@mui/material/AlertTitle";
-import CircularProgress from "@mui/material/CircularProgress";
-import MuiCard from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
-import Stack from "@mui/material/Stack";
-import MuiDivider from "@mui/material/Divider";
+import { Suspense, lazy, useState } from 'react';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import MuiAlert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import CircularProgress from '@mui/material/CircularProgress';
+import MuiCard from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
+import MuiDivider from '@mui/material/Divider';
 import {
   ApiOutlined,
   CloudOutlined,
   ElectricBoltOutlined,
   MenuBookOutlined,
-} from "@mui/icons-material";
-import { TabPanel } from "@/app/components/ui/tab-panel";
-import styles from "./docs.module.css";
+} from '@mui/icons-material';
+import { TabPanel } from '@/app/components/ui/tab-panel';
+import styles from './docs.module.css';
 
 // Typography destructuring removed - using MUI Typography directly
-import MuiLink from "@mui/material/Link";
+import MuiLink from '@mui/material/Link';
 
 // Lazy load heavy components
-const SwaggerUI = lazy(() => import("./swagger-ui"));
-const GraphQLSchemaViewer = lazy(() => import("./graphql-schema"));
+const SwaggerUI = lazy(() => import('./swagger-ui'));
+const GraphQLSchemaViewer = lazy(() => import('./graphql-schema'));
 
 function LoadingSpinner() {
   return (
@@ -108,11 +108,11 @@ function OverviewTab() {
               <CloudOutlined /> Authentication
             </Typography>
             <Typography variant="body1" component="p" sx={{ mb: 1 }}>
-              <strong>REST API:</strong> Uses NextAuth session cookies. Authenticate via{" "}
+              <strong>REST API:</strong> Uses NextAuth session cookies. Authenticate via{' '}
               <code>/api/auth/...</code> endpoints.
             </Typography>
             <Typography variant="body1" component="p" sx={{ mb: 1 }}>
-              <strong>WebSocket API:</strong> Obtain a JWT token from{" "}
+              <strong>WebSocket API:</strong> Obtain a JWT token from{' '}
               <code>GET /api/internal/ws-auth</code> and include it in the connection parameters:
             </Typography>
             <pre className={styles.codeBlockLight}>
@@ -146,10 +146,10 @@ function WebSocketGuideTab() {
       </Typography>
 
       <Typography variant="body1" component="p" sx={{ mb: 2 }}>
-        The Boardsesh WebSocket API uses the{" "}
+        The Boardsesh WebSocket API uses the{' '}
         <MuiLink href="https://github.com/enisdenjo/graphql-ws" target="_blank">
           graphql-ws
-        </MuiLink>{" "}
+        </MuiLink>{' '}
         protocol for real-time GraphQL subscriptions.
       </Typography>
 
@@ -289,7 +289,7 @@ lastSequence = eventsReplay.currentSequence;`}
 }
 
 export default function DocsClientPage() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState('overview');
 
   return (
     <div className={styles.docsContainer}>

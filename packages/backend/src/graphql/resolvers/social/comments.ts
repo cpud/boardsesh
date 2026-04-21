@@ -1,19 +1,19 @@
-import { eq, and, isNull, count, sql } from "drizzle-orm";
-import type { ConnectionContext } from "@boardsesh/shared-schema";
-import { db } from "../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { requireAuthenticated, applyRateLimit, validateInput } from "../shared/helpers";
+import { eq, and, isNull, count, sql } from 'drizzle-orm';
+import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { db } from '../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { requireAuthenticated, applyRateLimit, validateInput } from '../shared/helpers';
 import {
   AddCommentInputSchema,
   UpdateCommentInputSchema,
   CommentsInputSchema,
   GlobalCommentFeedInputSchema,
-} from "../../../validation/schemas";
-import { encodeOffsetCursor, decodeOffsetCursor } from "../../../utils/feed-cursor";
-import { validateEntityExists } from "./entity-validation";
-import { publishSocialEvent } from "../../../events/index";
-import { pubsub } from "../../../pubsub/index";
-import crypto from "crypto";
+} from '../../../validation/schemas';
+import { encodeOffsetCursor, decodeOffsetCursor } from '../../../utils/feed-cursor';
+import { validateEntityExists } from './entity-validation';
+import { publishSocialEvent } from '../../../events/index';
+import { pubsub } from '../../../pubsub/index';
+import crypto from 'crypto';
 
 interface CommentRow {
   id: number;
@@ -71,7 +71,7 @@ async function getCommentVoteCounts(commentUuid: string) {
     .from(dbSchema.voteCounts)
     .where(
       and(
-        eq(dbSchema.voteCounts.entityType, "comment"),
+        eq(dbSchema.voteCounts.entityType, 'comment'),
         eq(dbSchema.voteCounts.entityId, commentUuid),
       ),
     )
@@ -85,7 +85,7 @@ async function getCommentVoteCounts(commentUuid: string) {
 
 export const socialCommentQueries = {
   comments: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
-    const validated = validateInput(CommentsInputSchema, input, "input");
+    const validated = validateInput(CommentsInputSchema, input, 'input');
     const { entityType, entityId, parentCommentUuid, sortBy, limit = 20, offset = 0 } = validated;
 
     const authenticatedUserId = ctx.isAuthenticated ? ctx.userId : null;
@@ -113,10 +113,10 @@ export const socialCommentQueries = {
     // Build ORDER BY based on sortBy — uses vote_counts columns instead of LATERAL subqueries
     let orderByClause: ReturnType<typeof sql>;
     switch (sortBy) {
-      case "top":
+      case 'top':
         orderByClause = sql`COALESCE(vc."score", 0) DESC, c."created_at" DESC`;
         break;
-      case "controversial":
+      case 'controversial':
         orderByClause = sql`
           CASE WHEN COALESCE(vc."upvotes", 0) + COALESCE(vc."downvotes", 0) = 0 THEN 0
           ELSE POWER(COALESCE(vc."upvotes", 0) + COALESCE(vc."downvotes", 0),
@@ -124,7 +124,7 @@ export const socialCommentQueries = {
             GREATEST(COALESCE(vc."upvotes", 0)::float, COALESCE(vc."downvotes", 0)::float, 1)
           ) END DESC, c."created_at" DESC`;
         break;
-      case "hot":
+      case 'hot':
         orderByClause = sql`
           SIGN(COALESCE(vc."score", 0)) *
           LN(GREATEST(ABS(COALESCE(vc."score", 0)), 1)) +
@@ -216,7 +216,7 @@ export const socialCommentQueries = {
     { input }: { input?: Record<string, unknown> },
     ctx: ConnectionContext,
   ) => {
-    const validatedInput = validateInput(GlobalCommentFeedInputSchema, input || {}, "input");
+    const validatedInput = validateInput(GlobalCommentFeedInputSchema, input || {}, 'input');
     const limit = validatedInput.limit ?? 20;
     const authenticatedUserId = ctx.isAuthenticated ? ctx.userId : null;
 
@@ -332,9 +332,9 @@ export const socialCommentQueries = {
 export const socialCommentMutations = {
   addComment: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
-    await applyRateLimit(ctx, 10, "comment");
+    await applyRateLimit(ctx, 10, 'comment');
 
-    const validated = validateInput(AddCommentInputSchema, input, "input");
+    const validated = validateInput(AddCommentInputSchema, input, 'input');
     const { entityType, entityId, parentCommentUuid, body } = validated;
     const userId = ctx.userId!;
 
@@ -354,13 +354,13 @@ export const socialCommentMutations = {
         .limit(1);
 
       if (!parent) {
-        throw new Error("Parent comment not found");
+        throw new Error('Parent comment not found');
       }
       if (parent.deletedAt) {
-        throw new Error("Cannot reply to a deleted comment");
+        throw new Error('Cannot reply to a deleted comment');
       }
       if (parent.entityType !== entityType || parent.entityId !== entityId) {
-        throw new Error("Parent comment belongs to a different entity");
+        throw new Error('Parent comment belongs to a different entity');
       }
       parentCommentId = parent.id;
     }
@@ -414,13 +414,13 @@ export const socialCommentMutations = {
     // Live comment update via PubSub (synchronous for real-time)
     const entityKey = `${entityType}:${entityId}`;
     pubsub.publishCommentEvent(entityKey, {
-      __typename: "CommentAdded",
+      __typename: 'CommentAdded',
       comment: commentResult,
     });
 
     // Notification via event broker (async)
     publishSocialEvent({
-      type: parentCommentUuid ? "comment.reply" : "comment.created",
+      type: parentCommentUuid ? 'comment.reply' : 'comment.created',
       actorId: userId,
       entityType,
       entityId,
@@ -429,16 +429,16 @@ export const socialCommentMutations = {
         commentUuid: uuid,
         ...(parentCommentUuid ? { parentCommentId: parentCommentUuid } : {}),
       },
-    }).catch((err) => console.error("[Comments] Failed to publish social event:", err));
+    }).catch((err) => console.error('[Comments] Failed to publish social event:', err));
 
     return commentResult;
   },
 
   updateComment: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
-    await applyRateLimit(ctx, 10, "comment");
+    await applyRateLimit(ctx, 10, 'comment');
 
-    const validated = validateInput(UpdateCommentInputSchema, input, "input");
+    const validated = validateInput(UpdateCommentInputSchema, input, 'input');
     const { commentUuid, body } = validated;
     const userId = ctx.userId!;
 
@@ -449,13 +449,13 @@ export const socialCommentMutations = {
       .limit(1);
 
     if (!comment) {
-      throw new Error("Comment not found");
+      throw new Error('Comment not found');
     }
     if (comment.userId !== userId) {
-      throw new Error("You can only edit your own comments");
+      throw new Error('You can only edit your own comments');
     }
     if (comment.deletedAt) {
-      throw new Error("Cannot edit a deleted comment");
+      throw new Error('Cannot edit a deleted comment');
     }
 
     const now = new Date();
@@ -496,7 +496,7 @@ export const socialCommentMutations = {
       .from(dbSchema.votes)
       .where(
         and(
-          eq(dbSchema.votes.entityType, "comment"),
+          eq(dbSchema.votes.entityType, 'comment'),
           eq(dbSchema.votes.entityId, commentUuid),
           eq(dbSchema.votes.userId, userId),
         ),
@@ -536,7 +536,7 @@ export const socialCommentMutations = {
     // Live comment update via PubSub (synchronous, no notification needed)
     const entityKey = `${updated.entityType}:${updated.entityId}`;
     pubsub.publishCommentEvent(entityKey, {
-      __typename: "CommentUpdated",
+      __typename: 'CommentUpdated',
       comment: updateResult,
     });
 
@@ -558,10 +558,10 @@ export const socialCommentMutations = {
       .limit(1);
 
     if (!comment) {
-      throw new Error("Comment not found");
+      throw new Error('Comment not found');
     }
     if (comment.userId !== userId) {
-      throw new Error("You can only delete your own comments");
+      throw new Error('You can only delete your own comments');
     }
     if (comment.deletedAt) {
       return true; // Already deleted
@@ -591,7 +591,7 @@ export const socialCommentMutations = {
     // Live comment update via PubSub (synchronous, no notification needed)
     const entityKey = `${comment.entityType}:${comment.entityId}`;
     pubsub.publishCommentEvent(entityKey, {
-      __typename: "CommentDeleted",
+      __typename: 'CommentDeleted',
       commentUuid,
       entityType: comment.entityType,
       entityId: comment.entityId,

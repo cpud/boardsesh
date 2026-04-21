@@ -1,5 +1,5 @@
-import type Redis from "ioredis";
-import type { SessionUser } from "@boardsesh/shared-schema";
+import type Redis from 'ioredis';
+import type { SessionUser } from '@boardsesh/shared-schema';
 import {
   KEYS,
   TTL,
@@ -7,14 +7,14 @@ import {
   validateConnectionId,
   validateSessionId,
   hashToConnection,
-} from "./constants";
+} from './constants';
 import {
   JOIN_SESSION_SCRIPT,
   LEAVE_SESSION_SCRIPT,
   ELECT_NEW_LEADER_SCRIPT,
   REFRESH_TTL_SCRIPT,
   PRUNE_STALE_SESSION_MEMBERS_SCRIPT,
-} from "./lua-scripts";
+} from './lua-scripts';
 
 /**
  * Join a session. Handles leader election for first member.
@@ -44,7 +44,7 @@ export async function joinSession(
     username || UNSET_SENTINEL,
     // Use sentinel when avatarUrl is undefined (not provided), otherwise use actual value
     // This allows empty string to explicitly clear the avatar
-    avatarUrl !== undefined ? avatarUrl || "" : UNSET_SENTINEL,
+    avatarUrl !== undefined ? avatarUrl || '' : UNSET_SENTINEL,
   )) as number;
 
   if (becameLeader === 1) {
@@ -86,7 +86,7 @@ export async function leaveSession(
       return { newLeaderId: null };
     }
 
-    if (result === "") {
+    if (result === '') {
       console.log(
         `[DistributedState] Session ${sessionId.slice(0, 8)} has no remaining members after leader left`,
       );
@@ -120,7 +120,7 @@ async function leaveSessionFallback(
       const wasLeader = currentLeader === connectionId;
 
       const multi = redis.multi();
-      multi.hmset(KEYS.connection(connectionId), { sessionId: "", isLeader: "false" });
+      multi.hmset(KEYS.connection(connectionId), { sessionId: '', isLeader: 'false' });
       multi.srem(KEYS.sessionMembers(sessionId), connectionId);
       const execResult = await multi.exec();
 

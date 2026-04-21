@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useCallback, useContext } from "react";
-import { PlaylistsContext, type Playlist } from "./playlists-batch-context";
+import { useCallback, useContext } from 'react';
+import { PlaylistsContext, type Playlist } from './playlists-batch-context';
 
 type UsePlaylistsOptions = {
   climbUuid: string;
@@ -28,13 +28,13 @@ const emptySet = new Set<string>();
 const noopAsync = async () => {};
 const noopCreatePlaylist = async (): Promise<Playlist> => {
   return {
-    id: "",
-    uuid: "",
-    boardType: "",
-    name: "",
+    id: '',
+    uuid: '',
+    boardType: '',
+    name: '',
     isPublic: false,
-    createdAt: "",
-    updatedAt: "",
+    createdAt: '',
+    updatedAt: '',
     climbCount: 0,
     followerCount: 0,
     isFollowedByMe: false,

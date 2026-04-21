@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import React from "react";
-import MuiCard from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
-import MuiLink from "@mui/material/Link";
-import { GavelOutlined } from "@mui/icons-material";
-import Box from "@mui/material/Box";
-import Stack from "@mui/material/Stack";
-import BackButton from "@/app/components/back-button";
-import styles from "../about/about.module.css";
+import React from 'react';
+import MuiCard from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import MuiLink from '@mui/material/Link';
+import { GavelOutlined } from '@mui/icons-material';
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import BackButton from '@/app/components/back-button';
+import styles from '../about/about.module.css';
 
 export default function LegalContent() {
   return (
@@ -128,14 +128,14 @@ export default function LegalContent() {
                   </li>
                   <li>
                     <Typography variant="body1" component="span">
-                      If you are the creator of a climb and would like it removed, please{" "}
+                      If you are the creator of a climb and would like it removed, please{' '}
                       <MuiLink
                         href="https://github.com/marcodejongh/boardsesh/issues"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
                         open an issue
-                      </MuiLink>{" "}
+                      </MuiLink>{' '}
                       or contact us and we will honour your request promptly.
                     </Typography>
                   </li>
@@ -240,7 +240,7 @@ export default function LegalContent() {
                   of the material or a misunderstanding of the law.
                 </Typography>
                 <Typography variant="body1" component="p">
-                  <strong>Contact:</strong>{" "}
+                  <strong>Contact:</strong>{' '}
                   <MuiLink href="mailto:legal@mdj.ac">legal@mdj.ac</MuiLink>
                 </Typography>
               </section>
@@ -272,15 +272,15 @@ export default function LegalContent() {
                 <ul className={styles.featureList}>
                   <li>
                     <Typography variant="body1" component="span">
-                      <strong>Person Falling icon</strong> from{" "}
+                      <strong>Person Falling icon</strong> from{' '}
                       <MuiLink
                         href="https://fontawesome.com"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
                         Font Awesome Free 6.7.2
-                      </MuiLink>{" "}
-                      by @fontawesome. License:{" "}
+                      </MuiLink>{' '}
+                      by @fontawesome. License:{' '}
                       <MuiLink
                         href="https://fontawesome.com/license/free"
                         target="_blank"

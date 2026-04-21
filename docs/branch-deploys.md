@@ -313,7 +313,7 @@ CMD ["node", "packages/web/server.js"]
 > 2. **Add `output: 'standalone'` to `next.config.mjs`:**
 >    ```js
 >    const nextConfig = {
->      output: "standalone",
+>      output: 'standalone',
 >      // ... existing config
 >    };
 >    ```
@@ -337,7 +337,7 @@ Each PR gets 5 containers in an isolated Docker network. The compose template us
 ```yaml
 services:
   web:
-    image: "ghcr.io/marcodejongh/boardsesh-web:pr-{{ pr_number }}"
+    image: 'ghcr.io/marcodejongh/boardsesh-web:pr-{{ pr_number }}'
     container_name: web-pr-{{ pr_number }}
     restart: unless-stopped
     environment:
@@ -358,20 +358,20 @@ services:
       resources:
         limits:
           memory: 512M
-          cpus: "0.5"
+          cpus: '0.5'
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.web-pr-{{ pr_number }}.rule=Host(`{{ pr_number }}.preview.boardsesh.com`)"
-      - "traefik.http.routers.web-pr-{{ pr_number }}.entrypoints=websecure"
-      - "traefik.http.routers.web-pr-{{ pr_number }}.tls=true"
-      - "traefik.http.routers.web-pr-{{ pr_number }}.tls.certresolver=letsencrypt"
-      - "traefik.http.services.web-pr-{{ pr_number }}.loadbalancer.server.port=3000"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.web-pr-{{ pr_number }}.rule=Host(`{{ pr_number }}.preview.boardsesh.com`)'
+      - 'traefik.http.routers.web-pr-{{ pr_number }}.entrypoints=websecure'
+      - 'traefik.http.routers.web-pr-{{ pr_number }}.tls=true'
+      - 'traefik.http.routers.web-pr-{{ pr_number }}.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.web-pr-{{ pr_number }}.loadbalancer.server.port=3000'
     networks:
       - pr-{{ pr_number }}
       - traefik
 
   backend:
-    image: "ghcr.io/marcodejongh/boardsesh-backend:pr-{{ pr_number }}"
+    image: 'ghcr.io/marcodejongh/boardsesh-backend:pr-{{ pr_number }}'
     container_name: backend-pr-{{ pr_number }}
     restart: unless-stopped
     environment:
@@ -389,16 +389,16 @@ services:
       resources:
         limits:
           memory: 256M
-          cpus: "0.25"
+          cpus: '0.25'
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.backend-pr-{{ pr_number }}.rule=Host(`{{ pr_number }}.ws.preview.boardsesh.com`)"
-      - "traefik.http.routers.backend-pr-{{ pr_number }}.entrypoints=websecure"
-      - "traefik.http.routers.backend-pr-{{ pr_number }}.tls=true"
-      - "traefik.http.routers.backend-pr-{{ pr_number }}.tls.certresolver=letsencrypt"
-      - "traefik.http.services.backend-pr-{{ pr_number }}.loadbalancer.server.port=8080"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.backend-pr-{{ pr_number }}.rule=Host(`{{ pr_number }}.ws.preview.boardsesh.com`)'
+      - 'traefik.http.routers.backend-pr-{{ pr_number }}.entrypoints=websecure'
+      - 'traefik.http.routers.backend-pr-{{ pr_number }}.tls=true'
+      - 'traefik.http.routers.backend-pr-{{ pr_number }}.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.backend-pr-{{ pr_number }}.loadbalancer.server.port=8080'
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:8080/health']
       interval: 30s
       timeout: 3s
       start_period: 10s
@@ -411,14 +411,14 @@ services:
     image: ghcr.io/marcodejongh/boardsesh-dev-db:latest
     container_name: postgres-pr-{{ pr_number }}
     restart: unless-stopped
-    shm_size: "256mb"
+    shm_size: '256mb'
     command: postgres -c max_connections=100 -c log_min_messages=warning -c shared_buffers=128MB
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=main
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -426,7 +426,7 @@ services:
       resources:
         limits:
           memory: 1G
-          cpus: "0.5"
+          cpus: '0.5'
     networks:
       - pr-{{ pr_number }}
 
@@ -444,7 +444,7 @@ services:
       resources:
         limits:
           memory: 128M
-          cpus: "0.1"
+          cpus: '0.1'
     networks:
       - pr-{{ pr_number }}
 
@@ -453,7 +453,7 @@ services:
     container_name: redis-pr-{{ pr_number }}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
       timeout: 3s
       retries: 5
@@ -461,7 +461,7 @@ services:
       resources:
         limits:
           memory: 64M
-          cpus: "0.1"
+          cpus: '0.1'
     networks:
       - pr-{{ pr_number }}
 
@@ -496,31 +496,31 @@ api:
 
 entryPoints:
   web:
-    address: ":80"
+    address: ':80'
     http:
       redirections:
         entryPoint:
           to: websecure
           scheme: https
   websecure:
-    address: ":443"
+    address: ':443'
 
 providers:
   docker:
-    endpoint: "unix:///var/run/docker.sock"
+    endpoint: 'unix:///var/run/docker.sock'
     exposedByDefault: false
     network: traefik
 
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: "{{ acme_email }}"
+      email: '{{ acme_email }}'
       storage: /acme/acme.json
       dnsChallenge:
         provider: cloudflare
         resolvers:
-          - "1.1.1.1:53"
-          - "8.8.8.8:53"
+          - '1.1.1.1:53'
+          - '8.8.8.8:53'
 
 # Environment variables needed for Cloudflare DNS challenge:
 #   CF_DNS_API_TOKEN=<your-cloudflare-api-token>
@@ -547,11 +547,11 @@ credentials-file: /etc/cloudflared/credentials.json
 
 ingress:
   # Wildcard route: all *.preview.boardsesh.com traffic → Traefik
-  - hostname: "*.preview.boardsesh.com"
+  - hostname: '*.preview.boardsesh.com'
     service: https://localhost:443
     originRequest:
       noTLSVerify: true # Traefik handles TLS internally
-  - hostname: "*.ws.preview.boardsesh.com"
+  - hostname: '*.ws.preview.boardsesh.com'
     service: https://localhost:443
     originRequest:
       noTLSVerify: true
@@ -640,7 +640,7 @@ roles/branch_deploy_host/
     name: geerlingguy.docker
   vars:
     docker_users:
-      - "{{ deploy_user }}"
+      - '{{ deploy_user }}'
 
 - name: Install required packages
   ansible.builtin.apt:
@@ -650,11 +650,11 @@ roles/branch_deploy_host/
 
 - name: Create deploy directories
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: '{{ item }}'
     state: directory
-    owner: "{{ deploy_user }}"
-    group: "{{ deploy_user }}"
-    mode: "0755"
+    owner: '{{ deploy_user }}'
+    group: '{{ deploy_user }}'
+    mode: '0755'
   loop:
     - /opt/branch-deploys
     - /var/log/branch-deploys
@@ -669,7 +669,7 @@ roles/branch_deploy_host/
     src: traefik.yml.j2
     dest: /opt/traefik/traefik.yml
     owner: root
-    mode: "0644"
+    mode: '0644'
   notify: restart traefik
 
 - name: Run Traefik container
@@ -678,33 +678,33 @@ roles/branch_deploy_host/
     image: traefik:v3.2
     restart_policy: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
-      - "8080:8080"
+      - '80:80'
+      - '443:443'
+      - '8080:8080'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /opt/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - /opt/traefik/acme:/acme
     env:
-      CF_DNS_API_TOKEN: "{{ vault_cloudflare_dns_api_token }}"
+      CF_DNS_API_TOKEN: '{{ vault_cloudflare_dns_api_token }}'
     networks:
       - name: traefik
 
 - name: Log in to GHCR
   community.docker.docker_login:
     registry: ghcr.io
-    username: "{{ ghcr_username }}"
-    password: "{{ ghcr_token }}"
+    username: '{{ ghcr_username }}'
+    password: '{{ ghcr_token }}'
 
 - name: Install Tailscale
   ansible.builtin.include_role:
     name: artis3n.tailscale
   vars:
-    tailscale_authkey: "{{ tailscale_auth_key }}"
+    tailscale_authkey: '{{ tailscale_auth_key }}'
 
 - name: Install cloudflared
   ansible.builtin.apt:
-    deb: "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb"
+    deb: 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb'
     state: present
 
 - name: Configure cloudflared
@@ -712,7 +712,7 @@ roles/branch_deploy_host/
     src: cloudflared-config.yml.j2
     dest: /etc/cloudflared/config.yml
     owner: root
-    mode: "0600"
+    mode: '0600'
   notify: restart cloudflared
 
 - name: Enable cloudflared service
@@ -723,9 +723,9 @@ roles/branch_deploy_host/
 
 - name: Install stale deploy cleanup timer
   ansible.builtin.copy:
-    src: "{{ item }}"
+    src: '{{ item }}'
     dest: /etc/systemd/system/
-    mode: "0644"
+    mode: '0644'
   loop:
     - stale-deploy-cleanup.timer
     - stale-deploy-cleanup.service
@@ -744,17 +744,17 @@ roles/branch_deploy_host/
 ---
 - name: Create PR deploy directory
   ansible.builtin.file:
-    path: "/opt/branch-deploys/pr-{{ pr_number }}"
+    path: '/opt/branch-deploys/pr-{{ pr_number }}'
     state: directory
-    owner: "{{ deploy_user }}"
-    mode: "0755"
+    owner: '{{ deploy_user }}'
+    mode: '0755'
 
 - name: Template docker-compose for PR
   ansible.builtin.template:
     src: docker-compose.pr.yml.j2
-    dest: "/opt/branch-deploys/pr-{{ pr_number }}/docker-compose.yml"
-    owner: "{{ deploy_user }}"
-    mode: "0644"
+    dest: '/opt/branch-deploys/pr-{{ pr_number }}/docker-compose.yml'
+    owner: '{{ deploy_user }}'
+    mode: '0644'
 
 - name: Pull images for PR {{ pr_number }}
   ansible.builtin.command:
@@ -766,7 +766,7 @@ roles/branch_deploy_host/
 
 - name: Wait for backend health check
   ansible.builtin.uri:
-    url: "http://localhost:8080/health"
+    url: 'http://localhost:8080/health'
     status_code: 200
   register: health
   retries: 10
@@ -788,7 +788,7 @@ roles/branch_deploy_host/
 
 - name: Remove PR deploy directory
   ansible.builtin.file:
-    path: "/opt/branch-deploys/pr-{{ pr_number }}"
+    path: '/opt/branch-deploys/pr-{{ pr_number }}'
     state: absent
 
 - name: Prune dangling images
@@ -805,14 +805,14 @@ roles/branch_deploy_host/
   ansible.builtin.find:
     paths: /opt/branch-deploys
     file_type: directory
-    patterns: "pr-*"
+    patterns: 'pr-*'
   register: active_deploys
 
 - name: Get open PRs from GitHub
   ansible.builtin.uri:
-    url: "https://api.github.com/repos/marcodejongh/boardsesh/pulls?state=open&per_page=100"
+    url: 'https://api.github.com/repos/marcodejongh/boardsesh/pulls?state=open&per_page=100'
     headers:
-      Authorization: "Bearer {{ github_token }}"
+      Authorization: 'Bearer {{ github_token }}'
     return_content: true
   register: open_prs
 
@@ -1049,7 +1049,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "0 3 * * *" # Daily at 3am
+    - cron: '0 3 * * *' # Daily at 3am
 
 jobs:
   sweep:
@@ -1218,7 +1218,7 @@ Sync runs in two places:
    name: Sync Cron
    on:
      schedule:
-       - cron: "0 */2 * * *" # Every 2 hours
+       - cron: '0 */2 * * *' # Every 2 hours
    jobs:
      sync:
        runs-on: ubuntu-latest

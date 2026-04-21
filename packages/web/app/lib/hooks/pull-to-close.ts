@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useRef, useCallback, useEffect } from "react";
+import { useRef, useCallback, useEffect } from 'react';
 
 // ── Shared constants ──────────────────────────────────────────────────────────
 
-export const DECELERATE_EASING = "cubic-bezier(0.0, 0, 0.2, 1)";
+export const DECELERATE_EASING = 'cubic-bezier(0.0, 0, 0.2, 1)';
 export const CLOSE_ANIMATION_MS = 200;
 export const ANIMATION_DELAY_MS = 210; // CLOSE_ANIMATION_MS + safety margin
 
@@ -22,7 +22,7 @@ export function findScrollContainer(
   let el: HTMLElement | null = target;
   while (el && el !== stopAt) {
     const style = window.getComputedStyle(el);
-    if (style.overflowY === "auto" || style.overflowY === "scroll") {
+    if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
       return el;
     }
     el = el.parentElement;
@@ -122,14 +122,14 @@ export function usePullToClose({
     const el = paperElRef.current;
     if (!el) return;
     el.style.transform = `translateY(${translateY}px)`;
-    el.style.transition = "none";
+    el.style.transition = 'none';
   }, []);
 
   const clearTransform = useCallback(() => {
     const el = paperElRef.current;
     if (!el) return;
-    el.style.transform = "";
-    el.style.transition = "";
+    el.style.transform = '';
+    el.style.transition = '';
   }, []);
 
   const onTouchStart = useCallback(
@@ -213,11 +213,11 @@ export function usePullToClose({
     } else if (el) {
       // Snap back
       el.style.transition = `transform ${CLOSE_ANIMATION_MS}ms ${DECELERATE_EASING}`;
-      el.style.transform = "";
+      el.style.transform = '';
       scheduleTimer(() => {
         const currentEl = paperElRef.current;
         if (currentEl) {
-          currentEl.style.transition = "";
+          currentEl.style.transition = '';
         }
       }, ANIMATION_DELAY_MS);
     }

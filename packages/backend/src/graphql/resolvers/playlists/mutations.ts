@@ -1,17 +1,17 @@
-import { eq, and, sql } from "drizzle-orm";
-import { v4 as uuidv4 } from "uuid";
-import type { ConnectionContext } from "@boardsesh/shared-schema";
-import { db } from "../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { requireAuthenticated, validateInput } from "../shared/helpers";
+import { eq, and, sql } from 'drizzle-orm';
+import { v4 as uuidv4 } from 'uuid';
+import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { db } from '../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { requireAuthenticated, validateInput } from '../shared/helpers';
 import {
   CreatePlaylistInputSchema,
   UpdatePlaylistInputSchema,
   AddClimbToPlaylistInputSchema,
   RemoveClimbFromPlaylistInputSchema,
   FollowPlaylistInputSchema,
-} from "../../../validation/schemas";
-import { getPlaylistFollowStats } from "./queries";
+} from '../../../validation/schemas';
+import { getPlaylistFollowStats } from './queries';
 
 export const playlistMutations = {
   /**
@@ -23,7 +23,7 @@ export const playlistMutations = {
     ctx: ConnectionContext,
   ): Promise<unknown> => {
     requireAuthenticated(ctx);
-    const validatedInput = validateInput(CreatePlaylistInputSchema, input, "input");
+    const validatedInput = validateInput(CreatePlaylistInputSchema, input, 'input');
 
     const userId = ctx.userId!;
     const uuid = uuidv4();
@@ -50,7 +50,7 @@ export const playlistMutations = {
     await db.insert(dbSchema.playlistOwnership).values({
       playlistId: playlist.id,
       userId,
-      role: "owner",
+      role: 'owner',
       createdAt: now,
     });
 
@@ -67,7 +67,7 @@ export const playlistMutations = {
       createdAt: playlist.createdAt.toISOString(),
       updatedAt: playlist.updatedAt.toISOString(),
       climbCount: 0,
-      userRole: "owner",
+      userRole: 'owner',
       followerCount: 0,
       isFollowedByMe: false,
     };
@@ -82,7 +82,7 @@ export const playlistMutations = {
     ctx: ConnectionContext,
   ): Promise<unknown> => {
     requireAuthenticated(ctx);
-    const validatedInput = validateInput(UpdatePlaylistInputSchema, input, "input");
+    const validatedInput = validateInput(UpdatePlaylistInputSchema, input, 'input');
 
     const userId = ctx.userId!;
 
@@ -98,13 +98,13 @@ export const playlistMutations = {
         and(
           eq(dbSchema.playlists.uuid, validatedInput.playlistId),
           eq(dbSchema.playlistOwnership.userId, userId),
-          eq(dbSchema.playlistOwnership.role, "owner"),
+          eq(dbSchema.playlistOwnership.role, 'owner'),
         ),
       )
       .limit(1);
 
     if (ownership.length === 0) {
-      throw new Error("Playlist not found or you do not have permission to edit it");
+      throw new Error('Playlist not found or you do not have permission to edit it');
     }
 
     const playlistId = ownership[0].playlists.id;
@@ -151,7 +151,7 @@ export const playlistMutations = {
       createdAt: updated.createdAt.toISOString(),
       updatedAt: updated.updatedAt.toISOString(),
       climbCount: climbCount[0]?.count || 0,
-      userRole: "owner",
+      userRole: 'owner',
       followerCount: stats.followerCount,
       isFollowedByMe: stats.isFollowedByMe,
     };
@@ -181,13 +181,13 @@ export const playlistMutations = {
         and(
           eq(dbSchema.playlists.uuid, playlistId),
           eq(dbSchema.playlistOwnership.userId, userId),
-          eq(dbSchema.playlistOwnership.role, "owner"),
+          eq(dbSchema.playlistOwnership.role, 'owner'),
         ),
       )
       .limit(1);
 
     if (ownership.length === 0) {
-      throw new Error("Playlist not found or you do not have permission to delete it");
+      throw new Error('Playlist not found or you do not have permission to delete it');
     }
 
     // Delete playlist (cascade will handle ownership and climbs)
@@ -205,7 +205,7 @@ export const playlistMutations = {
     ctx: ConnectionContext,
   ): Promise<unknown> => {
     requireAuthenticated(ctx);
-    const validatedInput = validateInput(AddClimbToPlaylistInputSchema, input, "input");
+    const validatedInput = validateInput(AddClimbToPlaylistInputSchema, input, 'input');
 
     const userId = ctx.userId!;
 
@@ -226,7 +226,7 @@ export const playlistMutations = {
       .limit(1);
 
     if (ownership.length === 0) {
-      throw new Error("Playlist not found or you do not have permission to edit it");
+      throw new Error('Playlist not found or you do not have permission to edit it');
     }
 
     const playlistId = ownership[0].id;
@@ -307,7 +307,7 @@ export const playlistMutations = {
     ctx: ConnectionContext,
   ): Promise<boolean> => {
     requireAuthenticated(ctx);
-    const validatedInput = validateInput(RemoveClimbFromPlaylistInputSchema, input, "input");
+    const validatedInput = validateInput(RemoveClimbFromPlaylistInputSchema, input, 'input');
 
     const userId = ctx.userId!;
 
@@ -328,7 +328,7 @@ export const playlistMutations = {
       .limit(1);
 
     if (ownership.length === 0) {
-      throw new Error("Playlist not found or you do not have permission to edit it");
+      throw new Error('Playlist not found or you do not have permission to edit it');
     }
 
     const playlistId = ownership[0].id;
@@ -381,7 +381,7 @@ export const playlistMutations = {
       .limit(1);
 
     if (ownership.length === 0) {
-      throw new Error("Playlist not found or access denied");
+      throw new Error('Playlist not found or access denied');
     }
 
     await db
@@ -401,7 +401,7 @@ export const playlistMutations = {
     ctx: ConnectionContext,
   ): Promise<boolean> => {
     requireAuthenticated(ctx);
-    const validatedInput = validateInput(FollowPlaylistInputSchema, input, "input");
+    const validatedInput = validateInput(FollowPlaylistInputSchema, input, 'input');
     const userId = ctx.userId!;
 
     // Verify playlist exists and is public
@@ -415,10 +415,10 @@ export const playlistMutations = {
       .limit(1);
 
     if (!playlist) {
-      throw new Error("Playlist not found");
+      throw new Error('Playlist not found');
     }
     if (!playlist.isPublic) {
-      throw new Error("Cannot follow a private playlist");
+      throw new Error('Cannot follow a private playlist');
     }
 
     await db
@@ -441,7 +441,7 @@ export const playlistMutations = {
     ctx: ConnectionContext,
   ): Promise<boolean> => {
     requireAuthenticated(ctx);
-    const validatedInput = validateInput(FollowPlaylistInputSchema, input, "input");
+    const validatedInput = validateInput(FollowPlaylistInputSchema, input, 'input');
     const userId = ctx.userId!;
 
     await db

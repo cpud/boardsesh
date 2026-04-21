@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import styles from "./collapsible-section.module.css";
+import React, { useState } from 'react';
+import styles from './collapsible-section.module.css';
 
 export interface CollapsibleSectionConfig {
   key: string;
@@ -35,31 +35,31 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({ sections, defau
         const isActive = activeKey === section.key;
         const summaryParts = section.getSummary();
         const summaryText =
-          summaryParts.length > 0 ? summaryParts.join(" \u00B7 ") : section.defaultSummary;
+          summaryParts.length > 0 ? summaryParts.join(' \u00B7 ') : section.defaultSummary;
 
         const shouldRenderContent = section.lazy ? isActive : true;
 
         return (
           <div
             key={section.key}
-            className={`${styles.sectionCard} ${isActive ? styles.sectionCardActive : ""}`}
+            className={`${styles.sectionCard} ${isActive ? styles.sectionCardActive : ''}`}
             {...(!isActive ? { onClick: () => setActiveKey(section.key) } : {})}
           >
             <div
-              className={`${styles.collapsedRow} ${isActive ? styles.collapsedRowActive : ""}`}
+              className={`${styles.collapsedRow} ${isActive ? styles.collapsedRowActive : ''}`}
               {...(isActive ? { onClick: () => setActiveKey(null) } : {})}
             >
               <span className={styles.collapsedLabel}>
                 {isActive ? section.title : section.label}
               </span>
               <span
-                className={`${styles.collapsedSummary} ${isActive ? styles.collapsedSummaryHidden : ""}`}
+                className={`${styles.collapsedSummary} ${isActive ? styles.collapsedSummaryHidden : ''}`}
               >
                 {summaryText}
               </span>
             </div>
             <div
-              className={`${styles.expandableContent} ${isActive ? styles.expandableContentOpen : ""}`}
+              className={`${styles.expandableContent} ${isActive ? styles.expandableContentOpen : ''}`}
             >
               <div className={styles.expandableInner}>
                 <div

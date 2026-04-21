@@ -1,24 +1,24 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/app/lib/db/db";
-import * as schema from "@/app/lib/db/schema";
-import bcrypt from "bcryptjs";
-import { eq } from "drizzle-orm";
-import { z } from "zod";
-import { sendVerificationEmail } from "@/app/lib/email/email-service";
-import { checkRateLimit, getClientIp } from "@/app/lib/auth/rate-limiter";
+import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '@/app/lib/db/db';
+import * as schema from '@/app/lib/db/schema';
+import bcrypt from 'bcryptjs';
+import { eq } from 'drizzle-orm';
+import { z } from 'zod';
+import { sendVerificationEmail } from '@/app/lib/email/email-service';
+import { checkRateLimit, getClientIp } from '@/app/lib/auth/rate-limiter';
 
-const emailVerificationEnabled = process.env.EMAIL_VERIFICATION_ENABLED === "true";
+const emailVerificationEnabled = process.env.EMAIL_VERIFICATION_ENABLED === 'true';
 
 const registerSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().email('Invalid email address'),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
-    .max(128, "Password must be less than 128 characters"),
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password must be less than 128 characters'),
   name: z
     .string()
-    .min(1, "Name is required")
-    .max(100, "Name must be less than 100 characters")
+    .min(1, 'Name is required')
+    .max(100, 'Name must be less than 100 characters')
     .optional(),
 });
 
@@ -30,11 +30,11 @@ export async function POST(request: NextRequest) {
 
     if (rateLimitResult.limited) {
       return NextResponse.json(
-        { error: "Too many requests. Please try again later." },
+        { error: 'Too many requests. Please try again later.' },
         {
           status: 429,
           headers: {
-            "Retry-After": String(rateLimitResult.retryAfterSeconds),
+            'Retry-After': String(rateLimitResult.retryAfterSeconds),
           },
         },
       );
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "An account with this email already exists. Please sign in with your existing account.",
+            'An account with this email already exists. Please sign in with your existing account.',
         },
         { status: 409 },
       );
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
         await tx.insert(schema.users).values({
           id: userId,
           email,
-          name: name || email.split("@")[0],
+          name: name || email.split('@')[0],
           emailVerified: emailVerificationEnabled ? null : new Date(),
         });
 
@@ -119,12 +119,12 @@ export async function POST(request: NextRequest) {
       // PostgreSQL unique constraint violation code is '23505'
       if (
         insertError &&
-        typeof insertError === "object" &&
-        "code" in insertError &&
-        insertError.code === "23505"
+        typeof insertError === 'object' &&
+        'code' in insertError &&
+        insertError.code === '23505'
       ) {
         return NextResponse.json(
-          { error: "An account with this email already exists" },
+          { error: 'An account with this email already exists' },
           { status: 409 },
         );
       }
@@ -133,21 +133,21 @@ export async function POST(request: NextRequest) {
 
     // Send verification email if enabled
     if (emailVerificationEnabled && verificationToken) {
-      const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
       let emailSent = false;
       try {
         await sendVerificationEmail(email, verificationToken, baseUrl);
         emailSent = true;
       } catch (emailError) {
-        console.error("Failed to send verification email:", emailError);
+        console.error('Failed to send verification email:', emailError);
         // User is created, they can use resend functionality
       }
 
       return NextResponse.json(
         {
           message: emailSent
-            ? "Account created. Please check your email to verify your account."
-            : "Account created. Please request a new verification email.",
+            ? 'Account created. Please check your email to verify your account.'
+            : 'Account created. Please request a new verification email.',
           requiresVerification: true,
           emailSent,
         },
@@ -158,13 +158,13 @@ export async function POST(request: NextRequest) {
     // Email verification disabled - user can log in immediately
     return NextResponse.json(
       {
-        message: "Account created. You can now log in.",
+        message: 'Account created. You can now log in.',
         requiresVerification: false,
       },
       { status: 201 },
     );
   } catch (error) {
-    console.error("Registration error:", error);
-    return NextResponse.json({ error: "An error occurred during registration" }, { status: 500 });
+    console.error('Registration error:', error);
+    return NextResponse.json({ error: 'An error occurred during registration' }, { status: 500 });
   }
 }

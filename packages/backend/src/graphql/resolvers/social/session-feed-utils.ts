@@ -1,5 +1,5 @@
-import type { SessionGradeDistributionItem } from "@boardsesh/shared-schema";
-import { getGradeLabel } from "@boardsesh/db/queries";
+import type { SessionGradeDistributionItem } from '@boardsesh/shared-schema';
+import { getGradeLabel } from '@boardsesh/db/queries';
 
 /**
  * Compute session aggregate stats from tick rows.
@@ -13,13 +13,13 @@ export function computeSessionAggregates(
   let totalFlashes = 0;
   let totalAttempts = 0;
   for (const row of tickRows) {
-    if (row.tick.status === "flash") {
+    if (row.tick.status === 'flash') {
       totalFlashes++;
       totalSends++;
-    } else if (row.tick.status === "send") {
+    } else if (row.tick.status === 'send') {
       totalSends++;
       totalAttempts += Math.max(row.tick.attemptCount - 1, 0);
-    } else if (row.tick.status === "attempt") {
+    } else if (row.tick.status === 'attempt') {
       totalAttempts += row.tick.attemptCount;
     }
   }
@@ -59,11 +59,11 @@ export function buildGradeDistributionFromTicks(
       attempt: 0,
     };
 
-    if (row.tick.status === "flash") existing.flash++;
-    else if (row.tick.status === "send") {
+    if (row.tick.status === 'flash') existing.flash++;
+    else if (row.tick.status === 'send') {
       existing.send++;
       existing.attempt += Math.max(row.tick.attemptCount - 1, 0);
-    } else if (row.tick.status === "attempt") existing.attempt += row.tick.attemptCount;
+    } else if (row.tick.status === 'attempt') existing.attempt += row.tick.attemptCount;
 
     gradeMap.set(key, existing);
   }

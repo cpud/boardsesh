@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import React, { useCallback, useMemo } from "react";
-import { useSnackbar } from "@/app/components/providers/snackbar-provider";
-import { useEntityMutation } from "@/app/hooks/use-entity-mutation";
+import React, { useCallback, useMemo } from 'react';
+import { useSnackbar } from '@/app/components/providers/snackbar-provider';
+import { useEntityMutation } from '@/app/hooks/use-entity-mutation';
 import {
   UPDATE_BOARD,
   type UpdateBoardMutationVariables,
   type UpdateBoardMutationResponse,
-} from "@/app/lib/graphql/operations";
-import type { UserBoard } from "@boardsesh/shared-schema";
-import type { BoardName } from "@/app/lib/types";
-import { ANGLES } from "@/app/lib/board-data";
-import { getBoardSelectorOptions } from "@/app/lib/board-constants";
-import BoardForm from "./board-form";
+} from '@/app/lib/graphql/operations';
+import type { UserBoard } from '@boardsesh/shared-schema';
+import type { BoardName } from '@/app/lib/types';
+import { ANGLES } from '@/app/lib/board-data';
+import { getBoardSelectorOptions } from '@/app/lib/board-constants';
+import BoardForm from './board-form';
 
 interface EditBoardFormProps {
   board: UserBoard;
@@ -34,8 +34,8 @@ export default function EditBoardForm({
   const { execute } = useEntityMutation<UpdateBoardMutationResponse, UpdateBoardMutationVariables>(
     UPDATE_BOARD,
     {
-      successMessage: "Board updated!",
-      errorMessage: "Failed to update board",
+      successMessage: 'Board updated!',
+      errorMessage: 'Failed to update board',
     },
   );
 
@@ -68,7 +68,7 @@ export default function EditBoardForm({
       serialNumber?: string;
     }) => {
       if (!values.name) {
-        showMessage("Board name is required", "error");
+        showMessage('Board name is required', 'error');
         return;
       }
 
@@ -112,8 +112,8 @@ export default function EditBoardForm({
       initialValues={{
         name: board.name,
         slug: board.slug,
-        description: board.description ?? "",
-        locationName: board.locationName ?? "",
+        description: board.description ?? '',
+        locationName: board.locationName ?? '',
         latitude: board.latitude ?? null,
         longitude: board.longitude ?? null,
         isPublic: board.isPublic,
@@ -125,7 +125,7 @@ export default function EditBoardForm({
         layoutId: board.layoutId,
         sizeId: board.sizeId,
         setIds: board.setIds,
-        serialNumber: board.serialNumber ?? "",
+        serialNumber: board.serialNumber ?? '',
       }}
       showSlugField
       availableAngles={availableAngles}

@@ -1,6 +1,6 @@
-import type Redis from "ioredis";
-import { KEYS, TTL, validateSessionId } from "./constants";
-import { LEADER_ELECTION_SCRIPT } from "./lua-scripts";
+import type Redis from 'ioredis';
+import { KEYS, TTL, validateSessionId } from './constants';
+import { LEADER_ELECTION_SCRIPT } from './lua-scripts';
 
 /**
  * Attempt to elect a connection as leader for a session.

@@ -11,7 +11,7 @@
   color: var(--neutral-900);
 }
 
-:global(html[data-theme="dark"]) .reconnectRow {
+:global(html[data-theme='dark']) .reconnectRow {
   color: var(--neutral-100);
 }
 
@@ -61,7 +61,7 @@
 }
 
 /* Dark mode frosted glass effect */
-:global(html[data-theme="dark"]) .card {
+:global(html[data-theme='dark']) .card {
   background-color: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -69,7 +69,7 @@
 }
 
 @media (min-width: 768px) {
-  :global(html[data-theme="dark"]) .card {
+  :global(html[data-theme='dark']) .card {
     box-shadow:
       0 10px 15px -3px rgba(0, 0, 0, 0.4),
       0 4px 6px -4px rgba(0, 0, 0, 0.4);
@@ -77,18 +77,18 @@
 }
 
 @media (max-width: 767px) {
-  :global(html[data-theme="dark"]) .card {
+  :global(html[data-theme='dark']) .card {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
 }
 
-:global(html[data-theme="dark"]) .shellThumbnail,
-:global(html[data-theme="dark"]) .shellControl,
-:global(html[data-theme="dark"]) .shellControlWide {
+:global(html[data-theme='dark']) .shellThumbnail,
+:global(html[data-theme='dark']) .shellControl,
+:global(html[data-theme='dark']) .shellControlWide {
   background: rgba(255, 255, 255, 0.12);
 }
 
-:global(html[data-theme="dark"]) .shellTitle {
+:global(html[data-theme='dark']) .shellTitle {
   color: var(--neutral-100);
 }
 
@@ -138,7 +138,7 @@
   text-overflow: ellipsis;
 }
 
-:global(html[data-theme="dark"]) .offlineBanner {
+:global(html[data-theme='dark']) .offlineBanner {
   background-color: rgba(0, 0, 0, 0.8);
   color: var(--neutral-400);
 }
@@ -165,18 +165,18 @@
   filter: brightness(0.9);
 }
 
-:global(html[data-theme="dark"]) .sessionHeader {
+:global(html[data-theme='dark']) .sessionHeader {
   border-bottom-color: rgba(0, 0, 0, 0.3);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
 }
 
 @media (hover: hover) {
-  :global(html[data-theme="dark"]) .sessionHeader:hover {
+  :global(html[data-theme='dark']) .sessionHeader:hover {
     filter: brightness(1.1);
   }
 }
 
-:global(html[data-theme="dark"]) .sessionHeader:active {
+:global(html[data-theme='dark']) .sessionHeader:active {
   filter: brightness(1.15);
 }
 
@@ -219,7 +219,7 @@
   pointer-events: none;
 }
 
-:global(html[data-theme="dark"]) .participantBarExpanded {
+:global(html[data-theme='dark']) .participantBarExpanded {
   border-bottom-color: rgba(0, 0, 0, 0.3);
 }
 
@@ -425,7 +425,7 @@
   z-index: 1;
 }
 
-:global(html[data-theme="dark"]) .tickDragHandleBar {
+:global(html[data-theme='dark']) .tickDragHandleBar {
   background-color: var(--neutral-500, #6b7280);
 }
 

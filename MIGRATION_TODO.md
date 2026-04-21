@@ -71,7 +71,7 @@ The user provided starter code snippets in the initial request. Key patterns to 
 
 ```typescript
 // graphql-client.ts pattern
-import { createClient, Client } from "graphql-ws";
+import { createClient, Client } from 'graphql-ws';
 
 export function getGraphQLClient(sessionId: string, userId: string) {
   return createClient({

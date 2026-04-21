@@ -4,12 +4,12 @@ on:
   push:
     branches: [main, develop]
     paths:
-      - "packages/moonboard-ocr/**"
-      - ".github/workflows/moonboard-ocr-tests.yml"
+      - 'packages/moonboard-ocr/**'
+      - '.github/workflows/moonboard-ocr-tests.yml'
   pull_request:
     paths:
-      - "packages/moonboard-ocr/**"
-      - ".github/workflows/moonboard-ocr-tests.yml"
+      - 'packages/moonboard-ocr/**'
+      - '.github/workflows/moonboard-ocr-tests.yml'
 
 jobs:
   test:
@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '22'
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2

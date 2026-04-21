@@ -1,18 +1,18 @@
-import { eq, and, desc, sql, count as drizzleCount, isNull, inArray } from "drizzle-orm";
-import { db } from "../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { getGradeLabel } from "@boardsesh/db/queries";
-import { validateInput } from "../shared/helpers";
-import { ActivityFeedInputSchema } from "../../../validation/schemas";
-import { encodeOffsetCursor, decodeOffsetCursor } from "../../../utils/feed-cursor";
+import { eq, and, desc, sql, count as drizzleCount, isNull, inArray } from 'drizzle-orm';
+import { db } from '../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { getGradeLabel } from '@boardsesh/db/queries';
+import { validateInput } from '../shared/helpers';
+import { ActivityFeedInputSchema } from '../../../validation/schemas';
+import { encodeOffsetCursor, decodeOffsetCursor } from '../../../utils/feed-cursor';
 import type {
   SessionFeedItem,
   SessionDetail,
   SessionGradeDistributionItem,
   SessionFeedParticipant,
   SessionDetailTick,
-} from "@boardsesh/shared-schema";
-import { buildGradeDistributionFromTicks, computeSessionAggregates } from "./session-feed-utils";
+} from '@boardsesh/shared-schema';
+import { buildGradeDistributionFromTicks, computeSessionAggregates } from './session-feed-utils';
 
 type SessionFeedFilterOptions = {
   boardTypeFilter: string | null;
@@ -27,7 +27,7 @@ export const sessionFeedQueries = {
    * Always chronological (newest first). Uses offset pagination.
    */
   sessionGroupedFeed: async (_: unknown, { input }: { input?: Record<string, unknown> }) => {
-    const validatedInput = validateInput(ActivityFeedInputSchema, input || {}, "input");
+    const validatedInput = validateInput(ActivityFeedInputSchema, input || {}, 'input');
     const limit = validatedInput.limit ?? 20;
     const userId = validatedInput.userId || null;
 
@@ -151,7 +151,7 @@ export const sessionFeedQueries = {
         LIMIT ${limit + 1}
       `);
     } catch (err) {
-      console.error("[sessionGroupedFeed] SQL error:", err);
+      console.error('[sessionGroupedFeed] SQL error:', err);
       throw err;
     }
 
@@ -202,7 +202,7 @@ export const sessionFeedQueries = {
 
       return {
         sessionId: row.session_id,
-        sessionType: row.session_type as "party" | "inferred",
+        sessionType: row.session_type as 'party' | 'inferred',
         sessionName: sessionMeta?.name || null,
         ownerUserId: sessionMeta?.ownerUserId || null,
         participants,
@@ -214,11 +214,11 @@ export const sessionFeedQueries = {
         boardTypes,
         hardestGrade: gradeDistribution.length > 0 ? gradeDistribution[0].grade : null,
         firstTickAt:
-          typeof row.session_first_tick === "object"
+          typeof row.session_first_tick === 'object'
             ? (row.session_first_tick as unknown as Date).toISOString()
             : String(row.session_first_tick),
         lastTickAt:
-          typeof row.session_last_tick === "object"
+          typeof row.session_last_tick === 'object'
             ? (row.session_last_tick as unknown as Date).toISOString()
             : String(row.session_last_tick),
         durationMinutes,
@@ -321,7 +321,7 @@ export const sessionFeedQueries = {
             .from(dbSchema.voteCounts)
             .where(
               and(
-                eq(dbSchema.voteCounts.entityType, "tick"),
+                eq(dbSchema.voteCounts.entityType, 'tick'),
                 inArray(dbSchema.voteCounts.entityId, tickUuids),
               ),
             )
@@ -468,7 +468,7 @@ export const sessionFeedQueries = {
 
     const participants = await fetchParticipants(
       sessionId,
-      isParty ? "party" : "inferred",
+      isParty ? 'party' : 'inferred',
       userIds,
     );
     const gradeDistribution = buildGradeDistributionFromTicks(tickRows);
@@ -493,7 +493,7 @@ export const sessionFeedQueries = {
           r.difficultyName || (effDiff != null ? getGradeLabel(effDiff) : null) || null;
         return { ...r, effDiff, effName };
       })
-      .filter((r) => r.effName && (r.tick.status === "flash" || r.tick.status === "send"))
+      .filter((r) => r.effName && (r.tick.status === 'flash' || r.tick.status === 'send'))
       .sort((a, b) => (b.effDiff ?? 0) - (a.effDiff ?? 0));
     const hardestGrade = gradesSorted.length > 0 ? gradesSorted[0].effName : null;
 
@@ -533,7 +533,7 @@ export const sessionFeedQueries = {
 
     return {
       sessionId,
-      sessionType: isParty ? "party" : "inferred",
+      sessionType: isParty ? 'party' : 'inferred',
       sessionName,
       ownerUserId,
       participants,
@@ -566,7 +566,7 @@ export const sessionFeedQueries = {
  * - Inferred: filter by inferred_session_id
  */
 function tickSessionFilter(sessionId: string, sessionType: string) {
-  return sessionType === "party"
+  return sessionType === 'party'
     ? sql`t.session_id = ${sessionId}`
     : sql`t.inferred_session_id = ${sessionId}`;
 }
@@ -779,8 +779,8 @@ async function fetchSessionMetaBatch(
 ): Promise<Map<string, { name: string | null; goal: string | null; ownerUserId: string | null }>> {
   if (sessionIds.length === 0) return new Map();
 
-  const partyIds = sessionIds.filter((id) => sessionTypes.get(id) === "party");
-  const inferredIds = sessionIds.filter((id) => sessionTypes.get(id) === "inferred");
+  const partyIds = sessionIds.filter((id) => sessionTypes.get(id) === 'party');
+  const inferredIds = sessionIds.filter((id) => sessionTypes.get(id) === 'inferred');
 
   const map = new Map<
     string,

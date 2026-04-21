@@ -84,7 +84,7 @@
   background-color: var(--neutral-300, #d1d5db);
 }
 
-:global(html[data-theme="dark"]) .expandDragBarPill {
+:global(html[data-theme='dark']) .expandDragBarPill {
   background-color: var(--neutral-500, #6b7280);
 }
 

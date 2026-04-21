@@ -1,20 +1,20 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and } from 'drizzle-orm';
 import type {
   ConnectionContext,
   UserProfile,
   AuroraCredentialStatus,
   DeleteAccountInput,
-} from "@boardsesh/shared-schema";
-import { db } from "../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { requireAuthenticated, validateInput } from "../shared/helpers";
+} from '@boardsesh/shared-schema';
+import { db } from '../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { requireAuthenticated, validateInput } from '../shared/helpers';
 import {
   UpdateProfileInputSchema,
   SaveAuroraCredentialInputSchema,
   BoardNameSchema,
   DeleteAccountInputSchema,
-} from "../../../validation/schemas";
-import { encrypt } from "@boardsesh/crypto";
+} from '../../../validation/schemas';
+import { encrypt } from '@boardsesh/crypto';
 
 export const userMutations = {
   /**
@@ -26,7 +26,7 @@ export const userMutations = {
     ctx: ConnectionContext,
   ): Promise<UserProfile> => {
     requireAuthenticated(ctx);
-    validateInput(UpdateProfileInputSchema, input, "input");
+    validateInput(UpdateProfileInputSchema, input, 'input');
 
     const userId = ctx.userId!;
 
@@ -90,7 +90,7 @@ export const userMutations = {
     requireAuthenticated(ctx);
 
     // Validate input
-    validateInput(SaveAuroraCredentialInputSchema, input, "input");
+    validateInput(SaveAuroraCredentialInputSchema, input, 'input');
 
     const userId = ctx.userId!;
 
@@ -148,7 +148,7 @@ export const userMutations = {
     ctx: ConnectionContext,
   ): Promise<boolean> => {
     requireAuthenticated(ctx);
-    validateInput(BoardNameSchema, boardType, "boardType");
+    validateInput(BoardNameSchema, boardType, 'boardType');
 
     await db
       .delete(dbSchema.auroraCredentials)
@@ -174,7 +174,7 @@ export const userMutations = {
     ctx: ConnectionContext,
   ): Promise<boolean> => {
     requireAuthenticated(ctx);
-    validateInput(DeleteAccountInputSchema, input, "input");
+    validateInput(DeleteAccountInputSchema, input, 'input');
 
     const userId = ctx.userId!;
 

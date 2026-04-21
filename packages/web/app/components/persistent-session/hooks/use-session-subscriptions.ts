@@ -1,13 +1,13 @@
-import { useCallback, useEffect, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useEffect, type Dispatch, type SetStateAction } from 'react';
 import type {
   SubscriptionQueueEvent,
   SessionEvent,
   SessionLiveStats,
-} from "@boardsesh/shared-schema";
-import { computeQueueStateHash } from "@/app/utils/hash";
-import type { ClimbQueueItem as LocalClimbQueueItem } from "../../queue-control/types";
-import type { Session, ActiveSessionInfo, SharedRefs } from "../types";
-import { CORRUPTION_RESYNC_COOLDOWN_MS, DEBUG } from "../types";
+} from '@boardsesh/shared-schema';
+import { computeQueueStateHash } from '@/app/utils/hash';
+import type { ClimbQueueItem as LocalClimbQueueItem } from '../../queue-control/types';
+import type { Session, ActiveSessionInfo, SharedRefs } from '../types';
+import { CORRUPTION_RESYNC_COOLDOWN_MS, DEBUG } from '../types';
 
 interface UseSessionSubscriptionsArgs {
   session: Session | null;
@@ -20,11 +20,11 @@ interface UseSessionSubscriptionsArgs {
   setLiveSessionStats: Dispatch<SetStateAction<SessionLiveStats | null>>;
   refs: Pick<
     SharedRefs,
-    | "triggerResyncRef"
-    | "lastCorruptionResyncRef"
-    | "isFilteringCorruptedItemsRef"
-    | "queueEventSubscribersRef"
-    | "sessionEventSubscribersRef"
+    | 'triggerResyncRef'
+    | 'lastCorruptionResyncRef'
+    | 'isFilteringCorruptedItemsRef'
+    | 'queueEventSubscribersRef'
+    | 'sessionEventSubscribersRef'
   >;
 }
 
@@ -81,7 +81,7 @@ export function useSessionSubscriptions({
       }
 
       console.error(
-        "[PersistentSession] Detected null/undefined items in queue, triggering resync",
+        '[PersistentSession] Detected null/undefined items in queue, triggering resync',
       );
       lastCorruptionResyncRef.current = now;
       if (triggerResyncRef.current) {
@@ -111,15 +111,15 @@ export function useSessionSubscriptions({
 
       if (localHash !== lastReceivedStateHash) {
         console.warn(
-          "[PersistentSession] State hash mismatch detected!",
+          '[PersistentSession] State hash mismatch detected!',
           `Local: ${localHash}, Server: ${lastReceivedStateHash}`,
-          "Triggering automatic resync...",
+          'Triggering automatic resync...',
         );
         if (triggerResyncRef.current) {
           triggerResyncRef.current();
         }
       } else {
-        if (DEBUG) console.log("[PersistentSession] State hash verification passed");
+        if (DEBUG) console.log('[PersistentSession] State hash verification passed');
       }
     }, 60000);
 
@@ -136,7 +136,7 @@ export function useSessionSubscriptions({
 
     if (!isCurrentInQueue) {
       console.warn(
-        "[PersistentSession] Current climb not found in queue - state inconsistency detected. Triggering resync.",
+        '[PersistentSession] Current climb not found in queue - state inconsistency detected. Triggering resync.',
       );
       if (triggerResyncRef.current) {
         triggerResyncRef.current();
@@ -176,7 +176,7 @@ export function useSessionSubscriptions({
   // Trigger a resync with the server
   const triggerResync = useCallback(() => {
     if (triggerResyncRef.current) {
-      console.log("[PersistentSession] Manual resync triggered");
+      console.log('[PersistentSession] Manual resync triggered');
       triggerResyncRef.current();
     }
   }, [triggerResyncRef]);

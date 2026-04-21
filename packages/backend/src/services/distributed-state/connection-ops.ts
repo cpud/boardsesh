@@ -1,4 +1,4 @@
-import type Redis from "ioredis";
+import type Redis from 'ioredis';
 import {
   KEYS,
   TTL,
@@ -6,8 +6,8 @@ import {
   connectionToHash,
   hashToConnection,
   type DistributedConnection,
-} from "./constants";
-import { ELECT_NEW_LEADER_SCRIPT } from "./lua-scripts";
+} from './constants';
+import { ELECT_NEW_LEADER_SCRIPT } from './lua-scripts';
 
 /**
  * Register a new connection in distributed state.
@@ -163,7 +163,7 @@ async function electLeaderFallback(
       // Get connection data to find earliest connected
       const pipeline = redis.pipeline();
       for (const candidateId of candidates) {
-        pipeline.hget(KEYS.connection(candidateId), "connectedAt");
+        pipeline.hget(KEYS.connection(candidateId), 'connectedAt');
       }
       const results = await pipeline.exec();
 
@@ -186,8 +186,8 @@ async function electLeaderFallback(
 
       // Fall back to first candidate if no valid timestamps
       const chosenLeader = earliestCandidate || candidates[0];
-      await redis.set(KEYS.sessionLeader(sessionId), chosenLeader, "EX", TTL.sessionMembership);
-      await redis.hset(KEYS.connection(chosenLeader), "isLeader", "true");
+      await redis.set(KEYS.sessionLeader(sessionId), chosenLeader, 'EX', TTL.sessionMembership);
+      await redis.hset(KEYS.connection(chosenLeader), 'isLeader', 'true');
       console.log(
         `[DistributedState] Fallback elected leader: ${chosenLeader.slice(0, 8)} after removing ${connectionId.slice(0, 8)}`,
       );
@@ -220,7 +220,7 @@ export async function updateUsername(
   validateConnectionId(connectionId);
   const updates: Record<string, string> = { username };
   if (avatarUrl !== undefined) {
-    updates.avatarUrl = avatarUrl || "";
+    updates.avatarUrl = avatarUrl || '';
   }
   await redis.hmset(KEYS.connection(connectionId), updates);
 }

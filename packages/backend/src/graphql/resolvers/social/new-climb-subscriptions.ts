@@ -1,18 +1,18 @@
-import { and, eq, desc, sql } from "drizzle-orm";
+import { and, eq, desc, sql } from 'drizzle-orm';
 import type {
   ConnectionContext,
   NewClimbFeedInput,
   NewClimbFeedResult,
   NewClimbSubscription,
   NewClimbSubscriptionInput,
-} from "@boardsesh/shared-schema";
-import { db } from "../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { requireAuthenticated, applyRateLimit, validateInput } from "../shared/helpers";
+} from '@boardsesh/shared-schema';
+import { db } from '../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { requireAuthenticated, applyRateLimit, validateInput } from '../shared/helpers';
 import {
   NewClimbFeedInputSchema,
   NewClimbSubscriptionInputSchema,
-} from "../../../validation/schemas";
+} from '../../../validation/schemas';
 
 export const newClimbSubscriptionResolvers = {
   Query: {
@@ -24,7 +24,7 @@ export const newClimbSubscriptionResolvers = {
       _: unknown,
       { input }: { input: NewClimbFeedInput },
     ): Promise<NewClimbFeedResult> => {
-      const validated = validateInput(NewClimbFeedInputSchema, input, "input");
+      const validated = validateInput(NewClimbFeedInputSchema, input, 'input');
       const limit = validated.limit ?? 20;
       const offset = validated.offset ?? 0;
 
@@ -89,7 +89,7 @@ export const newClimbSubscriptionResolvers = {
       const totalCount = Number(total) || 0;
       const items = climbs.map((c) => ({
         uuid: c.uuid,
-        name: c.name ?? "",
+        name: c.name ?? '',
         boardType: c.boardType,
         layoutId: c.layoutId,
         setterDisplayName: c.setterDisplayName ?? null,
@@ -138,7 +138,7 @@ export const newClimbSubscriptionResolvers = {
     ): Promise<boolean> => {
       requireAuthenticated(ctx);
       await applyRateLimit(ctx, 20);
-      const validated = validateInput(NewClimbSubscriptionInputSchema, input, "input");
+      const validated = validateInput(NewClimbSubscriptionInputSchema, input, 'input');
 
       await db
         .insert(dbSchema.newClimbSubscriptions)
@@ -159,7 +159,7 @@ export const newClimbSubscriptionResolvers = {
     ): Promise<boolean> => {
       requireAuthenticated(ctx);
       await applyRateLimit(ctx, 20);
-      const validated = validateInput(NewClimbSubscriptionInputSchema, input, "input");
+      const validated = validateInput(NewClimbSubscriptionInputSchema, input, 'input');
 
       await db
         .delete(dbSchema.newClimbSubscriptions)

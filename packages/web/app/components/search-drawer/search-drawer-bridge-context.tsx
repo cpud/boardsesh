@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, {
   createContext,
@@ -9,10 +9,10 @@ import React, {
   useRef,
   useLayoutEffect,
   useEffect,
-} from "react";
+} from 'react';
 
 // useLayoutEffect emits SSR warnings in Next.js; fall back to useEffect on the server.
-const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 // -------------------------------------------------------------------
 // State context (consumed by GlobalHeader)
@@ -37,7 +37,7 @@ const SearchDrawerBridgeContext = createContext<SearchDrawerBridgeState>({
   openClimbSearchDrawer: null,
   searchPillSummary: null,
   hasActiveFilters: false,
-  nameFilter: "",
+  nameFilter: '',
   setNameFilter: null,
   hasActiveNonNameFilters: false,
 });
@@ -77,7 +77,7 @@ export function SearchDrawerBridgeProvider({ children }: { children: React.React
   const [isRegistered, setIsRegistered] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);
   const [active, setActive] = useState(false);
-  const [nameFilter, setNameFilterState] = useState("");
+  const [nameFilter, setNameFilterState] = useState('');
   const [nonNameActive, setNonNameActive] = useState(false);
   const openDrawerRef = useRef<(() => void) | null>(null);
   const setNameFilterRef = useRef<((name: string) => void) | null>(null);
@@ -115,7 +115,7 @@ export function SearchDrawerBridgeProvider({ children }: { children: React.React
     setIsRegistered(false);
     setSummary(null);
     setActive(false);
-    setNameFilterState("");
+    setNameFilterState('');
     setNonNameActive(false);
   }, []);
 

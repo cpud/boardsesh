@@ -1,15 +1,15 @@
-import "server-only";
+import 'server-only';
 
-import { cache } from "react";
-import { sql as drizzleSql } from "drizzle-orm";
-import { buildBoardRenderUrl } from "@/app/components/board-renderer/util";
-import { boardToRouteParams, resolveBoardBySlug } from "@/app/lib/board-slug-utils";
-import { getBoardDetailsForBoard } from "@/app/lib/board-utils";
-import { dbz, sql as rawSql } from "@/app/lib/db/db";
-import { formatBoardDisplayName } from "@/app/lib/string-utils";
-import type { BoardDetails, BoardName, ParsedBoardRouteParameters } from "@/app/lib/types";
-import { parseBoardRouteParamsWithSlugs } from "@/app/lib/url-utils.server";
-import { buildOgVersionToken } from "./og";
+import { cache } from 'react';
+import { sql as drizzleSql } from 'drizzle-orm';
+import { buildBoardRenderUrl } from '@/app/components/board-renderer/util';
+import { boardToRouteParams, resolveBoardBySlug } from '@/app/lib/board-slug-utils';
+import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
+import { dbz, sql as rawSql } from '@/app/lib/db/db';
+import { formatBoardDisplayName } from '@/app/lib/string-utils';
+import type { BoardDetails, BoardName, ParsedBoardRouteParameters } from '@/app/lib/types';
+import { parseBoardRouteParamsWithSlugs } from '@/app/lib/url-utils.server';
+import { buildOgVersionToken } from './og';
 
 export type ProfileOgSummary = {
   displayName: string;
@@ -49,7 +49,7 @@ export const getProfileOgSummary = cache(
     }
 
     return {
-      displayName: row.display_name || row.name || "Crusher",
+      displayName: row.display_name || row.name || 'Crusher',
       avatarUrl: row.avatar_url || null,
       fallbackImageUrl: row.image || null,
       version: buildOgVersionToken(row.version_at),
@@ -126,7 +126,7 @@ export type SessionOgGradeRow = {
 };
 
 export type SessionOgSummary = {
-  sessionType: "party" | "inferred" | null;
+  sessionType: 'party' | 'inferred' | null;
   sessionName: string;
   leaderName: string | null;
   participantNames: string[];
@@ -163,8 +163,8 @@ function extractPathname(value: string): string {
 }
 
 function parseSetIdString(value: string | null): number[] {
-  return (value ?? "")
-    .split(",")
+  return (value ?? '')
+    .split(',')
     .map((part) => Number(part.trim()))
     .filter((part) => !Number.isNaN(part));
 }
@@ -174,7 +174,7 @@ function formatBoardLabel(boardDetails: BoardDetails): string {
 
   if (boardDetails.layout_name) {
     const layoutName = boardDetails.layout_name
-      .replace(new RegExp(`^${boardDetails.board_name}\\s*(board)?\\s*`, "i"), "")
+      .replace(new RegExp(`^${boardDetails.board_name}\\s*(board)?\\s*`, 'i'), '')
       .trim();
 
     if (layoutName) {
@@ -193,7 +193,7 @@ function formatBoardLabel(boardDetails: BoardDetails): string {
     parts.push(boardDetails.size_description);
   }
 
-  return parts.join(" ");
+  return parts.join(' ');
 }
 
 async function resolveSessionBoardInfo(seed: SessionBoardSeed): Promise<{
@@ -225,9 +225,9 @@ async function resolveSessionBoardInfo(seed: SessionBoardSeed): Promise<{
 
     const pathname = extractPathname(rawBoardPath);
 
-    if (!parsedParams && pathname.startsWith("/b/")) {
-      const parts = pathname.split("/").filter(Boolean);
-      const boardSlug = seed.boardSlug?.trim() || parts[1] || "";
+    if (!parsedParams && pathname.startsWith('/b/')) {
+      const parts = pathname.split('/').filter(Boolean);
+      const boardSlug = seed.boardSlug?.trim() || parts[1] || '';
       const pathAngle = parts[2] ? Number(parts[2]) : Number.NaN;
 
       if (!Number.isNaN(pathAngle)) {
@@ -246,7 +246,7 @@ async function resolveSessionBoardInfo(seed: SessionBoardSeed): Promise<{
     }
 
     if (!parsedParams) {
-      const parts = pathname.split("/").filter(Boolean);
+      const parts = pathname.split('/').filter(Boolean);
       if (parts.length >= 4) {
         const maybeAngle = parts[4] ? Number(parts[4]) : Number.NaN;
         if (!Number.isNaN(maybeAngle)) {
@@ -271,10 +271,10 @@ async function resolveSessionBoardInfo(seed: SessionBoardSeed): Promise<{
     return {
       boardLabel: formatBoardLabel(boardDetails),
       boardAngle: boardAngle != null && !Number.isNaN(boardAngle) ? boardAngle : null,
-      boardPreviewPath: buildBoardRenderUrl(boardDetails, "", {
+      boardPreviewPath: buildBoardRenderUrl(boardDetails, '', {
         thumbnail: true,
         includeBackground: true,
-        format: "png",
+        format: 'png',
       }),
     };
   } catch {
@@ -283,7 +283,7 @@ async function resolveSessionBoardInfo(seed: SessionBoardSeed): Promise<{
 }
 
 export const getSessionOgSummary = cache(async (sessionId: string): Promise<SessionOgSummary> => {
-  let sessionType: "party" | "inferred" | null = null;
+  let sessionType: 'party' | 'inferred' | null = null;
   let sessionRow:
     | {
         name: string | null;
@@ -348,7 +348,7 @@ export const getSessionOgSummary = cache(async (sessionId: string): Promise<Sess
   `);
 
   if (partySessionResult.rows[0]) {
-    sessionType = "party";
+    sessionType = 'party';
     sessionRow = partySessionResult.rows[0];
   } else {
     const inferredSessionResult = await dbz.execute<{
@@ -389,7 +389,7 @@ export const getSessionOgSummary = cache(async (sessionId: string): Promise<Sess
     `);
 
     if (inferredSessionResult.rows[0]) {
-      sessionType = "inferred";
+      sessionType = 'inferred';
       sessionRow = inferredSessionResult.rows[0];
     }
   }
@@ -397,7 +397,7 @@ export const getSessionOgSummary = cache(async (sessionId: string): Promise<Sess
   if (!sessionType || !sessionRow) {
     return {
       sessionType: null,
-      sessionName: "Climbing Session",
+      sessionName: 'Climbing Session',
       leaderName: null,
       participantNames: [],
       participantCount: 0,
@@ -412,7 +412,7 @@ export const getSessionOgSummary = cache(async (sessionId: string): Promise<Sess
   }
 
   const tickWhereClause =
-    sessionType === "party"
+    sessionType === 'party'
       ? drizzleSql`bt.session_id = ${sessionId}`
       : drizzleSql`bt.inferred_session_id = ${sessionId}`;
 
@@ -480,7 +480,7 @@ export const getSessionOgSummary = cache(async (sessionId: string): Promise<Sess
 
   return {
     sessionType,
-    sessionName: sessionRow.name || "Climbing Session",
+    sessionName: sessionRow.name || 'Climbing Session',
     leaderName: sessionRow.leader_name || null,
     participantNames: participantResult.rows.map((row) => row.display_name),
     participantCount: Number(participantCountResult.rows[0]?.participant_count || 0),
@@ -537,7 +537,7 @@ export const getPlaylistOgSummary = cache(
     }
 
     return {
-      name: row.name || "Playlist",
+      name: row.name || 'Playlist',
       description: row.description,
       color: row.color,
       icon: row.icon,

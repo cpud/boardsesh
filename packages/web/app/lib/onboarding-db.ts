@@ -1,6 +1,6 @@
-import { createIndexedDBStore } from "./idb-helper";
+import { createIndexedDBStore } from './idb-helper';
 
-const STORE_NAME = "onboarding";
+const STORE_NAME = 'onboarding';
 
 // Increment this when new steps are added to the onboarding tour.
 // This will cause the tour to show again for all users.
@@ -11,7 +11,7 @@ export interface OnboardingStatus {
   completedAt: string;
 }
 
-const getDB = createIndexedDBStore("boardsesh-onboarding", STORE_NAME);
+const getDB = createIndexedDBStore('boardsesh-onboarding', STORE_NAME);
 
 /**
  * Get the storage key for onboarding status.
@@ -19,7 +19,7 @@ const getDB = createIndexedDBStore("boardsesh-onboarding", STORE_NAME);
  * or a generic key for anonymous users.
  */
 const getStorageKey = (userId?: string | number | null): string => {
-  return userId ? `onboarding-${userId}` : "onboarding-anonymous";
+  return userId ? `onboarding-${userId}` : 'onboarding-anonymous';
 };
 
 /**
@@ -34,7 +34,7 @@ export const getOnboardingStatus = async (
     const key = getStorageKey(userId);
     return await db.get(STORE_NAME, key);
   } catch (error) {
-    console.error("Failed to get onboarding status:", error);
+    console.error('Failed to get onboarding status:', error);
     return null;
   }
 };
@@ -53,7 +53,7 @@ export const saveOnboardingStatus = async (userId?: string | number | null): Pro
     };
     await db.put(STORE_NAME, status, key);
   } catch (error) {
-    console.error("Failed to save onboarding status:", error);
+    console.error('Failed to save onboarding status:', error);
   }
 };
 

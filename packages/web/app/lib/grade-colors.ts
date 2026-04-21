@@ -5,8 +5,8 @@ import {
   getVGradeColor,
   getFontGradeColor,
   getGradeColor,
-} from "@boardsesh/board-constants/grade-colors";
-import { BOULDER_GRADES } from "./board-data";
+} from '@boardsesh/board-constants/grade-colors';
+import { BOULDER_GRADES } from './board-data';
 
 // Re-export grade color data and core lookups from the canonical source
 export {
@@ -60,10 +60,10 @@ export function formatVGrade(difficulty: string | null | undefined): string | nu
   if (!vGrade) return null;
 
   // Only add "+" when the Font grade has "+" AND the V-grade has multiple Font grades
-  const slashIndex = difficulty.indexOf("/");
+  const slashIndex = difficulty.indexOf('/');
   if (slashIndex > 0) {
     const fontPart = difficulty.substring(0, slashIndex);
-    if (fontPart.endsWith("+") && V_GRADES_WITH_MULTIPLE_FONT_GRADES.has(vGrade)) {
+    if (fontPart.endsWith('+') && V_GRADES_WITH_MULTIPLE_FONT_GRADES.has(vGrade)) {
       return `${vGrade}+`;
     }
   }
@@ -79,7 +79,7 @@ export function formatVGrade(difficulty: string | null | undefined): string | nu
 function extractFontGrade(difficulty: string | null | undefined): string | null {
   if (!difficulty) return null;
   // Try to extract from "6a/V3" format first
-  const slashIndex = difficulty.indexOf("/");
+  const slashIndex = difficulty.indexOf('/');
   if (slashIndex > 0) {
     return difficulty.substring(0, slashIndex).toUpperCase();
   }
@@ -97,7 +97,7 @@ export function formatFontGrade(difficulty: string | null | undefined): string |
   return extractFontGrade(difficulty);
 }
 
-export type GradeDisplayFormat = "v-grade" | "font";
+export type GradeDisplayFormat = 'v-grade' | 'font';
 
 /**
  * Format a difficulty string based on the specified format preference.
@@ -109,7 +109,7 @@ export function formatGrade(
   difficulty: string | null | undefined,
   format: GradeDisplayFormat,
 ): string | null {
-  if (format === "font") {
+  if (format === 'font') {
     return formatFontGrade(difficulty);
   }
   return formatVGrade(difficulty);
@@ -127,7 +127,7 @@ export function getSoftGradeColorByFormat(
   format: GradeDisplayFormat,
   darkMode?: boolean,
 ): string | undefined {
-  if (format === "font") {
+  if (format === 'font') {
     const fontGrade = extractFontGrade(difficulty);
     return getSoftFontGradeColor(fontGrade, darkMode);
   }
@@ -142,10 +142,10 @@ export function getSoftGradeColorByFormat(
  * @returns RGBA color string
  */
 export function getGradeColorWithOpacity(color: string | undefined, opacity: number = 0.7): string {
-  if (!color) return "rgba(200, 200, 200, 0.7)";
+  if (!color) return 'rgba(200, 200, 200, 0.7)';
 
   // Convert hex to RGB
-  const hex = color.replace("#", "");
+  const hex = color.replace('#', '');
   const r = parseInt(hex.substring(0, 2), 16);
   const g = parseInt(hex.substring(2, 4), 16);
   const b = parseInt(hex.substring(4, 6), 16);
@@ -159,7 +159,7 @@ export function getGradeColorWithOpacity(color: string | undefined, opacity: num
  * @returns true if the color is light (should use dark text)
  */
 export function isLightColor(hexColor: string): boolean {
-  const hex = hexColor.replace("#", "");
+  const hex = hexColor.replace('#', '');
   const r = parseInt(hex.substring(0, 2), 16);
   const g = parseInt(hex.substring(2, 4), 16);
   const b = parseInt(hex.substring(4, 6), 16);
@@ -175,8 +175,8 @@ export function isLightColor(hexColor: string): boolean {
  * @returns 'black' or 'white'
  */
 export function getGradeTextColor(gradeColor: string | undefined): string {
-  if (!gradeColor) return "inherit";
-  return isLightColor(gradeColor) ? "#000000" : "#FFFFFF";
+  if (!gradeColor) return 'inherit';
+  return isLightColor(gradeColor) ? '#000000' : '#FFFFFF';
 }
 
 /**
@@ -184,7 +184,7 @@ export function getGradeTextColor(gradeColor: string | undefined): string {
  * @returns Object with h (0-360), s (0-1), l (0-1)
  */
 function hexToHSL(hex: string): { h: number; s: number; l: number } {
-  const clean = hex.replace("#", "");
+  const clean = hex.replace('#', '');
   const r = parseInt(clean.substring(0, 2), 16) / 255;
   const g = parseInt(clean.substring(2, 4), 16) / 255;
   const b = parseInt(clean.substring(4, 6), 16) / 255;
@@ -272,7 +272,7 @@ function hexToHue(hex: string): number {
  */
 export function getGradeTintColor(
   difficulty: string | null | undefined,
-  variant: "default" | "light" | "session" = "default",
+  variant: 'default' | 'light' | 'session' = 'default',
   darkMode?: boolean,
 ): string | undefined {
   const color = getGradeColor(difficulty);
@@ -281,19 +281,19 @@ export function getGradeTintColor(
   const hue = Math.round(hexToHue(color));
 
   if (darkMode) {
-    if (variant === "light") {
+    if (variant === 'light') {
       return `hsl(${hue}, 25%, 22%)`;
     }
-    if (variant === "session") {
+    if (variant === 'session') {
       return `hsla(${hue}, 40%, 14%, 0.85)`;
     }
     return `hsla(${hue}, 35%, 28%, 0.6)`;
   }
 
-  if (variant === "light") {
+  if (variant === 'light') {
     return `hsl(${hue}, 20%, 94%)`;
   }
-  if (variant === "session") {
+  if (variant === 'session') {
     return `hsl(${hue}, 35%, 82%)`;
   }
   return `hsl(${hue}, 30%, 88%)`;

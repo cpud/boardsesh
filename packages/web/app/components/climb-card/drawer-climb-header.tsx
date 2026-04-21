@@ -1,10 +1,10 @@
-import React from "react";
-import { usePathname } from "next/navigation";
-import { Climb, BoardDetails } from "@/app/lib/types";
-import { themeTokens } from "@/app/theme/theme-config";
-import ClimbThumbnail from "./climb-thumbnail";
-import ClimbTitle from "./climb-title";
-import styles from "./climb-list-item.module.css";
+import React from 'react';
+import { usePathname } from 'next/navigation';
+import { Climb, BoardDetails } from '@/app/lib/types';
+import { themeTokens } from '@/app/theme/theme-config';
+import ClimbThumbnail from './climb-thumbnail';
+import ClimbTitle from './climb-title';
+import styles from './climb-list-item.module.css';
 
 type DrawerClimbHeaderProps = {
   climb: Climb;

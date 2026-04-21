@@ -1,9 +1,9 @@
-import { eq, and, inArray, sql } from "drizzle-orm";
-import type { ConnectionContext } from "@boardsesh/shared-schema";
-import { db } from "../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { requireAuthenticated, validateInput } from "../shared/helpers";
-import { BoardNameSchema, FavoritesQueryClimbUuidsSchema } from "../../../validation/schemas";
+import { eq, and, inArray, sql } from 'drizzle-orm';
+import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { db } from '../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { requireAuthenticated, validateInput } from '../shared/helpers';
+import { BoardNameSchema, FavoritesQueryClimbUuidsSchema } from '../../../validation/schemas';
 
 export const favoriteQueries = {
   /**
@@ -19,8 +19,8 @@ export const favoriteQueries = {
       return [];
     }
 
-    validateInput(BoardNameSchema, boardName, "boardName");
-    validateInput(FavoritesQueryClimbUuidsSchema, climbUuids, "climbUuids");
+    validateInput(BoardNameSchema, boardName, 'boardName');
+    validateInput(FavoritesQueryClimbUuidsSchema, climbUuids, 'climbUuids');
 
     const favorites = await db
       .select({ climbUuid: dbSchema.userFavorites.climbUuid })

@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { ExternalUUIDSchema, BoardNameSchema } from "./primitives";
+import { z } from 'zod';
+import { ExternalUUIDSchema, BoardNameSchema } from './primitives';
 
 /**
  * Climb validation schema (simplified for input)
@@ -10,7 +10,7 @@ export const ClimbInputSchema = z.object({
     .string()
     .max(100)
     .nullish()
-    .transform((v) => v ?? ""),
+    .transform((v) => v ?? ''),
   // Boardsesh user ID of the climb owner. Nullable for Aurora-synced climbs
   // that pre-date Boardsesh accounts.
   userId: z.string().max(100).nullish(),
@@ -18,17 +18,17 @@ export const ClimbInputSchema = z.object({
     .string()
     .max(200)
     .nullish()
-    .transform((v) => v ?? ""),
+    .transform((v) => v ?? ''),
   description: z
     .string()
     .max(2000)
     .nullish()
-    .transform((v) => v ?? ""),
+    .transform((v) => v ?? ''),
   frames: z
     .string()
     .max(10000)
     .nullish()
-    .transform((v) => v ?? ""),
+    .transform((v) => v ?? ''),
   angle: z.number().min(0).max(90),
   ascensionist_count: z
     .number()
@@ -39,12 +39,12 @@ export const ClimbInputSchema = z.object({
     .string()
     .max(50)
     .nullish()
-    .transform((v) => v ?? ""),
+    .transform((v) => v ?? ''),
   quality_average: z
     .string()
     .max(20)
     .nullish()
-    .transform((v) => v ?? ""),
+    .transform((v) => v ?? ''),
   stars: z
     .number()
     .min(0)
@@ -55,7 +55,7 @@ export const ClimbInputSchema = z.object({
     .string()
     .max(50)
     .nullish()
-    .transform((v) => v ?? ""),
+    .transform((v) => v ?? ''),
   mirrored: z.boolean().nullish(),
   benchmark_difficulty: z.string().max(50).nullish(),
   // Whether this climb is still an unpublished draft. Round-trips through
@@ -81,7 +81,7 @@ export const QueueItemUserSchema = z.object({
  * ClimbQueueItem validation schema
  */
 export const ClimbQueueItemSchema = z.object({
-  uuid: z.string().uuid("Invalid UUID format"),
+  uuid: z.string().uuid('Invalid UUID format'),
   climb: ClimbInputSchema,
   addedBy: z.string().max(100).nullish(),
   addedByUser: QueueItemUserSchema.nullish(),
@@ -92,32 +92,32 @@ export const ClimbQueueItemSchema = z.object({
 /**
  * Queue array validation schema (with size limit)
  */
-export const QueueArraySchema = z.array(ClimbQueueItemSchema).max(500, "Queue too large");
+export const QueueArraySchema = z.array(ClimbQueueItemSchema).max(500, 'Queue too large');
 
 /**
  * Climb search input validation schema
  */
 export const ClimbSearchInputSchema = z.object({
   boardName: BoardNameSchema,
-  layoutId: z.number().int().positive("Layout ID must be positive"),
-  sizeId: z.number().int().positive("Size ID must be positive"),
-  setIds: z.string().min(1, "Set IDs cannot be empty"),
+  layoutId: z.number().int().positive('Layout ID must be positive'),
+  sizeId: z.number().int().positive('Size ID must be positive'),
+  setIds: z.string().min(1, 'Set IDs cannot be empty'),
   angle: z.number().int(),
   page: z.number().int().min(0).optional(),
-  pageSize: z.number().int().min(1).max(100, "Page size cannot exceed 100").optional(),
+  pageSize: z.number().int().min(1).max(100, 'Page size cannot exceed 100').optional(),
   gradeAccuracy: z.string().optional(),
   minGrade: z.number().int().optional(),
   maxGrade: z.number().int().optional(),
   minAscents: z.number().int().min(0).optional(),
   sortBy: z.string().optional(),
-  sortOrder: z.enum(["asc", "desc"]).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
   name: z.string().max(200).optional(),
   setter: z.array(z.string().max(100)).optional(),
   setterId: z.number().int().optional(),
   onlyBenchmarks: z.boolean().optional(),
   onlyTallClimbs: z.boolean().optional(),
   holdsFilter: z
-    .record(z.string(), z.enum(["OFF", "STARTING", "FINISH", "HAND", "FOOT", "ANY", "NOT"]))
+    .record(z.string(), z.enum(['OFF', 'STARTING', 'FINISH', 'HAND', 'FOOT', 'ANY', 'NOT']))
     .optional(),
   hideAttempted: z.boolean().optional(),
   hideCompleted: z.boolean().optional(),
@@ -129,9 +129,9 @@ export const ClimbSearchInputSchema = z.object({
 
 export const SaveClimbInputSchema = z.object({
   boardType: BoardNameSchema,
-  layoutId: z.number().int().positive("Layout ID must be positive"),
+  layoutId: z.number().int().positive('Layout ID must be positive'),
   name: z.string().min(1).max(200),
-  description: z.string().max(2000).optional().default(""),
+  description: z.string().max(2000).optional().default(''),
   isDraft: z.boolean(),
   frames: z.string().min(1).max(10000),
   framesCount: z.number().int().min(1).optional(),
@@ -158,10 +158,10 @@ export const MoonBoardHoldsInputSchema = z.object({
 });
 
 export const SaveMoonBoardClimbInputSchema = z.object({
-  boardType: z.literal("moonboard"),
-  layoutId: z.number().int().positive("Layout ID must be positive"),
+  boardType: z.literal('moonboard'),
+  layoutId: z.number().int().positive('Layout ID must be positive'),
   name: z.string().min(1).max(200),
-  description: z.string().max(2000).optional().default(""),
+  description: z.string().max(2000).optional().default(''),
   holds: MoonBoardHoldsInputSchema,
   angle: z.number().int().min(0).max(90),
   isDraft: z.boolean().optional(),
@@ -171,7 +171,7 @@ export const SaveMoonBoardClimbInputSchema = z.object({
 });
 
 export const CheckMoonBoardClimbDuplicatesInputSchema = z.object({
-  layoutId: z.number().int().positive("Layout ID must be positive"),
+  layoutId: z.number().int().positive('Layout ID must be positive'),
   angle: z.number().int().min(0).max(90),
   climbs: z
     .array(

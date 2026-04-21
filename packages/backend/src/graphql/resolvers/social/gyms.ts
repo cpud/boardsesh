@@ -1,9 +1,9 @@
-import { v4 as uuidv4 } from "uuid";
-import { eq, and, count, isNull, sql, ilike, or, desc, inArray } from "drizzle-orm";
-import type { ConnectionContext } from "@boardsesh/shared-schema";
-import { db } from "../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { requireAuthenticated, applyRateLimit, validateInput } from "../shared/helpers";
+import { v4 as uuidv4 } from 'uuid';
+import { eq, and, count, isNull, sql, ilike, or, desc, inArray } from 'drizzle-orm';
+import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { db } from '../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { requireAuthenticated, applyRateLimit, validateInput } from '../shared/helpers';
 import {
   CreateGymInputSchema,
   UpdateGymInputSchema,
@@ -15,7 +15,7 @@ import {
   GymMembersInputSchema,
   LinkBoardToGymInputSchema,
   UUIDSchema,
-} from "../../../validation/schemas";
+} from '../../../validation/schemas';
 
 // ============================================
 // Helpers
@@ -29,9 +29,9 @@ export async function generateUniqueGymSlug(name: string): Promise<string> {
   const baseSlug =
     name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 100) || "gym";
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 100) || 'gym';
 
   // Find all existing slugs matching this base in a single query
   const existing = await db
@@ -41,7 +41,7 @@ export async function generateUniqueGymSlug(name: string): Promise<string> {
       and(
         or(
           eq(dbSchema.gyms.slug, baseSlug),
-          ilike(dbSchema.gyms.slug, `${baseSlug.replace(/[%_\\]/g, "\\$&")}-%`),
+          ilike(dbSchema.gyms.slug, `${baseSlug.replace(/[%_\\]/g, '\\$&')}-%`),
         ),
         isNull(dbSchema.gyms.deletedAt),
       ),
@@ -138,7 +138,7 @@ async function enrichGym(gym: typeof dbSchema.gyms.$inferSelect, authenticatedUs
       .from(dbSchema.comments)
       .where(
         and(
-          eq(dbSchema.comments.entityType, "gym"),
+          eq(dbSchema.comments.entityType, 'gym'),
           eq(dbSchema.comments.entityId, gym.uuid),
           isNull(dbSchema.comments.deletedAt),
         ),
@@ -183,7 +183,7 @@ async function enrichGym(gym: typeof dbSchema.gyms.$inferSelect, authenticatedUs
   const isOwner = authenticatedUserId === gym.ownerId;
   const memberRow = (memberCheckResult as Array<{ role: string }>)[0];
   const isMember = isOwner || !!memberRow;
-  const myRole = isOwner ? "admin" : ((memberRow?.role as "admin" | "member" | undefined) ?? null);
+  const myRole = isOwner ? 'admin' : ((memberRow?.role as 'admin' | 'member' | undefined) ?? null);
 
   return {
     uuid: gym.uuid,
@@ -225,7 +225,7 @@ async function requireGymOwnerOrAdmin(
     .limit(1);
 
   if (!gym) {
-    throw new Error("Gym not found");
+    throw new Error('Gym not found');
   }
 
   if (gym.ownerId === userId) {
@@ -240,13 +240,13 @@ async function requireGymOwnerOrAdmin(
       and(
         eq(dbSchema.gymMembers.gymId, gym.id),
         eq(dbSchema.gymMembers.userId, userId),
-        eq(dbSchema.gymMembers.role, "admin"),
+        eq(dbSchema.gymMembers.role, 'admin'),
       ),
     )
     .limit(1);
 
   if (!member) {
-    throw new Error("Not authorized: must be gym owner or admin");
+    throw new Error('Not authorized: must be gym owner or admin');
   }
 
   return gym;
@@ -258,7 +258,7 @@ async function requireGymOwnerOrAdmin(
 
 export const socialGymQueries = {
   gym: async (_: unknown, { gymUuid }: { gymUuid: string }, ctx: ConnectionContext) => {
-    validateInput(UUIDSchema, gymUuid, "gymUuid");
+    validateInput(UUIDSchema, gymUuid, 'gymUuid');
 
     const [gym] = await db
       .select()
@@ -287,7 +287,7 @@ export const socialGymQueries = {
 
   myGyms: async (_: unknown, { input }: { input?: unknown }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
-    const validatedInput = validateInput(MyGymsInputSchema, input || {}, "input");
+    const validatedInput = validateInput(MyGymsInputSchema, input || {}, 'input');
     const userId = ctx.userId!;
     const limit = validatedInput.limit ?? 20;
     const offset = validatedInput.offset ?? 0;
@@ -337,7 +337,7 @@ export const socialGymQueries = {
   },
 
   searchGyms: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
-    const validatedInput = validateInput(SearchGymsInputSchema, input, "input");
+    const validatedInput = validateInput(SearchGymsInputSchema, input, 'input');
     const { query, latitude, longitude, radiusKm } = validatedInput;
     const limit = validatedInput.limit ?? 20;
     const offset = validatedInput.offset ?? 0;
@@ -348,7 +348,7 @@ export const socialGymQueries = {
       const lon = Number(longitude);
       const lat = Number(latitude);
 
-      const escapedQuery = query ? query.replace(/[%_\\]/g, "\\$&") : null;
+      const escapedQuery = query ? query.replace(/[%_\\]/g, '\\$&') : null;
       const likePattern = escapedQuery ? `%${escapedQuery}%` : null;
 
       const countRows = await db.execute(
@@ -384,7 +384,7 @@ export const socialGymQueries = {
     const conditions = [eq(dbSchema.gyms.isPublic, true), isNull(dbSchema.gyms.deletedAt)];
 
     if (query) {
-      const escapedQuery = query.replace(/[%_\\]/g, "\\$&");
+      const escapedQuery = query.replace(/[%_\\]/g, '\\$&');
       conditions.push(
         or(
           ilike(dbSchema.gyms.name, `%${escapedQuery}%`),
@@ -422,7 +422,7 @@ export const socialGymQueries = {
   },
 
   gymMembers: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
-    const validatedInput = validateInput(GymMembersInputSchema, input, "input");
+    const validatedInput = validateInput(GymMembersInputSchema, input, 'input');
     const { gymUuid } = validatedInput;
     const limit = validatedInput.limit ?? 20;
     const offset = validatedInput.offset ?? 0;
@@ -435,7 +435,7 @@ export const socialGymQueries = {
       .limit(1);
 
     if (!gym) {
-      throw new Error("Gym not found");
+      throw new Error('Gym not found');
     }
 
     const [countResult] = await db
@@ -488,7 +488,7 @@ export const socialGymMutations = {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 10);
 
-    const validatedInput = validateInput(CreateGymInputSchema, input, "input");
+    const validatedInput = validateInput(CreateGymInputSchema, input, 'input');
     const userId = ctx.userId!;
 
     const uuid = uuidv4();
@@ -547,7 +547,7 @@ export const socialGymMutations = {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 20);
 
-    const validatedInput = validateInput(UpdateGymInputSchema, input, "input");
+    const validatedInput = validateInput(UpdateGymInputSchema, input, 'input');
     const userId = ctx.userId!;
 
     const gym = await requireGymOwnerOrAdmin(validatedInput.gymUuid, userId);
@@ -584,7 +584,7 @@ export const socialGymMutations = {
         .limit(1);
 
       if (slugConflict) {
-        throw new Error("Slug is already taken");
+        throw new Error('Slug is already taken');
       }
       updateValues.slug = validatedInput.slug;
     }
@@ -619,7 +619,7 @@ export const socialGymMutations = {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 10);
 
-    validateInput(UUIDSchema, gymUuid, "gymUuid");
+    validateInput(UUIDSchema, gymUuid, 'gymUuid');
     const userId = ctx.userId!;
 
     const [gym] = await db
@@ -629,11 +629,11 @@ export const socialGymMutations = {
       .limit(1);
 
     if (!gym) {
-      throw new Error("Gym not found");
+      throw new Error('Gym not found');
     }
 
     if (gym.ownerId !== userId) {
-      throw new Error("Not authorized to delete this gym");
+      throw new Error('Not authorized to delete this gym');
     }
 
     // Soft-delete the gym
@@ -659,7 +659,7 @@ export const socialGymMutations = {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 20);
 
-    const validatedInput = validateInput(AddGymMemberInputSchema, input, "input");
+    const validatedInput = validateInput(AddGymMemberInputSchema, input, 'input');
     const userId = ctx.userId!;
 
     const gym = await requireGymOwnerOrAdmin(validatedInput.gymUuid, userId);
@@ -672,7 +672,7 @@ export const socialGymMutations = {
       .limit(1);
 
     if (!targetUser) {
-      throw new Error("User not found");
+      throw new Error('User not found');
     }
 
     await db
@@ -695,14 +695,14 @@ export const socialGymMutations = {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 20);
 
-    const validatedInput = validateInput(RemoveGymMemberInputSchema, input, "input");
+    const validatedInput = validateInput(RemoveGymMemberInputSchema, input, 'input');
     const userId = ctx.userId!;
 
     const gym = await requireGymOwnerOrAdmin(validatedInput.gymUuid, userId);
 
     // Prevent removing the owner
     if (validatedInput.userId === gym.ownerId) {
-      throw new Error("Cannot remove the gym owner");
+      throw new Error('Cannot remove the gym owner');
     }
 
     await db
@@ -725,7 +725,7 @@ export const socialGymMutations = {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 20);
 
-    const validatedInput = validateInput(FollowGymInputSchema, input, "input");
+    const validatedInput = validateInput(FollowGymInputSchema, input, 'input');
     const userId = ctx.userId!;
 
     const [gym] = await db
@@ -739,11 +739,11 @@ export const socialGymMutations = {
       .limit(1);
 
     if (!gym) {
-      throw new Error("Gym not found");
+      throw new Error('Gym not found');
     }
 
     if (!gym.isPublic && gym.ownerId !== userId) {
-      throw new Error("Cannot follow a private gym");
+      throw new Error('Cannot follow a private gym');
     }
 
     await db
@@ -765,7 +765,7 @@ export const socialGymMutations = {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 20);
 
-    const validatedInput = validateInput(FollowGymInputSchema, input, "input");
+    const validatedInput = validateInput(FollowGymInputSchema, input, 'input');
     const userId = ctx.userId!;
 
     // Look up gym by UUID to get id
@@ -776,7 +776,7 @@ export const socialGymMutations = {
       .limit(1);
 
     if (!gym) {
-      throw new Error("Gym not found");
+      throw new Error('Gym not found');
     }
 
     await db
@@ -794,7 +794,7 @@ export const socialGymMutations = {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 20);
 
-    const validatedInput = validateInput(LinkBoardToGymInputSchema, input, "input");
+    const validatedInput = validateInput(LinkBoardToGymInputSchema, input, 'input');
     const userId = ctx.userId!;
 
     // Verify board ownership
@@ -810,11 +810,11 @@ export const socialGymMutations = {
       .limit(1);
 
     if (!board) {
-      throw new Error("Board not found");
+      throw new Error('Board not found');
     }
 
     if (board.ownerId !== userId) {
-      throw new Error("Not authorized to modify this board");
+      throw new Error('Not authorized to modify this board');
     }
 
     if (validatedInput.gymUuid) {

@@ -1,15 +1,15 @@
-import "server-only";
-import { unstable_cache } from "next/cache";
-import { getDb } from "@/app/lib/db/db";
-import { searchClimbs as sharedSearchClimbs } from "@boardsesh/db/queries";
-import { getBoardClimbSearchTag } from "@/app/lib/climb-search-cache";
+import 'server-only';
+import { unstable_cache } from 'next/cache';
+import { getDb } from '@/app/lib/db/db';
+import { searchClimbs as sharedSearchClimbs } from '@boardsesh/db/queries';
+import { getBoardClimbSearchTag } from '@/app/lib/climb-search-cache';
 import type {
   ParsedBoardRouteParameters,
   SearchRequestPagination,
   BoardName,
-} from "@/app/lib/types";
-import type { Climb } from "@/app/lib/types";
-import { sortObjectKeys } from "@/app/lib/cache-utils";
+} from '@/app/lib/types';
+import type { Climb } from '@/app/lib/types';
+import { sortObjectKeys } from '@/app/lib/cache-utils';
 
 /**
  * Cache durations for climb search queries (in seconds)
@@ -36,7 +36,7 @@ async function _executeClimbSearch(
     board_name: boardName as BoardName,
     layout_id: layoutId,
     size_id: sizeId,
-    set_ids: setIdsStr.split(",").map(Number),
+    set_ids: setIdsStr.split(',').map(Number),
     angle,
   };
   const searchParams = JSON.parse(searchParamsJson) as SearchRequestPagination;
@@ -53,8 +53,8 @@ async function _executeClimbSearch(
       maxGrade: searchParams.maxGrade || undefined,
       minAscents: searchParams.minAscents || undefined,
       minRating: searchParams.minRating || undefined,
-      sortBy: searchParams.sortBy || "ascents",
-      sortOrder: searchParams.sortOrder || "desc",
+      sortBy: searchParams.sortBy || 'ascents',
+      sortOrder: searchParams.sortOrder || 'desc',
       name: searchParams.name || undefined,
       settername:
         searchParams.settername && searchParams.settername.length > 0
@@ -65,8 +65,8 @@ async function _executeClimbSearch(
         searchParams.holdsFilter && Object.keys(searchParams.holdsFilter).length > 0
           ? Object.fromEntries(
               Object.entries(searchParams.holdsFilter).map(([key, value]) => [
-                key.replace("hold_", ""),
-                typeof value === "object" && value !== null
+                key.replace('hold_', ''),
+                typeof value === 'object' && value !== null
                   ? (value as { state: string }).state
                   : value,
               ]),
@@ -85,7 +85,7 @@ async function _executeClimbSearch(
   const climbs: Climb[] = result.climbs.map((row) => ({
     ...row,
     mirrored: undefined,
-    is_no_match: /^no match/i.test(row.description || ""),
+    is_no_match: /^no match/i.test(row.description || ''),
   }));
 
   return { climbs, hasMore: result.hasMore };
@@ -118,7 +118,7 @@ function _getCachedFn(boardName: BoardName, revalidate: number): CachedClimbSear
   if (!fn) {
     fn = unstable_cache(_executeClimbSearch, [`climb-search-v3:${boardName}`], {
       revalidate,
-      tags: ["climb-search", getBoardClimbSearchTag(boardName)],
+      tags: ['climb-search', getBoardClimbSearchTag(boardName)],
     });
     _cacheRegistry.set(key, fn);
   }
@@ -143,9 +143,9 @@ export async function cachedSearchClimbs(
 ): Promise<{ climbs: Climb[]; hasMore: boolean }> {
   // MoonBoard list data is still being actively imported/curated, so bypass
   // the server cache there to surface new climbs immediately.
-  const cacheable = (options?.cacheable ?? !userId) && params.board_name !== "moonboard";
+  const cacheable = (options?.cacheable ?? !userId) && params.board_name !== 'moonboard';
 
-  const setIdsStr = [...params.set_ids].sort((a, b) => a - b).join(",");
+  const setIdsStr = [...params.set_ids].sort((a, b) => a - b).join(',');
   const searchParamsJson = JSON.stringify(
     sortObjectKeys({
       page: searchParams.page,

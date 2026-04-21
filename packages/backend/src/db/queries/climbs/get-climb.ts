@@ -1,8 +1,8 @@
-import { sql } from "drizzle-orm";
-import { db } from "../../client";
-import { UNIFIED_TABLES, type BoardName } from "../util/table-select";
-import { getGradeLabel } from "@boardsesh/db/queries";
-import type { Climb } from "@boardsesh/shared-schema";
+import { sql } from 'drizzle-orm';
+import { db } from '../../client';
+import { UNIFIED_TABLES, type BoardName } from '../util/table-select';
+import { getGradeLabel } from '@boardsesh/db/queries';
+import type { Climb } from '@boardsesh/shared-schema';
 
 interface GetClimbParams {
   board_name: BoardName;
@@ -59,17 +59,17 @@ export const getClimbByUuid = async (params: GetClimbParams): Promise<Climb | nu
 
     const climb: Climb = {
       uuid: row.uuid,
-      setter_username: row.setter_username || "",
+      setter_username: row.setter_username || '',
       userId: row.user_id ?? null,
-      name: row.name || "",
-      description: row.description || "",
-      frames: row.frames || "",
+      name: row.name || '',
+      description: row.description || '',
+      frames: row.frames || '',
       angle: Number(params.angle),
       ascensionist_count: Number(row.ascensionist_count || 0),
       difficulty: getGradeLabel(row.difficulty_id),
-      quality_average: row.quality_average?.toString() || "0",
+      quality_average: row.quality_average?.toString() || '0',
       stars: Math.round((Number(row.quality_average) || 0) * 5),
-      difficulty_error: row.difficulty_error?.toString() || "0",
+      difficulty_error: row.difficulty_error?.toString() || '0',
       benchmark_difficulty:
         row.benchmark_difficulty && row.benchmark_difficulty > 0
           ? row.benchmark_difficulty.toString()
@@ -81,7 +81,7 @@ export const getClimbByUuid = async (params: GetClimbParams): Promise<Climb | nu
 
     return climb;
   } catch (error) {
-    console.error("Error in getClimbByUuid:", error);
+    console.error('Error in getClimbByUuid:', error);
     throw error;
   }
 };

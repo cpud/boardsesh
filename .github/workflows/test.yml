@@ -4,16 +4,16 @@ on:
   push:
     branches: [main, develop]
     paths:
-      - "packages/web/**"
-      - "packages/shared-schema/**"
-      - "packages/db/**"
-      - ".github/workflows/test.yml"
+      - 'packages/web/**'
+      - 'packages/shared-schema/**'
+      - 'packages/db/**'
+      - '.github/workflows/test.yml'
   pull_request:
     paths:
-      - "packages/web/**"
-      - "packages/shared-schema/**"
-      - "packages/db/**"
-      - ".github/workflows/test.yml"
+      - 'packages/web/**'
+      - 'packages/shared-schema/**'
+      - 'packages/db/**'
+      - '.github/workflows/test.yml'
 
 jobs:
   setup:

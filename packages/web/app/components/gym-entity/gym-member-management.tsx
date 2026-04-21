@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useCallback } from "react";
-import Box from "@mui/material/Box";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import ListItemText from "@mui/material/ListItemText";
-import Avatar from "@mui/material/Avatar";
-import Chip from "@mui/material/Chip";
-import IconButton from "@mui/material/IconButton";
-import MuiButton from "@mui/material/Button";
-import MuiTypography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
-import RemoveCircleOutlined from "@mui/icons-material/RemoveCircleOutline";
-import { useWsAuthToken } from "@/app/hooks/use-ws-auth-token";
-import { useSnackbar } from "@/app/components/providers/snackbar-provider";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
+import React, { useState, useEffect, useCallback } from 'react';
+import Box from '@mui/material/Box';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Avatar from '@mui/material/Avatar';
+import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
+import MuiButton from '@mui/material/Button';
+import MuiTypography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import RemoveCircleOutlined from '@mui/icons-material/RemoveCircleOutline';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { useSnackbar } from '@/app/components/providers/snackbar-provider';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   GET_GYM_MEMBERS,
   REMOVE_GYM_MEMBER,
@@ -23,8 +23,8 @@ import {
   type GetGymMembersQueryResponse,
   type RemoveGymMemberMutationVariables,
   type RemoveGymMemberMutationResponse,
-} from "@/app/lib/graphql/operations";
-import type { GymMember } from "@boardsesh/shared-schema";
+} from '@/app/lib/graphql/operations';
+import type { GymMember } from '@boardsesh/shared-schema';
 
 interface GymMemberManagementProps {
   gymUuid: string;
@@ -58,7 +58,7 @@ export default function GymMemberManagement({ gymUuid, isOwnerOrAdmin }: GymMemb
         setHasMore(data.gymMembers.hasMore);
         setTotalCount(data.gymMembers.totalCount);
       } catch (error) {
-        console.error("Failed to fetch members:", error);
+        console.error('Failed to fetch members:', error);
       } finally {
         setLoading(false);
       }
@@ -72,7 +72,7 @@ export default function GymMemberManagement({ gymUuid, isOwnerOrAdmin }: GymMemb
 
   const handleRemove = async (userId: string) => {
     if (!token) return;
-    if (!window.confirm("Remove this member from the gym?")) return;
+    if (!window.confirm('Remove this member from the gym?')) return;
 
     try {
       const client = createGraphQLHttpClient(token);
@@ -82,16 +82,16 @@ export default function GymMemberManagement({ gymUuid, isOwnerOrAdmin }: GymMemb
       );
       setMembers((prev) => prev.filter((m) => m.userId !== userId));
       setTotalCount((prev) => prev - 1);
-      showMessage("Member removed", "success");
+      showMessage('Member removed', 'success');
     } catch (error) {
-      console.error("Failed to remove member:", error);
-      showMessage("Failed to remove member", "error");
+      console.error('Failed to remove member:', error);
+      showMessage('Failed to remove member', 'error');
     }
   };
 
   if (loading && members.length === 0) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         <CircularProgress />
       </Box>
     );
@@ -99,7 +99,7 @@ export default function GymMemberManagement({ gymUuid, isOwnerOrAdmin }: GymMemb
 
   if (members.length === 0) {
     return (
-      <Box sx={{ py: 4, textAlign: "center" }}>
+      <Box sx={{ py: 4, textAlign: 'center' }}>
         <MuiTypography variant="body2" color="text.secondary">
           No members yet
         </MuiTypography>
@@ -130,7 +130,7 @@ export default function GymMemberManagement({ gymUuid, isOwnerOrAdmin }: GymMemb
               </Avatar>
             </ListItemAvatar>
             <ListItemText
-              primary={member.displayName ?? "Unknown User"}
+              primary={member.displayName ?? 'Unknown User'}
               secondary={
                 <Chip
                   label={member.role}
@@ -152,7 +152,7 @@ export default function GymMemberManagement({ gymUuid, isOwnerOrAdmin }: GymMemb
             fullWidth
             size="small"
           >
-            {loading ? "Loading..." : `Load more (${members.length} of ${totalCount})`}
+            {loading ? 'Loading...' : `Load more (${members.length} of ${totalCount})`}
           </MuiButton>
         </Box>
       )}

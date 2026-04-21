@@ -1,8 +1,8 @@
-import type { ConnectionContext, QueueEvent } from "@boardsesh/shared-schema";
-import { roomManager } from "../../../services/room-manager";
-import { pubsub } from "../../../pubsub/index";
-import { requireSessionMember } from "../shared/helpers";
-import { createEagerAsyncIterator } from "../shared/async-iterators";
+import type { ConnectionContext, QueueEvent } from '@boardsesh/shared-schema';
+import { roomManager } from '../../../services/room-manager';
+import { pubsub } from '../../../pubsub/index';
+import { requireSessionMember } from '../shared/helpers';
+import { createEagerAsyncIterator } from '../shared/async-iterators';
 
 export const queueSubscriptions = {
   /**
@@ -37,7 +37,7 @@ export const queueSubscriptions = {
       // Send initial FullSync
       yield {
         queueUpdates: {
-          __typename: "FullSync",
+          __typename: 'FullSync',
           sequence: fullSyncSequence,
           state: queueState,
         } as QueueEvent,

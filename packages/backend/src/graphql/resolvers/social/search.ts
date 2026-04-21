@@ -1,9 +1,9 @@
-import { eq, and, or, ilike, sql, count, desc, asc } from "drizzle-orm";
-import type { ConnectionContext } from "@boardsesh/shared-schema";
-import { db } from "../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { applyRateLimit, validateInput } from "../shared/helpers";
-import { SearchUsersInputSchema } from "../../../validation/schemas";
+import { eq, and, or, ilike, sql, count, desc, asc } from 'drizzle-orm';
+import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { db } from '../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { applyRateLimit, validateInput } from '../shared/helpers';
+import { SearchUsersInputSchema } from '../../../validation/schemas';
 
 export const socialSearchQueries = {
   /**
@@ -16,13 +16,13 @@ export const socialSearchQueries = {
   ) => {
     await applyRateLimit(ctx, 20);
 
-    const validatedInput = validateInput(SearchUsersInputSchema, input, "input");
+    const validatedInput = validateInput(SearchUsersInputSchema, input, 'input');
     const query = validatedInput.query;
     const boardType = validatedInput.boardType;
     const limit = validatedInput.limit ?? 20;
     const offset = validatedInput.offset ?? 0;
     // Escape LIKE wildcards (%, _) in user input to prevent pattern injection
-    const escapedQuery = query.replace(/[%_\\]/g, "\\$&");
+    const escapedQuery = query.replace(/[%_\\]/g, '\\$&');
     const searchPattern = `%${escapedQuery}%`;
     const prefixPattern = `${escapedQuery}%`;
 
@@ -126,7 +126,7 @@ export const socialSearchQueries = {
         row.displayName?.toLowerCase().includes(lowerQuery) ||
         row.name?.toLowerCase().includes(lowerQuery)
       ) {
-        matchReason = "name match";
+        matchReason = 'name match';
       }
 
       return {

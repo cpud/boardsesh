@@ -1,56 +1,56 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useCallback } from "react";
-import MuiAvatar from "@mui/material/Avatar";
-import MuiTypography from "@mui/material/Typography";
-import MuiButton from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import PersonOutlined from "@mui/icons-material/PersonOutlined";
-import SettingsOutlined from "@mui/icons-material/SettingsOutlined";
-import LogoutOutlined from "@mui/icons-material/LogoutOutlined";
-import LoginOutlined from "@mui/icons-material/LoginOutlined";
-import HelpOutlineOutlined from "@mui/icons-material/HelpOutlineOutlined";
-import InfoOutlined from "@mui/icons-material/InfoOutlined";
-import GpsFixedOutlined from "@mui/icons-material/GpsFixedOutlined";
-import LocalOfferOutlined from "@mui/icons-material/LocalOfferOutlined";
-import SwapHorizOutlined from "@mui/icons-material/SwapHorizOutlined";
-import HistoryOutlined from "@mui/icons-material/HistoryOutlined";
-import PlayCircleOutlineOutlined from "@mui/icons-material/PlayCircleOutlineOutlined";
-import GroupOutlined from "@mui/icons-material/GroupOutlined";
-import LightModeOutlined from "@mui/icons-material/LightModeOutlined";
-import DarkModeOutlined from "@mui/icons-material/DarkModeOutlined";
+import React, { useState, useEffect, useCallback } from 'react';
+import MuiAvatar from '@mui/material/Avatar';
+import MuiTypography from '@mui/material/Typography';
+import MuiButton from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import PersonOutlined from '@mui/icons-material/PersonOutlined';
+import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
+import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
+import LoginOutlined from '@mui/icons-material/LoginOutlined';
+import HelpOutlineOutlined from '@mui/icons-material/HelpOutlineOutlined';
+import InfoOutlined from '@mui/icons-material/InfoOutlined';
+import GpsFixedOutlined from '@mui/icons-material/GpsFixedOutlined';
+import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
+import SwapHorizOutlined from '@mui/icons-material/SwapHorizOutlined';
+import HistoryOutlined from '@mui/icons-material/HistoryOutlined';
+import PlayCircleOutlineOutlined from '@mui/icons-material/PlayCircleOutlineOutlined';
+import GroupOutlined from '@mui/icons-material/GroupOutlined';
+import LightModeOutlined from '@mui/icons-material/LightModeOutlined';
+import DarkModeOutlined from '@mui/icons-material/DarkModeOutlined';
 
-import { useSession, signOut } from "next-auth/react";
-import { useColorMode } from "@/app/hooks/use-color-mode";
-import { useRouter, usePathname } from "next/navigation";
-import Link from "next/link";
+import { useSession, signOut } from 'next-auth/react';
+import { useColorMode } from '@/app/hooks/use-color-mode';
+import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import {
   getPlaylistsBasePath,
   constructBoardSlugListUrl,
   constructClimbListWithSlugs,
   tryConstructSlugListUrl,
-} from "@/app/lib/url-utils";
-import { getDefaultAngleForBoard } from "@/app/lib/board-config-for-playlist";
-import DashboardOutlined from "@mui/icons-material/DashboardOutlined";
-import SwipeableDrawer from "../swipeable-drawer/swipeable-drawer";
-import { useAuthModal } from "@/app/components/providers/auth-modal-provider";
-import { HoldClassificationWizard } from "../hold-classification";
-import BoardDiscoveryScroll from "../board-scroll/board-discovery-scroll";
-import BoardSelectorDrawer from "../board-selector-drawer/board-selector-drawer";
-import MyBoardsDrawer from "../my-boards-drawer/my-boards-drawer";
-import { BoardConfigData } from "@/app/lib/server-board-configs";
-import { BoardDetails, BoardName } from "@/app/lib/types";
-import type { BoardRouteIdentity } from "@/app/lib/types";
-import { SUPPORTED_BOARDS } from "@/app/lib/board-data";
-import type { UserBoard, PopularBoardConfig } from "@boardsesh/shared-schema";
-import { useBoardSwitchGuard } from "@/app/components/board-lock/use-board-switch-guard";
+} from '@/app/lib/url-utils';
+import { getDefaultAngleForBoard } from '@/app/lib/board-config-for-playlist';
+import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
+import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
+import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
+import { HoldClassificationWizard } from '../hold-classification';
+import BoardDiscoveryScroll from '../board-scroll/board-discovery-scroll';
+import BoardSelectorDrawer from '../board-selector-drawer/board-selector-drawer';
+import MyBoardsDrawer from '../my-boards-drawer/my-boards-drawer';
+import { BoardConfigData } from '@/app/lib/server-board-configs';
+import { BoardDetails, BoardName } from '@/app/lib/types';
+import type { BoardRouteIdentity } from '@/app/lib/types';
+import { SUPPORTED_BOARDS } from '@/app/lib/board-data';
+import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
+import { useBoardSwitchGuard } from '@/app/components/board-lock/use-board-switch-guard';
 import {
   type StoredSession,
   getRecentSessions,
   formatRelativeTime,
   extractBoardName,
-} from "@/app/lib/session-history-db";
-import styles from "./user-drawer.module.css";
+} from '@/app/lib/session-history-db';
+import styles from './user-drawer.module.css';
 
 function asBoardName(value: string): BoardName | null {
   return (SUPPORTED_BOARDS as readonly string[]).includes(value) ? (value as BoardName) : null;
@@ -79,7 +79,7 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
   const [recentSessions, setRecentSessions] = useState<StoredSession[]>([]);
 
   const { mode, toggleMode } = useColorMode();
-  const isMoonboard = boardDetails?.board_name === "moonboard";
+  const isMoonboard = boardDetails?.board_name === 'moonboard';
   const guardBoardSwitch = useBoardSwitchGuard();
 
   // Load recent sessions when drawer opens
@@ -125,7 +125,7 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
         board_name: boardName,
         layout_id: board.layoutId,
         size_id: board.sizeId,
-        set_ids: board.setIds ? board.setIds.split(",").map(Number).filter(Number.isFinite) : [],
+        set_ids: board.setIds ? board.setIds.split(',').map(Number).filter(Number.isFinite) : [],
       };
       guardBoardSwitch(target, navigate);
     },
@@ -146,7 +146,7 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
           angle,
         );
       } else {
-        const setIds = config.setIds.join(",");
+        const setIds = config.setIds.join(',');
         url =
           tryConstructSlugListUrl(
             config.boardType,
@@ -183,7 +183,7 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
 
   const handleResumeSession = (storedSession: StoredSession) => {
     const url = new URL(storedSession.boardPath, window.location.origin);
-    url.searchParams.set("session", storedSession.id);
+    url.searchParams.set('session', storedSession.id);
     router.push(url.pathname + url.search);
     handleClose();
   };
@@ -228,7 +228,7 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
                     component={Link}
                     href={`/profile/${session.user.id}`}
                     onClick={handleClose}
-                    sx={{ width: 64, height: 64, cursor: "pointer" }}
+                    sx={{ width: 64, height: 64, cursor: 'pointer' }}
                     src={userAvatar}
                     className={avatarClass}
                   >
@@ -270,9 +270,9 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
                     onClick={() => {
                       handleClose();
                       openAuthModal({
-                        title: "Sign in to Boardsesh",
+                        title: 'Sign in to Boardsesh',
                         description:
-                          "Sign in to access all features including saving favorites, tracking ascents, and more.",
+                          'Sign in to access all features including saving favorites, tracking ascents, and more.',
                       });
                     }}
                   >
@@ -379,10 +379,10 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
                         {storedSession.participantCount !== undefined &&
                           storedSession.participantCount > 0 && (
                             <>
-                              {" "}
+                              {' '}
                               <GroupOutlined /> {storedSession.participantCount}
                             </>
-                          )}{" "}
+                          )}{' '}
                         {formatRelativeTime(storedSession.lastActivity || storedSession.createdAt)}
                       </div>
                     </div>
@@ -439,15 +439,15 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
                 aria-label="Toggle dark mode"
               >
                 <div
-                  className={`${styles.themeToggleThumb} ${mode === "dark" ? styles.themeToggleThumbDark : ""}`}
+                  className={`${styles.themeToggleThumb} ${mode === 'dark' ? styles.themeToggleThumbDark : ''}`}
                 />
                 <div
-                  className={`${styles.themeToggleOption} ${mode === "light" ? styles.themeToggleOptionActive : ""}`}
+                  className={`${styles.themeToggleOption} ${mode === 'light' ? styles.themeToggleOptionActive : ''}`}
                 >
                   <LightModeOutlined sx={{ fontSize: 16 }} />
                 </div>
                 <div
-                  className={`${styles.themeToggleOption} ${mode === "dark" ? styles.themeToggleOptionActive : ""}`}
+                  className={`${styles.themeToggleOption} ${mode === 'dark' ? styles.themeToggleOptionActive : ''}`}
                 >
                   <DarkModeOutlined sx={{ fontSize: 16 }} />
                 </div>

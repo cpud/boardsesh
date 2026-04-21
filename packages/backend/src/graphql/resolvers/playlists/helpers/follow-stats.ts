@@ -1,6 +1,6 @@
-import { eq, and, inArray, sql } from "drizzle-orm";
-import { db } from "../../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
+import { eq, and, inArray, sql } from 'drizzle-orm';
+import { db } from '../../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
 
 /**
  * Batch-fetch followerCount and isFollowedByMe for a list of playlist UUIDs.

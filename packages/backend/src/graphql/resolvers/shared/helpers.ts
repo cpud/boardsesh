@@ -1,16 +1,16 @@
-import type { ConnectionContext } from "@boardsesh/shared-schema";
-import { checkRateLimit } from "../../../utils/rate-limiter";
-import { checkRateLimitRedis } from "../../../utils/redis-rate-limiter";
-import { getContext } from "../../context";
-import { getDistributedState } from "../../../services/distributed-state";
-import { db } from "../../../db/client";
-import { esp32Controllers } from "@boardsesh/db/schema/app";
-import { eq } from "drizzle-orm";
+import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { checkRateLimit } from '../../../utils/rate-limiter';
+import { checkRateLimitRedis } from '../../../utils/redis-rate-limiter';
+import { getContext } from '../../context';
+import { getDistributedState } from '../../../services/distributed-state';
+import { db } from '../../../db/client';
+import { esp32Controllers } from '@boardsesh/db/schema/app';
+import { eq } from 'drizzle-orm';
 
 // Re-export validateInput from validation schemas
-export { validateInput } from "../../../validation/schemas";
+export { validateInput } from '../../../validation/schemas';
 // Re-export MAX_RETRIES from types
-export { MAX_RETRIES } from "./types";
+export { MAX_RETRIES } from './types';
 
 /**
  * Configuration for session membership retry behavior.
@@ -50,7 +50,7 @@ export function requireSession(ctx: ConnectionContext): string {
  */
 export function requireAuthenticated(ctx: ConnectionContext): void {
   if (!ctx.isAuthenticated) {
-    throw new Error("Authentication required to perform this operation");
+    throw new Error('Authentication required to perform this operation');
   }
 }
 
@@ -157,9 +157,9 @@ export async function requireSessionMember(
 export async function applyRateLimit(
   ctx: ConnectionContext,
   limit?: number,
-  operation = "default",
+  operation = 'default',
 ): Promise<void> {
-  if (process.env.NODE_ENV === "development") return;
+  if (process.env.NODE_ENV === 'development') return;
 
   const maxRequests = limit ?? 60;
 
@@ -190,7 +190,7 @@ export function requireControllerAuth(ctx: ConnectionContext): {
 } {
   if (!ctx.controllerId || !ctx.controllerApiKey) {
     throw new Error(
-      "Controller authentication required. Pass controllerApiKey in connectionParams.",
+      'Controller authentication required. Pass controllerApiKey in connectionParams.',
     );
   }
   return { controllerId: ctx.controllerId, controllerApiKey: ctx.controllerApiKey };
@@ -221,7 +221,7 @@ export async function requireControllerAuthorizedForSession(
     .limit(1);
 
   if (!controller) {
-    throw new Error("Controller not found");
+    throw new Error('Controller not found');
   }
 
   // Update the controller's authorized session (for tracking purposes)

@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import React, { useState, useMemo } from "react";
-import Box from "@mui/material/Box";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import GymCard from "@/app/components/gym-entity/gym-card";
-import GymDetail from "@/app/components/gym-entity/gym-detail";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
+import React, { useState, useMemo } from 'react';
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import GymCard from '@/app/components/gym-entity/gym-card';
+import GymDetail from '@/app/components/gym-entity/gym-detail';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   SEARCH_GYMS,
   type SearchGymsQueryVariables,
   type SearchGymsQueryResponse,
-} from "@/app/lib/graphql/operations";
-import type { Gym, GymConnection } from "@boardsesh/shared-schema";
-import { useDebouncedValue } from "@/app/hooks/use-debounced-value";
-import { useInfiniteScroll } from "@/app/hooks/use-infinite-scroll";
+} from '@/app/lib/graphql/operations';
+import type { Gym, GymConnection } from '@boardsesh/shared-schema';
+import { useDebouncedValue } from '@/app/hooks/use-debounced-value';
+import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
 
 interface GymSearchResultsProps {
   query: string;
@@ -31,7 +31,7 @@ export default function GymSearchResults({ query, authToken }: GymSearchResultsP
     GymConnection,
     Error
   >({
-    queryKey: ["searchGyms", debouncedQuery, authToken],
+    queryKey: ['searchGyms', debouncedQuery, authToken],
     queryFn: async ({ pageParam }) => {
       const client = createGraphQLHttpClient(authToken);
       const response = await client.request<SearchGymsQueryResponse, SearchGymsQueryVariables>(
@@ -59,7 +59,7 @@ export default function GymSearchResults({ query, authToken }: GymSearchResultsP
 
   if (query.length < 2) {
     return (
-      <Box sx={{ py: 4, textAlign: "center" }}>
+      <Box sx={{ py: 4, textAlign: 'center' }}>
         <Typography variant="body2" color="text.secondary">
           Type at least 2 characters to search
         </Typography>
@@ -69,7 +69,7 @@ export default function GymSearchResults({ query, authToken }: GymSearchResultsP
 
   if (isLoading && results.length === 0) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         <CircularProgress />
       </Box>
     );
@@ -77,7 +77,7 @@ export default function GymSearchResults({ query, authToken }: GymSearchResultsP
 
   if (!isLoading && results.length === 0 && debouncedQuery.length >= 2) {
     return (
-      <Box sx={{ py: 4, textAlign: "center" }}>
+      <Box sx={{ py: 4, textAlign: 'center' }}>
         <Typography variant="body2" color="text.secondary">
           No gyms found for &quot;{debouncedQuery}&quot;
         </Typography>
@@ -94,12 +94,12 @@ export default function GymSearchResults({ query, authToken }: GymSearchResultsP
       </Stack>
       <Box
         ref={sentinelRef}
-        sx={{ display: "flex", justifyContent: "center", py: 2, minHeight: 20 }}
+        sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}
       >
         {isFetchingNextPage && <CircularProgress size={24} />}
       </Box>
       <GymDetail
-        gymUuid={selectedGymUuid ?? ""}
+        gymUuid={selectedGymUuid ?? ''}
         open={!!selectedGymUuid}
         onClose={() => setSelectedGymUuid(null)}
         anchor="top"

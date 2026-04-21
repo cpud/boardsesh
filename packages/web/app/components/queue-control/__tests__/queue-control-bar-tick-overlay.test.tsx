@@ -1,23 +1,23 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
-import React from "react";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
+import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
+import React from 'react';
 
 // -- All mocks before imports --
 
 const mockShowMessage = vi.fn();
-vi.mock("@/app/components/providers/snackbar-provider", () => ({
+vi.mock('@/app/components/providers/snackbar-provider', () => ({
   useSnackbar: () => ({ showMessage: mockShowMessage }),
 }));
 
 const mockGetPreference = vi.fn().mockResolvedValue(null);
 const mockSetPreference = vi.fn().mockResolvedValue(undefined);
-vi.mock("@/app/lib/user-preferences-db", () => ({
+vi.mock('@/app/lib/user-preferences-db', () => ({
   getPreference: (...args: unknown[]) => mockGetPreference(...args),
   setPreference: (...args: unknown[]) => mockSetPreference(...args),
 }));
 
 let mockQueueContext: Record<string, unknown> = {};
-vi.mock("@/app/components/graphql-queue", () => ({
+vi.mock('@/app/components/graphql-queue', () => ({
   useQueueContext: () => mockQueueContext,
   useQueueData: () => mockQueueContext,
   useQueueActions: () => mockQueueContext,
@@ -34,7 +34,7 @@ vi.mock("@/app/components/graphql-queue", () => ({
     sessionId: (mockQueueContext as Record<string, unknown>).sessionId ?? null,
     sessionSummary: null,
     sessionGoal: null,
-    connectionState: (mockQueueContext as Record<string, unknown>).connectionState ?? "idle",
+    connectionState: (mockQueueContext as Record<string, unknown>).connectionState ?? 'idle',
     canMutate: (mockQueueContext as Record<string, unknown>).canMutate ?? true,
     isDisconnected: (mockQueueContext as Record<string, unknown>).isDisconnected ?? false,
     users: (mockQueueContext as Record<string, unknown>).users ?? [],
@@ -46,27 +46,27 @@ vi.mock("@/app/components/graphql-queue", () => ({
   }),
 }));
 
-vi.mock("next/navigation", () => ({
-  usePathname: () => "/kilter/1/1/1/40",
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/kilter/1/1/1/40',
   useParams: () => ({
-    board_name: "kilter",
-    layout_id: "1",
-    size_id: "1",
-    set_ids: "1",
-    angle: "40",
+    board_name: 'kilter',
+    layout_id: '1',
+    size_id: '1',
+    set_ids: '1',
+    angle: '40',
   }),
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
 }));
 
-vi.mock("next/link", () => ({
+vi.mock('next/link', () => ({
   default: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) =>
-    React.createElement("a", props, children),
+    React.createElement('a', props, children),
 }));
 
-vi.mock("@vercel/analytics", () => ({ track: vi.fn() }));
+vi.mock('@vercel/analytics', () => ({ track: vi.fn() }));
 
-vi.mock("@/app/hooks/use-card-swipe-navigation", () => ({
+vi.mock('@/app/hooks/use-card-swipe-navigation', () => ({
   useCardSwipeNavigation: () => ({
     swipeHandlers: {},
     swipeOffset: 0,
@@ -83,68 +83,68 @@ vi.mock("@/app/hooks/use-card-swipe-navigation", () => ({
   ENTER_ANIMATION_DURATION: 300,
 }));
 
-vi.mock("@/app/hooks/use-color-mode", () => ({
-  useColorMode: () => ({ mode: "light" }),
+vi.mock('@/app/hooks/use-color-mode', () => ({
+  useColorMode: () => ({ mode: 'light' }),
 }));
 
-vi.mock("@/app/lib/grade-colors", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/app/lib/grade-colors")>();
+vi.mock('@/app/lib/grade-colors', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/app/lib/grade-colors')>();
   return {
     ...actual,
     getGradeTintColor: () => null,
   };
 });
 
-vi.mock("@/app/components/climb-card/climb-thumbnail", () => ({
-  default: () => React.createElement("div", { "data-testid": "climb-thumbnail" }),
+vi.mock('@/app/components/climb-card/climb-thumbnail', () => ({
+  default: () => React.createElement('div', { 'data-testid': 'climb-thumbnail' }),
 }));
 
-vi.mock("@/app/components/climb-card/climb-title", () => ({
-  default: () => React.createElement("div", { "data-testid": "climb-title" }),
+vi.mock('@/app/components/climb-card/climb-title', () => ({
+  default: () => React.createElement('div', { 'data-testid': 'climb-title' }),
 }));
 
-vi.mock("@/app/components/queue-control/queue-list", () => ({
-  default: React.forwardRef(() => React.createElement("div", { "data-testid": "queue-list" })),
+vi.mock('@/app/components/queue-control/queue-list', () => ({
+  default: React.forwardRef(() => React.createElement('div', { 'data-testid': 'queue-list' })),
 }));
 
-vi.mock("@/app/components/queue-control/next-climb-button", () => ({
-  default: () => React.createElement("button", { "data-testid": "next-climb" }),
+vi.mock('@/app/components/queue-control/next-climb-button', () => ({
+  default: () => React.createElement('button', { 'data-testid': 'next-climb' }),
 }));
 
-vi.mock("@/app/components/queue-control/previous-climb-button", () => ({
-  default: () => React.createElement("button", { "data-testid": "prev-climb" }),
+vi.mock('@/app/components/queue-control/previous-climb-button', () => ({
+  default: () => React.createElement('button', { 'data-testid': 'prev-climb' }),
 }));
 
-vi.mock("@/app/components/logbook/tick-button", () => ({
+vi.mock('@/app/components/logbook/tick-button', () => ({
   TickButton: (props: { onActivateTickBar?: () => void; tickBarActive?: boolean }) =>
-    React.createElement("button", {
-      "data-testid": "tick-button",
+    React.createElement('button', {
+      'data-testid': 'tick-button',
       onClick: props.onActivateTickBar,
-      "data-tick-active": props.tickBarActive,
+      'data-tick-active': props.tickBarActive,
     }),
 }));
 
-vi.mock("@/app/components/board-page/share-button", () => ({
+vi.mock('@/app/components/board-page/share-button', () => ({
   ShareBoardButton: () => null,
 }));
 
-vi.mock("@/app/components/play-view/play-view-drawer", () => ({
+vi.mock('@/app/components/play-view/play-view-drawer', () => ({
   default: () => null,
 }));
 
-vi.mock("@/app/components/onboarding/onboarding-tour", () => ({
-  TOUR_DRAWER_EVENT: "tour-drawer",
+vi.mock('@/app/components/onboarding/onboarding-tour', () => ({
+  TOUR_DRAWER_EVENT: 'tour-drawer',
 }));
 
-vi.mock("@/app/components/ui/confirm-popover", () => ({
+vi.mock('@/app/components/ui/confirm-popover', () => ({
   ConfirmPopover: () => null,
 }));
 
-vi.mock("next-auth/react", () => ({
-  useSession: () => ({ status: "unauthenticated", data: null }),
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({ status: 'unauthenticated', data: null }),
 }));
 
-vi.mock("@/app/components/persistent-session/persistent-session-context", () => ({
+vi.mock('@/app/components/persistent-session/persistent-session-context', () => ({
   usePersistentSessionState: () => ({
     activeSession: null,
     localBoardDetails: null,
@@ -154,7 +154,7 @@ vi.mock("@/app/components/persistent-session/persistent-session-context", () => 
   }),
 }));
 
-vi.mock("@/app/components/board-bluetooth-control/bluetooth-context", () => ({
+vi.mock('@/app/components/board-bluetooth-control/bluetooth-context', () => ({
   useBluetoothContext: () => ({
     isConnected: false,
     isConnecting: false,
@@ -164,43 +164,43 @@ vi.mock("@/app/components/board-bluetooth-control/bluetooth-context", () => ({
   }),
 }));
 
-vi.mock("@/app/components/board-provider/board-provider-context", () => ({
+vi.mock('@/app/components/board-provider/board-provider-context', () => ({
   useBoardProvider: () => ({ logbook: [] }),
 }));
 
-vi.mock("@/app/components/logbook/quick-tick-bar", () => ({
+vi.mock('@/app/components/logbook/quick-tick-bar', () => ({
   QuickTickBar: React.forwardRef((_props: unknown, _ref: unknown) =>
-    React.createElement("div", { "data-testid": "quick-tick-bar" }),
+    React.createElement('div', { 'data-testid': 'quick-tick-bar' }),
   ),
 }));
 
-vi.mock("@/app/hooks/use-tick-save", () => ({
+vi.mock('@/app/hooks/use-tick-save', () => ({
   hasPriorHistoryForClimb: () => false,
 }));
 
-vi.mock("@/app/components/session-creation/start-sesh-drawer", () => ({
+vi.mock('@/app/components/session-creation/start-sesh-drawer', () => ({
   default: () => null,
 }));
 
-vi.mock("@/app/components/sesh-settings/sesh-settings-drawer-event", () => ({
+vi.mock('@/app/components/sesh-settings/sesh-settings-drawer-event', () => ({
   dispatchOpenSeshSettingsDrawer: vi.fn(),
 }));
 
-vi.mock("@/app/lib/session-utils", () => ({
-  generateSessionName: () => "Test Session",
+vi.mock('@/app/lib/session-utils', () => ({
+  generateSessionName: () => 'Test Session',
 }));
 
-vi.mock("qrcode.react", () => ({
+vi.mock('qrcode.react', () => ({
   QRCodeSVG: () => null,
 }));
 
-vi.mock("@/app/lib/share-utils", () => ({
+vi.mock('@/app/lib/share-utils', () => ({
   shareWithFallback: vi.fn(),
 }));
 
 // jsdom doesn't provide window.matchMedia — stub it before the component
 // accesses it (the swipe-hint effect calls matchMedia on mount).
-Object.defineProperty(window, "matchMedia", {
+Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation((query: string) => ({
     matches: false,
@@ -215,20 +215,20 @@ Object.defineProperty(window, "matchMedia", {
 });
 
 // Import after mocks
-import QueueControlBar from "../queue-control-bar";
+import QueueControlBar from '../queue-control-bar';
 
 const mockClimb = {
-  uuid: "climb-1",
-  setter_username: "setter1",
-  name: "Test Climb",
-  description: "",
-  frames: "",
+  uuid: 'climb-1',
+  setter_username: 'setter1',
+  name: 'Test Climb',
+  description: '',
+  frames: '',
   angle: 40,
   ascensionist_count: 5,
-  difficulty: "7",
-  quality_average: "3.5",
+  difficulty: '7',
+  quality_average: '3.5',
   stars: 3,
-  difficulty_error: "",
+  difficulty_error: '',
   mirrored: false,
   benchmark_difficulty: null,
   userAscents: 0,
@@ -236,8 +236,8 @@ const mockClimb = {
 };
 
 const baseQueueContext = {
-  queue: [{ uuid: "item-1", climb: mockClimb, addedBy: "user-1", suggested: false }],
-  currentClimbQueueItem: { uuid: "item-1", climb: mockClimb, addedBy: "user-1", suggested: false },
+  queue: [{ uuid: 'item-1', climb: mockClimb, addedBy: 'user-1', suggested: false }],
+  currentClimbQueueItem: { uuid: 'item-1', climb: mockClimb, addedBy: 'user-1', suggested: false },
   currentClimb: mockClimb,
   climbSearchResults: [],
   suggestedClimbs: [],
@@ -245,9 +245,9 @@ const baseQueueContext = {
   isFetchingNextPage: false,
   hasDoneFirstFetch: true,
   viewOnlyMode: false,
-  parsedParams: { board_name: "kilter", layout_id: "1", size_id: "1", set_ids: ["1"], angle: "40" },
-  connectionState: "connected",
-  sessionId: "session-1",
+  parsedParams: { board_name: 'kilter', layout_id: '1', size_id: '1', set_ids: ['1'], angle: '40' },
+  connectionState: 'connected',
+  sessionId: 'session-1',
   canMutate: true,
   isDisconnected: false,
   users: [],
@@ -267,17 +267,17 @@ const baseQueueContext = {
 };
 
 const defaultProps = {
-  angle: "40" as unknown as number,
+  angle: '40' as unknown as number,
   boardDetails: {
-    board_name: "kilter",
+    board_name: 'kilter',
     layout_id: 1,
     size_id: 1,
-    set_ids: "1",
+    set_ids: '1',
     images_to_holds: {},
-    layout_name: "Original",
-    size_name: "12x12",
-    size_description: "Standard",
-    set_names: ["Base"],
+    layout_name: 'Original',
+    size_name: '12x12',
+    size_description: 'Standard',
+    set_names: ['Base'],
     edge_left: 0,
     edge_right: 0,
     edge_bottom: 0,
@@ -290,11 +290,11 @@ const getOverlay = () => document.querySelector('[data-testid="tick-backdrop-ove
 // Helper: activate the tick bar and wait for async effects to settle
 const activateTickBar = async () => {
   await act(async () => {
-    fireEvent.click(screen.getByTestId("tick-button"));
+    fireEvent.click(screen.getByTestId('tick-button'));
   });
 };
 
-describe("QueueControlBar tick overlay", () => {
+describe('QueueControlBar tick overlay', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockQueueContext = { ...baseQueueContext };
@@ -302,14 +302,14 @@ describe("QueueControlBar tick overlay", () => {
     mockSetPreference.mockResolvedValue(undefined);
   });
 
-  it("does not render overlay when tick bar is inactive", async () => {
+  it('does not render overlay when tick bar is inactive', async () => {
     await act(async () => {
       render(<QueueControlBar {...defaultProps} />);
     });
     expect(getOverlay()).toBeNull();
   });
 
-  it("renders overlay when tick bar is activated", async () => {
+  it('renders overlay when tick bar is activated', async () => {
     await act(async () => {
       render(<QueueControlBar {...defaultProps} />);
     });
@@ -319,7 +319,7 @@ describe("QueueControlBar tick overlay", () => {
     expect(getOverlay()).toBeTruthy();
   });
 
-  it("dismisses tick bar when overlay is clicked", async () => {
+  it('dismisses tick bar when overlay is clicked', async () => {
     await act(async () => {
       render(<QueueControlBar {...defaultProps} />);
     });
@@ -333,10 +333,10 @@ describe("QueueControlBar tick overlay", () => {
     });
 
     // QuickTickBar should unmount when tick bar closes
-    expect(screen.queryByTestId("quick-tick-bar")).toBeNull();
+    expect(screen.queryByTestId('quick-tick-bar')).toBeNull();
   });
 
-  it("overlay has active class when open and loses it on close", async () => {
+  it('overlay has active class when open and loses it on close', async () => {
     await act(async () => {
       render(<QueueControlBar {...defaultProps} />);
     });
@@ -345,7 +345,7 @@ describe("QueueControlBar tick overlay", () => {
 
     const overlay = getOverlay();
     expect(overlay).toBeTruthy();
-    expect(overlay!.getAttribute("class")).toMatch(/tickOverlayActive/);
+    expect(overlay!.getAttribute('class')).toMatch(/tickOverlayActive/);
 
     await act(async () => {
       fireEvent.click(overlay!);
@@ -353,12 +353,12 @@ describe("QueueControlBar tick overlay", () => {
 
     const overlayAfter = getOverlay();
     if (overlayAfter) {
-      expect(overlayAfter.getAttribute("class")).not.toMatch(/tickOverlayActive/);
+      expect(overlayAfter.getAttribute('class')).not.toMatch(/tickOverlayActive/);
     }
   });
 });
 
-describe("QueueControlBar tick bar expanded persistence", () => {
+describe('QueueControlBar tick bar expanded persistence', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockQueueContext = { ...baseQueueContext };
@@ -366,7 +366,7 @@ describe("QueueControlBar tick bar expanded persistence", () => {
     mockSetPreference.mockResolvedValue(undefined);
   });
 
-  it("reads persisted expanded state when tick bar opens", async () => {
+  it('reads persisted expanded state when tick bar opens', async () => {
     mockGetPreference.mockResolvedValue(true);
 
     await act(async () => {
@@ -375,18 +375,18 @@ describe("QueueControlBar tick bar expanded persistence", () => {
 
     await activateTickBar();
 
-    expect(mockGetPreference).toHaveBeenCalledWith("tickBarExpanded");
+    expect(mockGetPreference).toHaveBeenCalledWith('tickBarExpanded');
   });
 
-  it("does not read preference when tick bar is not opening", async () => {
+  it('does not read preference when tick bar is not opening', async () => {
     await act(async () => {
       render(<QueueControlBar {...defaultProps} />);
     });
 
-    expect(mockGetPreference).not.toHaveBeenCalledWith("tickBarExpanded");
+    expect(mockGetPreference).not.toHaveBeenCalledWith('tickBarExpanded');
   });
 
-  it("persists expanded state when user clicks expand button", async () => {
+  it('persists expanded state when user clicks expand button', async () => {
     await act(async () => {
       render(<QueueControlBar {...defaultProps} />);
     });
@@ -394,13 +394,13 @@ describe("QueueControlBar tick bar expanded persistence", () => {
     await activateTickBar();
 
     await act(async () => {
-      fireEvent.click(screen.getByLabelText("Expand tick bar"));
+      fireEvent.click(screen.getByLabelText('Expand tick bar'));
     });
 
-    expect(mockSetPreference).toHaveBeenCalledWith("tickBarExpanded", true);
+    expect(mockSetPreference).toHaveBeenCalledWith('tickBarExpanded', true);
   });
 
-  it("persists collapsed state when user clicks collapse button", async () => {
+  it('persists collapsed state when user clicks collapse button', async () => {
     mockGetPreference.mockResolvedValue(true);
 
     await act(async () => {
@@ -411,17 +411,17 @@ describe("QueueControlBar tick bar expanded persistence", () => {
 
     // Wait for expanded state to be restored from IndexedDB
     await waitFor(() => {
-      expect(screen.getByLabelText("Collapse tick bar")).toBeTruthy();
+      expect(screen.getByLabelText('Collapse tick bar')).toBeTruthy();
     });
 
     await act(async () => {
-      fireEvent.click(screen.getByLabelText("Collapse tick bar"));
+      fireEvent.click(screen.getByLabelText('Collapse tick bar'));
     });
 
-    expect(mockSetPreference).toHaveBeenCalledWith("tickBarExpanded", false);
+    expect(mockSetPreference).toHaveBeenCalledWith('tickBarExpanded', false);
   });
 
-  it("does not persist state on automatic close reset", async () => {
+  it('does not persist state on automatic close reset', async () => {
     await act(async () => {
       render(<QueueControlBar {...defaultProps} />);
     });
@@ -436,10 +436,10 @@ describe("QueueControlBar tick bar expanded persistence", () => {
       fireEvent.click(overlay!);
     });
 
-    expect(mockSetPreference).not.toHaveBeenCalledWith("tickBarExpanded", false);
+    expect(mockSetPreference).not.toHaveBeenCalledWith('tickBarExpanded', false);
   });
 
-  it("restores expanded state on re-open after close", async () => {
+  it('restores expanded state on re-open after close', async () => {
     mockGetPreference.mockResolvedValue(true);
 
     await act(async () => {
@@ -449,7 +449,7 @@ describe("QueueControlBar tick bar expanded persistence", () => {
     await activateTickBar();
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Collapse tick bar")).toBeTruthy();
+      expect(screen.getByLabelText('Collapse tick bar')).toBeTruthy();
     });
 
     // Close
@@ -469,6 +469,6 @@ describe("QueueControlBar tick bar expanded persistence", () => {
     // Re-open
     await activateTickBar();
 
-    expect(mockGetPreference).toHaveBeenCalledWith("tickBarExpanded");
+    expect(mockGetPreference).toHaveBeenCalledWith('tickBarExpanded');
   });
 });

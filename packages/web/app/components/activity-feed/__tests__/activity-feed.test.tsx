@@ -1,40 +1,40 @@
-import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
-import { render, screen, waitFor } from "@testing-library/react";
-import React from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createTestQueryClient } from "@/app/test-utils/test-providers";
-import type { SessionFeedItem } from "@boardsesh/shared-schema";
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import { render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/app/test-utils/test-providers';
+import type { SessionFeedItem } from '@boardsesh/shared-schema';
 
 // --- Mocks ---
 
 const mockRequest = vi.fn();
-vi.mock("@/app/lib/graphql/client", () => ({
+vi.mock('@/app/lib/graphql/client', () => ({
   createGraphQLHttpClient: () => ({ request: mockRequest }),
 }));
 
-vi.mock("@/app/hooks/use-ws-auth-token", () => ({
+vi.mock('@/app/hooks/use-ws-auth-token', () => ({
   useWsAuthToken: vi.fn(),
 }));
 
-vi.mock("@/app/lib/graphql/operations", () => ({
-  GET_SESSION_GROUPED_FEED: "GET_SESSION_GROUPED_FEED",
+vi.mock('@/app/lib/graphql/operations', () => ({
+  GET_SESSION_GROUPED_FEED: 'GET_SESSION_GROUPED_FEED',
 }));
 
-vi.mock("@/app/hooks/use-infinite-scroll", () => ({
+vi.mock('@/app/hooks/use-infinite-scroll', () => ({
   useInfiniteScroll: () => ({ sentinelRef: { current: null } }),
 }));
 
-vi.mock("../session-feed-card", () => ({
+vi.mock('../session-feed-card', () => ({
   default: ({ session }: { session: SessionFeedItem }) => (
     <div data-testid="activity-feed-item">{session.sessionId}</div>
   ),
 }));
-vi.mock("../feed-item-skeleton", () => ({
+vi.mock('../feed-item-skeleton', () => ({
   default: () => <div data-testid="feed-item-skeleton" />,
 }));
 
-import { useWsAuthToken } from "@/app/hooks/use-ws-auth-token";
-import ActivityFeed from "../activity-feed";
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import ActivityFeed from '../activity-feed';
 
 const mockUseWsAuthToken = vi.mocked(useWsAuthToken);
 
@@ -43,12 +43,12 @@ const mockUseWsAuthToken = vi.mocked(useWsAuthToken);
 function makeSessionFeedItem(id: string): SessionFeedItem {
   return {
     sessionId: id,
-    sessionType: "inferred",
+    sessionType: 'inferred',
     sessionName: null,
     participants: [
       {
-        userId: "user-1",
-        displayName: "Test User",
+        userId: 'user-1',
+        displayName: 'Test User',
         avatarUrl: null,
         sends: 3,
         flashes: 1,
@@ -59,11 +59,11 @@ function makeSessionFeedItem(id: string): SessionFeedItem {
     totalFlashes: 1,
     totalAttempts: 2,
     tickCount: 5,
-    gradeDistribution: [{ grade: "V5", flash: 1, send: 2, attempt: 2 }],
-    boardTypes: ["kilter"],
-    hardestGrade: "V5",
-    firstTickAt: "2024-01-15T10:00:00.000Z",
-    lastTickAt: "2024-01-15T12:00:00.000Z",
+    gradeDistribution: [{ grade: 'V5', flash: 1, send: 2, attempt: 2 }],
+    boardTypes: ['kilter'],
+    hardestGrade: 'V5',
+    firstTickAt: '2024-01-15T10:00:00.000Z',
+    lastTickAt: '2024-01-15T12:00:00.000Z',
     durationMinutes: 120,
     goal: null,
     upvotes: 0,
@@ -80,14 +80,14 @@ function createWrapper(queryClient?: QueryClient) {
   );
 }
 
-describe("ActivityFeed", () => {
+describe('ActivityFeed', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockRequest.mockReset();
   });
 
-  describe("Loading state", () => {
-    it("shows skeleton placeholders while loading", () => {
+  describe('Loading state', () => {
+    it('shows skeleton placeholders while loading', () => {
       mockUseWsAuthToken.mockReturnValue({
         token: null,
         isAuthenticated: false,
@@ -97,11 +97,11 @@ describe("ActivityFeed", () => {
 
       render(<ActivityFeed isAuthenticated={false} />, { wrapper: createWrapper() });
 
-      expect(screen.getAllByTestId("feed-item-skeleton")).toHaveLength(3);
+      expect(screen.getAllByTestId('feed-item-skeleton')).toHaveLength(3);
     });
   });
 
-  describe("Unauthenticated", () => {
+  describe('Unauthenticated', () => {
     beforeEach(() => {
       mockUseWsAuthToken.mockReturnValue({
         token: null,
@@ -111,8 +111,8 @@ describe("ActivityFeed", () => {
       });
     });
 
-    it("fetches sessionGroupedFeed and renders session cards", async () => {
-      const sessions = [makeSessionFeedItem("s1"), makeSessionFeedItem("s2")];
+    it('fetches sessionGroupedFeed and renders session cards', async () => {
+      const sessions = [makeSessionFeedItem('s1'), makeSessionFeedItem('s2')];
       mockRequest.mockResolvedValueOnce({
         sessionGroupedFeed: { sessions, cursor: null, hasMore: false },
       });
@@ -120,14 +120,14 @@ describe("ActivityFeed", () => {
       render(<ActivityFeed isAuthenticated={false} />, { wrapper: createWrapper() });
 
       await waitFor(() => {
-        expect(screen.getAllByTestId("activity-feed-item")).toHaveLength(2);
+        expect(screen.getAllByTestId('activity-feed-item')).toHaveLength(2);
       });
 
       expect(mockRequest).toHaveBeenCalledTimes(1);
-      expect(mockRequest).toHaveBeenCalledWith("GET_SESSION_GROUPED_FEED", expect.any(Object));
+      expect(mockRequest).toHaveBeenCalledWith('GET_SESSION_GROUPED_FEED', expect.any(Object));
     });
 
-    it("does not send sortBy or topPeriod in query", async () => {
+    it('does not send sortBy or topPeriod in query', async () => {
       mockRequest.mockResolvedValueOnce({
         sessionGroupedFeed: { sessions: [], cursor: null, hasMore: false },
       });
@@ -136,7 +136,7 @@ describe("ActivityFeed", () => {
 
       await waitFor(() => {
         expect(mockRequest).toHaveBeenCalledWith(
-          "GET_SESSION_GROUPED_FEED",
+          'GET_SESSION_GROUPED_FEED',
           expect.objectContaining({
             input: expect.not.objectContaining({
               sortBy: expect.anything(),
@@ -147,9 +147,9 @@ describe("ActivityFeed", () => {
       });
     });
 
-    it("shows sign-in alert for unauthenticated users", async () => {
+    it('shows sign-in alert for unauthenticated users', async () => {
       mockRequest.mockResolvedValueOnce({
-        sessionGroupedFeed: { sessions: [makeSessionFeedItem("s1")], cursor: null, hasMore: false },
+        sessionGroupedFeed: { sessions: [makeSessionFeedItem('s1')], cursor: null, hasMore: false },
       });
 
       render(<ActivityFeed isAuthenticated={false} />, { wrapper: createWrapper() });
@@ -159,7 +159,7 @@ describe("ActivityFeed", () => {
       });
     });
 
-    it("shows empty state when no sessions", async () => {
+    it('shows empty state when no sessions', async () => {
       mockRequest.mockResolvedValueOnce({
         sessionGroupedFeed: { sessions: [], cursor: null, hasMore: false },
       });
@@ -172,32 +172,32 @@ describe("ActivityFeed", () => {
     });
   });
 
-  describe("Authenticated", () => {
+  describe('Authenticated', () => {
     beforeEach(() => {
       mockUseWsAuthToken.mockReturnValue({
-        token: "test-token",
+        token: 'test-token',
         isAuthenticated: true,
         isLoading: false,
         error: null,
       });
     });
 
-    it("fetches and renders session cards", async () => {
-      const sessions = [makeSessionFeedItem("p1"), makeSessionFeedItem("p2")];
+    it('fetches and renders session cards', async () => {
+      const sessions = [makeSessionFeedItem('p1'), makeSessionFeedItem('p2')];
       mockRequest.mockResolvedValueOnce({
-        sessionGroupedFeed: { sessions, cursor: "cursor-1", hasMore: true },
+        sessionGroupedFeed: { sessions, cursor: 'cursor-1', hasMore: true },
       });
 
       render(<ActivityFeed isAuthenticated={true} />, { wrapper: createWrapper() });
 
       await waitFor(() => {
-        expect(screen.getAllByTestId("activity-feed-item")).toHaveLength(2);
+        expect(screen.getAllByTestId('activity-feed-item')).toHaveLength(2);
       });
 
       expect(mockRequest).toHaveBeenCalledTimes(1);
     });
 
-    it("shows empty state with find climbers button", async () => {
+    it('shows empty state with find climbers button', async () => {
       const onFindClimbers = vi.fn();
       mockRequest.mockResolvedValueOnce({
         sessionGroupedFeed: { sessions: [], cursor: null, hasMore: false },
@@ -213,8 +213,8 @@ describe("ActivityFeed", () => {
     });
   });
 
-  describe("initialData", () => {
-    it("renders SSR-provided session data immediately", () => {
+  describe('initialData', () => {
+    it('renders SSR-provided session data immediately', () => {
       mockUseWsAuthToken.mockReturnValue({
         token: null,
         isAuthenticated: false,
@@ -223,8 +223,8 @@ describe("ActivityFeed", () => {
       });
 
       const initialFeedResult = {
-        sessions: [makeSessionFeedItem("init-1")],
-        cursor: "init-cursor",
+        sessions: [makeSessionFeedItem('init-1')],
+        cursor: 'init-cursor',
         hasMore: true,
       };
 
@@ -232,12 +232,12 @@ describe("ActivityFeed", () => {
         wrapper: createWrapper(),
       });
 
-      expect(screen.getByText("init-1")).toBeTruthy();
+      expect(screen.getByText('init-1')).toBeTruthy();
     });
   });
 
-  describe("Board filter", () => {
-    it("passes boardUuid to the query", async () => {
+  describe('Board filter', () => {
+    it('passes boardUuid to the query', async () => {
       mockUseWsAuthToken.mockReturnValue({
         token: null,
         isAuthenticated: false,
@@ -255,9 +255,9 @@ describe("ActivityFeed", () => {
 
       await waitFor(() => {
         expect(mockRequest).toHaveBeenCalledWith(
-          "GET_SESSION_GROUPED_FEED",
+          'GET_SESSION_GROUPED_FEED',
           expect.objectContaining({
-            input: expect.objectContaining({ boardUuid: "board-123" }),
+            input: expect.objectContaining({ boardUuid: 'board-123' }),
           }),
         );
       });

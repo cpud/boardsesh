@@ -1,32 +1,32 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useCallback } from "react";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
-import AcUnitIcon from "@mui/icons-material/AcUnit";
-import { themeTokens } from "@/app/theme/theme-config";
-import { useWsAuthToken } from "@/app/hooks/use-ws-auth-token";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
+import React, { useState, useEffect, useCallback } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import AcUnitIcon from '@mui/icons-material/AcUnit';
+import { themeTokens } from '@/app/theme/theme-config';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   GET_CLIMB_COMMUNITY_STATUS,
   GET_CLIMB_PROPOSALS,
   GET_MY_ROLES,
-} from "@/app/lib/graphql/operations/proposals";
+} from '@/app/lib/graphql/operations/proposals';
 import type {
   ClimbCommunityStatusType,
   Proposal,
   ProposalConnection,
   CommunityRoleAssignment,
-} from "@boardsesh/shared-schema";
-import CollapsibleSection from "@/app/components/collapsible-section/collapsible-section";
-import type { CollapsibleSectionConfig } from "@/app/components/collapsible-section/collapsible-section";
-import ProposalCard from "./proposal-card";
-import CreateProposalForm from "./create-proposal-form";
-import FreezeIndicator from "./freeze-indicator";
-import FreezeClimbDialog from "./freeze-climb-dialog";
-import CommunityStatusBadge from "./community-status-badge";
+} from '@boardsesh/shared-schema';
+import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
+import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
+import ProposalCard from './proposal-card';
+import CreateProposalForm from './create-proposal-form';
+import FreezeIndicator from './freeze-indicator';
+import FreezeClimbDialog from './freeze-climb-dialog';
+import CommunityStatusBadge from './community-status-badge';
 
 interface ProposalSectionProps {
   climbUuid: string;
@@ -63,10 +63,10 @@ export default function ProposalSection({
           { climbUuid, boardType, angle },
         ),
         client.request<{ climbProposals: ProposalConnection }>(GET_CLIMB_PROPOSALS, {
-          input: { climbUuid, boardType, angle, status: "open", limit: 10, offset: 0 },
+          input: { climbUuid, boardType, angle, status: 'open', limit: 10, offset: 0 },
         }),
         client.request<{ climbProposals: ProposalConnection }>(GET_CLIMB_PROPOSALS, {
-          input: { climbUuid, boardType, angle, status: "approved", limit: 10, offset: 0 },
+          input: { climbUuid, boardType, angle, status: 'approved', limit: 10, offset: 0 },
         }),
       ]);
 
@@ -82,7 +82,7 @@ export default function ProposalSection({
           );
           const hasRole = rolesResult.myRoles.some(
             (r) =>
-              (r.role === "admin" || r.role === "community_leader") &&
+              (r.role === 'admin' || r.role === 'community_leader') &&
               (r.boardType === null || r.boardType === boardType),
           );
           setIsAdminOrLeader(hasRole);
@@ -91,7 +91,7 @@ export default function ProposalSection({
         }
       }
     } catch (err) {
-      console.error("[ProposalSection] Failed to fetch data:", err);
+      console.error('[ProposalSection] Failed to fetch data:', err);
     } finally {
       setLoading(false);
     }
@@ -113,7 +113,7 @@ export default function ProposalSection({
     (updated: Proposal) => {
       setProposals((prev) => prev.map((p) => (p.uuid === updated.uuid ? updated : p)));
       // Refresh status if proposal was resolved
-      if (updated.status !== "open") {
+      if (updated.status !== 'open') {
         fetchData();
       }
     },
@@ -132,9 +132,9 @@ export default function ProposalSection({
 
   const acceptedSummaryParts: string[] = [];
   for (const p of acceptedProposals) {
-    if (p.type === "grade") acceptedSummaryParts.push(`Grade: ${p.proposedValue}`);
-    else if (p.type === "classic") acceptedSummaryParts.push("Classic");
-    else if (p.type === "benchmark") acceptedSummaryParts.push("Benchmark");
+    if (p.type === 'grade') acceptedSummaryParts.push(`Grade: ${p.proposedValue}`);
+    else if (p.type === 'classic') acceptedSummaryParts.push('Classic');
+    else if (p.type === 'benchmark') acceptedSummaryParts.push('Benchmark');
   }
 
   const hasAccepted = acceptedProposals.length > 0;
@@ -142,20 +142,20 @@ export default function ProposalSection({
 
   const sections: CollapsibleSectionConfig[] = [
     {
-      key: "open",
-      label: "Open Proposals",
-      title: "Open Proposals",
-      defaultSummary: "None",
+      key: 'open',
+      label: 'Open Proposals',
+      title: 'Open Proposals',
+      defaultSummary: 'None',
       getSummary: () => (hasOpen ? [`${proposals.length} open`] : []),
       content: (
         <Box>
           {/* Section header with create button */}
           <Box
-            sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}
           >
-            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               {isAdminOrLeader && (
-                <Tooltip title={communityStatus?.isFrozen ? "Unfreeze climb" : "Freeze climb"}>
+                <Tooltip title={communityStatus?.isFrozen ? 'Unfreeze climb' : 'Freeze climb'}>
                   <IconButton
                     size="small"
                     onClick={() => setShowFreezeDialog(true)}
@@ -196,7 +196,7 @@ export default function ProposalSection({
           ) : (
             <Typography
               variant="body2"
-              sx={{ color: themeTokens.neutral[400], textAlign: "center", py: 2 }}
+              sx={{ color: themeTokens.neutral[400], textAlign: 'center', py: 2 }}
             >
               No open proposals
             </Typography>
@@ -208,10 +208,10 @@ export default function ProposalSection({
 
   if (hasAccepted) {
     sections.push({
-      key: "accepted",
-      label: "Accepted",
-      title: "Accepted Proposals",
-      defaultSummary: "None",
+      key: 'accepted',
+      label: 'Accepted',
+      title: 'Accepted Proposals',
+      defaultSummary: 'None',
       getSummary: () => (acceptedSummaryParts.length > 0 ? acceptedSummaryParts : []),
       content: (
         <Box>

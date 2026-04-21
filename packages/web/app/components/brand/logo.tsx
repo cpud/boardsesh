@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React from "react";
-import Link from "next/link";
-import { themeTokens } from "@/app/theme/theme-config";
+import React from 'react';
+import Link from 'next/link';
+import { themeTokens } from '@/app/theme/theme-config';
 
 type LogoProps = {
-  size?: "sm" | "md" | "lg";
+  size?: 'sm' | 'md' | 'lg';
   showText?: boolean;
   linkToHome?: boolean;
 };
@@ -74,7 +74,7 @@ const PixelLetter = ({
   </>
 );
 
-export const Logo = ({ size = "md", showText = true, linkToHome = true }: LogoProps) => {
+export const Logo = ({ size = 'md', showText = true, linkToHome = true }: LogoProps) => {
   const { icon, fontSize, gap } = sizes[size];
   const pixelSize = 3;
   const shadowOffset = 2;
@@ -82,11 +82,11 @@ export const Logo = ({ size = "md", showText = true, linkToHome = true }: LogoPr
   const logoContent = (
     <div
       style={{
-        display: "flex",
-        alignItems: "center",
+        display: 'flex',
+        alignItems: 'center',
         gap,
-        textDecoration: "none",
-        color: "inherit",
+        textDecoration: 'none',
+        color: 'inherit',
       }}
     >
       <svg
@@ -137,8 +137,8 @@ export const Logo = ({ size = "md", showText = true, linkToHome = true }: LogoPr
           style={{
             fontSize,
             fontWeight: themeTokens.typography.fontWeight.bold,
-            color: "var(--neutral-800)",
-            letterSpacing: "-0.02em",
+            color: 'var(--neutral-800)',
+            letterSpacing: '-0.02em',
             lineHeight: 1,
           }}
         >
@@ -150,7 +150,7 @@ export const Logo = ({ size = "md", showText = true, linkToHome = true }: LogoPr
 
   if (linkToHome) {
     return (
-      <Link href="/" style={{ textDecoration: "none", color: "inherit", display: "flex" }}>
+      <Link href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex' }}>
         {logoContent}
       </Link>
     );

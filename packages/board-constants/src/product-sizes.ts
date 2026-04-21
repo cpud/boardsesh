@@ -1,21 +1,21 @@
-import { AURORA_BOARDS } from "@boardsesh/shared-schema";
-import type { BoardName } from "@boardsesh/shared-schema";
+import { AURORA_BOARDS } from '@boardsesh/shared-schema';
+import type { BoardName } from '@boardsesh/shared-schema';
 import {
   AURORA_PRODUCT_SIZES,
   HOLE_PLACEMENTS,
   IMAGE_FILENAMES,
   LAYOUTS,
   SETS,
-} from "./generated/product-sizes-data";
-import type { HoldTuple, LayoutData, ProductSizeData, SetData, SizeEdges } from "./types";
+} from './generated/product-sizes-data';
+import type { HoldTuple, LayoutData, ProductSizeData, SetData, SizeEdges } from './types';
 
-export type { HoldTuple, LayoutData, ProductSizeData, SetData, SizeEdges } from "./types";
+export type { HoldTuple, LayoutData, ProductSizeData, SetData, SizeEdges } from './types';
 
 const MOONBOARD_PRODUCT_SIZES: Record<number, ProductSizeData> = {
   1: {
     id: 1,
-    name: "Standard",
-    description: "11x18 Grid",
+    name: 'Standard',
+    description: '11x18 Grid',
     edgeLeft: 0,
     edgeRight: 11,
     edgeBottom: 0,
@@ -67,7 +67,7 @@ export const getSizesForLayoutId = (boardName: BoardName, layoutId: number): Pro
 
     // Special filtering for Grasshopper:
     // Hide 'GrandMaster' (id: 1) in favor of 'GrandMaster with Tweeners' (id: 4)
-    if (boardName === "grasshopper" && size.id === 1) return false;
+    if (boardName === 'grasshopper' && size.id === 1) return false;
 
     return true;
   });
@@ -80,7 +80,7 @@ export const getSizesForProduct = (boardName: BoardName, productId: number): Pro
 
     // Special filtering for Grasshopper:
     // Hide 'GrandMaster' (id: 1) in favor of 'GrandMaster with Tweeners' (id: 4)
-    if (boardName === "grasshopper" && size.id === 1) return false;
+    if (boardName === 'grasshopper' && size.id === 1) return false;
 
     return true;
   });
@@ -115,12 +115,12 @@ export const ORPHANED_KILTER_LAYOUT_DEFAULTS: Record<
   number,
   { name: string; sizeId: number; setIds: string }
 > = {
-  2: { name: "Kilter JUUL", sizeId: 11, setIds: "21" },
-  3: { name: "Kilter Demo", sizeId: 12, setIds: "22" },
-  4: { name: "Kilter BKB", sizeId: 13, setIds: "23" },
-  5: { name: "Kilter Spire", sizeId: 15, setIds: "24" },
-  6: { name: "Kilter Orbit (v1)", sizeId: 16, setIds: "25" },
-  7: { name: "Kilter Orbit (v2)", sizeId: 16, setIds: "25" },
+  2: { name: 'Kilter JUUL', sizeId: 11, setIds: '21' },
+  3: { name: 'Kilter Demo', sizeId: 12, setIds: '22' },
+  4: { name: 'Kilter BKB', sizeId: 13, setIds: '23' },
+  5: { name: 'Kilter Spire', sizeId: 15, setIds: '24' },
+  6: { name: 'Kilter Orbit (v1)', sizeId: 16, setIds: '25' },
+  7: { name: 'Kilter Orbit (v2)', sizeId: 16, setIds: '25' },
 };
 
 export const getBoardSelectorOptions = () => {

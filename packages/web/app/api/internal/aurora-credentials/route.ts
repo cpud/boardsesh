@@ -1,22 +1,22 @@
-import { getServerSession } from "next-auth/next";
-import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/app/lib/db/db";
-import * as schema from "@/app/lib/db/schema";
-import { eq, and } from "drizzle-orm";
-import { z } from "zod";
-import { authOptions } from "@/app/lib/auth/auth-options";
-import { encrypt, decrypt } from "@boardsesh/crypto";
-import AuroraClimbingClient from "@/app/lib/api-wrappers/aurora-rest-client/aurora-rest-client";
-import { AuroraBoardName } from "@/app/lib/api-wrappers/aurora/types";
+import { getServerSession } from 'next-auth/next';
+import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '@/app/lib/db/db';
+import * as schema from '@/app/lib/db/schema';
+import { eq, and } from 'drizzle-orm';
+import { z } from 'zod';
+import { authOptions } from '@/app/lib/auth/auth-options';
+import { encrypt, decrypt } from '@boardsesh/crypto';
+import AuroraClimbingClient from '@/app/lib/api-wrappers/aurora-rest-client/aurora-rest-client';
+import { AuroraBoardName } from '@/app/lib/api-wrappers/aurora/types';
 
 const saveCredentialsSchema = z.object({
-  boardType: z.enum(["kilter", "tension"]),
-  username: z.string().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
+  boardType: z.enum(['kilter', 'tension']),
+  username: z.string().min(1, 'Username is required'),
+  password: z.string().min(1, 'Password is required'),
 });
 
 const deleteCredentialsSchema = z.object({
-  boardType: z.enum(["kilter", "tension"]),
+  boardType: z.enum(['kilter', 'tension']),
 });
 
 export interface AuroraCredentialStatus {
@@ -37,7 +37,7 @@ export async function GET() {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const db = getDb();
@@ -54,7 +54,7 @@ export async function GET() {
         username = decrypt(cred.encryptedUsername);
       } catch (decryptError) {
         console.error(`Failed to decrypt username for ${cred.boardType} credential:`, decryptError);
-        username = "[Decryption Failed]";
+        username = '[Decryption Failed]';
       }
 
       return {
@@ -70,8 +70,8 @@ export async function GET() {
 
     return NextResponse.json({ credentials: credentialStatuses });
   } catch (error) {
-    console.error("Failed to get Aurora credentials:", error);
-    return NextResponse.json({ error: "Failed to get credentials" }, { status: 500 });
+    console.error('Failed to get Aurora credentials:', error);
+    return NextResponse.json({ error: 'Failed to get credentials' }, { status: 500 });
   }
 }
 
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -104,14 +104,14 @@ export async function POST(request: NextRequest) {
     try {
       loginResponse = await auroraClient.signIn(username, password);
     } catch (error) {
-      if (error instanceof Error && error.message.includes("401")) {
-        return NextResponse.json({ error: "Invalid Aurora credentials" }, { status: 401 });
+      if (error instanceof Error && error.message.includes('401')) {
+        return NextResponse.json({ error: 'Invalid Aurora credentials' }, { status: 401 });
       }
       throw error;
     }
 
     if (!loginResponse.token || !loginResponse.user_id) {
-      return NextResponse.json({ error: "Invalid login response from Aurora" }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid login response from Aurora' }, { status: 400 });
     }
 
     const db = getDb();
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
           auroraUserId: loginResponse.user_id,
           auroraToken: encryptedToken,
           lastSyncAt: null,
-          syncStatus: "pending",
+          syncStatus: 'pending',
           syncError: null,
           updatedAt: now,
         })
@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
         auroraUserId: loginResponse.user_id,
         auroraToken: encryptedToken,
         lastSyncAt: null,
-        syncStatus: "pending",
+        syncStatus: 'pending',
         syncError: null,
       });
     }
@@ -211,14 +211,14 @@ export async function POST(request: NextRequest) {
         auroraUsername: username,
         auroraUserId: loginResponse.user_id,
         lastSyncAt: null,
-        syncStatus: "pending",
+        syncStatus: 'pending',
         syncError: null,
         createdAt: now.toISOString(),
       },
     });
   } catch (error) {
-    console.error("Failed to save Aurora credentials:", error);
-    return NextResponse.json({ error: "Failed to save credentials" }, { status: 500 });
+    console.error('Failed to save Aurora credentials:', error);
+    return NextResponse.json({ error: 'Failed to save credentials' }, { status: 500 });
   }
 }
 
@@ -230,7 +230,7 @@ export async function DELETE(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -268,7 +268,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to delete Aurora credentials:", error);
-    return NextResponse.json({ error: "Failed to delete credentials" }, { status: 500 });
+    console.error('Failed to delete Aurora credentials:', error);
+    return NextResponse.json({ error: 'Failed to delete credentials' }, { status: 500 });
   }
 }

@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useMemo } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { useSnackbar } from "@/app/components/providers/snackbar-provider";
-import { track } from "@vercel/analytics";
-import { useQueueActions } from "../graphql-queue";
-import { useFavorite } from "./use-favorite";
+import { useState, useCallback, useMemo } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useSnackbar } from '@/app/components/providers/snackbar-provider';
+import { track } from '@vercel/analytics';
+import { useQueueActions } from '../graphql-queue';
+import { useFavorite } from './use-favorite';
 import {
   constructCreateClimbUrl,
   constructClimbInfoUrl,
   getContextAwareClimbViewUrl,
-} from "@/app/lib/url-utils";
-import { Climb, BoardDetails } from "@/app/lib/types";
-import { UseClimbActionsReturn } from "./types";
-import { openExternalUrl } from "@/app/lib/open-external-url";
-import { useAuthModal } from "@/app/components/providers/auth-modal-provider";
+} from '@/app/lib/url-utils';
+import { Climb, BoardDetails } from '@/app/lib/types';
+import { UseClimbActionsReturn } from './types';
+import { openExternalUrl } from '@/app/lib/open-external-url';
+import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 
 interface UseClimbActionsOptions {
   climb: Climb;
@@ -45,7 +45,7 @@ export function useClimbActions({
     toggleFavorite,
     isAuthenticated,
   } = useFavorite({
-    climbUuid: climb?.uuid ?? "",
+    climbUuid: climb?.uuid ?? '',
   });
 
   // Computed availability
@@ -59,7 +59,7 @@ export function useClimbActions({
 
   // URLs
   const viewDetailsUrl = useMemo(() => {
-    if (!climb) return "";
+    if (!climb) return '';
     return getContextAwareClimbViewUrl(pathname, boardDetails, angle, climb.uuid, climb.name);
   }, [climb, pathname, boardDetails, angle]);
 
@@ -86,25 +86,25 @@ export function useClimbActions({
   const handleViewDetails = useCallback(() => {
     if (!climb) return;
 
-    track("Climb Info Viewed", {
-      boardLayout: boardDetails.layout_name || "",
+    track('Climb Info Viewed', {
+      boardLayout: boardDetails.layout_name || '',
       climbUuid: climb.uuid,
     });
 
     router.push(viewDetailsUrl);
-    onActionComplete?.("viewDetails");
+    onActionComplete?.('viewDetails');
   }, [climb, boardDetails.layout_name, viewDetailsUrl, router, onActionComplete]);
 
   const handleFork = useCallback(() => {
     if (!climb || !forkUrl) return;
 
-    track("Climb Forked", {
-      boardLayout: boardDetails.layout_name || "",
+    track('Climb Forked', {
+      boardLayout: boardDetails.layout_name || '',
       originalClimb: climb.uuid,
     });
 
     router.push(forkUrl);
-    onActionComplete?.("fork");
+    onActionComplete?.('fork');
   }, [climb, forkUrl, boardDetails.layout_name, router, onActionComplete]);
 
   const handleFavorite = useCallback(async () => {
@@ -112,7 +112,7 @@ export function useClimbActions({
 
     if (!isAuthenticated) {
       openAuthModal({
-        title: "Sign in to save favorites",
+        title: 'Sign in to save favorites',
         description: `Sign in to save "${climb.name}" to your favorites.`,
       });
       return;
@@ -120,12 +120,12 @@ export function useClimbActions({
 
     try {
       const newState = await toggleFavorite();
-      track("Favorite Toggle", {
+      track('Favorite Toggle', {
         boardName: boardDetails.board_name,
         climbUuid: climb.uuid,
-        action: newState ? "favorited" : "unfavorited",
+        action: newState ? 'favorited' : 'unfavorited',
       });
-      onActionComplete?.("favorite");
+      onActionComplete?.('favorite');
     } catch {
       // Silently fail
     }
@@ -143,9 +143,9 @@ export function useClimbActions({
 
     addToQueue(climb);
 
-    track("Add to Queue", {
-      source: "climbActions",
-      boardLayout: boardDetails.layout_name || "",
+    track('Add to Queue', {
+      source: 'climbActions',
+      boardLayout: boardDetails.layout_name || '',
     });
 
     setRecentlyAddedToQueue(true);
@@ -153,25 +153,25 @@ export function useClimbActions({
       setRecentlyAddedToQueue(false);
     }, 5000);
 
-    onActionComplete?.("queue");
+    onActionComplete?.('queue');
   }, [climb, addToQueue, recentlyAddedToQueue, boardDetails.layout_name, onActionComplete]);
 
   const handleTick = useCallback(() => {
     // TickButton handles its own drawer/modal logic
     // This is a placeholder that components can override
-    onActionComplete?.("tick");
+    onActionComplete?.('tick');
   }, [onActionComplete]);
 
   const handleOpenInApp = useCallback(() => {
     if (!climb || !openInAppUrl) return;
 
-    track("Open in Aurora App", {
+    track('Open in Aurora App', {
       boardName: boardDetails.board_name,
       climbUuid: climb.uuid,
     });
 
     openExternalUrl(openInAppUrl);
-    onActionComplete?.("openInApp");
+    onActionComplete?.('openInApp');
   }, [climb, boardDetails.board_name, openInAppUrl, onActionComplete]);
 
   const handleMirror = useCallback(() => {
@@ -179,19 +179,19 @@ export function useClimbActions({
 
     mirrorClimb();
 
-    track("Mirror Climb", {
+    track('Mirror Climb', {
       boardName: boardDetails.board_name,
       climbUuid: climb?.uuid,
     });
 
-    onActionComplete?.("mirror");
+    onActionComplete?.('mirror');
   }, [canMirror, mirrorClimb, boardDetails.board_name, climb?.uuid, onActionComplete]);
 
   const handleShare = useCallback(async () => {
     if (!climb) return;
 
     const shareUrl =
-      typeof window !== "undefined" ? `${window.location.origin}${viewDetailsUrl}` : viewDetailsUrl;
+      typeof window !== 'undefined' ? `${window.location.origin}${viewDetailsUrl}` : viewDetailsUrl;
 
     const shareData = {
       title: climb.name,
@@ -202,30 +202,30 @@ export function useClimbActions({
     try {
       if (navigator.share && navigator.canShare?.(shareData)) {
         await navigator.share(shareData);
-        track("Climb Shared", {
+        track('Climb Shared', {
           boardName: boardDetails.board_name,
           climbUuid: climb.uuid,
-          method: "native",
+          method: 'native',
         });
       } else {
         await navigator.clipboard.writeText(shareUrl);
-        showMessage("Link copied to clipboard!", "success");
-        track("Climb Shared", {
+        showMessage('Link copied to clipboard!', 'success');
+        track('Climb Shared', {
           boardName: boardDetails.board_name,
           climbUuid: climb.uuid,
-          method: "clipboard",
+          method: 'clipboard',
         });
       }
-      onActionComplete?.("share");
+      onActionComplete?.('share');
     } catch (error) {
       // User cancelled share or error occurred
-      if ((error as Error).name !== "AbortError") {
+      if ((error as Error).name !== 'AbortError') {
         // Fallback to clipboard
         try {
           await navigator.clipboard.writeText(shareUrl);
-          showMessage("Link copied to clipboard!", "success");
+          showMessage('Link copied to clipboard!', 'success');
         } catch {
-          showMessage("Failed to share", "error");
+          showMessage('Failed to share', 'error');
         }
       }
     }

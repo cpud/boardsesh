@@ -24,40 +24,40 @@ export async function wrapDatabaseOperation<T>(
     // Check for specific error types we want to handle specially
     if (error instanceof Error) {
       // Preserve version conflict errors (these are expected)
-      if (error.name === "VersionConflictError") {
+      if (error.name === 'VersionConflictError') {
         throw error;
       }
 
       // Check for common database errors
-      if (error.message.includes("connection refused") || error.message.includes("ECONNREFUSED")) {
-        throw new Error("Service temporarily unavailable. Please try again later.");
+      if (error.message.includes('connection refused') || error.message.includes('ECONNREFUSED')) {
+        throw new Error('Service temporarily unavailable. Please try again later.');
       }
 
-      if (error.message.includes("timeout") || error.message.includes("ETIMEDOUT")) {
-        throw new Error("Operation timed out. Please try again.");
+      if (error.message.includes('timeout') || error.message.includes('ETIMEDOUT')) {
+        throw new Error('Operation timed out. Please try again.');
       }
 
-      if (error.message.includes("duplicate key") || error.message.includes("unique constraint")) {
-        throw new Error("This operation conflicts with existing data.");
+      if (error.message.includes('duplicate key') || error.message.includes('unique constraint')) {
+        throw new Error('This operation conflicts with existing data.');
       }
 
       // Check for validation errors from Zod
-      if (error.message.startsWith("Invalid ")) {
+      if (error.message.startsWith('Invalid ')) {
         throw error; // These are safe to pass through
       }
 
       // Check for auth/rate limit errors
       if (
-        error.message.includes("Rate limit") ||
-        error.message.includes("Authentication required") ||
-        error.message.includes("Unauthorized")
+        error.message.includes('Rate limit') ||
+        error.message.includes('Authentication required') ||
+        error.message.includes('Unauthorized')
       ) {
         throw error; // These are safe to pass through
       }
     }
 
     // Generic error for anything else - don't leak internal details
-    throw new Error("An unexpected error occurred. Please try again.");
+    throw new Error('An unexpected error occurred. Please try again.');
   }
 }
 
@@ -67,11 +67,11 @@ export async function wrapDatabaseOperation<T>(
  */
 export function logSecurityEvent(event: {
   type:
-    | "auth_failure"
-    | "rate_limit"
-    | "unauthorized_access"
-    | "validation_error"
-    | "suspicious_activity";
+    | 'auth_failure'
+    | 'rate_limit'
+    | 'unauthorized_access'
+    | 'validation_error'
+    | 'suspicious_activity';
   connectionId?: string;
   userId?: string;
   details: string;
@@ -79,12 +79,12 @@ export function logSecurityEvent(event: {
 }): void {
   const logEntry = {
     timestamp: new Date().toISOString(),
-    level: "security",
+    level: 'security',
     ...event,
   };
 
   // Log to console in structured format
-  console.log("[SECURITY]", JSON.stringify(logEntry));
+  console.log('[SECURITY]', JSON.stringify(logEntry));
 
   // In production, this could be sent to a security monitoring service
 }

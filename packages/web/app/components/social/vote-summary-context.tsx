@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useWsAuthToken } from "@/app/hooks/use-ws-auth-token";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
+import React, { createContext, useContext, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   GET_BULK_VOTE_SUMMARIES,
   type GetBulkVoteSummariesQueryVariables,
   type GetBulkVoteSummariesQueryResponse,
-} from "@/app/lib/graphql/operations";
-import type { SocialEntityType, VoteSummary } from "@boardsesh/shared-schema";
+} from '@/app/lib/graphql/operations';
+import type { SocialEntityType, VoteSummary } from '@boardsesh/shared-schema';
 
 interface VoteSummaryContextValue {
   getVoteSummary: (entityId: string) => VoteSummary | undefined;
@@ -41,7 +41,7 @@ export function VoteSummaryProvider({ entityType, entityIds, children }: VoteSum
 
   const sortedIds = useMemo(() => [...entityIds].sort(), [entityIds]);
   const queryKey = useMemo(
-    () => ["bulkVoteSummaries", entityType, sortedIds.join(",")] as const,
+    () => ['bulkVoteSummaries', entityType, sortedIds.join(',')] as const,
     [entityType, sortedIds],
   );
 

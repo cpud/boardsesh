@@ -1,13 +1,13 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { getGradeDisplayFormat, setGradeDisplayFormat } from "@/app/lib/user-preferences-db";
-import type { GradeDisplayFormat } from "@/app/lib/grade-colors";
-import { formatGrade, getSoftGradeColorByFormat } from "@/app/lib/grade-colors";
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { getGradeDisplayFormat, setGradeDisplayFormat } from '@/app/lib/user-preferences-db';
+import type { GradeDisplayFormat } from '@/app/lib/grade-colors';
+import { formatGrade, getSoftGradeColorByFormat } from '@/app/lib/grade-colors';
 
 /** Custom event name used to sync grade format across mounted components. */
-const GRADE_FORMAT_CHANGE_EVENT = "boardsesh:gradeFormatChange";
+const GRADE_FORMAT_CHANGE_EVENT = 'boardsesh:gradeFormatChange';
 
 export function useGradeFormat() {
-  const [gradeFormat, setGradeFormatState] = useState<GradeDisplayFormat>("v-grade");
+  const [gradeFormat, setGradeFormatState] = useState<GradeDisplayFormat>('v-grade');
   const [loaded, setLoaded] = useState(false);
   // Track whether this instance originated the current change so the event
   // listener can skip the redundant setState.

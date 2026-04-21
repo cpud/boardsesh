@@ -1,5 +1,5 @@
-import { HoldType, GridCoordinate, GRID_POSITIONS, DetectedHold } from "../types";
-import { RawPixelData, ImageRegion } from "../image-processor/types";
+import { HoldType, GridCoordinate, GRID_POSITIONS, DetectedHold } from '../types';
+import { RawPixelData, ImageRegion } from '../image-processor/types';
 
 interface CircleCenter {
   x: number;
@@ -86,14 +86,14 @@ export function classifyPixelColor(r: number, g: number, b: number): HoldType | 
   const redDist = Math.sqrt(Math.pow(r - 244, 2) + Math.pow(g - 67, 2) + Math.pow(b - 54, 2));
   const redDist2 = Math.sqrt(Math.pow(r - 225, 2) + Math.pow(g - 82, 2) + Math.pow(b - 64, 2));
   if (redDist < 50 || redDist2 < 50) {
-    return "finish";
+    return 'finish';
   }
 
   // Blue circle (HAND holds) - intermediate moves
   // Exact color: #2961ff = RGB(41, 97, 255)
   const blueDist = Math.sqrt(Math.pow(r - 41, 2) + Math.pow(g - 97, 2) + Math.pow(b - 255, 2));
   if (blueDist < 50) {
-    return "hand";
+    return 'hand';
   }
 
   // Green circle (START holds) - bottom of climb
@@ -102,7 +102,7 @@ export function classifyPixelColor(r: number, g: number, b: number): HoldType | 
   const greenDist1 = Math.sqrt(Math.pow(r - 76, 2) + Math.pow(g - 175, 2) + Math.pow(b - 80, 2));
   const greenDist2 = Math.sqrt(Math.pow(r - 100, 2) + Math.pow(g - 160, 2) + Math.pow(b - 80, 2));
   if ((greenDist1 < 40 || greenDist2 < 40) && g > r && g > b) {
-    return "start";
+    return 'start';
   }
 
   return null;
@@ -212,7 +212,7 @@ export function findNearestGridPosition(
   relX: number,
   relY: number,
 ): { coordinate: GridCoordinate; distance: number } {
-  let nearestCoord: GridCoordinate = "A1";
+  let nearestCoord: GridCoordinate = 'A1';
   let minDistance = Infinity;
 
   for (const [coord, pos] of Object.entries(GRID_POSITIONS)) {

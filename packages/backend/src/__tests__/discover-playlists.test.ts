@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 
 const { mockDb } = vi.hoisted(() => {
   const mockDb = {
@@ -11,67 +11,67 @@ const { mockDb } = vi.hoisted(() => {
   return { mockDb };
 });
 
-vi.mock("../db/client", () => ({
+vi.mock('../db/client', () => ({
   db: mockDb,
 }));
 
-vi.mock("../events/index", () => ({
+vi.mock('../events/index', () => ({
   publishSocialEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../utils/rate-limiter", () => ({
+vi.mock('../utils/rate-limiter', () => ({
   checkRateLimit: vi.fn(),
 }));
 
-vi.mock("../utils/redis-rate-limiter", () => ({
+vi.mock('../utils/redis-rate-limiter', () => ({
   checkRateLimitRedis: vi.fn(),
 }));
 
-vi.mock("../db/queries/util/table-select", () => ({
+vi.mock('../db/queries/util/table-select', () => ({
   UNIFIED_TABLES: {
     climbs: {
-      uuid: "uuid",
-      layoutId: "layoutId",
-      boardType: "boardType",
-      setterUsername: "setterUsername",
-      name: "name",
-      description: "description",
-      frames: "frames",
-      createdAt: "createdAt",
-      edgeLeft: "edgeLeft",
-      edgeRight: "edgeRight",
-      edgeBottom: "edgeBottom",
-      edgeTop: "edgeTop",
+      uuid: 'uuid',
+      layoutId: 'layoutId',
+      boardType: 'boardType',
+      setterUsername: 'setterUsername',
+      name: 'name',
+      description: 'description',
+      frames: 'frames',
+      createdAt: 'createdAt',
+      edgeLeft: 'edgeLeft',
+      edgeRight: 'edgeRight',
+      edgeBottom: 'edgeBottom',
+      edgeTop: 'edgeTop',
     },
     climbStats: {
-      climbUuid: "climbUuid",
-      boardType: "boardType",
-      angle: "angle",
-      ascensionistCount: "ascensionistCount",
-      qualityAverage: "qualityAverage",
-      difficultyAverage: "difficultyAverage",
-      displayDifficulty: "displayDifficulty",
-      benchmarkDifficulty: "benchmarkDifficulty",
+      climbUuid: 'climbUuid',
+      boardType: 'boardType',
+      angle: 'angle',
+      ascensionistCount: 'ascensionistCount',
+      qualityAverage: 'qualityAverage',
+      difficultyAverage: 'difficultyAverage',
+      displayDifficulty: 'displayDifficulty',
+      benchmarkDifficulty: 'benchmarkDifficulty',
     },
     difficultyGrades: {
-      boardType: "boardType",
-      difficulty: "difficulty",
-      boulderName: "boulderName",
+      boardType: 'boardType',
+      difficulty: 'difficulty',
+      boulderName: 'boulderName',
     },
   },
   isValidBoardName: vi.fn().mockReturnValue(true),
 }));
 
-vi.mock("../db/queries/util/hold-state", () => ({
+vi.mock('../db/queries/util/hold-state', () => ({
   convertLitUpHoldsStringToMap: vi.fn().mockReturnValue([{}]),
 }));
 
-import type { ConnectionContext } from "@boardsesh/shared-schema";
-import { playlistQueries } from "../graphql/resolvers/playlists/queries";
+import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { playlistQueries } from '../graphql/resolvers/playlists/queries';
 
 function makeCtx(overrides: Partial<ConnectionContext> = {}): ConnectionContext {
   return {
-    connectionId: "conn-1",
+    connectionId: 'conn-1',
     isAuthenticated: false,
     userId: null,
     sessionId: null,
@@ -90,22 +90,22 @@ function createMockChain(resolveValue: unknown = []) {
   const calls: Record<string, unknown[][]> = {};
   const chain: Record<string, unknown> = {};
   const methods = [
-    "select",
-    "from",
-    "where",
-    "leftJoin",
-    "innerJoin",
-    "groupBy",
-    "orderBy",
-    "limit",
-    "offset",
-    "insert",
-    "values",
-    "onConflictDoNothing",
-    "returning",
-    "delete",
-    "update",
-    "set",
+    'select',
+    'from',
+    'where',
+    'leftJoin',
+    'innerJoin',
+    'groupBy',
+    'orderBy',
+    'limit',
+    'offset',
+    'insert',
+    'values',
+    'onConflictDoNothing',
+    'returning',
+    'delete',
+    'update',
+    'set',
   ];
 
   chain.then = (resolve: (value: unknown) => unknown) =>
@@ -122,44 +122,44 @@ function createMockChain(resolveValue: unknown = []) {
   return { chain, calls };
 }
 
-const NOW = new Date("2026-01-15T12:00:00Z");
+const NOW = new Date('2026-01-15T12:00:00Z');
 
 function makePlaylistRow(overrides: Record<string, unknown> = {}) {
   return {
     id: BigInt(1),
-    uuid: "pl-1",
-    boardType: "kilter",
+    uuid: 'pl-1',
+    boardType: 'kilter',
     layoutId: 1,
-    name: "Test Playlist",
-    description: "A test playlist",
-    color: "#FF0000",
+    name: 'Test Playlist',
+    description: 'A test playlist',
+    color: '#FF0000',
     icon: null,
     createdAt: NOW,
     updatedAt: NOW,
-    creatorId: "creator-1",
-    creatorName: "TestUser",
+    creatorId: 'creator-1',
+    creatorName: 'TestUser',
     climbCount: 5,
     ...overrides,
   };
 }
 
-describe("discoverPlaylists resolver", () => {
+describe('discoverPlaylists resolver', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("should return playlists without boardType or layoutId filter", async () => {
+  it('should return playlists without boardType or layoutId filter', async () => {
     const ctx = makeCtx();
 
     const { chain: countChain, calls: countCalls } = createMockChain([{ count: 2 }]);
     mockDb.select.mockReturnValueOnce(countChain);
 
     const { chain: resultsChain, calls: resultsCalls } = createMockChain([
-      makePlaylistRow({ uuid: "pl-1", boardType: "kilter", name: "Kilter Playlist" }),
+      makePlaylistRow({ uuid: 'pl-1', boardType: 'kilter', name: 'Kilter Playlist' }),
       makePlaylistRow({
-        uuid: "pl-2",
-        boardType: "tension",
-        name: "Tension Playlist",
+        uuid: 'pl-2',
+        boardType: 'tension',
+        name: 'Tension Playlist',
         id: BigInt(2),
       }),
     ]);
@@ -169,8 +169,8 @@ describe("discoverPlaylists resolver", () => {
 
     expect(result.totalCount).toBe(2);
     expect(result.playlists).toHaveLength(2);
-    expect(result.playlists[0]).toMatchObject({ uuid: "pl-1", boardType: "kilter" });
-    expect(result.playlists[1]).toMatchObject({ uuid: "pl-2", boardType: "tension" });
+    expect(result.playlists[0]).toMatchObject({ uuid: 'pl-1', boardType: 'kilter' });
+    expect(result.playlists[1]).toMatchObject({ uuid: 'pl-2', boardType: 'tension' });
 
     // Verify both queries used where() (at minimum isPublic filter + owner role)
     expect(countCalls.where.length).toBe(1);
@@ -180,26 +180,26 @@ describe("discoverPlaylists resolver", () => {
     expect(mockDb.select).toHaveBeenCalledTimes(2);
   });
 
-  it("should filter by boardType when provided", async () => {
+  it('should filter by boardType when provided', async () => {
     const ctx = makeCtx();
 
     const { chain: countChain, calls: countCalls } = createMockChain([{ count: 1 }]);
     mockDb.select.mockReturnValueOnce(countChain);
 
     const { chain: resultsChain, calls: resultsCalls } = createMockChain([
-      makePlaylistRow({ uuid: "pl-1", boardType: "kilter" }),
+      makePlaylistRow({ uuid: 'pl-1', boardType: 'kilter' }),
     ]);
     mockDb.select.mockReturnValueOnce(resultsChain);
 
     const result = await playlistQueries.discoverPlaylists(
       null,
-      { input: { boardType: "kilter" } },
+      { input: { boardType: 'kilter' } },
       ctx,
     );
 
     expect(result.totalCount).toBe(1);
     expect(result.playlists).toHaveLength(1);
-    expect(result.playlists[0]).toMatchObject({ boardType: "kilter" });
+    expect(result.playlists[0]).toMatchObject({ boardType: 'kilter' });
 
     // Both count and results queries should have where() called
     expect(countCalls.where.length).toBe(1);
@@ -210,33 +210,33 @@ describe("discoverPlaylists resolver", () => {
     expect(mockDb.select).toHaveBeenCalledTimes(2);
   });
 
-  it("should filter by boardType and layoutId when both provided", async () => {
+  it('should filter by boardType and layoutId when both provided', async () => {
     const ctx = makeCtx();
 
     const { chain: countChain, calls: countCalls } = createMockChain([{ count: 1 }]);
     mockDb.select.mockReturnValueOnce(countChain);
 
     const { chain: resultsChain, calls: resultsCalls } = createMockChain([
-      makePlaylistRow({ uuid: "pl-1", boardType: "kilter", layoutId: 8 }),
+      makePlaylistRow({ uuid: 'pl-1', boardType: 'kilter', layoutId: 8 }),
     ]);
     mockDb.select.mockReturnValueOnce(resultsChain);
 
     const result = await playlistQueries.discoverPlaylists(
       null,
-      { input: { boardType: "kilter", layoutId: 8 } },
+      { input: { boardType: 'kilter', layoutId: 8 } },
       ctx,
     );
 
     expect(result.totalCount).toBe(1);
     expect(result.playlists).toHaveLength(1);
-    expect(result.playlists[0]).toMatchObject({ boardType: "kilter", layoutId: 8 });
+    expect(result.playlists[0]).toMatchObject({ boardType: 'kilter', layoutId: 8 });
 
     // Both queries should have where()
     expect(countCalls.where.length).toBe(1);
     expect(resultsCalls.where.length).toBe(1);
   });
 
-  it("should paginate correctly with hasMore", async () => {
+  it('should paginate correctly with hasMore', async () => {
     const ctx = makeCtx();
 
     const { chain: countChain } = createMockChain([{ count: 25 }]);
@@ -267,7 +267,7 @@ describe("discoverPlaylists resolver", () => {
     expect(resultsCalls.offset[0][0]).toBe(0); // page * pageSize
   });
 
-  it("should return empty results when no playlists match", async () => {
+  it('should return empty results when no playlists match', async () => {
     const ctx = makeCtx();
 
     const { chain: countChain } = createMockChain([{ count: 0 }]);
@@ -278,7 +278,7 @@ describe("discoverPlaylists resolver", () => {
 
     const result = await playlistQueries.discoverPlaylists(
       null,
-      { input: { boardType: "tension", layoutId: 99 } },
+      { input: { boardType: 'tension', layoutId: 99 } },
       ctx,
     );
 
@@ -287,28 +287,28 @@ describe("discoverPlaylists resolver", () => {
     expect(result.hasMore).toBe(false);
   });
 
-  it("should support name filter", async () => {
+  it('should support name filter', async () => {
     const ctx = makeCtx();
 
     const { chain: countChain } = createMockChain([{ count: 1 }]);
     mockDb.select.mockReturnValueOnce(countChain);
 
     const { chain: resultsChain } = createMockChain([
-      makePlaylistRow({ uuid: "pl-1", name: "Hard Boulders" }),
+      makePlaylistRow({ uuid: 'pl-1', name: 'Hard Boulders' }),
     ]);
     mockDb.select.mockReturnValueOnce(resultsChain);
 
     const result = await playlistQueries.discoverPlaylists(
       null,
-      { input: { name: "boulders" } },
+      { input: { name: 'boulders' } },
       ctx,
     );
 
     expect(result.playlists).toHaveLength(1);
-    expect(result.playlists[0]).toMatchObject({ name: "Hard Boulders" });
+    expect(result.playlists[0]).toMatchObject({ name: 'Hard Boulders' });
   });
 
-  it("should not require authentication", async () => {
+  it('should not require authentication', async () => {
     const ctx = makeCtx({ isAuthenticated: false, userId: null });
 
     const { chain: countChain } = createMockChain([{ count: 1 }]);
@@ -322,32 +322,32 @@ describe("discoverPlaylists resolver", () => {
     expect(result.playlists).toHaveLength(1);
   });
 
-  it("should support sortBy popular", async () => {
+  it('should support sortBy popular', async () => {
     const ctx = makeCtx();
 
     const { chain: countChain } = createMockChain([{ count: 2 }]);
     mockDb.select.mockReturnValueOnce(countChain);
 
     const { chain: resultsChain, calls: resultsCalls } = createMockChain([
-      makePlaylistRow({ uuid: "pl-popular", climbCount: 50 }),
-      makePlaylistRow({ uuid: "pl-small", climbCount: 2, id: BigInt(2) }),
+      makePlaylistRow({ uuid: 'pl-popular', climbCount: 50 }),
+      makePlaylistRow({ uuid: 'pl-small', climbCount: 2, id: BigInt(2) }),
     ]);
     mockDb.select.mockReturnValueOnce(resultsChain);
 
     const result = await playlistQueries.discoverPlaylists(
       null,
-      { input: { sortBy: "popular" } },
+      { input: { sortBy: 'popular' } },
       ctx,
     );
 
     expect(result.playlists).toHaveLength(2);
-    expect(result.playlists[0]).toMatchObject({ uuid: "pl-popular" });
+    expect(result.playlists[0]).toMatchObject({ uuid: 'pl-popular' });
 
     // Verify orderBy was called (popular sort uses follower count)
     expect(resultsCalls.orderBy.length).toBe(1);
   });
 
-  it("should use correct page offset for page > 0", async () => {
+  it('should use correct page offset for page > 0', async () => {
     const ctx = makeCtx();
 
     const { chain: countChain } = createMockChain([{ count: 50 }]);

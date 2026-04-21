@@ -1,15 +1,15 @@
-import { createClient, Client, Sink } from "graphql-ws";
+import { createClient, Client, Sink } from 'graphql-ws';
 import {
   connectionManager,
   KEEP_ALIVE_MS,
-} from "../connection-manager/websocket-connection-manager";
+} from '../connection-manager/websocket-connection-manager';
 
 export type { Client };
 
-const DEBUG = process.env.NODE_ENV === "development";
+const DEBUG = process.env.NODE_ENV === 'development';
 const MUTATION_TIMEOUT_MS = 30_000; // 30 second timeout for mutations
 
-import { INITIAL_RETRY_DELAY_MS, MAX_RETRY_DELAY_MS, BACKOFF_MULTIPLIER } from "./retry-constants";
+import { INITIAL_RETRY_DELAY_MS, MAX_RETRY_DELAY_MS, BACKOFF_MULTIPLIER } from './retry-constants';
 
 let clientCounter = 0;
 
@@ -18,14 +18,14 @@ const operationNameCache = new WeakMap<{ query: string }, string>();
 
 function getOperationName(
   operation: { query: string },
-  type: "mutation" | "query" | "subscription",
+  type: 'mutation' | 'query' | 'subscription',
 ): string {
   const cached = operationNameCache.get(operation);
   if (cached) return cached;
 
-  const pattern = type === "subscription" ? /subscription\s+(\w+)/ : /(?:mutation|query)\s+(\w+)/;
+  const pattern = type === 'subscription' ? /subscription\s+(\w+)/ : /(?:mutation|query)\s+(\w+)/;
   const match = operation.query.match(pattern);
-  const name = match ? match[1] : "unknown";
+  const name = match ? match[1] : 'unknown';
   operationNameCache.set(operation, name);
   return name;
 }
@@ -56,10 +56,10 @@ export function createGraphQLClient(
 ): ExtendedClient {
   // Handle both signatures for backwards compatibility
   const options: GraphQLClientOptions =
-    typeof urlOrOptions === "string" ? { url: urlOrOptions, onReconnect } : urlOrOptions;
+    typeof urlOrOptions === 'string' ? { url: urlOrOptions, onReconnect } : urlOrOptions;
 
   const { url, authToken, onReconnect: onReconnectCallback, connectionName } = options;
-  const managerConnectionName = connectionName ?? "primary";
+  const managerConnectionName = connectionName ?? 'primary';
 
   const clientId = ++clientCounter;
 
@@ -78,7 +78,7 @@ export function createGraphQLClient(
   class SafeWebSocket extends WebSocket {
     constructor(url: string | URL, protocols?: string | string[]) {
       super(url, protocols);
-      this.addEventListener("error", (event) => {
+      this.addEventListener('error', (event) => {
         if (DEBUG)
           console.log(`[GraphQL] Client #${clientId} WebSocket native error suppressed`, event);
       });
@@ -126,7 +126,7 @@ export function createGraphQLClient(
   }) as ExtendedClient;
 
   // Register with the centralized connection manager for proactive reconnection/health checks
-  if (typeof window !== "undefined") {
+  if (typeof window !== 'undefined') {
     const unregister = connectionManager.registerClient(client, managerConnectionName);
     const originalDispose = client.dispose.bind(client);
     // graphql-ws dispose() is async and can reject with a raw DOM Event (ErrorEvent)
@@ -158,7 +158,7 @@ export function execute<TData = unknown, TVariables = Record<string, unknown>>(
   operation: { query: string; variables?: TVariables },
   timeoutMs: number = MUTATION_TIMEOUT_MS,
 ): Promise<TData> {
-  const opName = getOperationName(operation, "mutation");
+  const opName = getOperationName(operation, 'mutation');
 
   if (DEBUG) console.log(`[GraphQL] execute START: ${opName}`);
 
@@ -173,18 +173,18 @@ export function execute<TData = unknown, TVariables = Record<string, unknown>>(
           if (DEBUG)
             console.log(
               `[GraphQL] execute NEXT: ${opName}`,
-              data.data ? "has data" : "no data",
-              data.errors ? "has errors" : "no errors",
+              data.data ? 'has data' : 'no data',
+              data.errors ? 'has errors' : 'no errors',
             );
           // GraphQL can return null data values; keep the latest payload when present.
-          if ("data" in data) {
+          if ('data' in data) {
             result = data.data as TData;
           }
           if (data.errors) {
             if (!hasResolved) {
               hasResolved = true;
               unsubscribe();
-              reject(new Error(data.errors.map((e) => e.message).join(", ")));
+              reject(new Error(data.errors.map((e) => e.message).join(', ')));
             }
           }
         },
@@ -236,7 +236,7 @@ export function subscribe<TData = unknown, TVariables = Record<string, unknown>>
   operation: { query: string; variables?: TVariables },
   sink: Sink<TData>,
 ): () => void {
-  const opName = getOperationName(operation, "subscription");
+  const opName = getOperationName(operation, 'subscription');
 
   if (DEBUG) console.log(`[GraphQL] subscribe START: ${opName}`);
 
@@ -249,7 +249,7 @@ export function subscribe<TData = unknown, TVariables = Record<string, unknown>>
           sink.next?.(data.data);
         }
         if (data.errors) {
-          sink.error?.(new Error(data.errors.map((e) => e.message).join(", ")));
+          sink.error?.(new Error(data.errors.map((e) => e.message).join(', ')));
         }
       },
       error: (error) => {

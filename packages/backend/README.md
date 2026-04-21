@@ -83,7 +83,7 @@ Add to your Traefik dynamic configuration:
 http:
   routers:
     boardsesh-backend:
-      rule: "Host(`boardsesh-ws.yourdomain.com`)"
+      rule: 'Host(`boardsesh-ws.yourdomain.com`)'
       entryPoints:
         - websecure
       service: boardsesh-backend
@@ -94,7 +94,7 @@ http:
     boardsesh-backend:
       loadBalancer:
         servers:
-          - url: "http://backend-internal-ip:8080"
+          - url: 'http://backend-internal-ip:8080'
 ```
 
 ### Docker Compose for Production
@@ -123,7 +123,7 @@ services:
     volumes:
       - backend_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
       timeout: 5s
       retries: 5

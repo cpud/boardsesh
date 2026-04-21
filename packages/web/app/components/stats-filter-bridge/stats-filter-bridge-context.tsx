@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, {
   createContext,
@@ -9,9 +9,9 @@ import React, {
   useRef,
   useLayoutEffect,
   useEffect,
-} from "react";
+} from 'react';
 
-const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 // -------------------------------------------------------------------
 // State context (consumed by GlobalHeader)

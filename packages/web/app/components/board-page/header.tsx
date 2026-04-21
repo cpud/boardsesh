@@ -1,34 +1,34 @@
-"use client";
-import React, { useState, useCallback } from "react";
-import IconButton from "@mui/material/IconButton";
-import Box from "@mui/material/Box";
-import { usePathname, useSearchParams, useRouter } from "next/navigation";
-import CircularProgress from "@mui/material/CircularProgress";
-import MuiButton from "@mui/material/Button";
-import SearchOutlined from "@mui/icons-material/SearchOutlined";
-import UnifiedSearchDrawer from "../search-drawer/unified-search-drawer";
-import AccordionSearchForm from "../search-drawer/accordion-search-form";
-import { SearchDrawerBridgeInjector } from "../search-drawer/search-drawer-bridge-context";
-import { BoardDetails } from "@/app/lib/types";
+'use client';
+import React, { useState, useCallback } from 'react';
+import IconButton from '@mui/material/IconButton';
+import Box from '@mui/material/Box';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+import CircularProgress from '@mui/material/CircularProgress';
+import MuiButton from '@mui/material/Button';
+import SearchOutlined from '@mui/icons-material/SearchOutlined';
+import UnifiedSearchDrawer from '../search-drawer/unified-search-drawer';
+import AccordionSearchForm from '../search-drawer/accordion-search-form';
+import { SearchDrawerBridgeInjector } from '../search-drawer/search-drawer-bridge-context';
+import { BoardDetails } from '@/app/lib/types';
 import {
   constructClimbListWithSlugs,
   generateLayoutSlug,
   generateSizeSlug,
   generateSetSlug,
-} from "@/app/lib/url-utils";
-import { useCurrentClimb, useSearchData } from "../graphql-queue";
-import { useUISearchParams } from "../queue-control/ui-searchparams-provider";
+} from '@/app/lib/url-utils';
+import { useCurrentClimb, useSearchData } from '../graphql-queue';
+import { useUISearchParams } from '../queue-control/ui-searchparams-provider';
 import {
   hasActiveFilters,
   hasActiveNonNameFilters as computeNonNameFilters,
   getSearchPillSummary,
-} from "../search-drawer/search-summary-utils";
-import { addRecentSearch } from "../search-drawer/recent-searches-storage";
-import AddOutlined from "@mui/icons-material/AddOutlined";
-import ChevronLeftOutlined from "@mui/icons-material/ChevronLeftOutlined";
-import AngleSelector from "./angle-selector";
-import styles from "./header.module.css";
-import Link from "next/link";
+} from '../search-drawer/search-summary-utils';
+import { addRecentSearch } from '../search-drawer/recent-searches-storage';
+import AddOutlined from '@mui/icons-material/AddOutlined';
+import ChevronLeftOutlined from '@mui/icons-material/ChevronLeftOutlined';
+import AngleSelector from './angle-selector';
+import styles from './header.module.css';
+import Link from 'next/link';
 
 type BoardSeshHeaderProps = {
   boardDetails: BoardDetails;
@@ -48,12 +48,12 @@ export default function BoardSeshHeader({
   const searchParams = useSearchParams();
   const router = useRouter();
   const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
-  const isCreatePage = pathname.includes("/create");
-  const isListPage = pathname.includes("/list");
-  const isPlaylistPage = pathname.includes("/playlists");
-  const isLogbookPage = pathname.includes("/logbook");
-  const isPlayPage = pathname.includes("/play/");
-  const isViewPage = pathname.includes("/view/");
+  const isCreatePage = pathname.includes('/create');
+  const isListPage = pathname.includes('/list');
+  const isPlaylistPage = pathname.includes('/playlists');
+  const isLogbookPage = pathname.includes('/logbook');
+  const isPlayPage = pathname.includes('/play/');
+  const isViewPage = pathname.includes('/view/');
 
   // Stable callback for the bridge injector
   const openDrawer = useCallback(() => setSearchDropdownOpen(true), []);
@@ -91,7 +91,7 @@ export default function BoardSeshHeader({
         angle,
       );
     } else {
-      baseUrl = `/${board_name}/${boardDetails.layout_id}/${boardDetails.size_id}/${boardDetails.set_ids.join(",")}/${angle}/list`;
+      baseUrl = `/${board_name}/${boardDetails.layout_id}/${boardDetails.size_id}/${boardDetails.set_ids.join(',')}/${angle}/list`;
     }
 
     // Preserve search params when going back
@@ -135,17 +135,17 @@ export default function BoardSeshHeader({
           component="div"
           className={styles.header}
           sx={{
-            background: "var(--semantic-surface)",
-            lineHeight: "normal",
-            display: "flex",
-            padding: "0 12px",
-            alignItems: "center",
+            background: 'var(--semantic-surface)',
+            lineHeight: 'normal',
+            display: 'flex',
+            padding: '0 12px',
+            alignItems: 'center',
             minHeight: 40,
-            gap: "8px",
+            gap: '8px',
           }}
         >
           {/* Left section: Back button */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: "4px", flexShrink: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
             {hasBackButton && (
               <div className={styles.mobileOnly}>
                 <IconButton
@@ -162,7 +162,7 @@ export default function BoardSeshHeader({
           <Box sx={{ flex: 1 }} />
 
           {/* Right Section */}
-          <Box sx={{ display: "flex", gap: "4px", alignItems: "center" }}>
+          <Box sx={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
             {hasAngleSelector && (
               <AngleSelector
                 boardName={boardDetails.board_name}
@@ -190,7 +190,7 @@ export default function BoardSeshHeader({
       <UnifiedSearchDrawer
         boardDetails={boardDetails}
         defaultCategory="climbs"
-        allowedCategories={["climbs"]}
+        allowedCategories={['climbs']}
         showCloseButton
         showCloseButtonOnMobile
         open={searchDropdownOpen}
@@ -209,24 +209,24 @@ export default function BoardSeshHeader({
           return (
             <Box
               sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
                 py: 2,
                 px: 3,
-                background: "var(--semantic-surface)",
-                borderTop: "1px solid var(--neutral-100)",
+                background: 'var(--semantic-surface)',
+                borderTop: '1px solid var(--neutral-100)',
               }}
             >
               <MuiButton
                 variant="text"
                 onClick={clearClimbSearchParams}
                 sx={{
-                  textDecoration: "underline",
+                  textDecoration: 'underline',
                   fontWeight: 600,
-                  color: "var(--neutral-900)",
+                  color: 'var(--neutral-900)',
                   p: 0,
-                  minWidth: "auto",
+                  minWidth: 'auto',
                 }}
               >
                 Clear all
@@ -244,7 +244,7 @@ export default function BoardSeshHeader({
                 size="large"
                 sx={{ borderRadius: 3, height: 48, px: 3, fontSize: 16, fontWeight: 600 }}
               >
-                Search{showResultCount ? ` \u00B7 ${resultCount.toLocaleString()}` : ""}
+                Search{showResultCount ? ` \u00B7 ${resultCount.toLocaleString()}` : ''}
               </MuiButton>
             </Box>
           );

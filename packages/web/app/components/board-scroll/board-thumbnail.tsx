@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import React, { useMemo } from "react";
-import DashboardOutlined from "@mui/icons-material/DashboardOutlined";
-import { BoardDetails, BoardName } from "@/app/lib/types";
-import { getBoardDetails } from "@/app/lib/board-constants";
-import { getMoonBoardDetails } from "@/app/lib/moonboard-config";
-import BoardRenderer from "../board-renderer/board-renderer";
-import type { BoardConfigData } from "@/app/lib/server-board-configs";
-import type { StoredBoardConfig } from "@/app/lib/saved-boards-db";
-import type { UserBoard, PopularBoardConfig } from "@boardsesh/shared-schema";
-import styles from "./board-scroll.module.css";
+import React, { useMemo } from 'react';
+import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
+import { BoardDetails, BoardName } from '@/app/lib/types';
+import { getBoardDetails } from '@/app/lib/board-constants';
+import { getMoonBoardDetails } from '@/app/lib/moonboard-config';
+import BoardRenderer from '../board-renderer/board-renderer';
+import type { BoardConfigData } from '@/app/lib/server-board-configs';
+import type { StoredBoardConfig } from '@/app/lib/saved-boards-db';
+import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
+import styles from './board-scroll.module.css';
 
 interface BoardThumbnailProps {
   userBoard?: UserBoard;
@@ -27,9 +27,9 @@ export function useBoardDetails(
   return useMemo(() => {
     try {
       if (userBoard) {
-        const setIds = userBoard.setIds.split(",").map(Number);
+        const setIds = userBoard.setIds.split(',').map(Number);
         const boardName = userBoard.boardType as BoardName;
-        if (boardName === "moonboard") {
+        if (boardName === 'moonboard') {
           return getMoonBoardDetails({
             layout_id: userBoard.layoutId,
             set_ids: setIds,
@@ -43,7 +43,7 @@ export function useBoardDetails(
         });
       }
       if (storedConfig) {
-        if (storedConfig.board === "moonboard") {
+        if (storedConfig.board === 'moonboard') {
           return getMoonBoardDetails({
             layout_id: storedConfig.layoutId,
             set_ids: storedConfig.setIds,
@@ -58,7 +58,7 @@ export function useBoardDetails(
       }
       if (popularConfig) {
         const boardName = popularConfig.boardType as BoardName;
-        if (boardName === "moonboard") {
+        if (boardName === 'moonboard') {
           return getMoonBoardDetails({
             layout_id: popularConfig.layoutId,
             set_ids: popularConfig.setIds,

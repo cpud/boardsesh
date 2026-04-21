@@ -1,5 +1,5 @@
-import { sql } from "@/app/lib/db/db";
-import { NextResponse } from "next/server";
+import { sql } from '@/app/lib/db/db';
+import { NextResponse } from 'next/server';
 
 export async function GET(
   req: Request,
@@ -18,6 +18,6 @@ export async function GET(
     `;
     return NextResponse.json(angles);
   } catch {
-    return NextResponse.json({ error: "Failed to fetch angles" }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch angles' }, { status: 500 });
   }
 }

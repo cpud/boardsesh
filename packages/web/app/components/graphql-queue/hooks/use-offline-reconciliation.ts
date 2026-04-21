@@ -1,6 +1,6 @@
-import { useEffect, useRef, type MutableRefObject } from "react";
-import type { SubscriptionQueueEvent, SessionUser } from "@boardsesh/shared-schema";
-import type { ClimbQueueItem } from "../../queue-control/types";
+import { useEffect, useRef, type MutableRefObject } from 'react';
+import type { SubscriptionQueueEvent, SessionUser } from '@boardsesh/shared-schema';
+import type { ClimbQueueItem } from '../../queue-control/types';
 
 const RECONCILIATION_TIMEOUT_MS = 15000;
 
@@ -122,7 +122,7 @@ export function useOfflineReconciliation({
           await persistentSession.setCurrentClimb(localCurrentClimb, false);
         }
       } catch (error) {
-        console.error("[OfflineReconciliation] Failed to push full local state:", error);
+        console.error('[OfflineReconciliation] Failed to push full local state:', error);
       }
       if (!isSuperseded()) {
         offlineBuffer.clearBuffer();
@@ -140,7 +140,7 @@ export function useOfflineReconciliation({
           await persistentSession.addQueueItem(item);
         } catch (error) {
           console.error(
-            "[OfflineReconciliation] Failed to add buffered item:",
+            '[OfflineReconciliation] Failed to add buffered item:',
             item.climb?.name,
             error,
           );
@@ -156,18 +156,18 @@ export function useOfflineReconciliation({
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     const unsubscribe = persistentSession.subscribeToQueueEvents(
       (event: SubscriptionQueueEvent) => {
-        if (event.__typename === "FullSync") {
+        if (event.__typename === 'FullSync') {
           if (timeoutId) clearTimeout(timeoutId);
           unsubscribe();
 
           if (shouldClientWin(event.sequence)) {
             reconcileClientWins().catch((err) =>
-              console.error("[OfflineReconciliation] reconcileClientWins failed:", err),
+              console.error('[OfflineReconciliation] reconcileClientWins failed:', err),
             );
           } else {
             const serverQueue = (event.state?.queue ?? []) as ClimbQueueItem[];
             reconcileAdditionsOnly(serverQueue).catch((err) =>
-              console.error("[OfflineReconciliation] reconcileAdditionsOnly failed:", err),
+              console.error('[OfflineReconciliation] reconcileAdditionsOnly failed:', err),
             );
           }
         }
@@ -181,7 +181,7 @@ export function useOfflineReconciliation({
     timeoutId = setTimeout(() => {
       unsubscribe();
       reconcileAdditionsOnly(currentQueueRef.current).catch((err) =>
-        console.error("[OfflineReconciliation] timeout reconcileAdditionsOnly failed:", err),
+        console.error('[OfflineReconciliation] timeout reconcileAdditionsOnly failed:', err),
       );
     }, RECONCILIATION_TIMEOUT_MS);
 

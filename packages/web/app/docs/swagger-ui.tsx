@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * Swagger UI Component
@@ -7,29 +7,29 @@
  * Loads the OpenAPI spec from /openapi.json (generated at build time).
  */
 
-import { useEffect, useState } from "react";
-import MuiAlert from "@mui/material/Alert";
-import AlertTitle from "@mui/material/AlertTitle";
-import CircularProgress from "@mui/material/CircularProgress";
-import Typography from "@mui/material/Typography";
-import SwaggerUI from "swagger-ui-react";
-import "swagger-ui-react/swagger-ui.css";
-import styles from "./docs.module.css";
+import { useEffect, useState } from 'react';
+import MuiAlert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
+import SwaggerUI from 'swagger-ui-react';
+import 'swagger-ui-react/swagger-ui.css';
+import styles from './docs.module.css';
 
 // Typography destructuring removed - using MUI Typography directly
 
-type LoadState = "loading" | "success" | "not-found" | "error";
+type LoadState = 'loading' | 'success' | 'not-found' | 'error';
 
 export default function SwaggerUIComponent() {
   const [spec, setSpec] = useState<object | null>(null);
-  const [loadState, setLoadState] = useState<LoadState>("loading");
-  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [loadState, setLoadState] = useState<LoadState>('loading');
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   useEffect(() => {
-    fetch("/openapi.json")
+    fetch('/openapi.json')
       .then((res) => {
         if (res.status === 404) {
-          setLoadState("not-found");
+          setLoadState('not-found');
           return null;
         }
         if (!res.ok) {
@@ -40,16 +40,16 @@ export default function SwaggerUIComponent() {
       .then((data) => {
         if (data) {
           setSpec(data);
-          setLoadState("success");
+          setLoadState('success');
         }
       })
       .catch((err) => {
-        setLoadState("error");
+        setLoadState('error');
         setErrorMessage(err.message);
       });
   }, []);
 
-  if (loadState === "loading") {
+  if (loadState === 'loading') {
     return (
       <div className={styles.swaggerLoading}>
         <CircularProgress size={48} />
@@ -62,7 +62,7 @@ export default function SwaggerUIComponent() {
     );
   }
 
-  if (loadState === "not-found") {
+  if (loadState === 'not-found') {
     return (
       <MuiAlert severity="warning" className={styles.swaggerAlert}>
         <AlertTitle>OpenAPI Specification Not Generated</AlertTitle>
@@ -88,7 +88,7 @@ export default function SwaggerUIComponent() {
     );
   }
 
-  if (loadState === "error") {
+  if (loadState === 'error') {
     return (
       <MuiAlert severity="error" className={styles.swaggerAlert}>
         <AlertTitle>Failed to Load API Documentation</AlertTitle>

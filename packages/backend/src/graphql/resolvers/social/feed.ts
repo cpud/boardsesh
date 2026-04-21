@@ -1,14 +1,14 @@
-import { eq, and, desc, inArray } from "drizzle-orm";
-import type { ConnectionContext } from "@boardsesh/shared-schema";
-import { db } from "../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { requireAuthenticated, validateInput } from "../shared/helpers";
+import { eq, and, desc, inArray } from 'drizzle-orm';
+import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { db } from '../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { requireAuthenticated, validateInput } from '../shared/helpers';
 import {
   difficultyNameWithFallbackExpr,
   consensusGradeTable,
   consensusGradeJoinCondition,
-} from "../shared/sql-expressions";
-import { FollowingAscentsFeedInputSchema } from "../../../validation/schemas";
+} from '../shared/sql-expressions';
+import { FollowingAscentsFeedInputSchema } from '../../../validation/schemas';
 
 export const socialFeedQueries = {
   /**
@@ -23,7 +23,7 @@ export const socialFeedQueries = {
     requireAuthenticated(ctx);
     const myUserId = ctx.userId!;
 
-    const validatedInput = validateInput(FollowingAscentsFeedInputSchema, input || {}, "input");
+    const validatedInput = validateInput(FollowingAscentsFeedInputSchema, input || {}, 'input');
     const limit = validatedInput.limit ?? 20;
     const offset = validatedInput.offset ?? 0;
 
@@ -112,7 +112,7 @@ export const socialFeedQueries = {
         userDisplayName: userDisplayName || userName || undefined,
         userAvatarUrl: userAvatarUrl || userImage || undefined,
         climbUuid: tick.climbUuid,
-        climbName: climbName || "Unknown Climb",
+        climbName: climbName || 'Unknown Climb',
         setterUsername,
         boardType: tick.boardType,
         layoutId,
@@ -124,7 +124,7 @@ export const socialFeedQueries = {
         difficulty: tick.difficulty,
         difficultyName,
         isBenchmark: tick.isBenchmark ?? false,
-        comment: tick.comment || "",
+        comment: tick.comment || '',
         climbedAt: tick.climbedAt,
         frames,
       }),
@@ -145,7 +145,7 @@ export const socialFeedQueries = {
     _: unknown,
     { input }: { input?: { limit?: number; offset?: number } },
   ) => {
-    const validatedInput = validateInput(FollowingAscentsFeedInputSchema, input || {}, "input");
+    const validatedInput = validateInput(FollowingAscentsFeedInputSchema, input || {}, 'input');
     const limit = validatedInput.limit ?? 20;
     const offset = validatedInput.offset ?? 0;
 
@@ -217,7 +217,7 @@ export const socialFeedQueries = {
         userDisplayName: userDisplayName || userName || undefined,
         userAvatarUrl: userAvatarUrl || userImage || undefined,
         climbUuid: tick.climbUuid,
-        climbName: climbName || "Unknown Climb",
+        climbName: climbName || 'Unknown Climb',
         setterUsername,
         boardType: tick.boardType,
         layoutId,
@@ -229,7 +229,7 @@ export const socialFeedQueries = {
         difficulty: tick.difficulty,
         difficultyName,
         isBenchmark: tick.isBenchmark ?? false,
-        comment: tick.comment || "",
+        comment: tick.comment || '',
         climbedAt: tick.climbedAt,
         frames,
       }),

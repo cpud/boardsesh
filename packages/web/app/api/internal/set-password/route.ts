@@ -1,24 +1,24 @@
-import { getServerSession } from "next-auth/next";
-import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/app/lib/db/db";
-import * as schema from "@/app/lib/db/schema";
-import bcrypt from "bcryptjs";
-import { eq, and, isNull } from "drizzle-orm";
-import { z } from "zod";
-import { authOptions } from "@/app/lib/auth/auth-options";
-import { checkRateLimit, getClientIp } from "@/app/lib/auth/rate-limiter";
+import { getServerSession } from 'next-auth/next';
+import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '@/app/lib/db/db';
+import * as schema from '@/app/lib/db/schema';
+import bcrypt from 'bcryptjs';
+import { eq, and, isNull } from 'drizzle-orm';
+import { z } from 'zod';
+import { authOptions } from '@/app/lib/auth/auth-options';
+import { checkRateLimit, getClientIp } from '@/app/lib/auth/rate-limiter';
 
 const setPasswordSchema = z
   .object({
     password: z
       .string()
-      .min(8, "Password must be at least 8 characters")
-      .max(128, "Password must be less than 128 characters"),
+      .min(8, 'Password must be at least 8 characters')
+      .max(128, 'Password must be less than 128 characters'),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
   });
 
 export async function POST(request: NextRequest) {
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Rate limiting - 5 requests per minute per IP
@@ -34,10 +34,10 @@ export async function POST(request: NextRequest) {
     const ipRateLimit = checkRateLimit(`set-password:${clientIp}`, 5, 60_000);
     if (ipRateLimit.limited) {
       return NextResponse.json(
-        { error: "Too many requests. Please try again later." },
+        { error: 'Too many requests. Please try again later.' },
         {
           status: 429,
-          headers: { "Retry-After": String(ipRateLimit.retryAfterSeconds) },
+          headers: { 'Retry-After': String(ipRateLimit.retryAfterSeconds) },
         },
       );
     }
@@ -46,10 +46,10 @@ export async function POST(request: NextRequest) {
     const userRateLimit = checkRateLimit(`set-password:user:${session.user.id}`, 5, 60_000);
     if (userRateLimit.limited) {
       return NextResponse.json(
-        { error: "Too many requests. Please try again later." },
+        { error: 'Too many requests. Please try again later.' },
         {
           status: 429,
-          headers: { "Retry-After": String(userRateLimit.retryAfterSeconds) },
+          headers: { 'Retry-After': String(userRateLimit.retryAfterSeconds) },
         },
       );
     }
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 
     // Validate input
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (existing.length > 0) {
-      return NextResponse.json({ error: "Password already set." }, { status: 409 });
+      return NextResponse.json({ error: 'Password already set.' }, { status: 409 });
     }
 
     // Hash password and insert
@@ -106,22 +106,22 @@ export async function POST(request: NextRequest) {
       // Handle race condition: another request inserted credentials between our check and insert
       if (
         insertError &&
-        typeof insertError === "object" &&
-        "code" in insertError &&
-        insertError.code === "23505"
+        typeof insertError === 'object' &&
+        'code' in insertError &&
+        insertError.code === '23505'
       ) {
-        return NextResponse.json({ error: "Password already set." }, { status: 409 });
+        return NextResponse.json({ error: 'Password already set.' }, { status: 409 });
       }
       throw insertError;
     }
 
     return NextResponse.json({
-      message: "Password set successfully. You can now log in with your email and password.",
+      message: 'Password set successfully. You can now log in with your email and password.',
     });
   } catch (error) {
-    console.error("Set password error:", error);
+    console.error('Set password error:', error);
     return NextResponse.json(
-      { error: "An error occurred while setting the password" },
+      { error: 'An error occurred while setting the password' },
       { status: 500 },
     );
   }

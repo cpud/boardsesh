@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import React from "react";
-import MuiTooltip from "@mui/material/Tooltip";
-import MuiCard from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
-import Box from "@mui/material/Box";
-import { CssBarChart, GroupedBarChart } from "@/app/components/charts/css-bar-chart";
-import type { CssBarChartBar, GroupedBar } from "@/app/components/charts/css-bar-chart";
-import { EmptyState } from "@/app/components/ui/empty-state";
-import { themeTokens } from "@/app/theme/theme-config";
-import { AscentStatusIcon } from "@/app/components/ascent-status/ascent-status-icon";
+import React from 'react';
+import MuiTooltip from '@mui/material/Tooltip';
+import MuiCard from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
+import { CssBarChart, GroupedBarChart } from '@/app/components/charts/css-bar-chart';
+import type { CssBarChartBar, GroupedBar } from '@/app/components/charts/css-bar-chart';
+import { EmptyState } from '@/app/components/ui/empty-state';
+import { themeTokens } from '@/app/theme/theme-config';
+import { AscentStatusIcon } from '@/app/components/ascent-status/ascent-status-icon';
 import type {
   LayoutPercentage,
   LayoutLegendEntry,
   VPointsTimelineData,
-} from "../utils/chart-data-builders";
-import VPointsChart from "./v-points-chart";
-import styles from "../profile-page.module.css";
+} from '../utils/chart-data-builders';
+import VPointsChart from './v-points-chart';
+import styles from '../profile-page.module.css';
 
 interface GradeHighlight {
   label: string;
   color: string;
   textColor: string;
-  status: "send" | "flash";
+  status: 'send' | 'flash';
 }
 
 export interface StatsSummaryProps {
@@ -67,37 +67,37 @@ export default function StatsSummary({
     <Box
       sx={{
         flex: 1,
-        position: "relative",
+        position: 'relative',
         borderRadius: `${themeTokens.borderRadius.md}px`,
         bgcolor: highlight.color,
         color: highlight.textColor,
         p: 1.5,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
         gap: 0.125,
-        textAlign: "center",
-        overflow: "hidden",
+        textAlign: 'center',
+        overflow: 'hidden',
       }}
     >
       <Typography
         variant="h5"
         component="span"
         fontWeight={700}
-        sx={{ display: "block", lineHeight: 1 }}
+        sx={{ display: 'block', lineHeight: 1 }}
       >
         {highlight.label}
       </Typography>
-      <Typography variant="caption" sx={{ display: "block", lineHeight: 1, opacity: 0.8 }}>
+      <Typography variant="caption" sx={{ display: 'block', lineHeight: 1, opacity: 0.8 }}>
         {subtitle}
       </Typography>
       <Box
         sx={{
-          position: "absolute",
+          position: 'absolute',
           right: 8,
-          top: "calc(50% + 4px)",
-          transform: "translateY(-50%)",
+          top: 'calc(50% + 4px)',
+          transform: 'translateY(-50%)',
           lineHeight: 0,
         }}
       >
@@ -115,49 +115,49 @@ export default function StatsSummary({
   return (
     <MuiCard className={styles.statsCard}>
       <CardContent>
-        <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
           <Box
             sx={{
               flex: 1,
               borderRadius: `${themeTokens.borderRadius.md}px`,
-              bgcolor: "var(--neutral-100)",
+              bgcolor: 'var(--neutral-100)',
               p: 1.5,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
               gap: 0.125,
-              textAlign: "center",
+              textAlign: 'center',
             }}
           >
             <Typography
               variant="h5"
               component="span"
               fontWeight={700}
-              sx={{ display: "block", lineHeight: 1 }}
+              sx={{ display: 'block', lineHeight: 1 }}
             >
               {statisticsSummary.totalAscents}
             </Typography>
             <Typography
               variant="caption"
               color="text.secondary"
-              sx={{ display: "block", lineHeight: 1, opacity: 0.8 }}
+              sx={{ display: 'block', lineHeight: 1, opacity: 0.8 }}
             >
               problems
             </Typography>
           </Box>
-          {hardestSend && renderHighlightCard("hardest-send-status", "send", hardestSend)}
-          {hardestFlash && renderHighlightCard("hardest-flash-status", "flash", hardestFlash)}
+          {hardestSend && renderHighlightCard('hardest-send-status', 'send', hardestSend)}
+          {hardestFlash && renderHighlightCard('hardest-flash-status', 'flash', hardestFlash)}
         </Box>
 
         {percentile && percentile.percentile > 0 && (
           <Box sx={{ mb: 2 }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
               <Typography variant="caption" color="text.secondary">
                 Percentile
               </Typography>
               <Typography variant="caption" fontWeight={600}>
-                Top{" "}
+                Top{' '}
                 {Math.max(0.1, 100 - percentile.percentile).toFixed(
                   percentile.percentile >= 99 ? 1 : 0,
                 )}
@@ -168,21 +168,21 @@ export default function StatsSummary({
               sx={{
                 height: 8,
                 borderRadius: 4,
-                bgcolor: "var(--neutral-100)",
-                overflow: "hidden",
+                bgcolor: 'var(--neutral-100)',
+                overflow: 'hidden',
               }}
             >
               <Box
                 sx={{
-                  height: "100%",
+                  height: '100%',
                   width: `${percentile.percentile}%`,
                   borderRadius: 4,
                   bgcolor: themeTokens.colors.primary,
-                  transition: "width 0.5s ease",
+                  transition: 'width 0.5s ease',
                 }}
               />
             </Box>
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: "block" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
               More problems sent than {percentile.percentile.toFixed(0)}% of climbers
             </Typography>
           </Box>
@@ -202,7 +202,7 @@ export default function StatsSummary({
                   >
                     {layout.percentage >= 15 && (
                       <span className={styles.percentageLabel}>
-                        {layout.displayName.split(" ").slice(-1)[0]} {layout.percentage}%
+                        {layout.displayName.split(' ').slice(-1)[0]} {layout.percentage}%
                       </span>
                     )}
                   </div>

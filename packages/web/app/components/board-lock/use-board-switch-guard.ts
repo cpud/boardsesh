@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useCallback } from "react";
-import type { BoardDetails, BoardRouteIdentity } from "@/app/lib/types";
-import { useActiveBoardLock } from "./use-active-board-lock";
-import { useBoardSwitchConfirm } from "./board-switch-confirm-provider";
-import { disconnectAllBluetooth } from "../board-bluetooth-control/bluetooth-status-store";
+import { useCallback } from 'react';
+import type { BoardDetails, BoardRouteIdentity } from '@/app/lib/types';
+import { useActiveBoardLock } from './use-active-board-lock';
+import { useBoardSwitchConfirm } from './board-switch-confirm-provider';
+import { disconnectAllBluetooth } from '../board-bluetooth-control/bluetooth-status-store';
 
 function isSameBoard(
   a: BoardDetails | BoardRouteIdentity,

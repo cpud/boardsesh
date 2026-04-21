@@ -1,41 +1,41 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { usePathname } from "next/navigation";
-import { PartyProfileProvider } from "../party-manager/party-profile-context";
-import { PersistentSessionProvider, usePersistentSession } from "../persistent-session";
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { usePathname } from 'next/navigation';
+import { PartyProfileProvider } from '../party-manager/party-profile-context';
+import { PersistentSessionProvider, usePersistentSession } from '../persistent-session';
 import {
   QueueBridgeProvider,
   useQueueBridgeBoardInfo,
-} from "../queue-control/queue-bridge-context";
-import { useCurrentClimb, useQueueList } from "../graphql-queue";
-import QueueControlBar from "../queue-control/queue-control-bar";
-import QueueControlBarShell from "../queue-control/queue-control-bar-shell";
-import BottomTabBar from "../bottom-tab-bar/bottom-tab-bar";
-import { BoardProvider } from "../board-provider/board-provider-context";
-import { ConnectionSettingsProvider } from "../connection-manager/connection-settings-context";
-import { WebSocketConnectionProvider } from "../connection-manager/websocket-connection-provider";
-import { BluetoothProvider } from "../board-bluetooth-control/bluetooth-context";
-import { FavoritesProvider } from "../climb-actions/favorites-batch-context";
-import { PlaylistsProvider } from "../climb-actions/playlists-batch-context";
-import { useClimbActionsData } from "@/app/hooks/use-climb-actions-data";
-import ErrorBoundary from "../error-boundary";
-import bottomBarStyles from "../bottom-tab-bar/bottom-bar-wrapper.module.css";
-import { BoardConfigData } from "@/app/lib/server-board-configs";
-import { isBoardRoutePath } from "@/app/lib/board-route-paths";
-import GlobalHeader from "../global-header/global-header";
-import SessionSummaryDialog from "../session-summary/session-summary-dialog";
-import { SearchDrawerBridgeProvider } from "../search-drawer/search-drawer-bridge-context";
-import { StatsFilterBridgeProvider } from "../stats-filter-bridge/stats-filter-bridge-context";
-import { ProfileHeaderShareProvider } from "../profile-header-bridge/profile-header-bridge-context";
-import { isNativeApp } from "@/app/lib/ble/capacitor-utils";
-import dynamic from "next/dynamic";
-import { SESH_SETTINGS_DRAWER_EVENT } from "../sesh-settings/sesh-settings-drawer-event";
+} from '../queue-control/queue-bridge-context';
+import { useCurrentClimb, useQueueList } from '../graphql-queue';
+import QueueControlBar from '../queue-control/queue-control-bar';
+import QueueControlBarShell from '../queue-control/queue-control-bar-shell';
+import BottomTabBar from '../bottom-tab-bar/bottom-tab-bar';
+import { BoardProvider } from '../board-provider/board-provider-context';
+import { ConnectionSettingsProvider } from '../connection-manager/connection-settings-context';
+import { WebSocketConnectionProvider } from '../connection-manager/websocket-connection-provider';
+import { BluetoothProvider } from '../board-bluetooth-control/bluetooth-context';
+import { FavoritesProvider } from '../climb-actions/favorites-batch-context';
+import { PlaylistsProvider } from '../climb-actions/playlists-batch-context';
+import { useClimbActionsData } from '@/app/hooks/use-climb-actions-data';
+import ErrorBoundary from '../error-boundary';
+import bottomBarStyles from '../bottom-tab-bar/bottom-bar-wrapper.module.css';
+import { BoardConfigData } from '@/app/lib/server-board-configs';
+import { isBoardRoutePath } from '@/app/lib/board-route-paths';
+import GlobalHeader from '../global-header/global-header';
+import SessionSummaryDialog from '../session-summary/session-summary-dialog';
+import { SearchDrawerBridgeProvider } from '../search-drawer/search-drawer-bridge-context';
+import { StatsFilterBridgeProvider } from '../stats-filter-bridge/stats-filter-bridge-context';
+import { ProfileHeaderShareProvider } from '../profile-header-bridge/profile-header-bridge-context';
+import { isNativeApp } from '@/app/lib/ble/capacitor-utils';
+import dynamic from 'next/dynamic';
+import { SESH_SETTINGS_DRAWER_EVENT } from '../sesh-settings/sesh-settings-drawer-event';
 
-const SeshSettingsDrawer = dynamic(() => import("../sesh-settings/sesh-settings-drawer"), {
+const SeshSettingsDrawer = dynamic(() => import('../sesh-settings/sesh-settings-drawer'), {
   ssr: false,
 });
-import { BoardSwitchConfirmProvider } from "../board-lock/board-switch-confirm-provider";
+import { BoardSwitchConfirmProvider } from '../board-lock/board-switch-confirm-provider';
 
 interface PersistentSessionWrapperProps {
   children: React.ReactNode;
@@ -91,7 +91,7 @@ function RootSessionSummaryDialog() {
   return (
     <SessionSummaryDialog
       summary={sessionSummary}
-      boardType={sessionSummaryBoardType ?? ""}
+      boardType={sessionSummaryBoardType ?? ''}
       existingWorkoutId={sessionSummaryHealthKitWorkoutId}
       onDismiss={dismissSessionSummary}
     />
@@ -134,7 +134,7 @@ function RootSeshSettingsDrawer() {
  * QueueControlBar is only shown when there is an active queue (board details available).
  */
 /** Pages where the bottom tab bar is hidden unless there's an active queue */
-const HIDE_TAB_BAR_PAGES = ["/aurora-migration"];
+const HIDE_TAB_BAR_PAGES = ['/aurora-migration'];
 
 export function RootBottomBar({ boardConfigs }: { boardConfigs: BoardConfigData }) {
   const { boardDetails, angle, hasActiveQueue } = useQueueBridgeBoardInfo();
@@ -147,7 +147,7 @@ export function RootBottomBar({ boardConfigs }: { boardConfigs: BoardConfigData 
 
   return (
     <div
-      className={`${bottomBarStyles.bottomBarWrapper} ${isNative ? bottomBarStyles.nativeApp : ""}`}
+      className={`${bottomBarStyles.bottomBarWrapper} ${isNative ? bottomBarStyles.nativeApp : ''}`}
       data-testid="bottom-bar-wrapper"
     >
       {hasActiveQueue && boardDetails && (
@@ -180,7 +180,7 @@ function RootQueueControlBarWithProviders({
   boardDetails,
   angle,
 }: {
-  boardDetails: NonNullable<ReturnType<typeof useQueueBridgeBoardInfo>["boardDetails"]>;
+  boardDetails: NonNullable<ReturnType<typeof useQueueBridgeBoardInfo>['boardDetails']>;
   angle: number;
 }) {
   const { currentClimb } = useCurrentClimb();

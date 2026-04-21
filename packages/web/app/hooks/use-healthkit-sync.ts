@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useState } from "react";
-import type { SessionSummary } from "@boardsesh/shared-schema";
+import { useCallback, useEffect, useState } from 'react';
+import type { SessionSummary } from '@boardsesh/shared-schema';
 import {
   isHealthKitAvailable,
   requestHealthKitAuthorization,
   saveSessionToHealthKit,
   getHealthKitAutoSync,
   setHealthKitAutoSync,
-} from "@/app/lib/healthkit/healthkit-bridge";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
-import { SET_SESSION_HEALTHKIT_WORKOUT_ID } from "@/app/lib/graphql/operations/activity-feed";
-import { useWsAuthToken } from "./use-ws-auth-token";
+} from '@/app/lib/healthkit/healthkit-bridge';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
+import { SET_SESSION_HEALTHKIT_WORKOUT_ID } from '@/app/lib/graphql/operations/activity-feed';
+import { useWsAuthToken } from './use-ws-auth-token';
 
-export type HealthKitSaveState = "idle" | "saving" | "saved" | "error" | "unavailable";
+export type HealthKitSaveState = 'idle' | 'saving' | 'saved' | 'error' | 'unavailable';
 
 interface UseHealthKitSyncOptions {
   summary: SessionSummary | null;
@@ -28,7 +28,7 @@ export function useHealthKitSync({
   existingWorkoutId,
 }: UseHealthKitSyncOptions) {
   const [available, setAvailable] = useState(false);
-  const [state, setState] = useState<HealthKitSaveState>("idle");
+  const [state, setState] = useState<HealthKitSaveState>('idle');
   const { token } = useWsAuthToken();
 
   useEffect(() => {
@@ -43,29 +43,29 @@ export function useHealthKitSync({
 
   useEffect(() => {
     if (existingWorkoutId) {
-      setState("saved");
+      setState('saved');
     } else {
-      setState("idle");
+      setState('idle');
     }
   }, [existingWorkoutId, summary?.sessionId]);
 
   const save = useCallback(async (): Promise<boolean> => {
     if (!summary) return false;
     if (!available) {
-      setState("unavailable");
+      setState('unavailable');
       return false;
     }
-    if (state === "saving" || state === "saved") return state === "saved";
+    if (state === 'saving' || state === 'saved') return state === 'saved';
 
-    setState("saving");
+    setState('saving');
     const granted = await requestHealthKitAuthorization();
     if (!granted) {
-      setState("error");
+      setState('error');
       return false;
     }
     const result = await saveSessionToHealthKit(summary, boardType);
     if (!result) {
-      setState("error");
+      setState('error');
       return false;
     }
     try {
@@ -77,9 +77,9 @@ export function useHealthKitSync({
     } catch (e) {
       // Don't fail the overall flow if the back-mapping write fails — the
       // HealthKit workout exists; we just won't be able to dedupe later.
-      console.warn("[HealthKit] Failed to persist workout id:", e);
+      console.warn('[HealthKit] Failed to persist workout id:', e);
     }
-    setState("saved");
+    setState('saved');
     return true;
   }, [summary, available, state, boardType, token]);
 

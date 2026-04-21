@@ -3,15 +3,15 @@
  * This uses the `canvas` npm package to provide Canvas API in Node.js environment.
  */
 
-import { createCanvas, loadImage, Canvas, CanvasRenderingContext2D } from "canvas";
-import fs from "fs/promises";
-import path from "path";
+import { createCanvas, loadImage, Canvas, CanvasRenderingContext2D } from 'canvas';
+import fs from 'fs/promises';
+import path from 'path';
 import {
   ImageProcessor,
   RawPixelData,
   ImageMetadata,
   ImageRegion,
-} from "../../image-processor/types";
+} from '../../image-processor/types';
 
 /**
  * Node-canvas implementation of ImageProcessor for testing.
@@ -20,12 +20,12 @@ import {
 export class NodeCanvasImageProcessor implements ImageProcessor {
   private canvas: Canvas | null = null;
   private ctx: CanvasRenderingContext2D | null = null;
-  private sourceName: string = "unknown";
+  private sourceName: string = 'unknown';
 
   async load(source: string | Buffer): Promise<void> {
     let buffer: Buffer;
 
-    if (typeof source === "string") {
+    if (typeof source === 'string') {
       // File path
       this.sourceName = path.basename(source);
       buffer = await fs.readFile(source);
@@ -38,17 +38,17 @@ export class NodeCanvasImageProcessor implements ImageProcessor {
 
     // Create canvas with image dimensions
     this.canvas = createCanvas(image.width, image.height);
-    this.ctx = this.canvas.getContext("2d");
+    this.ctx = this.canvas.getContext('2d');
     this.ctx.drawImage(image, 0, 0);
   }
 
   getMetadata(): ImageMetadata {
-    if (!this.canvas) throw new Error("Image not loaded");
+    if (!this.canvas) throw new Error('Image not loaded');
     return { width: this.canvas.width, height: this.canvas.height };
   }
 
   async extractRegion(region: ImageRegion): Promise<RawPixelData> {
-    if (!this.ctx) throw new Error("Image not loaded");
+    if (!this.ctx) throw new Error('Image not loaded');
 
     const imageData = this.ctx.getImageData(region.x, region.y, region.width, region.height);
 
@@ -61,7 +61,7 @@ export class NodeCanvasImageProcessor implements ImageProcessor {
   }
 
   async extractFullImage(): Promise<RawPixelData> {
-    if (!this.ctx || !this.canvas) throw new Error("Image not loaded");
+    if (!this.ctx || !this.canvas) throw new Error('Image not loaded');
 
     const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
 
@@ -74,11 +74,11 @@ export class NodeCanvasImageProcessor implements ImageProcessor {
   }
 
   async extractForOCR(region: ImageRegion): Promise<Buffer> {
-    if (!this.ctx || !this.canvas) throw new Error("Image not loaded");
+    if (!this.ctx || !this.canvas) throw new Error('Image not loaded');
 
     // Create a temporary canvas for the cropped region
     const tempCanvas = createCanvas(region.width, region.height);
-    const tempCtx = tempCanvas.getContext("2d");
+    const tempCtx = tempCanvas.getContext('2d');
 
     // Copy the region to the temp canvas
     tempCtx.drawImage(
@@ -123,7 +123,7 @@ export class NodeCanvasImageProcessor implements ImageProcessor {
     tempCtx.putImageData(imageData, 0, 0);
 
     // Return as PNG buffer (Tesseract.js in Node can read PNG buffers)
-    return tempCanvas.toBuffer("image/png");
+    return tempCanvas.toBuffer('image/png');
   }
 
   getSourceName(): string {

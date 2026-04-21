@@ -1,7 +1,7 @@
-import type { Climb } from "@boardsesh/shared-schema";
-import { searchClimbs as searchClimbsQuery, countClimbs } from "../../../db/queries/climbs/index";
-import type { ClimbSearchContext } from "../shared/types";
-import { searchCache, DEFAULT_SEARCH_CACHE_TTL } from "../../../services/search-cache";
+import type { Climb } from '@boardsesh/shared-schema';
+import { searchClimbs as searchClimbsQuery, countClimbs } from '../../../db/queries/climbs/index';
+import type { ClimbSearchContext } from '../shared/types';
+import { searchCache, DEFAULT_SEARCH_CACHE_TTL } from '../../../services/search-cache';
 
 interface CachedClimbsResult {
   climbs: Climb[];
@@ -30,7 +30,7 @@ export const climbFieldResolvers = {
       return result.climbs;
     }
 
-    const cacheKey = searchCache.buildCacheKey(parent.params, parent.searchParams, "climbs");
+    const cacheKey = searchCache.buildCacheKey(parent.params, parent.searchParams, 'climbs');
     const cached = await searchCache.getCachedResult<CachedClimbsResult>(cacheKey);
     if (cached) {
       parent._cachedClimbs = cached.climbs;
@@ -66,7 +66,7 @@ export const climbFieldResolvers = {
       return count;
     }
 
-    const cacheKey = searchCache.buildCacheKey(parent.params, parent.searchParams, "count");
+    const cacheKey = searchCache.buildCacheKey(parent.params, parent.searchParams, 'count');
     const cached = await searchCache.getCachedResult<number>(cacheKey);
     if (cached !== null) {
       parent._cachedTotalCount = cached;
@@ -96,7 +96,7 @@ export const climbFieldResolvers = {
     // The climbs resolver always sets _cachedHasMore (from DB result or Redis cache).
     // A missing value here would indicate a bug in the climbs resolver.
     if (parent._cachedHasMore === undefined) {
-      throw new Error("Invariant violation: climbs resolver did not populate _cachedHasMore");
+      throw new Error('Invariant violation: climbs resolver did not populate _cachedHasMore');
     }
     return parent._cachedHasMore;
   },

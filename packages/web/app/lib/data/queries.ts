@@ -4,17 +4,17 @@
  * when fetching data in server components, as it will leverage the next cache and be more
  * performant.
  */
-import "server-only";
-import { cache } from "react";
-import { sql } from "@/app/lib/db/db";
-import { getGradeLabel } from "@boardsesh/db/queries";
+import 'server-only';
+import { cache } from 'react';
+import { sql } from '@/app/lib/db/db';
+import { getGradeLabel } from '@boardsesh/db/queries';
 
-import { Climb, ParsedBoardRouteParametersWithUuid, BoardName, LayoutId, Size } from "../types";
+import { Climb, ParsedBoardRouteParametersWithUuid, BoardName, LayoutId, Size } from '../types';
 import {
   getSizesForLayoutId,
   getAllLayouts,
   getSetsForLayoutAndSize,
-} from "@/app/lib/board-constants";
+} from '@/app/lib/board-constants';
 
 export const getClimb = cache(
   async (params: ParsedBoardRouteParametersWithUuid): Promise<Climb> => {

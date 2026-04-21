@@ -1,17 +1,17 @@
-import React from "react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { renderHook, act } from "@testing-library/react";
+import React from 'react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
+import { renderHook, act } from '@testing-library/react';
 
 // --- Mocks must be before imports ---
 
 const mockShowMessage = vi.fn();
-vi.mock("@/app/components/providers/snackbar-provider", () => ({
+vi.mock('@/app/components/providers/snackbar-provider', () => ({
   useSnackbar: () => ({ showMessage: mockShowMessage }),
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
-  usePathname: () => "/kilter/1/1/1/40",
+  usePathname: () => '/kilter/1/1/1/40',
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
 }));
 
@@ -23,8 +23,8 @@ const mockMirrorCurrentClimb = vi.fn().mockResolvedValue(undefined);
 
 const mockPersistentSession = {
   activeSession: {
-    sessionId: "session-1",
-    boardPath: "/kilter/1/1/1/40",
+    sessionId: 'session-1',
+    boardPath: '/kilter/1/1/1/40',
     boardDetails: {},
     parsedParams: {},
   } as {
@@ -33,11 +33,11 @@ const mockPersistentSession = {
     boardDetails: unknown;
     parsedParams: unknown;
   } | null,
-  session: { clientId: "client-1", isLeader: true, users: [], goal: null },
+  session: { clientId: 'client-1', isLeader: true, users: [], goal: null },
   isConnecting: false,
   hasConnected: true,
   error: null,
-  clientId: "client-1",
+  clientId: 'client-1',
   isLeader: true,
   users: [],
   currentClimbQueueItem: null,
@@ -70,90 +70,90 @@ const mockPersistentSession = {
   dismissSessionSummary: vi.fn(),
 };
 
-let mockConnectionState = "connected" as string;
-vi.mock("../../connection-manager/websocket-connection-provider", () => ({
+let mockConnectionState = 'connected' as string;
+vi.mock('../../connection-manager/websocket-connection-provider', () => ({
   useWebSocketConnection: () => ({
     state: mockConnectionState,
-    name: "session",
+    name: 'session',
   }),
 }));
 
-vi.mock("../../party-manager/party-profile-context", () => ({
+vi.mock('../../party-manager/party-profile-context', () => ({
   usePartyProfile: () => ({
-    profile: { id: "user-1" },
-    username: "tester",
+    profile: { id: 'user-1' },
+    username: 'tester',
     avatarUrl: undefined,
   }),
 }));
 
-vi.mock("../../connection-manager/connection-settings-context", () => ({
+vi.mock('../../connection-manager/connection-settings-context', () => ({
   useConnectionSettings: () => ({
-    backendUrl: "wss://example.com/graphql",
+    backendUrl: 'wss://example.com/graphql',
   }),
 }));
 
-vi.mock("../../persistent-session", () => ({
+vi.mock('../../persistent-session', () => ({
   usePersistentSession: () => mockPersistentSession,
   usePersistentSessionState: () => mockPersistentSession,
   usePersistentSessionActions: () => mockPersistentSession,
   PersistentSessionProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock("../../climb-actions/favorites-batch-context", () => ({
+vi.mock('../../climb-actions/favorites-batch-context', () => ({
   FavoritesProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock("../../climb-actions/playlists-batch-context", () => ({
+vi.mock('../../climb-actions/playlists-batch-context', () => ({
   PlaylistsProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock("@/app/hooks/use-climb-actions-data", () => ({
+vi.mock('@/app/hooks/use-climb-actions-data', () => ({
   useClimbActionsData: () => ({
     favoritesProviderProps: {},
     playlistsProviderProps: {},
   }),
 }));
 
-vi.mock("@/app/hooks/use-ws-auth-token", () => ({
-  useWsAuthToken: () => ({ token: "mock-token", isLoading: false }),
+vi.mock('@/app/hooks/use-ws-auth-token', () => ({
+  useWsAuthToken: () => ({ token: 'mock-token', isLoading: false }),
 }));
 
-let mockSessionCookie: string | null = "session-1";
-vi.mock("@/app/lib/climb-session-cookie", () => ({
+let mockSessionCookie: string | null = 'session-1';
+vi.mock('@/app/lib/climb-session-cookie', () => ({
   getClimbSessionCookie: () => mockSessionCookie,
   setClimbSessionCookie: vi.fn(),
   clearClimbSessionCookie: vi.fn(),
 }));
 
-vi.mock("@/app/lib/session-history-db", () => ({
+vi.mock('@/app/lib/session-history-db', () => ({
   saveSessionToHistory: vi.fn(),
 }));
 
-vi.mock("@/app/lib/graphql/client", () => ({
+vi.mock('@/app/lib/graphql/client', () => ({
   createGraphQLHttpClient: vi.fn(() => ({ request: vi.fn() })),
 }));
 
-vi.mock("../session-summary/session-summary-dialog", () => ({
+vi.mock('../session-summary/session-summary-dialog', () => ({
   default: () => null,
 }));
 
 // Import after all mocks
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { GraphQLQueueProvider, useQueueContext } from "../QueueContext";
-import type { Climb } from "@/app/lib/types";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { GraphQLQueueProvider, useQueueContext } from '../QueueContext';
+import type { Climb } from '@/app/lib/types';
 
 const mockClimb: Climb = {
-  uuid: "climb-1",
-  setter_username: "setter1",
-  name: "Test Climb",
-  description: "A test climb",
-  frames: "",
+  uuid: 'climb-1',
+  setter_username: 'setter1',
+  name: 'Test Climb',
+  description: 'A test climb',
+  frames: '',
   angle: 40,
   ascensionist_count: 5,
-  difficulty: "7",
-  quality_average: "3.5",
+  difficulty: '7',
+  quality_average: '3.5',
   stars: 3,
-  difficulty_error: "",
+  difficulty_error: '',
   mirrored: false,
   benchmark_difficulty: null,
   userAscents: 0,
@@ -162,34 +162,34 @@ const mockClimb: Climb = {
 
 const mockClimb2: Climb = {
   ...mockClimb,
-  uuid: "climb-2",
-  name: "Test Climb 2",
+  uuid: 'climb-2',
+  name: 'Test Climb 2',
 };
 
 const mockClimb3: Climb = {
   ...mockClimb,
-  uuid: "climb-3",
-  name: "Test Climb 3",
+  uuid: 'climb-3',
+  name: 'Test Climb 3',
 };
 
 const defaultProps = {
   parsedParams: {
-    board_name: "kilter",
-    layout_id: "1",
-    size_id: "1",
-    set_ids: ["1"],
-    angle: "40",
+    board_name: 'kilter',
+    layout_id: '1',
+    size_id: '1',
+    set_ids: ['1'],
+    angle: '40',
   } as never,
   boardDetails: {
-    board_name: "kilter",
+    board_name: 'kilter',
     layout_id: 1,
     size_id: 1,
-    set_ids: "1",
+    set_ids: '1',
     images_to_holds: {},
-    layout_name: "Original",
-    size_name: "12x12",
-    size_description: "Standard",
-    set_names: ["Base"],
+    layout_name: 'Original',
+    size_name: '12x12',
+    size_description: 'Standard',
+    set_names: ['Base'],
     edge_left: 0,
     edge_right: 0,
     edge_bottom: 0,
@@ -213,15 +213,15 @@ function createWrapper() {
   };
 }
 
-describe("QueueContext offline mutations", () => {
+describe('QueueContext offline mutations', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockConnectionState = "connected";
+    mockConnectionState = 'connected';
     mockPersistentSession.hasConnected = true;
   });
 
-  describe("when online in party mode", () => {
-    it("addToQueue calls persistentSession.addQueueItem", () => {
+  describe('when online in party mode', () => {
+    it('addToQueue calls persistentSession.addQueueItem', () => {
       const { result } = renderHook(() => useQueueContext(), { wrapper: createWrapper() });
 
       act(() => {
@@ -231,7 +231,7 @@ describe("QueueContext offline mutations", () => {
       expect(mockAddQueueItem).toHaveBeenCalledTimes(1);
     });
 
-    it("removeFromQueue calls persistentSession.removeQueueItem", () => {
+    it('removeFromQueue calls persistentSession.removeQueueItem', () => {
       const { result } = renderHook(() => useQueueContext(), { wrapper: createWrapper() });
 
       // First add an item so we can remove it
@@ -248,7 +248,7 @@ describe("QueueContext offline mutations", () => {
       expect(mockRemoveQueueItem).toHaveBeenCalledWith(queueItem.uuid);
     });
 
-    it("setCurrentClimb inserts via addQueueItem before setting current climb", async () => {
+    it('setCurrentClimb inserts via addQueueItem before setting current climb', async () => {
       const { result } = renderHook(() => useQueueContext(), { wrapper: createWrapper() });
 
       act(() => {
@@ -275,7 +275,7 @@ describe("QueueContext offline mutations", () => {
       const [addedItem, position] = mockAddQueueItem.mock.calls[0];
       const [currentItem, shouldAddToQueue, correlationId] = mockSetCurrentClimb.mock.calls[0];
 
-      expect(addedItem.climb.uuid).toBe("climb-3");
+      expect(addedItem.climb.uuid).toBe('climb-3');
       expect(position).toBe(1);
       expect(currentItem).toEqual(addedItem);
       expect(shouldAddToQueue).toBe(false);
@@ -285,7 +285,7 @@ describe("QueueContext offline mutations", () => {
       );
     });
 
-    it("setCurrentClimb appends when there is no current climb", async () => {
+    it('setCurrentClimb appends when there is no current climb', async () => {
       const { result } = renderHook(() => useQueueContext(), { wrapper: createWrapper() });
 
       act(() => {
@@ -305,30 +305,30 @@ describe("QueueContext offline mutations", () => {
       const [addedItem, position] = mockAddQueueItem.mock.calls[0];
       const [currentItem, shouldAddToQueue, correlationId] = mockSetCurrentClimb.mock.calls[0];
 
-      expect(addedItem.climb.uuid).toBe("climb-2");
+      expect(addedItem.climb.uuid).toBe('climb-2');
       expect(position).toBeUndefined();
       expect(currentItem).toEqual(addedItem);
       expect(shouldAddToQueue).toBe(false);
       expect(correlationId).toMatch(/^client-1-\d+$/);
     });
 
-    it("isDisconnected is false", () => {
+    it('isDisconnected is false', () => {
       const { result } = renderHook(() => useQueueContext(), { wrapper: createWrapper() });
       expect(result.current.isDisconnected).toBe(false);
     });
   });
 
-  describe("when offline in party mode", () => {
+  describe('when offline in party mode', () => {
     beforeEach(() => {
-      mockConnectionState = "reconnecting";
+      mockConnectionState = 'reconnecting';
     });
 
-    it("isDisconnected is true", () => {
+    it('isDisconnected is true', () => {
       const { result } = renderHook(() => useQueueContext(), { wrapper: createWrapper() });
       expect(result.current.isDisconnected).toBe(true);
     });
 
-    it("addToQueue applies locally but does NOT call persistentSession.addQueueItem", () => {
+    it('addToQueue applies locally but does NOT call persistentSession.addQueueItem', () => {
       const { result } = renderHook(() => useQueueContext(), { wrapper: createWrapper() });
 
       act(() => {
@@ -343,9 +343,9 @@ describe("QueueContext offline mutations", () => {
       expect(mockAddQueueItem).not.toHaveBeenCalled();
     });
 
-    it("removeFromQueue applies locally but does NOT call persistentSession.removeQueueItem", () => {
+    it('removeFromQueue applies locally but does NOT call persistentSession.removeQueueItem', () => {
       // Start online, add item, then go offline and remove
-      mockConnectionState = "connected";
+      mockConnectionState = 'connected';
       const { result, rerender } = renderHook(() => useQueueContext(), {
         wrapper: createWrapper(),
       });
@@ -358,7 +358,7 @@ describe("QueueContext offline mutations", () => {
       mockAddQueueItem.mockClear();
 
       // Go offline
-      mockConnectionState = "reconnecting";
+      mockConnectionState = 'reconnecting';
       rerender();
 
       act(() => {
@@ -368,7 +368,7 @@ describe("QueueContext offline mutations", () => {
       expect(mockRemoveQueueItem).not.toHaveBeenCalled();
     });
 
-    it("setQueue (reorder) applies locally but does NOT call persistentSession.setQueue", () => {
+    it('setQueue (reorder) applies locally but does NOT call persistentSession.setQueue', () => {
       // Start fully offline - the queue will already have items from setup
       const { result } = renderHook(() => useQueueContext(), { wrapper: createWrapper() });
 
@@ -379,15 +379,15 @@ describe("QueueContext offline mutations", () => {
       expect(mockSetQueue).not.toHaveBeenCalled();
     });
 
-    it("mirrorClimb applies locally but does NOT call persistentSession.mirrorCurrentClimb", () => {
+    it('mirrorClimb applies locally but does NOT call persistentSession.mirrorCurrentClimb', () => {
       const { result } = renderHook(() => useQueueContext(), { wrapper: createWrapper() });
 
       // Set a current climb - this is offline so it won't call server
       act(() => {
         result.current.setCurrentClimbQueueItem({
-          uuid: "item-1",
+          uuid: 'item-1',
           climb: mockClimb,
-          addedBy: "client-1",
+          addedBy: 'client-1',
           suggested: false,
         });
       });
@@ -400,26 +400,26 @@ describe("QueueContext offline mutations", () => {
     });
   });
 
-  describe("when offline in solo mode (no session)", () => {
+  describe('when offline in solo mode (no session)', () => {
     beforeEach(() => {
-      mockConnectionState = "idle";
+      mockConnectionState = 'idle';
       mockSessionCookie = null;
       mockPersistentSession.activeSession = null;
       mockPersistentSession.hasConnected = false;
     });
 
     afterEach(() => {
-      mockSessionCookie = "session-1";
+      mockSessionCookie = 'session-1';
       mockPersistentSession.activeSession = {
-        sessionId: "session-1",
-        boardPath: "/kilter/1/1/1/40",
+        sessionId: 'session-1',
+        boardPath: '/kilter/1/1/1/40',
         boardDetails: {} as never,
         parsedParams: {} as never,
       };
       mockPersistentSession.hasConnected = true;
     });
 
-    it("addToQueue applies locally without calling persistentSession", () => {
+    it('addToQueue applies locally without calling persistentSession', () => {
       const { result } = renderHook(() => useQueueContext(), { wrapper: createWrapper() });
 
       act(() => {

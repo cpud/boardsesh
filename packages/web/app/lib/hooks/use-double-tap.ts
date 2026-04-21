@@ -1,4 +1,4 @@
-import { useRef, useCallback, type RefCallback } from "react";
+import { useRef, useCallback, type RefCallback } from 'react';
 
 const DOUBLE_TAP_THRESHOLD = 300;
 
@@ -62,16 +62,16 @@ export function useDoubleTap(callback: (() => void) | undefined) {
     (node: HTMLElement | null) => {
       // Cleanup previous listeners
       if (elementRef.current) {
-        elementRef.current.removeEventListener("touchstart", handleTouchStart);
-        elementRef.current.removeEventListener("touchend", handleTouchEnd);
+        elementRef.current.removeEventListener('touchstart', handleTouchStart);
+        elementRef.current.removeEventListener('touchend', handleTouchEnd);
       }
 
       elementRef.current = node;
 
       // Attach new listeners
       if (node) {
-        node.addEventListener("touchstart", handleTouchStart, { passive: true });
-        node.addEventListener("touchend", handleTouchEnd, { passive: false });
+        node.addEventListener('touchstart', handleTouchStart, { passive: true });
+        node.addEventListener('touchend', handleTouchEnd, { passive: false });
       }
     },
     [handleTouchStart, handleTouchEnd],

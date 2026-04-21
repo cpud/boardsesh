@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, {
   createContext,
@@ -8,9 +8,9 @@ import React, {
   useMemo,
   useLayoutEffect,
   useEffect,
-} from "react";
+} from 'react';
 
-const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 interface ProfileHeaderShareState {
   isActive: boolean;

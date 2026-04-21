@@ -1,15 +1,15 @@
-import { getServerSession } from "next-auth/next";
-import { NextRequest, NextResponse } from "next/server";
-import { createUserBoardMapping, getUserBoardMappings } from "@/app/lib/auth/user-board-mappings";
-import { authOptions } from "@/app/lib/auth/auth-options";
-import { z } from "zod";
+import { getServerSession } from 'next-auth/next';
+import { NextRequest, NextResponse } from 'next/server';
+import { createUserBoardMapping, getUserBoardMappings } from '@/app/lib/auth/user-board-mappings';
+import { authOptions } from '@/app/lib/auth/auth-options';
+import { z } from 'zod';
 
 const userBoardMappingSchema = z.object({
-  boardType: z.enum(["kilter", "tension"], {
-    message: "Board type must be kilter or tension",
+  boardType: z.enum(['kilter', 'tension'], {
+    message: 'Board type must be kilter or tension',
   }),
-  boardUserId: z.number().int().positive("Board user ID must be a positive integer"),
-  boardUsername: z.string().max(100, "Username too long").optional(),
+  boardUserId: z.number().int().positive('Board user ID must be a positive integer'),
+  boardUsername: z.string().max(100, 'Username too long').optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -17,14 +17,14 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
     const result = userBoardMappingSchema.safeParse(body);
 
     if (!result.success) {
-      return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
     }
 
     const { boardType, boardUserId, boardUsername } = result.data;
@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to create board mapping:", error);
-    return NextResponse.json({ error: "Failed to create board mapping" }, { status: 500 });
+    console.error('Failed to create board mapping:', error);
+    return NextResponse.json({ error: 'Failed to create board mapping' }, { status: 500 });
   }
 }
 
@@ -43,13 +43,13 @@ export async function GET() {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const mappings = await getUserBoardMappings(session.user.id);
     return NextResponse.json({ mappings });
   } catch (error) {
-    console.error("Failed to get board mappings:", error);
-    return NextResponse.json({ error: "Failed to get board mappings" }, { status: 500 });
+    console.error('Failed to get board mappings:', error);
+    return NextResponse.json({ error: 'Failed to get board mappings' }, { status: 500 });
   }
 }

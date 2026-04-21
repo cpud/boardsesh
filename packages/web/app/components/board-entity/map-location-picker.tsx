@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef, useCallback, useState } from "react";
-import Box from "@mui/material/Box";
-import MuiButton from "@mui/material/Button";
-import MuiTypography from "@mui/material/Typography";
-import TextField from "@mui/material/TextField";
-import InputAdornment from "@mui/material/InputAdornment";
-import CircularProgress from "@mui/material/CircularProgress";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import MapOutlined from "@mui/icons-material/MapOutlined";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import MyLocationOutlined from "@mui/icons-material/MyLocationOutlined";
-import SearchOutlined from "@mui/icons-material/SearchOutlined";
-import type { Map as LeafletMap, Marker as LeafletMarker } from "leaflet";
-import { useGeolocation } from "@/app/hooks/use-geolocation";
+import React, { useEffect, useRef, useCallback, useState } from 'react';
+import Box from '@mui/material/Box';
+import MuiButton from '@mui/material/Button';
+import MuiTypography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import CircularProgress from '@mui/material/CircularProgress';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import MapOutlined from '@mui/icons-material/MapOutlined';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import MyLocationOutlined from '@mui/icons-material/MyLocationOutlined';
+import SearchOutlined from '@mui/icons-material/SearchOutlined';
+import type { Map as LeafletMap, Marker as LeafletMarker } from 'leaflet';
+import { useGeolocation } from '@/app/hooks/use-geolocation';
 
 interface NominatimResult {
   lat: string;
@@ -36,7 +36,7 @@ export default function MapLocationPicker({
 }: MapLocationPickerProps) {
   const mapRef = useRef<LeafletMap | null>(null);
   const markerRef = useRef<LeafletMarker | null>(null);
-  const leafletRef = useRef<typeof import("leaflet") | null>(null);
+  const leafletRef = useRef<typeof import('leaflet') | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
@@ -44,7 +44,7 @@ export default function MapLocationPicker({
   const { coordinates: userCoords, requestPermission } = useGeolocation();
   const [expanded, setExpanded] = useState(latitude != null && longitude != null);
   const [mapReady, setMapReady] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -57,13 +57,13 @@ export default function MapLocationPicker({
       markerRef.current.setLatLng([lat, lng]);
     } else {
       const icon = L.divIcon({
-        className: "",
+        className: '',
         html: '<div style="width:16px;height:16px;background:#8C4A52;border:3px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>',
         iconSize: [16, 16],
         iconAnchor: [8, 8],
       });
       markerRef.current = L.marker([lat, lng], { icon, draggable: true }).addTo(map);
-      markerRef.current.on("dragend", () => {
+      markerRef.current.on('dragend', () => {
         const pos = markerRef.current!.getLatLng();
         onChangeRef.current(
           Math.round(pos.lat * 1000000) / 1000000,
@@ -86,7 +86,7 @@ export default function MapLocationPicker({
     }
 
     // @ts-expect-error — CSS dynamic import handled by Next.js bundler
-    Promise.all([import("leaflet"), import("leaflet/dist/leaflet.css")]).then(([L]) => {
+    Promise.all([import('leaflet'), import('leaflet/dist/leaflet.css')]).then(([L]) => {
       if (!containerRef.current) return;
 
       const hasCoords = latitude != null && longitude != null;
@@ -102,7 +102,7 @@ export default function MapLocationPicker({
         attributionControl: false,
       }).setView(center, zoom);
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
       }).addTo(map);
 
@@ -116,7 +116,7 @@ export default function MapLocationPicker({
       }
 
       // Click to place/move marker
-      map.on("click", (e: { latlng: { lat: number; lng: number } }) => {
+      map.on('click', (e: { latlng: { lat: number; lng: number } }) => {
         const lat = Math.round(e.latlng.lat * 1000000) / 1000000;
         const lng = Math.round(e.latlng.lng * 1000000) / 1000000;
         placeMarker(lat, lng);
@@ -171,10 +171,10 @@ export default function MapLocationPicker({
           const encoded = encodeURIComponent(query.trim());
           const res = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encoded}`,
-            { headers: { "Accept-Language": "en" } },
+            { headers: { 'Accept-Language': 'en' } },
           );
           if (!res.ok) {
-            console.error("Nominatim search failed:", res.status, res.statusText);
+            console.error('Nominatim search failed:', res.status, res.statusText);
             return;
           }
           const results: NominatimResult[] = await res.json();
@@ -186,7 +186,7 @@ export default function MapLocationPicker({
             onChangeRef.current(lat, lng);
           }
         } catch (error) {
-          console.error("Address search failed:", error);
+          console.error('Address search failed:', error);
         } finally {
           setIsSearching(false);
         }
@@ -210,15 +210,15 @@ export default function MapLocationPicker({
       onChange={handleAccordionChange}
       variant="outlined"
       disableGutters
-      sx={{ "&:before": { display: "none" }, borderRadius: 1 }}
+      sx={{ '&:before': { display: 'none' }, borderRadius: 1 }}
     >
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <MapOutlined fontSize="small" color="action" />
           <MuiTypography variant="body2">
             {hasLocation
               ? `Location: ${latitude!.toFixed(4)}, ${longitude!.toFixed(4)}`
-              : "Set location on map"}
+              : 'Set location on map'}
           </MuiTypography>
         </Box>
       </AccordionSummary>
@@ -231,7 +231,7 @@ export default function MapLocationPicker({
             value={searchQuery}
             onChange={(e) => handleAddressSearch(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") e.preventDefault();
+              if (e.key === 'Enter') e.preventDefault();
             }}
             slotProps={{
               input: {
@@ -249,10 +249,10 @@ export default function MapLocationPicker({
             }}
           />
         </Box>
-        <Box sx={{ position: "relative" }}>
+        <Box sx={{ position: 'relative' }}>
           <div
             ref={containerRef}
-            style={{ width: "100%", height: 200, borderRadius: "0 0 4px 4px" }}
+            style={{ width: '100%', height: 200, borderRadius: '0 0 4px 4px' }}
           />
           {mapReady && (
             <MuiButton
@@ -261,12 +261,12 @@ export default function MapLocationPicker({
               startIcon={<MyLocationOutlined />}
               onClick={handleUseMyLocation}
               sx={{
-                position: "absolute",
+                position: 'absolute',
                 bottom: 8,
                 right: 8,
                 zIndex: 1000,
-                fontSize: "0.75rem",
-                textTransform: "none",
+                fontSize: '0.75rem',
+                textTransform: 'none',
               }}
             >
               My location
@@ -276,7 +276,7 @@ export default function MapLocationPicker({
         <MuiTypography
           variant="caption"
           color="text.secondary"
-          sx={{ px: 2, py: 1, display: "block" }}
+          sx={{ px: 2, py: 1, display: 'block' }}
         >
           Click the map to set your board&apos;s location, or drag the marker to adjust
         </MuiTypography>

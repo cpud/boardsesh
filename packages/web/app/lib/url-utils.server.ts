@@ -1,27 +1,27 @@
-import "server-only";
-import { cache } from "react";
-import { notFound } from "next/navigation";
+import 'server-only';
+import { cache } from 'react';
+import { notFound } from 'next/navigation';
 import {
   BoardRouteParameters,
   ParsedBoardRouteParametersWithUuid,
   ParsedBoardRouteParameters,
   BoardRouteParametersWithUuid,
   BoardName,
-} from "@/app/lib/types";
-import { getLayoutBySlug, getSizeBySlug, getSetsBySlug } from "./slug-utils";
+} from '@/app/lib/types';
+import { getLayoutBySlug, getSizeBySlug, getSetsBySlug } from './slug-utils';
 import {
   isNumericId,
   extractUuidFromSlug,
   hasOnlyNumericBoardRouteSegments,
   parseBoardRouteParams,
   getMoonBoardLayoutBySlug,
-} from "./url-utils";
+} from './url-utils';
 import {
   MOONBOARD_LAYOUTS,
   MOONBOARD_SETS,
   MOONBOARD_SIZE,
   MoonBoardLayoutKey,
-} from "./moonboard-config";
+} from './moonboard-config';
 
 // Helper to parse MoonBoard size slug (always returns the single size)
 function getMoonBoardSizeBySlug(): { id: number; name: string } {
@@ -34,11 +34,11 @@ function getMoonBoardSetsBySlug(
   setSlug: string,
 ): { id: number; name: string }[] {
   const sets = MOONBOARD_SETS[layoutKey] || [];
-  const slugParts = setSlug.split("-").map((s) => s.toLowerCase());
+  const slugParts = setSlug.split('-').map((s) => s.toLowerCase());
 
   // Try to match sets by name
   return sets.filter((set) => {
-    const setNameLower = set.name.toLowerCase().replace(/\s+/g, "-");
+    const setNameLower = set.name.toLowerCase().replace(/\s+/g, '-');
     return slugParts.some(
       (part) => setNameLower.includes(part) || set.name.toLowerCase().includes(part),
     );
@@ -61,7 +61,7 @@ export async function parseBoardRouteParamsWithSlugs<T extends BoardRouteParamet
   let parsedSetIds: number[];
 
   // Handle MoonBoard separately (uses static config instead of database)
-  if (board_name === "moonboard") {
+  if (board_name === 'moonboard') {
     // Handle layout_id (slug or numeric)
     if (isFullyNumericFormat && isNumericId(layout_id)) {
       parsedLayoutId = Number(layout_id);
@@ -83,8 +83,8 @@ export async function parseBoardRouteParamsWithSlugs<T extends BoardRouteParamet
 
     // Handle set_ids (slug or numeric)
     const decodedSetIds = decodeURIComponent(set_ids);
-    if (isFullyNumericFormat && isNumericId(decodedSetIds.split(",")[0])) {
-      parsedSetIds = decodedSetIds.split(",").map((id) => Number(id));
+    if (isFullyNumericFormat && isNumericId(decodedSetIds.split(',')[0])) {
+      parsedSetIds = decodedSetIds.split(',').map((id) => Number(id));
     } else {
       // Find the layout key to get sets
       const layoutEntry = Object.entries(MOONBOARD_LAYOUTS).find(
@@ -155,8 +155,8 @@ export async function parseBoardRouteParamsWithSlugs<T extends BoardRouteParamet
 
   // Handle set_ids (slug or numeric)
   const decodedSetIds = decodeURIComponent(set_ids);
-  if (isFullyNumericFormat && isNumericId(decodedSetIds.split(",")[0])) {
-    parsedSetIds = decodedSetIds.split(",").map((id) => Number(id));
+  if (isFullyNumericFormat && isNumericId(decodedSetIds.split(',')[0])) {
+    parsedSetIds = decodedSetIds.split(',').map((id) => Number(id));
   } else {
     const sets = await getSetsBySlug(
       board_name as BoardName,
@@ -166,8 +166,8 @@ export async function parseBoardRouteParamsWithSlugs<T extends BoardRouteParamet
     );
     if (sets && sets.length > 0) {
       parsedSetIds = sets.map((set) => set.id);
-    } else if (decodedSetIds.split(",").every((id) => isNumericId(id.trim()))) {
-      parsedSetIds = decodedSetIds.split(",").map((id) => Number(id));
+    } else if (decodedSetIds.split(',').every((id) => isNumericId(id.trim()))) {
+      parsedSetIds = decodedSetIds.split(',').map((id) => Number(id));
     } else {
       return notFound();
     }

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, {
   useState,
@@ -8,36 +8,36 @@ import React, {
   useMemo,
   useRef,
   useEffect,
-} from "react";
-import { useSearchParams } from "next/navigation";
-import { v4 as uuidv4 } from "uuid";
-import { useQueueReducer } from "../queue-control/reducer";
-import { useQueueDataFetching } from "../queue-control/hooks/use-queue-data-fetching";
-import { ClimbQueueItem, UserName, QueueItemUser } from "../queue-control/types";
-import { urlParamsToSearchParams, searchParamsToUrlParams } from "@/app/lib/url-utils";
-import { Climb, SearchRequestPagination } from "@/app/lib/types";
-import { usePartyProfile } from "../party-manager/party-profile-context";
-import { useWebSocketConnection } from "../connection-manager/websocket-connection-provider";
-import { FavoritesProvider } from "../climb-actions/favorites-batch-context";
-import { PlaylistsProvider } from "../climb-actions/playlists-batch-context";
-import { useClimbActionsData } from "@/app/hooks/use-climb-actions-data";
-import { SUGGESTIONS_THRESHOLD } from "../board-page/constants";
-import { useSnackbar } from "../providers/snackbar-provider";
-import SessionSummaryDialog from "../session-summary/session-summary-dialog";
+} from 'react';
+import { useSearchParams } from 'next/navigation';
+import { v4 as uuidv4 } from 'uuid';
+import { useQueueReducer } from '../queue-control/reducer';
+import { useQueueDataFetching } from '../queue-control/hooks/use-queue-data-fetching';
+import { ClimbQueueItem, UserName, QueueItemUser } from '../queue-control/types';
+import { urlParamsToSearchParams, searchParamsToUrlParams } from '@/app/lib/url-utils';
+import { Climb, SearchRequestPagination } from '@/app/lib/types';
+import { usePartyProfile } from '../party-manager/party-profile-context';
+import { useWebSocketConnection } from '../connection-manager/websocket-connection-provider';
+import { FavoritesProvider } from '../climb-actions/favorites-batch-context';
+import { PlaylistsProvider } from '../climb-actions/playlists-batch-context';
+import { useClimbActionsData } from '@/app/hooks/use-climb-actions-data';
+import { SUGGESTIONS_THRESHOLD } from '../board-page/constants';
+import { useSnackbar } from '../providers/snackbar-provider';
+import SessionSummaryDialog from '../session-summary/session-summary-dialog';
 import {
   trackQueueOperation,
   trackQueueOperationError,
   type QueueOperationMode,
-} from "@/app/lib/queue-metrics";
+} from '@/app/lib/queue-metrics';
 
-import { useSessionIdManagement } from "./hooks/use-session-id-management";
-import { useQueueRestoration } from "./hooks/use-queue-restoration";
-import { useQueueEventSubscription } from "./hooks/use-queue-event-subscription";
-import { usePendingUpdateCleanup } from "./hooks/use-pending-update-cleanup";
-import { useMutationGuard } from "./hooks/use-mutation-guard";
-import { useOfflineQueueBuffer } from "./hooks/use-offline-queue-buffer";
-import { useOfflineReconciliation } from "./hooks/use-offline-reconciliation";
-import { useQueueAddValidator } from "../board-lock/use-queue-add-validator";
+import { useSessionIdManagement } from './hooks/use-session-id-management';
+import { useQueueRestoration } from './hooks/use-queue-restoration';
+import { useQueueEventSubscription } from './hooks/use-queue-event-subscription';
+import { usePendingUpdateCleanup } from './hooks/use-pending-update-cleanup';
+import { useMutationGuard } from './hooks/use-mutation-guard';
+import { useOfflineQueueBuffer } from './hooks/use-offline-queue-buffer';
+import { useOfflineReconciliation } from './hooks/use-offline-reconciliation';
+import { useQueueAddValidator } from '../board-lock/use-queue-add-validator';
 import type {
   GraphQLQueueContextType,
   GraphQLQueueActionsType,
@@ -47,20 +47,20 @@ import type {
   QueueListDataType,
   SearchDataType,
   SessionDataType,
-} from "./types";
+} from './types';
 
 // Re-export types so direct importers still work
 export type {
   GraphQLQueueContextType,
   GraphQLQueueActionsType,
   GraphQLQueueDataType,
-} from "./types";
+} from './types';
 export type {
   CurrentClimbDataType,
   QueueListDataType,
   SearchDataType,
   SessionDataType,
-} from "./types";
+} from './types';
 
 const createClimbQueueItem = (
   climb: Climb,
@@ -150,7 +150,7 @@ export const GraphQLQueueProvider = ({
   );
   const connectionError = isPersistentSessionActive ? persistentSession.error : null;
   const isSessionActive = !!sessionId && hasConnected;
-  const isSessionReady = isSessionActive && connectionState === "connected";
+  const isSessionReady = isSessionActive && connectionState === 'connected';
 
   // --- Mutation guard ---
   const { viewOnlyMode, canMutate, guardMutation, isDisconnected } = useMutationGuard({
@@ -189,7 +189,7 @@ export const GraphQLQueueProvider = ({
   // Warn user when offline buffer is full
   useEffect(() => {
     if (rawOfflineBuffer.isBufferFull) {
-      showMessage("You've hit the offline queue limit. Reconnect to sync your climbs.", "warning");
+      showMessage("You've hit the offline queue limit. Reconnect to sync your climbs.", 'warning');
     }
   }, [rawOfflineBuffer.isBufferFull, showMessage]);
 
@@ -226,7 +226,7 @@ export const GraphQLQueueProvider = ({
   // --- Current user info ---
   const currentUserInfo: QueueItemUser | undefined = useMemo(() => {
     if (!profile?.id) return undefined;
-    return { id: profile.id, username: username || "", avatarUrl };
+    return { id: profile.id, username: username || '', avatarUrl };
   }, [profile?.id, username, avatarUrl]);
 
   // --- Data fetching ---
@@ -245,7 +245,7 @@ export const GraphQLQueueProvider = ({
     queue: state.queue,
     parsedParams,
     hasDoneFirstFetch: state.hasDoneFirstFetch,
-    setHasDoneFirstFetch: () => dispatch({ type: "SET_FIRST_FETCH", payload: true }),
+    setHasDoneFirstFetch: () => dispatch({ type: 'SET_FIRST_FETCH', payload: true }),
   });
 
   const { favoritesProviderProps, playlistsProviderProps } = useClimbActionsData({
@@ -353,25 +353,25 @@ export const GraphQLQueueProvider = ({
     if (r.guardMutation()) return;
     if (!r.validateQueueAdd(climb)) return;
     const mode: QueueOperationMode = !r.isPersistentSessionActive
-      ? "local"
+      ? 'local'
       : r.isDisconnected
-        ? "party-offline"
-        : "party";
+        ? 'party-offline'
+        : 'party';
     const newItem = createClimbQueueItem(climb, r.clientId, r.currentUserInfo);
-    r.dispatch({ type: "DELTA_ADD_QUEUE_ITEM", payload: { item: newItem } });
+    r.dispatch({ type: 'DELTA_ADD_QUEUE_ITEM', payload: { item: newItem } });
     if (r.isDisconnected && r.isPersistentSessionActive) {
       r.offlineBuffer.bufferAddition(newItem);
-      trackQueueOperation("addToQueue", performance.now() - startTime, mode);
+      trackQueueOperation('addToQueue', performance.now() - startTime, mode);
     } else if (r.hasConnected && r.isPersistentSessionActive) {
       r.persistentSession
         .addQueueItem(newItem)
-        .then(() => trackQueueOperation("addToQueue", performance.now() - startTime, mode))
+        .then(() => trackQueueOperation('addToQueue', performance.now() - startTime, mode))
         .catch((error: unknown) => {
-          console.error("Failed to add queue item:", error);
-          trackQueueOperationError("addToQueue", mode);
+          console.error('Failed to add queue item:', error);
+          trackQueueOperationError('addToQueue', mode);
         });
     } else {
-      trackQueueOperation("addToQueue", performance.now() - startTime, mode);
+      trackQueueOperation('addToQueue', performance.now() - startTime, mode);
     }
   }, []);
 
@@ -380,21 +380,21 @@ export const GraphQLQueueProvider = ({
     const r = latestRef.current;
     if (r.guardMutation()) return;
     const mode: QueueOperationMode = !r.isPersistentSessionActive
-      ? "local"
+      ? 'local'
       : r.isDisconnected
-        ? "party-offline"
-        : "party";
-    r.dispatch({ type: "DELTA_REMOVE_QUEUE_ITEM", payload: { uuid: item.uuid } });
+        ? 'party-offline'
+        : 'party';
+    r.dispatch({ type: 'DELTA_REMOVE_QUEUE_ITEM', payload: { uuid: item.uuid } });
     if (!r.isDisconnected && r.hasConnected && r.isPersistentSessionActive) {
       r.persistentSession
         .removeQueueItem(item.uuid)
-        .then(() => trackQueueOperation("removeFromQueue", performance.now() - startTime, mode))
+        .then(() => trackQueueOperation('removeFromQueue', performance.now() - startTime, mode))
         .catch((error: unknown) => {
-          console.error("Failed to remove queue item:", error);
-          trackQueueOperationError("removeFromQueue", mode);
+          console.error('Failed to remove queue item:', error);
+          trackQueueOperationError('removeFromQueue', mode);
         });
     } else {
-      trackQueueOperation("removeFromQueue", performance.now() - startTime, mode);
+      trackQueueOperation('removeFromQueue', performance.now() - startTime, mode);
     }
   }, []);
 
@@ -408,21 +408,21 @@ export const GraphQLQueueProvider = ({
     if (r.guardMutation()) return null;
     if (!r.validateQueueAdd(climb)) return null;
     const mode: QueueOperationMode = !r.isPersistentSessionActive
-      ? "local"
+      ? 'local'
       : r.isDisconnected
-        ? "party-offline"
-        : "party";
+        ? 'party-offline'
+        : 'party';
     const newItem = createClimbQueueItem(climb, r.clientId, r.currentUserInfo);
     const correlationId = r.clientId
       ? `${r.clientId}-${++r.correlationCounterRef.current}`
       : undefined;
     r.dispatch({
-      type: "DELTA_UPDATE_CURRENT_CLIMB",
+      type: 'DELTA_UPDATE_CURRENT_CLIMB',
       payload: { item: newItem, shouldAddToQueue: true, insertAfterCurrent: true, correlationId },
     });
     if (r.isDisconnected && r.isPersistentSessionActive) {
       r.offlineBuffer.bufferAddition(newItem);
-      trackQueueOperation("setCurrentClimb", performance.now() - startTime, mode);
+      trackQueueOperation('setCurrentClimb', performance.now() - startTime, mode);
     } else if (r.hasConnected && r.isPersistentSessionActive) {
       const currentIndex = r.state.currentClimbQueueItem
         ? r.state.queue.findIndex(
@@ -433,15 +433,15 @@ export const GraphQLQueueProvider = ({
       try {
         await r.persistentSession.addQueueItem(newItem, position);
         await r.persistentSession.setCurrentClimb(newItem, false, correlationId);
-        trackQueueOperation("setCurrentClimb", performance.now() - startTime, mode);
+        trackQueueOperation('setCurrentClimb', performance.now() - startTime, mode);
       } catch (error: unknown) {
-        console.error("Failed to set current climb:", error);
+        console.error('Failed to set current climb:', error);
         if (correlationId)
-          r.dispatch({ type: "CLEANUP_PENDING_UPDATE", payload: { correlationId } });
-        trackQueueOperationError("setCurrentClimb", mode);
+          r.dispatch({ type: 'CLEANUP_PENDING_UPDATE', payload: { correlationId } });
+        trackQueueOperationError('setCurrentClimb', mode);
       }
     } else {
-      trackQueueOperation("setCurrentClimb", performance.now() - startTime, mode);
+      trackQueueOperation('setCurrentClimb', performance.now() - startTime, mode);
     }
     return newItem;
   }, []);
@@ -457,10 +457,10 @@ export const GraphQLQueueProvider = ({
     if (!r.validateQueueAdd(climb)) return;
     const existing = r.state.queue.find((qItem) => qItem.uuid === queueItemUuid);
     const mode: QueueOperationMode = !r.isPersistentSessionActive
-      ? "local"
+      ? 'local'
       : r.isDisconnected
-        ? "party-offline"
-        : "party";
+        ? 'party-offline'
+        : 'party';
     const base = createClimbQueueItem(climb, r.clientId, r.currentUserInfo);
     const newItem: ClimbQueueItem = {
       ...base,
@@ -470,19 +470,19 @@ export const GraphQLQueueProvider = ({
       tickedBy: existing?.tickedBy,
     };
     r.dispatch({
-      type: "DELTA_REPLACE_QUEUE_ITEM",
+      type: 'DELTA_REPLACE_QUEUE_ITEM',
       payload: { uuid: queueItemUuid, item: newItem },
     });
     if (!r.isDisconnected && r.hasConnected && r.isPersistentSessionActive) {
       r.persistentSession
         .replaceQueueItem(queueItemUuid, newItem)
-        .then(() => trackQueueOperation("replaceQueueItem", performance.now() - startTime, mode))
+        .then(() => trackQueueOperation('replaceQueueItem', performance.now() - startTime, mode))
         .catch((error: unknown) => {
-          console.error("Failed to replace queue item:", error);
-          trackQueueOperationError("replaceQueueItem", mode);
+          console.error('Failed to replace queue item:', error);
+          trackQueueOperationError('replaceQueueItem', mode);
         });
     } else {
-      trackQueueOperation("replaceQueueItem", performance.now() - startTime, mode);
+      trackQueueOperation('replaceQueueItem', performance.now() - startTime, mode);
     }
   }, []);
 
@@ -491,24 +491,24 @@ export const GraphQLQueueProvider = ({
     const r = latestRef.current;
     if (r.guardMutation()) return;
     const mode: QueueOperationMode = !r.isPersistentSessionActive
-      ? "local"
+      ? 'local'
       : r.isDisconnected
-        ? "party-offline"
-        : "party";
+        ? 'party-offline'
+        : 'party';
     r.dispatch({
-      type: "UPDATE_QUEUE",
+      type: 'UPDATE_QUEUE',
       payload: { queue, currentClimbQueueItem: r.state.currentClimbQueueItem },
     });
     if (!r.isDisconnected && r.hasConnected && r.isPersistentSessionActive) {
       r.persistentSession
         .setQueue(queue, r.state.currentClimbQueueItem)
-        .then(() => trackQueueOperation("setQueue", performance.now() - startTime, mode))
+        .then(() => trackQueueOperation('setQueue', performance.now() - startTime, mode))
         .catch((error: unknown) => {
-          console.error("Failed to set queue:", error);
-          trackQueueOperationError("setQueue", mode);
+          console.error('Failed to set queue:', error);
+          trackQueueOperationError('setQueue', mode);
         });
     } else {
-      trackQueueOperation("setQueue", performance.now() - startTime, mode);
+      trackQueueOperation('setQueue', performance.now() - startTime, mode);
     }
   }, []);
 
@@ -517,42 +517,42 @@ export const GraphQLQueueProvider = ({
     const r = latestRef.current;
     if (r.guardMutation()) return;
     const mode: QueueOperationMode = !r.isPersistentSessionActive
-      ? "local"
+      ? 'local'
       : r.isDisconnected
-        ? "party-offline"
-        : "party";
+        ? 'party-offline'
+        : 'party';
     const correlationId = r.clientId
       ? `${r.clientId}-${++r.correlationCounterRef.current}`
       : undefined;
     r.dispatch({
-      type: "DELTA_UPDATE_CURRENT_CLIMB",
+      type: 'DELTA_UPDATE_CURRENT_CLIMB',
       payload: { item, shouldAddToQueue: item.suggested, correlationId },
     });
     if (!r.isDisconnected && r.hasConnected && r.isPersistentSessionActive) {
       r.persistentSession
         .setCurrentClimb(item, item.suggested, correlationId)
         .then(() =>
-          trackQueueOperation("setCurrentClimbQueueItem", performance.now() - startTime, mode),
+          trackQueueOperation('setCurrentClimbQueueItem', performance.now() - startTime, mode),
         )
         .catch((error: unknown) => {
-          console.error("Failed to set current climb:", error);
+          console.error('Failed to set current climb:', error);
           if (correlationId)
-            r.dispatch({ type: "CLEANUP_PENDING_UPDATE", payload: { correlationId } });
-          trackQueueOperationError("setCurrentClimbQueueItem", mode);
+            r.dispatch({ type: 'CLEANUP_PENDING_UPDATE', payload: { correlationId } });
+          trackQueueOperationError('setCurrentClimbQueueItem', mode);
         });
     } else {
-      trackQueueOperation("setCurrentClimbQueueItem", performance.now() - startTime, mode);
+      trackQueueOperation('setCurrentClimbQueueItem', performance.now() - startTime, mode);
     }
   }, []);
 
   const setClimbSearchParams = useCallback((params: SearchRequestPagination) => {
     const r = latestRef.current;
-    r.dispatch({ type: "SET_CLIMB_SEARCH_PARAMS", payload: params });
+    r.dispatch({ type: 'SET_CLIMB_SEARCH_PARAMS', payload: params });
     if (!r.isOffBoardMode) {
       const urlParams = searchParamsToUrlParams(params);
       const queryString = urlParams.toString();
       const newUrl = queryString ? `${r.pathname}?${queryString}` : r.pathname;
-      window.history.replaceState(window.history.state, "", newUrl);
+      window.history.replaceState(window.history.state, '', newUrl);
     }
   }, []);
 
@@ -566,22 +566,22 @@ export const GraphQLQueueProvider = ({
     if (r.guardMutation()) return;
     if (!r.state.currentClimbQueueItem?.climb) return;
     const mode: QueueOperationMode = !r.isPersistentSessionActive
-      ? "local"
+      ? 'local'
       : r.isDisconnected
-        ? "party-offline"
-        : "party";
+        ? 'party-offline'
+        : 'party';
     const newMirroredState = !r.state.currentClimbQueueItem.climb?.mirrored;
-    r.dispatch({ type: "DELTA_MIRROR_CURRENT_CLIMB", payload: { mirrored: newMirroredState } });
+    r.dispatch({ type: 'DELTA_MIRROR_CURRENT_CLIMB', payload: { mirrored: newMirroredState } });
     if (!r.isDisconnected && r.hasConnected && r.isPersistentSessionActive) {
       r.persistentSession
         .mirrorCurrentClimb(newMirroredState)
-        .then(() => trackQueueOperation("mirrorClimb", performance.now() - startTime, mode))
+        .then(() => trackQueueOperation('mirrorClimb', performance.now() - startTime, mode))
         .catch((error: unknown) => {
-          console.error("Failed to mirror climb:", error);
-          trackQueueOperationError("mirrorClimb", mode);
+          console.error('Failed to mirror climb:', error);
+          trackQueueOperationError('mirrorClimb', mode);
         });
     } else {
-      trackQueueOperation("mirrorClimb", performance.now() - startTime, mode);
+      trackQueueOperation('mirrorClimb', performance.now() - startTime, mode);
     }
   }, []);
 
@@ -624,7 +624,7 @@ export const GraphQLQueueProvider = ({
   const dispatchWidgetNavigation = useCallback((item: ClimbQueueItem, correlationId: string) => {
     const r = latestRef.current;
     r.dispatch({
-      type: "DELTA_UPDATE_CURRENT_CLIMB",
+      type: 'DELTA_UPDATE_CURRENT_CLIMB',
       payload: { item, shouldAddToQueue: false, correlationId },
     });
   }, []);
@@ -872,7 +872,7 @@ export const GraphQLQueueProvider = ({
 export const useQueueActions = (): GraphQLQueueActionsType => {
   const context = useContext(QueueActionsContext);
   if (!context) {
-    throw new Error("useQueueActions must be used within a GraphQLQueueProvider");
+    throw new Error('useQueueActions must be used within a GraphQLQueueProvider');
   }
   return context;
 };
@@ -884,7 +884,7 @@ export const useOptionalQueueActions = (): GraphQLQueueActionsType | null => {
 export const useQueueData = (): GraphQLQueueDataType => {
   const context = useContext(QueueDataContext);
   if (!context) {
-    throw new Error("useQueueData must be used within a GraphQLQueueProvider");
+    throw new Error('useQueueData must be used within a GraphQLQueueProvider');
   }
   return context;
 };
@@ -898,7 +898,7 @@ export const useOptionalQueueData = (): GraphQLQueueDataType | null => {
 export const useGraphQLQueueContext = (): GraphQLQueueContextType => {
   const context = useContext(QueueContext);
   if (!context) {
-    throw new Error("useGraphQLQueueContext must be used within a GraphQLQueueProvider");
+    throw new Error('useGraphQLQueueContext must be used within a GraphQLQueueProvider');
   }
   return context;
 };
@@ -915,7 +915,7 @@ export { useGraphQLQueueContext as useQueueContext };
 export const useCurrentClimb = (): CurrentClimbDataType => {
   const context = useContext(CurrentClimbContext);
   if (!context) {
-    throw new Error("useCurrentClimb must be used within a GraphQLQueueProvider");
+    throw new Error('useCurrentClimb must be used within a GraphQLQueueProvider');
   }
   return context;
 };
@@ -934,7 +934,7 @@ export const useCurrentClimbUuid = (): string | null => {
 export const useQueueList = (): QueueListDataType => {
   const context = useContext(QueueListContext);
   if (!context) {
-    throw new Error("useQueueList must be used within a GraphQLQueueProvider");
+    throw new Error('useQueueList must be used within a GraphQLQueueProvider');
   }
   return context;
 };
@@ -942,7 +942,7 @@ export const useQueueList = (): QueueListDataType => {
 export const useSearchData = (): SearchDataType => {
   const context = useContext(SearchContext);
   if (!context) {
-    throw new Error("useSearchData must be used within a GraphQLQueueProvider");
+    throw new Error('useSearchData must be used within a GraphQLQueueProvider');
   }
   return context;
 };
@@ -950,7 +950,7 @@ export const useSearchData = (): SearchDataType => {
 export const useSessionData = (): SessionDataType => {
   const context = useContext(SessionContext);
   if (!context) {
-    throw new Error("useSessionData must be used within a GraphQLQueueProvider");
+    throw new Error('useSessionData must be used within a GraphQLQueueProvider');
   }
   return context;
 };

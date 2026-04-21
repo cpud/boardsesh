@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import HistoryOutlined from "@mui/icons-material/HistoryOutlined";
+import React, { useState, useEffect } from 'react';
+import HistoryOutlined from '@mui/icons-material/HistoryOutlined';
 import {
   getRecentSearches,
   getFilterKey,
   RecentSearch,
   RECENT_SEARCHES_CHANGED_EVENT,
-} from "./recent-searches-storage";
-import { useUISearchParams } from "@/app/components/queue-control/ui-searchparams-provider";
-import { SearchRequestPagination } from "@/app/lib/types";
-import { DEFAULT_SEARCH_PARAMS } from "@/app/lib/url-utils";
-import { getSearchPillFullSummary } from "./search-summary-utils";
-import styles from "./recent-search-pills.module.css";
+} from './recent-searches-storage';
+import { useUISearchParams } from '@/app/components/queue-control/ui-searchparams-provider';
+import { SearchRequestPagination } from '@/app/lib/types';
+import { DEFAULT_SEARCH_PARAMS } from '@/app/lib/url-utils';
+import { getSearchPillFullSummary } from './search-summary-utils';
+import styles from './recent-search-pills.module.css';
 
 const SHADOW_PILL_WIDTHS = [72, 104, 88, 96, 80];
 
@@ -91,7 +91,7 @@ const RecentSearchPills: React.FC = () => {
             <button
               key={search.id}
               type="button"
-              className={`${styles.pill} ${isActive ? styles.pillActive : ""}`}
+              className={`${styles.pill} ${isActive ? styles.pillActive : ''}`}
               onClick={() => handleApply(search.filters)}
               title={tooltipText}
             >

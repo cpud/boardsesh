@@ -1,9 +1,9 @@
-import React, { useMemo } from "react";
+import React, { useMemo } from 'react';
 
-import { BoardDetails, Climb } from "@/app/lib/types";
-import BoardImageLayers from "@/app/components/board-renderer/board-image-layers";
-import BoardCanvasRenderer from "@/app/components/board-renderer/board-canvas-renderer";
-import { useCanvasRendererReady } from "@/app/lib/board-render-worker/worker-manager";
+import { BoardDetails, Climb } from '@/app/lib/types';
+import BoardImageLayers from '@/app/components/board-renderer/board-image-layers';
+import BoardCanvasRenderer from '@/app/components/board-renderer/board-canvas-renderer';
+import { useCanvasRendererReady } from '@/app/lib/board-render-worker/worker-manager';
 
 type ClimbThumbnailProps = {
   currentClimb: Climb | null;
@@ -15,7 +15,7 @@ type ClimbThumbnailProps = {
   maxHeight?: string;
   preferImageLayers?: boolean;
   /** Set fetchpriority="high" for LCP-critical images */
-  fetchPriority?: "high" | "low" | "auto";
+  fetchPriority?: 'high' | 'low' | 'auto';
 };
 
 const ClimbThumbnail: React.FC<ClimbThumbnailProps> = React.memo(
@@ -32,9 +32,9 @@ const ClimbThumbnail: React.FC<ClimbThumbnailProps> = React.memo(
 
     const boardStyle = useMemo<React.CSSProperties>(
       () => ({
-        aspectRatio: "5 / 7",
-        maxHeight: maxHeight ?? "120px",
-        width: "100%",
+        aspectRatio: '5 / 7',
+        maxHeight: maxHeight ?? '120px',
+        width: '100%',
       }),
       [maxHeight],
     );
@@ -69,11 +69,11 @@ const ClimbThumbnail: React.FC<ClimbThumbnailProps> = React.memo(
       return (
         <div
           onClick={onClick}
-          style={{ cursor: "pointer" }}
+          style={{ cursor: 'pointer' }}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
+            if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               onClick();
             }
@@ -115,6 +115,6 @@ const ClimbThumbnail: React.FC<ClimbThumbnailProps> = React.memo(
   },
 );
 
-ClimbThumbnail.displayName = "ClimbThumbnail";
+ClimbThumbnail.displayName = 'ClimbThumbnail';
 
 export default ClimbThumbnail;

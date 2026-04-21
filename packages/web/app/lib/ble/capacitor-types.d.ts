@@ -15,8 +15,8 @@ interface CapacitorGeolocationPlugin {
     };
     timestamp: number;
   }>;
-  checkPermissions(): Promise<{ location: "prompt" | "granted" | "denied" }>;
-  requestPermissions(): Promise<{ location: "prompt" | "granted" | "denied" }>;
+  checkPermissions(): Promise<{ location: 'prompt' | 'granted' | 'denied' }>;
+  requestPermissions(): Promise<{ location: 'prompt' | 'granted' | 'denied' }>;
 }
 
 interface CapacitorKeepAwakePlugin {
@@ -33,7 +33,7 @@ interface CapacitorBrowserPlugin {
 
 interface CapacitorAppPlugin {
   addListener(
-    eventName: "appUrlOpen",
+    eventName: 'appUrlOpen',
     listenerFunc: (event: { url: string }) => void,
   ): Promise<{ remove: () => Promise<void> }>;
 }

@@ -1,12 +1,12 @@
-import { eq, gte, sql, like, notLike, inArray, or, and, SQL } from "drizzle-orm";
+import { eq, gte, sql, like, notLike, inArray, or, and, SQL } from 'drizzle-orm';
 import {
   boardClimbs,
   boardClimbStats,
   boardseshTicks,
   boardProductSizes,
   boardClimbHolds,
-} from "../../schema/index";
-import type { BoardRouteParams, ClimbSearchParams } from "./types";
+} from '../../schema/index';
+import type { BoardRouteParams, ClimbSearchParams } from './types';
 
 // Kilter Homewall constants for tall-climb filtering
 const KILTER_HOMEWALL_LAYOUT_ID = 8;
@@ -33,22 +33,22 @@ export const createClimbFilters = (
   // - 'STARTING' | 'HAND' | 'FOOT' | 'FINISH': (after URL parsing) same as above
   const holdsToFilter = Object.entries(searchParams.holdsFilter || {}).map(
     ([key, stateOrValue]) => {
-      const holdId = key.replace("hold_", "");
+      const holdId = key.replace('hold_', '');
       // Handle both object form { state: 'STARTING' } and string form 'STARTING'
       const state =
-        typeof stateOrValue === "object" && stateOrValue !== null
+        typeof stateOrValue === 'object' && stateOrValue !== null
           ? (stateOrValue as { state: string }).state
           : stateOrValue;
       return [holdId, state] as const;
     },
   );
 
-  const anyHolds = holdsToFilter.filter(([, value]) => value === "ANY").map(([key]) => Number(key));
-  const notHolds = holdsToFilter.filter(([, value]) => value === "NOT").map(([key]) => Number(key));
+  const anyHolds = holdsToFilter.filter(([, value]) => value === 'ANY').map(([key]) => Number(key));
+  const notHolds = holdsToFilter.filter(([, value]) => value === 'NOT').map(([key]) => Number(key));
 
   // Hold state filters - hold must be present with specific state (STARTING, HAND, FOOT, FINISH)
   const holdStateFilters = holdsToFilter
-    .filter(([, value]) => ["STARTING", "HAND", "FOOT", "FINISH"].includes(value as string))
+    .filter(([, value]) => ['STARTING', 'HAND', 'FOOT', 'FINISH'].includes(value as string))
     .map(([key, state]) => ({ holdId: Number(key), state: state as string }));
 
   // When onlyDrafts is enabled, show ONLY the user's own draft climbs.
@@ -88,7 +88,7 @@ export const createClimbFilters = (
   // Uses denormalized compatible_size_ids array (pre-computed from edge comparison).
   // MoonBoard has a single fixed size, so skip.
   const sizeConditions: SQL[] =
-    params.board_name === "moonboard"
+    params.board_name === 'moonboard'
       ? []
       : [sql`${params.size_id} = ANY(${boardClimbs.compatibleSizeIds})`];
 
@@ -166,7 +166,7 @@ export const createClimbFilters = (
 
   if (
     searchParams.onlyTallClimbs &&
-    params.board_name === "kilter" &&
+    params.board_name === 'kilter' &&
     params.layout_id === KILTER_HOMEWALL_LAYOUT_ID
   ) {
     tallClimbsConditions.push(
@@ -188,7 +188,7 @@ export const createClimbFilters = (
   // For draft queries, allow NULL required_set_ids — denormalized columns are populated
   // asynchronously and may be NULL for freshly saved drafts, so we must not exclude them.
   const setIdsConditions: SQL[] =
-    params.board_name === "moonboard" || params.set_ids.length === 0
+    params.board_name === 'moonboard' || params.set_ids.length === 0
       ? []
       : [
           isOnlyDrafts
@@ -267,7 +267,7 @@ export const createClimbFilters = (
         SELECT COUNT(*)
         FROM ${boardseshTicks}
         WHERE ${boardseshTicks.climbUuid} = ${boardClimbs.uuid}
-        AND ${boardseshTicks.userId} = ${userId || ""}
+        AND ${boardseshTicks.userId} = ${userId || ''}
         AND ${boardseshTicks.boardType} = ${params.board_name}
         AND ${boardseshTicks.angle} = ${params.angle}
         AND ${boardseshTicks.status} IN ('flash', 'send')
@@ -276,7 +276,7 @@ export const createClimbFilters = (
         SELECT COUNT(*)
         FROM ${boardseshTicks}
         WHERE ${boardseshTicks.climbUuid} = ${boardClimbs.uuid}
-        AND ${boardseshTicks.userId} = ${userId || ""}
+        AND ${boardseshTicks.userId} = ${userId || ''}
         AND ${boardseshTicks.boardType} = ${params.board_name}
         AND ${boardseshTicks.angle} = ${params.angle}
         AND ${boardseshTicks.status} = 'attempt'
@@ -291,7 +291,7 @@ export const createClimbFilters = (
         SELECT COUNT(*)
         FROM ${boardseshTicks}
         WHERE ${boardseshTicks.climbUuid} = ${climbHoldsTable.climbUuid}
-        AND ${boardseshTicks.userId} = ${userId || ""}
+        AND ${boardseshTicks.userId} = ${userId || ''}
         AND ${boardseshTicks.boardType} = ${params.board_name}
         AND ${boardseshTicks.angle} = ${params.angle}
         AND ${boardseshTicks.status} IN ('flash', 'send')
@@ -300,7 +300,7 @@ export const createClimbFilters = (
         SELECT COUNT(*)
         FROM ${boardseshTicks}
         WHERE ${boardseshTicks.climbUuid} = ${climbHoldsTable.climbUuid}
-        AND ${boardseshTicks.userId} = ${userId || ""}
+        AND ${boardseshTicks.userId} = ${userId || ''}
         AND ${boardseshTicks.boardType} = ${params.board_name}
         AND ${boardseshTicks.angle} = ${params.angle}
         AND ${boardseshTicks.status} = 'attempt'

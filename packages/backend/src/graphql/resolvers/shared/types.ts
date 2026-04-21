@@ -1,8 +1,8 @@
-import type { Climb } from "@boardsesh/shared-schema";
+import type { Climb } from '@boardsesh/shared-schema';
 import type {
   ParsedBoardRouteParameters,
   ClimbSearchParams,
-} from "../../../db/queries/climbs/index";
+} from '../../../db/queries/climbs/index';
 
 /**
  * Context object passed from searchClimbs query to ClimbSearchResult field resolvers.

@@ -1,28 +1,28 @@
-"use client";
+'use client';
 
-import React, { useMemo, useCallback, useState } from "react";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import ToggleButton from "@mui/material/ToggleButton";
-import { useMyBoards } from "@/app/hooks/use-my-boards";
-import { useBoardDetailsMap } from "@/app/hooks/use-board-details-map";
-import { useClimbActionsData } from "@/app/hooks/use-climb-actions-data";
-import BoardFilterStrip from "@/app/components/board-scroll/board-filter-strip";
-import ClimbsList from "@/app/components/board-page/climbs-list";
-import { FavoritesProvider } from "@/app/components/climb-actions/favorites-batch-context";
-import { PlaylistsProvider } from "@/app/components/climb-actions/playlists-batch-context";
+import React, { useMemo, useCallback, useState } from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
+import { useMyBoards } from '@/app/hooks/use-my-boards';
+import { useBoardDetailsMap } from '@/app/hooks/use-board-details-map';
+import { useClimbActionsData } from '@/app/hooks/use-climb-actions-data';
+import BoardFilterStrip from '@/app/components/board-scroll/board-filter-strip';
+import ClimbsList from '@/app/components/board-page/climbs-list';
+import { FavoritesProvider } from '@/app/components/climb-actions/favorites-batch-context';
+import { PlaylistsProvider } from '@/app/components/climb-actions/playlists-batch-context';
 import {
   getDefaultAngleForBoard,
   type SessionBoardConfig,
-} from "@/app/lib/board-config-for-playlist";
-import { useOptionalQueueActions } from "@/app/components/graphql-queue";
-import { usePersistentSessionState } from "@/app/components/persistent-session/persistent-session-context";
-import type { UserBoard } from "@boardsesh/shared-schema";
-import type { Climb } from "@/app/lib/types";
+} from '@/app/lib/board-config-for-playlist';
+import { useOptionalQueueActions } from '@/app/components/graphql-queue';
+import { usePersistentSessionState } from '@/app/components/persistent-session/persistent-session-context';
+import type { UserBoard } from '@boardsesh/shared-schema';
+import type { Climb } from '@/app/lib/types';
 
-export type SortBy = "popular" | "new";
+export type SortBy = 'popular' | 'new';
 
 interface MultiboardClimbListProps {
   climbs: Climb[];
@@ -73,7 +73,7 @@ export default function MultiboardClimbList({
   selectedBoard,
   onBoardSelect,
   showSortToggle = false,
-  sortBy = "popular",
+  sortBy = 'popular',
   onSortChange,
   totalCount,
   onClimbSelect,
@@ -118,7 +118,7 @@ export default function MultiboardClimbList({
 
   // Climb action data for favorites/playlists context
   const climbUuids = useMemo(() => climbs.map((c) => c.uuid), [climbs]);
-  const actionsBoardName = selectedBoard?.boardType || (climbs[0]?.boardType ?? "kilter");
+  const actionsBoardName = selectedBoard?.boardType || (climbs[0]?.boardType ?? 'kilter');
   const actionsLayoutId = selectedBoard?.layoutId || (climbs[0]?.layoutId ?? 1);
   const actionsAngle = selectedBoard?.angle || getDefaultAngleForBoard(actionsBoardName);
 
@@ -143,7 +143,7 @@ export default function MultiboardClimbList({
         const { url } = await res.json();
         if (url) window.location.href = url;
       } catch (error) {
-        console.error("Failed to navigate to climb:", error);
+        console.error('Failed to navigate to climb:', error);
       }
     },
     [selectedBoard],
@@ -181,10 +181,10 @@ export default function MultiboardClimbList({
   const headerInline = showSortToggle ? (
     <Box
       sx={{
-        display: "flex",
-        alignItems: "center",
+        display: 'flex',
+        alignItems: 'center',
         gap: 1.5,
-        flexWrap: "wrap",
+        flexWrap: 'wrap',
         flex: 1,
         minWidth: 0,
       }}
@@ -195,7 +195,7 @@ export default function MultiboardClimbList({
       </ToggleButtonGroup>
       {totalCount != null && totalCount > 0 && (
         <Typography variant="body2" color="text.secondary">
-          {totalCount} climb{totalCount !== 1 ? "s" : ""}
+          {totalCount} climb{totalCount !== 1 ? 's' : ''}
         </Typography>
       )}
     </Box>
@@ -216,11 +216,11 @@ export default function MultiboardClimbList({
       )}
 
       {isLoading && climbs.length === 0 ? (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress size={24} />
         </Box>
       ) : climbs.length === 0 && !isLoading ? (
-        <Box sx={{ py: 4, textAlign: "center" }}>
+        <Box sx={{ py: 4, textAlign: 'center' }}>
           <Typography variant="body2" color="text.secondary">
             No climbs found
           </Typography>

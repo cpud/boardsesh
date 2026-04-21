@@ -1,7 +1,7 @@
-import { sql, eq, and } from "drizzle-orm";
-import { aliasedTable } from "drizzle-orm/alias";
-import * as dbSchema from "@boardsesh/db/schema";
-import { db } from "../../../db/client";
+import { sql, eq, and } from 'drizzle-orm';
+import { aliasedTable } from 'drizzle-orm/alias';
+import * as dbSchema from '@boardsesh/db/schema';
+import { db } from '../../../db/client';
 
 /**
  * Aliased board_difficulty_grades table for consensus grade lookups.
@@ -28,7 +28,7 @@ import { db } from "../../../db/client";
  * If a required join is missing the query will produce nulls (not an error)
  * because these are LEFT JOINs with nullable column references.
  */
-export const consensusGradeTable = aliasedTable(dbSchema.boardDifficultyGrades, "consensus_grade");
+export const consensusGradeTable = aliasedTable(dbSchema.boardDifficultyGrades, 'consensus_grade');
 
 /**
  * JOIN condition for consensusGradeTable.

@@ -1,12 +1,12 @@
-import { LedPlacements } from "@/app/lib/types";
-import { HOLD_STATE_MAP } from "../board-renderer/types";
+import { LedPlacements } from '@/app/lib/types';
+import { HOLD_STATE_MAP } from '../board-renderer/types';
 import {
   AURORA_ADVERTISED_SERVICE_UUID,
   MESSAGE_BODY_MAX_LENGTH,
   UART_SERVICE_UUID,
-} from "./bluetooth-shared";
-import { AuroraBoardName } from "@/app/lib/api-wrappers/aurora/types";
-import { BoardName } from "@boardsesh/shared-schema";
+} from './bluetooth-shared';
+import { AuroraBoardName } from '@/app/lib/api-wrappers/aurora/types';
+import { BoardName } from '@boardsesh/shared-schema';
 
 // --- API v3 command bytes (3 bytes per LED, 16-bit positions) ---
 const V3_PACKET_MIDDLE = 81; // 'Q'
@@ -30,7 +30,7 @@ const KILTER_LEDS_PER_HOLD = 2;
 const DEFAULT_LEDS_PER_HOLD = 1;
 
 const getLedsPerHold = (boardName: AuroraBoardName): number =>
-  boardName === "kilter" ? KILTER_LEDS_PER_HOLD : DEFAULT_LEDS_PER_HOLD;
+  boardName === 'kilter' ? KILTER_LEDS_PER_HOLD : DEFAULT_LEDS_PER_HOLD;
 
 export const AURORA_SCAN_SERVICE_UUIDS = [AURORA_ADVERTISED_SERVICE_UUID] as const;
 export const AURORA_OPTIONAL_SERVICE_UUIDS = [UART_SERVICE_UUID] as const;
@@ -170,9 +170,9 @@ export const getAuroraBluetoothPacket = (
   let skippedPositionCount = 0;
   let skippedRoleCount = 0;
 
-  frames.split("p").forEach((frame) => {
+  frames.split('p').forEach((frame) => {
     if (!frame) return;
-    const [placement, role] = frame.split("r");
+    const [placement, role] = frame.split('r');
     const placementId = Number(placement);
     const ledPosition = placementPositions[placementId];
 
@@ -189,7 +189,7 @@ export const getAuroraBluetoothPacket = (
       return;
     }
 
-    const color = state.color.replace("#", "");
+    const color = state.color.replace('#', '');
     ledEntries.push({ position: ledPosition, color });
   });
 

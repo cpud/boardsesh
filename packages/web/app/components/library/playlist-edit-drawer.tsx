@@ -1,51 +1,51 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState, useCallback } from "react";
-import dynamic from "next/dynamic";
-import { useSnackbar } from "@/app/components/providers/snackbar-provider";
-import MuiButton from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
-import Stack from "@mui/material/Stack";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import MuiSwitch from "@mui/material/Switch";
-import SwipeableDrawer from "@/app/components/swipeable-drawer/swipeable-drawer";
-import Popover from "@mui/material/Popover";
-import CircularProgress from "@mui/material/CircularProgress";
-import { PublicOutlined, LockOutlined, CloseOutlined } from "@mui/icons-material";
+import React, { useEffect, useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
+import { useSnackbar } from '@/app/components/providers/snackbar-provider';
+import MuiButton from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import MuiSwitch from '@mui/material/Switch';
+import SwipeableDrawer from '@/app/components/swipeable-drawer/swipeable-drawer';
+import Popover from '@mui/material/Popover';
+import CircularProgress from '@mui/material/CircularProgress';
+import { PublicOutlined, LockOutlined, CloseOutlined } from '@mui/icons-material';
 
 const EmojiPicker = dynamic(
   () =>
-    import("@emoji-mart/react").then((mod) => {
+    import('@emoji-mart/react').then((mod) => {
       // Pre-load the data module alongside the picker
-      return import("@emoji-mart/data").then((dataModule) => {
+      return import('@emoji-mart/data').then((dataModule) => {
         const PickerComponent = mod.default;
         // Return a wrapper that injects the data prop
         const PickerWithData = (props: Record<string, unknown>) => (
           <PickerComponent data={dataModule.default} {...props} />
         );
-        PickerWithData.displayName = "EmojiPicker";
+        PickerWithData.displayName = 'EmojiPicker';
         return { default: PickerWithData };
       });
     }),
   {
     ssr: false,
     loading: () => (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", p: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 4 }}>
         <CircularProgress />
       </Box>
     ),
   },
 );
-import { executeGraphQL } from "@/app/lib/graphql/client";
+import { executeGraphQL } from '@/app/lib/graphql/client';
 import {
   UPDATE_PLAYLIST,
   UpdatePlaylistMutationResponse,
   UpdatePlaylistMutationVariables,
   Playlist,
-} from "@/app/lib/graphql/operations/playlists";
-import { useWsAuthToken } from "@/app/hooks/use-ws-auth-token";
-import { themeTokens } from "@/app/theme/theme-config";
+} from '@/app/lib/graphql/operations/playlists';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { themeTokens } from '@/app/theme/theme-config';
 
 // Validate hex color format
 const isValidHexColor = (color: string): boolean => {
@@ -59,7 +59,7 @@ type PlaylistEditDrawerProps = {
   onSuccess: (updatedPlaylist: Playlist) => void;
 };
 
-const INITIAL_FORM_VALUES = { name: "", description: "", color: "", icon: "", isPublic: false };
+const INITIAL_FORM_VALUES = { name: '', description: '', color: '', icon: '', isPublic: false };
 
 export default function PlaylistEditDrawer({
   open,
@@ -80,9 +80,9 @@ export default function PlaylistEditDrawer({
     if (open && playlist) {
       setFormValues({
         name: playlist.name,
-        description: playlist.description || "",
-        color: playlist.color || "",
-        icon: playlist.icon || "",
+        description: playlist.description || '',
+        color: playlist.color || '',
+        icon: playlist.icon || '',
         isPublic: playlist.isPublic,
       });
       setFormErrors({});
@@ -93,12 +93,12 @@ export default function PlaylistEditDrawer({
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
     if (!formValues.name.trim()) {
-      errors.name = "Please enter a playlist name";
+      errors.name = 'Please enter a playlist name';
     } else if (formValues.name.length > 100) {
-      errors.name = "Name must be 100 characters or less";
+      errors.name = 'Name must be 100 characters or less';
     }
     if (formValues.description.length > 500) {
-      errors.description = "Description must be 500 characters or less";
+      errors.description = 'Description must be 500 characters or less';
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -136,12 +136,12 @@ export default function PlaylistEditDrawer({
         token,
       );
 
-      showMessage("Playlist updated successfully", "success");
+      showMessage('Playlist updated successfully', 'success');
       onSuccess(response.updatePlaylist);
       onClose();
     } catch (error) {
-      console.error("Error updating playlist:", error);
-      showMessage("Failed to update playlist", "error");
+      console.error('Error updating playlist:', error);
+      showMessage('Failed to update playlist', 'error');
     } finally {
       setLoading(false);
     }
@@ -166,7 +166,7 @@ export default function PlaylistEditDrawer({
       onClose={handleCancel}
       placement="bottom"
       styles={{
-        wrapper: { height: "auto" },
+        wrapper: { height: 'auto' },
         body: {
           paddingBottom: themeTokens.spacing[6],
         },
@@ -177,13 +177,13 @@ export default function PlaylistEditDrawer({
             Cancel
           </MuiButton>
           <MuiButton variant="contained" onClick={handleSubmit} disabled={loading}>
-            {loading ? "Saving..." : "Save"}
+            {loading ? 'Saving...' : 'Save'}
           </MuiButton>
         </Stack>
       }
     >
       <Box
-        sx={{ maxWidth: 600, margin: "0 auto", display: "flex", flexDirection: "column", gap: 2 }}
+        sx={{ maxWidth: 600, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 2 }}
       >
         <Box>
           <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
@@ -197,7 +197,7 @@ export default function PlaylistEditDrawer({
             value={formValues.name}
             onChange={(e) => {
               setFormValues((prev) => ({ ...prev, name: e.target.value }));
-              setFormErrors((prev) => ({ ...prev, name: "" }));
+              setFormErrors((prev) => ({ ...prev, name: '' }));
             }}
             error={!!formErrors.name}
             helperText={formErrors.name}
@@ -218,7 +218,7 @@ export default function PlaylistEditDrawer({
             value={formValues.description}
             onChange={(e) => {
               setFormValues((prev) => ({ ...prev, description: e.target.value }));
-              setFormErrors((prev) => ({ ...prev, description: "" }));
+              setFormErrors((prev) => ({ ...prev, description: '' }));
             }}
             error={!!formErrors.description}
             helperText={formErrors.description}
@@ -231,7 +231,7 @@ export default function PlaylistEditDrawer({
           </Typography>
           <TextField
             type="color"
-            value={formValues.color || "#000000"}
+            value={formValues.color || '#000000'}
             onChange={(e) => setFormValues((prev) => ({ ...prev, color: e.target.value }))}
             size="small"
             sx={{ width: 80 }}
@@ -248,14 +248,14 @@ export default function PlaylistEditDrawer({
               onClick={(e) => setEmojiAnchor(e.currentTarget)}
               sx={{ minWidth: 48, height: 48, fontSize: 24, lineHeight: 1 }}
             >
-              {formValues.icon || "+"}
+              {formValues.icon || '+'}
             </MuiButton>
             {formValues.icon && (
               <MuiButton
                 variant="text"
                 size="small"
                 startIcon={<CloseOutlined />}
-                onClick={() => setFormValues((prev) => ({ ...prev, icon: "" }))}
+                onClick={() => setFormValues((prev) => ({ ...prev, icon: '' }))}
               >
                 Remove
               </MuiButton>
@@ -265,7 +265,7 @@ export default function PlaylistEditDrawer({
             open={Boolean(emojiAnchor)}
             anchorEl={emojiAnchor}
             onClose={() => setEmojiAnchor(null)}
-            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
           >
             <EmojiPicker
               onEmojiSelect={(emoji: { native: string }) => {
@@ -285,14 +285,14 @@ export default function PlaylistEditDrawer({
           <Stack spacing={0.5}>
             <Stack direction="row" spacing={1} alignItems="center">
               <LockOutlined
-                sx={{ fontSize: 18, color: isPublic ? "text.disabled" : "text.secondary" }}
+                sx={{ fontSize: 18, color: isPublic ? 'text.disabled' : 'text.secondary' }}
               />
               <MuiSwitch
                 checked={isPublic}
                 onChange={(_, checked) => handleVisibilityChange(checked)}
               />
               <PublicOutlined
-                sx={{ fontSize: 18, color: isPublic ? "text.secondary" : "text.disabled" }}
+                sx={{ fontSize: 18, color: isPublic ? 'text.secondary' : 'text.disabled' }}
               />
             </Stack>
             <Typography
@@ -302,8 +302,8 @@ export default function PlaylistEditDrawer({
               sx={{ fontSize: 12 }}
             >
               {isPublic
-                ? "Public playlists can be viewed by anyone with the link"
-                : "Private playlists are only visible to you"}
+                ? 'Public playlists can be viewed by anyone with the link'
+                : 'Private playlists are only visible to you'}
             </Typography>
           </Stack>
         </Box>

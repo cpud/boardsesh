@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useMemo } from "react";
-import { useInfiniteQuery, type InfiniteData, type QueryKey } from "@tanstack/react-query";
-import { useWsAuthToken } from "@/app/hooks/use-ws-auth-token";
-import { useDebouncedValue } from "@/app/hooks/use-debounced-value";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
+import { useMemo } from 'react';
+import { useInfiniteQuery, type InfiniteData, type QueryKey } from '@tanstack/react-query';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { useDebouncedValue } from '@/app/hooks/use-debounced-value';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   SEARCH_BOARDS,
   type SearchBoardsQueryResponse,
   type SearchBoardsQueryVariables,
-} from "@/app/lib/graphql/operations";
-import type { UserBoard, UserBoardConnection } from "@boardsesh/shared-schema";
+} from '@/app/lib/graphql/operations';
+import type { UserBoard, UserBoardConnection } from '@boardsesh/shared-schema';
 
 export interface SearchBoardsMapInput {
   query: string;
@@ -88,9 +88,9 @@ export function useSearchBoardsMap({
       QueryKey,
       number
     >({
-      queryKey: ["searchBoardsMap", debouncedQuery, lat, lon, radiusKm, token],
+      queryKey: ['searchBoardsMap', debouncedQuery, lat, lon, radiusKm, token],
       queryFn: async ({ pageParam }) => {
-        const input: SearchBoardsQueryVariables["input"] = {
+        const input: SearchBoardsQueryVariables['input'] = {
           query: hasQuery ? debouncedQuery.trim() : undefined,
           latitude: hasCoords ? lat : undefined,
           longitude: hasCoords ? lon : undefined,

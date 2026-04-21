@@ -15,9 +15,9 @@ import {
   boardBetaLinks,
   boardWalls,
   boardTags,
-} from "@boardsesh/db";
-import type { BoardName } from "@boardsesh/shared-schema";
-import { SUPPORTED_BOARDS } from "@boardsesh/shared-schema";
+} from '@boardsesh/db';
+import type { BoardName } from '@boardsesh/shared-schema';
+import { SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
 
 export type { BoardName };
 

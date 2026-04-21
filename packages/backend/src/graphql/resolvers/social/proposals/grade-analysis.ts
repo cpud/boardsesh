@@ -1,7 +1,7 @@
-import { eq, and, sql } from "drizzle-orm";
-import { db } from "../../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { resolveCommunitySetting } from "../community-settings";
+import { eq, and, sql } from 'drizzle-orm';
+import { db } from '../../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { resolveCommunitySetting } from '../community-settings';
 
 /**
  * Analyze if a climb's grade at a given angle is an outlier compared to adjacent angles.
@@ -47,13 +47,13 @@ export async function analyzeGradeOutlier(
 
     // Resolve outlier settings
     const minAscentsStr = await resolveCommunitySetting(
-      "outlier_min_ascents",
+      'outlier_min_ascents',
       climbUuid,
       angle,
       boardType,
     );
     const gradeDiffStr = await resolveCommunitySetting(
-      "outlier_grade_diff",
+      'outlier_grade_diff',
       climbUuid,
       angle,
       boardType,
@@ -108,7 +108,7 @@ export async function checkAutoApproval(
   angle: number | null,
 ): Promise<boolean> {
   const threshold = await resolveCommunitySetting(
-    "approval_threshold",
+    'approval_threshold',
     climbUuid,
     angle,
     boardType,
@@ -120,7 +120,7 @@ export async function checkAutoApproval(
     .select({
       weightedSum:
         sql<number>`COALESCE(SUM(${dbSchema.proposalVotes.value} * ${dbSchema.proposalVotes.weight}), 0)`.as(
-          "weighted_sum",
+          'weighted_sum',
         ),
     })
     .from(dbSchema.proposalVotes)

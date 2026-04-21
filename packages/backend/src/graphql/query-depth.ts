@@ -1,4 +1,4 @@
-import { DocumentNode, Kind, type DefinitionNode, type SelectionSetNode } from "graphql";
+import { DocumentNode, Kind, type DefinitionNode, type SelectionSetNode } from 'graphql';
 
 const MAX_QUERY_DEPTH = 10;
 
@@ -17,7 +17,7 @@ function calculateDepth(selectionSet: SelectionSetNode, currentDepth: number): n
       }
     } else if (
       (selection.kind === Kind.INLINE_FRAGMENT || selection.kind === Kind.FRAGMENT_SPREAD) &&
-      "selectionSet" in selection &&
+      'selectionSet' in selection &&
       selection.selectionSet
     ) {
       const fragmentDepth = calculateDepth(selection.selectionSet, currentDepth);

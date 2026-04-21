@@ -1,8 +1,8 @@
-import { z } from "zod";
-import { eq, and, or, inArray, sql } from "drizzle-orm";
-import { getPool } from "@/app/lib/db/db";
-import { drizzle } from "drizzle-orm/neon-serverless";
-import type { NeonDatabase } from "drizzle-orm/neon-serverless";
+import { z } from 'zod';
+import { eq, and, or, inArray, sql } from 'drizzle-orm';
+import { getPool } from '@/app/lib/db/db';
+import { drizzle } from 'drizzle-orm/neon-serverless';
+import type { NeonDatabase } from 'drizzle-orm/neon-serverless';
 import {
   boardseshTicks,
   boardClimbs,
@@ -10,13 +10,13 @@ import {
   playlists,
   playlistClimbs,
   playlistOwnership,
-} from "@/app/lib/db/schema";
-import { randomUUID } from "crypto";
-import { createHash } from "crypto";
-import { fontGradeToDifficultyId } from "@/app/lib/board-data";
-import { LAYOUTS, HOLE_PLACEMENTS } from "@/app/lib/board-constants";
-import { buildInferredSessionsForUser } from "./inferred-session-builder";
-import { populateDenormalizedColumns } from "@boardsesh/db/queries";
+} from '@/app/lib/db/schema';
+import { randomUUID } from 'crypto';
+import { createHash } from 'crypto';
+import { fontGradeToDifficultyId } from '@/app/lib/board-data';
+import { LAYOUTS, HOLE_PLACEMENTS } from '@/app/lib/board-constants';
+import { buildInferredSessionsForUser } from './inferred-session-builder';
+import { populateDenormalizedColumns } from '@boardsesh/db/queries';
 
 const BATCH_SIZE = 100;
 
@@ -81,7 +81,7 @@ export const auroraExportSchema = z.object({
 
 export type AuroraExportData = z.infer<typeof auroraExportSchema>;
 
-type BoardType = "kilter" | "tension";
+type BoardType = 'kilter' | 'tension';
 
 // ---------------------------------------------------------------------------
 // Import result types
@@ -106,15 +106,15 @@ export interface ImportResult {
 // ---------------------------------------------------------------------------
 
 export type ImportProgressEvent =
-  | { type: "progress"; step: "climbs"; current: number; total: number }
-  | { type: "progress"; step: "resolving"; message: string }
-  | { type: "progress"; step: "dedup"; message: string }
-  | { type: "progress"; step: "ascents"; current: number; total: number }
-  | { type: "progress"; step: "attempts"; current: number; total: number }
-  | { type: "progress"; step: "circuits"; current: number; total: number }
-  | { type: "progress"; step: "sessions"; message: string }
-  | { type: "complete"; results: ImportResult }
-  | { type: "error"; error: string };
+  | { type: 'progress'; step: 'climbs'; current: number; total: number }
+  | { type: 'progress'; step: 'resolving'; message: string }
+  | { type: 'progress'; step: 'dedup'; message: string }
+  | { type: 'progress'; step: 'ascents'; current: number; total: number }
+  | { type: 'progress'; step: 'attempts'; current: number; total: number }
+  | { type: 'progress'; step: 'circuits'; current: number; total: number }
+  | { type: 'progress'; step: 'sessions'; message: string }
+  | { type: 'complete'; results: ImportResult }
+  | { type: 'error'; error: string };
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -133,10 +133,10 @@ export function normalizeTimestamp(ts: string): string {
   let normalized = ts.trim();
   // If the string has no timezone indicator (T/Z/+/-), treat as UTC
   // by replacing the space separator with 'T' and appending 'Z'
-  if (!normalized.includes("T") && !normalized.includes("Z")) {
+  if (!normalized.includes('T') && !normalized.includes('Z')) {
     // Truncate microseconds (.000001) to milliseconds (.000) for consistency
-    normalized = normalized.replace(/(\.\d{3})\d*$/, "$1");
-    normalized = normalized.replace(" ", "T") + "Z";
+    normalized = normalized.replace(/(\.\d{3})\d*$/, '$1');
+    normalized = normalized.replace(' ', 'T') + 'Z';
   }
   return new Date(normalized).toISOString();
 }
@@ -146,11 +146,11 @@ export function generateJsonImportAuroraId(
   climbUuid: string,
   angle: number,
   climbedAt: string,
-  type: "ascents" | "bids",
+  type: 'ascents' | 'bids',
 ): string {
-  const hash = createHash("sha256")
+  const hash = createHash('sha256')
     .update(`${userId}:${climbUuid}:${angle}:${climbedAt}:${type}`)
-    .digest("hex")
+    .digest('hex')
     .slice(0, 32);
   return `json-import-${hash}`;
 }
@@ -220,7 +220,7 @@ export function convertHoldsToFrames(
     parts.push(`p${placementId}r${roleCode}`);
   }
 
-  return parts.length > 0 ? parts.join("") : null;
+  return parts.length > 0 ? parts.join('') : null;
 }
 
 /** Compute bounding box (edge) values from hold coordinates. */
@@ -252,9 +252,9 @@ export function generateClimbImportUuid(
   name: string,
   createdAt: string,
 ): string {
-  const hash = createHash("sha256")
+  const hash = createHash('sha256')
     .update(`${userId}:${boardType}:${layoutId}:${name}:${createdAt}`)
-    .digest("hex")
+    .digest('hex')
     .slice(0, 32);
   return `json-import-climb-${hash}`;
 }
@@ -374,12 +374,12 @@ async function batchInsertTicks(
   db: NeonDatabase<Record<string, never>>,
   rows: (typeof boardseshTicks.$inferInsert)[],
   conflictSet: Record<string, ReturnType<typeof sql>>,
-  step: "ascents" | "attempts",
+  step: 'ascents' | 'attempts',
   fallbackTotal: number,
   onProgress?: (event: ImportProgressEvent) => void,
 ): Promise<number> {
   if (rows.length === 0) {
-    onProgress?.({ type: "progress", step, current: fallbackTotal, total: fallbackTotal });
+    onProgress?.({ type: 'progress', step, current: fallbackTotal, total: fallbackTotal });
     return 0;
   }
 
@@ -394,7 +394,7 @@ async function batchInsertTicks(
 
     imported += batch.length;
     onProgress?.({
-      type: "progress",
+      type: 'progress',
       step,
       current: Math.min(i + BATCH_SIZE, rows.length),
       total: rows.length,
@@ -493,7 +493,7 @@ export async function importJsonExportData(
           setterId: null,
           setterUsername: data.user.username,
           name: climb.name,
-          description: climb.description ?? "",
+          description: climb.description ?? '',
           frames,
           framesCount: 1,
           framesPace: 0,
@@ -541,7 +541,7 @@ export async function importJsonExportData(
           setterId: null,
           setterUsername: data.user.username,
           name: climb.name,
-          description: climb.description ?? "",
+          description: climb.description ?? '',
           frames,
           framesCount: 1,
           framesPace: 0,
@@ -561,7 +561,7 @@ export async function importJsonExportData(
       const totalRows = draftRows.length + publishedRows.length;
 
       if (totalRows > 0) {
-        await client.query("BEGIN");
+        await client.query('BEGIN');
         try {
           // Insert draft climbs with upsert (re-import updates them)
           for (let i = 0; i < draftRows.length; i += BATCH_SIZE) {
@@ -601,21 +601,21 @@ export async function importJsonExportData(
           ];
           await populateDenormalizedColumns(db, boardType, allInsertedUuids);
 
-          await client.query("COMMIT");
+          await client.query('COMMIT');
         } catch (error) {
-          await client.query("ROLLBACK");
+          await client.query('ROLLBACK');
           throw error;
         }
       }
 
       onProgress?.({
-        type: "progress",
-        step: "climbs",
+        type: 'progress',
+        step: 'climbs',
         current: data.climbs.length,
         total: data.climbs.length,
       });
     } else {
-      onProgress?.({ type: "progress", step: "climbs", current: 0, total: 0 });
+      onProgress?.({ type: 'progress', step: 'climbs', current: 0, total: 0 });
     }
 
     // Step 2: Collect all unique climb names from ascents/attempts/circuits
@@ -627,8 +627,8 @@ export async function importJsonExportData(
 
     // Step 3: Resolve climb names to UUIDs (includes user's own drafts)
     onProgress?.({
-      type: "progress",
-      step: "resolving",
+      type: 'progress',
+      step: 'resolving',
       message: `Resolving ${allClimbNames.size} climb names...`,
     });
     const nameToUuid = await resolveClimbNames(db, boardType, [...allClimbNames], userId);
@@ -637,7 +637,7 @@ export async function importJsonExportData(
     result.unresolvedClimbs = [...allClimbNames].filter((name) => !nameToUuid.has(name));
 
     // Step 4: Get existing tick keys for cross-source dedup
-    onProgress?.({ type: "progress", step: "dedup", message: "Checking for duplicates..." });
+    onProgress?.({ type: 'progress', step: 'dedup', message: 'Checking for duplicates...' });
     const existingKeys = await getExistingTickKeys(db, userId, boardType);
 
     // Step 5: Collect ascent rows to insert (in-memory dedup first)
@@ -665,19 +665,19 @@ export async function importJsonExportData(
         climbUuid,
         angle: ascent.angle,
         isMirror: false,
-        status: ascent.count === 1 ? "flash" : "send",
+        status: ascent.count === 1 ? 'flash' : 'send',
         attemptCount: ascent.count,
         // The JSON export 'stars' field is already on a 1-5 scale (user-facing),
         // unlike the Aurora API 'quality' field which is 0-3.
         quality: ascent.stars,
         difficulty: fontGradeToDifficultyId(ascent.grade),
         isBenchmark: false,
-        comment: "",
+        comment: '',
         climbedAt,
         createdAt: ascent.created_at ? normalizeTimestamp(ascent.created_at) : now,
         updatedAt: now,
-        auroraType: "ascents" as const,
-        auroraId: generateJsonImportAuroraId(userId, climbUuid, ascent.angle, climbedAt, "ascents"),
+        auroraType: 'ascents' as const,
+        auroraId: generateJsonImportAuroraId(userId, climbUuid, ascent.angle, climbedAt, 'ascents'),
         auroraSyncedAt: now,
       });
       return rows;
@@ -706,24 +706,24 @@ export async function importJsonExportData(
         climbUuid,
         angle: attempt.angle,
         isMirror: false,
-        status: "attempt",
+        status: 'attempt',
         attemptCount: attempt.count,
         quality: null,
         difficulty: null,
         isBenchmark: false,
-        comment: "",
+        comment: '',
         climbedAt,
         createdAt: attempt.created_at ? normalizeTimestamp(attempt.created_at) : now,
         updatedAt: now,
-        auroraType: "bids" as const,
-        auroraId: generateJsonImportAuroraId(userId, climbUuid, attempt.angle, climbedAt, "bids"),
+        auroraType: 'bids' as const,
+        auroraId: generateJsonImportAuroraId(userId, climbUuid, attempt.angle, climbedAt, 'bids'),
         auroraSyncedAt: now,
       });
       return rows;
     }, []);
 
     // Step 7: Batch-insert ascents and attempts in a transaction
-    await client.query("BEGIN");
+    await client.query('BEGIN');
 
     try {
       result.ascents.imported = await batchInsertTicks(
@@ -740,7 +740,7 @@ export async function importJsonExportData(
           updatedAt: sql`excluded.updated_at`,
           auroraSyncedAt: sql`excluded.aurora_synced_at`,
         },
-        "ascents",
+        'ascents',
         data.ascents.length,
         onProgress,
       );
@@ -756,14 +756,14 @@ export async function importJsonExportData(
           updatedAt: sql`excluded.updated_at`,
           auroraSyncedAt: sql`excluded.aurora_synced_at`,
         },
-        "attempts",
+        'attempts',
         data.attempts.length,
         onProgress,
       );
 
-      await client.query("COMMIT");
+      await client.query('COMMIT');
     } catch (error) {
-      await client.query("ROLLBACK");
+      await client.query('ROLLBACK');
       throw error;
     }
 
@@ -775,16 +775,16 @@ export async function importJsonExportData(
         .map((name) => nameToUuid.get(name))
         .filter((uuid): uuid is string => uuid != null);
 
-      const circuitHash = createHash("sha256")
+      const circuitHash = createHash('sha256')
         .update(`${userId}:${boardType}:${circuit.name}:${circuit.created_at}`)
-        .digest("hex")
+        .digest('hex')
         .slice(0, 32);
       const circuitAuroraId = `json-import-circuit-${circuitHash}`;
       const formattedColor = circuit.color ? `#${circuit.color}` : null;
       const circuitNow = new Date();
 
       try {
-        await client.query("BEGIN");
+        await client.query('BEGIN');
 
         const [playlist] = await db
           .insert(playlists)
@@ -796,7 +796,7 @@ export async function importJsonExportData(
             description: circuit.description ?? null,
             isPublic: false,
             color: formattedColor,
-            auroraType: "circuits",
+            auroraType: 'circuits',
             auroraId: circuitAuroraId,
             auroraSyncedAt: circuitNow,
             createdAt: circuit.created_at ? new Date(circuit.created_at) : circuitNow,
@@ -820,7 +820,7 @@ export async function importJsonExportData(
           .values({
             playlistId: playlist.id,
             userId,
-            role: "owner",
+            role: 'owner',
           })
           .onConflictDoNothing();
 
@@ -843,17 +843,17 @@ export async function importJsonExportData(
           }
         }
 
-        await client.query("COMMIT");
+        await client.query('COMMIT');
         result.circuits.imported++;
       } catch (error) {
-        await client.query("ROLLBACK");
+        await client.query('ROLLBACK');
         console.error(`Failed to import circuit "${circuit.name}":`, error);
         result.circuits.failed++;
       }
 
       onProgress?.({
-        type: "progress",
-        step: "circuits",
+        type: 'progress',
+        step: 'circuits',
         current: ci + 1,
         total: data.circuits.length,
       });
@@ -864,14 +864,14 @@ export async function importJsonExportData(
     // Always run on the final chunk — earlier chunks may have imported ticks even if
     // this chunk only contains circuits.
     if (!options?.skipSessionBuild) {
-      onProgress?.({ type: "progress", step: "sessions", message: "Building sessions..." });
+      onProgress?.({ type: 'progress', step: 'sessions', message: 'Building sessions...' });
       try {
         const assigned = await buildInferredSessionsForUser(userId);
         if (assigned > 0) {
           console.log(`Built inferred sessions: assigned ${assigned} ticks for user ${userId}`);
         }
       } catch (error) {
-        console.error("Error building inferred sessions after JSON import:", error);
+        console.error('Error building inferred sessions after JSON import:', error);
       }
     }
 

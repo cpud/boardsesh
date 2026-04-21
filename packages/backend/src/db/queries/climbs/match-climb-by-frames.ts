@@ -1,6 +1,6 @@
-import { sql } from "drizzle-orm";
-import { db } from "../../client";
-import { UNIFIED_TABLES, type BoardName } from "../util/table-select";
+import { sql } from 'drizzle-orm';
+import { db } from '../../client';
+import { UNIFIED_TABLES, type BoardName } from '../util/table-select';
 
 interface MatchedClimb {
   uuid: string;
@@ -56,10 +56,10 @@ export async function matchClimbByFrames(
 
     return {
       uuid: result[0].uuid,
-      name: result[0].name || "",
+      name: result[0].name || '',
     };
   } catch (error) {
-    console.error("[matchClimbByFrames] Error:", error);
+    console.error('[matchClimbByFrames] Error:', error);
     throw error;
   }
 }

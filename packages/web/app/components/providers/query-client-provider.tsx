@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React, { useState, ReactNode } from "react";
+import React, { useState, ReactNode } from 'react';
 import {
   QueryClient,
   QueryClientProvider as TanStackQueryClientProvider,
-} from "@tanstack/react-query";
+} from '@tanstack/react-query';
 
 interface QueryClientProviderProps {
   children: ReactNode;

@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   GET_POPULAR_BOARD_CONFIGS,
   type GetPopularBoardConfigsQueryResponse,
-} from "@/app/lib/graphql/operations";
-import type { PopularBoardConfig } from "@boardsesh/shared-schema";
+} from '@/app/lib/graphql/operations';
+import type { PopularBoardConfig } from '@boardsesh/shared-schema';
 
 interface UsePopularBoardConfigsOptions {
   /** Number of configs per page */
@@ -70,9 +70,9 @@ export function usePopularBoardConfigs({
         offsetRef.current = offset + newConfigs.length;
         loadMoreFailCountRef.current = 0;
       } catch (err) {
-        console.error("Failed to fetch popular board configs:", err);
+        console.error('Failed to fetch popular board configs:', err);
         if (isInitial) {
-          setError("Failed to load board configurations");
+          setError('Failed to load board configurations');
         } else {
           // Stop infinite retries from IntersectionObserver by disabling loadMore after 3 failures
           loadMoreFailCountRef.current += 1;

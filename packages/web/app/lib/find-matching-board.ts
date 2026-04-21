@@ -1,4 +1,4 @@
-import type { UserBoard } from "@boardsesh/shared-schema";
+import type { UserBoard } from '@boardsesh/shared-schema';
 
 export type BoardConfig = { boardType: string; layoutId: number; sizeId: number };
 

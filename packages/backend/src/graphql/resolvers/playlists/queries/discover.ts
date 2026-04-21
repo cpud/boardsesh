@@ -1,13 +1,13 @@
-import { eq, and, or, isNull, inArray, desc, sql } from "drizzle-orm";
-import type { ConnectionContext } from "@boardsesh/shared-schema";
-import { db } from "../../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { validateInput } from "../../shared/helpers";
+import { eq, and, or, isNull, inArray, desc, sql } from 'drizzle-orm';
+import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { db } from '../../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { validateInput } from '../../shared/helpers';
 import {
   DiscoverPlaylistsInputSchema,
   GetPlaylistCreatorsInputSchema,
-} from "../../../../validation/schemas";
-import { formatPublicPlaylist } from "../helpers/enrichment";
+} from '../../../../validation/schemas';
+import { formatPublicPlaylist } from '../helpers/enrichment';
 
 /** Shared select fields for public playlist queries (discover + search). */
 const PUBLIC_PLAYLIST_SELECT = {
@@ -96,14 +96,14 @@ export const discoverPlaylists = async (
       layoutId?: number;
       name?: string;
       creatorIds?: string[];
-      sortBy?: "recent" | "popular";
+      sortBy?: 'recent' | 'popular';
       page?: number;
       pageSize?: number;
     };
   },
   _ctx: ConnectionContext,
 ): Promise<{ playlists: unknown[]; totalCount: number; hasMore: boolean }> => {
-  validateInput(DiscoverPlaylistsInputSchema, input, "input");
+  validateInput(DiscoverPlaylistsInputSchema, input, 'input');
 
   const page = input.page ?? 0;
   const pageSize = input.pageSize ?? 20;
@@ -119,13 +119,13 @@ export const discoverPlaylists = async (
     );
   }
   if (input.name) {
-    conditions.push(sql`LOWER(${dbSchema.playlists.name}) LIKE LOWER(${"%" + input.name + "%"})`);
+    conditions.push(sql`LOWER(${dbSchema.playlists.name}) LIKE LOWER(${'%' + input.name + '%'})`);
   }
   if (input.creatorIds && input.creatorIds.length > 0) {
     conditions.push(inArray(dbSchema.playlistOwnership.userId, input.creatorIds));
   }
 
-  const whereClause = and(...conditions, eq(dbSchema.playlistOwnership.role, "owner"));
+  const whereClause = and(...conditions, eq(dbSchema.playlistOwnership.role, 'owner'));
 
   const countResult = await publicPlaylistCountQuery().where(whereClause);
   const totalCount = countResult[0]?.count || 0;
@@ -134,7 +134,7 @@ export const discoverPlaylists = async (
     .where(whereClause)
     .groupBy(...PUBLIC_PLAYLIST_GROUP_BY)
     .orderBy(
-      input.sortBy === "popular"
+      input.sortBy === 'popular'
         ? desc(sql`count(DISTINCT ${dbSchema.playlistClimbs.id})`)
         : desc(dbSchema.playlists.createdAt),
       desc(dbSchema.playlists.updatedAt),
@@ -169,18 +169,18 @@ export const playlistCreators = async (
   },
   _ctx: ConnectionContext,
 ): Promise<unknown[]> => {
-  validateInput(GetPlaylistCreatorsInputSchema, input, "input");
+  validateInput(GetPlaylistCreatorsInputSchema, input, 'input');
 
   const conditions = [
     eq(dbSchema.playlists.isPublic, true),
     eq(dbSchema.playlists.boardType, input.boardType),
     or(eq(dbSchema.playlists.layoutId, input.layoutId), isNull(dbSchema.playlists.layoutId)),
-    eq(dbSchema.playlistOwnership.role, "owner"),
+    eq(dbSchema.playlistOwnership.role, 'owner'),
   ];
 
   if (input.searchQuery) {
     conditions.push(
-      sql`LOWER(${dbSchema.users.name}) LIKE LOWER(${"%" + input.searchQuery + "%"})`,
+      sql`LOWER(${dbSchema.users.name}) LIKE LOWER(${'%' + input.searchQuery + '%'})`,
     );
   }
 

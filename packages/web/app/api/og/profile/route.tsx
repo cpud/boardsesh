@@ -1,14 +1,14 @@
-import React from "react";
-import { ImageResponse } from "@vercel/og";
-import { NextRequest } from "next/server";
-import { sql } from "@/app/lib/db/db";
-import { themeTokens } from "@/app/theme/theme-config";
-import { FONT_GRADE_COLORS, getGradeColorWithOpacity } from "@/app/lib/grade-colors";
-import { BOULDER_GRADES } from "@/app/lib/board-data";
-import { createOgImageHeaders, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/app/lib/seo/og";
-import { getProfileOgSummary } from "@/app/lib/seo/dynamic-og-data";
+import React from 'react';
+import { ImageResponse } from '@vercel/og';
+import { NextRequest } from 'next/server';
+import { sql } from '@/app/lib/db/db';
+import { themeTokens } from '@/app/theme/theme-config';
+import { FONT_GRADE_COLORS, getGradeColorWithOpacity } from '@/app/lib/grade-colors';
+import { BOULDER_GRADES } from '@/app/lib/board-data';
+import { createOgImageHeaders, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from '@/app/lib/seo/og';
+import { getProfileOgSummary } from '@/app/lib/seo/dynamic-og-data';
 
-export const runtime = "edge";
+export const runtime = 'edge';
 
 // Maps difficulty ID to Font grade name for OG image labels.
 // OG images are static server-rendered PNGs — they always use Font grades
@@ -24,11 +24,11 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("user_id");
-    const version = searchParams.get("v");
+    const userId = searchParams.get('user_id');
+    const version = searchParams.get('v');
 
     if (!userId) {
-      return new Response("Missing user_id parameter", { status: 400 });
+      return new Response('Missing user_id parameter', { status: 400 });
     }
 
     const dbT0 = performance.now();
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     const dbMs = performance.now() - dbT0;
 
     if (!summary) {
-      return new Response("User not found", { status: 404 });
+      return new Response('User not found', { status: 404 });
     }
 
     const displayName = summary.displayName;
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
 
       totalClimbs += count;
       const hex = FONT_GRADE_COLORS[grade.toLowerCase()];
-      const color = hex ? getGradeColorWithOpacity(hex, 0.5) : "rgba(200, 200, 200, 0.5)";
+      const color = hex ? getGradeColorWithOpacity(hex, 0.5) : 'rgba(200, 200, 200, 0.5)';
       gradeBars.push({ grade, count, color });
     }
 
@@ -78,24 +78,24 @@ export async function GET(request: NextRequest) {
     return new ImageResponse(
       <div
         style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          background: "#FFFFFF",
-          padding: "60px 80px",
-          gap: "40px",
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          background: '#FFFFFF',
+          padding: '60px 80px',
+          gap: '40px',
         }}
       >
         {/* Top section: Avatar + Name */}
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "32px",
-            width: "100%",
+            display: 'flex',
+            alignItems: 'center',
+            gap: '32px',
+            width: '100%',
           }}
         >
           {avatarUrl ? (
@@ -106,21 +106,21 @@ export async function GET(request: NextRequest) {
               width={120}
               height={120}
               style={{
-                borderRadius: "60px",
-                objectFit: "cover",
+                borderRadius: '60px',
+                objectFit: 'cover',
               }}
             />
           ) : (
             <div
               style={{
-                width: "120px",
-                height: "120px",
-                borderRadius: "60px",
+                width: '120px',
+                height: '120px',
+                borderRadius: '60px',
                 background: themeTokens.neutral[200],
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "48px",
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '48px',
                 color: themeTokens.neutral[500],
               }}
             >
@@ -129,15 +129,15 @@ export async function GET(request: NextRequest) {
           )}
           <div
             style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "8px",
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
             }}
           >
             <div
               style={{
-                fontSize: "48px",
-                fontWeight: "bold",
+                fontSize: '48px',
+                fontWeight: 'bold',
                 color: themeTokens.neutral[900],
                 lineHeight: 1.2,
               }}
@@ -146,13 +146,13 @@ export async function GET(request: NextRequest) {
             </div>
             <div
               style={{
-                fontSize: "24px",
+                fontSize: '24px',
                 color: themeTokens.neutral[500],
               }}
             >
               {totalClimbs > 0
-                ? `${totalClimbs} distinct climb${totalClimbs !== 1 ? "s" : ""}`
-                : "Boardsesh climber"}
+                ? `${totalClimbs} distinct climb${totalClimbs !== 1 ? 's' : ''}`
+                : 'Boardsesh climber'}
             </div>
           </div>
         </div>
@@ -161,20 +161,20 @@ export async function GET(request: NextRequest) {
         {gradeBars.length > 0 && (
           <div
             style={{
-              display: "flex",
-              flexDirection: "column",
-              width: "100%",
-              gap: "8px",
+              display: 'flex',
+              flexDirection: 'column',
+              width: '100%',
+              gap: '8px',
             }}
           >
             {/* Bars */}
             <div
               style={{
-                display: "flex",
-                alignItems: "flex-end",
-                gap: "4px",
-                height: "160px",
-                width: "100%",
+                display: 'flex',
+                alignItems: 'flex-end',
+                gap: '4px',
+                height: '160px',
+                width: '100%',
               }}
             >
               {gradeBars.map((bar) => (
@@ -184,7 +184,7 @@ export async function GET(request: NextRequest) {
                     flex: 1,
                     height: `${Math.max((bar.count / maxCount) * 100, 5)}%`,
                     backgroundColor: bar.color,
-                    borderRadius: "3px 3px 0 0",
+                    borderRadius: '3px 3px 0 0',
                   }}
                 />
               ))}
@@ -192,9 +192,9 @@ export async function GET(request: NextRequest) {
             {/* Labels */}
             <div
               style={{
-                display: "flex",
-                gap: "4px",
-                width: "100%",
+                display: 'flex',
+                gap: '4px',
+                width: '100%',
               }}
             >
               {gradeBars.map((bar) => (
@@ -202,8 +202,8 @@ export async function GET(request: NextRequest) {
                   key={bar.grade}
                   style={{
                     flex: 1,
-                    fontSize: "14px",
-                    textAlign: "center",
+                    fontSize: '14px',
+                    textAlign: 'center',
                     color: themeTokens.neutral[400],
                   }}
                 >
@@ -217,10 +217,10 @@ export async function GET(request: NextRequest) {
         {/* Branding */}
         <div
           style={{
-            position: "absolute",
-            bottom: "24px",
-            right: "40px",
-            fontSize: "20px",
+            position: 'absolute',
+            bottom: '24px',
+            right: '40px',
+            fontSize: '20px',
             color: themeTokens.neutral[300],
             fontWeight: 600,
           }}
@@ -232,14 +232,14 @@ export async function GET(request: NextRequest) {
         width: OG_IMAGE_WIDTH,
         height: OG_IMAGE_HEIGHT,
         headers: createOgImageHeaders({
-          contentType: "image/png",
+          contentType: 'image/png',
           version,
           serverTiming: `db;dur=${dbMs.toFixed(1)}, render;dur=${renderMs.toFixed(1)}, route;dur=${(performance.now() - routeT0).toFixed(1)}`,
         }),
       },
     );
   } catch (error) {
-    console.error("Error generating profile OG image:", error);
+    console.error('Error generating profile OG image:', error);
     const message = error instanceof Error ? error.message : String(error);
     return new Response(`Error generating image: ${message}`, { status: 500 });
   }

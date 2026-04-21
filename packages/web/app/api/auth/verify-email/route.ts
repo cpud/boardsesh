@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/app/lib/db/db";
-import * as schema from "@/app/lib/db/schema";
-import { eq, and } from "drizzle-orm";
-import { checkRateLimit, getClientIp } from "@/app/lib/auth/rate-limiter";
+import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '@/app/lib/db/db';
+import * as schema from '@/app/lib/db/schema';
+import { eq, and } from 'drizzle-orm';
+import { checkRateLimit, getClientIp } from '@/app/lib/auth/rate-limiter';
 
 export async function GET(request: NextRequest) {
   // Rate limiting - 20 attempts per minute per IP
@@ -12,16 +12,16 @@ export async function GET(request: NextRequest) {
 
   if (rateLimitResult.limited) {
     return NextResponse.redirect(
-      new URL("/auth/verify-request?error=TooManyAttempts", request.url),
+      new URL('/auth/verify-request?error=TooManyAttempts', request.url),
     );
   }
 
   const searchParams = request.nextUrl.searchParams;
-  const token = searchParams.get("token");
-  const email = searchParams.get("email");
+  const token = searchParams.get('token');
+  const email = searchParams.get('email');
 
   if (!token || !email) {
-    return NextResponse.redirect(new URL("/auth/verify-request?error=InvalidToken", request.url));
+    return NextResponse.redirect(new URL('/auth/verify-request?error=InvalidToken', request.url));
   }
 
   const db = getDb();
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     .limit(1);
 
   if (verificationToken.length === 0) {
-    return NextResponse.redirect(new URL("/auth/verify-request?error=InvalidToken", request.url));
+    return NextResponse.redirect(new URL('/auth/verify-request?error=InvalidToken', request.url));
   }
 
   const tokenData = verificationToken[0];
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
         ),
       );
 
-    return NextResponse.redirect(new URL("/auth/verify-request?error=TokenExpired", request.url));
+    return NextResponse.redirect(new URL('/auth/verify-request?error=TokenExpired', request.url));
   }
 
   // Verify user exists before updating
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
         ),
       );
 
-    return NextResponse.redirect(new URL("/auth/verify-request?error=InvalidToken", request.url));
+    return NextResponse.redirect(new URL('/auth/verify-request?error=InvalidToken', request.url));
   }
 
   // Update user and delete token atomically
@@ -94,5 +94,5 @@ export async function GET(request: NextRequest) {
   });
 
   // Redirect to login with success message
-  return NextResponse.redirect(new URL("/auth/login?verified=true", request.url));
+  return NextResponse.redirect(new URL('/auth/login?verified=true', request.url));
 }

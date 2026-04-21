@@ -1,7 +1,7 @@
-import { useReducer } from "react";
-import { QueueState, QueueAction } from "./types";
-import { SearchRequestPagination } from "@/app/lib/types";
-import { insertQueueItemIdempotent } from "../persistent-session/event-utils";
+import { useReducer } from 'react';
+import { QueueState, QueueAction } from './types';
+import { SearchRequestPagination } from '@/app/lib/types';
+import { insertQueueItemIdempotent } from '../persistent-session/event-utils';
 
 const initialState = (initialSearchParams: SearchRequestPagination): QueueState => ({
   queue: [],
@@ -17,7 +17,7 @@ const initialState = (initialSearchParams: SearchRequestPagination): QueueState 
 
 export function queueReducer(state: QueueState, action: QueueAction): QueueState {
   switch (action.type) {
-    case "SET_CURRENT_CLIMB":
+    case 'SET_CURRENT_CLIMB':
       const currentIndex = state.currentClimbQueueItem
         ? state.queue.findIndex(({ uuid }) => uuid === state.currentClimbQueueItem?.uuid)
         : -1;
@@ -35,7 +35,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
               ],
       };
 
-    case "SET_CURRENT_CLIMB_QUEUE_ITEM":
+    case 'SET_CURRENT_CLIMB_QUEUE_ITEM':
       return {
         ...state,
         currentClimbQueueItem: action.payload,
@@ -45,12 +45,12 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
             : state.queue,
       };
 
-    case "SET_CLIMB_SEARCH_PARAMS":
+    case 'SET_CLIMB_SEARCH_PARAMS':
       return {
         ...state,
         climbSearchParams: action.payload,
       };
-    case "INITIAL_QUEUE_DATA": {
+    case 'INITIAL_QUEUE_DATA': {
       // Filter out any undefined/null items that could corrupt queue operations
       // This handles edge cases from corrupted IndexedDB or WebSocket data
       const filteredQueue = action.payload.queue.filter(
@@ -60,7 +60,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
 
       if (hadCorruptedData) {
         console.warn(
-          "[QueueReducer] Filtered corrupted items from INITIAL_QUEUE_DATA, requesting resync",
+          '[QueueReducer] Filtered corrupted items from INITIAL_QUEUE_DATA, requesting resync',
         );
       }
 
@@ -76,7 +76,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
       };
     }
 
-    case "UPDATE_QUEUE": {
+    case 'UPDATE_QUEUE': {
       // Filter out any undefined/null items that could corrupt queue operations
       const filteredQueue = action.payload.queue.filter(
         (item): item is NonNullable<typeof item> => item != null && item.climb != null,
@@ -85,7 +85,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
 
       if (hadCorruptedData) {
         console.warn(
-          "[QueueReducer] Filtered corrupted items from UPDATE_QUEUE, requesting resync",
+          '[QueueReducer] Filtered corrupted items from UPDATE_QUEUE, requesting resync',
         );
       }
 
@@ -98,25 +98,25 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
       };
     }
 
-    case "ADD_TO_QUEUE":
+    case 'ADD_TO_QUEUE':
       return {
         ...state,
         queue: [...state.queue, action.payload],
       };
 
-    case "REMOVE_FROM_QUEUE":
+    case 'REMOVE_FROM_QUEUE':
       return {
         ...state,
         queue: [...action.payload],
       };
 
-    case "SET_FIRST_FETCH":
+    case 'SET_FIRST_FETCH':
       return {
         ...state,
         hasDoneFirstFetch: action.payload,
       };
 
-    case "MIRROR_CLIMB":
+    case 'MIRROR_CLIMB':
       if (!state.currentClimbQueueItem) return state;
       return {
         ...state,
@@ -130,7 +130,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
       };
 
     // Delta-specific reducers
-    case "DELTA_ADD_QUEUE_ITEM": {
+    case 'DELTA_ADD_QUEUE_ITEM': {
       const { item, position } = action.payload;
 
       // Skip if item or its climb is undefined
@@ -151,7 +151,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
       };
     }
 
-    case "DELTA_REMOVE_QUEUE_ITEM": {
+    case 'DELTA_REMOVE_QUEUE_ITEM': {
       const { uuid } = action.payload;
       return {
         ...state,
@@ -162,7 +162,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
       };
     }
 
-    case "DELTA_REORDER_QUEUE_ITEM": {
+    case 'DELTA_REORDER_QUEUE_ITEM': {
       const { uuid, oldIndex, newIndex } = action.payload;
       const newQueue = [...state.queue];
 
@@ -191,7 +191,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
       };
     }
 
-    case "DELTA_UPDATE_CURRENT_CLIMB": {
+    case 'DELTA_UPDATE_CURRENT_CLIMB': {
       const {
         item,
         shouldAddToQueue,
@@ -280,7 +280,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
       };
     }
 
-    case "CLEANUP_PENDING_UPDATE": {
+    case 'CLEANUP_PENDING_UPDATE': {
       return {
         ...state,
         pendingCurrentClimbUpdates: state.pendingCurrentClimbUpdates.filter(
@@ -289,7 +289,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
       };
     }
 
-    case "CLEANUP_PENDING_UPDATES_BATCH": {
+    case 'CLEANUP_PENDING_UPDATES_BATCH': {
       // Batch cleanup to avoid multiple re-renders
       const idsToRemove = new Set(action.payload.correlationIds);
       return {
@@ -300,7 +300,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
       };
     }
 
-    case "DELTA_MIRROR_CURRENT_CLIMB": {
+    case 'DELTA_MIRROR_CURRENT_CLIMB': {
       const { mirrored } = action.payload;
       if (!state.currentClimbQueueItem) return state;
 
@@ -324,7 +324,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
       };
     }
 
-    case "DELTA_REPLACE_QUEUE_ITEM": {
+    case 'DELTA_REPLACE_QUEUE_ITEM': {
       const { uuid, item } = action.payload;
       const itemIndex = state.queue.findIndex((qItem) => qItem.uuid === uuid);
 
@@ -344,7 +344,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
       };
     }
 
-    case "CLEAR_RESYNC_FLAG":
+    case 'CLEAR_RESYNC_FLAG':
       return {
         ...state,
         needsResync: false,

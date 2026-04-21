@@ -1,13 +1,13 @@
-import { dbz } from "@/app/lib/db/db";
-import { BoardName, LayoutId, Size } from "@/app/lib/types";
-import { matchSetNameToSlugParts } from "./slug-matching";
-import { generateSlugFromText, generateDescriptionSlug, generateLayoutSlug } from "./url-utils";
-import { UNIFIED_TABLES } from "@/app/lib/db/queries/util/table-select";
-import { eq, and, isNull } from "drizzle-orm";
-import { getAllLayouts, getSetsForLayoutAndSize, getSizesForLayoutId } from "./board-constants";
+import { dbz } from '@/app/lib/db/db';
+import { BoardName, LayoutId, Size } from '@/app/lib/types';
+import { matchSetNameToSlugParts } from './slug-matching';
+import { generateSlugFromText, generateDescriptionSlug, generateLayoutSlug } from './url-utils';
+import { UNIFIED_TABLES } from '@/app/lib/db/queries/util/table-select';
+import { eq, and, isNull } from 'drizzle-orm';
+import { getAllLayouts, getSetsForLayoutAndSize, getSizesForLayoutId } from './board-constants';
 
 // Re-export for backwards compatibility
-export { matchSetNameToSlugParts } from "./slug-matching";
+export { matchSetNameToSlugParts } from './slug-matching';
 
 export type LayoutRow = {
   id: number;
@@ -28,7 +28,7 @@ export type SetRow = {
 function findLayoutBySlug(rows: LayoutRow[], slug: string): LayoutRow | null {
   const normalizedSlug = slug
     .toLowerCase()
-    .replace(/^(kilter|tension|decoy|touchstone|grasshopper|moonboard)-/, "");
+    .replace(/^(kilter|tension|decoy|touchstone|grasshopper|moonboard)-/, '');
 
   return (
     rows.find(
@@ -61,8 +61,8 @@ function findSizeBySlug(rows: SizeRow[], slug: string): SizeRow | null {
       }
 
       if (!descSuffix) {
-        const descLower = (s.description || "").toLowerCase();
-        return descLower.includes("full ride") || !s.description;
+        const descLower = (s.description || '').toLowerCase();
+        return descLower.includes('full ride') || !s.description;
       }
 
       return false;
@@ -105,7 +105,7 @@ function findSizeBySlug(rows: SizeRow[], slug: string): SizeRow | null {
 }
 
 function findSetsBySlug(rows: SetRow[], slug: string): SetRow[] {
-  const slugParts = slug.split("_");
+  const slugParts = slug.split('_');
   return rows.filter((set) => matchSetNameToSlugParts(set.name, slugParts));
 }
 
@@ -177,7 +177,7 @@ export const getSizeBySlug = async (
   const size = findSizeBySlug(
     rows
       .filter((row): row is typeof row & { name: string } => row.name !== null)
-      .map((row) => ({ id: row.id, name: row.name, description: row.description || "" })),
+      .map((row) => ({ id: row.id, name: row.name, description: row.description || '' })),
     slug,
   );
 

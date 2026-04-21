@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import React, { useCallback } from "react";
-import Box from "@mui/material/Box";
-import List from "@mui/material/List";
-import MuiButton from "@mui/material/Button";
-import MuiTypography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
-import NotificationsNoneOutlined from "@mui/icons-material/NotificationsNoneOutlined";
-import { useRouter } from "next/navigation";
-import type { GroupedNotification, GroupedNotificationConnection } from "@boardsesh/shared-schema";
-import { useUnreadNotificationCount } from "@/app/hooks/use-unread-notification-count";
-import { useGroupedNotifications } from "@/app/hooks/use-grouped-notifications";
-import { useMarkGroupAsRead, useMarkAllAsRead } from "@/app/hooks/use-mark-notifications-read";
-import { useInfiniteScroll } from "@/app/hooks/use-infinite-scroll";
-import NotificationItem from "./notification-item";
+import React, { useCallback } from 'react';
+import Box from '@mui/material/Box';
+import List from '@mui/material/List';
+import MuiButton from '@mui/material/Button';
+import MuiTypography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import NotificationsNoneOutlined from '@mui/icons-material/NotificationsNoneOutlined';
+import { useRouter } from 'next/navigation';
+import type { GroupedNotification, GroupedNotificationConnection } from '@boardsesh/shared-schema';
+import { useUnreadNotificationCount } from '@/app/hooks/use-unread-notification-count';
+import { useGroupedNotifications } from '@/app/hooks/use-grouped-notifications';
+import { useMarkGroupAsRead, useMarkAllAsRead } from '@/app/hooks/use-mark-notifications-read';
+import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
+import NotificationItem from './notification-item';
 
 interface NotificationListProps {
   initialData?: GroupedNotificationConnection | null;
@@ -37,13 +37,13 @@ export default function NotificationList({ initialData }: NotificationListProps)
     async (boardType: string, climbUuid: string, proposalUuid?: string | null) => {
       try {
         const params = new URLSearchParams({ boardType, climbUuid });
-        if (proposalUuid) params.set("proposalUuid", proposalUuid);
+        if (proposalUuid) params.set('proposalUuid', proposalUuid);
         const res = await fetch(`/api/internal/climb-redirect?${params}`);
         if (!res.ok) return;
         const { url } = await res.json();
         if (url) router.push(url);
       } catch (error) {
-        console.error("Failed to navigate to climb:", error);
+        console.error('Failed to navigate to climb:', error);
       }
     },
     [router],
@@ -56,9 +56,9 @@ export default function NotificationList({ initialData }: NotificationListProps)
       }
 
       // Navigate based on notification type
-      if (notification.type === "new_follower" && notification.actors.length > 0) {
+      if (notification.type === 'new_follower' && notification.actors.length > 0) {
         router.push(`/profile/${notification.actors[0].id}`);
-      } else if (notification.type === "new_climbs_synced" && notification.setterUsername) {
+      } else if (notification.type === 'new_climbs_synced' && notification.setterUsername) {
         router.push(`/setter/${encodeURIComponent(notification.setterUsername)}`);
       } else if (notification.climbUuid && notification.boardType) {
         navigateToClimb(notification.boardType, notification.climbUuid, notification.proposalUuid);
@@ -76,18 +76,18 @@ export default function NotificationList({ initialData }: NotificationListProps)
   return (
     <Box>
       {isLoading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress size={24} />
         </Box>
       ) : (
         <>
           {/* Header with mark all as read */}
           {groupedNotifications.length > 0 && unreadCount > 0 && (
-            <Box sx={{ display: "flex", justifyContent: "flex-end", px: 2, py: 1 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, py: 1 }}>
               <MuiButton
                 onClick={() => markAllAsReadMutation.mutate()}
                 size="small"
-                sx={{ textTransform: "none" }}
+                sx={{ textTransform: 'none' }}
               >
                 Mark all as read
               </MuiButton>
@@ -97,9 +97,9 @@ export default function NotificationList({ initialData }: NotificationListProps)
           {/* Notification list */}
           {groupedNotifications.length === 0 ? (
             <Box
-              sx={{ display: "flex", flexDirection: "column", alignItems: "center", py: 6, gap: 1 }}
+              sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 6, gap: 1 }}
             >
-              <NotificationsNoneOutlined sx={{ fontSize: 40, color: "var(--neutral-300)" }} />
+              <NotificationsNoneOutlined sx={{ fontSize: 40, color: 'var(--neutral-300)' }} />
               <MuiTypography variant="body2" color="text.secondary">
                 Nothing yet
               </MuiTypography>
@@ -121,7 +121,7 @@ export default function NotificationList({ initialData }: NotificationListProps)
       {/* Infinite scroll sentinel — always in the DOM so the observer connects */}
       <Box
         ref={sentinelRef}
-        sx={{ display: "flex", justifyContent: "center", py: 2, minHeight: 20 }}
+        sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}
       >
         {isFetchingMore && <CircularProgress size={16} />}
       </Box>

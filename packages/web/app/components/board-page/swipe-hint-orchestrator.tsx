@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
-import { getPreference, setPreference } from "@/app/lib/user-preferences-db";
+import { useEffect, useRef } from 'react';
+import { getPreference, setPreference } from '@/app/lib/user-preferences-db';
 
-const PREF_KEY = "swipeHint:climbListSeen" as const;
+const PREF_KEY = 'swipeHint:climbListSeen' as const;
 const INITIAL_DELAY_MS = 1500;
 const PEEK_DISTANCE = 60; // Matches SHORT_SWIPE_THRESHOLD in climb-list-item.tsx
 const SLIDE_OUT_MS = 400;
@@ -28,16 +28,16 @@ export default function SwipeHintOrchestrator() {
     const run = async () => {
       const seen = await getPreference<boolean>(PREF_KEY);
       if (cancelled || seen) return;
-      if (!window.matchMedia("(pointer: coarse)").matches) return;
+      if (!window.matchMedia('(pointer: coarse)').matches) return;
 
       timer = setTimeout(async () => {
         if (cancelled) return;
 
         const contentEl = document.querySelector<HTMLElement>(
-          "#onboarding-climb-card [data-swipe-content]",
+          '#onboarding-climb-card [data-swipe-content]',
         );
         const actionEl = document.querySelector<HTMLElement>(
-          "#onboarding-climb-card [data-swipe-right-action]",
+          '#onboarding-climb-card [data-swipe-right-action]',
         );
         if (!contentEl || !actionEl) return;
 
@@ -48,18 +48,18 @@ export default function SwipeHintOrchestrator() {
             if (cancelled) return;
 
             // Show action layer
-            actionEl.style.visibility = "visible";
-            if (iconLayer) iconLayer.style.opacity = "1";
+            actionEl.style.visibility = 'visible';
+            if (iconLayer) iconLayer.style.opacity = '1';
 
             // Slide out
             const slideOut = contentEl.animate(
-              [{ transform: "translateX(0)" }, { transform: `translateX(-${PEEK_DISTANCE}px)` }],
-              { duration: SLIDE_OUT_MS, easing: "ease-out", fill: "forwards" },
+              [{ transform: 'translateX(0)' }, { transform: `translateX(-${PEEK_DISTANCE}px)` }],
+              { duration: SLIDE_OUT_MS, easing: 'ease-out', fill: 'forwards' },
             );
             const fadeIn = actionEl.animate([{ opacity: 0 }, { opacity: 1 }], {
               duration: SLIDE_OUT_MS,
-              easing: "ease-out",
-              fill: "forwards",
+              easing: 'ease-out',
+              fill: 'forwards',
             });
             animationsRef.current.push(slideOut, fadeIn);
 
@@ -74,13 +74,13 @@ export default function SwipeHintOrchestrator() {
 
             // Slide back
             const slideBack = contentEl.animate(
-              [{ transform: `translateX(-${PEEK_DISTANCE}px)` }, { transform: "translateX(0)" }],
-              { duration: SLIDE_BACK_MS, easing: "ease-out", fill: "forwards" },
+              [{ transform: `translateX(-${PEEK_DISTANCE}px)` }, { transform: 'translateX(0)' }],
+              { duration: SLIDE_BACK_MS, easing: 'ease-out', fill: 'forwards' },
             );
             const fadeOut = actionEl.animate([{ opacity: 1 }, { opacity: 0 }], {
               duration: SLIDE_BACK_MS,
-              easing: "ease-out",
-              fill: "forwards",
+              easing: 'ease-out',
+              fill: 'forwards',
             });
             animationsRef.current.push(slideBack, fadeOut);
 
@@ -88,10 +88,10 @@ export default function SwipeHintOrchestrator() {
             if (cancelled) return;
 
             // Clean up inline styles
-            contentEl.style.transform = "";
-            actionEl.style.opacity = "";
-            actionEl.style.visibility = "";
-            if (iconLayer) iconLayer.style.opacity = "";
+            contentEl.style.transform = '';
+            actionEl.style.opacity = '';
+            actionEl.style.visibility = '';
+            if (iconLayer) iconLayer.style.opacity = '';
 
             // Gap before next repeat
             if (i < REPEAT_COUNT - 1) {

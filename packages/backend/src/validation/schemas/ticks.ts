@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { ExternalUUIDSchema, BoardNameSchema } from "./primitives";
+import { z } from 'zod';
+import { ExternalUUIDSchema, BoardNameSchema } from './primitives';
 
 const INSTAGRAM_URL_REGEX =
   /^https?:\/\/(?:www\.)?(?:instagram\.com|instagr\.am)\/(?:p|reel|tv)\/([\w-]+)\/?(?:[?#].*)?$/i;
@@ -7,8 +7,8 @@ const INSTAGRAM_URL_REGEX =
 /**
  * Tick status validation schema
  */
-export const TickStatusSchema = z.enum(["flash", "send", "attempt"], {
-  error: "Status must be flash, send, or attempt",
+export const TickStatusSchema = z.enum(['flash', 'send', 'attempt'], {
+  error: 'Status must be flash, send, or attempt',
 });
 
 /**
@@ -34,7 +34,7 @@ export const SaveTickInputSchema = z
     videoUrl: z
       .string()
       .max(500)
-      .regex(INSTAGRAM_URL_REGEX, "Must be an Instagram post or reel URL")
+      .regex(INSTAGRAM_URL_REGEX, 'Must be an Instagram post or reel URL')
       .optional()
       .nullable(),
   })
@@ -45,10 +45,10 @@ export const SaveTickInputSchema = z
       // records how many tries that particular log represents (e.g. 1 when the
       // user is logging a single successful action, >1 when they're
       // back-filling a redpoint that took multiple tries). Both are valid.
-      if (data.status === "flash" && data.attemptCount !== 1) return false;
+      if (data.status === 'flash' && data.attemptCount !== 1) return false;
       return true;
     },
-    { message: "Flash requires attemptCount of 1", path: ["attemptCount"] },
+    { message: 'Flash requires attemptCount of 1', path: ['attemptCount'] },
   );
 
 /**
@@ -65,7 +65,7 @@ export const GetTicksInputSchema = z.object({
 export const AttachBetaLinkInputSchema = z.object({
   boardType: BoardNameSchema,
   climbUuid: ExternalUUIDSchema,
-  link: z.string().max(500).regex(INSTAGRAM_URL_REGEX, "Must be an Instagram post or reel URL"),
+  link: z.string().max(500).regex(INSTAGRAM_URL_REGEX, 'Must be an Instagram post or reel URL'),
   angle: z.number().int().min(0).max(90).optional().nullable(),
 });
 
@@ -78,28 +78,28 @@ export const AscentFeedInputSchema = z.object({
   boardType: BoardNameSchema.optional(),
   boardTypes: z.array(BoardNameSchema).optional(),
   layoutIds: z.array(z.number().int().positive()).optional(),
-  status: z.enum(["flash", "send", "attempt"]).optional(),
-  statusMode: z.enum(["both", "send", "attempt"]).optional(),
+  status: z.enum(['flash', 'send', 'attempt']).optional(),
+  statusMode: z.enum(['both', 'send', 'attempt']).optional(),
   flashOnly: z.boolean().optional(),
   climbName: z.string().max(200).optional(),
   sortBy: z
     .enum([
-      "recent",
-      "hardest",
-      "easiest",
-      "mostAttempts",
-      "climbName",
-      "loggedGrade",
-      "consensusGrade",
-      "date",
-      "attemptCount",
+      'recent',
+      'hardest',
+      'easiest',
+      'mostAttempts',
+      'climbName',
+      'loggedGrade',
+      'consensusGrade',
+      'date',
+      'attemptCount',
     ])
     .optional(),
-  sortOrder: z.enum(["asc", "desc"]).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
   secondarySortBy: z
-    .enum(["climbName", "loggedGrade", "consensusGrade", "date", "attemptCount"])
+    .enum(['climbName', 'loggedGrade', 'consensusGrade', 'date', 'attemptCount'])
     .optional(),
-  secondarySortOrder: z.enum(["asc", "desc"]).optional(),
+  secondarySortOrder: z.enum(['asc', 'desc']).optional(),
   minDifficulty: z.number().int().min(0).optional(),
   maxDifficulty: z.number().int().min(0).optional(),
   minAngle: z.number().int().min(0).max(90).optional(),
@@ -114,7 +114,7 @@ export const AscentFeedInputSchema = z.object({
  */
 export const UpdateTickInputSchema = z
   .object({
-    status: z.enum(["flash", "send", "attempt"]).optional(),
+    status: z.enum(['flash', 'send', 'attempt']).optional(),
     attemptCount: z.number().int().min(1).max(999).optional(),
     quality: z.number().int().min(1).max(5).optional().nullable(),
     difficulty: z.number().int().optional().nullable(),
@@ -123,9 +123,9 @@ export const UpdateTickInputSchema = z
   })
   .refine(
     (data) => {
-      if (data.status === "flash" && data.attemptCount !== undefined && data.attemptCount !== 1)
+      if (data.status === 'flash' && data.attemptCount !== undefined && data.attemptCount !== 1)
         return false;
       return true;
     },
-    { message: "Flash requires attemptCount of 1", path: ["attemptCount"] },
+    { message: 'Flash requires attemptCount of 1', path: ['attemptCount'] },
   );

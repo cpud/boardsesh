@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useSnackbar } from "@/app/components/providers/snackbar-provider";
-import { track } from "@vercel/analytics";
-import * as Sentry from "@sentry/nextjs";
-import { BoardDetails } from "@/app/lib/types";
-import { getAuroraBluetoothPacket, parseApiLevel } from "./bluetooth-aurora";
-import { getMoonboardBluetoothPacket } from "./bluetooth-moonboard";
-import { HoldRenderData } from "../board-renderer/types";
-import { useWakeLock } from "./use-wake-lock";
-import type { BluetoothAdapter } from "@/app/lib/ble/types";
-import { createBluetoothAdapter } from "@/app/lib/ble/adapter-factory";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSnackbar } from '@/app/components/providers/snackbar-provider';
+import { track } from '@vercel/analytics';
+import * as Sentry from '@sentry/nextjs';
+import { BoardDetails } from '@/app/lib/types';
+import { getAuroraBluetoothPacket, parseApiLevel } from './bluetooth-aurora';
+import { getMoonboardBluetoothPacket } from './bluetooth-moonboard';
+import { HoldRenderData } from '../board-renderer/types';
+import { useWakeLock } from './use-wake-lock';
+import type { BluetoothAdapter } from '@/app/lib/ble/types';
+import { createBluetoothAdapter } from '@/app/lib/ble/adapter-factory';
 
 // Module-level cache for Aurora LED placements loader to avoid repeated dynamic import overhead
 type GetLedPlacementsFn = (
@@ -33,10 +33,10 @@ export const convertToMirroredFramesString = (
   });
 
   return frames
-    .split("p") // Split into hold data entries
+    .split('p') // Split into hold data entries
     .filter((hold) => hold) // Remove empty entries
     .map((holdData) => {
-      const [holdId, stateCode] = holdData.split("r").map((str) => Number(str)); // Split hold data into holdId and stateCode
+      const [holdId, stateCode] = holdData.split('r').map((str) => Number(str)); // Split hold data into holdId and stateCode
       const mirroredHoldId = holdIdToMirroredIdMap.get(holdId);
 
       if (mirroredHoldId === undefined) {
@@ -46,7 +46,7 @@ export const convertToMirroredFramesString = (
       // Construct the mirrored hold data
       return `p${mirroredHoldId}r${stateCode}`;
     })
-    .join(""); // Reassemble into a single string
+    .join(''); // Reassemble into a single string
 };
 
 interface UseBoardBluetoothOptions {
@@ -79,7 +79,7 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
       if (!adapterRef.current || !frames || !boardDetails) return;
 
       try {
-        if (boardDetails.board_name === "moonboard") {
+        if (boardDetails.board_name === 'moonboard') {
           const bluetoothPacket = getMoonboardBluetoothPacket(frames);
           await adapterRef.current.write(bluetoothPacket, signal);
           return true;
@@ -89,14 +89,14 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
 
         if (mirrored && boardDetails.supportsMirroring === true) {
           if (!boardDetails.holdsData || Object.keys(boardDetails.holdsData).length === 0) {
-            console.error("Cannot mirror frames: holdsData is missing or empty");
+            console.error('Cannot mirror frames: holdsData is missing or empty');
             return false;
           }
           framesToSend = convertToMirroredFramesString(frames, boardDetails.holdsData);
         }
 
         if (!cachedGetLedPlacements) {
-          const mod = await import("@boardsesh/board-constants/led-placements");
+          const mod = await import('@boardsesh/board-constants/led-placements');
           cachedGetLedPlacements = mod.getLedPlacements as GetLedPlacementsFn;
         }
         const getLedPlacementsFn = cachedGetLedPlacements;
@@ -109,11 +109,11 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
         if (Object.keys(placementPositions).length === 0) {
           console.error(
             `[BLE] LED placement map is empty for ${boardDetails.board_name} layout=${boardDetails.layout_id} size=${boardDetails.size_id}. ` +
-              "Board configuration may be incorrect or LED data may need regeneration.",
+              'Board configuration may be incorrect or LED data may need regeneration.',
           );
           showMessage(
-            "Could not send to board — LED data missing for this board configuration.",
-            "error",
+            'Could not send to board — LED data missing for this board configuration.',
+            'error',
           );
           return false;
         }
@@ -136,8 +136,8 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
               size: boardDetails.size_id,
             },
           });
-          console.error("[BLE] Packet generation failed:", error);
-          showMessage("This climb is not compatible with your board.", "error");
+          console.error('[BLE] Packet generation failed:', error);
+          showMessage('This climb is not compatible with your board.', 'error');
           return false;
         }
 
@@ -145,10 +145,10 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
         return true;
       } catch (error) {
         // Abort errors are expected during rapid swiping — don't log or show them
-        if (error instanceof DOMException && error.name === "AbortError") {
+        if (error instanceof DOMException && error.name === 'AbortError') {
           return;
         }
-        console.error("Error sending frames to board:", error);
+        console.error('Error sending frames to board:', error);
         return false;
       }
     },
@@ -159,7 +159,7 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
   const connect = useCallback(
     async (initialFrames?: string, mirrored?: boolean) => {
       if (!boardDetails) {
-        console.error("Cannot connect to Bluetooth without board details");
+        console.error('Cannot connect to Bluetooth without board details');
         return false;
       }
 
@@ -171,7 +171,7 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
 
         const available = await adapter.isAvailable();
         if (!available) {
-          showMessage("Bluetooth is not available on this device.", "error");
+          showMessage('Bluetooth is not available on this device.', 'error');
           return false;
         }
 
@@ -189,7 +189,7 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
         unsubDisconnectRef.current = adapter.onDisconnect(handleDisconnection);
         adapterRef.current = adapter;
 
-        track("Bluetooth Connection Success", {
+        track('Bluetooth Connection Success', {
           boardLayout: `${boardDetails.layout_name}`,
         });
 
@@ -202,9 +202,9 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
         onConnectionChange?.(true);
         return true;
       } catch (error) {
-        console.error("Error connecting to Bluetooth:", error);
+        console.error('Error connecting to Bluetooth:', error);
         setIsConnected(false);
-        track("Bluetooth Connection Failed", {
+        track('Bluetooth Connection Failed', {
           boardLayout: `${boardDetails.layout_name}`,
         });
       } finally {

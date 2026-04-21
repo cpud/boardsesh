@@ -1,12 +1,12 @@
-import type { ClimbQueueItem, SessionUser } from "@boardsesh/shared-schema";
-import { db } from "../../db/client";
-import { sessions } from "../../db/schema";
-import type { RedisSessionStore } from "../redis-session-store";
-import type { DistributedStateManager } from "../distributed-state";
-import type { ConnectedClient } from "./types";
-import { restoreSessionWithLock } from "./session-restoration";
-import type { WriteScheduler } from "./write-scheduler";
-import type { Session } from "../../db/schema";
+import type { ClimbQueueItem, SessionUser } from '@boardsesh/shared-schema';
+import { db } from '../../db/client';
+import { sessions } from '../../db/schema';
+import type { RedisSessionStore } from '../redis-session-store';
+import type { DistributedStateManager } from '../distributed-state';
+import type { ConnectedClient } from './types';
+import { restoreSessionWithLock } from './session-restoration';
+import type { WriteScheduler } from './write-scheduler';
+import type { Session } from '../../db/schema';
 
 /**
  * Register a new client connection.
@@ -35,7 +35,7 @@ export async function registerClient(
       await distributedState.registerConnection(connectionId, defaultUsername, userId, avatarUrl);
     } catch (err) {
       clients.delete(connectionId);
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       console.error(
         `[RoomManager] Failed to register connection in distributed state: ${errorMessage}`,
       );
@@ -96,7 +96,7 @@ export async function joinSession(
 }> {
   const client = clients.get(connectionId);
   if (!client) {
-    throw new Error("Client not registered");
+    throw new Error('Client not registered');
   }
 
   // Leave current session if in one
@@ -143,7 +143,7 @@ export async function joinSession(
     } else {
       // No Redis, check Postgres directly for session existence
       const pgSession = await getSessionById(sessionId);
-      if (!pgSession || pgSession.status === "ended") {
+      if (!pgSession || pgSession.status === 'ended') {
         isNewSession = true;
         console.log(
           `[RoomManager] Creating new session ${sessionId} with ${initialQueue?.length || 0} initial queue items`,

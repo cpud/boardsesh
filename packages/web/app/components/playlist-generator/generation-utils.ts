@@ -1,6 +1,6 @@
 // Playlist Generation Utilities
 
-import { TENSION_KILTER_GRADES } from "@/app/lib/board-data";
+import { TENSION_KILTER_GRADES } from '@/app/lib/board-data';
 import {
   GeneratorOptions,
   PlannedClimbSlot,
@@ -9,7 +9,7 @@ import {
   PyramidOptions,
   LadderOptions,
   GradeFocusOptions,
-} from "./types";
+} from './types';
 
 const MIN_GRADE = TENSION_KILTER_GRADES[0].difficulty_id; // 10
 const MAX_GRADE = TENSION_KILTER_GRADES[TENSION_KILTER_GRADES.length - 1].difficulty_id; // 33
@@ -22,9 +22,9 @@ const clampGrade = (grade: number): number => {
 // Generate warm-up slots
 const generateWarmUp = (
   targetGrade: number,
-  warmUpType: "standard" | "extended" | "none",
+  warmUpType: 'standard' | 'extended' | 'none',
 ): PlannedClimbSlot[] => {
-  if (warmUpType === "none") {
+  if (warmUpType === 'none') {
     return [];
   }
 
@@ -41,7 +41,7 @@ const generateWarmUp = (
     for (let i = 0; i < config.climbsPerGrade; i++) {
       slots.push({
         grade: clampGrade(grade),
-        section: "warmUp",
+        section: 'warmUp',
         index: index++,
       });
     }
@@ -74,7 +74,7 @@ export const generateVolumePlan = (options: VolumeOptions): PlannedClimbSlot[] =
 
     slots.push({
       grade,
-      section: "main",
+      section: 'main',
       index: mainStartIndex + i,
     });
   }
@@ -117,7 +117,7 @@ export const generatePyramidPlan = (options: PyramidOptions): PlannedClimbSlot[]
     for (let i = 0; i < options.climbsPerStep; i++) {
       slots.push({
         grade,
-        section: step === stepsUp - 1 ? "peak" : "increasing",
+        section: step === stepsUp - 1 ? 'peak' : 'increasing',
         index: currentIndex++,
       });
     }
@@ -130,7 +130,7 @@ export const generatePyramidPlan = (options: PyramidOptions): PlannedClimbSlot[]
     for (let i = 0; i < options.climbsPerStep; i++) {
       slots.push({
         grade,
-        section: "decreasing",
+        section: 'decreasing',
         index: currentIndex++,
       });
     }
@@ -170,7 +170,7 @@ export const generateLadderPlan = (options: LadderOptions): PlannedClimbSlot[] =
     for (let i = 0; i < options.climbsPerStep; i++) {
       slots.push({
         grade,
-        section: step === options.numberOfSteps - 1 ? "peak" : "increasing",
+        section: step === options.numberOfSteps - 1 ? 'peak' : 'increasing',
         index: currentIndex++,
       });
     }
@@ -193,7 +193,7 @@ export const generateGradeFocusPlan = (options: GradeFocusOptions): PlannedClimb
   for (let i = 0; i < options.numberOfClimbs; i++) {
     slots.push({
       grade: options.targetGrade,
-      section: "main",
+      section: 'main',
       index: mainStartIndex + i,
     });
   }
@@ -204,13 +204,13 @@ export const generateGradeFocusPlan = (options: GradeFocusOptions): PlannedClimb
 // Main function to generate plan based on options
 export const generateWorkoutPlan = (options: GeneratorOptions): PlannedClimbSlot[] => {
   switch (options.type) {
-    case "volume":
+    case 'volume':
       return generateVolumePlan(options);
-    case "pyramid":
+    case 'pyramid':
       return generatePyramidPlan(options);
-    case "ladder":
+    case 'ladder':
       return generateLadderPlan(options);
-    case "gradeFocus":
+    case 'gradeFocus':
       return generateGradeFocusPlan(options);
     default:
       return [];
@@ -225,22 +225,22 @@ export const getGradeName = (difficultyId: number): string => {
 
 // Group slots by section for display
 export interface GroupedSlots {
-  section: PlannedClimbSlot["section"];
+  section: PlannedClimbSlot['section'];
   label: string;
   slots: PlannedClimbSlot[];
 }
 
 export const groupSlotsBySection = (slots: PlannedClimbSlot[]): GroupedSlots[] => {
   const groups: GroupedSlots[] = [];
-  let currentSection: PlannedClimbSlot["section"] | null = null;
+  let currentSection: PlannedClimbSlot['section'] | null = null;
   let currentGroup: PlannedClimbSlot[] = [];
 
-  const sectionLabels: Record<PlannedClimbSlot["section"], string> = {
-    warmUp: "Warm Up",
-    increasing: "Increasing",
-    peak: "Peak",
-    decreasing: "Decreasing",
-    main: "Main Set",
+  const sectionLabels: Record<PlannedClimbSlot['section'], string> = {
+    warmUp: 'Warm Up',
+    increasing: 'Increasing',
+    peak: 'Peak',
+    decreasing: 'Decreasing',
+    main: 'Main Set',
   };
 
   for (const slot of slots) {

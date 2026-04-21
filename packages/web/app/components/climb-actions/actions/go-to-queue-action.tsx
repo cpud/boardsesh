@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import React, { useCallback } from "react";
-import QueueMusicOutlined from "@mui/icons-material/QueueMusicOutlined";
-import { ClimbActionProps, ClimbActionResult } from "../types";
-import { useOptionalQueueActions } from "../../graphql-queue";
-import { buildActionResult, computeActionDisplay } from "../action-view-renderer";
+import React, { useCallback } from 'react';
+import QueueMusicOutlined from '@mui/icons-material/QueueMusicOutlined';
+import { ClimbActionProps, ClimbActionResult } from '../types';
+import { useOptionalQueueActions } from '../../graphql-queue';
+import { buildActionResult, computeActionDisplay } from '../action-view-renderer';
 
 export function GoToQueueAction({
   viewMode,
-  size = "default",
+  size = 'default',
   showLabel,
   disabled,
   className,
@@ -29,8 +29,8 @@ export function GoToQueueAction({
   const icon = <QueueMusicOutlined sx={{ fontSize: iconSize }} />;
 
   return buildActionResult({
-    key: "goToQueue",
-    label: "Go to Queue",
+    key: 'goToQueue',
+    label: 'Go to Queue',
     icon,
     onClick: handleClick,
     viewMode,

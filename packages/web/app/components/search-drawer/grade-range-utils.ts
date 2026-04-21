@@ -3,12 +3,12 @@
  * min never exceeds max and vice-versa.
  */
 export function buildGradeRangeUpdate(
-  type: "min" | "max",
+  type: 'min' | 'max',
   value: number | undefined,
   currentMin: number | undefined,
   currentMax: number | undefined,
 ): { minGrade?: number | undefined; maxGrade?: number | undefined } {
-  if (type === "min") {
+  if (type === 'min') {
     const updates: { minGrade?: number | undefined; maxGrade?: number | undefined } = {
       minGrade: value,
     };

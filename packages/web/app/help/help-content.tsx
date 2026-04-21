@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import ExpandMoreOutlined from "@mui/icons-material/ExpandMoreOutlined";
-import MuiCard from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
+import React, { useState } from 'react';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import ExpandMoreOutlined from '@mui/icons-material/ExpandMoreOutlined';
+import MuiCard from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
 import {
   GridOnOutlined,
   GroupOutlined,
@@ -15,17 +15,17 @@ import {
   SearchOutlined,
   ApiOutlined,
   HelpOutlineOutlined,
-} from "@mui/icons-material";
-import Box from "@mui/material/Box";
-import Logo from "@/app/components/brand/logo";
-import BackButton from "@/app/components/back-button";
-import styles from "./help.module.css";
+} from '@mui/icons-material';
+import Box from '@mui/material/Box';
+import Logo from '@/app/components/brand/logo';
+import BackButton from '@/app/components/back-button';
+import styles from './help.module.css';
 
 // Typography destructuring removed - using MUI Typography directly
 
 const helpSections = [
   {
-    key: "visualization",
+    key: 'visualization',
     label: (
       <span>
         <GridOnOutlined className={styles.sectionIcon} />
@@ -34,8 +34,8 @@ const helpSections = [
     ),
     children: [
       {
-        key: "heatmap",
-        label: "How do I use the heatmap feature?",
+        key: 'heatmap',
+        label: 'How do I use the heatmap feature?',
         children: (
           <div className={styles.answerContent}>
             <picture>
@@ -72,25 +72,25 @@ const helpSections = [
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Ascents:
-                </Typography>{" "}
+                </Typography>{' '}
                 Overall popularity based on total completions
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Starting Holds:
-                </Typography>{" "}
+                </Typography>{' '}
                 Common start positions
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Hand/Foot Holds:
-                </Typography>{" "}
+                </Typography>{' '}
                 Usage by limb type
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Finish Holds:
-                </Typography>{" "}
+                </Typography>{' '}
                 Common top-out positions
               </li>
             </ul>
@@ -101,8 +101,8 @@ const helpSections = [
         ),
       },
       {
-        key: "hold-classification",
-        label: "How do I classify holds on my board?",
+        key: 'hold-classification',
+        label: 'How do I classify holds on my board?',
         children: (
           <div className={styles.answerContent}>
             <picture>
@@ -127,25 +127,25 @@ const helpSections = [
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Hold Type:
-                </Typography>{" "}
+                </Typography>{' '}
                 Jug, Sloper, Pinch, Crimp, or Pocket
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Hand Rating:
-                </Typography>{" "}
+                </Typography>{' '}
                 1-5 difficulty scale for hand use
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Foot Rating:
-                </Typography>{" "}
+                </Typography>{' '}
                 1-5 difficulty scale for foot use
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Pull Direction:
-                </Typography>{" "}
+                </Typography>{' '}
                 0-360 optimal pulling angle
               </li>
             </ul>
@@ -159,7 +159,7 @@ const helpSections = [
     ],
   },
   {
-    key: "collaboration",
+    key: 'collaboration',
     label: (
       <span>
         <GroupOutlined className={styles.sectionIcon} />
@@ -168,8 +168,8 @@ const helpSections = [
     ),
     children: [
       {
-        key: "party-mode",
-        label: "How do I start a collaborative session?",
+        key: 'party-mode',
+        label: 'How do I start a collaborative session?',
         children: (
           <div className={styles.answerContent}>
             <picture>
@@ -205,19 +205,19 @@ const helpSections = [
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Scan QR Code:
-                </Typography>{" "}
+                </Typography>{' '}
                 The session host can show a QR code that others can scan with their phone camera
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Share Link:
-                </Typography>{" "}
+                </Typography>{' '}
                 Copy and share the session URL - anyone with the link can join
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Enter Session ID:
-                </Typography>{" "}
+                </Typography>{' '}
                 Go to the &quot;Join Session&quot; tab and paste either the full URL or just the
                 session ID
               </li>
@@ -238,8 +238,8 @@ const helpSections = [
         ),
       },
       {
-        key: "queue-management",
-        label: "How do I manage the climb queue?",
+        key: 'queue-management',
+        label: 'How do I manage the climb queue?',
         children: (
           <div className={styles.answerContent}>
             <picture>
@@ -264,31 +264,31 @@ const helpSections = [
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Add climbs:
-                </Typography>{" "}
+                </Typography>{' '}
                 Double-tap any climb in the list to add it to your queue
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Reorder:
-                </Typography>{" "}
+                </Typography>{' '}
                 Drag and drop climbs to change order
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Set current:
-                </Typography>{" "}
+                </Typography>{' '}
                 Click a climb to make it the active climb
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Remove:
-                </Typography>{" "}
+                </Typography>{' '}
                 Click the X on any queued climb
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Mirror:
-                </Typography>{" "}
+                </Typography>{' '}
                 Toggle mirror mode for bilateral training
               </li>
             </ul>
@@ -302,7 +302,7 @@ const helpSections = [
     ],
   },
   {
-    key: "training",
+    key: 'training',
     label: (
       <span>
         <ElectricBoltOutlined className={styles.sectionIcon} />
@@ -311,8 +311,8 @@ const helpSections = [
     ),
     children: [
       {
-        key: "playlist-generator",
-        label: "How do I generate a workout playlist?",
+        key: 'playlist-generator',
+        label: 'How do I generate a workout playlist?',
         children: (
           <div className={styles.answerContent}>
             <Typography variant="body1" component="p">
@@ -327,25 +327,25 @@ const helpSections = [
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Volume:
-                </Typography>{" "}
+                </Typography>{' '}
                 High repetitions at a consistent grade for endurance
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Pyramid:
-                </Typography>{" "}
+                </Typography>{' '}
                 Ramp up to a peak grade, then back down
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Ladder:
-                </Typography>{" "}
+                </Typography>{' '}
                 Step progression through increasing grades
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Grade Focus:
-                </Typography>{" "}
+                </Typography>{' '}
                 Concentrated work at a single target grade
               </li>
             </ul>
@@ -365,8 +365,8 @@ const helpSections = [
         ),
       },
       {
-        key: "mirroring",
-        label: "How do I mirror a climb?",
+        key: 'mirroring',
+        label: 'How do I mirror a climb?',
         children: (
           <div className={styles.answerContent}>
             <Typography variant="body1" component="p">
@@ -393,7 +393,7 @@ const helpSections = [
     ],
   },
   {
-    key: "search",
+    key: 'search',
     label: (
       <span>
         <SearchOutlined className={styles.sectionIcon} />
@@ -402,8 +402,8 @@ const helpSections = [
     ),
     children: [
       {
-        key: "search-filters",
-        label: "What search filters are available?",
+        key: 'search-filters',
+        label: 'What search filters are available?',
         children: (
           <div className={styles.answerContent}>
             <picture>
@@ -424,44 +424,44 @@ const helpSections = [
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Climb Name:
-                </Typography>{" "}
+                </Typography>{' '}
                 Search by climb title
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Grade Range:
-                </Typography>{" "}
+                </Typography>{' '}
                 Set minimum and maximum grades
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Setter:
-                </Typography>{" "}
+                </Typography>{' '}
                 Filter by climb creator
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Min Ascents:
-                </Typography>{" "}
+                </Typography>{' '}
                 Only show popular climbs
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Min Rating:
-                </Typography>{" "}
+                </Typography>{' '}
                 Filter by quality rating
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Classics Only:
-                </Typography>{" "}
+                </Typography>{' '}
                 Show only classic-rated climbs
               </li>
             </ul>
             <Typography variant="body1" component="p">
               <Typography variant="body2" component="span" fontWeight={600}>
                 Personal Progress filters
-              </Typography>{" "}
+              </Typography>{' '}
               (requires login):
             </Typography>
             <picture>
@@ -483,8 +483,8 @@ const helpSections = [
         ),
       },
       {
-        key: "search-by-hold",
-        label: "How do I search by specific holds?",
+        key: 'search-by-hold',
+        label: 'How do I search by specific holds?',
         children: (
           <div className={styles.answerContent}>
             <picture>
@@ -513,13 +513,13 @@ const helpSections = [
             <Typography variant="body1" component="p">
               <Typography variant="body2" component="span" fontWeight={600}>
                 Include mode:
-              </Typography>{" "}
+              </Typography>{' '}
               Climbs must use the selected holds
             </Typography>
             <Typography variant="body1" component="p">
               <Typography variant="body2" component="span" fontWeight={600}>
                 Exclude mode:
-              </Typography>{" "}
+              </Typography>{' '}
               Climbs must not use the selected holds
             </Typography>
           </div>
@@ -528,7 +528,7 @@ const helpSections = [
     ],
   },
   {
-    key: "connectivity",
+    key: 'connectivity',
     label: (
       <span>
         <ApiOutlined className={styles.sectionIcon} />
@@ -537,7 +537,7 @@ const helpSections = [
     ),
     children: [
       {
-        key: "bluetooth",
+        key: 'bluetooth',
         label: "How do I connect my board's LEDs?",
         children: (
           <div className={styles.answerContent}>
@@ -574,8 +574,8 @@ const helpSections = [
         ),
       },
       {
-        key: "user-sync",
-        label: "How do I sync with my Kilter/Tension account?",
+        key: 'user-sync',
+        label: 'How do I sync with my Kilter/Tension account?',
         children: (
           <div className={styles.answerContent}>
             <picture>
@@ -619,8 +619,8 @@ const helpSections = [
         ),
       },
       {
-        key: "logbook",
-        label: "How do I track my climbs?",
+        key: 'logbook',
+        label: 'How do I track my climbs?',
         children: (
           <div className={styles.answerContent}>
             <picture>
@@ -644,19 +644,19 @@ const helpSections = [
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Tick:
-                </Typography>{" "}
+                </Typography>{' '}
                 Record an attempt on the climb
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Log Ascent:
-                </Typography>{" "}
+                </Typography>{' '}
                 Mark the climb as completed (sends)
               </li>
               <li>
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Favorite:
-                </Typography>{" "}
+                </Typography>{' '}
                 Save climbs for quick access
               </li>
             </ul>
@@ -668,8 +668,8 @@ const helpSections = [
         ),
       },
       {
-        key: "offline",
-        label: "Does Boardsesh work offline?",
+        key: 'offline',
+        label: 'Does Boardsesh work offline?',
         children: (
           <div className={styles.answerContent}>
             <Typography variant="body1" component="p">
@@ -698,7 +698,7 @@ const helpSections = [
 ];
 
 export default function HelpContent() {
-  const [expandedSection, setExpandedSection] = useState<string | false>("visualization");
+  const [expandedSection, setExpandedSection] = useState<string | false>('visualization');
 
   return (
     <Box className={styles.pageLayout}>

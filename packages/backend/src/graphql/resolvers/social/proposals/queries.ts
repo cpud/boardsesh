@@ -1,20 +1,20 @@
-import { eq, and, count, desc, inArray } from "drizzle-orm";
-import type { ConnectionContext } from "@boardsesh/shared-schema";
-import { db } from "../../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { validateInput } from "../../shared/helpers";
+import { eq, and, count, desc, inArray } from 'drizzle-orm';
+import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { db } from '../../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { validateInput } from '../../shared/helpers';
 import {
   GetClimbProposalsInputSchema,
   BrowseProposalsInputSchema,
-} from "../../../../validation/schemas";
-import { resolveCommunitySetting } from "../community-settings";
-import { batchEnrichProposals } from "./enrichment";
-import { analyzeGradeOutlier } from "./grade-analysis";
-import { sql } from "drizzle-orm";
+} from '../../../../validation/schemas';
+import { resolveCommunitySetting } from '../community-settings';
+import { batchEnrichProposals } from './enrichment';
+import { analyzeGradeOutlier } from './grade-analysis';
+import { sql } from 'drizzle-orm';
 
 export const socialProposalQueries = {
   climbProposals: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
-    const validated = validateInput(GetClimbProposalsInputSchema, input, "input");
+    const validated = validateInput(GetClimbProposalsInputSchema, input, 'input');
     const {
       climbUuid,
       boardType,
@@ -60,7 +60,7 @@ export const socialProposalQueries = {
   },
 
   browseProposals: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
-    const validated = validateInput(BrowseProposalsInputSchema, input, "input");
+    const validated = validateInput(BrowseProposalsInputSchema, input, 'input');
     const { type, status, limit: rawLimit, offset: rawOffset } = validated;
     const limitVal = rawLimit ?? 20;
     const offsetVal = rawOffset ?? 0;
@@ -147,22 +147,22 @@ export const socialProposalQueries = {
 
     // Check if frozen
     const frozenSetting = await resolveCommunitySetting(
-      "climb_frozen",
+      'climb_frozen',
       climbUuid,
       angle,
       boardType,
     );
-    const isFrozen = frozenSetting === "true";
+    const isFrozen = frozenSetting === 'true';
 
     let freezeReason: string | undefined;
     if (isFrozen) {
       freezeReason = await resolveCommunitySetting(
-        "climb_freeze_reason",
+        'climb_freeze_reason',
         climbUuid,
         angle,
         boardType,
       );
-      if (freezeReason === "0") freezeReason = undefined;
+      if (freezeReason === '0') freezeReason = undefined;
     }
 
     // Count open proposals
@@ -173,7 +173,7 @@ export const socialProposalQueries = {
         and(
           eq(dbSchema.climbProposals.climbUuid, climbUuid),
           eq(dbSchema.climbProposals.boardType, boardType),
-          eq(dbSchema.climbProposals.status, "open"),
+          eq(dbSchema.climbProposals.status, 'open'),
         ),
       );
 

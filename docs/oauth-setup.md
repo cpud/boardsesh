@@ -223,28 +223,28 @@ Apple requires a JWT that expires every 6 months. Create it with this script:
 
 ```javascript
 // generate-apple-secret.js
-const jwt = require("jsonwebtoken");
-const fs = require("fs");
+const jwt = require('jsonwebtoken');
+const fs = require('fs');
 
 // Your values from Apple Developer Portal
-const TEAM_ID = "XXXXXXXXXX"; // Found in Membership details
-const KEY_ID = "XXXXXXXXXX"; // Key ID from Step 3
-const SERVICE_ID = "com.boardsesh.signin"; // Services ID from Step 2
-const KEY_FILE = "./AuthKey_XXXXXXXX.p8"; // Downloaded key file
+const TEAM_ID = 'XXXXXXXXXX'; // Found in Membership details
+const KEY_ID = 'XXXXXXXXXX'; // Key ID from Step 3
+const SERVICE_ID = 'com.boardsesh.signin'; // Services ID from Step 2
+const KEY_FILE = './AuthKey_XXXXXXXX.p8'; // Downloaded key file
 
 const privateKey = fs.readFileSync(KEY_FILE);
 
 const token = jwt.sign({}, privateKey, {
-  algorithm: "ES256",
-  expiresIn: "180d",
-  audience: "https://appleid.apple.com",
+  algorithm: 'ES256',
+  expiresIn: '180d',
+  audience: 'https://appleid.apple.com',
   issuer: TEAM_ID,
   subject: SERVICE_ID,
   keyid: KEY_ID,
 });
 
-console.log("APPLE_SECRET=" + token);
-console.log("\nThis token expires in 180 days. Set a reminder to regenerate!");
+console.log('APPLE_SECRET=' + token);
+console.log('\nThis token expires in 180 days. Set a reminder to regenerate!');
 ```
 
 Run it:

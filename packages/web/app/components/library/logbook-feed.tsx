@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React, { useMemo, useState, useCallback, useRef, useEffect } from "react";
-import Box from "@mui/material/Box";
-import CircularProgress from "@mui/material/CircularProgress";
-import Typography from "@mui/material/Typography";
-import Alert from "@mui/material/Alert";
-import { HistoryOutlined } from "@mui/icons-material";
+import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
+import { HistoryOutlined } from '@mui/icons-material';
 import {
   DEFAULT_FILTERS,
   DEFAULT_SORT,
@@ -13,20 +13,20 @@ import {
   sanitizeLogbookPreferences,
   type LogbookFilterState as FilterState,
   type LogbookSortState as SortState,
-} from "@/app/lib/logbook-preferences";
+} from '@/app/lib/logbook-preferences';
 import {
   readFiltersFromQuery,
   readSortFromQuery,
   filtersToQueryParams,
-} from "@/app/lib/logbook-url-utils";
-import { getPreference, setPreference } from "@/app/lib/user-preferences-db";
-import { useSession } from "next-auth/react";
-import { usePathname, useSearchParams, useRouter } from "next/navigation";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
-import { useWsAuthToken } from "@/app/hooks/use-ws-auth-token";
-import { useInfiniteScroll } from "@/app/hooks/use-infinite-scroll";
-import { useQueryClient } from "@tanstack/react-query";
+} from '@/app/lib/logbook-url-utils';
+import { getPreference, setPreference } from '@/app/lib/user-preferences-db';
+import { useSession } from 'next-auth/react';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   GET_USER_ASCENTS_FEED,
   DELETE_TICK,
@@ -35,28 +35,28 @@ import {
   type AscentFeedItem,
   type DeleteTickMutationVariables,
   type LayoutStats,
-} from "@/app/lib/graphql/operations/ticks";
-import { getLayoutDisplayName } from "@/app/profile/[user_id]/utils/profile-constants";
+} from '@/app/lib/graphql/operations/ticks';
+import { getLayoutDisplayName } from '@/app/profile/[user_id]/utils/profile-constants';
 import {
   getDefaultSizeForLayout,
   getSetsForLayoutAndSize,
   ORPHANED_KILTER_LAYOUT_DEFAULTS,
-} from "@boardsesh/board-constants/product-sizes";
-import { getLayoutById, MOONBOARD_SETS, type MoonBoardLayoutKey } from "@/app/lib/moonboard-config";
-import type { BoardName } from "@/app/lib/types";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { useSnackbar } from "@/app/components/providers/snackbar-provider";
-import { isInstagramPostingSupported } from "@/app/lib/instagram-posting";
-import type { UserBoard } from "@boardsesh/shared-schema";
-import LogbookFeedItem from "./logbook-feed-item";
-import LogbookSwipeHintOrchestrator from "./logbook-swipe-hint-orchestrator";
-import LogbookSearchForm from "./logbook-search-form";
-import LogbookItemSkeleton from "./logbook-item-skeleton";
-import styles from "./library.module.css";
-import feedStyles from "@/app/components/activity-feed/ascents-feed.module.css";
+} from '@boardsesh/board-constants/product-sizes';
+import { getLayoutById, MOONBOARD_SETS, type MoonBoardLayoutKey } from '@/app/lib/moonboard-config';
+import type { BoardName } from '@/app/lib/types';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useSnackbar } from '@/app/components/providers/snackbar-provider';
+import { isInstagramPostingSupported } from '@/app/lib/instagram-posting';
+import type { UserBoard } from '@boardsesh/shared-schema';
+import LogbookFeedItem from './logbook-feed-item';
+import LogbookSwipeHintOrchestrator from './logbook-swipe-hint-orchestrator';
+import LogbookSearchForm from './logbook-search-form';
+import LogbookItemSkeleton from './logbook-item-skeleton';
+import styles from './library.module.css';
+import feedStyles from '@/app/components/activity-feed/ascents-feed.module.css';
 
 const PAGE_SIZE = 20;
-type StatusMode = "both" | "send" | "attempt";
+type StatusMode = 'both' | 'send' | 'attempt';
 
 // ---------- Component ----------
 
@@ -72,7 +72,7 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
   const router = useRouter();
   const { token, isLoading: authLoading, error: authError } = useWsAuthToken();
   const userId = session?.user?.id;
-  const isNarrowViewport = useMediaQuery("(max-width: 768px)", { noSsr: true });
+  const isNarrowViewport = useMediaQuery('(max-width: 768px)', { noSsr: true });
 
   const queryClient = useQueryClient();
   const { showMessage } = useSnackbar();
@@ -85,25 +85,25 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
         const boardName = ls.boardType as BoardName;
 
         let sizeId = 0;
-        let setIds = "";
+        let setIds = '';
 
-        if (boardName === "moonboard") {
+        if (boardName === 'moonboard') {
           // MoonBoard uses its own set system, not Aurora's
           const layoutEntry = getLayoutById(layoutId);
           if (layoutEntry) {
             const [layoutKey] = layoutEntry;
             const moonSets = MOONBOARD_SETS[layoutKey as MoonBoardLayoutKey] ?? [];
-            setIds = moonSets.map((s) => s.id).join(",");
+            setIds = moonSets.map((s) => s.id).join(',');
           }
         } else {
           const defaultSize = getDefaultSizeForLayout(boardName, layoutId);
           if (defaultSize !== null) {
             sizeId = defaultSize;
             const sets = getSetsForLayoutAndSize(boardName, layoutId, sizeId);
-            setIds = sets.map((s) => s.id).join(",");
+            setIds = sets.map((s) => s.id).join(',');
           } else {
             const fallback =
-              boardName === "kilter" ? ORPHANED_KILTER_LAYOUT_DEFAULTS[layoutId] : undefined;
+              boardName === 'kilter' ? ORPHANED_KILTER_LAYOUT_DEFAULTS[layoutId] : undefined;
             if (fallback) {
               sizeId = fallback.sizeId;
               setIds = fallback.setIds;
@@ -117,8 +117,8 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
 
         return {
           uuid: `logbook-${ls.boardType}-${layoutId}`,
-          slug: "",
-          ownerId: "",
+          slug: '',
+          ownerId: '',
           boardType: ls.boardType,
           layoutId,
           sizeId,
@@ -130,7 +130,7 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
           isOwned: false,
           angle: 0,
           isAngleAdjustable: false,
-          createdAt: "",
+          createdAt: '',
           totalAscents: ls.distinctClimbCount,
           uniqueClimbers: 0,
           followerCount: 0,
@@ -142,14 +142,14 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
   );
 
   // State
-  const [searchText, setSearchText] = useState(() => searchParams.get("q") || "");
-  const [debouncedSearch, setDebouncedSearch] = useState(() => searchParams.get("q") || "");
+  const [searchText, setSearchText] = useState(() => searchParams.get('q') || '');
+  const [debouncedSearch, setDebouncedSearch] = useState(() => searchParams.get('q') || '');
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [sortState, setSortState] = useState<SortState>(DEFAULT_SORT);
   const [selectedBoards, setSelectedBoards] = useState<UserBoard[]>([]);
   const [editingItemUuid, setEditingItemUuid] = useState<string | null>(null);
   const [preferencesLoaded, setPreferencesLoaded] = useState(false);
-  const [boardsInitialized, setBoardsInitialized] = useState(() => !searchParams.get("boards"));
+  const [boardsInitialized, setBoardsInitialized] = useState(() => !searchParams.get('boards'));
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Debounced search text
@@ -168,7 +168,7 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
   useEffect(() => {
     let isCancelled = false;
 
-    getPreference("logbookPreferences").then((saved) => {
+    getPreference('logbookPreferences').then((saved) => {
       if (isCancelled) return;
 
       let baseFilters = DEFAULT_FILTERS;
@@ -208,14 +208,14 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
   useEffect(() => {
     if (loadingLayoutStats) return;
 
-    const boardsParam = searchParams.get("boards");
+    const boardsParam = searchParams.get('boards');
     if (boardsParam && logbookBoards.length > 0) {
-      const uuids = boardsParam.split(",");
+      const uuids = boardsParam.split(',');
       const matched = logbookBoards.filter((b) => uuids.includes(b.uuid));
       if (matched.length > 0) {
         setSelectedBoards(matched);
       } else {
-        showMessage("Couldn't find the linked board — showing all your entries.", "warning");
+        showMessage("Couldn't find the linked board — showing all your entries.", 'warning');
       }
     }
     setBoardsInitialized(true);
@@ -244,7 +244,7 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
       const currentSearch = searchParams.toString();
 
       if (newSearch !== currentSearch) {
-        router.replace(`${pathname}${newSearch ? `?${newSearch}` : ""}`, { scroll: false });
+        router.replace(`${pathname}${newSearch ? `?${newSearch}` : ''}`, { scroll: false });
       }
     }, 300);
 
@@ -258,9 +258,9 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
   // Persist to IndexedDB
   useEffect(() => {
     if (!preferencesLoaded) return;
-    void setPreference("logbookPreferences", {
+    void setPreference('logbookPreferences', {
       version: 1 as const,
-      boardFilter: "all" as const,
+      boardFilter: 'all' as const,
       layoutSelections: {
         kilter: [],
         tension: [],
@@ -302,11 +302,11 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
   const climbNameParam = debouncedSearch || undefined;
 
   const sortParams = useMemo(() => {
-    if (sortState.mode === "preset") {
-      if (sortState.preset === "hardest") {
-        return { sortBy: "hardest" as const, sortOrder: "desc" as const };
+    if (sortState.mode === 'preset') {
+      if (sortState.preset === 'hardest') {
+        return { sortBy: 'hardest' as const, sortOrder: 'desc' as const };
       }
-      return { sortBy: "recent" as const, sortOrder: "desc" as const };
+      return { sortBy: 'recent' as const, sortOrder: 'desc' as const };
     }
     return {
       sortBy: sortState.primaryField,
@@ -323,13 +323,13 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
   const activeFilters = useMemo(
     () => ({
       statusMode: (filters.includeSends && filters.includeAttempts
-        ? "both"
+        ? 'both'
         : filters.includeSends
-          ? "send"
-          : "attempt") as StatusMode,
+          ? 'send'
+          : 'attempt') as StatusMode,
       flashOnly: filters.includeSends ? filters.flashOnly : false,
-      minDifficulty: filters.minGrade !== "" ? filters.minGrade : undefined,
-      maxDifficulty: filters.maxGrade !== "" ? filters.maxGrade : undefined,
+      minDifficulty: filters.minGrade !== '' ? filters.minGrade : undefined,
+      maxDifficulty: filters.maxGrade !== '' ? filters.maxGrade : undefined,
       fromDate: filters.fromDate || undefined,
       toDate: filters.toDate || undefined,
       minAngle:
@@ -343,11 +343,11 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
 
   const feedQueryKey = useMemo(
     () => [
-      "logbookFeed",
+      'logbookFeed',
       userId,
-      selectedBoardTypes?.join(",") ?? "all",
-      selectedLayoutIds?.join(",") ?? "all-layouts",
-      climbNameParam ?? "",
+      selectedBoardTypes?.join(',') ?? 'all',
+      selectedLayoutIds?.join(',') ?? 'all-layouts',
+      climbNameParam ?? '',
       JSON.stringify(activeFilters),
       JSON.stringify(sortParams),
     ],
@@ -448,7 +448,7 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
             uuid: prevUuid,
           })
           .catch(() => {
-            showMessage("Failed to delete tick", "error");
+            showMessage('Failed to delete tick', 'error');
           });
       }
 
@@ -483,11 +483,11 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
         client
           .request<{ deleteTick: boolean }, DeleteTickMutationVariables>(DELETE_TICK, { uuid })
           .then(() => {
-            queryClient.invalidateQueries({ queryKey: ["logbookFeed"] });
+            queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
           })
           .catch(() => {
-            queryClient.invalidateQueries({ queryKey: ["logbookFeed"] });
-            showMessage("Failed to delete tick", "error");
+            queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
+            showMessage('Failed to delete tick', 'error');
           });
       }, 5000);
 
@@ -498,15 +498,15 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
       };
 
       showMessage(
-        "Tick deleted",
-        "success",
+        'Tick deleted',
+        'success',
         {
-          label: "Undo",
+          label: 'Undo',
           onClick: () => {
             if (pendingDeleteRef.current?.uuid === uuid) {
               clearTimeout(pendingDeleteRef.current.timerId);
               pendingDeleteRef.current = null;
-              queryClient.invalidateQueries({ queryKey: ["logbookFeed"] });
+              queryClient.invalidateQueries({ queryKey: ['logbookFeed'] });
             }
           },
         },
@@ -528,20 +528,20 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
   const hasFilters =
     selectedBoards.length > 0 ||
     debouncedSearch.length > 0 ||
-    filters.minGrade !== "" ||
-    filters.maxGrade !== "" ||
+    filters.minGrade !== '' ||
+    filters.maxGrade !== '' ||
     filters.flashOnly ||
     filters.benchmarkOnly ||
     !filters.includeSends ||
     !filters.includeAttempts ||
-    filters.fromDate !== "" ||
-    filters.toDate !== "" ||
+    filters.fromDate !== '' ||
+    filters.toDate !== '' ||
     filters.angleRange[0] !== DEFAULT_ANGLE_RANGE[0] ||
     filters.angleRange[1] !== DEFAULT_ANGLE_RANGE[1];
   // Posting and linking are mutually exclusive — see `allowInstagramLinking` below.
   const enableInstagramPosting =
-    pathname === "/you/logbook" && isNarrowViewport && isInstagramPostingSupported();
-  const enableInstagramLinking = pathname === "/you/logbook";
+    pathname === '/you/logbook' && isNarrowViewport && isInstagramPostingSupported();
+  const enableInstagramLinking = pathname === '/you/logbook';
 
   const searchForm = (
     <LogbookSearchForm
@@ -554,7 +554,7 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
           ...prev,
           minGrade: value,
           maxGrade:
-            value !== "" && prev.maxGrade !== "" && value > prev.maxGrade ? value : prev.maxGrade,
+            value !== '' && prev.maxGrade !== '' && value > prev.maxGrade ? value : prev.maxGrade,
         }))
       }
       onMaxGradeChange={(value) =>
@@ -562,7 +562,7 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
           ...prev,
           maxGrade: value,
           minGrade:
-            value !== "" && prev.minGrade !== "" && value < prev.minGrade ? value : prev.minGrade,
+            value !== '' && prev.minGrade !== '' && value < prev.minGrade ? value : prev.minGrade,
         }))
       }
       sortState={sortState}
@@ -580,7 +580,7 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
     return (
       <>
         {searchForm}
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {Array.from({ length: 5 }).map((_, i) => (
             <LogbookItemSkeleton key={i} />
           ))}
@@ -596,25 +596,25 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
         {userId && !authLoading && !token && (
           <Alert severity="warning" sx={{ mb: 2 }}>
             {authError
-              ? "Signed in, but Boardsesh could not load your authenticated logbook data on this device."
-              : "Signed in, but Boardsesh could not access your authenticated logbook data on this device."}
+              ? 'Signed in, but Boardsesh could not load your authenticated logbook data on this device.'
+              : 'Signed in, but Boardsesh could not access your authenticated logbook data on this device.'}
           </Alert>
         )}
         <div className={styles.emptyContainer}>
           <HistoryOutlined className={styles.emptyIcon} />
           <Typography variant="h6" component="h4" sx={{ mb: 1 }}>
             {userId && !authLoading && !token
-              ? "Logbook unavailable on this device"
+              ? 'Logbook unavailable on this device'
               : hasFilters
-                ? "No matching climbs"
-                : "No logged climbs yet"}
+                ? 'No matching climbs'
+                : 'No logged climbs yet'}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 300 }}>
             {userId && !authLoading && !token
-              ? "Your account is signed in, but the authenticated data connection did not become available."
+              ? 'Your account is signed in, but the authenticated data connection did not become available.'
               : hasFilters
-                ? "Try adjusting your filters or sort."
-                : "Tick your sends and they show up here."}
+                ? 'Try adjusting your filters or sort.'
+                : 'Tick your sends and they show up here.'}
           </Typography>
         </div>
       </>
@@ -626,7 +626,7 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
       {searchForm}
       <LogbookSwipeHintOrchestrator />
       <div className={feedStyles.feed}>
-        <Box sx={{ display: "flex", flexDirection: "column" }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           {items.map((item, index) => (
             <LogbookFeedItem
               key={item.uuid}
@@ -646,7 +646,7 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
 
         <Box
           ref={sentinelRef}
-          sx={{ display: "flex", justifyContent: "center", py: 2, minHeight: 20 }}
+          sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}
         >
           {isFetchingNextPage && <CircularProgress size={24} />}
         </Box>

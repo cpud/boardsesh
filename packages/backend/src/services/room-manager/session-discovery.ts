@@ -1,11 +1,11 @@
-import { db } from "../../db/client";
-import { sessions, type Session } from "../../db/schema";
-import { userBoards } from "@boardsesh/db/schema/app";
-import { eq, and, gt, gte, lte, ne, isNull } from "drizzle-orm";
-import type { RedisSessionStore } from "../redis-session-store";
-import type { DistributedStateManager } from "../distributed-state";
-import { haversineDistance, getBoundingBox, DEFAULT_SEARCH_RADIUS_METERS } from "../../utils/geo";
-import type { DiscoverableSession } from "./types";
+import { db } from '../../db/client';
+import { sessions, type Session } from '../../db/schema';
+import { userBoards } from '@boardsesh/db/schema/app';
+import { eq, and, gt, gte, lte, ne, isNull } from 'drizzle-orm';
+import type { RedisSessionStore } from '../redis-session-store';
+import type { DistributedStateManager } from '../distributed-state';
+import { haversineDistance, getBoundingBox, DEFAULT_SEARCH_RADIUS_METERS } from '../../utils/geo';
+import type { DiscoverableSession } from './types';
 
 /**
  * Get a session by its ID from the database.
@@ -104,7 +104,7 @@ export async function findNearbySessions(
     .where(
       and(
         eq(sessions.discoverable, true),
-        ne(sessions.status, "ended"),
+        ne(sessions.status, 'ended'),
         gte(sessions.latitude, box.minLat),
         lte(sessions.latitude, box.maxLat),
         gte(sessions.longitude, box.minLon),
@@ -193,7 +193,7 @@ export async function endSession(
   sessionId: string,
   sessionsMap: Map<string, Set<string>>,
   redisStore: RedisSessionStore | null,
-  writeScheduler: import("./write-scheduler").WriteScheduler,
+  writeScheduler: import('./write-scheduler').WriteScheduler,
   sessionGraceTimers: Map<string, NodeJS.Timeout>,
   pendingJoinPersists: Map<string, Promise<void>>,
 ): Promise<void> {
@@ -222,7 +222,7 @@ export async function endSession(
   const now = new Date();
   await db
     .update(sessions)
-    .set({ status: "ended", lastActivity: now, endedAt: now })
+    .set({ status: 'ended', lastActivity: now, endedAt: now })
     .where(eq(sessions.id, sessionId));
 
   // Remove from memory

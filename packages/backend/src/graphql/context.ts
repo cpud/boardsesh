@@ -1,7 +1,7 @@
-import { v4 as uuidv4 } from "uuid";
-import type { ConnectionContext } from "@boardsesh/shared-schema";
+import { v4 as uuidv4 } from 'uuid';
+import type { ConnectionContext } from '@boardsesh/shared-schema';
 
-const DEBUG = process.env.NODE_ENV === "development";
+const DEBUG = process.env.NODE_ENV === 'development';
 
 /**
  * Module-level map to track connection contexts.
@@ -55,7 +55,7 @@ export function getContext(connectionId: string): ConnectionContext | undefined 
  */
 export function updateContext(
   connectionId: string,
-  updates: Partial<Omit<ConnectionContext, "connectionId">>,
+  updates: Partial<Omit<ConnectionContext, 'connectionId'>>,
 ): void {
   const context = connections.get(connectionId);
   if (!context) {

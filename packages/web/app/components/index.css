@@ -81,7 +81,7 @@
 }
 
 /* Dark mode overrides */
-html[data-theme="dark"] {
+html[data-theme='dark'] {
   color-scheme: dark;
 
   /* Neutral palette (inverted) */
@@ -144,7 +144,7 @@ body {
   margin: 0;
   padding: 0;
   font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   background-color: var(--semantic-surface) !important;
   color: var(--neutral-800);
   -webkit-font-smoothing: antialiased;
@@ -212,7 +212,7 @@ button,
 }
 
 .header-shadow::after {
-  content: "";
+  content: '';
   position: absolute;
   left: 0;
   right: 0;
@@ -234,7 +234,7 @@ button,
 }
 
 .queue-bar-shadow::before {
-  content: "";
+  content: '';
   position: absolute;
   left: 0;
   right: 0;
@@ -254,38 +254,38 @@ button,
    input styling, but color-scheme:dark can override native input
    backgrounds. These CSS rules ensure inputs stay white in dark mode
    using the tokenized custom properties. */
-html[data-theme="dark"] .MuiOutlinedInput-root,
-html[data-theme="dark"] .MuiFilledInput-root {
+html[data-theme='dark'] .MuiOutlinedInput-root,
+html[data-theme='dark'] .MuiFilledInput-root {
   background-color: var(--input-bg);
   color: var(--input-text);
 }
 
-html[data-theme="dark"] .MuiOutlinedInput-root:hover {
+html[data-theme='dark'] .MuiOutlinedInput-root:hover {
   background-color: var(--input-bg-hover);
 }
 
-html[data-theme="dark"] .MuiOutlinedInput-root.Mui-focused {
+html[data-theme='dark'] .MuiOutlinedInput-root.Mui-focused {
   background-color: var(--input-bg-focused);
 }
 
-html[data-theme="dark"] .MuiSelect-icon,
-html[data-theme="dark"] .MuiInputLabel-root {
+html[data-theme='dark'] .MuiSelect-icon,
+html[data-theme='dark'] .MuiInputLabel-root {
   color: var(--neutral-500);
 }
 
-html[data-theme="dark"] .MuiInputLabel-root.Mui-focused {
+html[data-theme='dark'] .MuiInputLabel-root.Mui-focused {
   color: var(--color-primary);
 }
 
-html[data-theme="dark"] .MuiOutlinedInput-input::placeholder {
+html[data-theme='dark'] .MuiOutlinedInput-input::placeholder {
   color: var(--neutral-500);
   opacity: 1;
 }
 
-html[data-theme="dark"] .MuiOutlinedInput-root .MuiSvgIcon-root,
-html[data-theme="dark"] .MuiOutlinedInput-root .MuiInputAdornment-root,
-html[data-theme="dark"] .MuiFilledInput-root .MuiSvgIcon-root,
-html[data-theme="dark"] .MuiFilledInput-root .MuiInputAdornment-root {
+html[data-theme='dark'] .MuiOutlinedInput-root .MuiSvgIcon-root,
+html[data-theme='dark'] .MuiOutlinedInput-root .MuiInputAdornment-root,
+html[data-theme='dark'] .MuiFilledInput-root .MuiSvgIcon-root,
+html[data-theme='dark'] .MuiFilledInput-root .MuiInputAdornment-root {
   color: var(--neutral-500);
 }
 
@@ -311,6 +311,6 @@ html[data-theme="dark"] .MuiFilledInput-root .MuiInputAdornment-root {
 
 /* Alternative selector for drop indicator line */
 .pragmatic-drop-indicator,
-[class*="drop-indicator"] {
+[class*='drop-indicator'] {
   background-color: var(--color-primary) !important;
 }

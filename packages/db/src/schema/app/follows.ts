@@ -6,28 +6,28 @@ import {
   uniqueIndex,
   index,
   check,
-} from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
-import { users } from "../auth/users";
-import { playlists } from "./playlists";
+} from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
+import { users } from '../auth/users';
+import { playlists } from './playlists';
 
 export const userFollows = pgTable(
-  "user_follows",
+  'user_follows',
   {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
-    followerId: text("follower_id")
-      .references(() => users.id, { onDelete: "cascade" })
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    followerId: text('follower_id')
+      .references(() => users.id, { onDelete: 'cascade' })
       .notNull(),
-    followingId: text("following_id")
-      .references(() => users.id, { onDelete: "cascade" })
+    followingId: text('following_id')
+      .references(() => users.id, { onDelete: 'cascade' })
       .notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => ({
-    uniqueFollow: uniqueIndex("unique_user_follow").on(table.followerId, table.followingId),
-    followerIdx: index("user_follows_follower_idx").on(table.followerId),
-    followingIdx: index("user_follows_following_idx").on(table.followingId),
-    noSelfFollow: check("no_self_follow", sql`${table.followerId} != ${table.followingId}`),
+    uniqueFollow: uniqueIndex('unique_user_follow').on(table.followerId, table.followingId),
+    followerIdx: index('user_follows_follower_idx').on(table.followerId),
+    followingIdx: index('user_follows_following_idx').on(table.followingId),
+    noSelfFollow: check('no_self_follow', sql`${table.followerId} != ${table.followingId}`),
   }),
 );
 
@@ -35,19 +35,19 @@ export type UserFollow = typeof userFollows.$inferSelect;
 export type NewUserFollow = typeof userFollows.$inferInsert;
 
 export const setterFollows = pgTable(
-  "setter_follows",
+  'setter_follows',
   {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
-    followerId: text("follower_id")
-      .references(() => users.id, { onDelete: "cascade" })
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    followerId: text('follower_id')
+      .references(() => users.id, { onDelete: 'cascade' })
       .notNull(),
-    setterUsername: text("setter_username").notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    setterUsername: text('setter_username').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => ({
-    uniqueFollow: uniqueIndex("unique_setter_follow").on(table.followerId, table.setterUsername),
-    followerIdx: index("setter_follows_follower_idx").on(table.followerId),
-    setterIdx: index("setter_follows_setter_idx").on(table.setterUsername),
+    uniqueFollow: uniqueIndex('unique_setter_follow').on(table.followerId, table.setterUsername),
+    followerIdx: index('setter_follows_follower_idx').on(table.followerId),
+    setterIdx: index('setter_follows_setter_idx').on(table.setterUsername),
   }),
 );
 
@@ -55,21 +55,21 @@ export type SetterFollow = typeof setterFollows.$inferSelect;
 export type NewSetterFollow = typeof setterFollows.$inferInsert;
 
 export const playlistFollows = pgTable(
-  "playlist_follows",
+  'playlist_follows',
   {
-    id: bigserial("id", { mode: "number" }).primaryKey(),
-    followerId: text("follower_id")
-      .references(() => users.id, { onDelete: "cascade" })
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    followerId: text('follower_id')
+      .references(() => users.id, { onDelete: 'cascade' })
       .notNull(),
-    playlistUuid: text("playlist_uuid")
-      .references(() => playlists.uuid, { onDelete: "cascade" })
+    playlistUuid: text('playlist_uuid')
+      .references(() => playlists.uuid, { onDelete: 'cascade' })
       .notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => ({
-    uniqueFollow: uniqueIndex("unique_playlist_follow").on(table.followerId, table.playlistUuid),
-    followerIdx: index("playlist_follows_follower_idx").on(table.followerId),
-    playlistIdx: index("playlist_follows_playlist_idx").on(table.playlistUuid),
+    uniqueFollow: uniqueIndex('unique_playlist_follow').on(table.followerId, table.playlistUuid),
+    followerIdx: index('playlist_follows_follower_idx').on(table.followerId),
+    playlistIdx: index('playlist_follows_playlist_idx').on(table.playlistUuid),
   }),
 );
 

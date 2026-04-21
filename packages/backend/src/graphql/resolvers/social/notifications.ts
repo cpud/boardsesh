@@ -1,12 +1,12 @@
-import { eq, and, isNull, count, sql, inArray } from "drizzle-orm";
-import type { ConnectionContext } from "@boardsesh/shared-schema";
-import { db } from "../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { requireAuthenticated, applyRateLimit, validateInput } from "../shared/helpers";
-import { GroupedNotificationsInputSchema } from "../../../validation/schemas";
-import { pubsub } from "../../../pubsub/index";
-import { createAsyncIterator } from "../shared/async-iterators";
-import type { NotificationEvent } from "@boardsesh/shared-schema";
+import { eq, and, isNull, count, sql, inArray } from 'drizzle-orm';
+import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { db } from '../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { requireAuthenticated, applyRateLimit, validateInput } from '../shared/helpers';
+import { GroupedNotificationsInputSchema } from '../../../validation/schemas';
+import { pubsub } from '../../../pubsub/index';
+import { createAsyncIterator } from '../shared/async-iterators';
+import type { NotificationEvent } from '@boardsesh/shared-schema';
 
 interface NotificationRow {
   uuid: string;
@@ -35,7 +35,7 @@ function mapNotificationRow(row: NotificationRow) {
     entityId: row.entityId,
     commentBody: row.commentBody
       ? row.commentBody.length > 100
-        ? row.commentBody.slice(0, 100) + "..."
+        ? row.commentBody.slice(0, 100) + '...'
         : row.commentBody
       : undefined,
     climbName: undefined,
@@ -119,7 +119,7 @@ export const socialNotificationQueries = {
     requireAuthenticated(ctx);
     const userId = ctx.userId!;
 
-    const validated = validateInput(GroupedNotificationsInputSchema, args, "groupedNotifications");
+    const validated = validateInput(GroupedNotificationsInputSchema, args, 'groupedNotifications');
     const limit = validated.limit ?? 20;
     const offset = validated.offset ?? 0;
 
@@ -211,7 +211,7 @@ export const socialNotificationQueries = {
         actors,
         commentBody: row.commentBody
           ? row.commentBody.length > 100
-            ? row.commentBody.slice(0, 100) + "..."
+            ? row.commentBody.slice(0, 100) + '...'
             : row.commentBody
           : undefined,
         climbName: undefined as string | undefined,
@@ -229,19 +229,19 @@ export const socialNotificationQueries = {
 
     // Enrich groups with climb/proposal data (batched to avoid N+1)
     const proposalTypes = [
-      "proposal_created",
-      "proposal_approved",
-      "proposal_rejected",
-      "proposal_vote",
+      'proposal_created',
+      'proposal_approved',
+      'proposal_rejected',
+      'proposal_vote',
     ];
-    const climbTypes = ["new_climb", "new_climb_global"];
+    const climbTypes = ['new_climb', 'new_climb_global'];
 
     // Collect entity IDs by type
     const climbEntityIds: string[] = [];
     const proposalEntityIds: string[] = [];
     for (const group of groups) {
       if (!group.entityId) continue;
-      if (group.type === "new_climbs_synced" || climbTypes.includes(group.type)) {
+      if (group.type === 'new_climbs_synced' || climbTypes.includes(group.type)) {
         climbEntityIds.push(group.entityId);
       } else if (proposalTypes.includes(group.type)) {
         proposalEntityIds.push(group.entityId);
@@ -315,7 +315,7 @@ export const socialNotificationQueries = {
     for (const group of groups) {
       if (!group.entityId) continue;
 
-      if (group.type === "new_climbs_synced") {
+      if (group.type === 'new_climbs_synced') {
         const climb = climbMap.get(group.entityId);
         if (climb) {
           group.climbUuid = group.entityId;
@@ -385,7 +385,7 @@ export const socialNotificationMutations = {
     ctx: ConnectionContext,
   ): Promise<boolean> => {
     requireAuthenticated(ctx);
-    await applyRateLimit(ctx, 60, "notification_read");
+    await applyRateLimit(ctx, 60, 'notification_read');
     const userId = ctx.userId!;
 
     await db
@@ -411,7 +411,7 @@ export const socialNotificationMutations = {
     ctx: ConnectionContext,
   ): Promise<number> => {
     requireAuthenticated(ctx);
-    await applyRateLimit(ctx, 60, "notification_read");
+    await applyRateLimit(ctx, 60, 'notification_read');
     const userId = ctx.userId!;
 
     // Build conditions for the group
@@ -448,7 +448,7 @@ export const socialNotificationMutations = {
     ctx: ConnectionContext,
   ): Promise<boolean> => {
     requireAuthenticated(ctx);
-    await applyRateLimit(ctx, 5, "notification_read_all");
+    await applyRateLimit(ctx, 5, 'notification_read_all');
     const userId = ctx.userId!;
 
     await db

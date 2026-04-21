@@ -1,12 +1,12 @@
-"use client";
-import React, { useMemo, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
-import { Climb, ParsedBoardRouteParameters, BoardDetails } from "@/app/lib/types";
-import { useQueueActions, useCurrentClimb, useSearchData } from "../graphql-queue";
-import ClimbsList from "./climbs-list";
-import { stabilizeClimbArrayRef } from "./climb-list-utils";
-import RecentSearchPills from "../search-drawer/recent-search-pills";
-import AngleSelector from "./angle-selector";
+'use client';
+import React, { useMemo, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Climb, ParsedBoardRouteParameters, BoardDetails } from '@/app/lib/types';
+import { useQueueActions, useCurrentClimb, useSearchData } from '../graphql-queue';
+import ClimbsList from './climbs-list';
+import { stabilizeClimbArrayRef } from './climb-list-utils';
+import RecentSearchPills from '../search-drawer/recent-search-pills';
+import AngleSelector from './angle-selector';
 
 type BoardPageClimbsListProps = ParsedBoardRouteParameters & {
   boardDetails: BoardDetails;
@@ -28,12 +28,12 @@ const BoardPageClimbsList = ({
   const { setCurrentClimb, addToQueue, fetchMoreClimbs } = useQueueActions();
 
   const searchParams = useSearchParams();
-  const page = searchParams.get("page");
+  const page = searchParams.get('page');
 
   // Scroll to top when search params reset to page 0
   useEffect(() => {
-    if (page === "0" && hasDoneFirstFetch && isFetchingClimbs) {
-      window.scrollTo({ top: 0, behavior: "instant" });
+    if (page === '0' && hasDoneFirstFetch && isFetchingClimbs) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
     }
   }, [page, hasDoneFirstFetch, isFetchingClimbs]);
 

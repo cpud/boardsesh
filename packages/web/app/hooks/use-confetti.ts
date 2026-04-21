@@ -1,8 +1,8 @@
-import { useCallback } from "react";
-import confetti from "canvas-confetti";
-import { themeTokens } from "@/app/theme/theme-config";
+import { useCallback } from 'react';
+import confetti from 'canvas-confetti';
+import { themeTokens } from '@/app/theme/theme-config';
 
-export type ConfettiVariant = "ascent" | "attempt" | "flash";
+export type ConfettiVariant = 'ascent' | 'attempt' | 'flash';
 
 /**
  * Generates a small lightning bolt polygon path string (relative coordinates)
@@ -11,7 +11,7 @@ export type ConfettiVariant = "ascent" | "attempt" | "flash";
  */
 function buildBoltShape(): string {
   // A zigzag lightning bolt polygon (~32px tall, ~16px wide)
-  return "M 0,-16 L 6,-5 L 2,-5 L 7,5 L 3,5 L 8,16 L -1,4 L 3,4 L -3,-4 L 1,-4 L -4,-16 Z";
+  return 'M 0,-16 L 6,-5 L 2,-5 L 7,5 L 3,5 L 8,16 L -1,4 L 3,4 L -3,-4 L 1,-4 L -4,-16 Z';
 }
 
 let activeOverlay: HTMLElement | null = null;
@@ -23,7 +23,7 @@ let activeOverlay: HTMLElement | null = null;
  */
 function fireThunderstrike(targetElement: HTMLElement) {
   // Respect reduced motion preference
-  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
 
   // Prevent stacked overlays from rapid double-taps
   if (activeOverlay) {
@@ -38,7 +38,7 @@ function fireThunderstrike(targetElement: HTMLElement) {
 
   const boltCount = 6;
   const boltShape = buildBoltShape();
-  let bolts = "";
+  let bolts = '';
 
   for (let i = 0; i < boltCount; i++) {
     const angle = (i / boltCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
@@ -61,7 +61,7 @@ function fireThunderstrike(targetElement: HTMLElement) {
       </g>`;
   }
 
-  const overlay = document.createElement("div");
+  const overlay = document.createElement('div');
   overlay.style.cssText = `
     position: fixed;
     inset: 0;
@@ -82,25 +82,25 @@ function fireThunderstrike(targetElement: HTMLElement) {
   `;
 
   // Apply CSS custom properties to each bolt for the animation
-  const groups = overlay.querySelectorAll("g[data-tx]");
+  const groups = overlay.querySelectorAll('g[data-tx]');
   groups.forEach((g) => {
     const el = g as HTMLElement;
-    const transform = el.getAttribute("transform") || "";
-    const txVal = el.dataset.tx || "0";
-    const tyVal = el.dataset.ty || "0";
+    const transform = el.getAttribute('transform') || '';
+    const txVal = el.dataset.tx || '0';
+    const tyVal = el.dataset.ty || '0';
     // Extract translate and rotate from the transform attribute
     const translateMatch = transform.match(/translate\(([\d.-]+),\s*([\d.-]+)\)/);
     const rotateMatch = transform.match(/rotate\(([\d.-]+)\)/);
-    const xPos = translateMatch ? translateMatch[1] : "0";
-    const yPos = translateMatch ? translateMatch[2] : "0";
-    const rot = rotateMatch ? rotateMatch[1] : "0";
-    el.style.setProperty("--x", `${xPos}px`);
-    el.style.setProperty("--y", `${yPos}px`);
-    el.style.setProperty("--r", `${rot}deg`);
-    el.style.setProperty("--tx", `${txVal}px`);
-    el.style.setProperty("--ty", `${tyVal}px`);
+    const xPos = translateMatch ? translateMatch[1] : '0';
+    const yPos = translateMatch ? translateMatch[2] : '0';
+    const rot = rotateMatch ? rotateMatch[1] : '0';
+    el.style.setProperty('--x', `${xPos}px`);
+    el.style.setProperty('--y', `${yPos}px`);
+    el.style.setProperty('--r', `${rot}deg`);
+    el.style.setProperty('--tx', `${txVal}px`);
+    el.style.setProperty('--ty', `${tyVal}px`);
     // Remove the static transform since animation handles positioning
-    el.removeAttribute("transform");
+    el.removeAttribute('transform');
   });
 
   document.body.appendChild(overlay);
@@ -112,8 +112,8 @@ function fireThunderstrike(targetElement: HTMLElement) {
 
   // Pulse the button itself (expand then contract)
   targetElement.animate?.(
-    [{ transform: "scale(1)" }, { transform: "scale(1.3)" }, { transform: "scale(1)" }],
-    { duration: 250, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+    [{ transform: 'scale(1)' }, { transform: 'scale(1.3)' }, { transform: 'scale(1)' }],
+    { duration: 250, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
   );
 }
 
@@ -138,13 +138,13 @@ function getOrigin(element?: HTMLElement | null): { x: number; y: number } {
  */
 export function useConfetti() {
   const fireConfetti = useCallback(
-    (originElement?: HTMLElement | null, variant: ConfettiVariant = "ascent") => {
-      if (variant === "flash") {
+    (originElement?: HTMLElement | null, variant: ConfettiVariant = 'ascent') => {
+      if (variant === 'flash') {
         if (originElement) fireThunderstrike(originElement);
         return;
       }
 
-      const isAttempt = variant === "attempt";
+      const isAttempt = variant === 'attempt';
       confetti({
         particleCount: 35,
         spread: isAttempt ? 40 : 60,
@@ -158,7 +158,7 @@ export function useConfetti() {
         // Must be above MUI drawer z-index (1300) so confetti is visible
         // when fired from inside a SwipeableDrawer portal.
         zIndex: 1400,
-        ...(isAttempt && { colors: ["#d32f2f", "#b71c1c", "#e53935"] }),
+        ...(isAttempt && { colors: ['#d32f2f', '#b71c1c', '#e53935'] }),
       });
     },
     [],

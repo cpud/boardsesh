@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import MuiButton from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
-import { LabelOutlined, LoginOutlined, SentimentDissatisfiedOutlined } from "@mui/icons-material";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { executeGraphQL } from "@/app/lib/graphql/client";
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import MuiButton from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import { LabelOutlined, LoginOutlined, SentimentDissatisfiedOutlined } from '@mui/icons-material';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { executeGraphQL } from '@/app/lib/graphql/client';
 import {
   GET_ALL_USER_PLAYLISTS,
   GetAllUserPlaylistsQueryResponse,
@@ -16,20 +16,20 @@ import {
   DiscoverPlaylistsInput,
   Playlist,
   DiscoverablePlaylist,
-} from "@/app/lib/graphql/operations/playlists";
-import { useWsAuthToken } from "@/app/hooks/use-ws-auth-token";
-import { useMyBoards } from "@/app/hooks/use-my-boards";
-import { useQueueBridgeBoardInfo } from "@/app/components/queue-control/queue-bridge-context";
-import { constructBoardSlugPlaylistsUrl } from "@/app/lib/url-utils";
-import { findMatchingBoard } from "@/app/lib/find-matching-board";
-import { deriveIsAuthenticated } from "@/app/lib/derive-auth-status";
-import type { UserBoard } from "@boardsesh/shared-schema";
-import { useAuthModal } from "@/app/components/providers/auth-modal-provider";
-import PlaylistCardGrid from "@/app/components/library/playlist-card-grid";
-import PlaylistScrollSection from "@/app/components/library/playlist-scroll-section";
-import PlaylistCard from "@/app/components/library/playlist-card";
-import BoardFilterStrip from "@/app/components/board-scroll/board-filter-strip";
-import styles from "@/app/components/library/library.module.css";
+} from '@/app/lib/graphql/operations/playlists';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { useMyBoards } from '@/app/hooks/use-my-boards';
+import { useQueueBridgeBoardInfo } from '@/app/components/queue-control/queue-bridge-context';
+import { constructBoardSlugPlaylistsUrl } from '@/app/lib/url-utils';
+import { findMatchingBoard } from '@/app/lib/find-matching-board';
+import { deriveIsAuthenticated } from '@/app/lib/derive-auth-status';
+import type { UserBoard } from '@boardsesh/shared-schema';
+import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
+import PlaylistCardGrid from '@/app/components/library/playlist-card-grid';
+import PlaylistScrollSection from '@/app/components/library/playlist-scroll-section';
+import PlaylistCard from '@/app/components/library/playlist-card';
+import BoardFilterStrip from '@/app/components/board-scroll/board-filter-strip';
+import styles from '@/app/components/library/library.module.css';
 
 type LibraryPageContentProps = {
   /** When set, the page was rendered from a board route and this board is pre-selected. */
@@ -49,7 +49,7 @@ type LibraryPageContentProps = {
 
 export default function LibraryPageContent({
   boardSlug,
-  playlistsBasePath = "/playlists",
+  playlistsBasePath = '/playlists',
   initialMyBoards,
   initialPlaylists,
   initialDiscoverPlaylists,
@@ -73,7 +73,7 @@ export default function LibraryPageContent({
 
   // Fetch user's boards for the board selector (with SSR initial data)
   const { boards: myBoards, isLoading: boardsLoading } = useMyBoards(
-    hasInitialBoardData || sessionStatus === "authenticated",
+    hasInitialBoardData || sessionStatus === 'authenticated',
     50,
     initialMyBoards,
   );
@@ -155,8 +155,8 @@ export default function LibraryPageContent({
       setPlaylists(playlistsRes.allUserPlaylists);
       hasPlaylistDataRef.current = true;
     } catch (err) {
-      console.error("Error fetching user data:", err);
-      setError("Failed to load your library");
+      console.error('Error fetching user data:', err);
+      setError('Failed to load your library');
     } finally {
       setPlaylistsLoading(false);
     }
@@ -181,11 +181,11 @@ export default function LibraryPageContent({
       const [popularRes, recentRes] = await Promise.all([
         executeGraphQL<DiscoverPlaylistsQueryResponse, { input: DiscoverPlaylistsInput }>(
           DISCOVER_PLAYLISTS,
-          { input: { ...baseInput, sortBy: "popular" } },
+          { input: { ...baseInput, sortBy: 'popular' } },
         ),
         executeGraphQL<DiscoverPlaylistsQueryResponse, { input: DiscoverPlaylistsInput }>(
           DISCOVER_PLAYLISTS,
-          { input: { ...baseInput, sortBy: "recent" } },
+          { input: { ...baseInput, sortBy: 'recent' } },
         ),
       ]);
 
@@ -193,7 +193,7 @@ export default function LibraryPageContent({
       setRecentPlaylists(recentRes.discoverPlaylists.playlists);
       hasDiscoverDataRef.current = true;
     } catch (err) {
-      console.error("Error fetching discover playlists:", err);
+      console.error('Error fetching discover playlists:', err);
     } finally {
       setDiscoverLoading(false);
     }
@@ -239,12 +239,12 @@ export default function LibraryPageContent({
       hasDiscoverDataRef.current = false;
 
       // When rendered from a board route, switching boards navigates to the correct URL
-      if (boardSlug || playlistsBasePath !== "/playlists") {
+      if (boardSlug || playlistsBasePath !== '/playlists') {
         if (board) {
           const nextPlaylistsPath = constructBoardSlugPlaylistsUrl(board.slug, board.angle);
           router.push(nextPlaylistsPath);
         } else {
-          router.push("/playlists");
+          router.push('/playlists');
         }
       }
     },
@@ -272,7 +272,7 @@ export default function LibraryPageContent({
   }
 
   const isLoading =
-    playlistsLoading || tokenLoading || (!hasServerUserData && sessionStatus === "loading");
+    playlistsLoading || tokenLoading || (!hasServerUserData && sessionStatus === 'loading');
   const discoverItems = getDiscoverPlaylists();
 
   // Server query already filters by boardType + layoutId; no client-side filter needed
@@ -289,14 +289,14 @@ export default function LibraryPageContent({
       />
 
       {/* Placeholder to reserve space while auth status resolves (prevents CLS) */}
-      {!hasServerUserData && sessionStatus === "loading" && (
+      {!hasServerUserData && sessionStatus === 'loading' && (
         <div className={styles.signInBannerPlaceholder} aria-hidden="true" />
       )}
 
       {/* Sign-in banner for non-authenticated users */}
-      {!hasServerUserData && !isAuthenticated && sessionStatus !== "loading" && (
+      {!hasServerUserData && !isAuthenticated && sessionStatus !== 'loading' && (
         <div className={styles.signInBanner}>
-          <LoginOutlined sx={{ color: "text.secondary", fontSize: 28 }} />
+          <LoginOutlined sx={{ color: 'text.secondary', fontSize: 28 }} />
           <div className={styles.signInBannerText}>
             <Typography variant="body2" fontWeight={600}>
               Sign in to use your library
@@ -310,8 +310,8 @@ export default function LibraryPageContent({
             size="small"
             onClick={() =>
               openAuthModal({
-                title: "Sign in to Boardsesh",
-                description: "Sign in to track your climbs and manage playlists.",
+                title: 'Sign in to Boardsesh',
+                description: 'Sign in to track your climbs and manage playlists.',
               })
             }
           >
@@ -377,7 +377,7 @@ export default function LibraryPageContent({
               href={getPlaylistUrl(p.uuid)}
               variant="scroll"
               index={i}
-              fetchPriority={i === 0 ? "high" : undefined}
+              fetchPriority={i === 0 ? 'high' : undefined}
             />
           ))}
         </PlaylistScrollSection>

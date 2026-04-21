@@ -7,7 +7,7 @@
 
 // Message types shared with worker-manager.ts
 export type RenderRequest = {
-  type?: "render";
+  type?: 'render';
   id: number;
   boardWidth: number;
   boardHeight: number;
@@ -26,7 +26,7 @@ export type RenderRequest = {
 
 /** Pre-decoded background images sent from main thread to avoid per-worker fetching */
 export type PreloadImagesMessage = {
-  type: "preload-images";
+  type: 'preload-images';
   images: Array<{ url: string; bitmap: ImageBitmap }>;
 };
 
@@ -104,9 +104,9 @@ async function renderBoard(request: RenderRequest): Promise<ImageBitmap> {
 
   // Create OffscreenCanvas at target resolution (cropped height)
   const canvas = new OffscreenCanvas(outputWidth, outputHeight);
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext('2d');
   if (!ctx) {
-    throw new Error("Failed to get 2d context from OffscreenCanvas");
+    throw new Error('Failed to get 2d context from OffscreenCanvas');
   }
 
   // Apply mirroring transform before drawing anything
@@ -168,7 +168,7 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
   const msg = event.data;
 
   // Handle pre-loaded background images from main thread
-  if (msg.type === "preload-images") {
+  if (msg.type === 'preload-images') {
     for (const { url, bitmap } of msg.images) {
       bgImageCache.set(url, bitmap);
     }

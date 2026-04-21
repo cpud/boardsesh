@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import React, { useMemo, useCallback, useRef } from "react";
-import MuiSwipeableDrawer from "@mui/material/SwipeableDrawer";
-import Box from "@mui/material/Box";
-import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
-import CloseOutlined from "@mui/icons-material/CloseOutlined";
-import { themeTokens } from "@/app/theme/theme-config";
-import styles from "./swipeable-drawer.module.css";
+import React, { useMemo, useCallback, useRef } from 'react';
+import MuiSwipeableDrawer from '@mui/material/SwipeableDrawer';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import CloseOutlined from '@mui/icons-material/CloseOutlined';
+import { themeTokens } from '@/app/theme/theme-config';
+import styles from './swipeable-drawer.module.css';
 
-type Placement = "left" | "right" | "top" | "bottom";
+type Placement = 'left' | 'right' | 'top' | 'bottom';
 
 export interface SwipeableDrawerProps {
   swipeEnabled?: boolean;
@@ -48,7 +48,7 @@ export interface SwipeableDrawerProps {
 const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
   swipeEnabled,
   showDragHandle = true,
-  placement = "bottom",
+  placement = 'bottom',
   showCloseButton,
   showCloseButtonOnMobile = false,
   onClose,
@@ -81,7 +81,7 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
   const userClasses = userRootClassName ?? className;
   const rootClassName = [showCloseButtonOnMobile ? null : styles.mobileHideClose, userClasses]
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 
   const horizontalDragHandle = useMemo(
     () =>
@@ -97,7 +97,7 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
     () =>
       effectiveSwipeEnabled && showDragHandle ? (
         <div
-          className={placement === "left" ? styles.dragHandleZoneRight : styles.dragHandleZoneLeft}
+          className={placement === 'left' ? styles.dragHandleZoneRight : styles.dragHandleZoneLeft}
         ></div>
       ) : null,
     [effectiveSwipeEnabled, showDragHandle, placement],
@@ -105,10 +105,10 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
 
   // For bottom placement with a title:
   // Inject the drag handle into the title so it appears above the header content.
-  const handleInHeader = placement === "bottom" && userTitle !== undefined && userTitle !== null;
+  const handleInHeader = placement === 'bottom' && userTitle !== undefined && userTitle !== null;
 
   // For top-placed drawers, render drag handle below footer (at the bottom edge)
-  const hasExternalBottomHandle = placement === "top" && showDragHandle;
+  const hasExternalBottomHandle = placement === 'top' && showDragHandle;
 
   // Build the header element if title is provided
   const headerElement = useMemo(() => {
@@ -119,11 +119,11 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
     const titleContent = (
       <Box
         sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           padding: `${themeTokens.spacing[4]}px ${themeTokens.spacing[6]}px`,
-          borderBottom: "1px solid var(--neutral-200)",
+          borderBottom: '1px solid var(--neutral-200)',
           ...userStyles?.header,
         }}
       >
@@ -139,13 +139,13 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
         >
           {userTitle}
         </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>{extra}</Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>{extra}</Box>
       </Box>
     );
 
     if (!handleInHeader) return titleContent;
 
-    if (placement === "bottom") {
+    if (placement === 'bottom') {
       return (
         <div className={styles.titleWithHandle}>
           {horizontalDragHandle}
@@ -179,12 +179,12 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
         onClick={(e) => onClose?.(e)}
         aria-label="Close"
         sx={{
-          position: "absolute",
+          position: 'absolute',
           zIndex: 2,
           ...positionMap[placement],
-          color: "text.primary",
-          backgroundColor: "action.selected",
-          "&:hover": { backgroundColor: "action.focus" },
+          color: 'text.primary',
+          backgroundColor: 'action.selected',
+          '&:hover': { backgroundColor: 'action.focus' },
         }}
       >
         <CloseOutlined />
@@ -198,13 +198,13 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
   // Left/right vertical handles use position:absolute and stay inside.
   const topDragHandle = useMemo(() => {
     if (handleInHeader || !showDragHandle) return null;
-    if (placement === "bottom") return horizontalDragHandle;
+    if (placement === 'bottom') return horizontalDragHandle;
     return null;
   }, [handleInHeader, showDragHandle, placement, horizontalDragHandle]);
 
   const bottomDragHandle = useMemo(() => {
     if (handleInHeader || !showDragHandle || hasExternalBottomHandle) return null;
-    if (placement === "top") return horizontalDragHandle;
+    if (placement === 'top') return horizontalDragHandle;
     return null;
   }, [handleInHeader, showDragHandle, hasExternalBottomHandle, placement, horizontalDragHandle]);
 
@@ -216,9 +216,9 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
     // Only left/right placements keep drag handles inside the body (absolute positioned)
     return (
       <>
-        {placement === "left" && verticalDragHandle}
+        {placement === 'left' && verticalDragHandle}
         {children}
-        {placement === "right" && verticalDragHandle}
+        {placement === 'right' && verticalDragHandle}
       </>
     );
   }, [placement, verticalDragHandle, handleInHeader, children]);
@@ -246,21 +246,21 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
     // matches exact '100%' / '100vh' / '100dvh' values, not expressions like
     // calc(100vh) or custom-property references. New callers should always
     // pass fullHeight explicitly.
-    const normalizedHeight = typeof sx.height === "string" ? sx.height.trim().toLowerCase() : "";
+    const normalizedHeight = typeof sx.height === 'string' ? sx.height.trim().toLowerCase() : '';
     const isFullHeightDrawer =
       fullHeightProp ??
-      (normalizedHeight === "100%" ||
-        normalizedHeight === "100vh" ||
-        normalizedHeight === "100dvh");
+      (normalizedHeight === '100%' ||
+        normalizedHeight === '100vh' ||
+        normalizedHeight === '100dvh');
     if (isFullHeightDrawer && !sx.backgroundColor) {
-      sx.backgroundColor = "var(--semantic-background)";
+      sx.backgroundColor = 'var(--semantic-background)';
     }
 
     // Full-height bottom drawers extend to the top of the screen and need
     // safe-area-inset-top padding to avoid rendering behind the device notch/pill.
     // (Top/left/right anchors get this from the MUI theme overrides.)
-    if (isFullHeightDrawer && placement === "bottom" && !sx.paddingTop) {
-      sx.paddingTop = "env(safe-area-inset-top, 0px)";
+    if (isFullHeightDrawer && placement === 'bottom' && !sx.paddingTop) {
+      sx.paddingTop = 'env(safe-area-inset-top, 0px)';
     }
 
     return sx;
@@ -280,9 +280,9 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
       // Paper has inline transform from swipe — animate it off-screen ourselves.
       // We use the same translate() format MUI's setPosition uses so the browser
       // can interpolate between the current swipe position and the target.
-      const isHorizontal = placement === "left" || placement === "right";
+      const isHorizontal = placement === 'left' || placement === 'right';
       const maxTranslate = isHorizontal ? paper.offsetWidth : paper.offsetHeight;
-      const sign = placement === "right" || placement === "bottom" ? 1 : -1;
+      const sign = placement === 'right' || placement === 'bottom' ? 1 : -1;
       const target = isHorizontal
         ? `translate(${sign * maxTranslate}px, 0)`
         : `translate(0, ${sign * maxTranslate}px)`;
@@ -306,7 +306,7 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
       // the same microtask can cause browsers to skip the animation.
       void paper.offsetHeight;
 
-      const ease = "cubic-bezier(0.0, 0, 0.2, 1)"; // decelerate — momentum feel
+      const ease = 'cubic-bezier(0.0, 0, 0.2, 1)'; // decelerate — momentum feel
       paper.style.transition = `transform ${duration}ms ${ease}`;
       paper.style.webkitTransition = `-webkit-transform ${duration}ms ${ease}`;
       paper.style.transform = target;
@@ -332,7 +332,7 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
 
       const target = e.target as HTMLElement | null;
       if (target) {
-        const closestDrawerPaper = target.closest("[data-swipeable-drawer]");
+        const closestDrawerPaper = target.closest('[data-swipeable-drawer]');
         // If the closest drawer paper is a *nested* drawer (not this one),
         // don't let this (parent) drawer handle the swipe.
         if (closestDrawerPaper && closestDrawerPaper !== paper) {
@@ -340,7 +340,7 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
         }
 
         // Block swipe if it originates inside a swipe-blocked zone
-        if (target.closest("[data-swipe-blocked]")) {
+        if (target.closest('[data-swipe-blocked]')) {
           return false;
         }
       }
@@ -382,7 +382,7 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
   // MUI's internal handleRef, breaking swipe-to-close. We forward paperRef
   // through the wrapper Box's callback ref instead.
   const muiPaperProps = useMemo(
-    () => ({ sx: paperSx, "data-swipeable-drawer": "true" }),
+    () => ({ sx: paperSx, 'data-swipeable-drawer': 'true' }),
     [paperSx],
   );
 
@@ -409,7 +409,7 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
         return;
       }
       const target = e.target as Element | null;
-      if (target?.closest("[data-swipe-blocked]")) {
+      if (target?.closest('[data-swipe-blocked]')) {
         nativeEvent.defaultMuiPrevented = true;
       }
     },
@@ -425,7 +425,7 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
       if (paper === lastPaperRef.current) return;
       lastPaperRef.current = paper;
       if (!paperRef) return;
-      if (typeof paperRef === "function") {
+      if (typeof paperRef === 'function') {
         paperRef(paper);
       } else {
         (paperRef as React.MutableRefObject<HTMLDivElement | null>).current = paper;
@@ -442,10 +442,10 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
       <Box
         sx={{
           flex: 1,
-          display: "flex",
-          flexDirection: "column",
+          display: 'flex',
+          flexDirection: 'column',
           minHeight: 0,
-          overflow: "auto",
+          overflow: 'auto',
           padding: `${themeTokens.spacing[6]}px`,
           ...userStyles?.body,
         }}
@@ -456,7 +456,7 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
         <Box
           sx={{
             padding: `${themeTokens.spacing[3]}px ${themeTokens.spacing[4]}px`,
-            borderTop: "1px solid var(--neutral-200)",
+            borderTop: '1px solid var(--neutral-200)',
             ...userStyles?.footer,
           }}
         >
@@ -488,9 +488,9 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
         ref={wrapperBoxRef}
         onTouchStart={handleNestedTouchStart}
         sx={{
-          position: "relative",
-          display: "flex",
-          flexDirection: "column",
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
           flex: 1,
           minHeight: 0,
         }}

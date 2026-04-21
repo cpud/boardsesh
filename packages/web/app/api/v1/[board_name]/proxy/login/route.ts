@@ -1,15 +1,15 @@
-import { dbz } from "@/app/lib/db/db";
-import { boardUsers } from "@/app/lib/db/schema";
+import { dbz } from '@/app/lib/db/db';
+import { boardUsers } from '@/app/lib/db/schema';
 
-import { NextResponse } from "next/server";
-import { z } from "zod";
-import AuroraClimbingClient from "@/app/lib/api-wrappers/aurora-rest-client/aurora-rest-client";
-import { BoardOnlyRouteParameters } from "@/app/lib/types";
-import { syncUserData } from "@/app/lib/data-sync/aurora/user-sync";
-import { Session } from "@/app/lib/api-wrappers/aurora-rest-client/types";
-import { AuroraBoardName } from "@/app/lib/api-wrappers/aurora/types";
-import { getSession } from "@/app/lib/session";
-import { isAuroraBoardName } from "@/app/lib/board-constants";
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import AuroraClimbingClient from '@/app/lib/api-wrappers/aurora-rest-client/aurora-rest-client';
+import { BoardOnlyRouteParameters } from '@/app/lib/types';
+import { syncUserData } from '@/app/lib/data-sync/aurora/user-sync';
+import { Session } from '@/app/lib/api-wrappers/aurora-rest-client/types';
+import { AuroraBoardName } from '@/app/lib/api-wrappers/aurora/types';
+import { getSession } from '@/app/lib/session';
+import { isAuroraBoardName } from '@/app/lib/board-constants';
 
 // Input validation schema
 const loginSchema = z.object({
@@ -33,7 +33,7 @@ async function login(
   const loginResponse = await auroraClient.signIn(username, password);
 
   if (!loginResponse.token || !loginResponse.user_id) {
-    throw new Error("Invalid login response: missing token or user_id");
+    throw new Error('Invalid login response: missing token or user_id');
   }
 
   if (loginResponse.user_id) {
@@ -59,7 +59,7 @@ async function login(
     try {
       await syncUserData(boardName, loginResponse.token, loginResponse.user_id);
     } catch (error) {
-      console.error("Initial sync error:", error);
+      console.error('Initial sync error:', error);
       // We don't throw here as login was successful
     }
   }
@@ -82,7 +82,7 @@ export async function POST(request: Request, props: { params: Promise<BoardOnlyR
 
   // Only kilter and tension use Aurora APIs
   if (!isAuroraBoardName(params.board_name)) {
-    return NextResponse.json({ error: "Unsupported board for this endpoint" }, { status: 400 });
+    return NextResponse.json({ error: 'Unsupported board for this endpoint' }, { status: 400 });
   }
 
   const board_name = params.board_name as AuroraBoardName;
@@ -106,25 +106,25 @@ export async function POST(request: Request, props: { params: Promise<BoardOnlyR
     return response;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      console.error("Login validation error:", error.issues);
-      return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
+      console.error('Login validation error:', error.issues);
+      return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
     }
 
     // Handle fetch errors
     if (error instanceof Error) {
-      if (error.message.includes("401")) {
-        return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+      if (error.message.includes('401')) {
+        return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
       }
-      if (error.message.includes("403")) {
-        return NextResponse.json({ error: "Access forbidden" }, { status: 403 });
+      if (error.message.includes('403')) {
+        return NextResponse.json({ error: 'Access forbidden' }, { status: 403 });
       }
-      if (error.message.startsWith("HTTP error!")) {
-        return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+      if (error.message.startsWith('HTTP error!')) {
+        return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
       }
     }
 
     // Generic error
-    console.error("Login error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error('Login error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

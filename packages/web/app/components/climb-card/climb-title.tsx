@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import React, { useMemo } from "react";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import Skeleton from "@mui/material/Skeleton";
-import ClimbIcons from "./climb-icons";
-import { themeTokens } from "@/app/theme/theme-config";
-import { useIsDarkMode } from "@/app/hooks/use-is-dark-mode";
-import { formatSends, formatQuality } from "@/app/lib/format-climb-stats";
-import { useGradeFormat } from "@/app/hooks/use-grade-format";
+import React, { useMemo } from 'react';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Skeleton from '@mui/material/Skeleton';
+import ClimbIcons from './climb-icons';
+import { themeTokens } from '@/app/theme/theme-config';
+import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
+import { formatSends, formatQuality } from '@/app/lib/format-climb-stats';
+import { useGradeFormat } from '@/app/hooks/use-grade-format';
 
 export type ClimbTitleData = {
   name?: string;
@@ -38,14 +38,14 @@ export type ClimbTitleProps = {
   /** Additional className for the container */
   className?: string;
   /** Layout mode: 'stacked' (default) puts grade below name, 'horizontal' puts grade beside name */
-  layout?: "stacked" | "horizontal";
+  layout?: 'stacked' | 'horizontal';
   /** Center the content (useful for QueueControlBar) */
   centered?: boolean;
   /** Font size for the climb name. Use a design token, e.g. themeTokens.typography.fontSize.lg */
   titleFontSize?: number;
   /** Grade position: 'inline' (default) keeps grade in subtitle, 'right' floats colorized grade to the far right.
    *  When 'right', renders name + stars/setter on left and large colorized V-grade on right. Overrides layout prop. */
-  gradePosition?: "inline" | "right";
+  gradePosition?: 'inline' | 'right';
   /** When true, shows a heart indicator in the byline */
   favorited?: boolean;
   /** When true, shows a "no matching" icon next to the climb name */
@@ -63,9 +63,9 @@ const noClimbSx = {
 } as const;
 
 const textOverflowSx = {
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
 } as const;
 
 const subtitleSx = {
@@ -78,11 +78,11 @@ const subtitleEllipsisSx = {
   ...textOverflowSx,
 } as const;
 
-const italicSx = { fontStyle: "italic" } as const;
+const italicSx = { fontStyle: 'italic' } as const;
 
 const rowSx = {
-  display: "flex",
-  alignItems: "center",
+  display: 'flex',
+  alignItems: 'center',
   gap: `${themeTokens.spacing[2]}px`,
 } as const;
 
@@ -93,74 +93,74 @@ const rowMinWidthSx = {
 
 // gradePosition === 'right' layout
 const rightContainerSx = {
-  display: "flex",
-  alignItems: "center",
+  display: 'flex',
+  alignItems: 'center',
   gap: `${themeTokens.spacing[2]}px`,
-  width: "100%",
+  width: '100%',
 } as const;
 
 const rightLeftColumnSx = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "2px",
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '2px',
   flex: 1,
   minWidth: 0,
 } as const;
 
 const rightRightColumnSx = {
-  display: "flex",
-  alignItems: "center",
+  display: 'flex',
+  alignItems: 'center',
   gap: `${themeTokens.spacing[2]}px`,
   flexShrink: 0,
 } as const;
 
 // layout === 'horizontal'
 const horizontalDefaultSx = {
-  display: "flex",
-  alignItems: "center",
-  gap: "12px",
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
 } as const;
 
 const horizontalCenteredSx = {
-  display: "flex",
-  alignItems: "center",
-  position: "relative",
-  justifyContent: "center",
+  display: 'flex',
+  alignItems: 'center',
+  position: 'relative',
+  justifyContent: 'center',
 } as const;
 
 const horizontalCenterColumnDefaultSx = {
-  display: "flex",
-  flexDirection: "column",
+  display: 'flex',
+  flexDirection: 'column',
   gap: 0,
   minWidth: 0,
-  alignItems: "flex-start",
+  alignItems: 'flex-start',
   flex: 1,
 } as const;
 
 const horizontalCenterColumnCenteredSx = {
-  display: "flex",
-  flexDirection: "column",
+  display: 'flex',
+  flexDirection: 'column',
   gap: 0,
   minWidth: 0,
-  alignItems: "center",
+  alignItems: 'center',
 } as const;
 
-const absoluteLeftSx = { position: "absolute", left: 0 } as const;
-const absoluteRightSx = { position: "absolute", right: 0 } as const;
+const absoluteLeftSx = { position: 'absolute', left: 0 } as const;
+const absoluteRightSx = { position: 'absolute', right: 0 } as const;
 
 // default stacked layout
 const stackedDefaultSx = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "2px",
-  alignItems: "flex-start",
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '2px',
+  alignItems: 'flex-start',
 } as const;
 
 const stackedCenteredSx = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "2px",
-  alignItems: "center",
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '2px',
+  alignItems: 'center',
 } as const;
 
 /**
@@ -176,10 +176,10 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(
     rightAddon,
     ellipsis = true,
     className,
-    layout = "stacked",
+    layout = 'stacked',
     centered = false,
     titleFontSize,
-    gradePosition = "inline",
+    gradePosition = 'inline',
     favorited = false,
     isNoMatch = false,
     subtitleOverride,
@@ -210,7 +210,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(
         fontSize: nameFontSize,
         fontWeight: themeTokens.typography.fontWeight.bold,
         lineHeight: 1,
-        color: gradeColor ?? "text.secondary",
+        color: gradeColor ?? 'text.secondary',
       }),
       [nameFontSize, gradeColor],
     );
@@ -218,7 +218,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(
     const setterSx = useMemo(
       () => ({
         ...resolvedSubtitleSx,
-        fontStyle: climb?.is_draft ? ("italic" as const) : undefined,
+        fontStyle: climb?.is_draft ? ('italic' as const) : undefined,
       }),
       [resolvedSubtitleSx, climb?.is_draft],
     );
@@ -240,7 +240,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(
       );
     }
 
-    const hasGrade = displayDifficulty && climb.quality_average && climb.quality_average !== "0";
+    const hasGrade = displayDifficulty && climb.quality_average && climb.quality_average !== '0';
     const resolvedIsNoMatch = isNoMatch || Boolean(climb.is_no_match);
 
     const renderDifficultyText = () => {
@@ -248,7 +248,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(
         const baseText = `${displayDifficulty} ${formatQuality(climb.quality_average!)}★`;
         return showAngle ? `${baseText} @ ${climb.angle}°` : baseText;
       }
-      const projectText = showAngle ? `project @ ${climb.angle}°` : "project";
+      const projectText = showAngle ? `project @ ${climb.angle}°` : 'project';
       return (
         <Box component="span" sx={italicSx}>
           {projectText}
@@ -289,7 +289,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(
 
     const setterText = climb.is_draft
       ? `Draft by ${climb.setter_username}`
-      : `By ${climb.setter_username}${climb.ascensionist_count ? ` - ${formatSends(climb.ascensionist_count)}` : ""}`;
+      : `By ${climb.setter_username}${climb.ascensionist_count ? ` - ${formatSends(climb.ascensionist_count)}` : ''}`;
 
     const setterElement = showSetterInfo && climb.setter_username && (
       <Typography variant="body2" component="span" color="text.secondary" sx={setterSx}>
@@ -297,10 +297,10 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(
       </Typography>
     );
 
-    if (gradePosition === "right") {
+    if (gradePosition === 'right') {
       const subtitleParts: string[] = [];
       if (climb.is_draft) {
-        subtitleParts.push("Draft");
+        subtitleParts.push('Draft');
       }
       if (!climb.is_draft && climb.ascensionist_count) {
         subtitleParts.push(formatSends(climb.ascensionist_count));
@@ -313,13 +313,13 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(
       }
 
       if (favorited) {
-        subtitleParts.push("\u2665");
+        subtitleParts.push('\u2665');
       }
 
       const subtitleContent =
         subtitleOverride ??
         (subtitleParts.length > 0 ? (
-          subtitleParts.join(" \u00b7 ")
+          subtitleParts.join(' \u00b7 ')
         ) : (
           <Box component="span" sx={italicSx}>
             project
@@ -364,10 +364,10 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(
       );
     }
 
-    if (layout === "horizontal") {
+    if (layout === 'horizontal') {
       const secondLineContent = [];
       if (climb.is_draft) {
-        secondLineContent.push("Draft");
+        secondLineContent.push('Draft');
       }
       if (hasGrade) {
         secondLineContent.push(`${displayDifficulty} ${formatQuality(climb.quality_average!)}★`);
@@ -400,7 +400,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(
               sx={resolvedSubtitleSx}
             >
               {secondLineContent.length > 0 ? (
-                secondLineContent.join(" · ")
+                secondLineContent.join(' · ')
               ) : (
                 <Box component="span" sx={italicSx}>
                   project
@@ -482,6 +482,6 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(
   },
 );
 
-ClimbTitle.displayName = "ClimbTitle";
+ClimbTitle.displayName = 'ClimbTitle';
 
 export default ClimbTitle;

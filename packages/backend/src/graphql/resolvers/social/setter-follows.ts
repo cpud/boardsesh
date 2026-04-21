@@ -1,10 +1,10 @@
-import { eq, and, count, sql, ilike, inArray } from "drizzle-orm";
-import type { ConnectionContext, Climb, BoardName } from "@boardsesh/shared-schema";
-import { SUPPORTED_BOARDS } from "@boardsesh/shared-schema";
-import { db } from "../../../db/client";
-import * as dbSchema from "@boardsesh/db/schema";
-import { getGradeLabel } from "@boardsesh/db/queries";
-import { requireAuthenticated, applyRateLimit, validateInput } from "../shared/helpers";
+import { eq, and, count, sql, ilike, inArray } from 'drizzle-orm';
+import type { ConnectionContext, Climb, BoardName } from '@boardsesh/shared-schema';
+import { SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
+import { db } from '../../../db/client';
+import * as dbSchema from '@boardsesh/db/schema';
+import { getGradeLabel } from '@boardsesh/db/queries';
+import { requireAuthenticated, applyRateLimit, validateInput } from '../shared/helpers';
 import {
   FollowSetterInputSchema,
   SetterProfileInputSchema,
@@ -12,9 +12,9 @@ import {
   SetterClimbsFullInputSchema,
   SearchUsersInputSchema,
   UserClimbsInputSchema,
-} from "../../../validation/schemas";
-import { publishSocialEvent } from "../../../events/index";
-import { UNIFIED_TABLES, isValidBoardName } from "../../../db/queries/util/table-select";
+} from '../../../validation/schemas';
+import { publishSocialEvent } from '../../../events/index';
+import { UNIFIED_TABLES, isValidBoardName } from '../../../db/queries/util/table-select';
 
 /** Default angle fallback when no angle specified or no stats exist. 40 is the most common training angle. */
 const DEFAULT_ANGLE = 40;
@@ -28,7 +28,7 @@ export const setterFollowQueries = {
     { input }: { input: { username: string } },
     ctx: ConnectionContext,
   ) => {
-    const validatedInput = validateInput(SetterProfileInputSchema, input, "input");
+    const validatedInput = validateInput(SetterProfileInputSchema, input, 'input');
     const username = validatedInput.username;
 
     // Get distinct board types and climb count
@@ -122,12 +122,12 @@ export const setterFollowQueries = {
     },
     _ctx: ConnectionContext,
   ) => {
-    const validatedInput = validateInput(SetterClimbsInputSchema, input, "input");
+    const validatedInput = validateInput(SetterClimbsInputSchema, input, 'input');
     const {
       username,
       boardType,
       layoutId,
-      sortBy = "popular",
+      sortBy = 'popular',
       limit = 20,
       offset = 0,
     } = validatedInput;
@@ -184,7 +184,7 @@ export const setterFollowQueries = {
       )
       .where(and(...conditions))
       .orderBy(
-        sortBy === "popular"
+        sortBy === 'popular'
           ? sql`COALESCE(${dbSchema.boardClimbStats.ascensionistCount}, 0) DESC`
           : sql`${dbSchema.boardClimbs.createdAt} DESC NULLS LAST`,
       )
@@ -231,15 +231,15 @@ export const setterFollowQueries = {
     },
     _ctx: ConnectionContext,
   ): Promise<{ climbs: Climb[]; totalCount: number; hasMore: boolean }> => {
-    const validatedInput = validateInput(SetterClimbsFullInputSchema, input, "input");
-    const { username, boardType, sortBy = "popular", limit = 20, offset = 0 } = validatedInput;
+    const validatedInput = validateInput(SetterClimbsFullInputSchema, input, 'input');
+    const { username, boardType, sortBy = 'popular', limit = 20, offset = 0 } = validatedInput;
 
     if (boardType) {
       // === Specific board mode ===
       const boardName = boardType as BoardName;
       if (!isValidBoardName(boardName)) {
         throw new Error(
-          `Invalid board name: ${boardName}. Must be one of: ${SUPPORTED_BOARDS.join(", ")}`,
+          `Invalid board name: ${boardName}. Must be one of: ${SUPPORTED_BOARDS.join(', ')}`,
         );
       }
 
@@ -299,7 +299,7 @@ export const setterFollowQueries = {
         )
         .where(and(...filterConditions))
         .orderBy(
-          sortBy === "popular"
+          sortBy === 'popular'
             ? sql`COALESCE(${tables.climbStats.ascensionistCount}, 0) DESC`
             : sql`${tables.climbs.createdAt} DESC NULLS LAST`,
         )
@@ -312,16 +312,16 @@ export const setterFollowQueries = {
       const climbs: Climb[] = trimmedResults.map((result) => ({
         uuid: result.uuid,
         layoutId: result.layoutId,
-        setter_username: result.setter_username || "",
-        name: result.name || "",
-        description: result.description || "",
-        frames: result.frames || "",
+        setter_username: result.setter_username || '',
+        name: result.name || '',
+        description: result.description || '',
+        frames: result.frames || '',
         angle,
         ascensionist_count: Number(result.ascensionist_count || 0),
         difficulty: getGradeLabel(result.difficulty_id),
-        quality_average: result.quality_average?.toString() || "0",
+        quality_average: result.quality_average?.toString() || '0',
         stars: Math.round((Number(result.quality_average) || 0) * 5),
-        difficulty_error: result.difficulty_error?.toString() || "0",
+        difficulty_error: result.difficulty_error?.toString() || '0',
         benchmark_difficulty:
           result.benchmark_difficulty && result.benchmark_difficulty > 0
             ? result.benchmark_difficulty.toString()
@@ -397,7 +397,7 @@ export const setterFollowQueries = {
         )
         .where(eq(tables.climbs.setterUsername, username))
         .orderBy(
-          sortBy === "popular"
+          sortBy === 'popular'
             ? sql`COALESCE(${tables.climbStats.ascensionistCount}, 0) DESC`
             : sql`${tables.climbs.createdAt} DESC NULLS LAST`,
         )
@@ -408,20 +408,20 @@ export const setterFollowQueries = {
       const trimmedResults = hasMore ? results.slice(0, limit) : results;
 
       const climbs: Climb[] = trimmedResults.map((result) => {
-        const bt = (result.boardType || "kilter") as BoardName;
+        const bt = (result.boardType || 'kilter') as BoardName;
         return {
           uuid: result.uuid,
           layoutId: result.layoutId,
-          setter_username: result.setter_username || "",
-          name: result.name || "",
-          description: result.description || "",
-          frames: result.frames || "",
+          setter_username: result.setter_username || '',
+          name: result.name || '',
+          description: result.description || '',
+          frames: result.frames || '',
           angle: result.statsAngle ?? DEFAULT_ANGLE,
           ascensionist_count: Number(result.ascensionist_count || 0),
           difficulty: getGradeLabel(result.difficulty_id),
-          quality_average: result.quality_average?.toString() || "0",
+          quality_average: result.quality_average?.toString() || '0',
           stars: Math.round((Number(result.quality_average) || 0) * 5),
-          difficulty_error: result.difficulty_error?.toString() || "0",
+          difficulty_error: result.difficulty_error?.toString() || '0',
           benchmark_difficulty:
             result.benchmark_difficulty && result.benchmark_difficulty > 0
               ? result.benchmark_difficulty.toString()
@@ -443,8 +443,8 @@ export const setterFollowQueries = {
     { input }: { input: { userId: string; sortBy?: string; limit?: number; offset?: number } },
     _ctx: ConnectionContext,
   ): Promise<{ climbs: Climb[]; totalCount: number; hasMore: boolean }> => {
-    const validatedInput = validateInput(UserClimbsInputSchema, input, "input");
-    const { userId, sortBy = "popular", limit = 20, offset = 0 } = validatedInput;
+    const validatedInput = validateInput(UserClimbsInputSchema, input, 'input');
+    const { userId, sortBy = 'popular', limit = 20, offset = 0 } = validatedInput;
 
     // 1. Look up linked Aurora usernames
     const mappings = await db
@@ -489,7 +489,7 @@ export const setterFollowQueries = {
         : sql`c.user_id = ${userId}`;
 
     const orderSql =
-      sortBy === "popular"
+      sortBy === 'popular'
         ? sql`COALESCE(best.ascensionist_count, 0) DESC`
         : sql`c.created_at DESC NULLS LAST`;
 
@@ -549,20 +549,20 @@ export const setterFollowQueries = {
     const trimmedResults = hasMore ? rawRows.slice(0, limit) : rawRows;
 
     const climbs: Climb[] = trimmedResults.map((result) => {
-      const bt = (result.board_type || "kilter") as BoardName;
+      const bt = (result.board_type || 'kilter') as BoardName;
       return {
         uuid: result.uuid,
         layoutId: result.layout_id,
-        setter_username: result.setter_username || "",
-        name: result.name || "",
-        description: result.description || "",
-        frames: result.frames || "",
+        setter_username: result.setter_username || '',
+        name: result.name || '',
+        description: result.description || '',
+        frames: result.frames || '',
         angle: result.stats_angle ?? DEFAULT_ANGLE,
         ascensionist_count: Number(result.ascensionist_count || 0),
         difficulty: getGradeLabel(result.difficulty_id),
-        quality_average: result.quality_average?.toString() || "0",
+        quality_average: result.quality_average?.toString() || '0',
         stars: Math.round((Number(result.quality_average) || 0) * 5),
-        difficulty_error: result.difficulty_error?.toString() || "0",
+        difficulty_error: result.difficulty_error?.toString() || '0',
         benchmark_difficulty:
           result.benchmark_difficulty && result.benchmark_difficulty > 0
             ? result.benchmark_difficulty.toString()
@@ -584,12 +584,12 @@ export const setterFollowQueries = {
   ) => {
     await applyRateLimit(ctx, 20);
 
-    const validatedInput = validateInput(SearchUsersInputSchema, input, "input");
+    const validatedInput = validateInput(SearchUsersInputSchema, input, 'input');
     const query = validatedInput.query;
     const limit = validatedInput.limit ?? 20;
     const offset = validatedInput.offset ?? 0;
 
-    const escapedQuery = query.replace(/[%_\\]/g, "\\$&");
+    const escapedQuery = query.replace(/[%_\\]/g, '\\$&');
     const searchPattern = `%${escapedQuery}%`;
     const prefixPattern = `${escapedQuery}%`;
 
@@ -713,7 +713,7 @@ export const setterFollowQueries = {
           isFollowedByMe: Boolean(row.isFollowedByMe),
         },
         recentAscentCount: Number(row.recentAscentCount ?? 0),
-        matchReason: "name match",
+        matchReason: 'name match',
       });
     }
 
@@ -730,7 +730,7 @@ export const setterFollowQueries = {
           isFollowedByMe: setterFollowedSet.has(row.setterUsername),
         },
         recentAscentCount: 0,
-        matchReason: "setter match",
+        matchReason: 'setter match',
       });
     }
 
@@ -763,9 +763,9 @@ export const setterFollowMutations = {
     ctx: ConnectionContext,
   ): Promise<boolean> => {
     requireAuthenticated(ctx);
-    await applyRateLimit(ctx, 30, "follow");
+    await applyRateLimit(ctx, 30, 'follow');
 
-    const validatedInput = validateInput(FollowSetterInputSchema, input, "input");
+    const validatedInput = validateInput(FollowSetterInputSchema, input, 'input');
     const myUserId = ctx.userId!;
     const setterUsername = validatedInput.setterUsername;
 
@@ -777,7 +777,7 @@ export const setterFollowMutations = {
       .limit(1);
 
     if (Number(exists?.count ?? 0) === 0) {
-      throw new Error("Setter not found");
+      throw new Error('Setter not found');
     }
 
     // Insert setter follow
@@ -810,13 +810,13 @@ export const setterFollowMutations = {
       }
 
       publishSocialEvent({
-        type: "follow.created",
+        type: 'follow.created',
         actorId: myUserId,
-        entityType: "user",
+        entityType: 'user',
         entityId: setterUsername,
         timestamp: Date.now(),
         metadata: { followedSetterUsername: setterUsername },
-      }).catch((err) => console.error("[SetterFollows] Failed to publish social event:", err));
+      }).catch((err) => console.error('[SetterFollows] Failed to publish social event:', err));
     }
 
     return true;
@@ -831,9 +831,9 @@ export const setterFollowMutations = {
     ctx: ConnectionContext,
   ): Promise<boolean> => {
     requireAuthenticated(ctx);
-    await applyRateLimit(ctx, 30, "follow");
+    await applyRateLimit(ctx, 30, 'follow');
 
-    const validatedInput = validateInput(FollowSetterInputSchema, input, "input");
+    const validatedInput = validateInput(FollowSetterInputSchema, input, 'input');
     const myUserId = ctx.userId!;
     const setterUsername = validatedInput.setterUsername;
 

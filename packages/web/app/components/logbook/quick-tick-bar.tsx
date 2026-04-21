@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, {
   useState,
@@ -8,19 +8,19 @@ import React, {
   useImperativeHandle,
   useRef,
   forwardRef,
-} from "react";
-import Stack from "@mui/material/Stack";
-import KeyboardArrowUpOutlined from "@mui/icons-material/KeyboardArrowUpOutlined";
-import KeyboardArrowDownOutlined from "@mui/icons-material/KeyboardArrowDownOutlined";
-import ElectricBoltOutlined from "@mui/icons-material/ElectricBoltOutlined";
-import ChatBubbleOutlineOutlined from "@mui/icons-material/ChatBubbleOutlineOutlined";
-import { Angle, Climb, BoardDetails } from "@/app/lib/types";
-import { useBoardProvider } from "../board-provider/board-provider-context";
-import { TENSION_KILTER_GRADES } from "@/app/lib/board-data";
-import { loadTickDraft } from "@/app/lib/tick-draft-db";
-import { useTickSave, buildTickTarget, type TickTarget } from "@/app/hooks/use-tick-save";
-import type { TickStatus } from "@/app/hooks/use-logbook";
-import { themeTokens } from "@/app/theme/theme-config";
+} from 'react';
+import Stack from '@mui/material/Stack';
+import KeyboardArrowUpOutlined from '@mui/icons-material/KeyboardArrowUpOutlined';
+import KeyboardArrowDownOutlined from '@mui/icons-material/KeyboardArrowDownOutlined';
+import ElectricBoltOutlined from '@mui/icons-material/ElectricBoltOutlined';
+import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import { Angle, Climb, BoardDetails } from '@/app/lib/types';
+import { useBoardProvider } from '../board-provider/board-provider-context';
+import { TENSION_KILTER_GRADES } from '@/app/lib/board-data';
+import { loadTickDraft } from '@/app/lib/tick-draft-db';
+import { useTickSave, buildTickTarget, type TickTarget } from '@/app/hooks/use-tick-save';
+import type { TickStatus } from '@/app/hooks/use-logbook';
+import { themeTokens } from '@/app/theme/theme-config';
 import {
   TickControls,
   TickGradeButton,
@@ -29,8 +29,8 @@ import {
   InlineTriesPicker,
   InlineAscentTypePicker,
   type ExpandedControl,
-} from "./tick-controls";
-import styles from "./quick-tick-bar.module.css";
+} from './tick-controls';
+import styles from './quick-tick-bar.module.css';
 
 export interface QuickTickBarProps {
   currentClimb: Climb | null;
@@ -118,7 +118,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(
 
     // Explicit ascent type — initialized from inferred value, auto-updated on state changes.
     const inferredType: TickStatus =
-      tickTarget && !tickTarget.hasPriorHistory && attemptCount === 1 ? "flash" : "send";
+      tickTarget && !tickTarget.hasPriorHistory && attemptCount === 1 ? 'flash' : 'send';
     const [ascentType, setAscentType] = useState<TickStatus>(inferredType);
     const userOverrodeType = useRef(false);
 
@@ -131,8 +131,8 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(
     useEffect(() => {
       if (userOverrodeType.current) {
         // If user manually selected flash but now tries > 1, correct to send.
-        if (ascentType === "flash" && (attemptCount > 1 || tickTarget?.hasPriorHistory)) {
-          setAscentType("send");
+        if (ascentType === 'flash' && (attemptCount > 1 || tickTarget?.hasPriorHistory)) {
+          setAscentType('send');
         }
         return;
       }
@@ -145,7 +145,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(
     }, []);
 
     // Report ascent type to the parent so tick buttons can update their appearance.
-    const isFlash = ascentType === "flash";
+    const isFlash = ascentType === 'flash';
     useEffect(() => {
       onIsFlashChange?.(isFlash);
     }, [isFlash, onIsFlashChange]);
@@ -263,16 +263,16 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") onExpandedChange(!expanded);
+              if (e.key === 'Enter' || e.key === ' ') onExpandedChange(!expanded);
             }}
-            aria-label={expanded ? "Collapse tick bar" : "Expand tick bar"}
+            aria-label={expanded ? 'Collapse tick bar' : 'Expand tick bar'}
           >
             {expanded ? (
               <KeyboardArrowDownOutlined sx={{ fontSize: 16, opacity: 0.7 }} />
             ) : (
               <KeyboardArrowUpOutlined sx={{ fontSize: 16, opacity: 0.7 }} />
             )}
-            <span className={styles.expandLabel}>{expanded ? "collapse" : "expand"}</span>
+            <span className={styles.expandLabel}>{expanded ? 'collapse' : 'expand'}</span>
             <div className={styles.expandDragBar} aria-hidden="true">
               <div className={styles.expandDragBarPill} />
             </div>
@@ -351,13 +351,13 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(
         {!expanded && (
           <>
             <div
-              className={`${styles.pickerPanel} ${expandedControl ? styles.pickerPanelExpanded : ""}`}
+              className={`${styles.pickerPanel} ${expandedControl ? styles.pickerPanelExpanded : ''}`}
             >
               <div className={styles.pickerPanelContent}>
-                {renderedControl === "stars" && (
+                {renderedControl === 'stars' && (
                   <InlineStarPicker quality={quality} onSelect={handleStarSelect} />
                 )}
-                {renderedControl === "grade" && (
+                {renderedControl === 'grade' && (
                   <InlineGradePicker
                     grades={grades}
                     currentGradeId={currentGradeId}
@@ -366,7 +366,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(
                     gradeButtonRef={gradeButtonRef}
                   />
                 )}
-                {renderedControl === "tries" && (
+                {renderedControl === 'tries' && (
                   <InlineTriesPicker
                     attemptCount={attemptCount}
                     onSelect={handleTriesSelect}
@@ -395,7 +395,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(
               </div>
 
               <div className={styles.rightControls}>
-                <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
+                <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
                   <TickControls
                     quality={quality}
                     attemptCount={attemptCount}
@@ -413,4 +413,4 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(
   },
 );
 
-QuickTickBar.displayName = "QuickTickBar";
+QuickTickBar.displayName = 'QuickTickBar';

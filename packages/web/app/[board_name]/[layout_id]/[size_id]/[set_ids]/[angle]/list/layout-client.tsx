@@ -1,35 +1,35 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { PropsWithChildren } from "react";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import Badge from "@mui/material/Badge";
-import MuiButton from "@mui/material/Button";
-import Box from "@mui/material/Box";
-import { DeleteOutlined } from "@mui/icons-material";
-import { track } from "@vercel/analytics";
-import { BoardDetails } from "@/app/lib/types";
-import dynamic from "next/dynamic";
+import React, { useState, useEffect } from 'react';
+import { PropsWithChildren } from 'react';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Badge from '@mui/material/Badge';
+import MuiButton from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import { DeleteOutlined } from '@mui/icons-material';
+import { track } from '@vercel/analytics';
+import { BoardDetails } from '@/app/lib/types';
+import dynamic from 'next/dynamic';
 
-import { getImageUrl } from "@/app/components/board-renderer/util";
-import { useQueueActions, useQueueList } from "@/app/components/graphql-queue";
-import { ConfirmPopover } from "@/app/components/ui/confirm-popover";
-import { TabPanel } from "@/app/components/ui/tab-panel";
-import styles from "./layout-client.module.css";
+import { getImageUrl } from '@/app/components/board-renderer/util';
+import { useQueueActions, useQueueList } from '@/app/components/graphql-queue';
+import { ConfirmPopover } from '@/app/components/ui/confirm-popover';
+import { TabPanel } from '@/app/components/ui/tab-panel';
+import styles from './layout-client.module.css';
 
 const AccordionSearchForm = dynamic(
-  () => import("@/app/components/search-drawer/accordion-search-form"),
+  () => import('@/app/components/search-drawer/accordion-search-form'),
   { ssr: false },
 );
 const SearchResultsFooter = dynamic(
-  () => import("@/app/components/search-drawer/search-results-footer"),
+  () => import('@/app/components/search-drawer/search-results-footer'),
   { ssr: false },
 );
-const QueueList = dynamic(() => import("@/app/components/queue-control/queue-list"), {
+const QueueList = dynamic(() => import('@/app/components/queue-control/queue-list'), {
   ssr: false,
 });
-const OnboardingTour = dynamic(() => import("@/app/components/onboarding/onboarding-tour"), {
+const OnboardingTour = dynamic(() => import('@/app/components/onboarding/onboarding-tour'), {
   ssr: false,
 });
 
@@ -46,7 +46,7 @@ const QueueTabLabel: React.FC = () => {
       max={99}
       invisible={queue.length === 0}
       color="primary"
-      sx={{ "& .MuiBadge-badge": { right: -8, top: -2 } }}
+      sx={{ '& .MuiBadge-badge': { right: -8, top: -2 } }}
     >
       Queue
     </Badge>
@@ -61,16 +61,16 @@ const QueueTabContent: React.FC<{ boardDetails: BoardDetails }> = ({ boardDetail
 
   const handleClearQueue = () => {
     setQueue([]);
-    track("Queue Cleared", {
-      boardLayout: boardDetails.layout_name || "",
+    track('Queue Cleared', {
+      boardLayout: boardDetails.layout_name || '',
       itemsCleared: queue.length,
     });
   };
 
   return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {queue.length > 0 && (
-        <Box sx={{ display: "flex", justifyContent: "flex-end", padding: "8px 8px 0 8px" }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '8px 8px 0 8px' }}>
           <ConfirmPopover
             title="Clear queue"
             description="Are you sure you want to clear all items from the queue?"
@@ -82,14 +82,14 @@ const QueueTabContent: React.FC<{ boardDetails: BoardDetails }> = ({ boardDetail
               variant="text"
               startIcon={<DeleteOutlined />}
               size="small"
-              sx={{ color: "var(--neutral-400)" }}
+              sx={{ color: 'var(--neutral-400)' }}
             >
               Clear
             </MuiButton>
           </ConfirmPopover>
         </Box>
       )}
-      <div ref={setScrollContainerEl} style={{ flex: 1, overflow: "auto" }}>
+      <div ref={setScrollContainerEl} style={{ flex: 1, overflow: 'auto' }}>
         <QueueList boardDetails={boardDetails} scrollContainer={scrollContainerEl} />
       </div>
     </div>
@@ -97,7 +97,7 @@ const QueueTabContent: React.FC<{ boardDetails: BoardDetails }> = ({ boardDetail
 };
 
 const TabsWrapper: React.FC<{ boardDetails: BoardDetails }> = ({ boardDetails }) => {
-  const [activeTab, setActiveTab] = useState("queue");
+  const [activeTab, setActiveTab] = useState('queue');
 
   return (
     <>
@@ -109,8 +109,8 @@ const TabsWrapper: React.FC<{ boardDetails: BoardDetails }> = ({ boardDetails })
         <QueueTabContent boardDetails={boardDetails} />
       </TabPanel>
       <TabPanel value={activeTab} index="search">
-        <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-          <div style={{ flex: 1, overflow: "auto" }}>
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1, overflow: 'auto' }}>
             <AccordionSearchForm boardDetails={boardDetails} />
           </div>
           <SearchResultsFooter />
@@ -122,7 +122,7 @@ const TabsWrapper: React.FC<{ boardDetails: BoardDetails }> = ({ boardDetails })
 
 // Preload thumbnail background images so they stay in the browser's memory
 // cache while the virtualizer mounts/unmounts list items on scroll.
-const hiddenStyle: React.CSSProperties = { position: "absolute", width: 0, height: 0 };
+const hiddenStyle: React.CSSProperties = { position: 'absolute', width: 0, height: 0 };
 const ThumbnailPreload: React.FC<{ boardDetails: BoardDetails }> = React.memo(
   ({ boardDetails }) => (
     <>
@@ -139,7 +139,7 @@ const ThumbnailPreload: React.FC<{ boardDetails: BoardDetails }> = React.memo(
     </>
   ),
 );
-ThumbnailPreload.displayName = "ThumbnailPreload";
+ThumbnailPreload.displayName = 'ThumbnailPreload';
 
 const ListLayoutClient: React.FC<PropsWithChildren<ListLayoutClientProps>> = ({
   boardDetails,
@@ -150,10 +150,10 @@ const ListLayoutClient: React.FC<PropsWithChildren<ListLayoutClientProps>> = ({
     const links: HTMLLinkElement[] = [];
 
     const addPrefetchLink = (href: string) => {
-      const link = document.createElement("link");
-      link.rel = "prefetch";
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
       link.href = href;
-      link.as = "image";
+      link.as = 'image';
       document.head.appendChild(link);
       links.push(link);
     };
@@ -166,10 +166,10 @@ const ListLayoutClient: React.FC<PropsWithChildren<ListLayoutClientProps>> = ({
 
       // Prefetch MoonBoard images (background + hold sets)
       if (boardDetails.layoutFolder) {
-        addPrefetchLink("/images/moonboard/moonboard-bg.webp");
+        addPrefetchLink('/images/moonboard/moonboard-bg.webp');
         boardDetails.holdSetImages?.forEach((imageFile) => {
           addPrefetchLink(
-            `/images/moonboard/${boardDetails.layoutFolder}/${imageFile.replace(/\.png$/, ".webp")}`,
+            `/images/moonboard/${boardDetails.layoutFolder}/${imageFile.replace(/\.png$/, '.webp')}`,
           );
         });
       }
@@ -177,12 +177,12 @@ const ListLayoutClient: React.FC<PropsWithChildren<ListLayoutClientProps>> = ({
 
     // Defer to idle time; fall back to setTimeout for Safari which lacks requestIdleCallback
     const handle =
-      typeof requestIdleCallback !== "undefined"
+      typeof requestIdleCallback !== 'undefined'
         ? requestIdleCallback(prefetchImages)
         : (setTimeout(prefetchImages, 1) as unknown as number);
 
     return () => {
-      if (typeof cancelIdleCallback !== "undefined") {
+      if (typeof cancelIdleCallback !== 'undefined') {
         cancelIdleCallback(handle);
       } else {
         clearTimeout(handle);
@@ -200,7 +200,7 @@ const ListLayoutClient: React.FC<PropsWithChildren<ListLayoutClientProps>> = ({
       <Box
         component="aside"
         className={styles.sider}
-        sx={{ width: 400, padding: "0 8px 20px 8px" }}
+        sx={{ width: 400, padding: '0 8px 20px 8px' }}
       >
         <TabsWrapper boardDetails={boardDetails} />
       </Box>

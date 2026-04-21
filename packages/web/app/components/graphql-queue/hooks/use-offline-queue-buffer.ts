@@ -1,5 +1,5 @@
-import { useRef, useCallback, useState, useMemo } from "react";
-import type { ClimbQueueItem } from "../../queue-control/types";
+import { useRef, useCallback, useState, useMemo } from 'react';
+import type { ClimbQueueItem } from '../../queue-control/types';
 
 const BUFFER_CAP = 500;
 

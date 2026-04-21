@@ -2,4 +2,4 @@
 export {
   HOLD_STATE_MAP,
   convertLitUpHoldsStringToMap,
-} from "@boardsesh/board-constants/hold-states";
+} from '@boardsesh/board-constants/hold-states';

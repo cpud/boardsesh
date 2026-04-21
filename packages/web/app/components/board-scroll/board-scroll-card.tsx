@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import React, { useMemo } from "react";
-import DashboardOutlined from "@mui/icons-material/DashboardOutlined";
-import BoardRenderer from "../board-renderer/board-renderer";
-import { useBoardDetails } from "./board-thumbnail";
-import { formatCount, formatSends } from "@/app/lib/format-climb-stats";
-import { BoardConfigData } from "@/app/lib/server-board-configs";
-import { StoredBoardConfig } from "@/app/lib/saved-boards-db";
-import type { UserBoard, PopularBoardConfig } from "@boardsesh/shared-schema";
-import styles from "./board-scroll.module.css";
+import React, { useMemo } from 'react';
+import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
+import BoardRenderer from '../board-renderer/board-renderer';
+import { useBoardDetails } from './board-thumbnail';
+import { formatCount, formatSends } from '@/app/lib/format-climb-stats';
+import { BoardConfigData } from '@/app/lib/server-board-configs';
+import { StoredBoardConfig } from '@/app/lib/saved-boards-db';
+import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
+import styles from './board-scroll.module.css';
 
 const BOARD_TYPE_LABELS: Record<string, string> = {
-  kilter: "Kilter",
-  tension: "Tension",
-  moonboard: "MoonBoard",
-  decoy: "Decoy",
-  touchstone: "Touchstone",
-  grasshopper: "Grasshopper",
-  soill: "So iLL",
+  kilter: 'Kilter',
+  tension: 'Tension',
+  moonboard: 'MoonBoard',
+  decoy: 'Decoy',
+  touchstone: 'Touchstone',
+  grasshopper: 'Grasshopper',
+  soill: 'So iLL',
 };
 
 function formatDistance(meters: number): string {
@@ -34,7 +34,7 @@ interface BoardScrollCardProps {
   disabled?: boolean;
   disabledText?: string;
   distanceMeters?: number | null;
-  size?: "default" | "small";
+  size?: 'default' | 'small';
   onClick: () => void;
 }
 
@@ -47,14 +47,14 @@ export default function BoardScrollCard({
   disabled,
   disabledText,
   distanceMeters,
-  size = "default",
+  size = 'default',
   onClick,
 }: BoardScrollCardProps) {
   const boardDetails = useBoardDetails(userBoard, storedConfig, popularConfig);
 
   const { name, meta } = useMemo(() => {
-    let cardName = "";
-    let cardMeta = "";
+    let cardName = '';
+    let cardMeta = '';
 
     if (userBoard) {
       cardName = userBoard.name;
@@ -84,13 +84,13 @@ export default function BoardScrollCard({
       if (popularConfig.boardCount > 0)
         parts.push(`${formatCount(popularConfig.boardCount)} boards`);
       parts.push(formatSends(popularConfig.totalAscents));
-      cardMeta = parts.join(" \u00B7 ");
+      cardMeta = parts.join(' \u00B7 ');
     }
 
     return { name: cardName, meta: cardMeta };
   }, [userBoard, storedConfig, popularConfig, boardConfigs]);
 
-  const isSmall = size === "small";
+  const isSmall = size === 'small';
   const iconSize = isSmall ? 24 : 32;
 
   const handleClick = disabled ? undefined : onClick;
@@ -98,11 +98,11 @@ export default function BoardScrollCard({
 
   return (
     <div
-      className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ""}`}
+      className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ''}`}
       onClick={handleClick}
     >
       <div
-        className={`${styles.cardSquare} ${selected ? styles.cardSquareSelected : ""} ${disabled ? styles.cardSquareDisabled : ""}`}
+        className={`${styles.cardSquare} ${selected ? styles.cardSquareSelected : ''} ${disabled ? styles.cardSquareDisabled : ''}`}
       >
         {boardDetails ? (
           <BoardRenderer mirrored={false} boardDetails={boardDetails} thumbnail fillHeight />
@@ -116,12 +116,12 @@ export default function BoardScrollCard({
         )}
       </div>
       <div
-        className={`${styles.cardName} ${selected ? styles.cardNameSelected : ""} ${disabled ? styles.cardNameDisabled : ""}`}
+        className={`${styles.cardName} ${selected ? styles.cardNameSelected : ''} ${disabled ? styles.cardNameDisabled : ''}`}
       >
         {name}
       </div>
       {displayMeta && (
-        <div className={`${styles.cardMeta} ${disabled ? styles.cardNameDisabled : ""}`}>
+        <div className={`${styles.cardMeta} ${disabled ? styles.cardNameDisabled : ''}`}>
           {displayMeta}
         </div>
       )}

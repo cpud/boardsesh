@@ -8,29 +8,29 @@ import type {
   BoardName,
   SendDeviceLogsInput,
   SendDeviceLogsResponse,
-} from "@boardsesh/shared-schema";
-import { findClimbIndex } from "./navigation-helpers";
-import { db } from "../../../db/client";
-import { esp32Controllers } from "@boardsesh/db/schema/app";
-import { eq, and } from "drizzle-orm";
+} from '@boardsesh/shared-schema';
+import { findClimbIndex } from './navigation-helpers';
+import { db } from '../../../db/client';
+import { esp32Controllers } from '@boardsesh/db/schema/app';
+import { eq, and } from 'drizzle-orm';
 import {
   requireAuthenticated,
   applyRateLimit,
   requireControllerAuth,
   requireControllerAuthorizedForSession,
-} from "../shared/helpers";
-import { randomBytes, randomUUID } from "crypto";
-import { matchClimbByFrames, getClimbByUuid } from "../../../db/queries/climbs";
-import { roomManager } from "../../../services/room-manager";
-import { pubsub } from "../../../pubsub";
-import { buildFramesString } from "@boardsesh/board-constants/led-placements";
-import { forwardLogs, type DeviceLog } from "../../../services/axiom";
+} from '../shared/helpers';
+import { randomBytes, randomUUID } from 'crypto';
+import { matchClimbByFrames, getClimbByUuid } from '../../../db/queries/climbs';
+import { roomManager } from '../../../services/room-manager';
+import { pubsub } from '../../../pubsub';
+import { buildFramesString } from '@boardsesh/board-constants/led-placements';
+import { forwardLogs, type DeviceLog } from '../../../services/axiom';
 
 /**
  * Generate a secure random API key
  */
 function generateApiKey(): string {
-  return randomBytes(32).toString("hex");
+  return randomBytes(32).toString('hex');
 }
 
 export const controllerMutations = {
@@ -48,7 +48,7 @@ export const controllerMutations = {
     await applyRateLimit(ctx, 10); // Lower limit for controller registration
 
     if (!ctx.userId) {
-      throw new Error("User ID not available");
+      throw new Error('User ID not available');
     }
 
     const apiKey = generateApiKey();
@@ -86,7 +86,7 @@ export const controllerMutations = {
     await applyRateLimit(ctx);
 
     if (!ctx.userId) {
-      throw new Error("User ID not available");
+      throw new Error('User ID not available');
     }
 
     await db
@@ -130,7 +130,7 @@ export const controllerMutations = {
       .limit(1);
 
     if (!controller) {
-      throw new Error("Controller not found");
+      throw new Error('Controller not found');
     }
 
     // Update lastSeenAt
@@ -154,7 +154,7 @@ export const controllerMutations = {
     const angle = currentState.currentClimbQueueItem?.climb?.angle ?? 40;
 
     console.log(
-      `[Controller] Matching climb for session ${sessionId} at angle ${angle}, frames: ${frames ? "provided" : "not provided"}, positions: ${positions?.length ?? 0}`,
+      `[Controller] Matching climb for session ${sessionId} at angle ${angle}, frames: ${frames ? 'provided' : 'not provided'}, positions: ${positions?.length ?? 0}`,
     );
 
     // Build frames string from positions if not provided directly
@@ -204,7 +204,7 @@ export const controllerMutations = {
         `[Controller] Publishing CurrentClimbChanged (no match) with clientId: ${clientIdForEvent}`,
       );
       pubsub.publishQueueEvent(sessionId, {
-        __typename: "CurrentClimbChanged",
+        __typename: 'CurrentClimbChanged',
         sequence: currentState.sequence,
         item: null, // No queue item for unknown climb
         clientId: clientIdForEvent, // ESP32 compares this with its MAC
@@ -267,7 +267,7 @@ export const controllerMutations = {
 
     // Publish QueueItemAdded event for the new item
     pubsub.publishQueueEvent(sessionId, {
-      __typename: "QueueItemAdded",
+      __typename: 'QueueItemAdded',
       sequence,
       item: queueItem,
       position: insertPosition,
@@ -278,7 +278,7 @@ export const controllerMutations = {
     const matchClientId = ctx.controllerMac || controllerId;
     console.log(`[Controller] Publishing CurrentClimbChanged with clientId: ${matchClientId}`);
     pubsub.publishQueueEvent(sessionId, {
-      __typename: "CurrentClimbChanged",
+      __typename: 'CurrentClimbChanged',
       sequence,
       item: queueItem,
       clientId: matchClientId,
@@ -330,7 +330,7 @@ export const controllerMutations = {
     await applyRateLimit(ctx);
 
     if (!ctx.userId) {
-      throw new Error("User ID not available");
+      throw new Error('User ID not available');
     }
 
     // Verify the user owns this controller
@@ -341,7 +341,7 @@ export const controllerMutations = {
       .limit(1);
 
     if (!controller) {
-      throw new Error("Controller not found or not owned by user");
+      throw new Error('Controller not found or not owned by user');
     }
 
     // Update the controller's authorized session
@@ -408,7 +408,7 @@ export const controllerMutations = {
 
         // Publish CurrentClimbChanged event
         pubsub.publishQueueEvent(sessionId, {
-          __typename: "CurrentClimbChanged",
+          __typename: 'CurrentClimbChanged',
           sequence,
           item: newCurrentClimb,
           clientId: null,
@@ -420,7 +420,7 @@ export const controllerMutations = {
     }
 
     // Validate direction for fallback navigation
-    if (direction !== "next" && direction !== "previous") {
+    if (direction !== 'next' && direction !== 'previous') {
       throw new Error('Invalid direction. Must be "next" or "previous".');
     }
 
@@ -433,7 +433,7 @@ export const controllerMutations = {
     );
 
     // Calculate target index based on direction
-    if (direction === "next") {
+    if (direction === 'next') {
       // Move forward in queue
       if (currentIndex === -1) {
         // No current climb, start at beginning
@@ -476,7 +476,7 @@ export const controllerMutations = {
     // Unlike setClimbFromLedPositions (where we skip because ESP32 already has LEDs from BLE),
     // navigation NEEDS to send LedUpdate back to the ESP32 since it's moving to a different climb
     pubsub.publishQueueEvent(sessionId, {
-      __typename: "CurrentClimbChanged",
+      __typename: 'CurrentClimbChanged',
       sequence,
       item: newCurrentClimb,
       clientId: null, // Don't skip - ESP32 needs the new climb data

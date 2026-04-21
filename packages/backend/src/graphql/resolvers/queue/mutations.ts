@@ -1,17 +1,17 @@
-import type { ConnectionContext, ClimbQueueItem, QueueState } from "@boardsesh/shared-schema";
-import { roomManager, VersionConflictError } from "../../../services/room-manager";
-import { pubsub } from "../../../pubsub/index";
-import { requireSession, applyRateLimit, validateInput, MAX_RETRIES } from "../shared/helpers";
+import type { ConnectionContext, ClimbQueueItem, QueueState } from '@boardsesh/shared-schema';
+import { roomManager, VersionConflictError } from '../../../services/room-manager';
+import { pubsub } from '../../../pubsub/index';
+import { requireSession, applyRateLimit, validateInput, MAX_RETRIES } from '../shared/helpers';
 import {
   ClimbQueueItemSchema,
   QueueIndexSchema,
   QueueItemIdSchema,
   QueueArraySchema,
-} from "../../../validation/schemas";
-import { logMutationMetrics } from "./mutation-metrics";
+} from '../../../validation/schemas';
+import { logMutationMetrics } from './mutation-metrics';
 
 // Debug logging flag - only log in development
-const DEBUG = process.env.NODE_ENV === "development";
+const DEBUG = process.env.NODE_ENV === 'development';
 
 export const queueMutations = {
   /**
@@ -28,18 +28,18 @@ export const queueMutations = {
     const sessionId = requireSession(ctx);
 
     // Validate input
-    validateInput(ClimbQueueItemSchema, item, "item");
+    validateInput(ClimbQueueItemSchema, item, 'item');
     if (position !== undefined) {
-      validateInput(QueueIndexSchema, position, "position");
+      validateInput(QueueIndexSchema, position, 'position');
     }
 
     if (DEBUG)
       console.log(
-        "[addQueueItem] Adding item:",
+        '[addQueueItem] Adding item:',
         item.climb?.name,
-        "by client:",
+        'by client:',
         ctx.connectionId,
-        "at position:",
+        'at position:',
         position,
       );
 
@@ -54,9 +54,9 @@ export const queueMutations = {
       const currentState = await roomManager.getQueueState(sessionId);
       if (DEBUG)
         console.log(
-          "[addQueueItem] Current state - queue size:",
+          '[addQueueItem] Current state - queue size:',
           currentState.queue.length,
-          "version:",
+          'version:',
           currentState.version,
         );
       let queue = currentState.queue;
@@ -65,7 +65,7 @@ export const queueMutations = {
       // Only add if not already in queue
       if (queue.some((i) => i.uuid === item.uuid)) {
         // Item already in queue - return without publishing event
-        if (DEBUG) console.log("[addQueueItem] Item already in queue, skipping");
+        if (DEBUG) console.log('[addQueueItem] Item already in queue, skipping');
         return item;
       }
 
@@ -104,14 +104,14 @@ export const queueMutations = {
 
       // Broadcast to subscribers with the actual position
       pubsub.publishQueueEvent(sessionId, {
-        __typename: "QueueItemAdded",
+        __typename: 'QueueItemAdded',
         sequence: resultSequence,
         item: item,
         position: actualPosition,
       });
     }
 
-    logMutationMetrics("addQueueItem", performance.now() - startTime, sessionId, {
+    logMutationMetrics('addQueueItem', performance.now() - startTime, sessionId, {
       queueSize: originalQueueLength,
     });
     return item;
@@ -127,7 +127,7 @@ export const queueMutations = {
     const sessionId = requireSession(ctx);
 
     // Validate input
-    validateInput(QueueItemIdSchema, uuid, "uuid");
+    validateInput(QueueItemIdSchema, uuid, 'uuid');
 
     const currentState = await roomManager.getQueueState(sessionId);
     const queue = currentState.queue.filter((i) => i.uuid !== uuid);
@@ -141,12 +141,12 @@ export const queueMutations = {
     const { sequence } = await roomManager.updateQueueState(sessionId, queue, currentClimb);
 
     pubsub.publishQueueEvent(sessionId, {
-      __typename: "QueueItemRemoved",
+      __typename: 'QueueItemRemoved',
       sequence,
       uuid,
     });
 
-    logMutationMetrics("removeQueueItem", performance.now() - startTime, sessionId);
+    logMutationMetrics('removeQueueItem', performance.now() - startTime, sessionId);
     return true;
   },
 
@@ -163,9 +163,9 @@ export const queueMutations = {
     const sessionId = requireSession(ctx);
 
     // Validate inputs
-    validateInput(QueueItemIdSchema, uuid, "uuid");
-    validateInput(QueueIndexSchema, oldIndex, "oldIndex");
-    validateInput(QueueIndexSchema, newIndex, "newIndex");
+    validateInput(QueueItemIdSchema, uuid, 'uuid');
+    validateInput(QueueIndexSchema, oldIndex, 'oldIndex');
+    validateInput(QueueIndexSchema, newIndex, 'newIndex');
 
     const currentState = await roomManager.getQueueState(sessionId);
     const queue = [...currentState.queue];
@@ -186,14 +186,14 @@ export const queueMutations = {
     }
 
     pubsub.publishQueueEvent(sessionId, {
-      __typename: "QueueReordered",
+      __typename: 'QueueReordered',
       sequence: resultSequence,
       uuid,
       oldIndex,
       newIndex,
     });
 
-    logMutationMetrics("reorderQueueItem", performance.now() - startTime, sessionId);
+    logMutationMetrics('reorderQueueItem', performance.now() - startTime, sessionId);
     return true;
   },
 
@@ -217,25 +217,25 @@ export const queueMutations = {
 
     // Validate input
     if (item !== null) {
-      validateInput(ClimbQueueItemSchema, item, "item");
+      validateInput(ClimbQueueItemSchema, item, 'item');
     }
 
     // Debug: track who's setting null
     if (DEBUG) {
       if (item === null) {
         console.log(
-          "[setCurrentClimb] Setting current climb to NULL by client:",
+          '[setCurrentClimb] Setting current climb to NULL by client:',
           ctx.connectionId,
-          "session:",
+          'session:',
           sessionId,
         );
       } else {
         console.log(
-          "[setCurrentClimb] Setting current climb to:",
+          '[setCurrentClimb] Setting current climb to:',
           item.climb?.name,
-          "by client:",
+          'by client:',
           ctx.connectionId,
-          "correlationId:",
+          'correlationId:',
           correlationId,
         );
       }
@@ -274,14 +274,14 @@ export const queueMutations = {
     }
 
     pubsub.publishQueueEvent(sessionId, {
-      __typename: "CurrentClimbChanged",
+      __typename: 'CurrentClimbChanged',
       sequence,
       item: item,
       clientId: ctx.connectionId || null,
       correlationId: correlationId || null,
     });
 
-    logMutationMetrics("setCurrentClimb", performance.now() - startTime, sessionId, {
+    logMutationMetrics('setCurrentClimb', performance.now() - startTime, sessionId, {
       shouldAddToQueue: !!shouldAddToQueue,
     });
     return item;
@@ -321,12 +321,12 @@ export const queueMutations = {
     }
 
     pubsub.publishQueueEvent(sessionId, {
-      __typename: "ClimbMirrored",
+      __typename: 'ClimbMirrored',
       sequence,
       mirrored,
     });
 
-    logMutationMetrics("mirrorCurrentClimb", performance.now() - startTime, sessionId);
+    logMutationMetrics('mirrorCurrentClimb', performance.now() - startTime, sessionId);
     return currentClimb;
   },
 
@@ -344,8 +344,8 @@ export const queueMutations = {
     const sessionId = requireSession(ctx);
 
     // Validate input
-    validateInput(QueueItemIdSchema, uuid, "uuid");
-    validateInput(ClimbQueueItemSchema, item, "item");
+    validateInput(QueueItemIdSchema, uuid, 'uuid');
+    validateInput(ClimbQueueItemSchema, item, 'item');
 
     const currentState = await roomManager.getQueueState(sessionId);
     const queue = currentState.queue.map((i) => (i.uuid === uuid ? item : i));
@@ -364,12 +364,12 @@ export const queueMutations = {
 
     // Publish as FullSync since replace is less common
     pubsub.publishQueueEvent(sessionId, {
-      __typename: "FullSync",
+      __typename: 'FullSync',
       sequence,
       state: { sequence, stateHash, queue, currentClimbQueueItem: currentClimb },
     });
 
-    logMutationMetrics("replaceQueueItem", performance.now() - startTime, sessionId);
+    logMutationMetrics('replaceQueueItem', performance.now() - startTime, sessionId);
     return item;
   },
 
@@ -390,9 +390,9 @@ export const queueMutations = {
     const sessionId = requireSession(ctx);
 
     // Validate queue size to prevent memory exhaustion
-    validateInput(QueueArraySchema, queue, "queue");
+    validateInput(QueueArraySchema, queue, 'queue');
     if (currentClimbQueueItem) {
-      validateInput(ClimbQueueItemSchema, currentClimbQueueItem, "currentClimbQueueItem");
+      validateInput(ClimbQueueItemSchema, currentClimbQueueItem, 'currentClimbQueueItem');
     }
 
     const { sequence, stateHash } = await roomManager.updateQueueState(
@@ -409,12 +409,12 @@ export const queueMutations = {
     };
 
     pubsub.publishQueueEvent(sessionId, {
-      __typename: "FullSync",
+      __typename: 'FullSync',
       sequence,
       state,
     });
 
-    logMutationMetrics("setQueue", performance.now() - startTime, sessionId, {
+    logMutationMetrics('setQueue', performance.now() - startTime, sessionId, {
       queueSize: queue.length,
     });
     return state;

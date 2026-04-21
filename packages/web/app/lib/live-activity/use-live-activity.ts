@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { isNativeApp, getPlatform } from "../ble/capacitor-utils";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { isNativeApp, getPlatform } from '../ble/capacitor-utils';
 import {
   startLiveActivitySession,
   endLiveActivitySession,
   updateLiveActivity,
   updateLiveActivityClimb,
   isLiveActivityAvailable,
-} from "./live-activity-plugin";
-import { getBackendWsUrl } from "../backend-url";
-import type { ClimbQueueItem } from "@/app/components/queue-control/types";
-import type { BoardDetails } from "../types";
+} from './live-activity-plugin';
+import { getBackendWsUrl } from '../backend-url';
+import type { ClimbQueueItem } from '@/app/components/queue-control/types';
+import type { BoardDetails } from '../types';
 
 interface UseLiveActivityOptions {
   queue: ClimbQueueItem[];
@@ -60,13 +60,13 @@ export function useLiveActivity({
 
   // Stabilize boardDetails by value so reference changes don't restart the session
   const boardKey = boardDetails
-    ? `${boardDetails.board_name}:${boardDetails.layout_id}:${boardDetails.size_id}:${Array.isArray(boardDetails.set_ids) ? boardDetails.set_ids.join(",") : boardDetails.set_ids}`
+    ? `${boardDetails.board_name}:${boardDetails.layout_id}:${boardDetails.size_id}:${Array.isArray(boardDetails.set_ids) ? boardDetails.set_ids.join(',') : boardDetails.set_ids}`
     : null;
   const stableBoardDetails = useMemo(() => boardDetails, [boardKey]);
 
   // Check availability once
   useEffect(() => {
-    if (!isNativeApp() || getPlatform() !== "ios") return;
+    if (!isNativeApp() || getPlatform() !== 'ios') return;
     let cancelled = false;
     isLiveActivityAvailable().then((result) => {
       if (!cancelled) setAvailable(result);
@@ -83,11 +83,11 @@ export function useLiveActivity({
     isSessionActive && hasContent && stableBoardDetails !== null && available === true;
 
   useEffect(() => {
-    if (!isNativeApp() || getPlatform() !== "ios") return;
+    if (!isNativeApp() || getPlatform() !== 'ios') return;
     if (!available) return;
 
     if (shouldBeActive && !isActiveRef.current && stableBoardDetails) {
-      const serverUrl = typeof window !== "undefined" ? window.location.origin : "";
+      const serverUrl = typeof window !== 'undefined' ? window.location.origin : '';
 
       isActiveRef.current = true;
       const startGeneration = ++generationRef.current;
@@ -100,7 +100,7 @@ export function useLiveActivity({
         layoutId: stableBoardDetails.layout_id,
         sizeId: stableBoardDetails.size_id,
         setIds: Array.isArray(stableBoardDetails.set_ids)
-          ? stableBoardDetails.set_ids.join(",")
+          ? stableBoardDetails.set_ids.join(',')
           : String(stableBoardDetails.set_ids),
       }).then(() => {
         if (!isActiveRef.current || generationRef.current !== startGeneration) return;

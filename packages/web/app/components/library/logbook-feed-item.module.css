@@ -184,7 +184,7 @@
 }
 
 .statusBadgeButton::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: -13px;
 }

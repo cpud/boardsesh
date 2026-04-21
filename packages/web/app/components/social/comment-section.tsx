@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import React, { useState, useCallback, useEffect, useRef } from "react";
-import Box from "@mui/material/Box";
-import MuiTypography from "@mui/material/Typography";
-import type { SocialEntityType } from "@boardsesh/shared-schema";
-import { useSession } from "next-auth/react";
-import { useWsAuthToken } from "@/app/hooks/use-ws-auth-token";
-import { useSnackbar } from "@/app/components/providers/snackbar-provider";
-import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
-import { getBackendWsUrl } from "@/app/lib/backend-url";
-import { createGraphQLClient, subscribe } from "@/app/components/graphql-queue/graphql-client";
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import Box from '@mui/material/Box';
+import MuiTypography from '@mui/material/Typography';
+import type { SocialEntityType } from '@boardsesh/shared-schema';
+import { useSession } from 'next-auth/react';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { useSnackbar } from '@/app/components/providers/snackbar-provider';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
+import { getBackendWsUrl } from '@/app/lib/backend-url';
+import { createGraphQLClient, subscribe } from '@/app/components/graphql-queue/graphql-client';
 import {
   ADD_COMMENT,
   type AddCommentMutationVariables,
@@ -17,9 +17,9 @@ import {
   COMMENT_UPDATES_SUBSCRIPTION,
   type CommentUpdatesSubscriptionResponse,
   type CommentUpdatesSubscriptionVariables,
-} from "@/app/lib/graphql/operations";
-import CommentForm from "./comment-form";
-import CommentList from "./comment-list";
+} from '@/app/lib/graphql/operations';
+import CommentForm from './comment-form';
+import CommentList from './comment-list';
 
 interface CommentSectionProps {
   entityType: SocialEntityType;
@@ -30,7 +30,7 @@ interface CommentSectionProps {
 export default function CommentSection({
   entityType,
   entityId,
-  title = "Discussion",
+  title = 'Discussion',
 }: CommentSectionProps) {
   const [refreshKey, setRefreshKey] = useState(0);
   const { data: session } = useSession();
@@ -64,7 +64,7 @@ export default function CommentSection({
           }
         },
         error: (err) => {
-          console.error("[CommentSection] Subscription error:", err);
+          console.error('[CommentSection] Subscription error:', err);
         },
         complete: () => {
           // Subscription ended
@@ -89,8 +89,8 @@ export default function CommentSection({
         });
         setRefreshKey((prev) => prev + 1);
       } catch {
-        showMessage("Failed to post comment", "error");
-        throw new Error("Failed to post comment");
+        showMessage('Failed to post comment', 'error');
+        throw new Error('Failed to post comment');
       }
     },
     [token, entityType, entityId, showMessage],

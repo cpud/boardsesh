@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
-import React, { useCallback, useEffect, useRef } from "react";
-import MuiButton from "@mui/material/Button";
-import { useRouter, useSearchParams } from "next/navigation";
-import { track } from "@vercel/analytics";
-import { Climb, BoardDetails, Angle } from "@/app/lib/types";
-import { useQueueActions, useCurrentClimb, useQueueList } from "@/app/components/graphql-queue";
-import SwipeBoardCarousel from "@/app/components/board-renderer/swipe-board-carousel";
-import ClimbTitle from "@/app/components/climb-card/climb-title";
-import { AscentStatus } from "@/app/components/climb-card/ascent-status";
+import React, { useCallback, useEffect, useRef } from 'react';
+import MuiButton from '@mui/material/Button';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { track } from '@vercel/analytics';
+import { Climb, BoardDetails, Angle } from '@/app/lib/types';
+import { useQueueActions, useCurrentClimb, useQueueList } from '@/app/components/graphql-queue';
+import SwipeBoardCarousel from '@/app/components/board-renderer/swipe-board-carousel';
+import ClimbTitle from '@/app/components/climb-card/climb-title';
+import { AscentStatus } from '@/app/components/climb-card/ascent-status';
 import {
   constructClimbListWithSlugs,
   constructPlayUrlWithSlugs,
   extractUuidFromSlug,
-} from "@/app/lib/url-utils";
-import { themeTokens } from "@/app/theme/theme-config";
-import { EmptyState } from "@/app/components/ui/empty-state";
-import PlayViewBetaSlider from "@/app/components/play-view/play-view-beta-slider";
-import PlayViewComments from "@/app/components/play-view/play-view-comments";
-import styles from "./play-view.module.css";
+} from '@/app/lib/url-utils';
+import { themeTokens } from '@/app/theme/theme-config';
+import { EmptyState } from '@/app/components/ui/empty-state';
+import PlayViewBetaSlider from '@/app/components/play-view/play-view-beta-slider';
+import PlayViewComments from '@/app/components/play-view/play-view-comments';
+import styles from './play-view.module.css';
 
 type PlayViewClientProps = {
   boardDetails: BoardDetails;
@@ -51,7 +51,7 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
 
   useEffect(() => {
     const handlePopState = () => {
-      const pathSegments = window.location.pathname.split("/");
+      const pathSegments = window.location.pathname.split('/');
       const lastSegment = pathSegments[pathSegments.length - 1];
       if (!lastSegment) return;
       const uuid = extractUuidFromSlug(lastSegment);
@@ -60,8 +60,8 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
         setCurrentClimbRef.current(item);
       }
     };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   const getBackToListUrl = useCallback(() => {
@@ -78,7 +78,7 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
         angle,
       );
     } else {
-      baseUrl = `/${board_name}/${boardDetails.layout_id}/${boardDetails.size_id}/${boardDetails.set_ids.join(",")}/${angle}/list`;
+      baseUrl = `/${board_name}/${boardDetails.layout_id}/${boardDetails.size_id}/${boardDetails.set_ids.join(',')}/${angle}/list`;
     }
 
     const queryString = searchParams.toString();
@@ -105,14 +105,14 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
           climb.name,
         );
       } else {
-        url = `/${board_name}/${boardDetails.layout_id}/${boardDetails.size_id}/${boardDetails.set_ids.join(",")}/${angle}/play/${climb.uuid}`;
+        url = `/${board_name}/${boardDetails.layout_id}/${boardDetails.size_id}/${boardDetails.set_ids.join(',')}/${angle}/play/${climb.uuid}`;
       }
 
       const queryString = searchParams.toString();
       if (queryString) {
         url = `${url}?${queryString}`;
       }
-      window.history.pushState(null, "", url);
+      window.history.pushState(null, '', url);
     },
     [boardDetails, angle, searchParams],
   );
@@ -122,9 +122,9 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
     if (nextItem) {
       setCurrentClimbQueueItem(nextItem);
       navigateToClimb(nextItem.climb);
-      track("Play Mode Navigation", {
-        direction: "next",
-        boardLayout: boardDetails.layout_name || "",
+      track('Play Mode Navigation', {
+        direction: 'next',
+        boardLayout: boardDetails.layout_name || '',
       });
     }
   }, [getNextClimbQueueItem, setCurrentClimbQueueItem, navigateToClimb, boardDetails.layout_name]);
@@ -134,9 +134,9 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
     if (prevItem) {
       setCurrentClimbQueueItem(prevItem);
       navigateToClimb(prevItem.climb);
-      track("Play Mode Navigation", {
-        direction: "previous",
-        boardLayout: boardDetails.layout_name || "",
+      track('Play Mode Navigation', {
+        direction: 'previous',
+        boardLayout: boardDetails.layout_name || '',
       });
     }
   }, [
@@ -153,9 +153,9 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
     return (
       <div
         className={styles.pageContainer}
-        style={{ backgroundColor: "var(--semantic-background)" }}
+        style={{ backgroundColor: 'var(--semantic-background)' }}
       >
-        <div className={styles.emptyState} style={{ color: "var(--neutral-400)" }}>
+        <div className={styles.emptyState} style={{ color: 'var(--neutral-400)' }}>
           <EmptyState description="No climb selected" />
           <MuiButton variant="contained" onClick={() => router.push(getBackToListUrl())}>
             Browse Climbs
@@ -166,7 +166,7 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
   }
 
   return (
-    <div className={styles.pageContainer} style={{ backgroundColor: "var(--semantic-background)" }}>
+    <div className={styles.pageContainer} style={{ backgroundColor: 'var(--semantic-background)' }}>
       {/* Main Content with Swipe */}
       <div className={styles.contentWrapper}>
         {/* Climb title - horizontal layout with grade on right */}
@@ -180,12 +180,12 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
             climb={displayClimb}
             layout="horizontal"
             showSetterInfo
-            titleFontSize={themeTokens.typography.fontSize["2xl"]}
+            titleFontSize={themeTokens.typography.fontSize['2xl']}
             rightAddon={
               displayClimb && (
                 <AscentStatus
                   climbUuid={displayClimb.uuid}
-                  fontSize={themeTokens.typography.fontSize["2xl"]}
+                  fontSize={themeTokens.typography.fontSize['2xl']}
                 />
               )
             }

@@ -1,19 +1,19 @@
-import React from "react";
-import { getServerAuthToken } from "@/app/lib/auth/server-auth";
+import React from 'react';
+import { getServerAuthToken } from '@/app/lib/auth/server-auth';
 import {
   serverMyBoards,
   serverUserPlaylists,
   cachedDiscoverPlaylists,
-} from "@/app/lib/graphql/server-cached-client";
-import LibraryPageContent from "./library-page-content";
-import { getPlaylistLcpPreloadUrl } from "@/app/lib/lcp-preload-url";
-import styles from "@/app/components/library/library.module.css";
-import { createPageMetadata } from "@/app/lib/seo/metadata";
+} from '@/app/lib/graphql/server-cached-client';
+import LibraryPageContent from './library-page-content';
+import { getPlaylistLcpPreloadUrl } from '@/app/lib/lcp-preload-url';
+import styles from '@/app/components/library/library.module.css';
+import { createPageMetadata } from '@/app/lib/seo/metadata';
 
 export const metadata = createPageMetadata({
-  title: "Discover Climbing Playlists",
-  description: "Discover public climbing playlists and manage your own after signing in.",
-  path: "/playlists",
+  title: 'Discover Climbing Playlists',
+  description: 'Discover public climbing playlists and manage your own after signing in.',
+  path: '/playlists',
 });
 
 export default async function PlaylistsPage() {
