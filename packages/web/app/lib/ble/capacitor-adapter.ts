@@ -48,10 +48,7 @@ interface CapacitorBlePlugin {
     services: string[];
     optionalServices?: string[];
   }): Promise<{ deviceId: string; name?: string }>;
-  requestLEScan?(
-    options: { services?: string[] },
-    callback: (result: CapacitorScanResult) => void,
-  ): Promise<void>;
+  requestLEScan?(options: { services?: string[] }): Promise<void>;
   stopLEScan?(): Promise<void>;
   connect(options: {
     deviceId: string;
@@ -70,8 +67,8 @@ interface CapacitorBlePlugin {
     mtu: number;
   }): Promise<{ value: number }>;
   addListener(
-    eventName: 'disconnected',
-    callback: (data: { deviceId: string }) => void,
+    eventName: 'disconnected' | 'onScanResult',
+    callback: (data: Record<string, unknown>) => void,
   ): Promise<PluginListenerHandle>;
 }
 
@@ -163,8 +160,10 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
         pushDevices();
       });
 
-      // Start scanning — each callback adds/updates the device map
-      await ble.requestLEScan({ services }, (result) => {
+      // Register scan result listener BEFORE starting the scan.
+      // The raw Capacitor plugin delivers results via events, not callbacks.
+      const scanListener = await ble.addListener('onScanResult', (data) => {
+        const result = data as unknown as CapacitorScanResult;
         const device: DiscoveredDevice = {
           deviceId: result.device.deviceId,
           name: result.localName || result.device.name,
@@ -175,9 +174,16 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
           return;
         }
 
-        devices.set(device.deviceId, device);
+        // Deduplicate by name (which includes the serial number for Aurora boards)
+        // rather than deviceId, because iOS can assign different CoreBluetooth UUIDs
+        // to the same physical device across scan results.
+        const dedupeKey = device.name || device.deviceId;
+        devices.set(dedupeKey, device);
         pushDevices();
       });
+
+      // Start scanning
+      await ble.requestLEScan({ services });
 
       // Auto-stop scan after timeout to prevent indefinite battery drain
       const scanTimeoutId = setTimeout(() => {
@@ -188,6 +194,7 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
         selectedDeviceId = await selectionPromise;
       } finally {
         clearTimeout(scanTimeoutId);
+        await scanListener.remove();
         await stopScanQuietly(ble);
       }
 
