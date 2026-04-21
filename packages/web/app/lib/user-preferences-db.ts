@@ -1,24 +1,24 @@
-import { createIndexedDBStore, migrateFromLocalStorage } from './idb-helper';
-import type { LogbookPreferences } from './logbook-preferences';
+import { createIndexedDBStore, migrateFromLocalStorage } from "./idb-helper";
+import type { LogbookPreferences } from "./logbook-preferences";
 
-const STORE_NAME = 'preferences';
+const STORE_NAME = "preferences";
 
 export type UserPreferenceKeyMap = {
-  libraryTab: 'playlists' | 'logbook';
+  libraryTab: "playlists" | "logbook";
   logbookPreferences: LogbookPreferences;
-  'swipeHint:climbListSeen': boolean;
-  'swipeHint:queueBarSeen': boolean;
-  'swipeHint:logbookSeen': boolean;
+  "swipeHint:climbListSeen": boolean;
+  "swipeHint:queueBarSeen": boolean;
+  "swipeHint:logbookSeen": boolean;
   tickBarExpanded: boolean;
 };
 
 // Map of IDB preference keys to their legacy localStorage keys for one-time migration
 const LEGACY_LOCALSTORAGE_KEYS: Record<string, string> = {
-  climbListViewMode: 'climbListViewMode',
-  'boardsesh:partyMode': 'boardsesh:partyMode',
+  climbListViewMode: "climbListViewMode",
+  "boardsesh:partyMode": "boardsesh:partyMode",
 };
 
-const getDB = createIndexedDBStore('boardsesh-user-preferences', STORE_NAME);
+const getDB = createIndexedDBStore("boardsesh-user-preferences", STORE_NAME);
 
 /**
  * Get a preference value from IndexedDB.
@@ -30,7 +30,8 @@ export const getPreference = async <T = unknown, K extends string = string>(
     const db = await getDB();
     if (!db) return null;
     const value = await db.get(STORE_NAME, key);
-    if (value !== undefined) return value as (K extends keyof UserPreferenceKeyMap ? UserPreferenceKeyMap[K] : T);
+    if (value !== undefined)
+      return value as K extends keyof UserPreferenceKeyMap ? UserPreferenceKeyMap[K] : T;
 
     // Attempt one-time migration from localStorage
     const legacyKey = LEGACY_LOCALSTORAGE_KEYS[key];
@@ -42,12 +43,13 @@ export const getPreference = async <T = unknown, K extends string = string>(
         migratedValue = val;
         migrated = true;
       });
-      if (migrated) return migratedValue as (K extends keyof UserPreferenceKeyMap ? UserPreferenceKeyMap[K] : T);
+      if (migrated)
+        return migratedValue as K extends keyof UserPreferenceKeyMap ? UserPreferenceKeyMap[K] : T;
     }
 
     return null;
   } catch (error) {
-    console.error('Failed to get preference:', error);
+    console.error("Failed to get preference:", error);
     return null;
   }
 };
@@ -64,7 +66,7 @@ export const setPreference = async <K extends string>(
     if (!db) return;
     await db.put(STORE_NAME, value, key);
   } catch (error) {
-    console.error('Failed to save preference:', error);
+    console.error("Failed to save preference:", error);
   }
 };
 
@@ -77,7 +79,7 @@ export const removePreference = async (key: string): Promise<void> => {
     if (!db) return;
     await db.delete(STORE_NAME, key);
   } catch (error) {
-    console.error('Failed to remove preference:', error);
+    console.error("Failed to remove preference:", error);
   }
 };
 
@@ -85,7 +87,7 @@ export const removePreference = async (key: string): Promise<void> => {
  * Get the "always tick in app" preference.
  */
 export const getAlwaysTickInApp = async (): Promise<boolean> => {
-  const value = await getPreference<boolean>('alwaysTickInApp');
+  const value = await getPreference<boolean>("alwaysTickInApp");
   return value === true;
 };
 
@@ -93,26 +95,26 @@ export const getAlwaysTickInApp = async (): Promise<boolean> => {
  * Set the "always tick in app" preference.
  */
 export const setAlwaysTickInApp = async (enabled: boolean): Promise<void> => {
-  await setPreference('alwaysTickInApp', enabled);
+  await setPreference("alwaysTickInApp", enabled);
 };
 
-export type { GradeDisplayFormat } from './grade-colors';
+export type { GradeDisplayFormat } from "./grade-colors";
 // Re-export so existing consumers don't break.
 // The canonical definition lives in grade-colors.ts.
-import type { GradeDisplayFormat } from './grade-colors';
+import type { GradeDisplayFormat } from "./grade-colors";
 
 /**
  * Get the grade display format preference.
  * Defaults to 'v-grade' if not set.
  */
 export const getGradeDisplayFormat = async (): Promise<GradeDisplayFormat> => {
-  const value = await getPreference<GradeDisplayFormat>('gradeDisplayFormat');
-  return value === 'font' ? 'font' : 'v-grade';
+  const value = await getPreference<GradeDisplayFormat>("gradeDisplayFormat");
+  return value === "font" ? "font" : "v-grade";
 };
 
 /**
  * Set the grade display format preference.
  */
 export const setGradeDisplayFormat = async (format: GradeDisplayFormat): Promise<void> => {
-  await setPreference('gradeDisplayFormat', format);
+  await setPreference("gradeDisplayFormat", format);
 };

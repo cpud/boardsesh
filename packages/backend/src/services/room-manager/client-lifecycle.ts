@@ -60,9 +60,7 @@ export async function joinSession(
   writeScheduler: WriteScheduler,
   sessionGraceTimers: Map<string, NodeJS.Timeout>,
   pendingJoinPersists: Map<string, Promise<void>>,
-  getQueueStateFn: (
-    sessionId: string,
-  ) => Promise<{
+  getQueueStateFn: (sessionId: string) => Promise<{
     queue: ClimbQueueItem[];
     currentClimbQueueItem: ClimbQueueItem | null;
     version: number;

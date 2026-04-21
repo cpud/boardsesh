@@ -1,12 +1,12 @@
-import type { SessionSummary } from '@boardsesh/shared-schema';
+import type { SessionSummary } from "@boardsesh/shared-schema";
 import {
   isHealthKitAvailable,
   requestHealthKitAuthorization,
   saveSessionToHealthKit,
   getHealthKitAutoSync,
-} from './healthkit-bridge';
-import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import { SET_SESSION_HEALTHKIT_WORKOUT_ID } from '@/app/lib/graphql/operations/activity-feed';
+} from "./healthkit-bridge";
+import { createGraphQLHttpClient } from "@/app/lib/graphql/client";
+import { SET_SESSION_HEALTHKIT_WORKOUT_ID } from "@/app/lib/graphql/operations/activity-feed";
 
 // Guards against duplicate saves when both end-session paths fire for the
 // same session. Stores sessionIds that are currently being saved or have
@@ -86,7 +86,7 @@ export async function autoSaveToHealthKit(
           workoutId: result.workoutId,
         });
       } catch (e) {
-        console.warn('[HealthKit] Failed to persist workout id:', e);
+        console.warn("[HealthKit] Failed to persist workout id:", e);
       }
     }
 
@@ -94,7 +94,7 @@ export async function autoSaveToHealthKit(
   } catch (e) {
     // Remove from guard so a retry is possible after a genuine failure
     savedOrInFlight.delete(summary.sessionId);
-    console.warn('[HealthKit] Auto-save failed:', e);
+    console.warn("[HealthKit] Auto-save failed:", e);
     return null;
   }
 }

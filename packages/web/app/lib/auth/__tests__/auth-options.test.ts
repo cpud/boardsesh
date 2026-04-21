@@ -298,9 +298,7 @@ describe("authOptions.callbacks.signIn", () => {
 
 type CredentialProviderLike = {
   id?: string;
-  authorize?: (
-    credentials: Record<string, string> | undefined,
-  ) => Promise<{
+  authorize?: (credentials: Record<string, string> | undefined) => Promise<{
     id: string;
     email: string | null;
     name: string | null;

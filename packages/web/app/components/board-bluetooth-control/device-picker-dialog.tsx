@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import BluetoothSearching from '@mui/icons-material/BluetoothSearching';
-import Bluetooth from '@mui/icons-material/Bluetooth';
-import SignalCellularAlt from '@mui/icons-material/SignalCellularAlt';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import type { DiscoveredDevice } from '@/app/lib/ble/types';
+import BluetoothSearching from "@mui/icons-material/BluetoothSearching";
+import Bluetooth from "@mui/icons-material/Bluetooth";
+import SignalCellularAlt from "@mui/icons-material/SignalCellularAlt";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import List from "@mui/material/List";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import type { DiscoveredDevice } from "@/app/lib/ble/types";
 
 interface DevicePickerDialogProps {
   devices: DiscoveredDevice[];
@@ -24,10 +24,10 @@ interface DevicePickerDialogProps {
 }
 
 function signalLabel(rssi: number): string {
-  if (rssi >= -50) return 'Strong';
-  if (rssi >= -70) return 'Good';
-  if (rssi >= -85) return 'Weak';
-  return 'Very weak';
+  if (rssi >= -50) return "Strong";
+  if (rssi >= -70) return "Good";
+  if (rssi >= -85) return "Weak";
+  return "Very weak";
 }
 
 export function DevicePickerDialog({ devices, onSelect, onCancel }: DevicePickerDialogProps) {
@@ -44,7 +44,12 @@ export function DevicePickerDialog({ devices, onSelect, onCancel }: DevicePicker
       </DialogTitle>
       <DialogContent sx={{ minHeight: 120 }}>
         {sorted.length === 0 ? (
-          <Stack direction="row" alignItems="center" spacing={2} sx={{ py: 3, justifyContent: 'center' }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={2}
+            sx={{ py: 3, justifyContent: "center" }}
+          >
             <CircularProgress size={20} />
             <Typography variant="body2" color="text.secondary">
               Scanning for boards nearby&hellip;
@@ -58,7 +63,7 @@ export function DevicePickerDialog({ devices, onSelect, onCancel }: DevicePicker
                   <Bluetooth />
                 </ListItemIcon>
                 <ListItemText
-                  primary={device.name || 'Unknown device'}
+                  primary={device.name || "Unknown device"}
                   secondary={
                     <Stack direction="row" alignItems="center" spacing={0.5} component="span">
                       <SignalCellularAlt sx={{ fontSize: 14 }} />

@@ -91,7 +91,7 @@ function RootSessionSummaryDialog() {
   return (
     <SessionSummaryDialog
       summary={sessionSummary}
-      boardType={sessionSummaryBoardType ?? ''}
+      boardType={sessionSummaryBoardType ?? ""}
       existingWorkoutId={sessionSummaryHealthKitWorkoutId}
       onDismiss={dismissSessionSummary}
     />

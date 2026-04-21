@@ -69,7 +69,9 @@ export async function saveSessionToHealthKit(
     `[HealthKit] Saving workout: startedAt=${summary.startedAt} endedAt=${summary.endedAt} duration=${durationSec}s durationMinutes=${summary.durationMinutes}`,
   );
   if (durationSec < 60) {
-    console.warn(`[HealthKit] Duration is only ${durationSec}s — workout will appear as <1 min in Apple Health`);
+    console.warn(
+      `[HealthKit] Duration is only ${durationSec}s — workout will appear as <1 min in Apple Health`,
+    );
   }
   try {
     const result = await plugin.saveWorkout({
