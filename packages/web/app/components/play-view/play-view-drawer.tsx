@@ -331,8 +331,8 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
                 />
               }
             />
-            {/* Action buttons — save + attempt, hidden when expanded */}
-            {!tickBarExpanded && (
+            {/* Action buttons — save + attempt */}
+            {(
               <div className={styles.tickBarButtons}>
                 <TickButtonWithLabel label={isFlash ? 'flash' : 'tick'}>
                   <IconButton

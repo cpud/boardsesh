@@ -46,8 +46,6 @@ export interface QuickTickBarProps {
   expanded?: boolean;
   /** Toggle expanded/collapsed state. */
   onExpandedChange?: (expanded: boolean) => void;
-  /** Close the tick bar entirely (cancel). */
-  onClose?: () => void;
   /** Expanded-mode comment slot — taller, for the expanded layout. */
   expandedCommentSlot?: React.ReactNode;
 }
@@ -110,6 +108,11 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
   const inferredType: TickStatus = tickTarget && !tickTarget.hasPriorHistory && attemptCount === 1 ? 'flash' : 'send';
   const [ascentType, setAscentType] = useState<TickStatus>(inferredType);
   const userOverrodeType = useRef(false);
+
+  // Reset userOverrodeType when the tick target (climb) changes so auto-inference works for new climbs.
+  useEffect(() => {
+    userOverrodeType.current = false;
+  }, [tickTarget]);
 
   // Auto-update ascent type when tries or prior history changes (unless user explicitly chose).
   useEffect(() => {

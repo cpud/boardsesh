@@ -62,6 +62,12 @@ We use board and product names (e.g. "Kilter Board", "MoonBoard", "Tension Board
 
 ---
 
+## Third-Party Notices
+
+- **Person Falling icon** from [Font Awesome Free 6.7.2](https://fontawesome.com) by @fontawesome. License: [CC BY 4.0](https://fontawesome.com/license/free). Copyright 2024 Fonticons, Inc.
+
+---
+
 ## DMCA & Takedown Requests
 
 We take intellectual property concerns seriously. If you believe any material in this project infringes your copyright, please contact us with the following information:
