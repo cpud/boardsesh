@@ -90,8 +90,7 @@ export const TickButton: React.FC<TickButtonProps> = ({
   };
 
   const filteredLogbook = useMemo(
-    () =>
-      logbook.filter((asc) => asc.climb_uuid === currentClimb?.uuid && Number(asc.angle) === angle),
+    () => logbook.filter((asc) => asc.climb_uuid === currentClimb?.uuid && Number(asc.angle) === angle),
     [logbook, currentClimb?.uuid, angle],
   );
   const hasSuccessfulAscent = filteredLogbook.some((asc) => asc.is_ascent);
@@ -103,9 +102,7 @@ export const TickButton: React.FC<TickButtonProps> = ({
       max={100}
       sx={{
         '& .MuiBadge-badge': {
-          backgroundColor: hasSuccessfulAscent
-            ? themeTokens.colors.success
-            : themeTokens.colors.error,
+          backgroundColor: hasSuccessfulAscent ? themeTokens.colors.success : themeTokens.colors.error,
           color: 'common.white',
         },
       }}
@@ -123,8 +120,7 @@ export const TickButton: React.FC<TickButtonProps> = ({
                     : ascentType === 'flash' || isFlash
                       ? themeTokens.colors.amber
                       : themeTokens.colors.success,
-                color:
-                  ascentType === 'flash' || isFlash ? themeTokens.neutral[900] : 'common.white',
+                color: ascentType === 'flash' || isFlash ? themeTokens.neutral[900] : 'common.white',
                 transition: 'background-color 150ms ease, color 150ms ease',
                 '&:hover': {
                   backgroundColor:
@@ -147,8 +143,7 @@ export const TickButton: React.FC<TickButtonProps> = ({
     </MuiBadge>
   );
 
-  const tickLabel =
-    ascentType === 'attempt' ? 'attempt' : ascentType === 'flash' || isFlash ? 'flash' : 'tick';
+  const tickLabel = ascentType === 'attempt' ? 'attempt' : ascentType === 'flash' || isFlash ? 'flash' : 'tick';
 
   return (
     <>
@@ -194,12 +189,7 @@ export const TickButton: React.FC<TickButtonProps> = ({
                 <Typography variant="body1" component="p" color="text.secondary">
                   Or log your tick in the official app:
                 </Typography>
-                <Button
-                  variant="outlined"
-                  startIcon={<AppsOutlined />}
-                  onClick={handleOpenInApp}
-                  fullWidth
-                >
+                <Button variant="outlined" startIcon={<AppsOutlined />} onClick={handleOpenInApp} fullWidth>
                   Open in App
                 </Button>
                 <Button

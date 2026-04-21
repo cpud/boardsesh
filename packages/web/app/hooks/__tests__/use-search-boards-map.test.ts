@@ -59,10 +59,7 @@ function makeBoard(uuid: string, overrides?: Partial<UserBoard>): UserBoard {
   } as UserBoard;
 }
 
-function makeSearchResponse(
-  boards: UserBoard[],
-  hasMore = false,
-): { searchBoards: UserBoardConnection } {
+function makeSearchResponse(boards: UserBoard[], hasMore = false): { searchBoards: UserBoardConnection } {
   return { searchBoards: { boards, totalCount: boards.length + (hasMore ? 100 : 0), hasMore } };
 }
 

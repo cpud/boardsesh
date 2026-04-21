@@ -125,10 +125,7 @@ const SocialFeedItem: React.FC<SocialFeedItemProps> = ({ item, showUserHeader = 
           )}
 
           {/* Details */}
-          <Box
-            sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
-            className={styles.feedItemContent}
-          >
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }} className={styles.feedItemContent}>
             {/* Status and climb name row */}
             <Box
               sx={{
@@ -145,31 +142,17 @@ const SocialFeedItem: React.FC<SocialFeedItemProps> = ({ item, showUserHeader = 
                   label={statusDisplay.label}
                   size="small"
                   color={statusDisplay.chipColor}
-                  sx={
-                    statusDisplay.color
-                      ? { bgcolor: statusDisplay.color, color: 'var(--neutral-900)' }
-                      : undefined
-                  }
+                  sx={statusDisplay.color ? { bgcolor: statusDisplay.color, color: 'var(--neutral-900)' } : undefined}
                   className={styles.statusTag}
                 />
                 {!showUserHeader && (
-                  <MuiTypography
-                    variant="body2"
-                    component="span"
-                    fontWeight={600}
-                    className={styles.climbName}
-                  >
+                  <MuiTypography variant="body2" component="span" fontWeight={600} className={styles.climbName}>
                     {item.climbName}
                   </MuiTypography>
                 )}
               </Box>
               {!showUserHeader && (
-                <MuiTypography
-                  variant="body2"
-                  component="span"
-                  color="text.secondary"
-                  className={styles.timeAgo}
-                >
+                <MuiTypography variant="body2" component="span" color="text.secondary" className={styles.timeAgo}>
                   {timeAgo}
                 </MuiTypography>
               )}
@@ -177,16 +160,9 @@ const SocialFeedItem: React.FC<SocialFeedItemProps> = ({ item, showUserHeader = 
 
             {/* Climb details chips */}
             <Box sx={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-              {item.difficultyName && (
-                <Chip label={item.difficultyName} size="small" color="primary" />
-              )}
+              {item.difficultyName && <Chip label={item.difficultyName} size="small" color="primary" />}
               <Chip icon={<LocationOnOutlined />} label={`${item.angle}\u00B0`} size="small" />
-              <MuiTypography
-                variant="body2"
-                component="span"
-                color="text.secondary"
-                className={styles.boardType}
-              >
+              <MuiTypography variant="body2" component="span" color="text.secondary" className={styles.boardType}>
                 {boardDisplay}
               </MuiTypography>
               {item.isMirror && <Chip label="Mirrored" size="small" color="secondary" />}

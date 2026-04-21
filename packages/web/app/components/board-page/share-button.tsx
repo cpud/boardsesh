@@ -47,18 +47,12 @@ export const ShareBoardButton = () => {
     }
     let success: boolean;
     if (currentClimbQueueItem) {
-      success = await btConnect(
-        currentClimbQueueItem.climb.frames,
-        !!currentClimbQueueItem.climb.mirrored,
-      );
+      success = await btConnect(currentClimbQueueItem.climb.frames, !!currentClimbQueueItem.climb.mirrored);
     } else {
       success = await btConnect();
     }
     if (!success) {
-      showMessage(
-        'Could not connect to board. Make sure Bluetooth is on and the board is nearby.',
-        'error',
-      );
+      showMessage('Could not connect to board. Make sure Bluetooth is on and the board is nearby.', 'error');
     }
   };
 
@@ -92,13 +86,11 @@ export const ShareBoardButton = () => {
         <DialogContent>
           {isIOS ? (
             <Typography variant="body2">
-              Safari doesn&apos;t support Bluetooth. Use the Boardsesh app to light up holds on your
-              board.
+              Safari doesn&apos;t support Bluetooth. Use the Boardsesh app to light up holds on your board.
             </Typography>
           ) : (
             <Typography variant="body2">
-              This browser doesn&apos;t support Bluetooth. Switch to Chrome to light up holds on
-              your board.
+              This browser doesn&apos;t support Bluetooth. Switch to Chrome to light up holds on your board.
             </Typography>
           )}
         </DialogContent>

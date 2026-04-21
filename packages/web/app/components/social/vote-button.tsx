@@ -31,12 +31,7 @@ interface VoteButtonProps {
   initialUserVote?: number;
   layout?: 'vertical' | 'horizontal';
   likeOnly?: boolean;
-  onVoteChange?: (summary: {
-    upvotes: number;
-    downvotes: number;
-    voteScore: number;
-    userVote: number;
-  }) => void;
+  onVoteChange?: (summary: { upvotes: number; downvotes: number; voteScore: number; userVote: number }) => void;
 }
 
 export default function VoteButton({
@@ -94,10 +89,10 @@ export default function VoteButton({
     const fetchVoteSummary = async () => {
       try {
         const client = createGraphQLHttpClient(token);
-        const response = await client.request<
-          GetVoteSummaryQueryResponse,
-          GetVoteSummaryQueryVariables
-        >(GET_VOTE_SUMMARY, { entityType, entityId });
+        const response = await client.request<GetVoteSummaryQueryResponse, GetVoteSummaryQueryVariables>(
+          GET_VOTE_SUMMARY,
+          { entityType, entityId },
+        );
         if (!cancelled && !hasVotedRef.current) {
           const summary = response.voteSummary;
           setUpvotes(summary.upvotes);
@@ -187,17 +182,7 @@ export default function VoteButton({
         setIsLoading(false);
       }
     },
-    [
-      upvotes,
-      downvotes,
-      userVote,
-      isAuthenticated,
-      token,
-      entityType,
-      entityId,
-      onVoteChange,
-      showMessage,
-    ],
+    [upvotes, downvotes, userVote, isAuthenticated, token, entityType, entityId, onVoteChange, showMessage],
   );
 
   const score = upvotes - downvotes;
@@ -217,11 +202,7 @@ export default function VoteButton({
             p: 0.5,
           }}
         >
-          {isLiked ? (
-            <FavoriteOutlined sx={{ fontSize: 18 }} />
-          ) : (
-            <FavoriteBorderOutlined sx={{ fontSize: 18 }} />
-          )}
+          {isLiked ? <FavoriteOutlined sx={{ fontSize: 18 }} /> : <FavoriteBorderOutlined sx={{ fontSize: 18 }} />}
         </IconButton>
         {upvotes > 0 && (
           <MuiTypography

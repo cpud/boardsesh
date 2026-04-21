@@ -49,8 +49,7 @@ const GeneratorOptionsForm: React.FC<GeneratorOptionsFormProps> = ({
 
   // Check if we should show the tall climbs filter
   // Only show for Kilter Homewall on the largest size (10x12)
-  const isKilterHomewall =
-    boardDetails.board_name === 'kilter' && boardDetails.layout_id === KILTER_HOMEWALL_LAYOUT_ID;
+  const isKilterHomewall = boardDetails.board_name === 'kilter' && boardDetails.layout_id === KILTER_HOMEWALL_LAYOUT_ID;
   const isLargestSize = boardDetails.size_name?.toLowerCase().includes('12');
   const showTallClimbsFilter = isKilterHomewall && isLargestSize;
 
@@ -182,9 +181,7 @@ const GeneratorOptionsForm: React.FC<GeneratorOptionsFormProps> = ({
       </div>
 
       {/* Climb Bias */}
-      {renderSelect('Climb Bias', options.climbBias, CLIMB_BIAS_OPTIONS, (v) =>
-        updateOption('climbBias', v),
-      )}
+      {renderSelect('Climb Bias', options.climbBias, CLIMB_BIAS_OPTIONS, (v) => updateOption('climbBias', v))}
 
       {/* Tall Climbs Only - only for Kilter Homewall large size */}
       {showTallClimbsFilter && (
@@ -324,12 +321,7 @@ const GeneratorOptionsForm: React.FC<GeneratorOptionsFormProps> = ({
       <div className={styles.form}>{renderOptionsForm()}</div>
 
       <div className={styles.resetContainer}>
-        <MuiButton
-          variant="text"
-          startIcon={<RefreshOutlined />}
-          onClick={onReset}
-          className={styles.resetButton}
-        >
+        <MuiButton variant="text" startIcon={<RefreshOutlined />} onClick={onReset} className={styles.resetButton}>
           Reset
         </MuiButton>
       </div>
@@ -340,10 +332,7 @@ const GeneratorOptionsForm: React.FC<GeneratorOptionsFormProps> = ({
 export default GeneratorOptionsForm;
 
 // Helper to get default options for a workout type
-export const getDefaultOptions = (
-  workoutType: WorkoutType,
-  targetGrade: number,
-): GeneratorOptions => {
+export const getDefaultOptions = (workoutType: WorkoutType, targetGrade: number): GeneratorOptions => {
   switch (workoutType) {
     case 'volume':
       return { ...DEFAULT_VOLUME_OPTIONS, targetGrade };

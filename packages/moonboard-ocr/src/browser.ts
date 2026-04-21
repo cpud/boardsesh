@@ -81,9 +81,4 @@ export { deduplicateClimbs };
 // Re-export the CanvasImageProcessor for advanced use cases
 export { CanvasImageProcessor } from './image-processor/canvas-processor';
 export { parseWithProcessor } from './parser-core';
-export type {
-  ImageProcessor,
-  RawPixelData,
-  ImageMetadata,
-  ImageRegion,
-} from './image-processor/types';
+export type { ImageProcessor, RawPixelData, ImageMetadata, ImageRegion } from './image-processor/types';

@@ -74,9 +74,7 @@ function parseSchema(schema: string): SchemaSection[] {
   for (const line of lines) {
     // Detect start of a new type definition
     const typeMatch = line.match(/^\s*("""[\s\S]*?"""\s*)?(type|input|enum|union|scalar)\s+(\w+)/);
-    const queryMatch = line.match(
-      /^\s*("""[\s\S]*?""")?\s*type\s+(Query|Mutation|Subscription)\s*\{/,
-    );
+    const queryMatch = line.match(/^\s*("""[\s\S]*?""")?\s*type\s+(Query|Mutation|Subscription)\s*\{/);
 
     if (queryMatch) {
       if (currentSection && braceCount === 0) {
@@ -157,12 +155,9 @@ export default function GraphQLSchemaViewer() {
     : sections;
 
   const groupedSections = {
-    operations: filteredSections.filter((s) =>
-      ['query', 'mutation', 'subscription'].includes(s.type),
-    ),
+    operations: filteredSections.filter((s) => ['query', 'mutation', 'subscription'].includes(s.type)),
     types: filteredSections.filter(
-      (s) =>
-        s.type === 'type' && !['query', 'mutation', 'subscription'].includes(s.name.toLowerCase()),
+      (s) => s.type === 'type' && !['query', 'mutation', 'subscription'].includes(s.name.toLowerCase()),
     ),
     inputs: filteredSections.filter((s) => s.type === 'input'),
     enums: filteredSections.filter((s) => s.type === 'enum'),
@@ -224,12 +219,7 @@ export default function GraphQLSchemaViewer() {
 
       <TabPanel value={activeTab} index="operations">
         <div>
-          <Typography
-            variant="body1"
-            component="p"
-            color="text.secondary"
-            className={styles.operationsDescription}
-          >
+          <Typography variant="body1" component="p" color="text.secondary" className={styles.operationsDescription}>
             Queries, Mutations, and Subscriptions available via the WebSocket GraphQL API.
           </Typography>
           {renderSectionList(groupedSections.operations)}

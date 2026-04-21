@@ -33,9 +33,7 @@ export const favoriteClimbsQuery = {
     const boardName = input.boardName as BoardName;
 
     if (!isValidBoardName(boardName)) {
-      throw new Error(
-        `Invalid board name: ${boardName}. Must be one of: ${SUPPORTED_BOARDS.join(', ')}`,
-      );
+      throw new Error(`Invalid board name: ${boardName}. Must be one of: ${SUPPORTED_BOARDS.join(', ')}`);
     }
 
     const page = input.page ?? 0;
@@ -46,12 +44,7 @@ export const favoriteClimbsQuery = {
     const countResult = await db
       .select({ count: sql<number>`count(*)::int` })
       .from(dbSchema.userFavorites)
-      .where(
-        and(
-          eq(dbSchema.userFavorites.userId, userId),
-          eq(dbSchema.userFavorites.boardName, boardName),
-        ),
-      );
+      .where(and(eq(dbSchema.userFavorites.userId, userId), eq(dbSchema.userFavorites.boardName, boardName)));
 
     const totalCount = countResult[0]?.count || 0;
 
@@ -69,9 +62,7 @@ export const favoriteClimbsQuery = {
         frames: tables.climbs.frames,
         // Stats data
         ascensionist_count: tables.climbStats.ascensionistCount,
-        difficulty_id: sql<
-          number | null
-        >`ROUND(${tables.climbStats.displayDifficulty}::numeric, 0)`,
+        difficulty_id: sql<number | null>`ROUND(${tables.climbStats.displayDifficulty}::numeric, 0)`,
         quality_average: sql<number>`ROUND(${tables.climbStats.qualityAverage}::numeric, 2)`,
         difficulty_error: sql<number>`ROUND(${tables.climbStats.difficultyAverage}::numeric - ${tables.climbStats.displayDifficulty}::numeric, 2)`,
         benchmark_difficulty: tables.climbStats.benchmarkDifficulty,
@@ -79,10 +70,7 @@ export const favoriteClimbsQuery = {
       .from(dbSchema.userFavorites)
       .innerJoin(
         tables.climbs,
-        and(
-          eq(tables.climbs.uuid, dbSchema.userFavorites.climbUuid),
-          eq(tables.climbs.boardType, boardName),
-        ),
+        and(eq(tables.climbs.uuid, dbSchema.userFavorites.climbUuid), eq(tables.climbs.boardType, boardName)),
       )
       .leftJoin(
         tables.climbStats,
@@ -92,12 +80,7 @@ export const favoriteClimbsQuery = {
           eq(tables.climbStats.angle, input.angle),
         ),
       )
-      .where(
-        and(
-          eq(dbSchema.userFavorites.userId, userId),
-          eq(dbSchema.userFavorites.boardName, boardName),
-        ),
-      )
+      .where(and(eq(dbSchema.userFavorites.userId, userId), eq(dbSchema.userFavorites.boardName, boardName)))
       .orderBy(desc(dbSchema.userFavorites.createdAt))
       .limit(pageSize + 1)
       .offset(page * pageSize);
@@ -119,9 +102,7 @@ export const favoriteClimbsQuery = {
       stars: Math.round((Number(result.quality_average) || 0) * 5),
       difficulty_error: result.difficulty_error?.toString() || '0',
       benchmark_difficulty:
-        result.benchmark_difficulty && result.benchmark_difficulty > 0
-          ? result.benchmark_difficulty.toString()
-          : null,
+        result.benchmark_difficulty && result.benchmark_difficulty > 0 ? result.benchmark_difficulty.toString() : null,
     }));
 
     return {

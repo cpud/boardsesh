@@ -11,10 +11,7 @@
  * @returns Result of the operation
  * @throws Sanitized error if operation fails
  */
-export async function wrapDatabaseOperation<T>(
-  operation: () => Promise<T>,
-  context: string,
-): Promise<T> {
+export async function wrapDatabaseOperation<T>(operation: () => Promise<T>, context: string): Promise<T> {
   try {
     return await operation();
   } catch (error) {
@@ -66,12 +63,7 @@ export async function wrapDatabaseOperation<T>(
  * @param event - Event details to log
  */
 export function logSecurityEvent(event: {
-  type:
-    | 'auth_failure'
-    | 'rate_limit'
-    | 'unauthorized_access'
-    | 'validation_error'
-    | 'suspicious_activity';
+  type: 'auth_failure' | 'rate_limit' | 'unauthorized_access' | 'validation_error' | 'suspicious_activity';
   connectionId?: string;
   userId?: string;
   details: string;

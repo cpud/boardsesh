@@ -50,36 +50,32 @@ export default function CommentFeed({ isAuthenticated, boardUuid }: CommentFeedP
 
   const queryKey = ['globalCommentFeed', boardUuid] as const;
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } =
-    useInfiniteQuery<CommentConnection, Error>({
-      queryKey,
-      queryFn: async ({ pageParam }) => {
-        const client = createGraphQLHttpClient(isAuthenticated ? token : null);
-        const input = {
-          limit: 20,
-          cursor: pageParam as string | null,
-          boardUuid: boardUuid || undefined,
-        };
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } = useInfiniteQuery<
+    CommentConnection,
+    Error
+  >({
+    queryKey,
+    queryFn: async ({ pageParam }) => {
+      const client = createGraphQLHttpClient(isAuthenticated ? token : null);
+      const input = {
+        limit: 20,
+        cursor: pageParam as string | null,
+        boardUuid: boardUuid || undefined,
+      };
 
-        const response = await client.request<GetGlobalCommentFeedResponse>(
-          GET_GLOBAL_COMMENT_FEED,
-          { input },
-        );
-        return response.globalCommentFeed;
-      },
-      initialPageParam: null as string | null,
-      getNextPageParam: (lastPage) => {
-        if (!lastPage.hasMore) return undefined;
-        return lastPage.cursor ?? undefined;
-      },
-      enabled: isAuthenticated ? !!token : true,
-      staleTime: 60 * 1000,
-    });
+      const response = await client.request<GetGlobalCommentFeedResponse>(GET_GLOBAL_COMMENT_FEED, { input });
+      return response.globalCommentFeed;
+    },
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.hasMore) return undefined;
+      return lastPage.cursor ?? undefined;
+    },
+    enabled: isAuthenticated ? !!token : true,
+    staleTime: 60 * 1000,
+  });
 
-  const comments: CommentType[] = useMemo(
-    () => data?.pages.flatMap((p) => p.comments) ?? [],
-    [data],
-  );
+  const comments: CommentType[] = useMemo(() => data?.pages.flatMap((p) => p.comments) ?? [], [data]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: fetchNextPage,
@@ -89,10 +85,7 @@ export default function CommentFeed({ isAuthenticated, boardUuid }: CommentFeedP
 
   if ((authLoading || isLoading) && comments.length === 0) {
     return (
-      <Box
-        data-testid="comment-feed"
-        sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
-      >
+      <Box data-testid="comment-feed" sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <FeedItemSkeleton />
         <FeedItemSkeleton />
         <FeedItemSkeleton />
@@ -103,10 +96,7 @@ export default function CommentFeed({ isAuthenticated, boardUuid }: CommentFeedP
   return (
     <Box data-testid="comment-feed" sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       {error && (
-        <EmptyState
-          icon={<ErrorOutline fontSize="inherit" />}
-          description="Failed to load comments. Please try again."
-        >
+        <EmptyState icon={<ErrorOutline fontSize="inherit" />} description="Failed to load comments. Please try again.">
           <MuiButton variant="contained" onClick={() => refetch()}>
             Retry
           </MuiButton>
@@ -114,10 +104,7 @@ export default function CommentFeed({ isAuthenticated, boardUuid }: CommentFeedP
       )}
 
       {!error && comments.length === 0 ? (
-        <EmptyState
-          icon={<ChatBubbleOutlineOutlined fontSize="inherit" />}
-          description="No comments yet"
-        />
+        <EmptyState icon={<ChatBubbleOutlineOutlined fontSize="inherit" />} description="No comments yet" />
       ) : (
         <>
           {comments.map((comment) => (

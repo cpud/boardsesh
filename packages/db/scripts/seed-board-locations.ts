@@ -215,11 +215,7 @@ function slugify(name: string, uuid: string): string {
  * Resolve setIds from accumulated_hold_set_value bitmask.
  * Each bit position maps to a set in the ordered KILTER_SETS array.
  */
-function resolveKilterSetIds(
-  layoutId: number,
-  sizeId: number,
-  accumulatedValue: number | null,
-): string | null {
+function resolveKilterSetIds(layoutId: number, sizeId: number, accumulatedValue: number | null): string | null {
   const key = `${layoutId}-${sizeId}`;
   const availableSets = KILTER_SETS[key];
   if (!availableSets || availableSets.length === 0) return null;
@@ -420,11 +416,7 @@ async function seedBoardLocations() {
     console.log('Starting board location seed...');
 
     // Step 1: Ensure system user exists
-    const [existingUser] = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(eq(users.id, SYSTEM_USER_ID))
-      .limit(1);
+    const [existingUser] = await db.select({ id: users.id }).from(users).where(eq(users.id, SYSTEM_USER_ID)).limit(1);
 
     if (!existingUser) {
       await db.insert(users).values({
@@ -467,10 +459,7 @@ async function seedBoardLocations() {
       const batch = gymEntries.slice(i, i + BATCH_SIZE);
       for (const [sourceKey, rec] of batch) {
         const gymUuid = deterministicUuid(`gym:${sourceKey}`);
-        const gymSlug = slugify(
-          rec.gymName,
-          createHash('md5').update(sourceKey).digest('hex').slice(0, 6),
-        );
+        const gymSlug = slugify(rec.gymName, createHash('md5').update(sourceKey).digest('hex').slice(0, 6));
 
         // Upsert gym: insert or update on UUID conflict
         const result = await db
@@ -547,9 +536,7 @@ async function seedBoardLocations() {
       }
 
       if ((i + BATCH_SIZE) % 200 === 0 || i + BATCH_SIZE >= allRecords.length) {
-        console.log(
-          `  Progress: ${Math.min(i + BATCH_SIZE, allRecords.length)}/${allRecords.length}`,
-        );
+        console.log(`  Progress: ${Math.min(i + BATCH_SIZE, allRecords.length)}/${allRecords.length}`);
       }
     }
 

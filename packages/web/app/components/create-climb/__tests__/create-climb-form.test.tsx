@@ -145,9 +145,7 @@ describe('CreateClimbForm', () => {
     renderComponent();
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/This hold pattern already exists as "Existing Problem"/),
-      ).toBeTruthy();
+      expect(screen.getByText(/This hold pattern already exists as "Existing Problem"/)).toBeTruthy();
     });
 
     await waitFor(() => {

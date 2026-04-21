@@ -124,8 +124,7 @@
   border-color: transparent;
 }
 
-.holdSearchHeaderCompact
-  :global(.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline) {
+.holdSearchHeaderCompact :global(.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline) {
   border-color: transparent;
 }
 

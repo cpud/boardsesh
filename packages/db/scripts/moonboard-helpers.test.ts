@@ -50,23 +50,17 @@ describe('coordinateToHoldId', () => {
 
 describe('movesToFrames', () => {
   it('converts a single start move', () => {
-    const moves: MoonBoardMove[] = [
-      { problemId: 1, description: 'A1', isStart: true, isEnd: false },
-    ];
+    const moves: MoonBoardMove[] = [{ problemId: 1, description: 'A1', isStart: true, isEnd: false }];
     assert.equal(movesToFrames(moves), `p1r${HOLD_STATE_CODES.start}`);
   });
 
   it('converts a single finish move', () => {
-    const moves: MoonBoardMove[] = [
-      { problemId: 1, description: 'K18', isStart: false, isEnd: true },
-    ];
+    const moves: MoonBoardMove[] = [{ problemId: 1, description: 'K18', isStart: false, isEnd: true }];
     assert.equal(movesToFrames(moves), `p198r${HOLD_STATE_CODES.finish}`);
   });
 
   it('converts a single hand move', () => {
-    const moves: MoonBoardMove[] = [
-      { problemId: 1, description: 'E5', isStart: false, isEnd: false },
-    ];
+    const moves: MoonBoardMove[] = [{ problemId: 1, description: 'E5', isStart: false, isEnd: false }];
     assert.equal(movesToFrames(moves), `p49r${HOLD_STATE_CODES.hand}`);
   });
 
@@ -87,24 +81,15 @@ describe('movesToFrames', () => {
 
 describe('moveToHoldState', () => {
   it('returns STARTING for start moves', () => {
-    assert.equal(
-      moveToHoldState({ problemId: 1, description: 'A1', isStart: true, isEnd: false }),
-      'STARTING',
-    );
+    assert.equal(moveToHoldState({ problemId: 1, description: 'A1', isStart: true, isEnd: false }), 'STARTING');
   });
 
   it('returns FINISH for end moves', () => {
-    assert.equal(
-      moveToHoldState({ problemId: 1, description: 'K18', isStart: false, isEnd: true }),
-      'FINISH',
-    );
+    assert.equal(moveToHoldState({ problemId: 1, description: 'K18', isStart: false, isEnd: true }), 'FINISH');
   });
 
   it('returns HAND for regular moves', () => {
-    assert.equal(
-      moveToHoldState({ problemId: 1, description: 'E5', isStart: false, isEnd: false }),
-      'HAND',
-    );
+    assert.equal(moveToHoldState({ problemId: 1, description: 'E5', isStart: false, isEnd: false }), 'HAND');
   });
 });
 
@@ -125,10 +110,7 @@ describe('uuidv5', () => {
     const uuid = uuidv5('test', MOONBOARD_UUID_NAMESPACE);
     // Variant is the 17th hex char (index 19 after dashes), must be 8, 9, a, or b
     const variantChar = uuid.charAt(19);
-    assert.ok(
-      ['8', '9', 'a', 'b'].includes(variantChar),
-      `Expected variant char to be 8/9/a/b, got: ${variantChar}`,
-    );
+    assert.ok(['8', '9', 'a', 'b'].includes(variantChar), `Expected variant char to be 8/9/a/b, got: ${variantChar}`);
   });
 
   it('produces deterministic output (same input = same UUID)', () => {

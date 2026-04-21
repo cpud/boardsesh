@@ -102,8 +102,7 @@ const SwipeBoardCarousel = React.memo<SwipeBoardCarouselProps>(
     };
 
     const showPeek = swipeOffset !== 0 || isAnimating;
-    const peekIsNext =
-      animationDirection === 'left' || (animationDirection === null && swipeOffset < 0);
+    const peekIsNext = animationDirection === 'left' || (animationDirection === null && swipeOffset < 0);
     const peekClimb = peekIsNext ? nextClimb : previousClimb;
 
     const getPeekTransform = () => {
@@ -114,9 +113,7 @@ const SwipeBoardCarousel = React.memo<SwipeBoardCarouselProps>(
 
     const transition = getSwipeTransition();
     const canvasReady = useCanvasRendererReady();
-    const { ref: doubleTapRef, onDoubleClick: handleDoubleTapClick } = useDoubleTap(
-      isZoomed ? undefined : onDoubleTap,
-    );
+    const { ref: doubleTapRef, onDoubleClick: handleDoubleTapClick } = useDoubleTap(isZoomed ? undefined : onDoubleTap);
 
     const handleZoomChange = useCallback(
       (zoomed: boolean) => {
@@ -182,11 +179,7 @@ const SwipeBoardCarousel = React.memo<SwipeBoardCarouselProps>(
     return (
       <div
         className={`${styles.carouselContainer} ${className ?? ''}`}
-        style={
-          fillContainer
-            ? undefined
-            : { aspectRatio: `${boardDetails.boardWidth} / ${boardDetails.boardHeight}` }
-        }
+        style={fillContainer ? undefined : { aspectRatio: `${boardDetails.boardWidth} / ${boardDetails.boardHeight}` }}
         {...swipeHandlers}
         ref={mergedRef}
         onDoubleClick={handleDoubleTapClick}

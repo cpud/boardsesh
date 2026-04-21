@@ -1,9 +1,6 @@
 // app/api/cron/sync-shared-data/route.ts
 import { NextResponse } from 'next/server';
-import {
-  syncSharedData as syncSharedDataFunction,
-  type NewClimbInfo,
-} from '@/lib/data-sync/aurora/shared-sync';
+import { syncSharedData as syncSharedDataFunction, type NewClimbInfo } from '@/lib/data-sync/aurora/shared-sync';
 import { AuroraBoardName } from '@/app/lib/api-wrappers/aurora/types';
 import { AURORA_BOARD_NAMES } from '@/app/lib/board-constants';
 import { getDb } from '@/app/lib/db/db';
@@ -50,10 +47,7 @@ const internalSyncSharedData = async (
     complete: false,
     newClimbs: [...previousResults.newClimbs, ...currentResult.newClimbs],
   };
-  const categories = new Set([
-    ...Object.keys(previousResults.results),
-    ...Object.keys(currentResult.results),
-  ]);
+  const categories = new Set([...Object.keys(previousResults.results), ...Object.keys(currentResult.results)]);
 
   for (const category of categories) {
     if (category === 'complete') {
@@ -82,10 +76,7 @@ const internalSyncSharedData = async (
 /**
  * Create batched notifications for setter followers when new climbs are synced.
  */
-async function createSetterSyncNotifications(
-  boardName: AuroraBoardName,
-  newClimbs: NewClimbInfo[],
-): Promise<void> {
+async function createSetterSyncNotifications(boardName: AuroraBoardName, newClimbs: NewClimbInfo[]): Promise<void> {
   if (newClimbs.length === 0) return;
 
   try {
@@ -222,10 +213,7 @@ export async function GET(request: Request, props: { params: Promise<SharedSyncR
       console.error(
         `No sync token configured for ${board_name}. Set ${board_name.toUpperCase()}_SYNC_TOKEN env variable.`,
       );
-      return NextResponse.json(
-        { error: `No sync token configured for ${board_name}` },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: `No sync token configured for ${board_name}` }, { status: 500 });
     }
 
     const result = await internalSyncSharedData(board_name, token);

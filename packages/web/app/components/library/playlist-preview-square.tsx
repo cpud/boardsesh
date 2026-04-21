@@ -59,10 +59,7 @@ export default function PlaylistPreviewSquare({
   className,
   fetchPriority,
 }: PlaylistPreviewSquareProps) {
-  const boardDetails = useMemo(
-    () => getBoardDetailsForPlaylist(boardType, layoutId),
-    [boardType, layoutId],
-  );
+  const boardDetails = useMemo(() => getBoardDetailsForPlaylist(boardType, layoutId), [boardType, layoutId]);
 
   const backgroundColor = isLikedClimbs
     ? undefined
@@ -117,16 +114,9 @@ export default function PlaylistPreviewSquare({
           fetchPriority={fetchPriority}
         />
       </div>
-      <div
-        className={styles.previewFrostedOverlay}
-        style={{ background: `rgba(${rgbColor}, 0.45)` }}
-      />
+      <div className={styles.previewFrostedOverlay} style={{ background: `rgba(${rgbColor}, 0.45)` }} />
       <div className={styles.previewIconLayer}>
-        {icon ? (
-          <span className={styles.previewEmoji}>{icon}</span>
-        ) : (
-          <LabelOutlined className={styles.previewIcon} />
-        )}
+        {icon ? <span className={styles.previewEmoji}>{icon}</span> : <LabelOutlined className={styles.previewIcon} />}
       </div>
     </div>
   );

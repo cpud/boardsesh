@@ -1,14 +1,6 @@
 'use client';
 
-import React, {
-  useEffect,
-  useCallback,
-  useState,
-  useMemo,
-  useRef,
-  useImperativeHandle,
-  forwardRef,
-} from 'react';
+import React, { useEffect, useCallback, useState, useMemo, useRef, useImperativeHandle, forwardRef } from 'react';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import { FormatListBulletedOutlined, AppsOutlined } from '@mui/icons-material';
@@ -39,10 +31,7 @@ import { getPreference, setPreference } from '@/app/lib/user-preferences-db';
 import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
 import { getExcludedClimbActions } from '@/app/lib/climb-action-utils';
 import { themeTokens } from '@/app/theme/theme-config';
-import {
-  SelectionStoreContext,
-  useSelectionStore,
-} from '@/app/components/board-page/selected-climb-store';
+import { SelectionStoreContext, useSelectionStore } from '@/app/components/board-page/selected-climb-store';
 import styles from '@/app/components/library/playlist-view.module.css';
 import listStyles from '@/app/components/board-page/climbs-list.module.css';
 
@@ -112,9 +101,7 @@ const LikedDrawers = forwardRef<LikedDrawerHandle, LikedDrawersProps>(({ boardDe
     <>
       <SwipeableDrawer
         title={
-          activeDrawerClimb ? (
-            <DrawerClimbHeader climb={activeDrawerClimb} boardDetails={boardDetails} />
-          ) : undefined
+          activeDrawerClimb ? <DrawerClimbHeader climb={activeDrawerClimb} boardDetails={boardDetails} /> : undefined
         }
         placement="bottom"
         open={drawerMode === 'actions'}
@@ -138,9 +125,7 @@ const LikedDrawers = forwardRef<LikedDrawerHandle, LikedDrawersProps>(({ boardDe
 
       <SwipeableDrawer
         title={
-          activeDrawerClimb ? (
-            <DrawerClimbHeader climb={activeDrawerClimb} boardDetails={boardDetails} />
-          ) : undefined
+          activeDrawerClimb ? <DrawerClimbHeader climb={activeDrawerClimb} boardDetails={boardDetails} /> : undefined
         }
         placement="bottom"
         open={drawerMode === 'playlist'}
@@ -203,44 +188,34 @@ export default function LikedClimbsList({ boardDetails, angle }: LikedClimbsList
     track('Liked Climbs View Mode Changed', { mode });
   }, []);
 
-  const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage, isLoading, error } =
-    useInfiniteQuery({
-      queryKey: [
-        'likedClimbs',
-        boardDetails.board_name,
-        boardDetails.layout_id,
-        boardDetails.size_id,
-        angle,
-      ],
-      queryFn: async ({ pageParam = 0 }) => {
-        const response = await executeGraphQL<
-          GetUserFavoriteClimbsQueryResponse,
-          GetUserFavoriteClimbsQueryVariables
-        >(
-          GET_USER_FAVORITE_CLIMBS,
-          {
-            input: {
-              boardName: boardDetails.board_name,
-              layoutId: boardDetails.layout_id,
-              sizeId: boardDetails.size_id,
-              setIds: boardDetails.set_ids.join(','),
-              angle,
-              page: pageParam,
-              pageSize: 20,
-            },
+  const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage, isLoading, error } = useInfiniteQuery({
+    queryKey: ['likedClimbs', boardDetails.board_name, boardDetails.layout_id, boardDetails.size_id, angle],
+    queryFn: async ({ pageParam = 0 }) => {
+      const response = await executeGraphQL<GetUserFavoriteClimbsQueryResponse, GetUserFavoriteClimbsQueryVariables>(
+        GET_USER_FAVORITE_CLIMBS,
+        {
+          input: {
+            boardName: boardDetails.board_name,
+            layoutId: boardDetails.layout_id,
+            sizeId: boardDetails.size_id,
+            setIds: boardDetails.set_ids.join(','),
+            angle,
+            page: pageParam,
+            pageSize: 20,
           },
-          token,
-        );
-        return response.userFavoriteClimbs;
-      },
-      enabled: !tokenLoading && !!token,
-      initialPageParam: 0,
-      getNextPageParam: (lastPage, allPages) => {
-        if (!lastPage.hasMore) return undefined;
-        return allPages.length;
-      },
-      staleTime: 5 * 60 * 1000,
-    });
+        },
+        token,
+      );
+      return response.userFavoriteClimbs;
+    },
+    enabled: !tokenLoading && !!token,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      if (!lastPage.hasMore) return undefined;
+      return allPages.length;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
   const allClimbs: Climb[] = data?.pages.flatMap((page) => page.climbs as Climb[]) ?? [];
   const totalCount = data?.pages[0]?.totalCount ?? 0;
@@ -408,9 +383,7 @@ export default function LikedClimbsList({ boardDetails, angle }: LikedClimbsList
                 />
               </Box>
             ))}
-            {isFetching && allClimbs.length === 0 && (
-              <ClimbsListSkeleton aspectRatio={aspectRatio} />
-            )}
+            {isFetching && allClimbs.length === 0 && <ClimbsListSkeleton aspectRatio={aspectRatio} />}
           </Box>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
@@ -441,9 +414,7 @@ export default function LikedClimbsList({ boardDetails, angle }: LikedClimbsList
           )}
           {!hasNextPage && visibleClimbs.length > 0 && (
             <div className={styles.endOfList}>
-              {allClimbs.length >= totalCount
-                ? `All ${visibleClimbs.length} climbs loaded`
-                : 'No more climbs'}
+              {allClimbs.length >= totalCount ? `All ${visibleClimbs.length} climbs loaded` : 'No more climbs'}
             </div>
           )}
         </div>

@@ -66,9 +66,7 @@ describe('checkRateLimitRedis', () => {
     it('throws when rate limit is exceeded', async () => {
       mockEval.mockResolvedValue(31); // over limit of 30
 
-      await expect(checkRateLimitRedis('user-1', 'vote', 30, 60_000)).rejects.toThrow(
-        'Rate limit exceeded',
-      );
+      await expect(checkRateLimitRedis('user-1', 'vote', 30, 60_000)).rejects.toThrow('Rate limit exceeded');
     });
 
     it('uses correct window bucket based on current time', async () => {
@@ -135,9 +133,7 @@ describe('checkRateLimitRedis', () => {
         throw new Error('Rate limit exceeded. Try again in 30 seconds.');
       });
 
-      await expect(checkRateLimitRedis('user-1', 'vote', 30, 60_000)).rejects.toThrow(
-        'Rate limit exceeded',
-      );
+      await expect(checkRateLimitRedis('user-1', 'vote', 30, 60_000)).rejects.toThrow('Rate limit exceeded');
     });
   });
 
@@ -157,9 +153,7 @@ describe('checkRateLimitRedis', () => {
     it('re-throws rate limit errors even when Redis has issues', async () => {
       mockEval.mockRejectedValue(new Error('Rate limit exceeded. Try again in 30 seconds.'));
 
-      await expect(checkRateLimitRedis('user-1', 'vote', 30, 60_000)).rejects.toThrow(
-        'Rate limit exceeded',
-      );
+      await expect(checkRateLimitRedis('user-1', 'vote', 30, 60_000)).rejects.toThrow('Rate limit exceeded');
     });
 
     it('does not re-throw non-rate-limit errors', async () => {

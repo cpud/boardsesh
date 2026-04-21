@@ -64,9 +64,7 @@ export default function BoardFilterStrip(props: BoardFilterStripProps) {
     ? (board: UserBoard) => props.selectedBoards.some((b) => b.uuid === board.uuid)
     : (board: UserBoard) => props.selectedBoard?.uuid === board.uuid;
 
-  const isAllSelected = props.multiSelect
-    ? props.selectedBoards.length === 0
-    : !props.selectedBoard;
+  const isAllSelected = props.multiSelect ? props.selectedBoards.length === 0 : !props.selectedBoard;
 
   if (!loading && boards.length === 0 && !props.multiSelect) {
     return null;
@@ -86,9 +84,7 @@ export default function BoardFilterStrip(props: BoardFilterStripProps) {
         >
           <span className={styles.filterLabel}>All</span>
         </div>
-        <div className={`${styles.cardName} ${isAllSelected ? styles.cardNameSelected : ''}`}>
-          All Boards
-        </div>
+        <div className={`${styles.cardName} ${isAllSelected ? styles.cardNameSelected : ''}`}>All Boards</div>
       </div>
       {boards.map((board) => (
         <BoardScrollCard

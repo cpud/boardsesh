@@ -104,12 +104,7 @@ describe('BoardFilterStrip', () => {
 
   it('returns null when no boards and not loading', () => {
     const { container } = render(
-      <BoardFilterStrip
-        boards={[]}
-        loading={false}
-        selectedBoard={null}
-        onBoardSelect={onBoardSelect}
-      />,
+      <BoardFilterStrip boards={[]} loading={false} selectedBoard={null} onBoardSelect={onBoardSelect} />,
     );
 
     expect(container.firstChild).toBeNull();
@@ -117,12 +112,7 @@ describe('BoardFilterStrip', () => {
 
   it('renders loading state when loading is true', () => {
     const { container, queryByText } = render(
-      <BoardFilterStrip
-        boards={[]}
-        loading={true}
-        selectedBoard={null}
-        onBoardSelect={onBoardSelect}
-      />,
+      <BoardFilterStrip boards={[]} loading={true} selectedBoard={null} onBoardSelect={onBoardSelect} />,
     );
 
     // Should render (not null) even with empty boards when loading
@@ -134,12 +124,7 @@ describe('BoardFilterStrip', () => {
 
   it('"All" card is selected when selectedBoard is null', () => {
     const { getByText } = render(
-      <BoardFilterStrip
-        boards={[kilterBoard]}
-        loading={false}
-        selectedBoard={null}
-        onBoardSelect={onBoardSelect}
-      />,
+      <BoardFilterStrip boards={[kilterBoard]} loading={false} selectedBoard={null} onBoardSelect={onBoardSelect} />,
     );
 
     const allCard = getByText('All').parentElement!;

@@ -241,10 +241,7 @@ describe('SetPasswordSection', () => {
       fireEvent.click(screen.getByText('Set Password'));
 
       await waitFor(() => {
-        expect(mockShowMessage).toHaveBeenCalledWith(
-          'Failed to set password. Please try again.',
-          'error',
-        );
+        expect(mockShowMessage).toHaveBeenCalledWith('Failed to set password. Please try again.', 'error');
       });
     });
 

@@ -1,9 +1,5 @@
 import { useCallback, useEffect, type Dispatch, type SetStateAction } from 'react';
-import type {
-  SubscriptionQueueEvent,
-  SessionEvent,
-  SessionLiveStats,
-} from '@boardsesh/shared-schema';
+import type { SubscriptionQueueEvent, SessionEvent, SessionLiveStats } from '@boardsesh/shared-schema';
 import { computeQueueStateHash } from '@/app/utils/hash';
 import type { ClimbQueueItem as LocalClimbQueueItem } from '../../queue-control/types';
 import type { Session, ActiveSessionInfo, SharedRefs } from '../types';
@@ -80,9 +76,7 @@ export function useSessionSubscriptions({
         return;
       }
 
-      console.error(
-        '[PersistentSession] Detected null/undefined items in queue, triggering resync',
-      );
+      console.error('[PersistentSession] Detected null/undefined items in queue, triggering resync');
       lastCorruptionResyncRef.current = now;
       if (triggerResyncRef.current) {
         triggerResyncRef.current();

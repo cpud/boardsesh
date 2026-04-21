@@ -102,11 +102,7 @@ vi.mock('@/app/lib/board-config-for-playlist', () => ({
 }));
 
 // Now import the SUT — after all vi.mock calls
-import {
-  QueueBridgeProvider,
-  QueueBridgeInjector,
-  useQueueBridgeBoardInfo,
-} from '../queue-bridge-context';
+import { QueueBridgeProvider, QueueBridgeInjector, useQueueBridgeBoardInfo } from '../queue-bridge-context';
 import {
   QueueContext,
   QueueActionsContext,
@@ -211,9 +207,7 @@ function createDefaultPersistentSession(overrides?: Record<string, unknown>) {
 }
 
 /** Minimal fake GraphQLQueueContextType for injection tests */
-function createFakeQueueContext(
-  overrides?: Partial<GraphQLQueueContextType>,
-): GraphQLQueueContextType {
+function createFakeQueueContext(overrides?: Partial<GraphQLQueueContextType>): GraphQLQueueContextType {
   return {
     queue: [],
     currentClimbQueueItem: null,
@@ -628,8 +622,7 @@ describe('queue-bridge-context', () => {
           result.current!.setCurrentClimb(climb);
         });
         expect(mockSetLocalQueueState).toHaveBeenCalledTimes(1);
-        const [newQueue, newCurrent, boardPath, boardDetails] =
-          mockSetLocalQueueState.mock.calls[0];
+        const [newQueue, newCurrent, boardPath, boardDetails] = mockSetLocalQueueState.mock.calls[0];
         expect(newQueue).toHaveLength(1);
         expect(newQueue[0].climb.uuid).toBe('c-cold');
         expect(newCurrent.climb.uuid).toBe('c-cold');

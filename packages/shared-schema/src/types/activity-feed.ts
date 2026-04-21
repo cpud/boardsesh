@@ -85,12 +85,7 @@ export type FollowingAscentsFeedResult = {
   hasMore: boolean;
 };
 
-export type ActivityFeedItemType =
-  | 'ascent'
-  | 'new_climb'
-  | 'comment'
-  | 'proposal_approved'
-  | 'session_summary';
+export type ActivityFeedItemType = 'ascent' | 'new_climb' | 'comment' | 'proposal_approved' | 'session_summary';
 
 export type ActivityFeedItem = {
   id: string;

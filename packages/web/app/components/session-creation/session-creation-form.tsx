@@ -43,11 +43,7 @@ interface SessionCreationFormProps {
   headerContent?: React.ReactNode;
   isAnonymous?: boolean;
   /** Render the submit button externally via this render prop instead of inline */
-  renderSubmit?: (props: {
-    onSubmit: () => void;
-    isSubmitting: boolean;
-    label: string;
-  }) => React.ReactNode;
+  renderSubmit?: (props: { onSubmit: () => void; isSubmitting: boolean; label: string }) => React.ReactNode;
 }
 
 export default function SessionCreationForm({
@@ -150,12 +146,7 @@ export default function SessionCreationForm({
             <Typography variant="body2" component="span" fontWeight={600}>
               Discoverable by nearby climbers
             </Typography>
-            <Typography
-              variant="body2"
-              component="span"
-              color="text.secondary"
-              sx={{ fontSize: '12px' }}
-            >
+            <Typography variant="body2" component="span" color="text.secondary" sx={{ fontSize: '12px' }}>
               Others nearby can find and join your session
             </Typography>
           </Stack>
@@ -165,9 +156,7 @@ export default function SessionCreationForm({
 
       {isGymAdmin && (
         <FormControlLabel
-          control={
-            <Switch checked={isPermanent} onChange={(e) => setIsPermanent(e.target.checked)} />
-          }
+          control={<Switch checked={isPermanent} onChange={(e) => setIsPermanent(e.target.checked)} />}
           label="Permanent session (won't auto-end)"
         />
       )}

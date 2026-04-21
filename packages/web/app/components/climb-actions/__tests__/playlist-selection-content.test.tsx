@@ -59,13 +59,7 @@ describe('PlaylistSelectionContent failures', () => {
       isLoading: false,
     });
 
-    render(
-      <PlaylistSelectionContent
-        climbUuid="climb-1"
-        angle={40}
-        boardDetails={createBoardDetails()}
-      />,
-    );
+    render(<PlaylistSelectionContent climbUuid="climb-1" angle={40} boardDetails={createBoardDetails()} />);
 
     fireEvent.click(screen.getByText('Test Playlist'));
 
@@ -85,13 +79,7 @@ describe('PlaylistSelectionContent failures', () => {
       isLoading: false,
     });
 
-    render(
-      <PlaylistSelectionContent
-        climbUuid="climb-1"
-        angle={40}
-        boardDetails={createBoardDetails()}
-      />,
-    );
+    render(<PlaylistSelectionContent climbUuid="climb-1" angle={40} boardDetails={createBoardDetails()} />);
 
     fireEvent.click(screen.getByText('Test Playlist'));
 
@@ -113,12 +101,7 @@ describe('PlaylistSelectionContent failures', () => {
     });
 
     render(
-      <PlaylistSelectionContent
-        climbUuid="climb-1"
-        angle={40}
-        boardDetails={createBoardDetails()}
-        onDone={onDone}
-      />,
+      <PlaylistSelectionContent climbUuid="climb-1" angle={40} boardDetails={createBoardDetails()} onDone={onDone} />,
     );
 
     fireEvent.click(screen.getByRole('button', { name: /create new playlist/i }));
@@ -145,13 +128,7 @@ describe('PlaylistSelectionContent failures', () => {
       isLoading: false,
     });
 
-    render(
-      <PlaylistSelectionContent
-        climbUuid="climb-1"
-        angle={40}
-        boardDetails={createBoardDetails()}
-      />,
-    );
+    render(<PlaylistSelectionContent climbUuid="climb-1" angle={40} boardDetails={createBoardDetails()} />);
 
     const playlistItem = screen.getByRole('button', { name: /add to playlist keyboard playlist/i });
     expect(playlistItem.getAttribute('tabindex')).toBe('0');
@@ -182,13 +159,7 @@ describe('PlaylistSelectionContent failures', () => {
       isLoading: false,
     });
 
-    render(
-      <PlaylistSelectionContent
-        climbUuid="climb-1"
-        angle={40}
-        boardDetails={createBoardDetails()}
-      />,
-    );
+    render(<PlaylistSelectionContent climbUuid="climb-1" angle={40} boardDetails={createBoardDetails()} />);
 
     fireEvent.click(screen.getByRole('button', { name: /create new playlist/i }));
     fireEvent.change(screen.getByPlaceholderText('e.g., Hard Crimps'), {

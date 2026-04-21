@@ -1,12 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import {
-  MOONBOARD_GRID,
-  MOONBOARD_SIZE,
-  getGridPosition,
-  MOONBOARD_HOLD_STATES,
-} from '@/app/lib/moonboard-config';
+import { MOONBOARD_GRID, MOONBOARD_SIZE, getGridPosition, MOONBOARD_HOLD_STATES } from '@/app/lib/moonboard-config';
 import { MoonBoardRendererProps } from './types';
 
 const MoonBoardRenderer: React.FC<MoonBoardRendererProps> = ({
@@ -77,11 +72,7 @@ const MoonBoardRenderer: React.FC<MoonBoardRendererProps> = ({
     <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet" style={svgStyle}>
       {/* Render MoonBoard background first */}
       <image
-        href={
-          thumbnail
-            ? '/images/moonboard/thumbs/moonboard-bg.webp'
-            : '/images/moonboard/moonboard-bg.webp'
-        }
+        href={thumbnail ? '/images/moonboard/thumbs/moonboard-bg.webp' : '/images/moonboard/moonboard-bg.webp'}
         width="100%"
         height="100%"
       />

@@ -43,13 +43,7 @@ export default function StatsFilterDrawer({
   onTransitionEnd,
 }: StatsFilterDrawerProps) {
   return (
-    <SwipeableDrawer
-      open={open}
-      onClose={onClose}
-      placement="top"
-      title="Filters"
-      onTransitionEnd={onTransitionEnd}
-    >
+    <SwipeableDrawer open={open} onClose={onClose} placement="top" title="Filters" onTransitionEnd={onTransitionEnd}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pb: 2 }}>
         <Box>
           <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>

@@ -55,11 +55,7 @@ interface LogAscentFormProps {
   onClose: () => void;
 }
 
-export const LogAscentForm: React.FC<LogAscentFormProps> = ({
-  currentClimb,
-  boardDetails,
-  onClose,
-}) => {
+export const LogAscentForm: React.FC<LogAscentFormProps> = ({ currentClimb, boardDetails, onClose }) => {
   const { saveTick, isAuthenticated } = useBoardProvider();
   const grades = TENSION_KILTER_GRADES;
   const angleOptions = ANGLES[boardDetails.board_name];
@@ -69,9 +65,7 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
     angle: currentClimb?.angle || 0,
     attempts: 1,
     quality: 0,
-    difficulty:
-      grades.find((grade) => grade.difficulty_name === currentClimb?.difficulty)?.difficulty_id ||
-      0,
+    difficulty: grades.find((grade) => grade.difficulty_name === currentClimb?.difficulty)?.difficulty_id || 0,
   });
 
   const [formValues, setFormValues] = useState<LogAscentFormValues>(getInitialValues);
@@ -88,8 +82,7 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
       date: dayjs(),
       angle: currentClimb?.angle || prev.angle,
       difficulty:
-        grades.find((grade) => grade.difficulty_name === currentClimb?.difficulty)?.difficulty_id ||
-        prev.difficulty,
+        grades.find((grade) => grade.difficulty_name === currentClimb?.difficulty)?.difficulty_id || prev.difficulty,
       attempts: 1,
     }));
     setIsMirrored(!!currentClimb?.mirrored);
@@ -161,9 +154,7 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
         climbedAt: values.date.toISOString(),
         layoutId: boardDetails.layout_id,
         sizeId: boardDetails.size_id,
-        setIds: Array.isArray(boardDetails.set_ids)
-          ? boardDetails.set_ids.join(',')
-          : String(boardDetails.set_ids),
+        setIds: Array.isArray(boardDetails.set_ids) ? boardDetails.set_ids.join(',') : String(boardDetails.set_ids),
         videoUrl: logType === 'ascent' && trimmedVideoUrl ? trimmedVideoUrl : undefined,
       });
 
@@ -194,12 +185,7 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
       }}
     >
       <Box sx={{ mb: 2 }}>
-        <ToggleButtonGroup
-          exclusive
-          fullWidth
-          value={logType}
-          onChange={(_, val) => val && setLogType(val as LogType)}
-        >
+        <ToggleButtonGroup exclusive fullWidth value={logType} onChange={(_, val) => val && setLogType(val as LogType)}>
           <ToggleButton value="ascent">Ascent</ToggleButton>
           <ToggleButton value="attempt">Attempt</ToggleButton>
         </ToggleButtonGroup>
@@ -264,9 +250,7 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
           <TextField
             type="number"
             value={formValues.attempts}
-            onChange={(e) =>
-              setFormValues((prev) => ({ ...prev, attempts: Number(e.target.value) }))
-            }
+            onChange={(e) => setFormValues((prev) => ({ ...prev, attempts: Number(e.target.value) }))}
             slotProps={{ htmlInput: { min: 1, max: 999 } }}
             size="small"
             sx={{ width: 80 }}
@@ -293,9 +277,7 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
           <Box sx={{ flex: 1 }}>
             <MuiSelect
               value={formValues.difficulty}
-              onChange={(e) =>
-                setFormValues((prev) => ({ ...prev, difficulty: Number(e.target.value) }))
-              }
+              onChange={(e) => setFormValues((prev) => ({ ...prev, difficulty: Number(e.target.value) }))}
               size="small"
               sx={{ width: 120 }}
             >
@@ -336,9 +318,7 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({
               value={formValues.videoUrl || ''}
               onChange={(e) => setFormValues((prev) => ({ ...prev, videoUrl: e.target.value }))}
               error={!!videoUrlError}
-              helperText={
-                videoUrlError ?? 'Paste a reel link so others can see your beta. (Optional)'
-              }
+              helperText={videoUrlError ?? 'Paste a reel link so others can see your beta. (Optional)'}
             />
           </Box>
         </Box>

@@ -213,12 +213,7 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
       onClipboardSuccess: () => showMessage('Link copied to clipboard!', 'success'),
       onError: () => showMessage('Failed to share', 'error'),
     });
-  }, [
-    profileHeaderConfig,
-    profileHeaderShare.displayName,
-    profileHeaderShare.isActive,
-    showMessage,
-  ]);
+  }, [profileHeaderConfig, profileHeaderShare.displayName, profileHeaderShare.isActive, showMessage]);
 
   const notificationButton = (
     <IconButton component={Link} href="/notifications" aria-label="Notifications" size="small">
@@ -262,9 +257,7 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
                 >
                   <TuneOutlined />
                 </IconButton>
-                {statsFilterBridge.hasActiveFilters && (
-                  <span className={styles.filterActiveIndicator} />
-                )}
+                {statsFilterBridge.hasActiveFilters && <span className={styles.filterActiveIndicator} />}
               </div>
             )}
             {session?.user?.id && (
@@ -332,22 +325,14 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
                 >
                   <TuneOutlined />
                 </IconButton>
-                {statsFilterBridge.hasActiveFilters && (
-                  <span className={styles.filterActiveIndicator} />
-                )}
+                {statsFilterBridge.hasActiveFilters && <span className={styles.filterActiveIndicator} />}
               </div>
             )}
-            {!statsFilterBridge.isActive &&
-              profileHeaderConfig.isRoot &&
-              profileHeaderShare.isActive && (
-                <IconButton
-                  onClick={handleShareViewedProfile}
-                  aria-label="Share profile"
-                  size="small"
-                >
-                  <IosShareOutlined />
-                </IconButton>
-              )}
+            {!statsFilterBridge.isActive && profileHeaderConfig.isRoot && profileHeaderShare.isActive && (
+              <IconButton onClick={handleShareViewedProfile} aria-label="Share profile" size="small">
+                <IosShareOutlined />
+              </IconButton>
+            )}
           </div>
         }
       />
@@ -364,9 +349,7 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
   }
 
   // Check if current page wants a simple title header
-  const titleHeaderPage = Object.entries(TITLE_HEADER_PAGES).find(([prefix]) =>
-    pathname.startsWith(prefix),
-  );
+  const titleHeaderPage = Object.entries(TITLE_HEADER_PAGES).find(([prefix]) => pathname.startsWith(prefix));
 
   // When the bridge is active (on a board list page), delegate to the board route's drawer
   const useClimbSearchBridge = openClimbSearchDrawer !== null;
@@ -386,9 +369,7 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
     }
   };
 
-  const searchPlaceholder = useClimbSearchBridge
-    ? 'Search climbs...'
-    : 'What do you want to climb?';
+  const searchPlaceholder = useClimbSearchBridge ? 'Search climbs...' : 'What do you want to climb?';
 
   // Simple title header for specific pages (back button + title, no search/sesh)
   if (titleHeaderPage) {
@@ -400,10 +381,7 @@ export default function GlobalHeader({ boardConfigs }: GlobalHeaderProps) {
       <header className={styles.header}>
         <UserDrawer boardConfigs={boardConfigs} />
 
-        <div
-          id={useClimbSearchBridge ? 'onboarding-search-button' : undefined}
-          className={styles.searchInput}
-        >
+        <div id={useClimbSearchBridge ? 'onboarding-search-button' : undefined} className={styles.searchInput}>
           <TextField
             inputRef={inputRef}
             placeholder={searchPlaceholder}

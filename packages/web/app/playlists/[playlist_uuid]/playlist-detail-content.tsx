@@ -48,10 +48,7 @@ import { EmptyState } from '@/app/components/ui/empty-state';
 import FollowButton from '@/app/components/ui/follow-button';
 import PlaylistPreviewSquare from '@/app/components/library/playlist-preview-square';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
-import {
-  getBoardDetailsForPlaylist,
-  getDefaultAngleForBoard,
-} from '@/app/lib/board-config-for-playlist';
+import { getBoardDetailsForPlaylist, getDefaultAngleForBoard } from '@/app/lib/board-config-for-playlist';
 import { themeTokens } from '@/app/theme/theme-config';
 import { useRouter } from 'next/navigation';
 import BackButton from '@/app/components/back-button';
@@ -173,10 +170,11 @@ export default function PlaylistDetailContent({
   useEffect(() => {
     if (playlist && token && playlist.userRole === 'owner' && !lastAccessedUpdatedRef.current) {
       lastAccessedUpdatedRef.current = true;
-      executeGraphQL<
-        UpdatePlaylistLastAccessedMutationResponse,
-        UpdatePlaylistLastAccessedMutationVariables
-      >(UPDATE_PLAYLIST_LAST_ACCESSED, { playlistId: playlistUuid }, token).catch(() => {
+      executeGraphQL<UpdatePlaylistLastAccessedMutationResponse, UpdatePlaylistLastAccessedMutationVariables>(
+        UPDATE_PLAYLIST_LAST_ACCESSED,
+        { playlistId: playlistUuid },
+        token,
+      ).catch(() => {
         // Silently ignore - this is fire-and-forget
       });
     }
@@ -427,11 +425,7 @@ export default function PlaylistDetailContent({
             </IconButton>
           </Box>
 
-          <Menu
-            anchorEl={menuAnchor}
-            open={Boolean(menuAnchor)}
-            onClose={() => setMenuAnchor(null)}
-          >
+          <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>
             {isOwner && (
               <MenuItem
                 onClick={() => {
@@ -494,11 +488,7 @@ export default function PlaylistDetailContent({
         {/* Discussion */}
         {playlist.isPublic && (
           <div className={styles.discussionSection}>
-            <CommentSection
-              entityType="playlist_climb"
-              entityId={`${playlistUuid}:_all`}
-              title="Discussion"
-            />
+            <CommentSection entityType="playlist_climb" entityId={`${playlistUuid}:_all`} title="Discussion" />
           </div>
         )}
       </div>

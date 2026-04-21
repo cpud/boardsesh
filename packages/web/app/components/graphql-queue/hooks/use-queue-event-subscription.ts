@@ -28,65 +28,63 @@ export function useQueueEventSubscription({
   useEffect(() => {
     if (!isPersistentSessionActive) return;
 
-    const unsubscribe = persistentSession.subscribeToQueueEvents(
-      (event: SubscriptionQueueEvent) => {
-        switch (event.__typename) {
-          case 'FullSync':
-            dispatch({
-              type: 'INITIAL_QUEUE_DATA',
-              payload: {
-                queue: event.state.queue as ClimbQueueItem[],
-                currentClimbQueueItem: event.state.currentClimbQueueItem as ClimbQueueItem | null,
-              },
-            });
-            break;
-          case 'QueueItemAdded':
-            dispatch({
-              type: 'DELTA_ADD_QUEUE_ITEM',
-              payload: {
-                item: event.addedItem as ClimbQueueItem,
-                position: event.position,
-              },
-            });
-            break;
-          case 'QueueItemRemoved':
-            dispatch({
-              type: 'DELTA_REMOVE_QUEUE_ITEM',
-              payload: { uuid: event.uuid },
-            });
-            break;
-          case 'QueueReordered':
-            dispatch({
-              type: 'DELTA_REORDER_QUEUE_ITEM',
-              payload: {
-                uuid: event.uuid,
-                oldIndex: event.oldIndex,
-                newIndex: event.newIndex,
-              },
-            });
-            break;
-          case 'CurrentClimbChanged':
-            dispatch({
-              type: 'DELTA_UPDATE_CURRENT_CLIMB',
-              payload: {
-                item: event.currentItem as ClimbQueueItem | null,
-                shouldAddToQueue: (event.currentItem as ClimbQueueItem | null)?.suggested ?? false,
-                isServerEvent: true,
-                eventClientId: event.clientId || undefined,
-                myClientId: persistentSession.clientId || undefined,
-                serverCorrelationId: event.correlationId || undefined,
-              },
-            });
-            break;
-          case 'ClimbMirrored':
-            dispatch({
-              type: 'DELTA_MIRROR_CURRENT_CLIMB',
-              payload: { mirrored: event.mirrored },
-            });
-            break;
-        }
-      },
-    );
+    const unsubscribe = persistentSession.subscribeToQueueEvents((event: SubscriptionQueueEvent) => {
+      switch (event.__typename) {
+        case 'FullSync':
+          dispatch({
+            type: 'INITIAL_QUEUE_DATA',
+            payload: {
+              queue: event.state.queue as ClimbQueueItem[],
+              currentClimbQueueItem: event.state.currentClimbQueueItem as ClimbQueueItem | null,
+            },
+          });
+          break;
+        case 'QueueItemAdded':
+          dispatch({
+            type: 'DELTA_ADD_QUEUE_ITEM',
+            payload: {
+              item: event.addedItem as ClimbQueueItem,
+              position: event.position,
+            },
+          });
+          break;
+        case 'QueueItemRemoved':
+          dispatch({
+            type: 'DELTA_REMOVE_QUEUE_ITEM',
+            payload: { uuid: event.uuid },
+          });
+          break;
+        case 'QueueReordered':
+          dispatch({
+            type: 'DELTA_REORDER_QUEUE_ITEM',
+            payload: {
+              uuid: event.uuid,
+              oldIndex: event.oldIndex,
+              newIndex: event.newIndex,
+            },
+          });
+          break;
+        case 'CurrentClimbChanged':
+          dispatch({
+            type: 'DELTA_UPDATE_CURRENT_CLIMB',
+            payload: {
+              item: event.currentItem as ClimbQueueItem | null,
+              shouldAddToQueue: (event.currentItem as ClimbQueueItem | null)?.suggested ?? false,
+              isServerEvent: true,
+              eventClientId: event.clientId || undefined,
+              myClientId: persistentSession.clientId || undefined,
+              serverCorrelationId: event.correlationId || undefined,
+            },
+          });
+          break;
+        case 'ClimbMirrored':
+          dispatch({
+            type: 'DELTA_MIRROR_CURRENT_CLIMB',
+            payload: { mirrored: event.mirrored },
+          });
+          break;
+      }
+    });
 
     return unsubscribe;
   }, [isPersistentSessionActive, persistentSession, dispatch]);

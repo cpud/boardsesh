@@ -10,11 +10,7 @@ vi.mock('@/app/lib/db/schema', () => ({
   inferredSessions: {},
 }));
 
-import {
-  generateInferredSessionId,
-  groupTicks,
-  type TickForGrouping,
-} from '../inferred-session-builder';
+import { generateInferredSessionId, groupTicks, type TickForGrouping } from '../inferred-session-builder';
 
 function makeTick(overrides: Partial<TickForGrouping> & { climbedAt: string }): TickForGrouping {
   return {

@@ -7,10 +7,7 @@ import type { SocialEntityType } from '@boardsesh/shared-schema';
  * Validates that a target entity exists before allowing a comment or vote.
  * Performs minimal SELECT ... LIMIT 1 existence checks.
  */
-export async function validateEntityExists(
-  entityType: SocialEntityType,
-  entityId: string,
-): Promise<void> {
+export async function validateEntityExists(entityType: SocialEntityType, entityId: string): Promise<void> {
   switch (entityType) {
     case 'climb': {
       const [climb] = await db
@@ -40,9 +37,7 @@ export async function validateEntityExists(
       // Format: "playlistUuid:climbUuid" or "playlistUuid:_all" for general playlist discussion
       const parts = entityId.split(':');
       if (parts.length !== 2) {
-        throw new Error(
-          'Invalid playlist_climb entity ID format. Expected "playlistUuid:climbUuid"',
-        );
+        throw new Error('Invalid playlist_climb entity ID format. Expected "playlistUuid:climbUuid"');
       }
       const [playlistUuid, climbUuid] = parts;
 
@@ -62,10 +57,7 @@ export async function validateEntityExists(
           .select({ id: dbSchema.playlistClimbs.id })
           .from(dbSchema.playlistClimbs)
           .where(
-            and(
-              eq(dbSchema.playlistClimbs.playlistId, playlist.id),
-              eq(dbSchema.playlistClimbs.climbUuid, climbUuid),
-            ),
+            and(eq(dbSchema.playlistClimbs.playlistId, playlist.id), eq(dbSchema.playlistClimbs.climbUuid, climbUuid)),
           )
           .limit(1);
 

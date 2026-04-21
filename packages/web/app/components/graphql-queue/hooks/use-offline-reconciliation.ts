@@ -19,11 +19,7 @@ export interface UseOfflineReconciliationParams {
   persistentSession: {
     addQueueItem: (item: ClimbQueueItem) => Promise<void>;
     setQueue: (queue: ClimbQueueItem[], currentClimb?: ClimbQueueItem | null) => Promise<void>;
-    setCurrentClimb: (
-      item: ClimbQueueItem | null,
-      shouldAddToQueue?: boolean,
-      correlationId?: string,
-    ) => Promise<void>;
+    setCurrentClimb: (item: ClimbQueueItem | null, shouldAddToQueue?: boolean, correlationId?: string) => Promise<void>;
     subscribeToQueueEvents: (callback: (event: SubscriptionQueueEvent) => void) => () => void;
   };
   currentQueue: ClimbQueueItem[];
@@ -100,11 +96,7 @@ export function useOfflineReconciliation({
       // Solo session — no one else could have changed anything
       if (currentUsers.length <= 1) return true;
       // Server state unchanged since we went disconnected
-      if (
-        sequenceAtDisconnectRef.current !== null &&
-        serverSequence === sequenceAtDisconnectRef.current
-      )
-        return true;
+      if (sequenceAtDisconnectRef.current !== null && serverSequence === sequenceAtDisconnectRef.current) return true;
       return false;
     }
 
@@ -139,11 +131,7 @@ export function useOfflineReconciliation({
         try {
           await persistentSession.addQueueItem(item);
         } catch (error) {
-          console.error(
-            '[OfflineReconciliation] Failed to add buffered item:',
-            item.climb?.name,
-            error,
-          );
+          console.error('[OfflineReconciliation] Failed to add buffered item:', item.climb?.name, error);
         }
       }
 
@@ -154,25 +142,23 @@ export function useOfflineReconciliation({
 
     // Subscribe to queue events and wait for FullSync
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    const unsubscribe = persistentSession.subscribeToQueueEvents(
-      (event: SubscriptionQueueEvent) => {
-        if (event.__typename === 'FullSync') {
-          if (timeoutId) clearTimeout(timeoutId);
-          unsubscribe();
+    const unsubscribe = persistentSession.subscribeToQueueEvents((event: SubscriptionQueueEvent) => {
+      if (event.__typename === 'FullSync') {
+        if (timeoutId) clearTimeout(timeoutId);
+        unsubscribe();
 
-          if (shouldClientWin(event.sequence)) {
-            reconcileClientWins().catch((err) =>
-              console.error('[OfflineReconciliation] reconcileClientWins failed:', err),
-            );
-          } else {
-            const serverQueue = (event.state?.queue ?? []) as ClimbQueueItem[];
-            reconcileAdditionsOnly(serverQueue).catch((err) =>
-              console.error('[OfflineReconciliation] reconcileAdditionsOnly failed:', err),
-            );
-          }
+        if (shouldClientWin(event.sequence)) {
+          reconcileClientWins().catch((err) =>
+            console.error('[OfflineReconciliation] reconcileClientWins failed:', err),
+          );
+        } else {
+          const serverQueue = (event.state?.queue ?? []) as ClimbQueueItem[];
+          reconcileAdditionsOnly(serverQueue).catch((err) =>
+            console.error('[OfflineReconciliation] reconcileAdditionsOnly failed:', err),
+          );
         }
-      },
-    );
+      }
+    });
 
     // Safety timeout: if no FullSync arrives, push additions using the server
     // queue from the FullSync that may have already been processed by the event

@@ -9,11 +9,7 @@ import AcUnitIcon from '@mui/icons-material/AcUnit';
 import { themeTokens } from '@/app/theme/theme-config';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  GET_CLIMB_COMMUNITY_STATUS,
-  GET_CLIMB_PROPOSALS,
-  GET_MY_ROLES,
-} from '@/app/lib/graphql/operations/proposals';
+import { GET_CLIMB_COMMUNITY_STATUS, GET_CLIMB_PROPOSALS, GET_MY_ROLES } from '@/app/lib/graphql/operations/proposals';
 import type {
   ClimbCommunityStatusType,
   Proposal,
@@ -58,10 +54,11 @@ export default function ProposalSection({
       const client = createGraphQLHttpClient(token || undefined);
 
       const [statusResult, proposalsResult, acceptedResult] = await Promise.all([
-        client.request<{ climbCommunityStatus: ClimbCommunityStatusType }>(
-          GET_CLIMB_COMMUNITY_STATUS,
-          { climbUuid, boardType, angle },
-        ),
+        client.request<{ climbCommunityStatus: ClimbCommunityStatusType }>(GET_CLIMB_COMMUNITY_STATUS, {
+          climbUuid,
+          boardType,
+          angle,
+        }),
         client.request<{ climbProposals: ProposalConnection }>(GET_CLIMB_PROPOSALS, {
           input: { climbUuid, boardType, angle, status: 'open', limit: 10, offset: 0 },
         }),
@@ -77,9 +74,7 @@ export default function ProposalSection({
       // Check user roles
       if (token) {
         try {
-          const rolesResult = await client.request<{ myRoles: CommunityRoleAssignment[] }>(
-            GET_MY_ROLES,
-          );
+          const rolesResult = await client.request<{ myRoles: CommunityRoleAssignment[] }>(GET_MY_ROLES);
           const hasRole = rolesResult.myRoles.some(
             (r) =>
               (r.role === 'admin' || r.role === 'community_leader') &&
@@ -150,9 +145,7 @@ export default function ProposalSection({
       content: (
         <Box>
           {/* Section header with create button */}
-          <Box
-            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}
-          >
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               {isAdminOrLeader && (
                 <Tooltip title={communityStatus?.isFrozen ? 'Unfreeze climb' : 'Freeze climb'}>
@@ -160,9 +153,7 @@ export default function ProposalSection({
                     size="small"
                     onClick={() => setShowFreezeDialog(true)}
                     sx={{
-                      color: communityStatus?.isFrozen
-                        ? themeTokens.colors.warning
-                        : themeTokens.neutral[400],
+                      color: communityStatus?.isFrozen ? themeTokens.colors.warning : themeTokens.neutral[400],
                     }}
                   >
                     <AcUnitIcon fontSize="small" />
@@ -194,10 +185,7 @@ export default function ProposalSection({
               />
             ))
           ) : (
-            <Typography
-              variant="body2"
-              sx={{ color: themeTokens.neutral[400], textAlign: 'center', py: 2 }}
-            >
+            <Typography variant="body2" sx={{ color: themeTokens.neutral[400], textAlign: 'center', py: 2 }}>
               No open proposals
             </Typography>
           )}
@@ -246,17 +234,10 @@ export default function ProposalSection({
       {communityStatus?.isFrozen && <FreezeIndicator reason={communityStatus.freezeReason} />}
 
       {/* Section header */}
-      <Typography
-        variant="subtitle2"
-        sx={{ fontWeight: 600, color: themeTokens.neutral[700], mb: 1.5 }}
-      >
+      <Typography variant="subtitle2" sx={{ fontWeight: 600, color: themeTokens.neutral[700], mb: 1.5 }}>
         Community Proposals
         {proposals.length > 0 && (
-          <Typography
-            component="span"
-            variant="caption"
-            sx={{ ml: 0.5, color: themeTokens.neutral[400] }}
-          >
+          <Typography component="span" variant="caption" sx={{ ml: 0.5, color: themeTokens.neutral[400] }}>
             ({proposals.length})
           </Typography>
         )}

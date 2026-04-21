@@ -1345,11 +1345,7 @@ extend type Query {
   climbProposals(input: GetClimbProposalsInput!): ProposalConnection!
   browseProposals(input: BrowseProposalsInput!): ProposalConnection!
   climbCommunityStatus(climbUuid: String!, boardType: String!, angle: Int!): ClimbCommunityStatus!
-  bulkClimbCommunityStatus(
-    climbUuids: [String!]!
-    boardType: String!
-    angle: Int!
-  ): [ClimbCommunityStatus!]!
+  bulkClimbCommunityStatus(climbUuids: [String!]!, boardType: String!, angle: Int!): [ClimbCommunityStatus!]!
 
   # Admin / Community Settings
   communitySettings(scope: String!, scopeKey: String): [CommunitySetting!]!

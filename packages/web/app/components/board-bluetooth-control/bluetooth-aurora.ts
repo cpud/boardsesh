@@ -1,10 +1,6 @@
 import { LedPlacements } from '@/app/lib/types';
 import { HOLD_STATE_MAP } from '../board-renderer/types';
-import {
-  AURORA_ADVERTISED_SERVICE_UUID,
-  MESSAGE_BODY_MAX_LENGTH,
-  UART_SERVICE_UUID,
-} from './bluetooth-shared';
+import { AURORA_ADVERTISED_SERVICE_UUID, MESSAGE_BODY_MAX_LENGTH, UART_SERVICE_UUID } from './bluetooth-shared';
 import { AuroraBoardName } from '@/app/lib/api-wrappers/aurora/types';
 import { BoardName } from '@boardsesh/shared-schema';
 
@@ -41,8 +37,7 @@ export const AURORA_REQUEST_DEVICE_OPTIONS: RequestDeviceOptions = {
 };
 
 // Shared helpers — exported for testing
-export const checksum = (data: number[]) =>
-  data.reduce((acc, value) => (acc + value) & 255, 0) ^ 255;
+export const checksum = (data: number[]) => data.reduce((acc, value) => (acc + value) & 255, 0) ^ 255;
 
 export const wrapBytes = (data: number[]) =>
   data.length > MESSAGE_BODY_MAX_LENGTH ? [] : [1, data.length, checksum(data), 2, ...data, 3];
@@ -82,10 +77,7 @@ export const encodePositionAndColorV3 = (position: number, ledColor: string) => 
  * Compute the brightness scale factor for v2 power budget.
  * Tries progressively lower scales until total power fits within 18W.
  */
-export const computeV2Scale = (
-  ledEntries: Array<{ position: number; color: string }>,
-  ledsPerHold: number,
-): number => {
+export const computeV2Scale = (ledEntries: Array<{ position: number; color: string }>, ledsPerHold: number): number => {
   for (const scale of V2_POWER_SCALES) {
     let totalPower = 0;
     for (const { color } of ledEntries) {
@@ -101,19 +93,14 @@ export const computeV2Scale = (
   return 0;
 };
 
-export const scaledColorV2 = (value8bit: number, scale: number): number =>
-  Math.floor(value8bit * scale) >> 6; // Result: 0-3
+export const scaledColorV2 = (value8bit: number, scale: number): number => Math.floor(value8bit * scale) >> 6; // Result: 0-3
 
 /**
  * Encode a single LED for v2: 2 bytes.
  * Byte 1: position[7:0]
  * Byte 2: (red_2bit << 6) | (green_2bit << 4) | (blue_2bit << 2) | position[9:8]
  */
-export const encodePositionAndColorV2 = (
-  position: number,
-  ledColor: string,
-  scale: number,
-): number[] => {
+export const encodePositionAndColorV2 = (position: number, ledColor: string, scale: number): number[] => {
   if (position > 1023) {
     console.warn(`[BLE v2] Position ${position} exceeds 10-bit limit (1023), skipping`);
     return [];

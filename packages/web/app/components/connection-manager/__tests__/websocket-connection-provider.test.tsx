@@ -2,10 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { render, screen, act } from '@testing-library/react';
 import React from 'react';
 import { connectionManager } from '../websocket-connection-manager';
-import {
-  WebSocketConnectionProvider,
-  useWebSocketConnection,
-} from '../websocket-connection-provider';
+import { WebSocketConnectionProvider, useWebSocketConnection } from '../websocket-connection-provider';
 import type { Client } from 'graphql-ws';
 
 class FakeClient {

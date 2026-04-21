@@ -44,9 +44,7 @@ export const InlineListTickBar: React.FC<InlineListTickBarProps> = ({
   // initializer always produces a value. This avoids recomputing
   // hasPriorHistory on every logbook mutation (logbook is a new array
   // reference after each optimistic save).
-  const [tickTarget] = useState<TickTarget | null>(() =>
-    buildTickTarget(climb, angle, boardDetails, logbook),
-  );
+  const [tickTarget] = useState<TickTarget | null>(() => buildTickTarget(climb, angle, boardDetails, logbook));
 
   const [quality, setQuality] = useState<number | null>(null);
   const [difficulty, setDifficulty] = useState<number | undefined>(undefined);
@@ -138,13 +136,9 @@ export const InlineListTickBar: React.FC<InlineListTickBarProps> = ({
     <div className={styles.tickBarWrapper}>
       <div className={styles.tickBarInner}>
         {/* Picker panel — expands above the controls row */}
-        <div
-          className={`${styles.pickerPanel} ${expandedControl ? styles.pickerPanelExpanded : ''}`}
-        >
+        <div className={`${styles.pickerPanel} ${expandedControl ? styles.pickerPanelExpanded : ''}`}>
           <div className={styles.pickerPanelContent}>
-            {renderedControl === 'stars' && (
-              <InlineStarPicker quality={quality} onSelect={handleStarSelect} />
-            )}
+            {renderedControl === 'stars' && <InlineStarPicker quality={quality} onSelect={handleStarSelect} />}
             {renderedControl === 'grade' && (
               <InlineGradePicker
                 grades={grades}

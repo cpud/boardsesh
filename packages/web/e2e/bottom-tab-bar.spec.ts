@@ -97,9 +97,7 @@ test.describe('Bottom Tab Bar - Navigation', () => {
     await expect(page.locator(bottomTabBar)).toBeVisible();
   });
 
-  test('Create tab should open drawer with create options without immediate navigation', async ({
-    page,
-  }) => {
+  test('Create tab should open drawer with create options without immediate navigation', async ({ page }) => {
     await page.goto(boardUrl);
     await waitForPageReady(page);
 

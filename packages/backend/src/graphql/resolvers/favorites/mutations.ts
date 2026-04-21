@@ -1,9 +1,5 @@
 import { eq, and } from 'drizzle-orm';
-import type {
-  ConnectionContext,
-  ToggleFavoriteInput,
-  ToggleFavoriteResult,
-} from '@boardsesh/shared-schema';
+import type { ConnectionContext, ToggleFavoriteInput, ToggleFavoriteResult } from '@boardsesh/shared-schema';
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { requireAuthenticated, validateInput } from '../shared/helpers';

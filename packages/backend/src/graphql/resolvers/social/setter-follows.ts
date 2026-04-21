@@ -23,11 +23,7 @@ export const setterFollowQueries = {
   /**
    * Get a setter profile by username
    */
-  setterProfile: async (
-    _: unknown,
-    { input }: { input: { username: string } },
-    ctx: ConnectionContext,
-  ) => {
+  setterProfile: async (_: unknown, { input }: { input: { username: string } }, ctx: ConnectionContext) => {
     const validatedInput = validateInput(SetterProfileInputSchema, input, 'input');
     const username = validatedInput.username;
 
@@ -63,10 +59,7 @@ export const setterFollowQueries = {
         .select({ count: count() })
         .from(dbSchema.setterFollows)
         .where(
-          and(
-            eq(dbSchema.setterFollows.followerId, ctx.userId),
-            eq(dbSchema.setterFollows.setterUsername, username),
-          ),
+          and(eq(dbSchema.setterFollows.followerId, ctx.userId), eq(dbSchema.setterFollows.setterUsername, username)),
         );
       isFollowedByMe = Number(followCheck?.count ?? 0) > 0;
     }
@@ -82,10 +75,7 @@ export const setterFollowQueries = {
       })
       .from(dbSchema.userBoardMappings)
       .innerJoin(dbSchema.users, eq(dbSchema.userBoardMappings.userId, dbSchema.users.id))
-      .leftJoin(
-        dbSchema.userProfiles,
-        eq(dbSchema.userBoardMappings.userId, dbSchema.userProfiles.userId),
-      )
+      .leftJoin(dbSchema.userProfiles, eq(dbSchema.userBoardMappings.userId, dbSchema.userProfiles.userId))
       .where(eq(dbSchema.userBoardMappings.boardUsername, username))
       .limit(1);
 
@@ -123,14 +113,7 @@ export const setterFollowQueries = {
     _ctx: ConnectionContext,
   ) => {
     const validatedInput = validateInput(SetterClimbsInputSchema, input, 'input');
-    const {
-      username,
-      boardType,
-      layoutId,
-      sortBy = 'popular',
-      limit = 20,
-      offset = 0,
-    } = validatedInput;
+    const { username, boardType, layoutId, sortBy = 'popular', limit = 20, offset = 0 } = validatedInput;
 
     // Build conditions
     const conditions = [eq(dbSchema.boardClimbs.setterUsername, username)];
@@ -160,9 +143,7 @@ export const setterFollowQueries = {
         statsAngle: dbSchema.boardClimbStats.angle,
         qualityAverage: dbSchema.boardClimbStats.qualityAverage,
         ascensionistCount: dbSchema.boardClimbStats.ascensionistCount,
-        difficultyId: sql<
-          number | null
-        >`ROUND(${dbSchema.boardClimbStats.displayDifficulty}::numeric, 0)`,
+        difficultyId: sql<number | null>`ROUND(${dbSchema.boardClimbStats.displayDifficulty}::numeric, 0)`,
       })
       .from(dbSchema.boardClimbs)
       .leftJoin(
@@ -238,9 +219,7 @@ export const setterFollowQueries = {
       // === Specific board mode ===
       const boardName = boardType as BoardName;
       if (!isValidBoardName(boardName)) {
-        throw new Error(
-          `Invalid board name: ${boardName}. Must be one of: ${SUPPORTED_BOARDS.join(', ')}`,
-        );
+        throw new Error(`Invalid board name: ${boardName}. Must be one of: ${SUPPORTED_BOARDS.join(', ')}`);
       }
 
       const angle = validatedInput.angle ?? DEFAULT_ANGLE;
@@ -281,9 +260,7 @@ export const setterFollowQueries = {
           description: tables.climbs.description,
           frames: tables.climbs.frames,
           ascensionist_count: tables.climbStats.ascensionistCount,
-          difficulty_id: sql<
-            number | null
-          >`ROUND(${tables.climbStats.displayDifficulty}::numeric, 0)`,
+          difficulty_id: sql<number | null>`ROUND(${tables.climbStats.displayDifficulty}::numeric, 0)`,
           quality_average: sql<number>`ROUND(${tables.climbStats.qualityAverage}::numeric, 2)`,
           difficulty_error: sql<number>`ROUND(${tables.climbStats.difficultyAverage}::numeric - ${tables.climbStats.displayDifficulty}::numeric, 2)`,
           benchmark_difficulty: tables.climbStats.benchmarkDifficulty,
@@ -370,9 +347,7 @@ export const setterFollowQueries = {
           frames: tables.climbs.frames,
           statsAngle: tables.climbStats.angle,
           ascensionist_count: tables.climbStats.ascensionistCount,
-          difficulty_id: sql<
-            number | null
-          >`ROUND(${tables.climbStats.displayDifficulty}::numeric, 0)`,
+          difficulty_id: sql<number | null>`ROUND(${tables.climbStats.displayDifficulty}::numeric, 0)`,
           quality_average: sql<number>`ROUND(${tables.climbStats.qualityAverage}::numeric, 2)`,
           difficulty_error: sql<number>`ROUND(${tables.climbStats.difficultyAverage}::numeric - ${tables.climbStats.displayDifficulty}::numeric, 2)`,
           benchmark_difficulty: tables.climbStats.benchmarkDifficulty,
@@ -452,9 +427,7 @@ export const setterFollowQueries = {
       .from(dbSchema.userBoardMappings)
       .where(eq(dbSchema.userBoardMappings.userId, userId));
 
-    const linkedUsernames = mappings
-      .map((m) => m.boardUsername)
-      .filter((u): u is string => u !== null && u.length > 0);
+    const linkedUsernames = mappings.map((m) => m.boardUsername).filter((u): u is string => u !== null && u.length > 0);
 
     // 2. Build WHERE condition: userId match OR setterUsername in linked usernames, AND not draft
     const tables = UNIFIED_TABLES;
@@ -489,9 +462,7 @@ export const setterFollowQueries = {
         : sql`c.user_id = ${userId}`;
 
     const orderSql =
-      sortBy === 'popular'
-        ? sql`COALESCE(best.ascensionist_count, 0) DESC`
-        : sql`c.created_at DESC NULLS LAST`;
+      sortBy === 'popular' ? sql`COALESCE(best.ascensionist_count, 0) DESC` : sql`c.created_at DESC NULLS LAST`;
 
     const rawResult = await db.execute(sql`
       WITH best_angle AS (
@@ -664,9 +635,7 @@ export const setterFollowQueries = {
     // 4. Check isFollowedByMe for setter results
     let setterFollowedSet = new Set<string>();
     if (ctx.isAuthenticated && ctx.userId && setterResults.length > 0) {
-      const setterUsernames = setterResults
-        .map((r) => r.setterUsername)
-        .filter((u): u is string => u !== null);
+      const setterUsernames = setterResults.map((r) => r.setterUsername).filter((u): u is string => u !== null);
       if (setterUsernames.length > 0) {
         const followedSetters = await db
           .select({ setterUsername: dbSchema.setterFollows.setterUsername })
@@ -840,10 +809,7 @@ export const setterFollowMutations = {
     await db
       .delete(dbSchema.setterFollows)
       .where(
-        and(
-          eq(dbSchema.setterFollows.followerId, myUserId),
-          eq(dbSchema.setterFollows.setterUsername, setterUsername),
-        ),
+        and(eq(dbSchema.setterFollows.followerId, myUserId), eq(dbSchema.setterFollows.setterUsername, setterUsername)),
       );
 
     // Also remove user_follows if linked

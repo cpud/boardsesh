@@ -243,13 +243,7 @@ export function buildActionResult({
   );
 
   const listElement = listElementOverride ?? (
-    <ActionListElement
-      icon={icon}
-      label={label}
-      onClick={onClick}
-      disabled={disabled}
-      extraContent={extraContent}
-    />
+    <ActionListElement icon={icon} label={label} onClick={onClick} disabled={disabled} extraContent={extraContent} />
   );
 
   const menuItem: ClimbActionMenuItem = menuItemOverride ?? {

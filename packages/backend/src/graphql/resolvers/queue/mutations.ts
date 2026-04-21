@@ -83,10 +83,7 @@ export const queueMutations = {
         break; // Success, exit retry loop
       } catch (error) {
         if (error instanceof VersionConflictError && attempt < MAX_RETRIES - 1) {
-          if (DEBUG)
-            console.log(
-              `[addQueueItem] Version conflict, retrying (attempt ${attempt + 1}/${MAX_RETRIES})`,
-            );
+          if (DEBUG) console.log(`[addQueueItem] Version conflict, retrying (attempt ${attempt + 1}/${MAX_RETRIES})`);
           continue; // Retry
         }
         throw error; // Re-throw if not a version conflict or max retries exceeded
@@ -98,9 +95,7 @@ export const queueMutations = {
       // Calculate actual position where item was inserted
       // If position was valid, item is at that index; otherwise it was appended
       const actualPosition =
-        position !== undefined && position >= 0 && position <= originalQueueLength
-          ? position
-          : originalQueueLength; // Item was appended at end of original queue
+        position !== undefined && position >= 0 && position <= originalQueueLength ? position : originalQueueLength; // Item was appended at end of original queue
 
       // Broadcast to subscribers with the actual position
       pubsub.publishQueueEvent(sessionId, {
@@ -253,20 +248,13 @@ export const queueMutations = {
       }
 
       try {
-        const result = await roomManager.updateQueueState(
-          sessionId,
-          queue,
-          item,
-          currentState.version,
-        );
+        const result = await roomManager.updateQueueState(sessionId, queue, item, currentState.version);
         sequence = result.sequence;
         break; // Success, exit retry loop
       } catch (error) {
         if (error instanceof VersionConflictError && attempt < MAX_RETRIES - 1) {
           if (DEBUG)
-            console.log(
-              `[setCurrentClimb] Version conflict, retrying (attempt ${attempt + 1}/${MAX_RETRIES})`,
-            );
+            console.log(`[setCurrentClimb] Version conflict, retrying (attempt ${attempt + 1}/${MAX_RETRIES})`);
           continue; // Retry
         }
         throw error; // Re-throw if not a version conflict or max retries exceeded
@@ -291,11 +279,7 @@ export const queueMutations = {
    * Toggle the mirrored state of the current climb
    * Updates both the current climb and the queue item if present
    */
-  mirrorCurrentClimb: async (
-    _: unknown,
-    { mirrored }: { mirrored: boolean },
-    ctx: ConnectionContext,
-  ) => {
+  mirrorCurrentClimb: async (_: unknown, { mirrored }: { mirrored: boolean }, ctx: ConnectionContext) => {
     const startTime = performance.now();
     await applyRateLimit(ctx);
     const sessionId = requireSession(ctx);
@@ -356,11 +340,7 @@ export const queueMutations = {
       currentClimb = item;
     }
 
-    const { sequence, stateHash } = await roomManager.updateQueueState(
-      sessionId,
-      queue,
-      currentClimb,
-    );
+    const { sequence, stateHash } = await roomManager.updateQueueState(sessionId, queue, currentClimb);
 
     // Publish as FullSync since replace is less common
     pubsub.publishQueueEvent(sessionId, {
@@ -379,10 +359,7 @@ export const queueMutations = {
    */
   setQueue: async (
     _: unknown,
-    {
-      queue,
-      currentClimbQueueItem,
-    }: { queue: ClimbQueueItem[]; currentClimbQueueItem?: ClimbQueueItem },
+    { queue, currentClimbQueueItem }: { queue: ClimbQueueItem[]; currentClimbQueueItem?: ClimbQueueItem },
     ctx: ConnectionContext,
   ) => {
     const startTime = performance.now();
@@ -395,11 +372,7 @@ export const queueMutations = {
       validateInput(ClimbQueueItemSchema, currentClimbQueueItem, 'currentClimbQueueItem');
     }
 
-    const { sequence, stateHash } = await roomManager.updateQueueState(
-      sessionId,
-      queue,
-      currentClimbQueueItem || null,
-    );
+    const { sequence, stateHash } = await roomManager.updateQueueState(sessionId, queue, currentClimbQueueItem || null);
 
     const state: QueueState = {
       sequence,

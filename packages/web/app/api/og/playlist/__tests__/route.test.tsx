@@ -37,15 +37,7 @@ vi.mock('@/app/lib/seo/og', () => ({
   OG_IMAGE_WIDTH: 1200,
   OG_IMAGE_HEIGHT: 630,
   createOgImageHeaders: vi.fn(
-    ({
-      contentType,
-      version,
-      serverTiming,
-    }: {
-      contentType: string;
-      version?: string;
-      serverTiming?: string;
-    }) => ({
+    ({ contentType, version, serverTiming }: { contentType: string; version?: string; serverTiming?: string }) => ({
       'Content-Type': contentType,
       'Cache-Control': version
         ? 'public, max-age=31536000, s-maxage=31536000, immutable'

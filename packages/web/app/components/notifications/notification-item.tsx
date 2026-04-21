@@ -137,10 +137,7 @@ export default function NotificationItem({ notification, onClick }: Notification
     >
       <ListItemAvatar sx={{ minWidth: showAvatarGroup ? 56 : undefined }}>
         {showAvatarGroup ? (
-          <AvatarGroup
-            max={3}
-            sx={{ '& .MuiAvatar-root': { width: 28, height: 28, fontSize: 12 } }}
-          >
+          <AvatarGroup max={3} sx={{ '& .MuiAvatar-root': { width: 28, height: 28, fontSize: 12 } }}>
             {actors.map((actor) => (
               <Avatar key={actor.id} src={actor.avatarUrl || undefined}>
                 {getNotificationIcon(notification.type)}

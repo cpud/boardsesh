@@ -3,11 +3,7 @@ import { unstable_cache } from 'next/cache';
 import { getDb } from '@/app/lib/db/db';
 import { searchClimbs as sharedSearchClimbs } from '@boardsesh/db/queries';
 import { getBoardClimbSearchTag } from '@/app/lib/climb-search-cache';
-import type {
-  ParsedBoardRouteParameters,
-  SearchRequestPagination,
-  BoardName,
-} from '@/app/lib/types';
+import type { ParsedBoardRouteParameters, SearchRequestPagination, BoardName } from '@/app/lib/types';
 import type { Climb } from '@/app/lib/types';
 import { sortObjectKeys } from '@/app/lib/cache-utils';
 
@@ -56,19 +52,14 @@ async function _executeClimbSearch(
       sortBy: searchParams.sortBy || 'ascents',
       sortOrder: searchParams.sortOrder || 'desc',
       name: searchParams.name || undefined,
-      settername:
-        searchParams.settername && searchParams.settername.length > 0
-          ? searchParams.settername
-          : undefined,
+      settername: searchParams.settername && searchParams.settername.length > 0 ? searchParams.settername : undefined,
       onlyTallClimbs: searchParams.onlyTallClimbs || undefined,
       holdsFilter:
         searchParams.holdsFilter && Object.keys(searchParams.holdsFilter).length > 0
           ? Object.fromEntries(
               Object.entries(searchParams.holdsFilter).map(([key, value]) => [
                 key.replace('hold_', ''),
-                typeof value === 'object' && value !== null
-                  ? (value as { state: string }).state
-                  : value,
+                typeof value === 'object' && value !== null ? (value as { state: string }).state : value,
               ]),
             )
           : undefined,
@@ -182,9 +173,7 @@ export async function cachedSearchClimbs(
     );
   }
 
-  const revalidate = isDefaultSearch
-    ? CACHE_DURATION_DEFAULT_SEARCH
-    : CACHE_DURATION_FILTERED_SEARCH;
+  const revalidate = isDefaultSearch ? CACHE_DURATION_DEFAULT_SEARCH : CACHE_DURATION_FILTERED_SEARCH;
   return _getCachedFn(params.board_name, revalidate)(
     params.board_name,
     params.layout_id,

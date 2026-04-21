@@ -39,14 +39,8 @@ vi.mock('@/app/components/search-drawer/search-drawer-bridge-context', () => ({
 }));
 
 vi.mock('@/app/components/search-drawer/unified-search-drawer', () => ({
-  default: ({
-    open,
-    defaultCategory,
-  }: {
-    open: boolean;
-    onClose: () => void;
-    defaultCategory: string;
-  }) => (open ? <div data-testid="unified-search-drawer" data-category={defaultCategory} /> : null),
+  default: ({ open, defaultCategory }: { open: boolean; onClose: () => void; defaultCategory: string }) =>
+    open ? <div data-testid="unified-search-drawer" data-category={defaultCategory} /> : null,
 }));
 
 vi.mock('@/app/components/session-creation/start-sesh-drawer', () => ({
@@ -89,15 +83,7 @@ vi.mock('next-auth/react', () => ({
 }));
 
 vi.mock('next/link', () => ({
-  default: ({
-    children,
-    href,
-    ...props
-  }: {
-    children: React.ReactNode;
-    href: string;
-    [key: string]: unknown;
-  }) => (
+  default: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -196,9 +182,7 @@ describe('GlobalHeader', () => {
     render(<GlobalHeader boardConfigs={mockBoardConfigs} />);
 
     fireEvent.focus(screen.getByPlaceholderText('What do you want to climb?'));
-    expect(screen.getByTestId('unified-search-drawer').getAttribute('data-category')).toBe(
-      'boards',
-    );
+    expect(screen.getByTestId('unified-search-drawer').getAttribute('data-category')).toBe('boards');
   });
 
   it('passes "climbs" as defaultCategory when on board route', () => {
@@ -206,9 +190,7 @@ describe('GlobalHeader', () => {
     render(<GlobalHeader boardConfigs={mockBoardConfigs} />);
 
     fireEvent.focus(screen.getByPlaceholderText('What do you want to climb?'));
-    expect(screen.getByTestId('unified-search-drawer').getAttribute('data-category')).toBe(
-      'climbs',
-    );
+    expect(screen.getByTestId('unified-search-drawer').getAttribute('data-category')).toBe('climbs');
   });
 
   it('renders nothing on board create routes', () => {
@@ -284,9 +266,7 @@ describe('GlobalHeader', () => {
     it('adds onboarding-search-button id when bridge is active', () => {
       render(<GlobalHeader boardConfigs={mockBoardConfigs} />);
 
-      const searchWrapper = screen
-        .getByPlaceholderText('Search climbs...')
-        .closest('[id="onboarding-search-button"]');
+      const searchWrapper = screen.getByPlaceholderText('Search climbs...').closest('[id="onboarding-search-button"]');
       expect(searchWrapper).toBeTruthy();
     });
 
@@ -379,9 +359,7 @@ describe('GlobalHeader', () => {
       expect(settingsLink).toBeTruthy();
       expect(settingsLink.closest('a')?.getAttribute('href')).toBe('/settings');
       const title = screen.getByText('You');
-      expect(
-        Boolean(settingsLink.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING),
-      ).toBe(true);
+      expect(Boolean(settingsLink.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
       expect(container.querySelectorAll('[aria-label="Settings"]').length).toBe(1);
     });
 
@@ -505,9 +483,7 @@ describe('GlobalHeader', () => {
       render(<GlobalHeader boardConfigs={mockBoardConfigs} />);
 
       expect(screen.getByText('Sessions')).toBeTruthy();
-      expect(screen.getByTestId('back-button').getAttribute('data-fallback')).toBe(
-        '/profile/user-2',
-      );
+      expect(screen.getByTestId('back-button').getAttribute('data-fallback')).toBe('/profile/user-2');
     });
 
     it('renders the statistics filter action in the profile header when the bridge is active', () => {

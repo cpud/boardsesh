@@ -18,14 +18,12 @@ import { ConfirmPopover } from '@/app/components/ui/confirm-popover';
 import { TabPanel } from '@/app/components/ui/tab-panel';
 import styles from './layout-client.module.css';
 
-const AccordionSearchForm = dynamic(
-  () => import('@/app/components/search-drawer/accordion-search-form'),
-  { ssr: false },
-);
-const SearchResultsFooter = dynamic(
-  () => import('@/app/components/search-drawer/search-results-footer'),
-  { ssr: false },
-);
+const AccordionSearchForm = dynamic(() => import('@/app/components/search-drawer/accordion-search-form'), {
+  ssr: false,
+});
+const SearchResultsFooter = dynamic(() => import('@/app/components/search-drawer/search-results-footer'), {
+  ssr: false,
+});
 const QueueList = dynamic(() => import('@/app/components/queue-control/queue-list'), {
   ssr: false,
 });
@@ -78,12 +76,7 @@ const QueueTabContent: React.FC<{ boardDetails: BoardDetails }> = ({ boardDetail
             okText="Clear"
             cancelText="Cancel"
           >
-            <MuiButton
-              variant="text"
-              startIcon={<DeleteOutlined />}
-              size="small"
-              sx={{ color: 'var(--neutral-400)' }}
-            >
+            <MuiButton variant="text" startIcon={<DeleteOutlined />} size="small" sx={{ color: 'var(--neutral-400)' }}>
               Clear
             </MuiButton>
           </ConfirmPopover>
@@ -123,28 +116,17 @@ const TabsWrapper: React.FC<{ boardDetails: BoardDetails }> = ({ boardDetails })
 // Preload thumbnail background images so they stay in the browser's memory
 // cache while the virtualizer mounts/unmounts list items on scroll.
 const hiddenStyle: React.CSSProperties = { position: 'absolute', width: 0, height: 0 };
-const ThumbnailPreload: React.FC<{ boardDetails: BoardDetails }> = React.memo(
-  ({ boardDetails }) => (
-    <>
-      {Object.keys(boardDetails.images_to_holds).map((img) => (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          key={img}
-          src={getImageUrl(img, boardDetails.board_name, true)}
-          alt=""
-          aria-hidden
-          style={hiddenStyle}
-        />
-      ))}
-    </>
-  ),
-);
+const ThumbnailPreload: React.FC<{ boardDetails: BoardDetails }> = React.memo(({ boardDetails }) => (
+  <>
+    {Object.keys(boardDetails.images_to_holds).map((img) => (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img key={img} src={getImageUrl(img, boardDetails.board_name, true)} alt="" aria-hidden style={hiddenStyle} />
+    ))}
+  </>
+));
 ThumbnailPreload.displayName = 'ThumbnailPreload';
 
-const ListLayoutClient: React.FC<PropsWithChildren<ListLayoutClientProps>> = ({
-  boardDetails,
-  children,
-}) => {
+const ListLayoutClient: React.FC<PropsWithChildren<ListLayoutClientProps>> = ({ boardDetails, children }) => {
   // Prefetch full-size board images when the browser is idle so climb detail view loads instantly
   useEffect(() => {
     const links: HTMLLinkElement[] = [];
@@ -168,9 +150,7 @@ const ListLayoutClient: React.FC<PropsWithChildren<ListLayoutClientProps>> = ({
       if (boardDetails.layoutFolder) {
         addPrefetchLink('/images/moonboard/moonboard-bg.webp');
         boardDetails.holdSetImages?.forEach((imageFile) => {
-          addPrefetchLink(
-            `/images/moonboard/${boardDetails.layoutFolder}/${imageFile.replace(/\.png$/, '.webp')}`,
-          );
+          addPrefetchLink(`/images/moonboard/${boardDetails.layoutFolder}/${imageFile.replace(/\.png$/, '.webp')}`);
         });
       }
     };
@@ -197,11 +177,7 @@ const ListLayoutClient: React.FC<PropsWithChildren<ListLayoutClientProps>> = ({
       <Box component="main" className={styles.mainContent}>
         {children}
       </Box>
-      <Box
-        component="aside"
-        className={styles.sider}
-        sx={{ width: 400, padding: '0 8px 20px 8px' }}
-      >
+      <Box component="aside" className={styles.sider} sx={{ width: 400, padding: '0 8px 20px 8px' }}>
         <TabsWrapper boardDetails={boardDetails} />
       </Box>
       <OnboardingTour />

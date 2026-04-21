@@ -59,10 +59,7 @@ export const socialFeedQueries = {
       })
       .from(dbSchema.boardseshTicks)
       .innerJoin(dbSchema.users, eq(dbSchema.boardseshTicks.userId, dbSchema.users.id))
-      .leftJoin(
-        dbSchema.userProfiles,
-        eq(dbSchema.boardseshTicks.userId, dbSchema.userProfiles.userId),
-      )
+      .leftJoin(dbSchema.userProfiles, eq(dbSchema.boardseshTicks.userId, dbSchema.userProfiles.userId))
       .leftJoin(
         dbSchema.boardClimbs,
         and(
@@ -141,10 +138,7 @@ export const socialFeedQueries = {
    * Get global activity feed of all recent ascents
    * No authentication required
    */
-  globalAscentsFeed: async (
-    _: unknown,
-    { input }: { input?: { limit?: number; offset?: number } },
-  ) => {
+  globalAscentsFeed: async (_: unknown, { input }: { input?: { limit?: number; offset?: number } }) => {
     const validatedInput = validateInput(FollowingAscentsFeedInputSchema, input || {}, 'input');
     const limit = validatedInput.limit ?? 20;
     const offset = validatedInput.offset ?? 0;
@@ -165,10 +159,7 @@ export const socialFeedQueries = {
       })
       .from(dbSchema.boardseshTicks)
       .innerJoin(dbSchema.users, eq(dbSchema.boardseshTicks.userId, dbSchema.users.id))
-      .leftJoin(
-        dbSchema.userProfiles,
-        eq(dbSchema.boardseshTicks.userId, dbSchema.userProfiles.userId),
-      )
+      .leftJoin(dbSchema.userProfiles, eq(dbSchema.boardseshTicks.userId, dbSchema.userProfiles.userId))
       .leftJoin(
         dbSchema.boardClimbs,
         and(

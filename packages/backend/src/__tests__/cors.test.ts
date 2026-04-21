@@ -92,20 +92,14 @@ describe('CORS Handler', () => {
     });
 
     it('adds Tailscale hostname origins from tailscale status when available', () => {
-      vi.mocked(execFileSync).mockReturnValue(
-        JSON.stringify({ Self: { DNSName: 'my-mac.tailnet123.ts.net.' } }),
-      );
+      vi.mocked(execFileSync).mockReturnValue(JSON.stringify({ Self: { DNSName: 'my-mac.tailnet123.ts.net.' } }));
 
       initCors('https://boardsesh.com');
 
       const origins = getAllowedOrigins();
       expect(origins).toContain('http://my-mac.tailnet123.ts.net:3000');
       expect(origins).toContain('http://my-mac.tailnet123.ts.net:3001');
-      expect(execFileSync).toHaveBeenCalledWith(
-        'tailscale',
-        ['status', '--json'],
-        expect.any(Object),
-      );
+      expect(execFileSync).toHaveBeenCalledWith('tailscale', ['status', '--json'], expect.any(Object));
     });
 
     it('fails gracefully when tailscale is unavailable', () => {
@@ -127,9 +121,7 @@ describe('CORS Handler', () => {
     });
 
     it('returns true for Vercel preview deployments matching regex', () => {
-      expect(isOriginAllowed('https://boardsesh-abc123-marcodejonghs-projects.vercel.app')).toBe(
-        true,
-      );
+      expect(isOriginAllowed('https://boardsesh-abc123-marcodejonghs-projects.vercel.app')).toBe(true);
     });
 
     it('returns true for homelab preview deployments matching regex', () => {
@@ -156,15 +148,11 @@ describe('CORS Handler', () => {
     });
 
     it('returns false for partial regex matches with wrong prefix', () => {
-      expect(isOriginAllowed('http://boardsesh-abc123-marcodejonghs-projects.vercel.app')).toBe(
-        false,
-      ); // http not https
+      expect(isOriginAllowed('http://boardsesh-abc123-marcodejonghs-projects.vercel.app')).toBe(false); // http not https
     });
 
     it('returns false for partial regex matches with wrong suffix', () => {
-      expect(
-        isOriginAllowed('https://boardsesh-abc123-marcodejonghs-projects.vercel.app.evil.com'),
-      ).toBe(false);
+      expect(isOriginAllowed('https://boardsesh-abc123-marcodejonghs-projects.vercel.app.evil.com')).toBe(false);
     });
 
     it('returns true for localhost origins in non-production', () => {
@@ -208,10 +196,7 @@ describe('CORS Handler', () => {
       const res = createMockRes();
       applyCorsHeaders(req, res);
 
-      expect(res.setHeader).toHaveBeenCalledWith(
-        'Access-Control-Allow-Origin',
-        'https://boardsesh.com',
-      );
+      expect(res.setHeader).toHaveBeenCalledWith('Access-Control-Allow-Origin', 'https://boardsesh.com');
     });
 
     it('sets Access-Control-Allow-Credentials to true when origin is allowed', () => {
@@ -227,14 +212,8 @@ describe('CORS Handler', () => {
       const res = createMockRes();
       applyCorsHeaders(req, res);
 
-      expect(res.setHeader).not.toHaveBeenCalledWith(
-        'Access-Control-Allow-Origin',
-        expect.anything(),
-      );
-      expect(res.setHeader).not.toHaveBeenCalledWith(
-        'Access-Control-Allow-Credentials',
-        expect.anything(),
-      );
+      expect(res.setHeader).not.toHaveBeenCalledWith('Access-Control-Allow-Origin', expect.anything());
+      expect(res.setHeader).not.toHaveBeenCalledWith('Access-Control-Allow-Credentials', expect.anything());
     });
 
     it('always sets Access-Control-Allow-Methods', () => {
@@ -242,10 +221,7 @@ describe('CORS Handler', () => {
       const res = createMockRes();
       applyCorsHeaders(req, res);
 
-      expect(res.setHeader).toHaveBeenCalledWith(
-        'Access-Control-Allow-Methods',
-        'GET, POST, OPTIONS',
-      );
+      expect(res.setHeader).toHaveBeenCalledWith('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     });
 
     it('always sets Access-Control-Allow-Headers', () => {
@@ -253,10 +229,7 @@ describe('CORS Handler', () => {
       const res = createMockRes();
       applyCorsHeaders(req, res);
 
-      expect(res.setHeader).toHaveBeenCalledWith(
-        'Access-Control-Allow-Headers',
-        'Content-Type, Authorization',
-      );
+      expect(res.setHeader).toHaveBeenCalledWith('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     });
 
     it('returns false and sends 200 for OPTIONS requests', () => {

@@ -25,9 +25,7 @@ vi.mock('@/app/hooks/use-infinite-scroll', () => ({
 }));
 
 vi.mock('@/app/components/social/proposal-card', () => ({
-  default: ({ proposal }: { proposal: Proposal }) => (
-    <div data-testid="proposal-card">{proposal.uuid}</div>
-  ),
+  default: ({ proposal }: { proposal: Proposal }) => <div data-testid="proposal-card">{proposal.uuid}</div>,
 }));
 
 vi.mock('../feed-item-skeleton', () => ({

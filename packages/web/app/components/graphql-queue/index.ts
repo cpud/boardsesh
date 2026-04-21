@@ -29,14 +29,5 @@ export {
   SearchContext,
   SessionContext,
 } from './QueueContext';
-export type {
-  GraphQLQueueContextType,
-  GraphQLQueueActionsType,
-  GraphQLQueueDataType,
-} from './types';
-export type {
-  CurrentClimbDataType,
-  QueueListDataType,
-  SearchDataType,
-  SessionDataType,
-} from './types';
+export type { GraphQLQueueContextType, GraphQLQueueActionsType, GraphQLQueueDataType } from './types';
+export type { CurrentClimbDataType, QueueListDataType, SearchDataType, SessionDataType } from './types';

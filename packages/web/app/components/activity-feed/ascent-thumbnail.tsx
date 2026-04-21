@@ -120,12 +120,7 @@ const AscentThumbnail: React.FC<AscentThumbnailProps> = ({
     );
   } else {
     thumbnailContent = (
-      <BoardImageLayers
-        boardDetails={boardDetails}
-        mirrored={isMirror}
-        thumbnail
-        style={thumbnailStyle}
-      />
+      <BoardImageLayers boardDetails={boardDetails} mirrored={isMirror} thumbnail style={thumbnailStyle} />
     );
   }
 

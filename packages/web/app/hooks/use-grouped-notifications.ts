@@ -34,10 +34,10 @@ export function useGroupedNotifications(initialData?: GroupedNotificationConnect
     queryKey: GROUPED_NOTIFICATIONS_QUERY_KEY,
     queryFn: async ({ pageParam }) => {
       const client = createGraphQLHttpClient(token!);
-      const data = await client.request<
-        GetGroupedNotificationsQueryResponse,
-        GetGroupedNotificationsQueryVariables
-      >(GET_GROUPED_NOTIFICATIONS, { limit: PAGE_SIZE, offset: pageParam });
+      const data = await client.request<GetGroupedNotificationsQueryResponse, GetGroupedNotificationsQueryVariables>(
+        GET_GROUPED_NOTIFICATIONS,
+        { limit: PAGE_SIZE, offset: pageParam },
+      );
 
       // Sync unread count from the grouped response
       queryClient.setQueryData(UNREAD_COUNT_QUERY_KEY, data.groupedNotifications.unreadCount);

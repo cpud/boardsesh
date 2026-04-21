@@ -10,11 +10,7 @@ type PlaylistScrollSectionProps = {
   children: React.ReactNode;
 };
 
-export default function PlaylistScrollSection({
-  title,
-  loading,
-  children,
-}: PlaylistScrollSectionProps) {
+export default function PlaylistScrollSection({ title, loading, children }: PlaylistScrollSectionProps) {
   if (loading) {
     return (
       <div className={styles.scrollSection}>

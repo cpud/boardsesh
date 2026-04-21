@@ -121,10 +121,7 @@ const warnedHoldStates = new Set<string>();
  * Convert lit up holds string to a map of frames.
  * Each frame maps hold IDs to their state, color, and display color.
  */
-export function convertLitUpHoldsStringToMap(
-  litUpHolds: string,
-  board: BoardName,
-): Record<number, LitUpHoldsMap> {
+export function convertLitUpHoldsStringToMap(litUpHolds: string, board: BoardName): Record<number, LitUpHoldsMap> {
   return litUpHolds
     .split(',')
     .filter((frame) => frame)

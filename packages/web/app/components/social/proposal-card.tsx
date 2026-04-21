@@ -27,11 +27,7 @@ import Snackbar from '@mui/material/Snackbar';
 import { themeTokens } from '@/app/theme/theme-config';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  VOTE_ON_PROPOSAL,
-  RESOLVE_PROPOSAL,
-  DELETE_PROPOSAL,
-} from '@/app/lib/graphql/operations/proposals';
+import { VOTE_ON_PROPOSAL, RESOLVE_PROPOSAL, DELETE_PROPOSAL } from '@/app/lib/graphql/operations/proposals';
 import type { Proposal } from '@boardsesh/shared-schema';
 import { usePathname } from 'next/navigation';
 import type { Climb, BoardDetails, BoardName } from '@/app/lib/types';
@@ -63,13 +59,7 @@ interface ProposalCardProps {
   highlight?: boolean;
 }
 
-export default function ProposalCard({
-  proposal,
-  isAdminOrLeader,
-  onUpdate,
-  onDelete,
-  highlight,
-}: ProposalCardProps) {
+export default function ProposalCard({ proposal, isAdminOrLeader, onUpdate, onDelete, highlight }: ProposalCardProps) {
   const pathname = usePathname();
   const isDark = useIsDarkMode();
   const { token } = useWsAuthToken();
@@ -215,10 +205,7 @@ export default function ProposalCard({
 
           {/* Header */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-            <Avatar
-              src={localProposal.proposerAvatarUrl || undefined}
-              sx={{ width: 28, height: 28, fontSize: 14 }}
-            >
+            <Avatar src={localProposal.proposerAvatarUrl || undefined} sx={{ width: 28, height: 28, fontSize: 14 }}>
               {localProposal.proposerDisplayName?.[0] || 'U'}
             </Avatar>
             <Typography variant="body2" sx={{ fontWeight: 600, flex: 1 }}>
@@ -238,12 +225,7 @@ export default function ProposalCard({
 
           {/* Value change */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
-            <Chip
-              label={localProposal.currentValue}
-              size="small"
-              variant="outlined"
-              sx={{ fontSize: 13 }}
-            />
+            <Chip label={localProposal.currentValue} size="small" variant="outlined" sx={{ fontSize: 13 }} />
             <ArrowForwardIcon sx={{ fontSize: 16, color: themeTokens.neutral[400] }} />
             <Chip
               label={localProposal.proposedValue}
@@ -259,10 +241,7 @@ export default function ProposalCard({
 
           {/* Reason */}
           {localProposal.reason && (
-            <Typography
-              variant="body2"
-              sx={{ color: themeTokens.neutral[600], mb: 1.5, fontStyle: 'italic' }}
-            >
+            <Typography variant="body2" sx={{ color: themeTokens.neutral[600], mb: 1.5, fontStyle: 'italic' }}>
               &ldquo;{localProposal.reason}&rdquo;
             </Typography>
           )}
@@ -284,10 +263,7 @@ export default function ProposalCard({
                   disabled={loading}
                   onClick={() => handleVote(1)}
                   sx={{
-                    color:
-                      localProposal.userVote === 1
-                        ? themeTokens.colors.success
-                        : themeTokens.neutral[400],
+                    color: localProposal.userVote === 1 ? themeTokens.colors.success : themeTokens.neutral[400],
                   }}
                 >
                   {localProposal.userVote === 1 ? (
@@ -303,10 +279,7 @@ export default function ProposalCard({
                   disabled={loading}
                   onClick={() => handleVote(-1)}
                   sx={{
-                    color:
-                      localProposal.userVote === -1
-                        ? themeTokens.colors.error
-                        : themeTokens.neutral[400],
+                    color: localProposal.userVote === -1 ? themeTokens.colors.error : themeTokens.neutral[400],
                   }}
                 >
                   {localProposal.userVote === -1 ? (
@@ -381,10 +354,7 @@ export default function ProposalCard({
           </Box>
 
           {/* Timestamp */}
-          <Typography
-            variant="caption"
-            sx={{ color: themeTokens.neutral[400], mt: 1, display: 'block' }}
-          >
+          <Typography variant="caption" sx={{ color: themeTokens.neutral[400], mt: 1, display: 'block' }}>
             {new Date(localProposal.createdAt).toLocaleDateString()}
           </Typography>
         </CardContent>
@@ -395,8 +365,8 @@ export default function ProposalCard({
         <DialogTitle>Delete Accepted Proposal</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            This will revert the effects of this proposal (e.g., grade change, benchmark/classic
-            status) and permanently delete it. This action cannot be undone.
+            This will revert the effects of this proposal (e.g., grade change, benchmark/classic status) and permanently
+            delete it. This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -410,12 +380,7 @@ export default function ProposalCard({
       </Dialog>
 
       {/* TODO: Replace local Snackbar with useSnackbar() from SnackbarProvider */}
-      <Snackbar
-        open={!!snackbar}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar('')}
-        message={snackbar}
-      />
+      <Snackbar open={!!snackbar} autoHideDuration={3000} onClose={() => setSnackbar('')} message={snackbar} />
     </>
   );
 }

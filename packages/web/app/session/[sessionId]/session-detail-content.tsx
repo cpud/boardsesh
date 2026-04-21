@@ -23,11 +23,7 @@ import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import type {
-  SessionDetail,
-  SessionDetailTick,
-  SessionFeedParticipant,
-} from '@boardsesh/shared-schema';
+import type { SessionDetail, SessionDetailTick, SessionFeedParticipant } from '@boardsesh/shared-schema';
 import VoteButton from '@/app/components/social/vote-button';
 import CommentSection from '@/app/components/social/comment-section';
 import { VoteSummaryProvider } from '@/app/components/social/vote-summary-context';
@@ -49,10 +45,7 @@ import SessionOverviewPanel, {
 import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
 import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
 import { CssBarChart } from '@/app/components/charts/css-bar-chart';
-import {
-  buildSessionGradeBars,
-  SESSION_GRADE_LEGEND,
-} from '@/app/components/charts/session-grade-bars';
+import { buildSessionGradeBars, SESSION_GRADE_LEGEND } from '@/app/components/charts/session-grade-bars';
 import { useGradeFormat } from '@/app/hooks/use-grade-format';
 import { generateSessionName } from '@/app/lib/session-utils';
 import { ConfirmPopover } from '@/app/components/ui/confirm-popover';
@@ -234,12 +227,7 @@ function SessionTickItem({
           </Typography>
         )}
         <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 0.25 }}>
-          <VoteButton
-            entityType="tick"
-            entityId={tick.uuid}
-            initialUpvotes={tick.upvotes}
-            likeOnly
-          />
+          <VoteButton entityType="tick" entityId={tick.uuid} initialUpvotes={tick.upvotes} likeOnly />
           <IconButton
             size="small"
             onClick={() => setCommentsOpen((prev) => !prev)}
@@ -263,12 +251,7 @@ function SessionTickItem({
         </Box>
       </Box>
       {tick.comment && (
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{ pl: isMultiUser ? 3.5 : 0, minWidth: 0 }}
-          noWrap
-        >
+        <Typography variant="caption" color="text.secondary" sx={{ pl: isMultiUser ? 3.5 : 0, minWidth: 0 }} noWrap>
           {tick.comment}
         </Typography>
       )}
@@ -330,9 +313,7 @@ export default function SessionDetailContent({
           </IconButton>
           <Typography variant="h6">Session Not Found</Typography>
         </Box>
-        <Typography color="text.secondary">
-          This session could not be found. It may have been removed.
-        </Typography>
+        <Typography color="text.secondary">This session could not be found. It may have been removed.</Typography>
       </Box>
     );
   }
@@ -360,9 +341,7 @@ export default function SessionDetailContent({
 
   const currentUserId = authSession?.user?.id;
   const isInferred = sessionType === 'inferred';
-  const isParticipant = currentUserId
-    ? participants.some((p) => p.userId === currentUserId)
-    : false;
+  const isParticipant = currentUserId ? participants.some((p) => p.userId === currentUserId) : false;
   const canEdit = isInferred && isParticipant;
 
   const isMultiUser = participants.length > 1;
@@ -410,8 +389,13 @@ export default function SessionDetailContent({
   const tickUuids = useMemo(() => ticks.map((t) => t.uuid), [ticks]);
 
   // Build per-climb BoardDetails for multi-board support
-  const { boardDetailsByClimb, defaultBoardDetails, unsupportedClimbs, upsizedClimbs } =
-    useBoardDetailsMap(sessionClimbs, myBoards, null, null, boardTypes);
+  const { boardDetailsByClimb, defaultBoardDetails, unsupportedClimbs, upsizedClimbs } = useBoardDetailsMap(
+    sessionClimbs,
+    myBoards,
+    null,
+    null,
+    boardTypes,
+  );
   const effectiveBoardDetails = defaultBoardDetails ?? fallbackBoardDetails;
 
   // Climb actions data for favorites/playlists — derive from actual climb data, fall back to session metadata
@@ -492,14 +476,7 @@ export default function SessionDetailContent({
         </Box>
       );
     },
-    [
-      ticksByClimb,
-      participantMap,
-      isMultiUser,
-      currentUserId,
-      handleDeleteTick,
-      deleteTick.isPending,
-    ],
+    [ticksByClimb, participantMap, isMultiUser, currentUserId, handleDeleteTick, deleteTick.isPending],
   );
 
   const handleStartEdit = useCallback(() => {
@@ -796,9 +773,7 @@ export default function SessionDetailContent({
         )}
 
         {/* Collapsible pills for embedded (drawer) mode */}
-        {embedded && embeddedSections.length > 0 && (
-          <CollapsibleSection sections={embeddedSections} />
-        )}
+        {embedded && embeddedSections.length > 0 && <CollapsibleSection sections={embeddedSections} />}
 
         {/* Full layout for standalone page */}
         {!embedded && (

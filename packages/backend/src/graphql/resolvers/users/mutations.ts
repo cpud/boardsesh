@@ -56,11 +56,7 @@ export const userMutations = {
     }
 
     // Fetch and return updated profile
-    const users = await db
-      .select()
-      .from(dbSchema.users)
-      .where(eq(dbSchema.users.id, userId))
-      .limit(1);
+    const users = await db.select().from(dbSchema.users).where(eq(dbSchema.users.id, userId)).limit(1);
 
     const profiles = await db
       .select()
@@ -102,10 +98,7 @@ export const userMutations = {
       .select()
       .from(dbSchema.auroraCredentials)
       .where(
-        and(
-          eq(dbSchema.auroraCredentials.userId, userId),
-          eq(dbSchema.auroraCredentials.boardType, input.boardType),
-        ),
+        and(eq(dbSchema.auroraCredentials.userId, userId), eq(dbSchema.auroraCredentials.boardType, input.boardType)),
       )
       .limit(1);
 
@@ -125,10 +118,7 @@ export const userMutations = {
           updatedAt: new Date(),
         })
         .where(
-          and(
-            eq(dbSchema.auroraCredentials.userId, userId),
-            eq(dbSchema.auroraCredentials.boardType, input.boardType),
-          ),
+          and(eq(dbSchema.auroraCredentials.userId, userId), eq(dbSchema.auroraCredentials.boardType, input.boardType)),
         );
     }
 
@@ -153,10 +143,7 @@ export const userMutations = {
     await db
       .delete(dbSchema.auroraCredentials)
       .where(
-        and(
-          eq(dbSchema.auroraCredentials.userId, ctx.userId!),
-          eq(dbSchema.auroraCredentials.boardType, boardType),
-        ),
+        and(eq(dbSchema.auroraCredentials.userId, ctx.userId!), eq(dbSchema.auroraCredentials.boardType, boardType)),
       );
 
     return true;
@@ -182,18 +169,14 @@ export const userMutations = {
       // Delete draft climbs created by this user
       await tx
         .delete(dbSchema.boardClimbs)
-        .where(
-          and(eq(dbSchema.boardClimbs.userId, userId), eq(dbSchema.boardClimbs.isDraft, true)),
-        );
+        .where(and(eq(dbSchema.boardClimbs.userId, userId), eq(dbSchema.boardClimbs.isDraft, true)));
 
       // Optionally remove setter name from published climbs
       if (input.removeSetterName) {
         await tx
           .update(dbSchema.boardClimbs)
           .set({ setterUsername: null })
-          .where(
-            and(eq(dbSchema.boardClimbs.userId, userId), eq(dbSchema.boardClimbs.isDraft, false)),
-          );
+          .where(and(eq(dbSchema.boardClimbs.userId, userId), eq(dbSchema.boardClimbs.isDraft, false)));
       }
 
       // Delete the user row — all related tables with onDelete: cascade

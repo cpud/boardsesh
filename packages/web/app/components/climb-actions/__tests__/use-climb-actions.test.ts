@@ -324,9 +324,7 @@ describe('useClimbActions', () => {
       set_names: undefined,
     };
 
-    const { result } = renderHook(() =>
-      useClimbActions({ ...defaultOptions, boardDetails: boardDetailsNoFork }),
-    );
+    const { result } = renderHook(() => useClimbActions({ ...defaultOptions, boardDetails: boardDetailsNoFork }));
 
     expect(result.current.canFork).toBe(false);
     expect(result.current.forkUrl).toBeNull();
@@ -334,9 +332,7 @@ describe('useClimbActions', () => {
 
   it('onActionComplete callback is called', () => {
     const onComplete = vi.fn();
-    const { result } = renderHook(() =>
-      useClimbActions({ ...defaultOptions, onActionComplete: onComplete }),
-    );
+    const { result } = renderHook(() => useClimbActions({ ...defaultOptions, onActionComplete: onComplete }));
 
     act(() => {
       result.current.handleViewDetails();

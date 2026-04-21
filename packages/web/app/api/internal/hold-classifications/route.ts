@@ -32,27 +32,18 @@ export async function GET(request: NextRequest) {
     const sizeIdParam = searchParams.get('sizeId');
 
     if (!boardType || !layoutIdParam || !sizeIdParam) {
-      return NextResponse.json(
-        { error: 'Missing required parameters: boardType, layoutId, sizeId' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Missing required parameters: boardType, layoutId, sizeId' }, { status: 400 });
     }
 
     if (!isValidBoardType(boardType)) {
-      return NextResponse.json(
-        { error: `boardType must be one of: ${VALID_BOARD_TYPES.join(', ')}` },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: `boardType must be one of: ${VALID_BOARD_TYPES.join(', ')}` }, { status: 400 });
     }
 
     const layoutId = parseIntSafe(layoutIdParam);
     const sizeId = parseIntSafe(sizeIdParam);
 
     if (layoutId === null || sizeId === null) {
-      return NextResponse.json(
-        { error: 'layoutId and sizeId must be valid integers' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'layoutId and sizeId must be valid integers' }, { status: 400 });
     }
 
     const db = getDb();
@@ -104,15 +95,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { boardType, layoutId, sizeId, holdId, holdType, handRating, footRating, pullDirection } =
-      body;
+    const { boardType, layoutId, sizeId, holdId, holdType, handRating, footRating, pullDirection } = body;
 
     // Validate required fields
     if (!isValidBoardType(boardType)) {
-      return NextResponse.json(
-        { error: `boardType must be one of: ${VALID_BOARD_TYPES.join(', ')}` },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: `boardType must be one of: ${VALID_BOARD_TYPES.join(', ')}` }, { status: 400 });
     }
 
     if (typeof layoutId !== 'number' || !Number.isInteger(layoutId)) {
@@ -129,35 +116,19 @@ export async function POST(request: NextRequest) {
 
     // Validate optional fields
     if (holdType !== null && holdType !== undefined && !isValidHoldType(holdType)) {
-      return NextResponse.json(
-        { error: `holdType must be one of: ${VALID_HOLD_TYPES.join(', ')}` },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: `holdType must be one of: ${VALID_HOLD_TYPES.join(', ')}` }, { status: 400 });
     }
 
     if (handRating !== null && handRating !== undefined && !isValidRating(handRating)) {
-      return NextResponse.json(
-        { error: 'handRating must be an integer between 1 and 5' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'handRating must be an integer between 1 and 5' }, { status: 400 });
     }
 
     if (footRating !== null && footRating !== undefined && !isValidRating(footRating)) {
-      return NextResponse.json(
-        { error: 'footRating must be an integer between 1 and 5' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'footRating must be an integer between 1 and 5' }, { status: 400 });
     }
 
-    if (
-      pullDirection !== null &&
-      pullDirection !== undefined &&
-      !isValidPullDirection(pullDirection)
-    ) {
-      return NextResponse.json(
-        { error: 'pullDirection must be an integer between 0 and 360' },
-        { status: 400 },
-      );
+    if (pullDirection !== null && pullDirection !== undefined && !isValidPullDirection(pullDirection)) {
+      return NextResponse.json({ error: 'pullDirection must be an integer between 0 and 360' }, { status: 400 });
     }
 
     const db = getDb();

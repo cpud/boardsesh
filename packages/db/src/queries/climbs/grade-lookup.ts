@@ -44,9 +44,7 @@ export function getGradeLabel(difficultyId: number | null): string {
   const label = GRADE_MAP[difficultyId];
   if (label === undefined && !warnedIds.has(difficultyId)) {
     warnedIds.add(difficultyId);
-    console.warn(
-      `[grade-lookup] Unknown difficulty ID: ${difficultyId} — not in grade map (range 10-33)`,
-    );
+    console.warn(`[grade-lookup] Unknown difficulty ID: ${difficultyId} — not in grade map (range 10-33)`);
   }
   return label ?? '';
 }

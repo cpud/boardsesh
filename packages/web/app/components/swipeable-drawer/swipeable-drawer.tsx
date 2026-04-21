@@ -96,9 +96,7 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
   const verticalDragHandle = useMemo(
     () =>
       effectiveSwipeEnabled && showDragHandle ? (
-        <div
-          className={placement === 'left' ? styles.dragHandleZoneRight : styles.dragHandleZoneLeft}
-        ></div>
+        <div className={placement === 'left' ? styles.dragHandleZoneRight : styles.dragHandleZoneLeft}></div>
       ) : null,
     [effectiveSwipeEnabled, showDragHandle, placement],
   );
@@ -248,10 +246,7 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
     // pass fullHeight explicitly.
     const normalizedHeight = typeof sx.height === 'string' ? sx.height.trim().toLowerCase() : '';
     const isFullHeightDrawer =
-      fullHeightProp ??
-      (normalizedHeight === '100%' ||
-        normalizedHeight === '100vh' ||
-        normalizedHeight === '100dvh');
+      fullHeightProp ?? (normalizedHeight === '100%' || normalizedHeight === '100vh' || normalizedHeight === '100dvh');
     if (isFullHeightDrawer && !sx.backgroundColor) {
       sx.backgroundColor = 'var(--semantic-background)';
     }
@@ -283,9 +278,7 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
       const isHorizontal = placement === 'left' || placement === 'right';
       const maxTranslate = isHorizontal ? paper.offsetWidth : paper.offsetHeight;
       const sign = placement === 'right' || placement === 'bottom' ? 1 : -1;
-      const target = isHorizontal
-        ? `translate(${sign * maxTranslate}px, 0)`
-        : `translate(0, ${sign * maxTranslate}px)`;
+      const target = isHorizontal ? `translate(${sign * maxTranslate}px, 0)` : `translate(0, ${sign * maxTranslate}px)`;
 
       // Calculate duration proportional to remaining distance so the animation
       // feels like it carries the fling momentum. A short fling from near the
@@ -381,10 +374,7 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
   // { ...defaults, ...external } — a PaperProps.ref (even undefined) overwrites
   // MUI's internal handleRef, breaking swipe-to-close. We forward paperRef
   // through the wrapper Box's callback ref instead.
-  const muiPaperProps = useMemo(
-    () => ({ sx: paperSx, 'data-swipeable-drawer': 'true' }),
-    [paperSx],
-  );
+  const muiPaperProps = useMemo(() => ({ sx: paperSx, 'data-swipeable-drawer': 'true' }), [paperSx]);
 
   // Prevent MUI SwipeableDrawer from claiming touches that belong to the
   // drawer's inner content. We set `defaultMuiPrevented` on the native event

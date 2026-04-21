@@ -52,14 +52,7 @@ interface BoardUnsyncedCounts {
 
 export type ImportPhase = 'preview' | 'importing' | 'complete' | 'error';
 
-export type ImportStep =
-  | 'climbs'
-  | 'resolving'
-  | 'dedup'
-  | 'ascents'
-  | 'attempts'
-  | 'circuits'
-  | 'sessions';
+export type ImportStep = 'climbs' | 'resolving' | 'dedup' | 'ascents' | 'attempts' | 'circuits' | 'sessions';
 
 export interface ImportProgress {
   step: ImportStep;
@@ -68,15 +61,7 @@ export interface ImportProgress {
   total?: number;
 }
 
-export const STEP_ORDER: ImportStep[] = [
-  'climbs',
-  'resolving',
-  'dedup',
-  'ascents',
-  'attempts',
-  'circuits',
-  'sessions',
-];
+export const STEP_ORDER: ImportStep[] = ['climbs', 'resolving', 'dedup', 'ascents', 'attempts', 'circuits', 'sessions'];
 
 export const STEP_LABELS: Record<ImportStep, string> = {
   climbs: 'Importing draft climbs',
@@ -139,9 +124,7 @@ export function BoardCredentialCard({
 
     switch (credential.syncStatus) {
       case 'active':
-        return (
-          <Chip icon={<CheckCircleOutlined />} label="Connected" size="small" color="success" />
-        );
+        return <Chip icon={<CheckCircleOutlined />} label="Connected" size="small" color="success" />;
       case 'error':
         return <Chip icon={<WarningAmberOutlined />} label="Error" size="small" color="error" />;
       case 'expired':
@@ -167,24 +150,14 @@ export function BoardCredentialCard({
             </Typography>
           </div>
           {isKilter ? (
-            <Typography
-              variant="body2"
-              component="span"
-              color="text.secondary"
-              className={styles.notConnectedText}
-            >
-              The Kilter backend has been shut down. You can import your data using an Aurora JSON
-              export file, or email Aurora Climbing to request a data export.
+            <Typography variant="body2" component="span" color="text.secondary" className={styles.notConnectedText}>
+              The Kilter backend has been shut down. You can import your data using an Aurora JSON export file, or email
+              Aurora Climbing to request a data export.
             </Typography>
           ) : (
-            <Typography
-              variant="body2"
-              component="span"
-              color="text.secondary"
-              className={styles.notConnectedText}
-            >
-              Not connected. Link your {boardName} account to import your Aurora data, or import
-              from a JSON export file.
+            <Typography variant="body2" component="span" color="text.secondary" className={styles.notConnectedText}>
+              Not connected. Link your {boardName} account to import your Aurora data, or import from a JSON export
+              file.
             </Typography>
           )}
           <div className={isKilter ? styles.buttonRowStacked : styles.buttonRow}>
@@ -250,18 +223,13 @@ export function BoardCredentialCard({
             </div>
           )}
           {totalUnsynced > 0 && (
-            <MuiAlert
-              severity="warning"
-              icon={<WarningOutlined />}
-              className={styles.unsyncedAlert}
-            >
+            <MuiAlert severity="warning" icon={<WarningOutlined />} className={styles.unsyncedAlert}>
               <AlertTitle>{`${totalUnsynced} item${totalUnsynced > 1 ? 's' : ''} pending sync`}</AlertTitle>
               <Typography variant="body2" component="span" color="text.secondary">
                 {unsyncedCounts.ascents > 0 &&
                   `${unsyncedCounts.ascents} ascent${unsyncedCounts.ascents > 1 ? 's' : ''}`}
                 {unsyncedCounts.ascents > 0 && unsyncedCounts.climbs > 0 && ', '}
-                {unsyncedCounts.climbs > 0 &&
-                  `${unsyncedCounts.climbs} climb${unsyncedCounts.climbs > 1 ? 's' : ''}`}
+                {unsyncedCounts.climbs > 0 && `${unsyncedCounts.climbs} climb${unsyncedCounts.climbs > 1 ? 's' : ''}`}
               </Typography>
             </MuiAlert>
           )}
@@ -325,15 +293,9 @@ export function ImportProgressSteps({ progress }: { progress: ImportProgress | n
               </Typography>
             </div>
             {hasCounts && (
-              <LinearProgress
-                variant="determinate"
-                value={progressPercent}
-                sx={{ ml: '32px', mr: 1, mt: 0.5 }}
-              />
+              <LinearProgress variant="determinate" value={progressPercent} sx={{ ml: '32px', mr: 1, mt: 0.5 }} />
             )}
-            {isActive && !hasCounts && (
-              <LinearProgress variant="indeterminate" sx={{ ml: '32px', mr: 1, mt: 0.5 }} />
-            )}
+            {isActive && !hasCounts && <LinearProgress variant="indeterminate" sx={{ ml: '32px', mr: 1, mt: 0.5 }} />}
           </div>
         );
       })}
@@ -489,10 +451,7 @@ export default function AuroraCredentialsSection() {
     // Guard against very large files (200MB limit - exports can be large due to climb data)
     const maxSizeBytes = 200 * 1024 * 1024;
     if (file.size > maxSizeBytes) {
-      showMessage(
-        'File is too large (max 200MB). Please check you selected the correct file.',
-        'error',
-      );
+      showMessage('File is too large (max 200MB). Please check you selected the correct file.', 'error');
       setImportingBoard(null);
       event.target.value = '';
       return;
@@ -513,9 +472,7 @@ export default function AuroraCredentialsSection() {
         setImportPhase('preview');
       } catch (err) {
         showMessage(
-          err instanceof Error
-            ? err.message
-            : 'Failed to parse JSON file. Please check the file format.',
+          err instanceof Error ? err.message : 'Failed to parse JSON file. Please check the file format.',
           'error',
         );
         setImportingBoard(null);
@@ -601,10 +558,7 @@ export default function AuroraCredentialsSection() {
 
   const isImporting = importPhase === 'importing';
   const isImportDialogOpen =
-    importPhase === 'preview' ||
-    importPhase === 'importing' ||
-    importPhase === 'complete' ||
-    importPhase === 'error';
+    importPhase === 'preview' || importPhase === 'importing' || importPhase === 'complete' || importPhase === 'error';
 
   const getImportDialogTitle = () => {
     switch (importPhase) {
@@ -638,15 +592,10 @@ export default function AuroraCredentialsSection() {
       <Card>
         <CardContent>
           <Typography variant="h5">Board Accounts</Typography>
-          <Typography
-            variant="body2"
-            component="span"
-            color="text.secondary"
-            className={styles.sectionDescription}
-          >
-            Link your board accounts to import your Aurora data to Boardsesh, or import from a JSON
-            export file. We'll automatically sync your logbook, ascents, and climbs FROM Aurora
-            every 12 hours. Data created in Boardsesh stays local and does not sync back to Aurora.
+          <Typography variant="body2" component="span" color="text.secondary" className={styles.sectionDescription}>
+            Link your board accounts to import your Aurora data to Boardsesh, or import from a JSON export file. We'll
+            automatically sync your logbook, ascents, and climbs FROM Aurora every 12 hours. Data created in Boardsesh
+            stays local and does not sync back to Aurora.
           </Typography>
 
           <Stack spacing={2} className={styles.cardsContainer}>
@@ -690,15 +639,9 @@ export default function AuroraCredentialsSection() {
       <Dialog open={isModalOpen} onClose={handleModalCancel} maxWidth="sm" fullWidth>
         <DialogTitle>{`Link ${selectedBoard.charAt(0).toUpperCase() + selectedBoard.slice(1)} Account`}</DialogTitle>
         <DialogContent>
-          <Typography
-            variant="body2"
-            component="span"
-            color="text.secondary"
-            className={styles.modalDescription}
-          >
-            Enter your {selectedBoard.charAt(0).toUpperCase() + selectedBoard.slice(1)} Board
-            username and password to import your Aurora data. Your credentials are encrypted and
-            securely stored. Data syncs every 12 hours.
+          <Typography variant="body2" component="span" color="text.secondary" className={styles.modalDescription}>
+            Enter your {selectedBoard.charAt(0).toUpperCase() + selectedBoard.slice(1)} Board username and password to
+            import your Aurora data. Your credentials are encrypted and securely stored. Data syncs every 12 hours.
           </Typography>
           <Box
             component="form"
@@ -759,11 +702,7 @@ export default function AuroraCredentialsSection() {
           {/* Preview phase */}
           {importPhase === 'preview' && importPreview && (
             <>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                className={styles.modalDescription}
-              >
+              <Typography variant="body2" color="text.secondary" className={styles.modalDescription}>
                 Import data from <strong>{importPreview.username}</strong> to{' '}
                 <strong>
                   {importingBoard?.charAt(0).toUpperCase()}
@@ -788,8 +727,8 @@ export default function AuroraCredentialsSection() {
                 </ListItem>
               </List>
               <Typography variant="body2" color="text.secondary">
-                Climbs will be matched by name. Any that can't be matched will be reported after
-                import. Re-importing the same file will not create duplicates.
+                Climbs will be matched by name. Any that can't be matched will be reported after import. Re-importing
+                the same file will not create duplicates.
               </Typography>
             </>
           )}

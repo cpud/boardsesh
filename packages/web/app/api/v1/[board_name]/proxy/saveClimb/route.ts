@@ -119,10 +119,7 @@ export async function POST(request: Request, props: { params: Promise<{ board_na
     });
 
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request data', details: error.issues },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Invalid request data', details: error.issues }, { status: 400 });
     }
 
     // Only database errors should reach here now

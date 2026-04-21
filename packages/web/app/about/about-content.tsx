@@ -5,13 +5,7 @@ import MuiCard from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import MuiLink from '@mui/material/Link';
-import {
-  GitHub,
-  GroupOutlined,
-  FavoriteBorderOutlined,
-  ApiOutlined,
-  RocketLaunchOutlined,
-} from '@mui/icons-material';
+import { GitHub, GroupOutlined, FavoriteBorderOutlined, ApiOutlined, RocketLaunchOutlined } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Logo from '@/app/components/brand/logo';
@@ -39,12 +33,7 @@ export default function AboutContent() {
                 <Typography variant="h2" className={styles.heroTitle}>
                   Track, Train, and Climb Together
                 </Typography>
-                <Typography
-                  variant="body2"
-                  component="span"
-                  color="text.secondary"
-                  className={styles.heroSubtitle}
-                >
+                <Typography variant="body2" component="span" color="text.secondary" className={styles.heroSubtitle}>
                   One app for every climbing board
                 </Typography>
               </div>
@@ -56,8 +45,8 @@ export default function AboutContent() {
                   Our Vision
                 </Typography>
                 <Typography variant="body1" component="p">
-                  Kilter, Tension, MoonBoard, Decoy, Grasshopper. Every board has its own app and
-                  its own walled garden. Your training shouldn&apos;t be locked inside one of them.
+                  Kilter, Tension, MoonBoard, Decoy, Grasshopper. Every board has its own app and its own walled garden.
+                  Your training shouldn&apos;t be locked inside one of them.
                 </Typography>
                 <Typography variant="body1" component="p">
                   Boardsesh works across all of them so you can just climb.
@@ -111,15 +100,11 @@ export default function AboutContent() {
                   Open Source
                 </Typography>
                 <Typography variant="body1" component="p">
-                  Boardsesh is open source under the Apache license. Browse the code, send a PR,
-                  file a bug, or fork the whole project.
+                  Boardsesh is open source under the Apache license. Browse the code, send a PR, file a bug, or fork the
+                  whole project.
                 </Typography>
                 <Typography variant="body1" component="p">
-                  <MuiLink
-                    href="https://github.com/marcodejongh/boardsesh"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <MuiLink href="https://github.com/marcodejongh/boardsesh" target="_blank" rel="noopener noreferrer">
                     View on GitHub →
                   </MuiLink>
                 </Typography>
@@ -142,14 +127,12 @@ export default function AboutContent() {
               {/* Collaboration */}
               <section>
                 <Typography variant="h3">
-                  <FavoriteBorderOutlined
-                    className={`${styles.sectionIcon} ${styles.primaryIcon}`}
-                  />
+                  <FavoriteBorderOutlined className={`${styles.sectionIcon} ${styles.primaryIcon}`} />
                   Join the Community
                 </Typography>
                 <Typography variant="body1" component="p">
-                  Whether you write code, set problems, or just want to tell us what&apos;s broken,
-                  we&apos;d like to hear from you.
+                  Whether you write code, set problems, or just want to tell us what&apos;s broken, we&apos;d like to
+                  hear from you.
                 </Typography>
               </section>
 

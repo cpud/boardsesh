@@ -137,13 +137,7 @@ function parseFrames(frames: string): Array<{ holdId: number; roleCode: number }
 }
 
 interface Problem {
-  type:
-    | 'unknown_role'
-    | 'no_starting'
-    | 'no_finish'
-    | 'empty_frames'
-    | 'malformed_frames'
-    | 'negative_role';
+  type: 'unknown_role' | 'no_starting' | 'no_finish' | 'empty_frames' | 'malformed_frames' | 'negative_role';
   detail: string;
 }
 
@@ -239,18 +233,14 @@ async function main() {
     }>(dbRoles)) {
       const boardMap = HOLD_STATE_MAP[role.board_type];
       if (boardMap && !(role.id in boardMap)) {
-        console.log(
-          `  UNMAPPED: ${role.board_type} role ${role.id} "${role.full_name}" (product ${role.product_id})`,
-        );
+        console.log(`  UNMAPPED: ${role.board_type} role ${role.id} "${role.full_name}" (product ${role.product_id})`);
         unmappedCount++;
       }
     }
     if (unmappedCount === 0) {
       console.log('  All placement roles are mapped in HOLD_STATE_MAP ✓');
     } else {
-      console.log(
-        `\n  ${unmappedCount} unmapped role(s) found — these will cause rendering issues`,
-      );
+      console.log(`\n  ${unmappedCount} unmapped role(s) found — these will cause rendering issues`);
     }
 
     // Now scan climbs
@@ -274,9 +264,7 @@ async function main() {
         GROUP BY climb_uuid
       `);
 
-      const statsMap = new Map(
-        rows<StatsRow>(statsResult).map((s) => [s.climb_uuid, Number(s.total_ascents)]),
-      );
+      const statsMap = new Map(rows<StatsRow>(statsResult).map((s) => [s.climb_uuid, Number(s.total_ascents)]));
 
       const problemCounts: Record<string, number> = {
         unknown_role: 0,
@@ -331,9 +319,7 @@ async function main() {
             console.log(`      → ${p.type}: ${p.detail}`);
           }
           if (verbose) {
-            console.log(
-              `      frames: ${climb.frames?.slice(0, 80)}${(climb.frames?.length ?? 0) > 80 ? '...' : ''}`,
-            );
+            console.log(`      frames: ${climb.frames?.slice(0, 80)}${(climb.frames?.length ?? 0) > 80 ? '...' : ''}`);
           }
         }
       }
@@ -352,14 +338,10 @@ async function main() {
     `);
 
     let anyUnknown = false;
-    for (const row of rows<{ board_type: string; role_code: number; climb_count: string }>(
-      allUnknown,
-    )) {
+    for (const row of rows<{ board_type: string; role_code: number; climb_count: string }>(allUnknown)) {
       const boardMap = HOLD_STATE_MAP[row.board_type];
       if (boardMap && !(row.role_code in boardMap)) {
-        console.log(
-          `  ${row.board_type} role ${row.role_code}: ${Number(row.climb_count).toLocaleString()} climbs`,
-        );
+        console.log(`  ${row.board_type} role ${row.role_code}: ${Number(row.climb_count).toLocaleString()} climbs`);
         anyUnknown = true;
       }
     }

@@ -86,8 +86,7 @@ export default async function CreateClimbPage(props: CreateClimbPageProps) {
       }
     } catch (error) {
       console.error('Failed to load edit climb:', error);
-      editClimbError =
-        "We couldn't load that climb. It may have been deleted or belongs to a different board.";
+      editClimbError = "We couldn't load that climb. It may have been deleted or belongs to a different board.";
     }
   }
 

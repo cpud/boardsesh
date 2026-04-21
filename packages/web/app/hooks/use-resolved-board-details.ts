@@ -26,10 +26,7 @@ export function useResolvedBoardDetails(boardDetails?: BoardDetails) {
     try {
       resolvedDetails = getBoardDetailsForBoard({ board_name, layout_id, size_id, set_ids });
     } catch (error) {
-      console.warn(
-        '[useResolvedBoardDetails] Failed to resolve board details from static data:',
-        error,
-      );
+      console.warn('[useResolvedBoardDetails] Failed to resolve board details from static data:', error);
       resolvedDetails = { board_name, layout_id, size_id, set_ids };
     }
   } else {

@@ -17,9 +17,7 @@ describe('ImportProgressSteps', () => {
     const { container } = render(<ImportProgressSteps progress={null} />);
 
     // All steps should have the disabled icon (RadioButtonUnchecked)
-    const disabledIcons = container.querySelectorAll(
-      '[data-testid="RadioButtonUncheckedOutlinedIcon"]',
-    );
+    const disabledIcons = container.querySelectorAll('[data-testid="RadioButtonUncheckedOutlinedIcon"]');
     expect(disabledIcons.length).toBe(STEP_ORDER.length);
   });
 
@@ -66,9 +64,7 @@ describe('ImportProgressSteps', () => {
     const { container } = render(<ImportProgressSteps progress={progress} />);
 
     // Steps after resolving should have the disabled icon
-    const disabledIcons = container.querySelectorAll(
-      '[data-testid="RadioButtonUncheckedOutlinedIcon"]',
-    );
+    const disabledIcons = container.querySelectorAll('[data-testid="RadioButtonUncheckedOutlinedIcon"]');
     const resolvingIndex = STEP_ORDER.indexOf('resolving');
     const pendingCount = STEP_ORDER.length - resolvingIndex - 1;
     expect(disabledIcons.length).toBe(pendingCount);
@@ -83,9 +79,7 @@ describe('ImportProgressSteps', () => {
     expect(checkIcons.length).toBe(STEP_ORDER.length - 1);
 
     // No pending icons
-    const disabledIcons = container.querySelectorAll(
-      '[data-testid="RadioButtonUncheckedOutlinedIcon"]',
-    );
+    const disabledIcons = container.querySelectorAll('[data-testid="RadioButtonUncheckedOutlinedIcon"]');
     expect(disabledIcons.length).toBe(0);
   });
 

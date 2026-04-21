@@ -47,12 +47,7 @@ export function useStatsFilterBridge() {
 // -------------------------------------------------------------------
 
 interface StatsFilterBridgeSetters {
-  register: (
-    openDrawer: () => void,
-    pageTitle: string,
-    backUrl: string | null,
-    hasActiveFilters: boolean,
-  ) => void;
+  register: (openDrawer: () => void, pageTitle: string, backUrl: string | null, hasActiveFilters: boolean) => void;
   update: (hasActiveFilters: boolean) => void;
   deregister: () => void;
 }
@@ -74,16 +69,13 @@ export function StatsFilterBridgeProvider({ children }: { children: React.ReactN
   const [hasActiveFilters, setHasActiveFilters] = useState(false);
   const openDrawerRef = useRef<(() => void) | null>(null);
 
-  const register = useCallback(
-    (openDrawer: () => void, title: string, url: string | null, active: boolean) => {
-      openDrawerRef.current = openDrawer;
-      setPageTitle(title);
-      setBackUrl(url);
-      setHasActiveFilters(active);
-      setIsRegistered(true);
-    },
-    [],
-  );
+  const register = useCallback((openDrawer: () => void, title: string, url: string | null, active: boolean) => {
+    openDrawerRef.current = openDrawer;
+    setPageTitle(title);
+    setBackUrl(url);
+    setHasActiveFilters(active);
+    setIsRegistered(true);
+  }, []);
 
   const update = useCallback((active: boolean) => {
     setHasActiveFilters(active);
@@ -119,9 +111,7 @@ export function StatsFilterBridgeProvider({ children }: { children: React.ReactN
 
   return (
     <StatsFilterBridgeSetterContext.Provider value={setters}>
-      <StatsFilterBridgeContext.Provider value={state}>
-        {children}
-      </StatsFilterBridgeContext.Provider>
+      <StatsFilterBridgeContext.Provider value={state}>{children}</StatsFilterBridgeContext.Provider>
     </StatsFilterBridgeSetterContext.Provider>
   );
 }
@@ -158,12 +148,7 @@ export function StatsFilterBridgeInjector({
 
   useIsomorphicLayoutEffect(() => {
     if (isActive) {
-      register(
-        () => openDrawerRef.current(),
-        pageTitleRef.current,
-        backUrlRef.current,
-        hasActiveFiltersRef.current,
-      );
+      register(() => openDrawerRef.current(), pageTitleRef.current, backUrlRef.current, hasActiveFiltersRef.current);
     } else {
       deregister();
     }

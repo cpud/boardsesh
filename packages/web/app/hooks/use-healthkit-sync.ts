@@ -22,11 +22,7 @@ interface UseHealthKitSyncOptions {
   existingWorkoutId?: string | null;
 }
 
-export function useHealthKitSync({
-  summary,
-  boardType,
-  existingWorkoutId,
-}: UseHealthKitSyncOptions) {
+export function useHealthKitSync({ summary, boardType, existingWorkoutId }: UseHealthKitSyncOptions) {
   const [available, setAvailable] = useState(false);
   const [state, setState] = useState<HealthKitSaveState>('idle');
   const { token } = useWsAuthToken();

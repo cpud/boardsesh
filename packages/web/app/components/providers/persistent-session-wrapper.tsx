@@ -4,10 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { PartyProfileProvider } from '../party-manager/party-profile-context';
 import { PersistentSessionProvider, usePersistentSession } from '../persistent-session';
-import {
-  QueueBridgeProvider,
-  useQueueBridgeBoardInfo,
-} from '../queue-control/queue-bridge-context';
+import { QueueBridgeProvider, useQueueBridgeBoardInfo } from '../queue-control/queue-bridge-context';
 import { useCurrentClimb, useQueueList } from '../graphql-queue';
 import QueueControlBar from '../queue-control/queue-control-bar';
 import QueueControlBarShell from '../queue-control/queue-control-bar-shell';
@@ -49,10 +46,7 @@ interface PersistentSessionWrapperProps {
  * 3. QueueBridgeProvider - bridges queue context from board routes to the persistent bottom bar
  * 4. RootBottomBar - always-rendered queue control bar + bottom tab bar
  */
-export default function PersistentSessionWrapper({
-  children,
-  boardConfigs,
-}: PersistentSessionWrapperProps) {
+export default function PersistentSessionWrapper({ children, boardConfigs }: PersistentSessionWrapperProps) {
   return (
     <PartyProfileProvider>
       <PersistentSessionProvider>
@@ -82,12 +76,8 @@ export default function PersistentSessionWrapper({
  * so session ending works from any page (not just board routes).
  */
 function RootSessionSummaryDialog() {
-  const {
-    sessionSummary,
-    sessionSummaryBoardType,
-    sessionSummaryHealthKitWorkoutId,
-    dismissSessionSummary,
-  } = usePersistentSession();
+  const { sessionSummary, sessionSummaryBoardType, sessionSummaryHealthKitWorkoutId, dismissSessionSummary } =
+    usePersistentSession();
   return (
     <SessionSummaryDialog
       summary={sessionSummary}
@@ -123,9 +113,7 @@ function RootSeshSettingsDrawer() {
 
   if (!rendered) return null;
 
-  return (
-    <SeshSettingsDrawer open={open} onClose={handleClose} onTransitionEnd={handleTransitionEnd} />
-  );
+  return <SeshSettingsDrawer open={open} onClose={handleClose} onTransitionEnd={handleTransitionEnd} />;
 }
 
 /**
@@ -141,8 +129,7 @@ export function RootBottomBar({ boardConfigs }: { boardConfigs: BoardConfigData 
   const pathname = usePathname();
   const isNative = isNativeApp();
 
-  const hideTabBar =
-    HIDE_TAB_BAR_PAGES.some((prefix) => pathname.startsWith(prefix)) && !hasActiveQueue;
+  const hideTabBar = HIDE_TAB_BAR_PAGES.some((prefix) => pathname.startsWith(prefix)) && !hasActiveQueue;
   const shouldShowQueueShell = isBoardRoutePath(pathname) && !hasActiveQueue && !boardDetails;
 
   return (
@@ -164,9 +151,7 @@ export function RootBottomBar({ boardConfigs }: { boardConfigs: BoardConfigData 
         </ErrorBoundary>
       )}
       {shouldShowQueueShell && <QueueControlBarShell />}
-      {!hideTabBar && (
-        <BottomTabBar boardDetails={boardDetails} angle={angle} boardConfigs={boardConfigs} />
-      )}
+      {!hideTabBar && <BottomTabBar boardDetails={boardDetails} angle={angle} boardConfigs={boardConfigs} />}
     </div>
   );
 }

@@ -4,11 +4,7 @@ import React, { useEffect, useRef, useCallback, useState } from 'react';
 import Box from '@mui/material/Box';
 import MuiButton from '@mui/material/Button';
 import MyLocationOutlined from '@mui/icons-material/MyLocationOutlined';
-import type {
-  Map as LeafletMap,
-  Marker as LeafletMarker,
-  LayerGroup as LeafletLayerGroup,
-} from 'leaflet';
+import type { Map as LeafletMap, Marker as LeafletMarker, LayerGroup as LeafletLayerGroup } from 'leaflet';
 import type { UserBoard } from '@boardsesh/shared-schema';
 import { themeTokens } from '@/app/theme/theme-config';
 import markerStyles from './board-search-map.module.css';
@@ -185,9 +181,7 @@ export default function BoardSearchMap({
     const layer = markersLayerRef.current;
     if (!L || !layer) return;
 
-    const nextUuids = new Set(
-      boards.filter((b) => b.latitude != null && b.longitude != null).map((b) => b.uuid),
-    );
+    const nextUuids = new Set(boards.filter((b) => b.latitude != null && b.longitude != null).map((b) => b.uuid));
 
     // Remove markers no longer in results
     for (const [uuid, marker] of markersByUuidRef.current.entries()) {

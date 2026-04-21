@@ -21,23 +21,15 @@ interface EditBoardFormProps {
   onCancel?: () => void;
 }
 
-export default function EditBoardForm({
-  board,
-  totalAscents,
-  onSuccess,
-  onCancel,
-}: EditBoardFormProps) {
+export default function EditBoardForm({ board, totalAscents, onSuccess, onCancel }: EditBoardFormProps) {
   const { showMessage } = useSnackbar();
 
   const availableAngles = ANGLES[board.boardType as BoardName] ?? [];
 
-  const { execute } = useEntityMutation<UpdateBoardMutationResponse, UpdateBoardMutationVariables>(
-    UPDATE_BOARD,
-    {
-      successMessage: 'Board updated!',
-      errorMessage: 'Failed to update board',
-    },
-  );
+  const { execute } = useEntityMutation<UpdateBoardMutationResponse, UpdateBoardMutationVariables>(UPDATE_BOARD, {
+    successMessage: 'Board updated!',
+    errorMessage: 'Failed to update board',
+  });
 
   const configEditable = useMemo(() => {
     if (totalAscents !== 0) return undefined;

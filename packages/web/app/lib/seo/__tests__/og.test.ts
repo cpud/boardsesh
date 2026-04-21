@@ -23,10 +23,7 @@ describe('buildVersionedOgImagePath', () => {
 
 describe('createOgImageHeaders', () => {
   it('returns immutable headers for versioned requests', () => {
-    const headers = createOgImageHeaders({ contentType: 'image/png', version: 'abc123' }) as Record<
-      string,
-      string
-    >;
+    const headers = createOgImageHeaders({ contentType: 'image/png', version: 'abc123' }) as Record<string, string>;
 
     expect(headers['Content-Type']).toBe('image/png');
     expect(headers['Cache-Control']).toContain('immutable');

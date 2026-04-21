@@ -40,12 +40,7 @@ export async function enrichProposal(
       .from(dbSchema.proposalVotes)
       .where(eq(dbSchema.proposalVotes.proposalId, proposal.id)),
 
-    resolveCommunitySetting(
-      'approval_threshold',
-      proposal.climbUuid,
-      proposal.angle,
-      proposal.boardType,
-    ),
+    resolveCommunitySetting('approval_threshold', proposal.climbUuid, proposal.angle, proposal.boardType),
 
     db
       .select({
@@ -57,10 +52,7 @@ export async function enrichProposal(
       })
       .from(dbSchema.boardClimbs)
       .where(
-        and(
-          eq(dbSchema.boardClimbs.uuid, proposal.climbUuid),
-          eq(dbSchema.boardClimbs.boardType, proposal.boardType),
-        ),
+        and(eq(dbSchema.boardClimbs.uuid, proposal.climbUuid), eq(dbSchema.boardClimbs.boardType, proposal.boardType)),
       )
       .limit(1),
 
@@ -128,9 +120,7 @@ export async function enrichProposal(
     if (stats) {
       climbDifficulty = stats.boulderName || undefined;
       climbQualityAverage =
-        stats.qualityAverage != null
-          ? String(Math.round(stats.qualityAverage * 100) / 100)
-          : undefined;
+        stats.qualityAverage != null ? String(Math.round(stats.qualityAverage * 100) / 100) : undefined;
       climbAscensionistCount = stats.ascensionistCount ?? undefined;
       climbDifficultyError =
         stats.difficultyAverage != null && stats.displayDifficulty != null
@@ -261,9 +251,7 @@ export async function batchEnrichProposals(
 
   if (proposalsWithEffectiveAngle.length > 0) {
     const uniqueStatsKeys = [
-      ...new Set(
-        proposalsWithEffectiveAngle.map((p) => `${p.climbUuid}:${p.boardType}:${p.effectiveAngle}`),
-      ),
+      ...new Set(proposalsWithEffectiveAngle.map((p) => `${p.climbUuid}:${p.boardType}:${p.effectiveAngle}`)),
     ];
     const statsConditions = uniqueStatsKeys.map((key) => {
       const [climbUuid, boardType, angle] = key.split(':');
@@ -404,9 +392,7 @@ export async function batchEnrichProposals(
       climbSetterUsername: climb?.setterUsername || undefined,
       climbDifficulty: stats?.boulderName || undefined,
       climbQualityAverage:
-        stats?.qualityAverage != null
-          ? String(Math.round(stats.qualityAverage * 100) / 100)
-          : undefined,
+        stats?.qualityAverage != null ? String(Math.round(stats.qualityAverage * 100) / 100) : undefined,
       climbAscensionistCount: stats?.ascensionistCount ?? undefined,
       climbDifficultyError:
         stats?.difficultyAverage != null && stats?.displayDifficulty != null

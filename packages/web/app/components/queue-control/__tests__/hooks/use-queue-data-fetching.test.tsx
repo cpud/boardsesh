@@ -4,10 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useQueueDataFetching } from '../../hooks/use-queue-data-fetching';
 import { ParsedBoardRouteParameters, SearchRequestPagination, Climb } from '@/app/lib/types';
 import { ClimbQueue } from '../../types';
-import {
-  useBoardProvider,
-  useOptionalBoardProvider,
-} from '../../../board-provider/board-provider-context';
+import { useBoardProvider, useOptionalBoardProvider } from '../../../board-provider/board-provider-context';
 import React from 'react';
 
 // Mock dependencies

@@ -71,7 +71,5 @@ export function getMoonboardBluetoothPacket(frames: string): Uint8Array {
 
   const holdPayload = encodedHolds.join(',');
 
-  return new TextEncoder().encode(
-    `${MOONBOARD_FRAME_PREFIX}${holdPayload}${MOONBOARD_FRAME_SUFFIX}`,
-  );
+  return new TextEncoder().encode(`${MOONBOARD_FRAME_PREFIX}${holdPayload}${MOONBOARD_FRAME_SUFFIX}`);
 }

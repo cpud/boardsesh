@@ -53,10 +53,7 @@ export async function registerConnection(
 /**
  * Get connection data from Redis.
  */
-export async function getConnection(
-  redis: Redis,
-  connectionId: string,
-): Promise<DistributedConnection | null> {
+export async function getConnection(redis: Redis, connectionId: string): Promise<DistributedConnection | null> {
   validateConnectionId(connectionId);
   const data = await redis.hgetall(KEYS.connection(connectionId));
   if (!data || !data.connectionId) {
@@ -115,11 +112,7 @@ export async function removeConnection(
 /**
  * Elect a new leader after a connection is removed, with fallback logic.
  */
-async function electLeaderAfterRemoval(
-  redis: Redis,
-  sessionId: string,
-  connectionId: string,
-): Promise<string | null> {
+async function electLeaderAfterRemoval(redis: Redis, sessionId: string, connectionId: string): Promise<string | null> {
   try {
     const newLeaderId = (await redis.eval(
       ELECT_NEW_LEADER_SCRIPT,
@@ -138,10 +131,7 @@ async function electLeaderAfterRemoval(
     }
     return newLeaderId;
   } catch (err) {
-    console.error(
-      `[DistributedState] Failed to elect new leader after removing ${connectionId.slice(0, 8)}:`,
-      err,
-    );
+    console.error(`[DistributedState] Failed to elect new leader after removing ${connectionId.slice(0, 8)}:`, err);
     // Fallback: try to manually elect a leader from remaining members
     return electLeaderFallback(redis, sessionId, connectionId);
   }
@@ -150,11 +140,7 @@ async function electLeaderAfterRemoval(
 /**
  * Fallback leader election when Lua script fails.
  */
-async function electLeaderFallback(
-  redis: Redis,
-  sessionId: string,
-  connectionId: string,
-): Promise<string | null> {
+async function electLeaderFallback(redis: Redis, sessionId: string, connectionId: string): Promise<string | null> {
   try {
     const remainingMembers = await redis.smembers(KEYS.sessionMembers(sessionId));
     const candidates = remainingMembers.filter((id) => id !== connectionId);

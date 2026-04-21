@@ -11,12 +11,7 @@ function safeJSONParse<T>(value: string | undefined | null, fallback: T): T {
   try {
     return JSON.parse(value) as T;
   } catch (error) {
-    console.error(
-      '[RedisSessionStore] JSON parse error:',
-      error,
-      'Value:',
-      value?.substring(0, 100),
-    );
+    console.error('[RedisSessionStore] JSON parse error:', error, 'Value:', value?.substring(0, 100));
     return fallback;
   }
 }
@@ -62,9 +57,7 @@ export class RedisSessionStore {
       sessionId: data.sessionId,
       boardPath: data.boardPath,
       queue: JSON.stringify(data.queue),
-      currentClimbQueueItem: data.currentClimbQueueItem
-        ? JSON.stringify(data.currentClimbQueueItem)
-        : '',
+      currentClimbQueueItem: data.currentClimbQueueItem ? JSON.stringify(data.currentClimbQueueItem) : '',
       version: data.version.toString(),
       sequence: data.sequence.toString(),
       stateHash: data.stateHash,

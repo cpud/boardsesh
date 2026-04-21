@@ -146,10 +146,7 @@ describe('navigateQueue mutation', () => {
       });
       updateQueueStateSpy.mockResolvedValue({ version: 2, sequence: 2, stateHash: 'new-hash' });
 
-      const controllerCtx = createControllerContext(
-        registeredController.controllerId,
-        registeredController.apiKey,
-      );
+      const controllerCtx = createControllerContext(registeredController.controllerId, registeredController.apiKey);
 
       // Navigate directly to item3
       const result = await controllerMutations.navigateQueue(
@@ -177,10 +174,7 @@ describe('navigateQueue mutation', () => {
       });
       updateQueueStateSpy.mockResolvedValue({ version: 2, sequence: 2, stateHash: 'new-hash' });
 
-      const controllerCtx = createControllerContext(
-        registeredController.controllerId,
-        registeredController.apiKey,
-      );
+      const controllerCtx = createControllerContext(registeredController.controllerId, registeredController.apiKey);
 
       // Navigate with non-existent queueItemUuid - should fall back to direction
       const result = await controllerMutations.navigateQueue(
@@ -211,10 +205,7 @@ describe('navigateQueue mutation', () => {
       });
       updateQueueStateSpy.mockResolvedValue({ version: 2, sequence: 2, stateHash: 'new-hash' });
 
-      const controllerCtx = createControllerContext(
-        registeredController.controllerId,
-        registeredController.apiKey,
-      );
+      const controllerCtx = createControllerContext(registeredController.controllerId, registeredController.apiKey);
 
       const result = await controllerMutations.navigateQueue(
         undefined,
@@ -239,10 +230,7 @@ describe('navigateQueue mutation', () => {
         stateHash: 'test-hash',
       });
 
-      const controllerCtx = createControllerContext(
-        registeredController.controllerId,
-        registeredController.apiKey,
-      );
+      const controllerCtx = createControllerContext(registeredController.controllerId, registeredController.apiKey);
 
       const result = await controllerMutations.navigateQueue(
         undefined,
@@ -271,10 +259,7 @@ describe('navigateQueue mutation', () => {
       });
       updateQueueStateSpy.mockResolvedValue({ version: 2, sequence: 2, stateHash: 'new-hash' });
 
-      const controllerCtx = createControllerContext(
-        registeredController.controllerId,
-        registeredController.apiKey,
-      );
+      const controllerCtx = createControllerContext(registeredController.controllerId, registeredController.apiKey);
 
       const result = await controllerMutations.navigateQueue(
         undefined,
@@ -299,10 +284,7 @@ describe('navigateQueue mutation', () => {
         stateHash: 'test-hash',
       });
 
-      const controllerCtx = createControllerContext(
-        registeredController.controllerId,
-        registeredController.apiKey,
-      );
+      const controllerCtx = createControllerContext(registeredController.controllerId, registeredController.apiKey);
 
       const result = await controllerMutations.navigateQueue(
         undefined,
@@ -330,10 +312,7 @@ describe('navigateQueue mutation', () => {
       });
       updateQueueStateSpy.mockResolvedValue({ version: 2, sequence: 2, stateHash: 'new-hash' });
 
-      const controllerCtx = createControllerContext(
-        registeredController.controllerId,
-        registeredController.apiKey,
-      );
+      const controllerCtx = createControllerContext(registeredController.controllerId, registeredController.apiKey);
 
       const result = await controllerMutations.navigateQueue(
         undefined,
@@ -360,10 +339,7 @@ describe('navigateQueue mutation', () => {
       });
       updateQueueStateSpy.mockResolvedValue({ version: 2, sequence: 2, stateHash: 'new-hash' });
 
-      const controllerCtx = createControllerContext(
-        registeredController.controllerId,
-        registeredController.apiKey,
-      );
+      const controllerCtx = createControllerContext(registeredController.controllerId, registeredController.apiKey);
 
       const result = await controllerMutations.navigateQueue(
         undefined,
@@ -387,10 +363,7 @@ describe('navigateQueue mutation', () => {
         stateHash: 'test-hash',
       });
 
-      const controllerCtx = createControllerContext(
-        registeredController.controllerId,
-        registeredController.apiKey,
-      );
+      const controllerCtx = createControllerContext(registeredController.controllerId, registeredController.apiKey);
 
       const result = await controllerMutations.navigateQueue(
         undefined,
@@ -413,10 +386,7 @@ describe('navigateQueue mutation', () => {
         stateHash: 'test-hash',
       });
 
-      const controllerCtx = createControllerContext(
-        registeredController.controllerId,
-        registeredController.apiKey,
-      );
+      const controllerCtx = createControllerContext(registeredController.controllerId, registeredController.apiKey);
 
       // Navigate next - should stay at same position
       const result = await controllerMutations.navigateQueue(
@@ -442,10 +412,7 @@ describe('navigateQueue mutation', () => {
         stateHash: 'test-hash',
       });
 
-      const controllerCtx = createControllerContext(
-        registeredController.controllerId,
-        registeredController.apiKey,
-      );
+      const controllerCtx = createControllerContext(registeredController.controllerId, registeredController.apiKey);
 
       await expect(
         controllerMutations.navigateQueue(
@@ -472,10 +439,7 @@ describe('navigateQueue mutation', () => {
       });
       updateQueueStateSpy.mockResolvedValue({ version: 2, sequence: 2, stateHash: 'new-hash' });
 
-      const controllerCtx = createControllerContext(
-        registeredController.controllerId,
-        registeredController.apiKey,
-      );
+      const controllerCtx = createControllerContext(registeredController.controllerId, registeredController.apiKey);
 
       await controllerMutations.navigateQueue(
         undefined,
@@ -509,10 +473,7 @@ describe('navigateQueue mutation', () => {
       });
       updateQueueStateSpy.mockResolvedValue({ version: 2, sequence: 6, stateHash: 'new-hash' });
 
-      const controllerCtx = createControllerContext(
-        registeredController.controllerId,
-        registeredController.apiKey,
-      );
+      const controllerCtx = createControllerContext(registeredController.controllerId, registeredController.apiKey);
 
       await controllerMutations.navigateQueue(
         undefined,
@@ -555,28 +516,13 @@ describe('navigateQueue mutation', () => {
         };
       });
 
-      const controllerCtx = createControllerContext(
-        registeredController.controllerId,
-        registeredController.apiKey,
-      );
+      const controllerCtx = createControllerContext(registeredController.controllerId, registeredController.apiKey);
 
       // Fire 3 navigation requests concurrently
       const results = await Promise.all([
-        controllerMutations.navigateQueue(
-          undefined,
-          { sessionId: TEST_SESSION_ID, direction: 'next' },
-          controllerCtx,
-        ),
-        controllerMutations.navigateQueue(
-          undefined,
-          { sessionId: TEST_SESSION_ID, direction: 'next' },
-          controllerCtx,
-        ),
-        controllerMutations.navigateQueue(
-          undefined,
-          { sessionId: TEST_SESSION_ID, direction: 'next' },
-          controllerCtx,
-        ),
+        controllerMutations.navigateQueue(undefined, { sessionId: TEST_SESSION_ID, direction: 'next' }, controllerCtx),
+        controllerMutations.navigateQueue(undefined, { sessionId: TEST_SESSION_ID, direction: 'next' }, controllerCtx),
+        controllerMutations.navigateQueue(undefined, { sessionId: TEST_SESSION_ID, direction: 'next' }, controllerCtx),
       ]);
 
       // All requests should complete successfully
@@ -600,10 +546,7 @@ describe('navigateQueue mutation', () => {
       });
       updateQueueStateSpy.mockResolvedValue({ version: 2, sequence: 2, stateHash: 'new-hash' });
 
-      const controllerCtx = createControllerContext(
-        registeredController.controllerId,
-        registeredController.apiKey,
-      );
+      const controllerCtx = createControllerContext(registeredController.controllerId, registeredController.apiKey);
 
       // Navigate to same target item concurrently
       const results = await Promise.all([
@@ -640,17 +583,10 @@ describe('navigateQueue mutation', () => {
       });
       updateQueueStateSpy.mockRejectedValue(new Error('Update failed'));
 
-      const controllerCtx = createControllerContext(
-        registeredController.controllerId,
-        registeredController.apiKey,
-      );
+      const controllerCtx = createControllerContext(registeredController.controllerId, registeredController.apiKey);
 
       await expect(
-        controllerMutations.navigateQueue(
-          undefined,
-          { sessionId: TEST_SESSION_ID, direction: 'next' },
-          controllerCtx,
-        ),
+        controllerMutations.navigateQueue(undefined, { sessionId: TEST_SESSION_ID, direction: 'next' }, controllerCtx),
       ).rejects.toThrow('Update failed');
     });
 
@@ -668,10 +604,7 @@ describe('navigateQueue mutation', () => {
       });
       updateQueueStateSpy.mockRejectedValue(new Error('Update failed'));
 
-      const controllerCtx = createControllerContext(
-        registeredController.controllerId,
-        registeredController.apiKey,
-      );
+      const controllerCtx = createControllerContext(registeredController.controllerId, registeredController.apiKey);
 
       try {
         await controllerMutations.navigateQueue(
@@ -689,17 +622,10 @@ describe('navigateQueue mutation', () => {
     it('should handle getQueueState failure gracefully', async () => {
       getQueueStateSpy.mockRejectedValue(new Error('Failed to get queue state'));
 
-      const controllerCtx = createControllerContext(
-        registeredController.controllerId,
-        registeredController.apiKey,
-      );
+      const controllerCtx = createControllerContext(registeredController.controllerId, registeredController.apiKey);
 
       await expect(
-        controllerMutations.navigateQueue(
-          undefined,
-          { sessionId: TEST_SESSION_ID, direction: 'next' },
-          controllerCtx,
-        ),
+        controllerMutations.navigateQueue(undefined, { sessionId: TEST_SESSION_ID, direction: 'next' }, controllerCtx),
       ).rejects.toThrow('Failed to get queue state');
     });
   });
@@ -710,11 +636,7 @@ describe('navigateQueue mutation', () => {
       const userCtx = createMockContext();
 
       await expect(
-        controllerMutations.navigateQueue(
-          undefined,
-          { sessionId: TEST_SESSION_ID, direction: 'next' },
-          userCtx,
-        ),
+        controllerMutations.navigateQueue(undefined, { sessionId: TEST_SESSION_ID, direction: 'next' }, userCtx),
       ).rejects.toThrow('Controller authentication required');
     });
 
@@ -753,10 +675,7 @@ describe('navigateQueue mutation', () => {
         stateHash: 'test-hash',
       });
 
-      const controllerCtx = createControllerContext(
-        secondController.controllerId,
-        secondController.apiKey,
-      );
+      const controllerCtx = createControllerContext(secondController.controllerId, secondController.apiKey);
 
       // Controller should be able to navigate any session (authorization is just API key)
       const result = await controllerMutations.navigateQueue(

@@ -8,11 +8,7 @@ import { track } from '@vercel/analytics';
 import { ClimbActionProps, ClimbActionResult } from '../types';
 import { useOptionalQueueActions, useOptionalQueueData } from '../../graphql-queue';
 import { themeTokens } from '@/app/theme/theme-config';
-import {
-  buildActionResult,
-  computeActionDisplay,
-  ActionListElement,
-} from '../action-view-renderer';
+import { buildActionResult, computeActionDisplay, ActionListElement } from '../action-view-renderer';
 
 export function MirrorAction({
   climb,
@@ -52,9 +48,7 @@ export function MirrorAction({
   );
 
   const label = isMirrored ? 'Mirrored' : 'Mirror';
-  const iconStyle = isMirrored
-    ? { color: themeTokens.colors.purple, fontSize: iconSize }
-    : { fontSize: iconSize };
+  const iconStyle = isMirrored ? { color: themeTokens.colors.purple, fontSize: iconSize } : { fontSize: iconSize };
   const icon = <SwapHorizOutlined sx={iconStyle} />;
   const listIcon = <SwapHorizOutlined sx={{ fontSize: iconSize }} />;
 

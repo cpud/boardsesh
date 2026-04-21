@@ -27,13 +27,7 @@ export function ViewDetailsAction({
 }: ClimbActionProps): ClimbActionResult {
   const { iconSize, shouldShowLabel } = computeActionDisplay(viewMode, size, showLabel);
 
-  const url = getContextAwareClimbViewUrl(
-    currentPathname ?? '',
-    boardDetails,
-    angle,
-    climb.uuid,
-    climb.name,
-  );
+  const url = getContextAwareClimbViewUrl(currentPathname ?? '', boardDetails, angle, climb.uuid, climb.name);
 
   const handleClick = () => {
     track('Climb Info Viewed', {
@@ -59,13 +53,7 @@ export function ViewDetailsAction({
     className,
     iconElementOverride: (
       <ActionTooltip title={label}>
-        <Link
-          href={url}
-          prefetch={false}
-          onClick={handleClick}
-          className={className}
-          style={linkResetStyle}
-        >
+        <Link href={url} prefetch={false} onClick={handleClick} className={className} style={linkResetStyle}>
           {icon}
         </Link>
       </ActionTooltip>

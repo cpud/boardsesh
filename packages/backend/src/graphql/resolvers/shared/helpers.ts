@@ -33,12 +33,8 @@ export const SESSION_MEMBER_RETRY_CONFIG = {
  */
 export function requireSession(ctx: ConnectionContext): string {
   if (!ctx.sessionId) {
-    console.error(
-      `[Auth] requireSession failed: connectionId=${ctx.connectionId}, sessionId=${ctx.sessionId}`,
-    );
-    throw new Error(
-      `Must be in a session to perform this operation (connectionId: ${ctx.connectionId})`,
-    );
+    console.error(`[Auth] requireSession failed: connectionId=${ctx.connectionId}, sessionId=${ctx.sessionId}`);
+    throw new Error(`Must be in a session to perform this operation (connectionId: ${ctx.connectionId})`);
   }
   return ctx.sessionId;
 }
@@ -114,17 +110,13 @@ export async function requireSessionMember(
     console.error(
       `[Auth] requireSessionMember failed after ${maxRetries} retries: not in any session. connectionId=${ctx.connectionId}, requested=${sessionId}`,
     );
-    throw new Error(
-      `Unauthorized: not in any session (connectionId: ${ctx.connectionId}, requested: ${sessionId})`,
-    );
+    throw new Error(`Unauthorized: not in any session (connectionId: ${ctx.connectionId}, requested: ${sessionId})`);
   }
   if (finalCtx.sessionId !== sessionId) {
     console.error(
       `[Auth] requireSessionMember failed: session mismatch. connectionId=${ctx.connectionId}, have=${finalCtx.sessionId}, requested=${sessionId}`,
     );
-    throw new Error(
-      `Unauthorized: session mismatch (have: ${finalCtx.sessionId}, requested: ${sessionId})`,
-    );
+    throw new Error(`Unauthorized: session mismatch (have: ${finalCtx.sessionId}, requested: ${sessionId})`);
   }
 }
 
@@ -154,11 +146,7 @@ export async function requireSessionMember(
  * @param limit - Optional custom limit (default: 60 requests per minute)
  * @param operation - Operation name for Redis key namespacing (default: 'default')
  */
-export async function applyRateLimit(
-  ctx: ConnectionContext,
-  limit?: number,
-  operation = 'default',
-): Promise<void> {
+export async function applyRateLimit(ctx: ConnectionContext, limit?: number, operation = 'default'): Promise<void> {
   if (process.env.NODE_ENV === 'development') return;
 
   const maxRequests = limit ?? 60;
@@ -189,9 +177,7 @@ export function requireControllerAuth(ctx: ConnectionContext): {
   controllerApiKey: string;
 } {
   if (!ctx.controllerId || !ctx.controllerApiKey) {
-    throw new Error(
-      'Controller authentication required. Pass controllerApiKey in connectionParams.',
-    );
+    throw new Error('Controller authentication required. Pass controllerApiKey in connectionParams.');
   }
   return { controllerId: ctx.controllerId, controllerApiKey: ctx.controllerApiKey };
 }
@@ -214,11 +200,7 @@ export async function requireControllerAuthorizedForSession(
   const { controllerId, controllerApiKey } = requireControllerAuth(ctx);
 
   // Verify the controller still exists (it was already authenticated via connectionParams)
-  const [controller] = await db
-    .select()
-    .from(esp32Controllers)
-    .where(eq(esp32Controllers.id, controllerId))
-    .limit(1);
+  const [controller] = await db.select().from(esp32Controllers).where(eq(esp32Controllers.id, controllerId)).limit(1);
 
   if (!controller) {
     throw new Error('Controller not found');

@@ -5,9 +5,7 @@ import {
   type TickForGrouping,
 } from '../jobs/inferred-session-builder';
 
-function makeTick(
-  overrides: Partial<TickForGrouping> & { userId: string; climbedAt: string },
-): TickForGrouping {
+function makeTick(overrides: Partial<TickForGrouping> & { userId: string; climbedAt: string }): TickForGrouping {
   return {
     id: BigInt(Math.floor(Math.random() * 100000)),
     uuid: `tick-${Math.random().toString(36).slice(2)}`,

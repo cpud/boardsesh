@@ -22,11 +22,7 @@ const MIME_TYPES: Record<string, string> = {
  * When S3 is configured, proxies the image from S3 (avoids ACL/public access requirements).
  * Otherwise, serves avatar files from local storage with caching headers.
  */
-export async function handleStaticAvatar(
-  req: IncomingMessage,
-  res: ServerResponse,
-  fileName: string,
-): Promise<void> {
+export async function handleStaticAvatar(req: IncomingMessage, res: ServerResponse, fileName: string): Promise<void> {
   if (!applyCorsHeaders(req, res)) return;
 
   // Security: validate filename to prevent path traversal

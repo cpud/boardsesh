@@ -27,11 +27,7 @@ interface CommentSectionProps {
   title?: string;
 }
 
-export default function CommentSection({
-  entityType,
-  entityId,
-  title = 'Discussion',
-}: CommentSectionProps) {
+export default function CommentSection({ entityType, entityId, title = 'Discussion' }: CommentSectionProps) {
   const [refreshKey, setRefreshKey] = useState(0);
   const { data: session } = useSession();
   const { token, isAuthenticated } = useWsAuthToken();
@@ -47,10 +43,7 @@ export default function CommentSection({
     const wsClient = createGraphQLClient({ url: wsUrl, authToken: token });
     wsClientRef.current = wsClient;
 
-    const unsub = subscribe<
-      CommentUpdatesSubscriptionResponse,
-      CommentUpdatesSubscriptionVariables
-    >(
+    const unsub = subscribe<CommentUpdatesSubscriptionResponse, CommentUpdatesSubscriptionVariables>(
       wsClient,
       {
         query: COMMENT_UPDATES_SUBSCRIPTION,
@@ -112,12 +105,7 @@ export default function CommentSection({
         </MuiTypography>
       )}
 
-      <CommentList
-        entityType={entityType}
-        entityId={entityId}
-        refreshKey={refreshKey}
-        currentUserId={currentUserId}
-      />
+      <CommentList entityType={entityType} entityId={entityId} refreshKey={refreshKey} currentUserId={currentUserId} />
     </Box>
   );
 }

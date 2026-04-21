@@ -5,9 +5,7 @@ import type { SessionDetail } from '@boardsesh/shared-schema';
 
 // Mock dependencies
 vi.mock('next/link', () => ({
-  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
-    <a href={href}>{children}</a>
-  ),
+  default: ({ children, href }: { children: React.ReactNode; href: string }) => <a href={href}>{children}</a>,
 }));
 
 vi.mock('next/navigation', () => ({
@@ -48,9 +46,7 @@ vi.mock('../[sessionId]/user-search-dialog', () => ({
 }));
 
 vi.mock('@/app/components/charts/css-bar-chart', () => ({
-  CssBarChart: (props: { ariaLabel?: string }) => (
-    <div data-testid="css-bar-chart" aria-label={props.ariaLabel} />
-  ),
+  CssBarChart: (props: { ariaLabel?: string }) => <div data-testid="css-bar-chart" aria-label={props.ariaLabel} />,
 }));
 
 vi.mock('@/app/components/charts/session-grade-bars', () => ({
@@ -87,15 +83,7 @@ vi.mock('@/app/components/social/vote-summary-context', () => ({
 }));
 
 vi.mock('@/app/components/social/comment-section', () => ({
-  default: ({
-    entityType,
-    entityId,
-    title,
-  }: {
-    entityType: string;
-    entityId: string;
-    title?: string;
-  }) => (
+  default: ({ entityType, entityId, title }: { entityType: string; entityId: string; title?: string }) => (
     <div
       data-testid="comment-section"
       data-entity-type={entityType}
@@ -300,9 +288,7 @@ describe('SessionDetailContent', () => {
     render(<SessionDetailContent session={makeSession()} />);
     // Session comments should be collapsed by default
     const commentSections = screen.queryAllByTestId('comment-section');
-    const sessionComment = commentSections.find(
-      (el) => el.getAttribute('data-entity-type') === 'session',
-    );
+    const sessionComment = commentSections.find((el) => el.getAttribute('data-entity-type') === 'session');
     expect(sessionComment).toBeFalsy();
   });
 
@@ -313,9 +299,7 @@ describe('SessionDetailContent', () => {
 
     // After clicking, the session comment section should be visible
     const commentSections = screen.getAllByTestId('comment-section');
-    const sessionComment = commentSections.find(
-      (el) => el.getAttribute('data-entity-type') === 'session',
-    );
+    const sessionComment = commentSections.find((el) => el.getAttribute('data-entity-type') === 'session');
     expect(sessionComment).toBeTruthy();
     expect(sessionComment!.getAttribute('data-entity-id')).toBe('session-1');
   });
@@ -594,9 +578,7 @@ describe('SessionDetailContent', () => {
     render(<SessionDetailContent session={makeSession()} />);
     // By default, all comment sections (both session and tick) should be collapsed
     const allCommentSections = screen.queryAllByTestId('comment-section');
-    const tickCommentSections = allCommentSections.filter(
-      (el) => el.getAttribute('data-entity-type') === 'tick',
-    );
+    const tickCommentSections = allCommentSections.filter((el) => el.getAttribute('data-entity-type') === 'tick');
     expect(tickCommentSections).toHaveLength(0);
   });
 

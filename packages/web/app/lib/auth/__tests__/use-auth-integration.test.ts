@@ -57,9 +57,7 @@ describe('useAuthIntegration', () => {
       await result.current.linkBoardAccount('kilter', 123, 'testuser');
     });
 
-    expect(warnSpy).toHaveBeenCalledWith(
-      'Cannot link board account: user not authenticated with NextAuth',
-    );
+    expect(warnSpy).toHaveBeenCalledWith('Cannot link board account: user not authenticated with NextAuth');
     expect(mockCreateMapping).not.toHaveBeenCalled();
     warnSpy.mockRestore();
   });

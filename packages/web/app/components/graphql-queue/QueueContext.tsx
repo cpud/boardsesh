@@ -1,14 +1,6 @@
 'use client';
 
-import React, {
-  useState,
-  useContext,
-  createContext,
-  useCallback,
-  useMemo,
-  useRef,
-  useEffect,
-} from 'react';
+import React, { useState, useContext, createContext, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { useQueueReducer } from '../queue-control/reducer';
@@ -24,11 +16,7 @@ import { useClimbActionsData } from '@/app/hooks/use-climb-actions-data';
 import { SUGGESTIONS_THRESHOLD } from '../board-page/constants';
 import { useSnackbar } from '../providers/snackbar-provider';
 import SessionSummaryDialog from '../session-summary/session-summary-dialog';
-import {
-  trackQueueOperation,
-  trackQueueOperationError,
-  type QueueOperationMode,
-} from '@/app/lib/queue-metrics';
+import { trackQueueOperation, trackQueueOperationError, type QueueOperationMode } from '@/app/lib/queue-metrics';
 
 import { useSessionIdManagement } from './hooks/use-session-id-management';
 import { useQueueRestoration } from './hooks/use-queue-restoration';
@@ -50,17 +38,8 @@ import type {
 } from './types';
 
 // Re-export types so direct importers still work
-export type {
-  GraphQLQueueContextType,
-  GraphQLQueueActionsType,
-  GraphQLQueueDataType,
-} from './types';
-export type {
-  CurrentClimbDataType,
-  QueueListDataType,
-  SearchDataType,
-  SessionDataType,
-} from './types';
+export type { GraphQLQueueContextType, GraphQLQueueActionsType, GraphQLQueueDataType } from './types';
+export type { CurrentClimbDataType, QueueListDataType, SearchDataType, SessionDataType } from './types';
 
 const createClimbQueueItem = (
   climb: Climb,
@@ -100,8 +79,7 @@ export const GraphQLQueueProvider = ({
   const searchParamsHook = useSearchParams();
   const initialSearchParams = urlParamsToSearchParams(searchParamsHook);
   const [state, dispatch] = useQueueReducer(initialSearchParams);
-  const [countSearchParams, setCountSearchParams] =
-    useState<SearchRequestPagination>(initialSearchParams);
+  const [countSearchParams, setCountSearchParams] = useState<SearchRequestPagination>(initialSearchParams);
 
   const isOffBoardMode = propsBaseBoardPath !== undefined;
   const correlationCounterRef = useRef(0);
@@ -200,9 +178,7 @@ export const GraphQLQueueProvider = ({
     isPersistentSessionActive,
     hasConnected,
     users,
-    lastReceivedSequenceRef: isPersistentSessionActive
-      ? persistentSession.lastReceivedSequenceRef
-      : { current: null },
+    lastReceivedSequenceRef: isPersistentSessionActive ? persistentSession.lastReceivedSequenceRef : { current: null },
     persistentSession,
     currentQueue: state.queue,
     currentClimbQueueItem: state.currentClimbQueueItem,
@@ -413,9 +389,7 @@ export const GraphQLQueueProvider = ({
         ? 'party-offline'
         : 'party';
     const newItem = createClimbQueueItem(climb, r.clientId, r.currentUserInfo);
-    const correlationId = r.clientId
-      ? `${r.clientId}-${++r.correlationCounterRef.current}`
-      : undefined;
+    const correlationId = r.clientId ? `${r.clientId}-${++r.correlationCounterRef.current}` : undefined;
     r.dispatch({
       type: 'DELTA_UPDATE_CURRENT_CLIMB',
       payload: { item: newItem, shouldAddToQueue: true, insertAfterCurrent: true, correlationId },
@@ -425,9 +399,7 @@ export const GraphQLQueueProvider = ({
       trackQueueOperation('setCurrentClimb', performance.now() - startTime, mode);
     } else if (r.hasConnected && r.isPersistentSessionActive) {
       const currentIndex = r.state.currentClimbQueueItem
-        ? r.state.queue.findIndex(
-            (queueItem) => queueItem.uuid === r.state.currentClimbQueueItem?.uuid,
-          )
+        ? r.state.queue.findIndex((queueItem) => queueItem.uuid === r.state.currentClimbQueueItem?.uuid)
         : -1;
       const position = currentIndex === -1 ? undefined : currentIndex + 1;
       try {
@@ -436,8 +408,7 @@ export const GraphQLQueueProvider = ({
         trackQueueOperation('setCurrentClimb', performance.now() - startTime, mode);
       } catch (error: unknown) {
         console.error('Failed to set current climb:', error);
-        if (correlationId)
-          r.dispatch({ type: 'CLEANUP_PENDING_UPDATE', payload: { correlationId } });
+        if (correlationId) r.dispatch({ type: 'CLEANUP_PENDING_UPDATE', payload: { correlationId } });
         trackQueueOperationError('setCurrentClimb', mode);
       }
     } else {
@@ -521,9 +492,7 @@ export const GraphQLQueueProvider = ({
       : r.isDisconnected
         ? 'party-offline'
         : 'party';
-    const correlationId = r.clientId
-      ? `${r.clientId}-${++r.correlationCounterRef.current}`
-      : undefined;
+    const correlationId = r.clientId ? `${r.clientId}-${++r.correlationCounterRef.current}` : undefined;
     r.dispatch({
       type: 'DELTA_UPDATE_CURRENT_CLIMB',
       payload: { item, shouldAddToQueue: item.suggested, correlationId },
@@ -531,13 +500,10 @@ export const GraphQLQueueProvider = ({
     if (!r.isDisconnected && r.hasConnected && r.isPersistentSessionActive) {
       r.persistentSession
         .setCurrentClimb(item, item.suggested, correlationId)
-        .then(() =>
-          trackQueueOperation('setCurrentClimbQueueItem', performance.now() - startTime, mode),
-        )
+        .then(() => trackQueueOperation('setCurrentClimbQueueItem', performance.now() - startTime, mode))
         .catch((error: unknown) => {
           console.error('Failed to set current climb:', error);
-          if (correlationId)
-            r.dispatch({ type: 'CLEANUP_PENDING_UPDATE', payload: { correlationId } });
+          if (correlationId) r.dispatch({ type: 'CLEANUP_PENDING_UPDATE', payload: { correlationId } });
           trackQueueOperationError('setCurrentClimbQueueItem', mode);
         });
     } else {
@@ -600,12 +566,9 @@ export const GraphQLQueueProvider = ({
       r.climbSearchResults.length > 0
     ) {
       const nextClimb = r.suggestedClimbs.find(
-        (climb: Climb) =>
-          !r.state.queue.some((qItem: ClimbQueueItem) => qItem.climb?.uuid === climb.uuid),
+        (climb: Climb) => !r.state.queue.some((qItem: ClimbQueueItem) => qItem.climb?.uuid === climb.uuid),
       );
-      return nextClimb
-        ? createClimbQueueItem(nextClimb, r.clientId, r.currentUserInfo, true)
-        : null;
+      return nextClimb ? createClimbQueueItem(nextClimb, r.clientId, r.currentUserInfo, true) : null;
     }
     return queueItemIndex >= r.state.queue.length - 1 ? null : r.state.queue[queueItemIndex + 1];
   }, []);
@@ -629,12 +592,9 @@ export const GraphQLQueueProvider = ({
     });
   }, []);
 
-  const stableStartSession = useCallback(
-    (options?: { discoverable?: boolean; name?: string; sessionId?: string }) => {
-      return latestRef.current.startSession(options);
-    },
-    [],
-  );
+  const stableStartSession = useCallback((options?: { discoverable?: boolean; name?: string; sessionId?: string }) => {
+    return latestRef.current.startSession(options);
+  }, []);
 
   const stableJoinSession = useCallback((sessionId: string) => {
     return latestRef.current.joinSession(sessionId);
@@ -852,10 +812,7 @@ export const GraphQLQueueProvider = ({
                     <FavoritesProvider {...favoritesProviderProps}>
                       <PlaylistsProvider {...playlistsProviderProps}>{children}</PlaylistsProvider>
                     </FavoritesProvider>
-                    <SessionSummaryDialog
-                      summary={sessionSummary}
-                      onDismiss={stableDismissSessionSummary}
-                    />
+                    <SessionSummaryDialog summary={sessionSummary} onDismiss={stableDismissSessionSummary} />
                   </SessionContext.Provider>
                 </SearchContext.Provider>
               </QueueListContext.Provider>

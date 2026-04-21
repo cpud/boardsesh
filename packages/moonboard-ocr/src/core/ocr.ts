@@ -166,9 +166,7 @@ export function parseHeaderText(lines: string[]): OcrResult {
   // Find grades
   for (const line of lines) {
     // Format: "Grade: User 8A/V11/ Setter 8A/V11"
-    const gradeMatch = line.match(
-      /grade[:\s]+user\s+([^\s/]+(?:\/[^\s/]+)?)\s*[/|]\s*setter\s+([^\s]+)/i,
-    );
+    const gradeMatch = line.match(/grade[:\s]+user\s+([^\s/]+(?:\/[^\s/]+)?)\s*[/|]\s*setter\s+([^\s]+)/i);
     if (gradeMatch) {
       userGrade = gradeMatch[1].trim();
       setterGrade = gradeMatch[2].trim();

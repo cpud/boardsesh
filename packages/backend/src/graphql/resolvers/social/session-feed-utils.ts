@@ -6,9 +6,11 @@ import { getGradeLabel } from '@boardsesh/db/queries';
  * Counts sends (flash + send), flashes, and attempts (including implicit
  * failed attempts from sends with attemptCount > 1).
  */
-export function computeSessionAggregates(
-  tickRows: Array<{ tick: { status: string; attemptCount: number } }>,
-): { totalSends: number; totalFlashes: number; totalAttempts: number } {
+export function computeSessionAggregates(tickRows: Array<{ tick: { status: string; attemptCount: number } }>): {
+  totalSends: number;
+  totalFlashes: number;
+  totalAttempts: number;
+} {
   let totalSends = 0;
   let totalFlashes = 0;
   let totalAttempts = 0;
@@ -45,8 +47,7 @@ export function buildGradeDistributionFromTicks(
 
   for (const row of tickRows) {
     const effectiveDifficulty =
-      row.tick.difficulty ??
-      (row.consensusDifficulty != null ? Math.round(row.consensusDifficulty) : null);
+      row.tick.difficulty ?? (row.consensusDifficulty != null ? Math.round(row.consensusDifficulty) : null);
     if (effectiveDifficulty == null) continue;
     const effectiveGradeName = row.difficultyName || getGradeLabel(effectiveDifficulty) || null;
     if (!effectiveGradeName) continue;

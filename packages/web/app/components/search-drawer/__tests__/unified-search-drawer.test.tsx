@@ -125,12 +125,7 @@ describe('UnifiedSearchDrawer', () => {
 
   it('falls back to the first allowed category when defaultCategory is not in the allow-list', () => {
     render(
-      <UnifiedSearchDrawer
-        open={true}
-        onClose={vi.fn()}
-        defaultCategory="boards"
-        allowedCategories={['users']}
-      />,
+      <UnifiedSearchDrawer open={true} onClose={vi.fn()} defaultCategory="boards" allowedCategories={['users']} />,
     );
 
     // The users search placeholder is shown, confirming the category fell back.
@@ -140,12 +135,7 @@ describe('UnifiedSearchDrawer', () => {
 
   it('never transiently mounts the wrong category results on first render (no flash)', () => {
     render(
-      <UnifiedSearchDrawer
-        open={true}
-        onClose={vi.fn()}
-        defaultCategory="boards"
-        allowedCategories={['users']}
-      />,
+      <UnifiedSearchDrawer open={true} onClose={vi.fn()} defaultCategory="boards" allowedCategories={['users']} />,
     );
 
     // If the fallback ran as a post-render effect, BoardSearchResults would

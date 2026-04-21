@@ -72,10 +72,7 @@ export function createCachedGraphQLQuery<T = unknown, V extends Variables = Vari
  * Cached server-side session-grouped feed query.
  * Used for SSR on the home page for both authenticated and unauthenticated users.
  */
-export async function cachedSessionGroupedFeed(
-  boardUuid?: string,
-  isAuthenticated: boolean = false,
-) {
+export async function cachedSessionGroupedFeed(boardUuid?: string, isAuthenticated: boolean = false) {
   const { GET_SESSION_GROUPED_FEED } = await import('@/app/lib/graphql/operations/activity-feed');
 
   const revalidate = isAuthenticated ? 300 : 86400;
@@ -122,9 +119,7 @@ export async function cachedUserSessionGroupedFeed(authToken: string, userId: st
 /**
  * Server-side cached fetch of discover playlists (public, no auth needed).
  */
-export async function cachedDiscoverPlaylists(
-  input: { boardType?: string; layoutId?: number } = {},
-): Promise<{
+export async function cachedDiscoverPlaylists(input: { boardType?: string; layoutId?: number } = {}): Promise<{
   popular: import('@/app/lib/graphql/operations/playlists').DiscoverablePlaylist[];
   recent: import('@/app/lib/graphql/operations/playlists').DiscoverablePlaylist[];
 } | null> {
@@ -137,11 +132,7 @@ export async function cachedDiscoverPlaylists(
       'discover-playlists-popular',
       300, // 5 min cache
     );
-    const recentQuery = createCachedGraphQLQuery<Response>(
-      DISCOVER_PLAYLISTS,
-      'discover-playlists-recent',
-      300,
-    );
+    const recentQuery = createCachedGraphQLQuery<Response>(DISCOVER_PLAYLISTS, 'discover-playlists-recent', 300);
 
     const [popularRes, recentRes] = await Promise.all([
       popularQuery({ input: { ...input, pageSize: 10, sortBy: 'popular' } }),
@@ -162,10 +153,7 @@ export async function cachedDiscoverPlaylists(
  */
 export async function cachedUserProfileStats(
   userId: string,
-): Promise<
-  | import('@/app/lib/graphql/operations/ticks').GetUserProfileStatsQueryResponse['userProfileStats']
-  | null
-> {
+): Promise<import('@/app/lib/graphql/operations/ticks').GetUserProfileStatsQueryResponse['userProfileStats'] | null> {
   const { GET_USER_PROFILE_STATS } = await import('@/app/lib/graphql/operations/ticks');
   type Response = import('@/app/lib/graphql/operations/ticks').GetUserProfileStatsQueryResponse;
 
@@ -185,9 +173,7 @@ export async function cachedUserProfileStats(
 export async function cachedUserTicks(
   userId: string,
   boardType: string,
-): Promise<
-  import('@/app/lib/graphql/operations/ticks').GetUserTicksQueryResponse['userTicks'] | null
-> {
+): Promise<import('@/app/lib/graphql/operations/ticks').GetUserTicksQueryResponse['userTicks'] | null> {
   const { GET_USER_TICKS } = await import('@/app/lib/graphql/operations/ticks');
   type Response = import('@/app/lib/graphql/operations/ticks').GetUserTicksQueryResponse;
 

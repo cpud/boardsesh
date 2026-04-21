@@ -64,10 +64,7 @@ test.describe('App Store Screenshots', () => {
 
     // Open play drawer to show the climb on the board
     await page.locator('#onboarding-queue-toggle').click();
-    await page
-      .locator('[data-swipeable-drawer="true"]:visible')
-      .first()
-      .waitFor({ timeout: 10000 });
+    await page.locator('[data-swipeable-drawer="true"]:visible').first().waitFor({ timeout: 10000 });
 
     await page.screenshot({ path: `${SCREENSHOT_DIR}/03-board-view.png` });
   });
@@ -100,10 +97,7 @@ test.describe('App Store Screenshots', () => {
 
     // Open the play drawer and look for BLE connection button
     await page.locator('#onboarding-queue-toggle').click();
-    await page
-      .locator('[data-swipeable-drawer="true"]:visible')
-      .first()
-      .waitFor({ timeout: 10000 });
+    await page.locator('[data-swipeable-drawer="true"]:visible').first().waitFor({ timeout: 10000 });
 
     // Click the Bluetooth/connect button if visible in the play drawer
     const bleButton = page.getByLabel('Connect to board').or(page.getByLabel('Bluetooth'));
@@ -125,9 +119,7 @@ test.describe('App Store Screenshots', () => {
 
     // The share/party button is rendered by ShareBoardButton inside the queue bar.
     // Find it by looking for the icon button after the nav buttons, or by its SVG icon.
-    const partyButton = page
-      .locator('[data-testid="queue-control-bar"] button')
-      .filter({ has: page.locator('svg') });
+    const partyButton = page.locator('[data-testid="queue-control-bar"] button').filter({ has: page.locator('svg') });
     const buttons = await partyButton.all();
 
     // Debug: try to click the share/party button (typically the 3rd or 4th button in the bar)

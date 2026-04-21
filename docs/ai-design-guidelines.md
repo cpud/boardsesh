@@ -877,12 +877,7 @@ var(--semantic-selected)
 ### Grade Utilities
 
 ```typescript
-import {
-  getGradeColor,
-  getGradeTintColor,
-  getSoftGradeColor,
-  getGradeTextColor,
-} from '@/app/lib/grade-colors';
+import { getGradeColor, getGradeTintColor, getSoftGradeColor, getGradeTextColor } from '@/app/lib/grade-colors';
 ```
 
 ### CSS Module Co-location
@@ -897,12 +892,7 @@ packages/web/app/components/
 ### MUI Imports
 
 ```typescript
-import {
-  IconButton,
-  Button as MuiButton,
-  Badge as MuiBadge,
-  CircularProgress,
-} from '@mui/material';
+import { IconButton, Button as MuiButton, Badge as MuiBadge, CircularProgress } from '@mui/material';
 import { FavoriteBorderOutlined, CheckOutlined } from '@mui/icons-material';
 ```
 

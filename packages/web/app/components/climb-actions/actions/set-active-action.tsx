@@ -6,11 +6,7 @@ import { track } from '@vercel/analytics';
 import { ClimbActionProps, ClimbActionResult } from '../types';
 import { useOptionalQueueActions, useOptionalQueueData } from '../../graphql-queue';
 import { themeTokens } from '@/app/theme/theme-config';
-import {
-  buildActionResult,
-  computeActionDisplay,
-  ActionIconElement,
-} from '../action-view-renderer';
+import { buildActionResult, computeActionDisplay, ActionIconElement } from '../action-view-renderer';
 
 export function SetActiveAction({
   climb,
@@ -48,9 +44,7 @@ export function SetActiveAction({
   );
 
   const label = isCurrentClimb ? 'Active' : 'Set Active';
-  const iconStyle = isCurrentClimb
-    ? { color: themeTokens.colors.primary, fontSize: iconSize }
-    : { fontSize: iconSize };
+  const iconStyle = isCurrentClimb ? { color: themeTokens.colors.primary, fontSize: iconSize } : { fontSize: iconSize };
   const icon = <PlayCircleOutlineOutlined sx={iconStyle} />;
 
   return buildActionResult({

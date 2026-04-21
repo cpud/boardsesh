@@ -60,9 +60,7 @@ export const difficultyNameWithFallbackExpr = sql<string | null>`COALESCE(
  * Rounded consensus difficulty ID.
  * Requires `boardClimbStats` to be joined in the query.
  */
-export const consensusDifficultyExpr = sql<
-  number | null
->`ROUND(${dbSchema.boardClimbStats.displayDifficulty})`;
+export const consensusDifficultyExpr = sql<number | null>`ROUND(${dbSchema.boardClimbStats.displayDifficulty})`;
 
 /**
  * Imperative query: look up consensus grade name for a specific climb+angle.
@@ -79,10 +77,7 @@ export async function getConsensusDifficultyName(
     .innerJoin(
       dbSchema.boardDifficultyGrades,
       and(
-        eq(
-          dbSchema.boardDifficultyGrades.difficulty,
-          sql`ROUND(${dbSchema.boardClimbStats.displayDifficulty})`,
-        ),
+        eq(dbSchema.boardDifficultyGrades.difficulty, sql`ROUND(${dbSchema.boardClimbStats.displayDifficulty})`),
         eq(dbSchema.boardDifficultyGrades.boardType, dbSchema.boardClimbStats.boardType),
       ),
     )

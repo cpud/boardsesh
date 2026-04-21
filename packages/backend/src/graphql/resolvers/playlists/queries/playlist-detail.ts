@@ -3,10 +3,7 @@ import type { ConnectionContext } from '@boardsesh/shared-schema';
 import { db } from '../../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { requireAuthenticated, validateInput } from '../../shared/helpers';
-import {
-  GetPlaylistsForClimbInputSchema,
-  GetPlaylistsForClimbsInputSchema,
-} from '../../../../validation/schemas';
+import { GetPlaylistsForClimbInputSchema, GetPlaylistsForClimbsInputSchema } from '../../../../validation/schemas';
 import { getPlaylistFollowStats } from '../helpers/follow-stats';
 
 /**
@@ -49,12 +46,7 @@ export const playlist = async (
     const ownershipResult = await db
       .select({ role: dbSchema.playlistOwnership.role })
       .from(dbSchema.playlistOwnership)
-      .where(
-        and(
-          eq(dbSchema.playlistOwnership.playlistId, p.id),
-          eq(dbSchema.playlistOwnership.userId, userId),
-        ),
-      )
+      .where(and(eq(dbSchema.playlistOwnership.playlistId, p.id), eq(dbSchema.playlistOwnership.userId, userId)))
       .limit(1);
 
     if (ownershipResult.length > 0) {
@@ -115,10 +107,7 @@ export const playlistsForClimb = async (
     .select({ playlistUuid: dbSchema.playlists.uuid })
     .from(dbSchema.playlistClimbs)
     .innerJoin(dbSchema.playlists, eq(dbSchema.playlists.id, dbSchema.playlistClimbs.playlistId))
-    .innerJoin(
-      dbSchema.playlistOwnership,
-      eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id),
-    )
+    .innerJoin(dbSchema.playlistOwnership, eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id))
     .where(
       and(
         eq(dbSchema.playlistClimbs.climbUuid, input.climbUuid),
@@ -152,10 +141,7 @@ export const playlistsForClimbs = async (
     })
     .from(dbSchema.playlistClimbs)
     .innerJoin(dbSchema.playlists, eq(dbSchema.playlists.id, dbSchema.playlistClimbs.playlistId))
-    .innerJoin(
-      dbSchema.playlistOwnership,
-      eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id),
-    )
+    .innerJoin(dbSchema.playlistOwnership, eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id))
     .where(
       and(
         inArray(dbSchema.playlistClimbs.climbUuid, input.climbUuids),

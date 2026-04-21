@@ -5,8 +5,7 @@
 import * as Sentry from '@sentry/nextjs';
 
 // Only enable Sentry on boardsesh.com to avoid polluting error tracking
-const isProductionDomain =
-  typeof window !== 'undefined' && window.location.hostname.includes('boardsesh.com');
+const isProductionDomain = typeof window !== 'undefined' && window.location.hostname.includes('boardsesh.com');
 
 Sentry.init({
   dsn: 'https://f55e6626faf787ae5291ad75b010ea14@o4510644927660032.ingest.us.sentry.io/4510644930150400',
@@ -38,11 +37,7 @@ Sentry.init({
 
     // Ignore Safari/WebKit "Load failed" errors caused by in-flight fetch requests
     // being aborted during page navigation (e.g., RSC fetches interrupted by route changes)
-    if (
-      errorMessage === 'Load failed' ||
-      errorMessage === 'Failed to fetch' ||
-      errorMessage === 'cancelled'
-    ) {
+    if (errorMessage === 'Load failed' || errorMessage === 'Failed to fetch' || errorMessage === 'cancelled') {
       return null;
     }
 

@@ -9,9 +9,7 @@ interface BluetoothQuickStartCardProps {
   size?: 'default' | 'small';
 }
 
-export default function BluetoothQuickStartCard({
-  size = 'default',
-}: BluetoothQuickStartCardProps) {
+export default function BluetoothQuickStartCard({ size = 'default' }: BluetoothQuickStartCardProps) {
   const isSmall = size === 'small';
   const iconSize = isSmall ? 28 : 36;
 
@@ -29,9 +27,7 @@ export default function BluetoothQuickStartCard({
           <BluetoothOutlined sx={{ fontSize: iconSize, color: 'var(--neutral-500)' }} />
         </div>
       </div>
-      <div className={`${styles.cardName} ${styles.cardNameDisabled}`}>
-        Quick start (coming soon)
-      </div>
+      <div className={`${styles.cardName} ${styles.cardNameDisabled}`}>Quick start (coming soon)</div>
     </div>
   );
 }

@@ -270,8 +270,7 @@ export default function AuthPageContent() {
                   value={loginValues.email}
                   onChange={(e) => {
                     setLoginValues((prev) => ({ ...prev, email: e.target.value }));
-                    if (loginErrors.email)
-                      setLoginErrors((prev) => ({ ...prev, email: undefined }));
+                    if (loginErrors.email) setLoginErrors((prev) => ({ ...prev, email: undefined }));
                   }}
                   error={!!loginErrors.email}
                   helperText={loginErrors.email}
@@ -296,8 +295,7 @@ export default function AuthPageContent() {
                   value={loginValues.password}
                   onChange={(e) => {
                     setLoginValues((prev) => ({ ...prev, password: e.target.value }));
-                    if (loginErrors.password)
-                      setLoginErrors((prev) => ({ ...prev, password: undefined }));
+                    if (loginErrors.password) setLoginErrors((prev) => ({ ...prev, password: undefined }));
                   }}
                   error={!!loginErrors.password}
                   helperText={loginErrors.password}
@@ -343,8 +341,7 @@ export default function AuthPageContent() {
                   value={registerValues.name}
                   onChange={(e) => {
                     setRegisterValues((prev) => ({ ...prev, name: e.target.value }));
-                    if (registerErrors.name)
-                      setRegisterErrors((prev) => ({ ...prev, name: undefined }));
+                    if (registerErrors.name) setRegisterErrors((prev) => ({ ...prev, name: undefined }));
                   }}
                   error={!!registerErrors.name}
                   helperText={registerErrors.name}
@@ -368,8 +365,7 @@ export default function AuthPageContent() {
                   value={registerValues.email}
                   onChange={(e) => {
                     setRegisterValues((prev) => ({ ...prev, email: e.target.value }));
-                    if (registerErrors.email)
-                      setRegisterErrors((prev) => ({ ...prev, email: undefined }));
+                    if (registerErrors.email) setRegisterErrors((prev) => ({ ...prev, email: undefined }));
                   }}
                   error={!!registerErrors.email}
                   helperText={registerErrors.email}
@@ -394,8 +390,7 @@ export default function AuthPageContent() {
                   value={registerValues.password}
                   onChange={(e) => {
                     setRegisterValues((prev) => ({ ...prev, password: e.target.value }));
-                    if (registerErrors.password)
-                      setRegisterErrors((prev) => ({ ...prev, password: undefined }));
+                    if (registerErrors.password) setRegisterErrors((prev) => ({ ...prev, password: undefined }));
                   }}
                   error={!!registerErrors.password}
                   helperText={registerErrors.password}

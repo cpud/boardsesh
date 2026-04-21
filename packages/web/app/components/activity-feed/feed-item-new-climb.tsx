@@ -81,24 +81,12 @@ export default function FeedItemNewClimb({ item }: FeedItemNewClimbProps) {
             />
           )}
 
-          <Box
-            sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
-            className={styles.feedItemContent}
-          >
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }} className={styles.feedItemContent}>
             <Box sx={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-              {item.difficultyName && (
-                <Chip label={item.difficultyName} size="small" color="primary" />
-              )}
-              {item.angle != null && (
-                <Chip icon={<LocationOnOutlined />} label={`${item.angle}\u00B0`} size="small" />
-              )}
+              {item.difficultyName && <Chip label={item.difficultyName} size="small" color="primary" />}
+              {item.angle != null && <Chip icon={<LocationOnOutlined />} label={`${item.angle}\u00B0`} size="small" />}
               {item.boardType && (
-                <MuiTypography
-                  variant="body2"
-                  component="span"
-                  color="text.secondary"
-                  className={styles.boardType}
-                >
+                <MuiTypography variant="body2" component="span" color="text.secondary" className={styles.boardType}>
                   {item.boardType.charAt(0).toUpperCase() + item.boardType.slice(1)}
                 </MuiTypography>
               )}
@@ -120,11 +108,7 @@ export default function FeedItemNewClimb({ item }: FeedItemNewClimbProps) {
         {/* Comments */}
         <Collapse in={commentsOpen} unmountOnExit>
           <Box sx={{ mt: 1 }}>
-            <CommentSection
-              entityType="climb"
-              entityId={item.climbUuid || item.entityId}
-              title="Comments"
-            />
+            <CommentSection entityType="climb" entityId={item.climbUuid || item.entityId} title="Comments" />
           </Box>
         </Collapse>
       </CardContent>

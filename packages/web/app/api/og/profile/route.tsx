@@ -150,9 +150,7 @@ export async function GET(request: NextRequest) {
                 color: themeTokens.neutral[500],
               }}
             >
-              {totalClimbs > 0
-                ? `${totalClimbs} distinct climb${totalClimbs !== 1 ? 's' : ''}`
-                : 'Boardsesh climber'}
+              {totalClimbs > 0 ? `${totalClimbs} distinct climb${totalClimbs !== 1 ? 's' : ''}` : 'Boardsesh climber'}
             </div>
           </div>
         </div>

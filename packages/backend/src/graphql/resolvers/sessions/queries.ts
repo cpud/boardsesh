@@ -2,12 +2,7 @@ import type { ConnectionContext, EventsReplayResponse } from '@boardsesh/shared-
 import { roomManager, type DiscoverableSession } from '../../../services/room-manager';
 import { pubsub } from '../../../pubsub/index';
 import { validateInput, requireSessionMember, requireAuthenticated } from '../shared/helpers';
-import {
-  SessionIdSchema,
-  LatitudeSchema,
-  LongitudeSchema,
-  RadiusMetersSchema,
-} from '../../../validation/schemas';
+import { SessionIdSchema, LatitudeSchema, LongitudeSchema, RadiusMetersSchema } from '../../../validation/schemas';
 import { generateSessionSummary } from './session-summary';
 import { getDistributedState } from '../../../services/distributed-state';
 
@@ -76,11 +71,7 @@ export const sessionQueries = {
    */
   nearbySessions: async (
     _: unknown,
-    {
-      latitude,
-      longitude,
-      radiusMeters,
-    }: { latitude: number; longitude: number; radiusMeters?: number },
+    { latitude, longitude, radiusMeters }: { latitude: number; longitude: number; radiusMeters?: number },
   ): Promise<DiscoverableSession[]> => {
     // Validate GPS coordinates
     validateInput(LatitudeSchema, latitude, 'latitude');
@@ -95,11 +86,7 @@ export const sessionQueries = {
    * Get sessions created by the authenticated user
    * Returns empty array if user is not authenticated
    */
-  mySessions: async (
-    _: unknown,
-    __: unknown,
-    ctx: ConnectionContext,
-  ): Promise<DiscoverableSession[]> => {
+  mySessions: async (_: unknown, __: unknown, ctx: ConnectionContext): Promise<DiscoverableSession[]> => {
     // For now, we use userId from context if available
     // In production, this should use authenticated user ID
     if (!ctx.userId) {
@@ -141,11 +128,7 @@ export const sessionQueries = {
    * Get a session summary with stats, grade distribution, and participants.
    * Available for ended sessions or active sessions with ticks.
    */
-  sessionSummary: async (
-    _: unknown,
-    { sessionId }: { sessionId: string },
-    ctx: ConnectionContext,
-  ) => {
+  sessionSummary: async (_: unknown, { sessionId }: { sessionId: string }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     validateInput(SessionIdSchema, sessionId, 'sessionId');
     return generateSessionSummary(sessionId);

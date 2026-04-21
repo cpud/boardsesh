@@ -579,10 +579,7 @@ describe('buildFlashRedpointBars', () => {
   });
 
   it('ignores entries with null difficulty', () => {
-    const logbook = [
-      makeEntry({ difficulty: 22, tries: 1 }),
-      makeEntry({ difficulty: null, tries: 1 }),
-    ];
+    const logbook = [makeEntry({ difficulty: 22, tries: 1 }), makeEntry({ difficulty: null, tries: 1 })];
     const result = buildFlashRedpointBars(logbook);
     expect(result).not.toBeNull();
     expect(result!.length).toBe(1);

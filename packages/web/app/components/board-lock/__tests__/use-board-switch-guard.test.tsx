@@ -83,10 +83,7 @@ describe('useBoardSwitchGuard', () => {
     const onConfirmed = vi.fn();
 
     act(() => {
-      result.current(
-        makeTarget({ board_name: 'kilter', layout_id: 1, size_id: 2, set_ids: [2, 1] }),
-        onConfirmed,
-      );
+      result.current(makeTarget({ board_name: 'kilter', layout_id: 1, size_id: 2, set_ids: [2, 1] }), onConfirmed);
     });
 
     expect(onConfirmed).toHaveBeenCalledOnce();
@@ -102,10 +99,7 @@ describe('useBoardSwitchGuard', () => {
     const onConfirmed = vi.fn();
 
     act(() => {
-      result.current(
-        makeTarget({ board_name: 'kilter', layout_id: 1, size_id: 1, set_ids: [3, 4] }),
-        onConfirmed,
-      );
+      result.current(makeTarget({ board_name: 'kilter', layout_id: 1, size_id: 1, set_ids: [3, 4] }), onConfirmed);
     });
 
     expect(onConfirmed).toHaveBeenCalledOnce();

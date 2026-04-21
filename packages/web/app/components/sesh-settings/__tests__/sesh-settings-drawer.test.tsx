@@ -117,13 +117,7 @@ vi.mock('@/app/components/swipeable-drawer/swipeable-drawer', () => ({
 }));
 
 vi.mock('@/app/components/board-page/angle-selector', () => ({
-  default: ({
-    onAngleChange,
-    currentAngle,
-  }: {
-    onAngleChange: (angle: number) => void;
-    currentAngle: number;
-  }) => (
+  default: ({ onAngleChange, currentAngle }: { onAngleChange: (angle: number) => void; currentAngle: number }) => (
     <div data-testid="angle-selector">
       <span>Current: {currentAngle}</span>
       <button data-testid="change-angle-45" onClick={() => onAngleChange(45)}>
@@ -192,9 +186,7 @@ describe('SeshSettingsDrawer', () => {
 
   it('renders drawer title', () => {
     render(<SeshSettingsDrawer open={true} onClose={vi.fn()} />);
-    expect(screen.getByTestId('swipeable-drawer').getAttribute('data-title')).toBe(
-      'Session overview',
-    );
+    expect(screen.getByTestId('swipeable-drawer').getAttribute('data-title')).toBe('Session overview');
   });
 
   it('renders session detail content', () => {

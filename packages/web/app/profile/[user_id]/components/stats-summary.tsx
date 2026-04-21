@@ -12,11 +12,7 @@ import type { CssBarChartBar, GroupedBar } from '@/app/components/charts/css-bar
 import { EmptyState } from '@/app/components/ui/empty-state';
 import { themeTokens } from '@/app/theme/theme-config';
 import { AscentStatusIcon } from '@/app/components/ascent-status/ascent-status-icon';
-import type {
-  LayoutPercentage,
-  LayoutLegendEntry,
-  VPointsTimelineData,
-} from '../utils/chart-data-builders';
+import type { LayoutPercentage, LayoutLegendEntry, VPointsTimelineData } from '../utils/chart-data-builders';
 import VPointsChart from './v-points-chart';
 import styles from '../profile-page.module.css';
 
@@ -59,11 +55,7 @@ export default function StatsSummary({
     return null;
   }
 
-  const renderHighlightCard = (
-    statusTestId: string,
-    subtitle: string,
-    highlight: GradeHighlight,
-  ) => (
+  const renderHighlightCard = (statusTestId: string, subtitle: string, highlight: GradeHighlight) => (
     <Box
       sx={{
         flex: 1,
@@ -81,12 +73,7 @@ export default function StatsSummary({
         overflow: 'hidden',
       }}
     >
-      <Typography
-        variant="h5"
-        component="span"
-        fontWeight={700}
-        sx={{ display: 'block', lineHeight: 1 }}
-      >
+      <Typography variant="h5" component="span" fontWeight={700} sx={{ display: 'block', lineHeight: 1 }}>
         {highlight.label}
       </Typography>
       <Typography variant="caption" sx={{ display: 'block', lineHeight: 1, opacity: 0.8 }}>
@@ -130,19 +117,10 @@ export default function StatsSummary({
               textAlign: 'center',
             }}
           >
-            <Typography
-              variant="h5"
-              component="span"
-              fontWeight={700}
-              sx={{ display: 'block', lineHeight: 1 }}
-            >
+            <Typography variant="h5" component="span" fontWeight={700} sx={{ display: 'block', lineHeight: 1 }}>
               {statisticsSummary.totalAscents}
             </Typography>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ display: 'block', lineHeight: 1, opacity: 0.8 }}
-            >
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1, opacity: 0.8 }}>
               problems
             </Typography>
           </Box>
@@ -157,11 +135,7 @@ export default function StatsSummary({
                 Percentile
               </Typography>
               <Typography variant="caption" fontWeight={600}>
-                Top{' '}
-                {Math.max(0.1, 100 - percentile.percentile).toFixed(
-                  percentile.percentile >= 99 ? 1 : 0,
-                )}
-                %
+                Top {Math.max(0.1, 100 - percentile.percentile).toFixed(percentile.percentile >= 99 ? 1 : 0)}%
               </Typography>
             </Box>
             <Box
@@ -214,12 +188,7 @@ export default function StatsSummary({
 
         {weeklyBars && (
           <div className={styles.gradeDistributionSection}>
-            <Typography
-              variant="body2"
-              component="span"
-              fontWeight={600}
-              className={styles.gradeDistributionTitle}
-            >
+            <Typography variant="body2" component="span" fontWeight={600} className={styles.gradeDistributionTitle}>
               Activity
             </Typography>
             <CssBarChart
@@ -235,12 +204,7 @@ export default function StatsSummary({
         )}
 
         <div className={weeklyBars ? styles.flashRedpointSection : styles.gradeDistributionSection}>
-          <Typography
-            variant="body2"
-            component="span"
-            fontWeight={600}
-            className={styles.gradeDistributionTitle}
-          >
+          <Typography variant="body2" component="span" fontWeight={600} className={styles.gradeDistributionTitle}>
             Grade Distribution
           </Typography>
 
@@ -263,12 +227,7 @@ export default function StatsSummary({
 
         {aggregatedFlashRedpointBars && !loadingAggregated && (
           <div className={styles.flashRedpointSection}>
-            <Typography
-              variant="body2"
-              component="span"
-              fontWeight={600}
-              className={styles.gradeDistributionTitle}
-            >
+            <Typography variant="body2" component="span" fontWeight={600} className={styles.gradeDistributionTitle}>
               Flash vs Redpoint
             </Typography>
             <GroupedBarChart

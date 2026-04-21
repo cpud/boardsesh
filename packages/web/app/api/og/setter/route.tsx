@@ -55,8 +55,7 @@ export async function GET(request: NextRequest) {
     const displayName = summary.displayName;
     const origin = process.env.VERCEL_URL ? 'https://www.boardsesh.com' : 'http://localhost:3000';
     const rawAvatarUrl = summary.avatarUrl || null;
-    const avatarUrl =
-      rawAvatarUrl && !rawAvatarUrl.startsWith('http') ? `${origin}${rawAvatarUrl}` : rawAvatarUrl;
+    const avatarUrl = rawAvatarUrl && !rawAvatarUrl.startsWith('http') ? `${origin}${rawAvatarUrl}` : rawAvatarUrl;
 
     // Build grade bars from ascents of climbs this setter created
     const gradeBars: Array<{ grade: string; count: number; color: string }> = [];

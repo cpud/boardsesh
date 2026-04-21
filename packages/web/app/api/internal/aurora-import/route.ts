@@ -30,10 +30,7 @@ export async function POST(request: NextRequest) {
     const parsed = requestSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: 'Invalid request body', details: parsed.error.flatten() },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Invalid request body', details: parsed.error.flatten() }, { status: 400 });
     }
 
     const { boardType, data, skipSessionBuild } = parsed.data;
@@ -70,9 +67,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Aurora JSON import error:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Import failed' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Import failed' }, { status: 500 });
   }
 }

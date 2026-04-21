@@ -55,13 +55,7 @@ export default function NewClimbFeedItem({ item }: NewClimbFeedItemProps) {
     }
 
     // Fallback to default path
-    return getDefaultClimbViewPath(
-      boardName,
-      item.layoutId,
-      angle,
-      item.uuid,
-      item.name || undefined,
-    );
+    return getDefaultClimbViewPath(boardName, item.layoutId, angle, item.uuid, item.name || undefined);
   })();
 
   return (
@@ -80,11 +74,7 @@ export default function NewClimbFeedItem({ item }: NewClimbFeedItemProps) {
             </Typography>
           </Box>
           {item.boardType && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ textTransform: 'capitalize' }}
-            >
+            <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'capitalize' }}>
               {item.boardType}
             </Typography>
           )}
@@ -109,9 +99,7 @@ export default function NewClimbFeedItem({ item }: NewClimbFeedItemProps) {
                 {item.name || 'Untitled climb'}
               </Typography>
               <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center' }}>
-                {item.difficultyName && (
-                  <Chip label={item.difficultyName} size="small" color="primary" />
-                )}
+                {item.difficultyName && <Chip label={item.difficultyName} size="small" color="primary" />}
                 {item.angle != null && (
                   <Chip icon={<LocationOnOutlined />} label={`${item.angle}\u00B0`} size="small" />
                 )}

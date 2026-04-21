@@ -34,8 +34,7 @@ const ClimbHoldSearchForm: React.FC<ClimbHoldSearchFormProps> = ({ boardDetails 
         updatedHoldsFilter[holdId] = {
           state: selectedState,
           color: selectedState === 'ANY' ? themeTokens.colors.primary : themeTokens.colors.error,
-          displayColor:
-            selectedState === 'ANY' ? themeTokens.colors.primary : themeTokens.colors.error,
+          displayColor: selectedState === 'ANY' ? themeTokens.colors.primary : themeTokens.colors.error,
         };
       }
     }
@@ -58,12 +57,8 @@ const ClimbHoldSearchForm: React.FC<ClimbHoldSearchFormProps> = ({ boardDetails 
     },
   ];
 
-  const anyHoldsCount = Object.values(uiSearchParams.holdsFilter || {}).filter(
-    (h) => h.state === 'ANY',
-  ).length;
-  const notHoldsCount = Object.values(uiSearchParams.holdsFilter || {}).filter(
-    (h) => h.state === 'NOT',
-  ).length;
+  const anyHoldsCount = Object.values(uiSearchParams.holdsFilter || {}).filter((h) => h.state === 'ANY').length;
+  const notHoldsCount = Object.values(uiSearchParams.holdsFilter || {}).filter((h) => h.state === 'NOT').length;
 
   return (
     <div className={styles.holdSearchForm}>

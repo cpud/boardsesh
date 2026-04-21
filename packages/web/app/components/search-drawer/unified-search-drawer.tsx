@@ -70,9 +70,7 @@ export default function UnifiedSearchDrawer({
       { key: 'users', label: 'Users', visible: true },
       { key: 'playlists', label: 'Playlists', visible: true },
     ];
-    const allowedSet = allowedCategoriesKey
-      ? new Set(allowedCategoriesKey.split('|') as SearchCategory[])
-      : null;
+    const allowedSet = allowedCategoriesKey ? new Set(allowedCategoriesKey.split('|') as SearchCategory[]) : null;
     return all
       .filter((c) => c.visible && (allowedSet ? allowedSet.has(c.key) : true))
       .map(({ key, label }) => ({ key, label }));

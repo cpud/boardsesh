@@ -182,11 +182,7 @@ async function shutdown() {
   await delay(1000);
 
   // Force kill if still running
-  if (
-    processes.backend.isManaged &&
-    processes.backend.process &&
-    !processes.backend.process.killed
-  ) {
+  if (processes.backend.isManaged && processes.backend.process && !processes.backend.process.killed) {
     processes.backend.process.kill('SIGKILL');
   }
 
@@ -205,10 +201,7 @@ async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const startNewBackend = args.includes('--be');
 
-  const requestedBackendPort = parseInt(
-    process.env.BACKEND_PORT || String(DEFAULT_BACKEND_PORT),
-    10,
-  );
+  const requestedBackendPort = parseInt(process.env.BACKEND_PORT || String(DEFAULT_BACKEND_PORT), 10);
   const requestedWebPort = parseInt(process.env.PORT || String(DEFAULT_WEB_PORT), 10);
 
   // Determine backend port

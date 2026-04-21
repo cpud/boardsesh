@@ -122,20 +122,15 @@ export default function VerifyRequestContent() {
             <Stack spacing={3} sx={{ width: '100%' }}>
               {errorMessage ? (
                 <>
-                  <CancelOutlined
-                    sx={{ fontSize: 48, color: themeTokens.colors.error, mx: 'auto' }}
-                  />
+                  <CancelOutlined sx={{ fontSize: 48, color: themeTokens.colors.error, mx: 'auto' }} />
                   <MuiAlert severity="error">{errorMessage}</MuiAlert>
                 </>
               ) : (
                 <>
-                  <MailOutlined
-                    sx={{ fontSize: 48, color: themeTokens.colors.primary, mx: 'auto' }}
-                  />
+                  <MailOutlined sx={{ fontSize: 48, color: themeTokens.colors.primary, mx: 'auto' }} />
                   <Typography variant="h3">Check your email</Typography>
                   <Typography variant="body1" component="p" color="text.secondary">
-                    We sent you a verification link. Click the link in your email to verify your
-                    account.
+                    We sent you a verification link. Click the link in your email to verify your account.
                   </Typography>
                 </>
               )}

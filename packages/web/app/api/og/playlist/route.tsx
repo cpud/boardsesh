@@ -63,9 +63,7 @@ export async function GET(request: NextRequest) {
     const climbCount = playlist.climbCount;
     const boardLabel = formatBoardDisplayName(boardType);
     const displayName = truncateOgText(name, PLAYLIST_NAME_MAX_LENGTH);
-    const displayDescription = description
-      ? truncateOgText(description, PLAYLIST_DESCRIPTION_MAX_LENGTH)
-      : null;
+    const displayDescription = description ? truncateOgText(description, PLAYLIST_DESCRIPTION_MAX_LENGTH) : null;
     const displayMark = getPlaylistFallbackMark(icon, name, boardLabel);
 
     return new ImageResponse(

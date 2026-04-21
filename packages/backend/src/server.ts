@@ -90,10 +90,7 @@ export async function startServer(): Promise<ServerResources> {
       }
 
       // OCR test data upload endpoint (handle OPTIONS for CORS preflight)
-      if (
-        pathname === '/api/ocr-test-data' &&
-        (req.method === 'POST' || req.method === 'OPTIONS')
-      ) {
+      if (pathname === '/api/ocr-test-data' && (req.method === 'POST' || req.method === 'OPTIONS')) {
         await handleOcrTestDataUpload(req, res);
         return;
       }
@@ -220,9 +217,7 @@ export async function startServer(): Promise<ServerResources> {
               batch.map((sessionId) =>
                 roomManager['redisStore']
                   ?.refreshTTL(sessionId)
-                  .catch((err) =>
-                    console.error(`[Server] TTL refresh failed for ${sessionId}:`, err),
-                  ),
+                  .catch((err) => console.error(`[Server] TTL refresh failed for ${sessionId}:`, err)),
               ),
             );
           }

@@ -28,17 +28,12 @@ vi.mock('../utils/chart-data-builders', () => ({
 }));
 
 vi.mock('../components/user-card', () => ({
-  default: (props: { userId: string }) => (
-    <div data-testid="user-card" data-user-id={props.userId} />
-  ),
+  default: (props: { userId: string }) => <div data-testid="user-card" data-user-id={props.userId} />,
 }));
 
 vi.mock('../components/profile-nav-card', () => ({
   default: (props: { title: string; href: string }) => (
-    <div
-      data-testid={`nav-card-${props.title.toLowerCase().replace(/\s+/g, '-')}`}
-      data-href={props.href}
-    >
+    <div data-testid={`nav-card-${props.title.toLowerCase().replace(/\s+/g, '-')}`} data-href={props.href}>
       {props.title}
     </div>
   ),
@@ -57,9 +52,7 @@ vi.mock('@/app/components/providers/snackbar-provider', () => ({
 }));
 
 vi.mock('@/app/components/ui/empty-state', () => ({
-  EmptyState: (props: { description: string }) => (
-    <div data-testid="empty-state">{props.description}</div>
-  ),
+  EmptyState: (props: { description: string }) => <div data-testid="empty-state">{props.description}</div>,
 }));
 
 vi.mock('@/app/components/back-button', () => ({
@@ -161,9 +154,7 @@ describe('ProfilePageContent', () => {
 
     expect(screen.getByTestId('empty-state')).toBeTruthy();
     expect(screen.getByText('User not found')).toBeTruthy();
-    expect(screen.getByTestId('profile-header-share-injector').getAttribute('data-active')).toBe(
-      'false',
-    );
+    expect(screen.getByTestId('profile-header-share-injector').getAttribute('data-active')).toBe('false');
   });
 
   it('renders user card with userId when profile exists', () => {
@@ -175,12 +166,8 @@ describe('ProfilePageContent', () => {
     const userCard = screen.getByTestId('user-card');
     expect(userCard).toBeTruthy();
     expect(userCard.getAttribute('data-user-id')).toBe('user-2');
-    expect(screen.getByTestId('profile-header-share-injector').getAttribute('data-active')).toBe(
-      'true',
-    );
-    expect(
-      screen.getByTestId('profile-header-share-injector').getAttribute('data-display-name'),
-    ).toBe('Test Climber');
+    expect(screen.getByTestId('profile-header-share-injector').getAttribute('data-active')).toBe('true');
+    expect(screen.getByTestId('profile-header-share-injector').getAttribute('data-display-name')).toBe('Test Climber');
   });
 
   it('renders Statistics and Sessions navigation cards', () => {
@@ -208,24 +195,16 @@ describe('ProfilePageContent', () => {
 
     render(<ProfilePageContent userId="user-2" />);
 
-    expect(screen.getByTestId('nav-card-sessions').getAttribute('data-href')).toBe(
-      '/profile/user-2/sessions',
-    );
-    expect(screen.getByTestId('nav-card-statistics').getAttribute('data-href')).toBe(
-      '/profile/user-2/statistics',
-    );
-    expect(screen.getByTestId('nav-card-created-climbs').getAttribute('data-href')).toBe(
-      '/profile/user-2/climbs',
-    );
+    expect(screen.getByTestId('nav-card-sessions').getAttribute('data-href')).toBe('/profile/user-2/sessions');
+    expect(screen.getByTestId('nav-card-statistics').getAttribute('data-href')).toBe('/profile/user-2/statistics');
+    expect(screen.getByTestId('nav-card-created-climbs').getAttribute('data-href')).toBe('/profile/user-2/climbs');
   });
 
   it('renders overview chart when tick data is available', () => {
     const profile = makeProfile();
     mockUseProfileData.mockReturnValue(mockProfileDataReturn({ profile }));
 
-    mockBuildWeeklyBars.mockReturnValue([
-      { label: 'W1', segments: [{ value: 3, color: '#ccc', label: 'V3' }] },
-    ]);
+    mockBuildWeeklyBars.mockReturnValue([{ label: 'W1', segments: [{ value: 3, color: '#ccc', label: 'V3' }] }]);
 
     const allBoardsTicks = {
       kilter: [

@@ -85,12 +85,7 @@ export const socialCommunitySettingsQueries = {
     const settings = await db
       .select()
       .from(dbSchema.communitySettings)
-      .where(
-        and(
-          eq(dbSchema.communitySettings.scope, scope),
-          eq(dbSchema.communitySettings.scopeKey, scopeKey),
-        ),
-      );
+      .where(and(eq(dbSchema.communitySettings.scope, scope), eq(dbSchema.communitySettings.scopeKey, scopeKey)));
 
     return settings.map((s) => ({
       id: s.id,
@@ -106,11 +101,7 @@ export const socialCommunitySettingsQueries = {
 };
 
 export const socialCommunitySettingsMutations = {
-  setCommunitySettings: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  setCommunitySettings: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     await requireAdminOrLeader(ctx);
     await applyRateLimit(ctx, 10);
 

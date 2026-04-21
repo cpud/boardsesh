@@ -112,59 +112,45 @@ describe('TickButton', () => {
 
   describe('icon rendering', () => {
     it('renders CheckOutlined when tickBarActive and isFlash is false', () => {
-      const { container } = render(
-        <TickButton {...defaultProps} tickBarActive={true} isFlash={false} />,
-      );
+      const { container } = render(<TickButton {...defaultProps} tickBarActive={true} isFlash={false} />);
       const svg = container.querySelector('#button-tick svg');
       expect(svg?.getAttribute('data-testid')).toBe('CheckOutlinedIcon');
     });
 
     it('renders ElectricBoltOutlined when tickBarActive and isFlash is true', () => {
-      const { container } = render(
-        <TickButton {...defaultProps} tickBarActive={true} isFlash={true} />,
-      );
+      const { container } = render(<TickButton {...defaultProps} tickBarActive={true} isFlash={true} />);
       const svg = container.querySelector('#button-tick svg');
       expect(svg?.getAttribute('data-testid')).toBe('ElectricBoltOutlinedIcon');
     });
 
     it('renders CheckOutlined when tickBarActive is false', () => {
-      const { container } = render(
-        <TickButton {...defaultProps} tickBarActive={false} isFlash={true} />,
-      );
+      const { container } = render(<TickButton {...defaultProps} tickBarActive={false} isFlash={true} />);
       const svg = container.querySelector('#button-tick svg');
       expect(svg?.getAttribute('data-testid')).toBe('CheckOutlinedIcon');
     });
 
     it('renders CheckOutlined when isFlash is undefined and not active', () => {
-      const { container } = render(
-        <TickButton {...defaultProps} tickBarActive={false} isFlash={undefined} />,
-      );
+      const { container } = render(<TickButton {...defaultProps} tickBarActive={false} isFlash={undefined} />);
       const svg = container.querySelector('#button-tick svg');
       expect(svg?.getAttribute('data-testid')).toBe('CheckOutlinedIcon');
     });
 
     it('renders person-falling icon and "attempt" label when ascentType is attempt', () => {
-      const { container } = render(
-        <TickButton {...defaultProps} tickBarActive={true} ascentType="attempt" />,
-      );
+      const { container } = render(<TickButton {...defaultProps} tickBarActive={true} ascentType="attempt" />);
       const svg = container.querySelector('#button-tick svg');
       expect(svg?.getAttribute('data-testid')).toBe('PersonFallingIcon');
       expect(screen.getByText('attempt')).toBeTruthy();
     });
 
     it('renders flash icon and "flash" label when ascentType is flash', () => {
-      const { container } = render(
-        <TickButton {...defaultProps} tickBarActive={true} ascentType="flash" />,
-      );
+      const { container } = render(<TickButton {...defaultProps} tickBarActive={true} ascentType="flash" />);
       const svg = container.querySelector('#button-tick svg');
       expect(svg?.getAttribute('data-testid')).toBe('ElectricBoltOutlinedIcon');
       expect(screen.getByText('flash')).toBeTruthy();
     });
 
     it('renders check icon and "tick" label when ascentType is send', () => {
-      const { container } = render(
-        <TickButton {...defaultProps} tickBarActive={true} ascentType="send" />,
-      );
+      const { container } = render(<TickButton {...defaultProps} tickBarActive={true} ascentType="send" />);
       const svg = container.querySelector('#button-tick svg');
       expect(svg?.getAttribute('data-testid')).toBe('CheckOutlinedIcon');
       expect(screen.getByText('tick')).toBeTruthy();
@@ -181,12 +167,7 @@ describe('TickButton', () => {
 
     it('renders check icon when isFlash is false and no ascentType', () => {
       const { container } = render(
-        <TickButton
-          {...defaultProps}
-          tickBarActive={true}
-          isFlash={false}
-          ascentType={undefined}
-        />,
+        <TickButton {...defaultProps} tickBarActive={true} isFlash={false} ascentType={undefined} />,
       );
       const svg = container.querySelector('#button-tick svg');
       expect(svg?.getAttribute('data-testid')).toBe('CheckOutlinedIcon');

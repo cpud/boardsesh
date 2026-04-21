@@ -29,11 +29,7 @@ interface MapLocationPickerProps {
   onChange: (lat: number, lng: number) => void;
 }
 
-export default function MapLocationPicker({
-  latitude,
-  longitude,
-  onChange,
-}: MapLocationPickerProps) {
+export default function MapLocationPicker({ latitude, longitude, onChange }: MapLocationPickerProps) {
   const mapRef = useRef<LeafletMap | null>(null);
   const markerRef = useRef<LeafletMarker | null>(null);
   const leafletRef = useRef<typeof import('leaflet') | null>(null);
@@ -65,10 +61,7 @@ export default function MapLocationPicker({
       markerRef.current = L.marker([lat, lng], { icon, draggable: true }).addTo(map);
       markerRef.current.on('dragend', () => {
         const pos = markerRef.current!.getLatLng();
-        onChangeRef.current(
-          Math.round(pos.lat * 1000000) / 1000000,
-          Math.round(pos.lng * 1000000) / 1000000,
-        );
+        onChangeRef.current(Math.round(pos.lat * 1000000) / 1000000, Math.round(pos.lng * 1000000) / 1000000);
       });
     }
   }, []);
@@ -169,10 +162,9 @@ export default function MapLocationPicker({
         setIsSearching(true);
         try {
           const encoded = encodeURIComponent(query.trim());
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encoded}`,
-            { headers: { 'Accept-Language': 'en' } },
-          );
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encoded}`, {
+            headers: { 'Accept-Language': 'en' },
+          });
           if (!res.ok) {
             console.error('Nominatim search failed:', res.status, res.statusText);
             return;
@@ -216,9 +208,7 @@ export default function MapLocationPicker({
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <MapOutlined fontSize="small" color="action" />
           <MuiTypography variant="body2">
-            {hasLocation
-              ? `Location: ${latitude!.toFixed(4)}, ${longitude!.toFixed(4)}`
-              : 'Set location on map'}
+            {hasLocation ? `Location: ${latitude!.toFixed(4)}, ${longitude!.toFixed(4)}` : 'Set location on map'}
           </MuiTypography>
         </Box>
       </AccordionSummary>
@@ -250,10 +240,7 @@ export default function MapLocationPicker({
           />
         </Box>
         <Box sx={{ position: 'relative' }}>
-          <div
-            ref={containerRef}
-            style={{ width: '100%', height: 200, borderRadius: '0 0 4px 4px' }}
-          />
+          <div ref={containerRef} style={{ width: '100%', height: 200, borderRadius: '0 0 4px 4px' }} />
           {mapReady && (
             <MuiButton
               size="small"
@@ -273,11 +260,7 @@ export default function MapLocationPicker({
             </MuiButton>
           )}
         </Box>
-        <MuiTypography
-          variant="caption"
-          color="text.secondary"
-          sx={{ px: 2, py: 1, display: 'block' }}
-        >
+        <MuiTypography variant="caption" color="text.secondary" sx={{ px: 2, py: 1, display: 'block' }}>
           Click the map to set your board&apos;s location, or drag the marker to adjust
         </MuiTypography>
       </AccordionDetails>

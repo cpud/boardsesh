@@ -106,11 +106,5 @@ export default async function BoardSlugPlayPage(props: BoardSlugPlayPageProps) {
     scheduleOverlayWarming({ boardDetails, climbs: [initialClimb], variant: 'full' });
   }
 
-  return (
-    <PlayViewClient
-      boardDetails={boardDetails}
-      initialClimb={initialClimb}
-      angle={parsedParams.angle}
-    />
-  );
+  return <PlayViewClient boardDetails={boardDetails} initialClimb={initialClimb} angle={parsedParams.angle} />;
 }

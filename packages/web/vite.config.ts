@@ -18,12 +18,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['app/**/*.{ts,tsx}'],
-      exclude: [
-        'app/**/*.test.{ts,tsx}',
-        'app/**/*.spec.{ts,tsx}',
-        'app/**/types.ts',
-        'app/**/__tests__/**',
-      ],
+      exclude: ['app/**/*.test.{ts,tsx}', 'app/**/*.spec.{ts,tsx}', 'app/**/types.ts', 'app/**/__tests__/**'],
       reporter: ['text', 'lcov', 'html'],
       thresholds: {
         global: {

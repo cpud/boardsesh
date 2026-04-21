@@ -208,10 +208,7 @@ export function findCircleCenters(pixelData: RawPixelData): CircleCenter[] {
 /**
  * Find the nearest grid coordinate to a relative position.
  */
-export function findNearestGridPosition(
-  relX: number,
-  relY: number,
-): { coordinate: GridCoordinate; distance: number } {
+export function findNearestGridPosition(relX: number, relY: number): { coordinate: GridCoordinate; distance: number } {
   let nearestCoord: GridCoordinate = 'A1';
   let minDistance = Infinity;
 
@@ -310,12 +307,7 @@ export function detectBenchmarkCircle(pixelData: RawPixelData): boolean {
         if (p.x > maxX) maxX = p.x;
         if (p.y < minY) minY = p.y;
         if (p.y > maxY) maxY = p.y;
-        stack.push(
-          { x: p.x + 1, y: p.y },
-          { x: p.x - 1, y: p.y },
-          { x: p.x, y: p.y + 1 },
-          { x: p.x, y: p.y - 1 },
-        );
+        stack.push({ x: p.x + 1, y: p.y }, { x: p.x - 1, y: p.y }, { x: p.x, y: p.y + 1 }, { x: p.x, y: p.y - 1 });
       }
 
       // Check if this component is the benchmark circle:
@@ -339,10 +331,7 @@ export function detectBenchmarkCircle(pixelData: RawPixelData): boolean {
 /**
  * Detect holds from raw pixel data of the board region.
  */
-export function detectHoldsFromPixelData(
-  pixelData: RawPixelData,
-  boardRegion: ImageRegion,
-): DetectedHold[] {
+export function detectHoldsFromPixelData(pixelData: RawPixelData, boardRegion: ImageRegion): DetectedHold[] {
   const circles = findCircleCenters(pixelData);
   return mapCirclesToHolds(circles, boardRegion, {
     width: pixelData.width,

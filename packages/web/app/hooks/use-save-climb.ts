@@ -40,9 +40,7 @@ export function useSaveClimb(boardName: BoardName) {
   const { showMessage } = useSnackbar();
 
   return useMutation({
-    mutationFn: async (
-      options: Omit<SaveClimbOptions, 'setter_id' | 'user_id'>,
-    ): Promise<SaveClimbResponse> => {
+    mutationFn: async (options: Omit<SaveClimbOptions, 'setter_id' | 'user_id'>): Promise<SaveClimbResponse> => {
       if (sessionStatus !== 'authenticated' || !session?.user?.id || !token) {
         throw new Error('Authentication required to create climbs');
       }
@@ -69,10 +67,10 @@ export function useSaveClimb(boardName: BoardName) {
           },
         };
 
-        const result = await execute<SaveClimbMutationResponse, SaveClimbMutationVariables>(
-          client,
-          { query: SAVE_CLIMB_MUTATION, variables },
-        );
+        const result = await execute<SaveClimbMutationResponse, SaveClimbMutationVariables>(client, {
+          query: SAVE_CLIMB_MUTATION,
+          variables,
+        });
 
         return result.saveClimb;
       } finally {
@@ -107,10 +105,10 @@ export function useUpdateClimb() {
 
       try {
         const variables: UpdateClimbMutationVariables = { input };
-        const result = await execute<UpdateClimbMutationResponse, UpdateClimbMutationVariables>(
-          client,
-          { query: UPDATE_CLIMB_MUTATION, variables },
-        );
+        const result = await execute<UpdateClimbMutationResponse, UpdateClimbMutationVariables>(client, {
+          query: UPDATE_CLIMB_MUTATION,
+          variables,
+        });
         return result.updateClimb;
       } finally {
         client.dispose();

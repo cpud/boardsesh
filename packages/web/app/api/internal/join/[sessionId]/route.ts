@@ -39,10 +39,7 @@ function getBaseUrl(request: Request): string {
   return `${url.protocol}//${url.host}`;
 }
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ sessionId: string }> },
-) {
+export async function GET(request: Request, { params }: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = await params;
   const baseUrl = getBaseUrl(request);
 

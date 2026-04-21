@@ -430,15 +430,12 @@ describe('Slug generation functions', () => {
       { name: 'Mini MoonBoard 2020', expectedSlug: 'mini-moonboard-2020', expectedId: 6 },
     ];
 
-    it.each(cases)(
-      'round-trips $name through generateLayoutSlug',
-      ({ name, expectedSlug, expectedId }) => {
-        const slug = generateLayoutSlug(name);
-        expect(slug).toBe(expectedSlug);
-        const resolved = getMoonBoardLayoutBySlug(slug);
-        expect(resolved).toEqual({ id: expectedId, name });
-      },
-    );
+    it.each(cases)('round-trips $name through generateLayoutSlug', ({ name, expectedSlug, expectedId }) => {
+      const slug = generateLayoutSlug(name);
+      expect(slug).toBe(expectedSlug);
+      const resolved = getMoonBoardLayoutBySlug(slug);
+      expect(resolved).toEqual({ id: expectedId, name });
+    });
 
     it('still accepts legacy MOONBOARD_LAYOUTS keys for backwards compatibility', () => {
       expect(getMoonBoardLayoutBySlug('moonboard-2016')).toEqual({ id: 2, name: 'MoonBoard 2016' });
@@ -595,12 +592,7 @@ describe('Slug generation functions', () => {
 
     describe('homewall full ride - all four sets combined', () => {
       it('should generate correct slug for all four homewall sets (full names)', () => {
-        const result = generateSetSlug([
-          'Auxiliary Kickboard',
-          'Mainline Kickboard',
-          'Auxiliary',
-          'Mainline',
-        ]);
+        const result = generateSetSlug(['Auxiliary Kickboard', 'Mainline Kickboard', 'Auxiliary', 'Mainline']);
         // Should be sorted alphabetically descending and joined with underscores
         expect(result).toBe('main-kicker_main_aux-kicker_aux');
       });
@@ -611,12 +603,7 @@ describe('Slug generation functions', () => {
       });
 
       it('should generate correct slug for mixed full and abbreviated names', () => {
-        const result = generateSetSlug([
-          'Auxiliary Kickboard',
-          'Main Kickboard',
-          'Aux',
-          'Mainline',
-        ]);
+        const result = generateSetSlug(['Auxiliary Kickboard', 'Main Kickboard', 'Aux', 'Mainline']);
         expect(result).toBe('main-kicker_main_aux-kicker_aux');
       });
     });
@@ -684,24 +671,9 @@ describe('Slug generation functions', () => {
       });
 
       it('should maintain consistent ordering regardless of input order', () => {
-        const order1 = generateSetSlug([
-          'Auxiliary',
-          'Mainline',
-          'Auxiliary Kickboard',
-          'Mainline Kickboard',
-        ]);
-        const order2 = generateSetSlug([
-          'Mainline Kickboard',
-          'Auxiliary Kickboard',
-          'Mainline',
-          'Auxiliary',
-        ]);
-        const order3 = generateSetSlug([
-          'Auxiliary Kickboard',
-          'Auxiliary',
-          'Mainline Kickboard',
-          'Mainline',
-        ]);
+        const order1 = generateSetSlug(['Auxiliary', 'Mainline', 'Auxiliary Kickboard', 'Mainline Kickboard']);
+        const order2 = generateSetSlug(['Mainline Kickboard', 'Auxiliary Kickboard', 'Mainline', 'Auxiliary']);
+        const order3 = generateSetSlug(['Auxiliary Kickboard', 'Auxiliary', 'Mainline Kickboard', 'Mainline']);
 
         expect(order1).toBe(order2);
         expect(order2).toBe(order3);
@@ -739,9 +711,7 @@ describe('Utility functions', () => {
     });
 
     it('should return UUID if input is already just UUID', () => {
-      expect(extractUuidFromSlug('ABCDEF1234567890ABCDEF1234567890')).toBe(
-        'ABCDEF1234567890ABCDEF1234567890',
-      );
+      expect(extractUuidFromSlug('ABCDEF1234567890ABCDEF1234567890')).toBe('ABCDEF1234567890ABCDEF1234567890');
     });
 
     it('should return input if no UUID found', () => {
@@ -811,99 +781,73 @@ describe('Utility functions', () => {
 describe('getBaseBoardPath', () => {
   describe('stripping /play/[uuid] segments', () => {
     it('should strip /play/[uuid] from path with angle', () => {
-      expect(getBaseBoardPath('/kilter/original/12x12/default/45/play/abc-123')).toBe(
-        '/kilter/original/12x12/default',
-      );
+      expect(getBaseBoardPath('/kilter/original/12x12/default/45/play/abc-123')).toBe('/kilter/original/12x12/default');
     });
 
     it('should strip /play/[slug-uuid] from path', () => {
-      expect(
-        getBaseBoardPath('/kilter/original/12x12/default/45/play/test-climb-name-abc123def456'),
-      ).toBe('/kilter/original/12x12/default');
+      expect(getBaseBoardPath('/kilter/original/12x12/default/45/play/test-climb-name-abc123def456')).toBe(
+        '/kilter/original/12x12/default',
+      );
     });
 
     it('should handle different angles', () => {
-      expect(getBaseBoardPath('/kilter/original/12x12/default/50/play/abc-123')).toBe(
-        '/kilter/original/12x12/default',
-      );
-      expect(getBaseBoardPath('/tension/original/8x10/bolt/30/play/xyz-789')).toBe(
-        '/tension/original/8x10/bolt',
-      );
+      expect(getBaseBoardPath('/kilter/original/12x12/default/50/play/abc-123')).toBe('/kilter/original/12x12/default');
+      expect(getBaseBoardPath('/tension/original/8x10/bolt/30/play/xyz-789')).toBe('/tension/original/8x10/bolt');
     });
   });
 
   describe('stripping /view/[uuid] segments', () => {
     it('should strip /view/[uuid] from path', () => {
-      expect(getBaseBoardPath('/kilter/original/12x12/default/45/view/abc123')).toBe(
-        '/kilter/original/12x12/default',
-      );
+      expect(getBaseBoardPath('/kilter/original/12x12/default/45/view/abc123')).toBe('/kilter/original/12x12/default');
     });
 
     it('should strip /view/[slug-uuid] from path', () => {
-      expect(
-        getBaseBoardPath('/kilter/original/12x12/default/45/view/test-climb-abc123def456'),
-      ).toBe('/kilter/original/12x12/default');
+      expect(getBaseBoardPath('/kilter/original/12x12/default/45/view/test-climb-abc123def456')).toBe(
+        '/kilter/original/12x12/default',
+      );
     });
   });
 
   describe('stripping /list segment', () => {
     it('should strip /list from path with angle', () => {
-      expect(getBaseBoardPath('/kilter/original/12x12/default/45/list')).toBe(
-        '/kilter/original/12x12/default',
-      );
+      expect(getBaseBoardPath('/kilter/original/12x12/default/45/list')).toBe('/kilter/original/12x12/default');
     });
 
     it('should handle different board configurations', () => {
-      expect(getBaseBoardPath('/tension/two-zone/10x12/main_aux/40/list')).toBe(
-        '/tension/two-zone/10x12/main_aux',
-      );
+      expect(getBaseBoardPath('/tension/two-zone/10x12/main_aux/40/list')).toBe('/tension/two-zone/10x12/main_aux');
     });
   });
 
   describe('stripping /create segment', () => {
     it('should strip /create from path with angle', () => {
-      expect(getBaseBoardPath('/kilter/original/12x12/default/45/create')).toBe(
-        '/kilter/original/12x12/default',
-      );
+      expect(getBaseBoardPath('/kilter/original/12x12/default/45/create')).toBe('/kilter/original/12x12/default');
     });
   });
 
   describe('stripping angle from base path', () => {
     it('should strip angle from path without view segment', () => {
-      expect(getBaseBoardPath('/kilter/original/12x12/default/45')).toBe(
-        '/kilter/original/12x12/default',
-      );
+      expect(getBaseBoardPath('/kilter/original/12x12/default/45')).toBe('/kilter/original/12x12/default');
     });
 
     it('should strip different angle values', () => {
-      expect(getBaseBoardPath('/kilter/original/12x12/default/0')).toBe(
-        '/kilter/original/12x12/default',
-      );
-      expect(getBaseBoardPath('/kilter/original/12x12/default/70')).toBe(
-        '/kilter/original/12x12/default',
-      );
+      expect(getBaseBoardPath('/kilter/original/12x12/default/0')).toBe('/kilter/original/12x12/default');
+      expect(getBaseBoardPath('/kilter/original/12x12/default/70')).toBe('/kilter/original/12x12/default');
     });
   });
 
   describe('edge cases', () => {
     it('should return path as-is if no matching segments', () => {
-      expect(getBaseBoardPath('/kilter/original/12x12/default')).toBe(
-        '/kilter/original/12x12/default',
-      );
+      expect(getBaseBoardPath('/kilter/original/12x12/default')).toBe('/kilter/original/12x12/default');
     });
 
     it('should handle paths with complex set slugs', () => {
-      expect(
-        getBaseBoardPath(
-          '/kilter/homewall/10x12-full-ride/main-kicker_main_aux-kicker_aux/45/play/abc-123',
-        ),
-      ).toBe('/kilter/homewall/10x12-full-ride/main-kicker_main_aux-kicker_aux');
+      expect(getBaseBoardPath('/kilter/homewall/10x12-full-ride/main-kicker_main_aux-kicker_aux/45/play/abc-123')).toBe(
+        '/kilter/homewall/10x12-full-ride/main-kicker_main_aux-kicker_aux',
+      );
     });
 
     it('should handle tension board paths', () => {
-      expect(getBaseBoardPath('/tension/original/8x10/screw_bolt/35/list')).toBe(
-        '/tension/original/8x10/screw_bolt',
-      );
+      expect(getBaseBoardPath('/tension/original/8x10/screw_bolt/35/list')).toBe('/tension/original/8x10/screw_bolt');
     });
 
     it('should handle empty string', () => {
@@ -917,9 +861,7 @@ describe('getBaseBoardPath', () => {
     it('should not strip segments that look like angle but are part of set names', () => {
       // Sets like "main_aux" should not have digits stripped
       // This is handled correctly because we only strip the last segment if it's purely numeric
-      expect(getBaseBoardPath('/kilter/original/12x12/main_aux')).toBe(
-        '/kilter/original/12x12/main_aux',
-      );
+      expect(getBaseBoardPath('/kilter/original/12x12/main_aux')).toBe('/kilter/original/12x12/main_aux');
     });
   });
 
@@ -1005,9 +947,7 @@ describe('Shared slug helper functions', () => {
     });
 
     it('should process descriptions without LED Kit', () => {
-      expect(generateDescriptionSlug('Rows: KB1, KB2, 1-18 Columns: A-K')).toBe(
-        'rows-kb1-kb2-1-18-columns-a-k',
-      );
+      expect(generateDescriptionSlug('Rows: KB1, KB2, 1-18 Columns: A-K')).toBe('rows-kb1-kb2-1-18-columns-a-k');
       expect(generateDescriptionSlug('Square')).toBe('square');
     });
   });
@@ -1098,9 +1038,7 @@ describe('constructBoardSlugPlaylistsUrl', () => {
 
 describe('constructBoardSlugViewUrl', () => {
   it('should construct board-slug view URL with UUID when no climb name is provided', () => {
-    expect(constructBoardSlugViewUrl('my-kilter', 40, 'ABC123')).toBe(
-      '/b/my-kilter/40/view/ABC123',
-    );
+    expect(constructBoardSlugViewUrl('my-kilter', 40, 'ABC123')).toBe('/b/my-kilter/40/view/ABC123');
   });
 
   it('should construct board-slug view URL with climb slug and UUID when climb name is provided', () => {
@@ -1123,38 +1061,20 @@ describe('getContextAwareClimbViewUrl', () => {
   } as unknown as BoardDetails;
 
   it('should preserve /b/{slug}/{angle} context from list routes', () => {
-    expect(
-      getContextAwareClimbViewUrl(
-        '/b/moonrise-gym/40/list',
-        boardDetails,
-        40,
-        'ABC123',
-        'Moon Landing',
-      ),
-    ).toBe('/b/moonrise-gym/40/view/moon-landing-ABC123');
+    expect(getContextAwareClimbViewUrl('/b/moonrise-gym/40/list', boardDetails, 40, 'ABC123', 'Moon Landing')).toBe(
+      '/b/moonrise-gym/40/view/moon-landing-ABC123',
+    );
   });
 
   it('should preserve /b/{slug}/{angle} context from play routes', () => {
     expect(
-      getContextAwareClimbViewUrl(
-        '/b/moonrise-gym/40/play/some-climb',
-        boardDetails,
-        40,
-        'ABC123',
-        'Moon Landing',
-      ),
+      getContextAwareClimbViewUrl('/b/moonrise-gym/40/play/some-climb', boardDetails, 40, 'ABC123', 'Moon Landing'),
     ).toBe('/b/moonrise-gym/40/view/moon-landing-ABC123');
   });
 
   it('should fall back to canonical URL outside /b routes', () => {
     expect(
-      getContextAwareClimbViewUrl(
-        '/kilter/homewall/8x12/main_aux/40/list',
-        boardDetails,
-        40,
-        'ABC123',
-        'Moon Landing',
-      ),
+      getContextAwareClimbViewUrl('/kilter/homewall/8x12/main_aux/40/list', boardDetails, 40, 'ABC123', 'Moon Landing'),
     ).toBe('/kilter/homewall/8x12-main/main-kicker_aux-kicker/40/view/moon-landing-ABC123');
   });
 });
@@ -1166,9 +1086,7 @@ describe('getPlaylistsBasePath', () => {
     });
 
     it('should extract base path from /b/{slug}/{angle}/playlists/{uuid}', () => {
-      expect(getPlaylistsBasePath('/b/my-kilter/40/playlists/ABC123')).toBe(
-        '/b/my-kilter/40/playlists',
-      );
+      expect(getPlaylistsBasePath('/b/my-kilter/40/playlists/ABC123')).toBe('/b/my-kilter/40/playlists');
     });
 
     it('should extract base path from /b/{slug}/{angle}/list', () => {
@@ -1176,15 +1094,11 @@ describe('getPlaylistsBasePath', () => {
     });
 
     it('should extract base path from /b/{slug}/{angle}/play/{uuid}', () => {
-      expect(getPlaylistsBasePath('/b/my-kilter/40/play/abc-123')).toBe(
-        '/b/my-kilter/40/playlists',
-      );
+      expect(getPlaylistsBasePath('/b/my-kilter/40/play/abc-123')).toBe('/b/my-kilter/40/playlists');
     });
 
     it('should handle slug with hyphens', () => {
-      expect(getPlaylistsBasePath('/b/my-home-board/45/list')).toBe(
-        '/b/my-home-board/45/playlists',
-      );
+      expect(getPlaylistsBasePath('/b/my-home-board/45/list')).toBe('/b/my-home-board/45/playlists');
     });
   });
 
@@ -1247,15 +1161,11 @@ describe('getPlaylistsBasePath', () => {
 
 describe('getContextAwarePlaylistUrl', () => {
   it('should build board-slug scoped URL when on a /b/ route', () => {
-    expect(getContextAwarePlaylistUrl('/b/my-kilter/40/playlists', 'ABC123')).toBe(
-      '/b/my-kilter/40/playlists/ABC123',
-    );
+    expect(getContextAwarePlaylistUrl('/b/my-kilter/40/playlists', 'ABC123')).toBe('/b/my-kilter/40/playlists/ABC123');
   });
 
   it('should build board-slug scoped URL when on /b/ list route', () => {
-    expect(getContextAwarePlaylistUrl('/b/my-kilter/40/list', 'ABC123')).toBe(
-      '/b/my-kilter/40/playlists/ABC123',
-    );
+    expect(getContextAwarePlaylistUrl('/b/my-kilter/40/list', 'ABC123')).toBe('/b/my-kilter/40/playlists/ABC123');
   });
 
   it('should build old-style scoped URL when on an old-style route', () => {
@@ -1285,9 +1195,7 @@ describe('constructClimbViewUrlWithSlugs', () => {
       'abc123def456',
       'Breakfast Burrito',
     );
-    expect(result).toBe(
-      '/kilter/original/16x12-super-wide/screw_bolt/40/view/breakfast-burrito-abc123def456',
-    );
+    expect(result).toBe('/kilter/original/16x12-super-wide/screw_bolt/40/view/breakfast-burrito-abc123def456');
   });
 
   it('should construct slug-based view URL without climb name', () => {
@@ -1489,83 +1397,44 @@ describe('tryConstructSlugListUrl', () => {
 
 describe('constructCreateClimbUrl', () => {
   it('builds a create URL without query params when no forkParams', () => {
-    const url = constructCreateClimbUrl(
-      'kilter',
-      'Original',
-      '12x12',
-      'Full Size',
-      ['Standard'],
-      40,
-    );
+    const url = constructCreateClimbUrl('kilter', 'Original', '12x12', 'Full Size', ['Standard'], 40);
     expect(url).toContain('/create');
     expect(url).not.toContain('?');
   });
 
   it('includes forkFrames and forkName when forkParams provided', () => {
-    const url = constructCreateClimbUrl(
-      'kilter',
-      'Original',
-      '12x12',
-      'Full Size',
-      ['Standard'],
-      40,
-      {
-        frames: 'p1r12',
-        name: 'My Climb',
-      },
-    );
+    const url = constructCreateClimbUrl('kilter', 'Original', '12x12', 'Full Size', ['Standard'], 40, {
+      frames: 'p1r12',
+      name: 'My Climb',
+    });
     expect(url).toContain('forkFrames=p1r12');
     expect(url).toContain('forkName=My+Climb');
   });
 
   it('uses editClimbUuid (not editUuid) as the query param name', () => {
-    const url = constructCreateClimbUrl(
-      'kilter',
-      'Original',
-      '12x12',
-      'Full Size',
-      ['Standard'],
-      40,
-      {
-        frames: 'p1r12',
-        name: 'Draft',
-        editClimbUuid: 'abc-123',
-      },
-    );
+    const url = constructCreateClimbUrl('kilter', 'Original', '12x12', 'Full Size', ['Standard'], 40, {
+      frames: 'p1r12',
+      name: 'Draft',
+      editClimbUuid: 'abc-123',
+    });
     expect(url).toContain('editClimbUuid=abc-123');
     expect(url).not.toContain('editUuid=');
   });
 
   it('includes forkDescription when provided', () => {
-    const url = constructCreateClimbUrl(
-      'kilter',
-      'Original',
-      '12x12',
-      'Full Size',
-      ['Standard'],
-      40,
-      {
-        frames: 'p1r12',
-        name: 'Draft',
-        description: 'A cool problem',
-      },
-    );
+    const url = constructCreateClimbUrl('kilter', 'Original', '12x12', 'Full Size', ['Standard'], 40, {
+      frames: 'p1r12',
+      name: 'Draft',
+      description: 'A cool problem',
+    });
     expect(url).toContain('forkDescription=A+cool+problem');
   });
 
   it('omits editClimbUuid from URL when not provided', () => {
-    const url = constructCreateClimbUrl(
-      'kilter',
-      'Original',
-      '12x12',
-      'Full Size',
-      ['Standard'],
-      40,
-      {
-        frames: 'p1r12',
-        name: 'Fork',
-      },
-    );
+    const url = constructCreateClimbUrl('kilter', 'Original', '12x12', 'Full Size', ['Standard'], 40, {
+      frames: 'p1r12',
+      name: 'Fork',
+    });
     expect(url).not.toContain('editClimbUuid');
   });
 });

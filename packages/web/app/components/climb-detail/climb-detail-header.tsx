@@ -31,10 +31,8 @@ export default function ClimbDetailHeader({ climb, communityGrade }: ClimbDetail
   const gradeColor = formattedGrade ? getGradeColor(displayDifficulty, isDark) : undefined;
 
   // Check if climb is a benchmark/classic
-  const benchmarkValue =
-    climb.benchmark_difficulty != null ? Number(climb.benchmark_difficulty) : null;
-  const isBenchmark =
-    benchmarkValue !== null && benchmarkValue > 0 && !Number.isNaN(benchmarkValue);
+  const benchmarkValue = climb.benchmark_difficulty != null ? Number(climb.benchmark_difficulty) : null;
+  const isBenchmark = benchmarkValue !== null && benchmarkValue > 0 && !Number.isNaN(benchmarkValue);
 
   const hasQuality = climb.quality_average && climb.quality_average !== '0';
 
@@ -79,11 +77,7 @@ export default function ClimbDetailHeader({ climb, communityGrade }: ClimbDetail
             {displayDifficulty}
           </Typography>
         ) : (
-          <Typography
-            variant="body2"
-            component="span"
-            sx={{ fontStyle: 'italic', color: 'text.secondary' }}
-          >
+          <Typography variant="body2" component="span" sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
             project
           </Typography>
         )}

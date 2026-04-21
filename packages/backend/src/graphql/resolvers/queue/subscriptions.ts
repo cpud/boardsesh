@@ -11,11 +11,7 @@ export const queueSubscriptions = {
    * Uses eager subscription to prevent race conditions
    */
   queueUpdates: {
-    subscribe: async function* (
-      _: unknown,
-      { sessionId }: { sessionId: string },
-      ctx: ConnectionContext,
-    ) {
+    subscribe: async function* (_: unknown, { sessionId }: { sessionId: string }, ctx: ConnectionContext) {
       // Verify user is a member of the session they're subscribing to
       // Uses retry logic to handle race conditions with joinSession
       await requireSessionMember(ctx, sessionId);

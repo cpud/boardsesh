@@ -21,8 +21,9 @@ interface NotificationListProps {
 
 export default function NotificationList({ initialData }: NotificationListProps) {
   const unreadCount = useUnreadNotificationCount();
-  const { groupedNotifications, isLoading, hasMore, isFetchingMore, fetchMore } =
-    useGroupedNotifications(initialData ?? undefined);
+  const { groupedNotifications, isLoading, hasMore, isFetchingMore, fetchMore } = useGroupedNotifications(
+    initialData ?? undefined,
+  );
   const markGroupAsReadMutation = useMarkGroupAsRead();
   const markAllAsReadMutation = useMarkAllAsRead();
   const router = useRouter();
@@ -84,11 +85,7 @@ export default function NotificationList({ initialData }: NotificationListProps)
           {/* Header with mark all as read */}
           {groupedNotifications.length > 0 && unreadCount > 0 && (
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, py: 1 }}>
-              <MuiButton
-                onClick={() => markAllAsReadMutation.mutate()}
-                size="small"
-                sx={{ textTransform: 'none' }}
-              >
+              <MuiButton onClick={() => markAllAsReadMutation.mutate()} size="small" sx={{ textTransform: 'none' }}>
                 Mark all as read
               </MuiButton>
             </Box>
@@ -96,9 +93,7 @@ export default function NotificationList({ initialData }: NotificationListProps)
 
           {/* Notification list */}
           {groupedNotifications.length === 0 ? (
-            <Box
-              sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 6, gap: 1 }}
-            >
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 6, gap: 1 }}>
               <NotificationsNoneOutlined sx={{ fontSize: 40, color: 'var(--neutral-300)' }} />
               <MuiTypography variant="body2" color="text.secondary">
                 Nothing yet
@@ -119,10 +114,7 @@ export default function NotificationList({ initialData }: NotificationListProps)
       )}
 
       {/* Infinite scroll sentinel — always in the DOM so the observer connects */}
-      <Box
-        ref={sentinelRef}
-        sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}
-      >
+      <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}>
         {isFetchingMore && <CircularProgress size={16} />}
       </Box>
     </Box>

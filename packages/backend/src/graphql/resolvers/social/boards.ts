@@ -105,84 +105,72 @@ async function enrichBoard(
   distanceMeters?: number | null,
 ) {
   // Run all independent queries in parallel to avoid N+1 per board
-  const [
-    ownerResult,
-    tickStatsResult,
-    followerStatsResult,
-    commentStatsResult,
-    followCheckResult,
-    gymInfoResult,
-  ] = await Promise.all([
-    // Get owner profile
-    db
-      .select({
-        name: dbSchema.users.name,
-        image: dbSchema.users.image,
-        displayName: dbSchema.userProfiles.displayName,
-        avatarUrl: dbSchema.userProfiles.avatarUrl,
-      })
-      .from(dbSchema.users)
-      .leftJoin(dbSchema.userProfiles, eq(dbSchema.users.id, dbSchema.userProfiles.userId))
-      .where(eq(dbSchema.users.id, board.ownerId))
-      .limit(1),
+  const [ownerResult, tickStatsResult, followerStatsResult, commentStatsResult, followCheckResult, gymInfoResult] =
+    await Promise.all([
+      // Get owner profile
+      db
+        .select({
+          name: dbSchema.users.name,
+          image: dbSchema.users.image,
+          displayName: dbSchema.userProfiles.displayName,
+          avatarUrl: dbSchema.userProfiles.avatarUrl,
+        })
+        .from(dbSchema.users)
+        .leftJoin(dbSchema.userProfiles, eq(dbSchema.users.id, dbSchema.userProfiles.userId))
+        .where(eq(dbSchema.users.id, board.ownerId))
+        .limit(1),
 
-    // Count total ascents and unique climbers
-    db
-      .select({
-        totalAscents: count(),
-        uniqueClimbers: sql<number>`COUNT(DISTINCT ${dbSchema.boardseshTicks.userId})`,
-      })
-      .from(dbSchema.boardseshTicks)
-      .where(
-        and(
-          eq(dbSchema.boardseshTicks.boardId, board.id),
-          or(
-            eq(dbSchema.boardseshTicks.status, 'flash'),
-            eq(dbSchema.boardseshTicks.status, 'send'),
+      // Count total ascents and unique climbers
+      db
+        .select({
+          totalAscents: count(),
+          uniqueClimbers: sql<number>`COUNT(DISTINCT ${dbSchema.boardseshTicks.userId})`,
+        })
+        .from(dbSchema.boardseshTicks)
+        .where(
+          and(
+            eq(dbSchema.boardseshTicks.boardId, board.id),
+            or(eq(dbSchema.boardseshTicks.status, 'flash'), eq(dbSchema.boardseshTicks.status, 'send')),
           ),
         ),
-      ),
 
-    // Count followers
-    db
-      .select({ count: count() })
-      .from(dbSchema.boardFollows)
-      .where(eq(dbSchema.boardFollows.boardUuid, board.uuid)),
+      // Count followers
+      db.select({ count: count() }).from(dbSchema.boardFollows).where(eq(dbSchema.boardFollows.boardUuid, board.uuid)),
 
-    // Count comments
-    db
-      .select({ count: count() })
-      .from(dbSchema.comments)
-      .where(
-        and(
-          eq(dbSchema.comments.entityType, 'board'),
-          eq(dbSchema.comments.entityId, board.uuid),
-          isNull(dbSchema.comments.deletedAt),
+      // Count comments
+      db
+        .select({ count: count() })
+        .from(dbSchema.comments)
+        .where(
+          and(
+            eq(dbSchema.comments.entityType, 'board'),
+            eq(dbSchema.comments.entityId, board.uuid),
+            isNull(dbSchema.comments.deletedAt),
+          ),
         ),
-      ),
 
-    // Check if authenticated user follows this board
-    authenticatedUserId
-      ? db
-          .select({ count: count() })
-          .from(dbSchema.boardFollows)
-          .where(
-            and(
-              eq(dbSchema.boardFollows.userId, authenticatedUserId),
-              eq(dbSchema.boardFollows.boardUuid, board.uuid),
-            ),
-          )
-      : Promise.resolve([]),
+      // Check if authenticated user follows this board
+      authenticatedUserId
+        ? db
+            .select({ count: count() })
+            .from(dbSchema.boardFollows)
+            .where(
+              and(
+                eq(dbSchema.boardFollows.userId, authenticatedUserId),
+                eq(dbSchema.boardFollows.boardUuid, board.uuid),
+              ),
+            )
+        : Promise.resolve([]),
 
-    // Get gym info if board is linked to a gym
-    board.gymId
-      ? db
-          .select({ uuid: dbSchema.gyms.uuid, name: dbSchema.gyms.name })
-          .from(dbSchema.gyms)
-          .where(and(eq(dbSchema.gyms.id, board.gymId), isNull(dbSchema.gyms.deletedAt)))
-          .limit(1)
-      : Promise.resolve([]),
-  ]);
+      // Get gym info if board is linked to a gym
+      board.gymId
+        ? db
+            .select({ uuid: dbSchema.gyms.uuid, name: dbSchema.gyms.name })
+            .from(dbSchema.gyms)
+            .where(and(eq(dbSchema.gyms.id, board.gymId), isNull(dbSchema.gyms.deletedAt)))
+            .limit(1)
+        : Promise.resolve([]),
+    ]);
 
   const ownerInfo = ownerResult[0];
   const tickStats = tickStatsResult[0];
@@ -244,9 +232,7 @@ async function enrichBoards(
   const boardIds = boards.map((b) => b.board.id);
   const boardUuids = boards.map((b) => b.board.uuid);
   const ownerIds = [...new Set(boards.map((b) => b.board.ownerId))];
-  const gymIds = [
-    ...new Set(boards.map((b) => b.board.gymId).filter((id): id is number => id != null)),
-  ];
+  const gymIds = [...new Set(boards.map((b) => b.board.gymId).filter((id): id is number => id != null))];
 
   const [ownerRows, tickRows, followerRows, commentRows, followRows, gymRows] = await Promise.all([
     // Batch owner profiles
@@ -273,10 +259,7 @@ async function enrichBoards(
       .where(
         and(
           inArray(dbSchema.boardseshTicks.boardId, boardIds),
-          or(
-            eq(dbSchema.boardseshTicks.status, 'flash'),
-            eq(dbSchema.boardseshTicks.status, 'send'),
-          ),
+          or(eq(dbSchema.boardseshTicks.status, 'flash'), eq(dbSchema.boardseshTicks.status, 'send')),
         ),
       )
       .groupBy(dbSchema.boardseshTicks.boardId),
@@ -600,13 +583,7 @@ export async function warmPopularConfigsCache(): Promise<void> {
       const { publisher } = redisClientManager.getClients();
 
       // Try to acquire lock — only the winning node runs the query
-      const lockAcquired = await publisher.set(
-        REDIS_LOCK_KEY,
-        '1',
-        'EX',
-        REDIS_LOCK_TTL_SECONDS,
-        'NX',
-      );
+      const lockAcquired = await publisher.set(REDIS_LOCK_KEY, '1', 'EX', REDIS_LOCK_TTL_SECONDS, 'NX');
       if (!lockAcquired) {
         console.log('[PopularConfigs] Another node is refreshing the cache, skipping');
         return;
@@ -670,11 +647,7 @@ export const socialBoardQueries = {
   /**
    * Get current user's boards (owned + followed)
    */
-  myBoards: async (
-    _: unknown,
-    { input }: { input?: { limit?: number; offset?: number } },
-    ctx: ConnectionContext,
-  ) => {
+  myBoards: async (_: unknown, { input }: { input?: { limit?: number; offset?: number } }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     const validatedInput = validateInput(MyBoardsInputSchema, input || {}, 'input');
     const userId = ctx.userId!;
@@ -691,17 +664,11 @@ export const socialBoardQueries = {
 
     // Build WHERE: owned OR followed, and not deleted
     const ownerCondition = eq(dbSchema.userBoards.ownerId, userId);
-    const followedCondition =
-      followedUuids.length > 0 ? inArray(dbSchema.userBoards.uuid, followedUuids) : undefined;
-    const matchCondition = followedCondition
-      ? or(ownerCondition, followedCondition)!
-      : ownerCondition;
+    const followedCondition = followedUuids.length > 0 ? inArray(dbSchema.userBoards.uuid, followedUuids) : undefined;
+    const matchCondition = followedCondition ? or(ownerCondition, followedCondition)! : ownerCondition;
     const whereClause = and(matchCondition, isNull(dbSchema.userBoards.deletedAt));
 
-    const [countResult] = await db
-      .select({ count: count() })
-      .from(dbSchema.userBoards)
-      .where(whereClause);
+    const [countResult] = await db.select({ count: count() }).from(dbSchema.userBoards).where(whereClause);
 
     const totalCount = Number(countResult?.count || 0);
 
@@ -745,9 +712,7 @@ export const socialBoardQueries = {
       const userPoint = sql`ST_MakePoint(${lon}, ${lat})::geography`;
       // "location" is a PostGIS geography column added via raw migration, not in the Drizzle schema
       const locationCol = sql`${dbSchema.userBoards}.location`;
-      const distanceMeters = sql<number>`ST_Distance(${locationCol}, ${userPoint})`.as(
-        'distance_meters',
-      );
+      const distanceMeters = sql<number>`ST_Distance(${locationCol}, ${userPoint})`.as('distance_meters');
 
       // Build shared WHERE conditions
       const conditions = [
@@ -783,10 +748,7 @@ export const socialBoardQueries = {
 
       const whereClause = and(...conditions);
 
-      const [countResult] = await db
-        .select({ count: count() })
-        .from(dbSchema.userBoards)
-        .where(whereClause);
+      const [countResult] = await db.select({ count: count() }).from(dbSchema.userBoards).where(whereClause);
 
       const totalCount = Number(countResult?.count || 0);
 
@@ -837,10 +799,7 @@ export const socialBoardQueries = {
 
     const whereClause = and(...conditions);
 
-    const [countResult] = await db
-      .select({ count: count() })
-      .from(dbSchema.userBoards)
-      .where(whereClause);
+    const [countResult] = await db.select({ count: count() }).from(dbSchema.userBoards).where(whereClause);
 
     const totalCount = Number(countResult?.count || 0);
 
@@ -867,11 +826,7 @@ export const socialBoardQueries = {
   /**
    * Get popular board configurations ranked by climb count
    */
-  popularBoardConfigs: async (
-    _: unknown,
-    { input }: { input?: unknown },
-    _ctx: ConnectionContext,
-  ) => {
+  popularBoardConfigs: async (_: unknown, { input }: { input?: unknown }, _ctx: ConnectionContext) => {
     const validatedInput = validateInput(PopularBoardConfigsInputSchema, input || {}, 'input');
     const { boardType, limit, offset } = validatedInput;
 
@@ -1267,23 +1222,18 @@ export const socialBoardMutations = {
     };
 
     if (validatedInput.name !== undefined) updateValues.name = validatedInput.name;
-    if (validatedInput.description !== undefined)
-      updateValues.description = validatedInput.description;
-    if (validatedInput.locationName !== undefined)
-      updateValues.locationName = validatedInput.locationName;
+    if (validatedInput.description !== undefined) updateValues.description = validatedInput.description;
+    if (validatedInput.locationName !== undefined) updateValues.locationName = validatedInput.locationName;
     if (validatedInput.latitude !== undefined) updateValues.latitude = validatedInput.latitude;
     if (validatedInput.longitude !== undefined) updateValues.longitude = validatedInput.longitude;
     if (validatedInput.isPublic !== undefined) updateValues.isPublic = validatedInput.isPublic;
-    if (validatedInput.isUnlisted !== undefined)
-      updateValues.isUnlisted = validatedInput.isUnlisted;
-    if (validatedInput.hideLocation !== undefined)
-      updateValues.hideLocation = validatedInput.hideLocation;
+    if (validatedInput.isUnlisted !== undefined) updateValues.isUnlisted = validatedInput.isUnlisted;
+    if (validatedInput.hideLocation !== undefined) updateValues.hideLocation = validatedInput.hideLocation;
     if (validatedInput.isOwned !== undefined) updateValues.isOwned = validatedInput.isOwned;
     if (validatedInput.angle !== undefined) updateValues.angle = validatedInput.angle;
     if (validatedInput.isAngleAdjustable !== undefined)
       updateValues.isAngleAdjustable = validatedInput.isAngleAdjustable;
-    if (validatedInput.serialNumber !== undefined)
-      updateValues.serialNumber = validatedInput.serialNumber;
+    if (validatedInput.serialNumber !== undefined) updateValues.serialNumber = validatedInput.serialNumber;
 
     // Handle config field changes (layoutId, sizeId, setIds) — only allowed on boards with zero ticks
     const hasConfigChange =
@@ -1384,11 +1334,7 @@ export const socialBoardMutations = {
   /**
    * Soft-delete a board
    */
-  deleteBoard: async (
-    _: unknown,
-    { boardUuid }: { boardUuid: string },
-    ctx: ConnectionContext,
-  ): Promise<boolean> => {
+  deleteBoard: async (_: unknown, { boardUuid }: { boardUuid: string }, ctx: ConnectionContext): Promise<boolean> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 10);
 
@@ -1409,10 +1355,7 @@ export const socialBoardMutations = {
       throw new Error('Not authorized to delete this board');
     }
 
-    await db
-      .update(dbSchema.userBoards)
-      .set({ deletedAt: new Date() })
-      .where(eq(dbSchema.userBoards.id, board.id));
+    await db.update(dbSchema.userBoards).set({ deletedAt: new Date() }).where(eq(dbSchema.userBoards.id, board.id));
 
     return true;
   },
@@ -1439,12 +1382,7 @@ export const socialBoardMutations = {
         isPublic: dbSchema.userBoards.isPublic,
       })
       .from(dbSchema.userBoards)
-      .where(
-        and(
-          eq(dbSchema.userBoards.uuid, validatedInput.boardUuid),
-          isNull(dbSchema.userBoards.deletedAt),
-        ),
-      )
+      .where(and(eq(dbSchema.userBoards.uuid, validatedInput.boardUuid), isNull(dbSchema.userBoards.deletedAt)))
       .limit(1);
 
     if (!board) {
@@ -1483,10 +1421,7 @@ export const socialBoardMutations = {
     await db
       .delete(dbSchema.boardFollows)
       .where(
-        and(
-          eq(dbSchema.boardFollows.userId, userId),
-          eq(dbSchema.boardFollows.boardUuid, validatedInput.boardUuid),
-        ),
+        and(eq(dbSchema.boardFollows.userId, userId), eq(dbSchema.boardFollows.boardUuid, validatedInput.boardUuid)),
       );
 
     return true;

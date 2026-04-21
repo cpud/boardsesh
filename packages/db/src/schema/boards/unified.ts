@@ -340,10 +340,7 @@ export const boardClimbs = pgTable(
       table.edgeBottom,
       table.edgeTop,
     ),
-    setterUsernameIdx: index('board_climbs_setter_username_idx').on(
-      table.boardType,
-      table.setterUsername,
-    ),
+    setterUsernameIdx: index('board_climbs_setter_username_idx').on(table.boardType, table.setterUsername),
     // Index for climb name lookups (used by JSON import to resolve names to UUIDs)
     nameIdx: index('board_climbs_name_idx').on(table.boardType, table.name),
     // Note: No FK to board_layouts - climbs may reference layouts that don't exist during sync
@@ -385,11 +382,7 @@ export const boardClimbHolds = pgTable(
   },
   (table) => ({
     pk: primaryKey({ columns: [table.boardType, table.climbUuid, table.holdId] }),
-    holdSearchIdx: index('board_climb_holds_search_idx').on(
-      table.boardType,
-      table.holdId,
-      table.holdState,
-    ),
+    holdSearchIdx: index('board_climb_holds_search_idx').on(table.boardType, table.holdId, table.holdState),
     climbFk: foreignKey({
       columns: [table.climbUuid],
       foreignColumns: [boardClimbs.uuid],
@@ -417,11 +410,7 @@ export const boardClimbStatsHistory = pgTable(
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
   },
   (table) => ({
-    boardTypeClimbIdx: index('board_climb_stats_history_lookup_idx').on(
-      table.boardType,
-      table.climbUuid,
-      table.angle,
-    ),
+    boardTypeClimbIdx: index('board_climb_stats_history_lookup_idx').on(table.boardType, table.climbUuid, table.angle),
   }),
 );
 

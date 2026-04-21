@@ -41,10 +41,7 @@ export async function GET(request: Request) {
           .from(schema.auroraCredentials)
           .where(
             and(
-              or(
-                eq(schema.auroraCredentials.syncStatus, 'active'),
-                eq(schema.auroraCredentials.syncStatus, 'error'),
-              ),
+              or(eq(schema.auroraCredentials.syncStatus, 'active'), eq(schema.auroraCredentials.syncStatus, 'error')),
               isNotNull(schema.auroraCredentials.encryptedUsername),
               isNotNull(schema.auroraCredentials.encryptedPassword),
               isNotNull(schema.auroraCredentials.auroraUserId),
@@ -133,9 +130,7 @@ export async function GET(request: Request) {
         }
 
         // Get a fresh token by logging in
-        console.log(
-          `[User Sync Cron] Getting fresh token for user ${cred.userId} (${boardType})...`,
-        );
+        console.log(`[User Sync Cron] Getting fresh token for user ${cred.userId} (${boardType})...`);
         const auroraClient = new AuroraClimbingClient({ boardName: boardType });
         let loginResponse;
         try {
@@ -229,10 +224,7 @@ export async function GET(request: Request) {
               updatedAt: new Date(),
             })
             .where(
-              and(
-                eq(schema.auroraCredentials.userId, cred.userId),
-                eq(schema.auroraCredentials.boardType, boardType),
-              ),
+              and(eq(schema.auroraCredentials.userId, cred.userId), eq(schema.auroraCredentials.boardType, boardType)),
             );
         } finally {
           updateClient.release();
@@ -267,18 +259,12 @@ export async function GET(request: Request) {
               ),
             );
         } catch (updateError) {
-          console.error(
-            `[User Sync Cron] Failed to update error status for user ${cred.userId}:`,
-            updateError,
-          );
+          console.error(`[User Sync Cron] Failed to update error status for user ${cred.userId}:`, updateError);
         } finally {
           updateClient.release();
         }
 
-        console.error(
-          `[User Sync Cron] ✗ Failed to sync user ${cred.userId} for ${cred.boardType}:`,
-          errorMsg,
-        );
+        console.error(`[User Sync Cron] ✗ Failed to sync user ${cred.userId} for ${cred.boardType}:`, errorMsg);
       }
     }
 

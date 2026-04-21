@@ -2,10 +2,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { GraphQLClient } from 'graphql-request';
 import { getGraphQLHttpUrl } from '@/app/lib/graphql/client';
-import {
-  GET_SESSION_DETAIL,
-  type GetSessionDetailQueryResponse,
-} from '@/app/lib/graphql/operations/activity-feed';
+import { GET_SESSION_DETAIL, type GetSessionDetailQueryResponse } from '@/app/lib/graphql/operations/activity-feed';
 import SessionDetailContent from './session-detail-content';
 import { buildVersionedOgImagePath, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from '@/app/lib/seo/og';
 import { getSessionOgSummary } from '@/app/lib/seo/dynamic-og-data';
@@ -46,9 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const stats = `${summary.totalSends} send${summary.totalSends !== 1 ? 's' : ''}`;
     description = participantNames ? `${participantNames} — ${stats}` : stats;
   } else {
-    description = participantNames
-      ? `${participantNames} climbing on Boardsesh`
-      : `${sessionName} on Boardsesh`;
+    description = participantNames ? `${participantNames} climbing on Boardsesh` : `${sessionName} on Boardsesh`;
   }
 
   const ogImage = buildVersionedOgImagePath('/api/og/session', { sessionId }, summary.version);

@@ -3,10 +3,7 @@ import type { ConnectionContext } from '@boardsesh/shared-schema';
 import { db } from '../../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { validateInput } from '../../shared/helpers';
-import {
-  DiscoverPlaylistsInputSchema,
-  GetPlaylistCreatorsInputSchema,
-} from '../../../../validation/schemas';
+import { DiscoverPlaylistsInputSchema, GetPlaylistCreatorsInputSchema } from '../../../../validation/schemas';
 import { formatPublicPlaylist } from '../helpers/enrichment';
 
 /** Shared select fields for public playlist queries (discover + search). */
@@ -47,14 +44,8 @@ function publicPlaylistBaseQuery() {
   return db
     .select(PUBLIC_PLAYLIST_SELECT)
     .from(dbSchema.playlists)
-    .innerJoin(
-      dbSchema.playlistOwnership,
-      eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id),
-    )
-    .innerJoin(
-      dbSchema.playlistClimbs,
-      eq(dbSchema.playlistClimbs.playlistId, dbSchema.playlists.id),
-    )
+    .innerJoin(dbSchema.playlistOwnership, eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id))
+    .innerJoin(dbSchema.playlistClimbs, eq(dbSchema.playlistClimbs.playlistId, dbSchema.playlists.id))
     .innerJoin(dbSchema.users, eq(dbSchema.users.id, dbSchema.playlistOwnership.userId));
 }
 
@@ -63,24 +54,13 @@ function publicPlaylistCountQuery() {
   return db
     .select({ count: sql<number>`count(DISTINCT ${dbSchema.playlists.id})::int` })
     .from(dbSchema.playlists)
-    .innerJoin(
-      dbSchema.playlistOwnership,
-      eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id),
-    )
-    .innerJoin(
-      dbSchema.playlistClimbs,
-      eq(dbSchema.playlistClimbs.playlistId, dbSchema.playlists.id),
-    )
+    .innerJoin(dbSchema.playlistOwnership, eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id))
+    .innerJoin(dbSchema.playlistClimbs, eq(dbSchema.playlistClimbs.playlistId, dbSchema.playlists.id))
     .innerJoin(dbSchema.users, eq(dbSchema.users.id, dbSchema.playlistOwnership.userId));
 }
 
 // Re-export for search.ts to reuse
-export {
-  PUBLIC_PLAYLIST_SELECT,
-  PUBLIC_PLAYLIST_GROUP_BY,
-  publicPlaylistBaseQuery,
-  publicPlaylistCountQuery,
-};
+export { PUBLIC_PLAYLIST_SELECT, PUBLIC_PLAYLIST_GROUP_BY, publicPlaylistBaseQuery, publicPlaylistCountQuery };
 
 /**
  * Discover public playlists with at least 1 climb.
@@ -114,9 +94,7 @@ export const discoverPlaylists = async (
     conditions.push(eq(dbSchema.playlists.boardType, input.boardType));
   }
   if (input.layoutId != null) {
-    conditions.push(
-      or(eq(dbSchema.playlists.layoutId, input.layoutId), isNull(dbSchema.playlists.layoutId))!,
-    );
+    conditions.push(or(eq(dbSchema.playlists.layoutId, input.layoutId), isNull(dbSchema.playlists.layoutId))!);
   }
   if (input.name) {
     conditions.push(sql`LOWER(${dbSchema.playlists.name}) LIKE LOWER(${'%' + input.name + '%'})`);
@@ -179,9 +157,7 @@ export const playlistCreators = async (
   ];
 
   if (input.searchQuery) {
-    conditions.push(
-      sql`LOWER(${dbSchema.users.name}) LIKE LOWER(${'%' + input.searchQuery + '%'})`,
-    );
+    conditions.push(sql`LOWER(${dbSchema.users.name}) LIKE LOWER(${'%' + input.searchQuery + '%'})`);
   }
 
   const results = await db
@@ -191,14 +167,8 @@ export const playlistCreators = async (
       playlistCount: sql<number>`count(DISTINCT ${dbSchema.playlists.id})::int`,
     })
     .from(dbSchema.playlists)
-    .innerJoin(
-      dbSchema.playlistOwnership,
-      eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id),
-    )
-    .innerJoin(
-      dbSchema.playlistClimbs,
-      eq(dbSchema.playlistClimbs.playlistId, dbSchema.playlists.id),
-    )
+    .innerJoin(dbSchema.playlistOwnership, eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id))
+    .innerJoin(dbSchema.playlistClimbs, eq(dbSchema.playlistClimbs.playlistId, dbSchema.playlists.id))
     .innerJoin(dbSchema.users, eq(dbSchema.users.id, dbSchema.playlistOwnership.userId))
     .where(and(...conditions))
     .groupBy(dbSchema.playlistOwnership.userId, dbSchema.users.name)

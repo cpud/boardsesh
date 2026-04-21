@@ -24,13 +24,7 @@ const getNativeOAuthSecret = (): string => {
 
 const sanitizeNextPath = (nextPath: string): string => (nextPath.startsWith('/') ? nextPath : '/');
 
-export const issueNativeOAuthTransferToken = ({
-  userId,
-  nextPath,
-}: {
-  userId: string;
-  nextPath: string;
-}): string => {
+export const issueNativeOAuthTransferToken = ({ userId, nextPath }: { userId: string; nextPath: string }): string => {
   const now = Math.floor(Date.now() / 1000);
   const payload: NativeOAuthTransferPayload = {
     userId,
@@ -40,17 +34,12 @@ export const issueNativeOAuthTransferToken = ({
   };
 
   const encodedPayload = base64UrlEncode(JSON.stringify(payload));
-  const signature = crypto
-    .createHmac('sha256', getNativeOAuthSecret())
-    .update(encodedPayload)
-    .digest('base64url');
+  const signature = crypto.createHmac('sha256', getNativeOAuthSecret()).update(encodedPayload).digest('base64url');
 
   return `${encodedPayload}.${signature}`;
 };
 
-export const verifyNativeOAuthTransferToken = (
-  token: string,
-): { userId: string; nextPath: string } | null => {
+export const verifyNativeOAuthTransferToken = (token: string): { userId: string; nextPath: string } | null => {
   let secret: string;
   try {
     secret = getNativeOAuthSecret();
@@ -64,10 +53,7 @@ export const verifyNativeOAuthTransferToken = (
   }
   const [encodedPayload, signature] = parts;
 
-  const expectedSignature = crypto
-    .createHmac('sha256', secret)
-    .update(encodedPayload)
-    .digest('base64url');
+  const expectedSignature = crypto.createHmac('sha256', secret).update(encodedPayload).digest('base64url');
 
   const sigBuffer = Buffer.from(signature);
   const expectedSigBuffer = Buffer.from(expectedSignature);

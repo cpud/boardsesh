@@ -82,9 +82,7 @@ describe('POST /api/internal/set-password', () => {
   it('returns 401 when not authenticated', async () => {
     mockGetServerSession.mockResolvedValue(null);
 
-    const response = await POST(
-      createRequest({ password: 'testpass123', confirmPassword: 'testpass123' }),
-    );
+    const response = await POST(createRequest({ password: 'testpass123', confirmPassword: 'testpass123' }));
     expect(response.status).toBe(401);
 
     const data = await response.json();
@@ -95,9 +93,7 @@ describe('POST /api/internal/set-password', () => {
     mockGetServerSession.mockResolvedValue({ user: { id: 'user-1' } });
     mockCheckRateLimit.mockReturnValueOnce({ limited: true, retryAfterSeconds: 30 });
 
-    const response = await POST(
-      createRequest({ password: 'testpass123', confirmPassword: 'testpass123' }),
-    );
+    const response = await POST(createRequest({ password: 'testpass123', confirmPassword: 'testpass123' }));
     expect(response.status).toBe(429);
     expect(response.headers.get('Retry-After')).toBe('30');
   });
@@ -109,9 +105,7 @@ describe('POST /api/internal/set-password', () => {
       .mockReturnValueOnce({ limited: false, retryAfterSeconds: 0 })
       .mockReturnValueOnce({ limited: true, retryAfterSeconds: 45 });
 
-    const response = await POST(
-      createRequest({ password: 'testpass123', confirmPassword: 'testpass123' }),
-    );
+    const response = await POST(createRequest({ password: 'testpass123', confirmPassword: 'testpass123' }));
     expect(response.status).toBe(429);
     expect(response.headers.get('Retry-After')).toBe('45');
   });
@@ -129,9 +123,7 @@ describe('POST /api/internal/set-password', () => {
   it('returns 400 when passwords do not match', async () => {
     mockGetServerSession.mockResolvedValue({ user: { id: 'user-1' } });
 
-    const response = await POST(
-      createRequest({ password: 'testpass123', confirmPassword: 'different123' }),
-    );
+    const response = await POST(createRequest({ password: 'testpass123', confirmPassword: 'different123' }));
     expect(response.status).toBe(400);
 
     const data = await response.json();
@@ -149,9 +141,7 @@ describe('POST /api/internal/set-password', () => {
     mockGetServerSession.mockResolvedValue({ user: { id: 'user-1' } });
     mockLimit.mockResolvedValue([{ userId: 'user-1' }]);
 
-    const response = await POST(
-      createRequest({ password: 'testpass123', confirmPassword: 'testpass123' }),
-    );
+    const response = await POST(createRequest({ password: 'testpass123', confirmPassword: 'testpass123' }));
     expect(response.status).toBe(409);
 
     const data = await response.json();
@@ -175,9 +165,7 @@ describe('POST /api/internal/set-password', () => {
       await fn(tx);
     });
 
-    const response = await POST(
-      createRequest({ password: 'testpass123', confirmPassword: 'testpass123' }),
-    );
+    const response = await POST(createRequest({ password: 'testpass123', confirmPassword: 'testpass123' }));
     expect(response.status).toBe(200);
 
     const data = await response.json();
@@ -192,9 +180,7 @@ describe('POST /api/internal/set-password', () => {
     // Transaction fails with unique constraint
     mockTransaction.mockRejectedValue({ code: '23505' });
 
-    const response = await POST(
-      createRequest({ password: 'testpass123', confirmPassword: 'testpass123' }),
-    );
+    const response = await POST(createRequest({ password: 'testpass123', confirmPassword: 'testpass123' }));
     expect(response.status).toBe(409);
 
     const data = await response.json();
@@ -206,9 +192,7 @@ describe('POST /api/internal/set-password', () => {
     mockLimit.mockResolvedValue([]);
     mockTransaction.mockRejectedValue(new Error('DB connection failed'));
 
-    const response = await POST(
-      createRequest({ password: 'testpass123', confirmPassword: 'testpass123' }),
-    );
+    const response = await POST(createRequest({ password: 'testpass123', confirmPassword: 'testpass123' }));
     expect(response.status).toBe(500);
   });
 
@@ -232,9 +216,7 @@ describe('POST /api/internal/set-password', () => {
     mockGetServerSession.mockResolvedValue({ user: { id: 'user-1' } });
 
     const longPassword = 'a'.repeat(129);
-    const response = await POST(
-      createRequest({ password: longPassword, confirmPassword: longPassword }),
-    );
+    const response = await POST(createRequest({ password: longPassword, confirmPassword: longPassword }));
     expect(response.status).toBe(400);
 
     const data = await response.json();

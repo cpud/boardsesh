@@ -102,10 +102,9 @@ describe('useBuildClimbDetailSections', () => {
   });
 
   it('returns empty array when enabled is false', () => {
-    const { result } = renderHook(
-      () => useBuildClimbDetailSections({ ...BASE_PROPS, enabled: false }),
-      { wrapper: createWrapper() },
-    );
+    const { result } = renderHook(() => useBuildClimbDetailSections({ ...BASE_PROPS, enabled: false }), {
+      wrapper: createWrapper(),
+    });
 
     expect(result.current).toEqual([]);
   });
@@ -123,8 +122,7 @@ describe('useBuildClimbDetailSections', () => {
   it('returns sections again when enabled flips from false to true', () => {
     const wrapper = createWrapper();
     const { result, rerender } = renderHook(
-      ({ enabled }: { enabled: boolean }) =>
-        useBuildClimbDetailSections({ ...BASE_PROPS, enabled }),
+      ({ enabled }: { enabled: boolean }) => useBuildClimbDetailSections({ ...BASE_PROPS, enabled }),
       { wrapper, initialProps: { enabled: false } },
     );
 

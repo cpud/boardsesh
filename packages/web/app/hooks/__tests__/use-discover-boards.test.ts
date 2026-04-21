@@ -106,17 +106,15 @@ function geoSuccess(latitude: number, longitude: number) {
 }
 
 function geoDenied() {
-  mockGetCurrentPosition.mockImplementation(
-    (_success: PositionCallback, error: PositionErrorCallback) => {
-      error({
-        code: 1,
-        message: 'User denied',
-        PERMISSION_DENIED: 1,
-        POSITION_UNAVAILABLE: 2,
-        TIMEOUT: 3,
-      });
-    },
-  );
+  mockGetCurrentPosition.mockImplementation((_success: PositionCallback, error: PositionErrorCallback) => {
+    error({
+      code: 1,
+      message: 'User denied',
+      PERMISSION_DENIED: 1,
+      POSITION_UNAVAILABLE: 2,
+      TIMEOUT: 3,
+    });
+  });
 }
 
 // --- Tests ---

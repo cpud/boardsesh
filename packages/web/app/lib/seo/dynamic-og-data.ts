@@ -18,9 +18,8 @@ export type ProfileOgSummary = {
   version: string;
 };
 
-export const getProfileOgSummary = cache(
-  async (userId: string): Promise<ProfileOgSummary | null> => {
-    const rows = (await rawSql`
+export const getProfileOgSummary = cache(async (userId: string): Promise<ProfileOgSummary | null> => {
+  const rows = (await rawSql`
     SELECT
       u.name,
       u.image,
@@ -36,26 +35,25 @@ export const getProfileOgSummary = cache(
     WHERE u.id = ${userId}
     LIMIT 1
   `) as Array<{
-      name: string | null;
-      image: string | null;
-      display_name: string | null;
-      avatar_url: string | null;
-      version_at: string | Date | null;
-    }>;
+    name: string | null;
+    image: string | null;
+    display_name: string | null;
+    avatar_url: string | null;
+    version_at: string | Date | null;
+  }>;
 
-    const row = rows[0];
-    if (!row) {
-      return null;
-    }
+  const row = rows[0];
+  if (!row) {
+    return null;
+  }
 
-    return {
-      displayName: row.display_name || row.name || 'Crusher',
-      avatarUrl: row.avatar_url || null,
-      fallbackImageUrl: row.image || null,
-      version: buildOgVersionToken(row.version_at),
-    };
-  },
-);
+  return {
+    displayName: row.display_name || row.name || 'Crusher',
+    avatarUrl: row.avatar_url || null,
+    fallbackImageUrl: row.image || null,
+    version: buildOgVersionToken(row.version_at),
+  };
+});
 
 export type SetterOgSummary = {
   displayName: string;
@@ -416,18 +414,17 @@ export const getSessionOgSummary = cache(async (sessionId: string): Promise<Sess
       ? drizzleSql`bt.session_id = ${sessionId}`
       : drizzleSql`bt.inferred_session_id = ${sessionId}`;
 
-  const [participantCountResult, participantResult, totalSendsResult, gradeResult, boardInfo] =
-    await Promise.all([
-      dbz.execute<{
-        participant_count: number;
-      }>(drizzleSql`
+  const [participantCountResult, participantResult, totalSendsResult, gradeResult, boardInfo] = await Promise.all([
+    dbz.execute<{
+      participant_count: number;
+    }>(drizzleSql`
       SELECT COUNT(DISTINCT bt.user_id)::int as participant_count
       FROM boardsesh_ticks bt
       WHERE ${tickWhereClause}
     `),
-      dbz.execute<{
-        display_name: string;
-      }>(drizzleSql`
+    dbz.execute<{
+      display_name: string;
+    }>(drizzleSql`
       SELECT DISTINCT
         COALESCE(up.display_name, u.name, 'Climber') as display_name
       FROM boardsesh_ticks bt
@@ -436,18 +433,18 @@ export const getSessionOgSummary = cache(async (sessionId: string): Promise<Sess
       WHERE ${tickWhereClause}
       LIMIT 6
     `),
-      dbz.execute<{
-        total_sends: number;
-      }>(drizzleSql`
+    dbz.execute<{
+      total_sends: number;
+    }>(drizzleSql`
       SELECT COUNT(*)::int as total_sends
       FROM boardsesh_ticks bt
       WHERE ${tickWhereClause}
         AND bt.status IN ('flash', 'send')
     `),
-      dbz.execute<{
-        difficulty: number;
-        cnt: number;
-      }>(drizzleSql`
+    dbz.execute<{
+      difficulty: number;
+      cnt: number;
+    }>(drizzleSql`
       SELECT
         COALESCE(bt.difficulty, ROUND(bcs.display_difficulty)::int) as difficulty,
         COUNT(*) as cnt
@@ -462,16 +459,16 @@ export const getSessionOgSummary = cache(async (sessionId: string): Promise<Sess
       GROUP BY COALESCE(bt.difficulty, ROUND(bcs.display_difficulty)::int)
       ORDER BY COALESCE(bt.difficulty, ROUND(bcs.display_difficulty)::int)
     `),
-      resolveSessionBoardInfo({
-        boardPath: sessionRow.board_path,
-        boardSlug: sessionRow.board_slug,
-        boardAngle: sessionRow.board_angle != null ? Number(sessionRow.board_angle) : null,
-        boardType: sessionRow.board_type,
-        layoutId: sessionRow.layout_id != null ? Number(sessionRow.layout_id) : null,
-        sizeId: sessionRow.size_id != null ? Number(sessionRow.size_id) : null,
-        setIds: sessionRow.set_ids,
-      }),
-    ]);
+    resolveSessionBoardInfo({
+      boardPath: sessionRow.board_path,
+      boardSlug: sessionRow.board_slug,
+      boardAngle: sessionRow.board_angle != null ? Number(sessionRow.board_angle) : null,
+      boardType: sessionRow.board_type,
+      layoutId: sessionRow.layout_id != null ? Number(sessionRow.layout_id) : null,
+      sizeId: sessionRow.size_id != null ? Number(sessionRow.size_id) : null,
+      setIds: sessionRow.set_ids,
+    }),
+  ]);
 
   const gradeRows = gradeResult.rows.map((row) => ({
     difficulty: Number(row.difficulty),
@@ -505,9 +502,8 @@ export type PlaylistOgSummary = {
   version: string;
 };
 
-export const getPlaylistOgSummary = cache(
-  async (playlistUuid: string): Promise<PlaylistOgSummary | null> => {
-    const rows = (await rawSql`
+export const getPlaylistOgSummary = cache(async (playlistUuid: string): Promise<PlaylistOgSummary | null> => {
+  const rows = (await rawSql`
     SELECT
       p.name,
       p.description,
@@ -521,30 +517,29 @@ export const getPlaylistOgSummary = cache(
     WHERE p.uuid = ${playlistUuid}
     LIMIT 1
   `) as Array<{
-      name: string | null;
-      description: string | null;
-      color: string | null;
-      icon: string | null;
-      is_public: boolean;
-      board_type: string;
-      climb_count: number;
-      version_at: string | Date | null;
-    }>;
+    name: string | null;
+    description: string | null;
+    color: string | null;
+    icon: string | null;
+    is_public: boolean;
+    board_type: string;
+    climb_count: number;
+    version_at: string | Date | null;
+  }>;
 
-    const row = rows[0];
-    if (!row) {
-      return null;
-    }
+  const row = rows[0];
+  if (!row) {
+    return null;
+  }
 
-    return {
-      name: row.name || 'Playlist',
-      description: row.description,
-      color: row.color,
-      icon: row.icon,
-      isPublic: row.is_public,
-      boardType: row.board_type,
-      climbCount: Number(row.climb_count),
-      version: buildOgVersionToken(row.version_at),
-    };
-  },
-);
+  return {
+    name: row.name || 'Playlist',
+    description: row.description,
+    color: row.color,
+    icon: row.icon,
+    isPublic: row.is_public,
+    boardType: row.board_type,
+    climbCount: Number(row.climb_count),
+    version: buildOgVersionToken(row.version_at),
+  };
+});

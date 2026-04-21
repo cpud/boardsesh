@@ -27,11 +27,7 @@ const mockClimb: Climb = {
 };
 
 // Re-implement the createClimbQueueItem function from queue-context.tsx for testing
-const createClimbQueueItem = (
-  climb: Climb,
-  addedBy: UserName,
-  suggested?: boolean,
-): ClimbQueueItem => ({
+const createClimbQueueItem = (climb: Climb, addedBy: UserName, suggested?: boolean): ClimbQueueItem => ({
   climb,
   addedBy,
   uuid: uuidv4(),
@@ -130,9 +126,7 @@ describe('queue-context utilities', () => {
       peerId: string,
       climbSearchResults?: Climb[],
     ) => {
-      const queueItemIndex = currentItem
-        ? queue.findIndex(({ uuid }) => uuid === currentItem.uuid)
-        : -1;
+      const queueItemIndex = currentItem ? queue.findIndex(({ uuid }) => uuid === currentItem.uuid) : -1;
 
       if (
         (queue.length === 0 || queue.length <= queueItemIndex + 1) &&
@@ -146,13 +140,8 @@ describe('queue-context utilities', () => {
       return queueItemIndex >= queue.length - 1 ? null : queue[queueItemIndex + 1];
     };
 
-    const getPreviousClimbQueueItem = (
-      queue: ClimbQueueItem[],
-      currentItem: ClimbQueueItem | null,
-    ) => {
-      const queueItemIndex = currentItem
-        ? queue.findIndex(({ uuid }) => uuid === currentItem.uuid)
-        : -1;
+    const getPreviousClimbQueueItem = (queue: ClimbQueueItem[], currentItem: ClimbQueueItem | null) => {
+      const queueItemIndex = currentItem ? queue.findIndex(({ uuid }) => uuid === currentItem.uuid) : -1;
       return queueItemIndex > 0 ? queue[queueItemIndex - 1] : null;
     };
 
@@ -175,13 +164,7 @@ describe('queue-context utilities', () => {
         const currentItem = mockQueue[2];
         const suggestedClimbs = [{ ...mockClimb, uuid: 'suggested-1', name: 'Suggested Climb' }];
         const climbSearchResults = [{ ...mockClimb, uuid: 'search-1', name: 'Search Result' }];
-        const result = getNextClimbQueueItem(
-          mockQueue,
-          currentItem,
-          suggestedClimbs,
-          'test-user',
-          climbSearchResults,
-        );
+        const result = getNextClimbQueueItem(mockQueue, currentItem, suggestedClimbs, 'test-user', climbSearchResults);
 
         expect(result).toEqual({
           climb: suggestedClimbs[0],
@@ -194,13 +177,7 @@ describe('queue-context utilities', () => {
       it('should return suggested climb when queue is empty', () => {
         const suggestedClimbs = [{ ...mockClimb, uuid: 'suggested-1', name: 'Suggested Climb' }];
         const climbSearchResults = [{ ...mockClimb, uuid: 'search-1', name: 'Search Result' }];
-        const result = getNextClimbQueueItem(
-          [],
-          null,
-          suggestedClimbs,
-          'test-user',
-          climbSearchResults,
-        );
+        const result = getNextClimbQueueItem([], null, suggestedClimbs, 'test-user', climbSearchResults);
 
         expect(result).toEqual({
           climb: suggestedClimbs[0],

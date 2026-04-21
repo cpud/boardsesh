@@ -25,9 +25,7 @@ const getStorageKey = (userId?: string | number | null): string => {
 /**
  * Get the onboarding status from IndexedDB
  */
-export const getOnboardingStatus = async (
-  userId?: string | number | null,
-): Promise<OnboardingStatus | null> => {
+export const getOnboardingStatus = async (userId?: string | number | null): Promise<OnboardingStatus | null> => {
   try {
     const db = await getDB();
     if (!db) return null;

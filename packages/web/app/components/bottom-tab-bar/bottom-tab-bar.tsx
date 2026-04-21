@@ -112,9 +112,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
   const [isCustomBoardOpen, setIsCustomBoardOpen] = useState(false);
   const [isCustomBoardRendered, setIsCustomBoardRendered] = useState(false);
   const [pendingCreateAction, setPendingCreateAction] = useState<PendingCreateAction>(null);
-  const [selectedBoardContext, setSelectedBoardContext] = useState<SelectedBoardContext | null>(
-    null,
-  );
+  const [selectedBoardContext, setSelectedBoardContext] = useState<SelectedBoardContext | null>(null);
   const [playlistFormValues, setPlaylistFormValues] = useState(INITIAL_PLAYLIST_FORM);
   const [playlistFormErrors, setPlaylistFormErrors] = useState<Record<string, string>>({});
 
@@ -141,8 +139,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
   const { showMessage } = useSnackbar();
 
   // Use the active queue's board details as a fallback when no boardDetails prop
-  const { activeSession, localBoardDetails, localCurrentClimbQueueItem } =
-    usePersistentSessionState();
+  const { activeSession, localBoardDetails, localCurrentClimbQueueItem } = usePersistentSessionState();
 
   // Resolve effective board details: prop > active session > local queue
   const effectiveBoardDetails =
@@ -152,8 +149,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
     (activeSession ? activeSession.parsedParams.angle : undefined) ??
     localCurrentClimbQueueItem?.climb?.angle ??
     0;
-  const playlistBoardName =
-    effectiveBoardDetails?.board_name ?? selectedBoardContext?.boardName ?? '';
+  const playlistBoardName = effectiveBoardDetails?.board_name ?? selectedBoardContext?.boardName ?? '';
   const playlistLayoutId = effectiveBoardDetails?.layout_id ?? selectedBoardContext?.layoutId ?? 0;
   const playlistAngle = effectiveAngle ?? selectedBoardContext?.angle ?? 0;
 
@@ -164,8 +160,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
     climbUuids: [],
   });
   const createPlaylist = playlistsContext?.createPlaylist ?? playlistsProviderProps.createPlaylist;
-  const isAuthenticated =
-    playlistsContext?.isAuthenticated ?? playlistsProviderProps.isAuthenticated;
+  const isAuthenticated = playlistsContext?.isAuthenticated ?? playlistsProviderProps.isAuthenticated;
   const canCreatePlaylistHere = !!playlistBoardName && playlistLayoutId > 0;
 
   // Hide playlists for moonboard (not yet supported)
@@ -193,8 +188,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
       }
     }
     if (!effectiveBoardDetails) return null;
-    const { board_name, layout_name, size_name, size_description, set_names } =
-      effectiveBoardDetails;
+    const { board_name, layout_name, size_name, size_description, set_names } = effectiveBoardDetails;
     if (layout_name && size_name && set_names) {
       return constructClimbListWithSlugs(
         board_name,
@@ -210,8 +204,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
 
   const createClimbUrl = (() => {
     if (!effectiveBoardDetails) return null;
-    const { board_name, layout_name, size_name, size_description, set_names } =
-      effectiveBoardDetails;
+    const { board_name, layout_name, size_name, size_description, set_names } = effectiveBoardDetails;
     if (layout_name && size_name && set_names) {
       return `/${board_name}/${generateLayoutSlug(layout_name)}/${generateSizeSlug(size_name, size_description)}/${generateSetSlug(set_names)}/${effectiveAngle}/create`;
     }
@@ -490,13 +483,8 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
       } else {
         const setIds = config.setIds.join(',');
         url =
-          tryConstructSlugListUrl(
-            config.boardType,
-            config.layoutId,
-            config.sizeId,
-            config.setIds,
-            angle,
-          ) ?? `/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`;
+          tryConstructSlugListUrl(config.boardType, config.layoutId, config.sizeId, config.setIds, angle) ??
+          `/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`;
       }
       const storedConfig: StoredBoardConfig = {
         name: config.layoutName ?? `${config.boardType} board`,
@@ -606,12 +594,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
           },
         }}
       >
-        <BottomNavigationAction
-          label="Home"
-          icon={<HomeOutlined sx={{ fontSize: 20 }} />}
-          value="home"
-          sx={actionSx}
-        />
+        <BottomNavigationAction label="Home" icon={<HomeOutlined sx={{ fontSize: 20 }} />} value="home" sx={actionSx} />
         <BottomNavigationAction
           label="Climb"
           icon={<FormatListBulletedOutlined sx={{ fontSize: 20 }} />}
@@ -636,12 +619,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
           value="create"
           sx={actionSx}
         />
-        <BottomNavigationAction
-          label="You"
-          icon={<PersonOutlined sx={{ fontSize: 20 }} />}
-          value="you"
-          sx={actionSx}
-        />
+        <BottomNavigationAction label="You" icon={<PersonOutlined sx={{ fontSize: 20 }} />} value="you" sx={actionSx} />
       </BottomNavigation>
 
       {/* Create Playlist Drawer */}
@@ -661,11 +639,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
             body: { padding: themeTokens.spacing[4] },
           }}
           extra={
-            <MuiButton
-              variant="contained"
-              onClick={handleCreatePlaylist}
-              disabled={isCreatingPlaylist}
-            >
+            <MuiButton variant="contained" onClick={handleCreatePlaylist} disabled={isCreatingPlaylist}>
               {isCreatingPlaylist ? 'Creating...' : 'Create'}
             </MuiButton>
           }
@@ -716,9 +690,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
               <TextField
                 type="color"
                 value={playlistFormValues.color || '#000000'}
-                onChange={(e) =>
-                  setPlaylistFormValues((prev) => ({ ...prev, color: e.target.value }))
-                }
+                onChange={(e) => setPlaylistFormValues((prev) => ({ ...prev, color: e.target.value }))}
                 size="small"
                 sx={{ width: 80 }}
               />

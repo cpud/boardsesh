@@ -4,11 +4,7 @@ import * as dbSchema from '@boardsesh/db/schema';
 import { validateInput } from '../../shared/helpers';
 import { SearchPlaylistsInputSchema } from '../../../../validation/schemas';
 import { formatPublicPlaylist } from '../helpers/enrichment';
-import {
-  PUBLIC_PLAYLIST_GROUP_BY,
-  publicPlaylistBaseQuery,
-  publicPlaylistCountQuery,
-} from './discover';
+import { PUBLIC_PLAYLIST_GROUP_BY, publicPlaylistBaseQuery, publicPlaylistCountQuery } from './discover';
 
 /**
  * Search public playlists globally by name.
@@ -42,10 +38,7 @@ export const searchPlaylists = async (
   const results = await publicPlaylistBaseQuery()
     .where(whereClause)
     .groupBy(...PUBLIC_PLAYLIST_GROUP_BY)
-    .orderBy(
-      desc(sql`count(DISTINCT ${dbSchema.playlistClimbs.id})`),
-      desc(dbSchema.playlists.createdAt),
-    )
+    .orderBy(desc(sql`count(DISTINCT ${dbSchema.playlistClimbs.id})`), desc(dbSchema.playlists.createdAt))
     .limit(limit + 1)
     .offset(offset);
 

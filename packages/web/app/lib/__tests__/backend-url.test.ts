@@ -3,21 +3,15 @@ import { deriveWsUrlFromHost } from '../backend-url';
 
 describe('deriveWsUrlFromHost', () => {
   it('should derive wss URL for secure preview domain', () => {
-    expect(deriveWsUrlFromHost('42.preview.boardsesh.com', true)).toBe(
-      'wss://42.ws.preview.boardsesh.com/graphql',
-    );
+    expect(deriveWsUrlFromHost('42.preview.boardsesh.com', true)).toBe('wss://42.ws.preview.boardsesh.com/graphql');
   });
 
   it('should derive ws URL for insecure preview domain', () => {
-    expect(deriveWsUrlFromHost('42.preview.boardsesh.com', false)).toBe(
-      'ws://42.ws.preview.boardsesh.com/graphql',
-    );
+    expect(deriveWsUrlFromHost('42.preview.boardsesh.com', false)).toBe('ws://42.ws.preview.boardsesh.com/graphql');
   });
 
   it('should work with multi-digit PR numbers', () => {
-    expect(deriveWsUrlFromHost('123.preview.boardsesh.com', true)).toBe(
-      'wss://123.ws.preview.boardsesh.com/graphql',
-    );
+    expect(deriveWsUrlFromHost('123.preview.boardsesh.com', true)).toBe('wss://123.ws.preview.boardsesh.com/graphql');
   });
 
   it('should return null for localhost', () => {

@@ -69,9 +69,7 @@ vi.mock('@/app/components/climb-detail/climb-detail-page.server', () => ({
 }));
 
 vi.mock('@/app/components/board-renderer/util', () => ({
-  buildOgBoardRenderUrl: vi.fn(
-    () => '/api/internal/board-render?board_name=kilter&variant=og&format=png',
-  ),
+  buildOgBoardRenderUrl: vi.fn(() => '/api/internal/board-render?board_name=kilter&variant=og&format=png'),
 }));
 
 const pageModule = await import('../page');
@@ -102,9 +100,7 @@ describe('board slug climb metadata', () => {
       }),
     });
 
-    const image = Array.isArray(metadata.openGraph?.images)
-      ? metadata.openGraph.images[0]
-      : metadata.openGraph?.images;
+    const image = Array.isArray(metadata.openGraph?.images) ? metadata.openGraph.images[0] : metadata.openGraph?.images;
     const imageUrl = getOpenGraphImageUrl(image);
 
     expect(imageUrl).toBe('/api/internal/board-render?board_name=kilter&variant=og&format=png');

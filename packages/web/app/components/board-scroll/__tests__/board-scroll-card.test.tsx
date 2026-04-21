@@ -94,9 +94,7 @@ describe('BoardScrollCard', () => {
 
   it('renders BoardRenderer immediately when boardDetails available', () => {
     const onClick = vi.fn();
-    const { getByTestId } = render(
-      <BoardScrollCard userBoard={makeUserBoard()} onClick={onClick} />,
-    );
+    const { getByTestId } = render(<BoardScrollCard userBoard={makeUserBoard()} onClick={onClick} />);
 
     expect(getByTestId('board-renderer')).toBeDefined();
   });
@@ -111,9 +109,7 @@ describe('BoardScrollCard', () => {
 
   it('disabled card does not trigger onClick', () => {
     const onClick = vi.fn();
-    const { getByText } = render(
-      <BoardScrollCard userBoard={makeUserBoard()} onClick={onClick} disabled />,
-    );
+    const { getByText } = render(<BoardScrollCard userBoard={makeUserBoard()} onClick={onClick} disabled />);
 
     const nameEl = getByText('My Kilter');
     const cardRoot = nameEl.parentElement!;
@@ -125,12 +121,7 @@ describe('BoardScrollCard', () => {
   it('shows disabledText when disabled', () => {
     const onClick = vi.fn();
     const { getByText, queryByText } = render(
-      <BoardScrollCard
-        userBoard={makeUserBoard()}
-        onClick={onClick}
-        disabled
-        disabledText="Not available"
-      />,
+      <BoardScrollCard userBoard={makeUserBoard()} onClick={onClick} disabled disabledText="Not available" />,
     );
 
     expect(getByText('Not available')).toBeDefined();
@@ -140,9 +131,7 @@ describe('BoardScrollCard', () => {
 
   it('selected card has selected class', () => {
     const onClick = vi.fn();
-    const { getByText } = render(
-      <BoardScrollCard userBoard={makeUserBoard()} onClick={onClick} selected />,
-    );
+    const { getByText } = render(<BoardScrollCard userBoard={makeUserBoard()} onClick={onClick} selected />);
 
     const nameEl = getByText('My Kilter');
     const cardRoot = nameEl.parentElement!;
@@ -152,9 +141,7 @@ describe('BoardScrollCard', () => {
 
   it('small size variant applies correct class', () => {
     const onClick = vi.fn();
-    const { getByText } = render(
-      <BoardScrollCard userBoard={makeUserBoard()} onClick={onClick} size="small" />,
-    );
+    const { getByText } = render(<BoardScrollCard userBoard={makeUserBoard()} onClick={onClick} size="small" />);
 
     const nameEl = getByText('My Kilter');
     const cardRoot = nameEl.parentElement!;

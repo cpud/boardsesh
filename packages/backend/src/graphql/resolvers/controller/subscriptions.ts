@@ -46,13 +46,8 @@ function buildControllerQueueItem(item: ClimbQueueItem): ControllerQueueItem {
 /**
  * Build a ControllerQueueSync event from current queue state
  */
-function buildControllerQueueSync(
-  queue: ClimbQueueItem[],
-  currentItemUuid: string | undefined,
-): ControllerQueueSync {
-  const currentIndex = currentItemUuid
-    ? queue.findIndex((item) => item.uuid === currentItemUuid)
-    : -1;
+function buildControllerQueueSync(queue: ClimbQueueItem[], currentItemUuid: string | undefined): ControllerQueueSync {
+  const currentIndex = currentItemUuid ? queue.findIndex((item) => item.uuid === currentItemUuid) : -1;
 
   return {
     __typename: 'ControllerQueueSync',
@@ -92,9 +87,7 @@ function climbToLedCommands(
     });
   }
 
-  console.log(
-    `[Controller] Converted ${Object.keys(litUpHoldsMap).length} holds to ${commands.length} LED commands`,
-  );
+  console.log(`[Controller] Converted ${Object.keys(litUpHoldsMap).length} holds to ${commands.length} LED commands`);
   return commands;
 }
 
@@ -140,10 +133,7 @@ export const controllerSubscriptions = {
 
       // Helper to build LedUpdate with navigation context
       const buildLedUpdateWithNavigation = async (
-        climb:
-          | { uuid: string; name: string; difficulty: string; angle: number; frames: string }
-          | null
-          | undefined,
+        climb: { uuid: string; name: string; difficulty: string; angle: number; frames: string } | null | undefined,
         currentItemUuid?: string,
         clientId?: string | null,
       ): Promise<LedUpdate> => {
@@ -173,11 +163,7 @@ export const controllerSubscriptions = {
           };
         }
 
-        const commands = climbToLedCommands(
-          climb,
-          controller.boardName as BoardName,
-          ledPlacements,
-        );
+        const commands = climbToLedCommands(climb, controller.boardName as BoardName, ledPlacements);
 
         // Get queue state for navigation context
         const queueState = await roomManager.getQueueState(sessionId);
@@ -217,10 +203,7 @@ export const controllerSubscriptions = {
             eventQueue = eventQueue.then(async () => {
               try {
                 const queueState = await roomManager.getQueueState(sessionId);
-                const queueSync = buildControllerQueueSync(
-                  queueState.queue,
-                  queueState.currentClimbQueueItem?.uuid,
-                );
+                const queueSync = buildControllerQueueSync(queueState.queue, queueState.currentClimbQueueItem?.uuid);
                 push(queueSync);
               } catch (error) {
                 console.error(`[Controller] Error building queue sync:`, error);
@@ -231,13 +214,9 @@ export const controllerSubscriptions = {
 
           // Handle current climb changes and full sync
           // Always send LedUpdate with clientId - ESP32 uses clientId to decide whether to disconnect BLE client
-          if (
-            queueEvent.__typename === 'CurrentClimbChanged' ||
-            queueEvent.__typename === 'FullSync'
-          ) {
+          if (queueEvent.__typename === 'CurrentClimbChanged' || queueEvent.__typename === 'FullSync') {
             // Extract clientId from the event (null for FullSync or system-initiated changes)
-            const eventClientId =
-              queueEvent.__typename === 'CurrentClimbChanged' ? queueEvent.clientId : null;
+            const eventClientId = queueEvent.__typename === 'CurrentClimbChanged' ? queueEvent.clientId : null;
 
             const currentItem =
               queueEvent.__typename === 'CurrentClimbChanged'
@@ -249,19 +228,11 @@ export const controllerSubscriptions = {
             eventQueue = eventQueue.then(async () => {
               try {
                 if (climb) {
-                  const ledUpdate = await buildLedUpdateWithNavigation(
-                    climb,
-                    currentItem?.uuid,
-                    eventClientId,
-                  );
+                  const ledUpdate = await buildLedUpdateWithNavigation(climb, currentItem?.uuid, eventClientId);
                   push(ledUpdate);
                 } else {
                   // No climb - could be clearing or unknown climb
-                  const ledUpdate = await buildLedUpdateWithNavigation(
-                    null,
-                    undefined,
-                    eventClientId,
-                  );
+                  const ledUpdate = await buildLedUpdateWithNavigation(null, undefined, eventClientId);
                   push(ledUpdate);
                 }
               } catch (error) {

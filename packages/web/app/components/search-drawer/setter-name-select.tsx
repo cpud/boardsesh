@@ -35,9 +35,7 @@ const SetterNameSelect = () => {
   const isSearching = searchValue.length >= MIN_SEARCH_LENGTH;
 
   // Build API URL - with search query if searching, without if just showing top setters
-  const apiUrl = shouldFetch
-    ? constructSetterStatsUrl(parsedParams, isSearching ? searchValue : undefined)
-    : null;
+  const apiUrl = shouldFetch ? constructSetterStatsUrl(parsedParams, isSearching ? searchValue : undefined) : null;
 
   // Fetch setter stats from the API
   const { data: setterStats, isLoading } = useQuery<SetterStat[]>({

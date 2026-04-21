@@ -8,12 +8,7 @@ import type { SocialEvent } from '@boardsesh/shared-schema';
  */
 describe('NotificationWorker event routing', () => {
   // The routing table maps event types to handler methods
-  const SUPPORTED_EVENTS: SocialEvent['type'][] = [
-    'comment.created',
-    'comment.reply',
-    'vote.cast',
-    'follow.created',
-  ];
+  const SUPPORTED_EVENTS: SocialEvent['type'][] = ['comment.created', 'comment.reply', 'vote.cast', 'follow.created'];
 
   const FUTURE_EVENTS: SocialEvent['type'][] = [
     'climb.created',

@@ -7347,16 +7347,7 @@
     "public.social_entity_type": {
       "name": "social_entity_type",
       "schema": "public",
-      "values": [
-        "playlist_climb",
-        "climb",
-        "tick",
-        "comment",
-        "proposal",
-        "board",
-        "gym",
-        "session"
-      ]
+      "values": ["playlist_climb", "climb", "tick", "comment", "proposal", "board", "gym", "session"]
     },
     "public.notification_type": {
       "name": "notification_type",

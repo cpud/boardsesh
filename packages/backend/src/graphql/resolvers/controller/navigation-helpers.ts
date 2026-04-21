@@ -1,8 +1,4 @@
-import type {
-  ClimbQueueItem,
-  QueueNavigationItem,
-  QueueNavigationContext,
-} from '@boardsesh/shared-schema';
+import type { ClimbQueueItem, QueueNavigationItem, QueueNavigationContext } from '@boardsesh/shared-schema';
 import { getGradeColor } from './grade-colors';
 
 /**
@@ -26,10 +22,7 @@ export function buildNavigationItem(item: ClimbQueueItem): QueueNavigationItem {
  * @param currentIndex - Index of the current climb in the queue (-1 if not in queue)
  * @returns Navigation context with up to 3 previous climbs and 1 next climb
  */
-export function buildNavigationContext(
-  queue: ClimbQueueItem[],
-  currentIndex: number,
-): QueueNavigationContext {
+export function buildNavigationContext(queue: ClimbQueueItem[], currentIndex: number): QueueNavigationContext {
   const previousClimbs: QueueNavigationItem[] = [];
   let nextClimb: QueueNavigationItem | null = null;
 

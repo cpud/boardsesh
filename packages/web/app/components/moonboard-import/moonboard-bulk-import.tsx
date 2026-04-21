@@ -14,13 +14,7 @@ import Stack from '@mui/material/Stack';
 import MuiButton from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
-import {
-  InboxOutlined,
-  SaveOutlined,
-  ClearOutlined,
-  ArrowBackOutlined,
-  LoginOutlined,
-} from '@mui/icons-material';
+import { InboxOutlined, SaveOutlined, ClearOutlined, ArrowBackOutlined, LoginOutlined } from '@mui/icons-material';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
@@ -249,12 +243,8 @@ export default function MoonBoardBulkImport({
     void runDuplicateCheck(state.climbs);
   }, [runDuplicateCheck, state.climbs, state.status]);
 
-  const duplicateCount = state.climbs.filter(
-    (climb) => duplicateMatches[climb.sourceFile]?.exists,
-  ).length;
-  const readyToImportClimbs = state.climbs.filter(
-    (climb) => !duplicateMatches[climb.sourceFile]?.exists,
-  );
+  const duplicateCount = state.climbs.filter((climb) => duplicateMatches[climb.sourceFile]?.exists).length;
+  const readyToImportClimbs = state.climbs.filter((climb) => !duplicateMatches[climb.sourceFile]?.exists);
 
   const handleFilesUpload = useCallback(
     async (fileList: File[]) => {
@@ -307,9 +297,7 @@ export default function MoonBoardBulkImport({
     setIsSaving(true);
     try {
       const latestDuplicateMatches = await runDuplicateCheck(state.climbs);
-      const climbsToSave = state.climbs.filter(
-        (climb) => !latestDuplicateMatches[climb.sourceFile]?.exists,
-      );
+      const climbsToSave = state.climbs.filter((climb) => !latestDuplicateMatches[climb.sourceFile]?.exists);
       const skippedDuplicateCount = state.climbs.length - climbsToSave.length;
 
       if (climbsToSave.length === 0) {
@@ -342,16 +330,11 @@ export default function MoonBoardBulkImport({
             },
           };
 
-          await client.request<SaveMoonBoardClimbMutationResponse>(
-            SAVE_MOONBOARD_CLIMB_MUTATION,
-            variables,
-          );
+          await client.request<SaveMoonBoardClimbMutationResponse>(SAVE_MOONBOARD_CLIMB_MUTATION, variables);
           savedCount++;
           savedClimbs.push(climb);
         } catch (error) {
-          errors.push(
-            `${climb.name}: ${error instanceof Error ? error.message : 'Failed to save'}`,
-          );
+          errors.push(`${climb.name}: ${error instanceof Error ? error.message : 'Failed to save'}`);
         }
       }
 
@@ -362,16 +345,11 @@ export default function MoonBoardBulkImport({
         // Fire-and-forget: upload OCR test data if opted in
         if (contributeImages && backendUrl && authToken && savedClimbs.length > 0) {
           // Don't await - fire and forget
-          uploadOcrTestDataBatch(
-            backendUrl,
-            filesMapRef.current,
-            savedClimbs,
-            layoutId,
-            angle,
-            authToken,
-          ).catch((err) => {
-            console.warn('[OCR Upload] Background upload failed:', err);
-          });
+          uploadOcrTestDataBatch(backendUrl, filesMapRef.current, savedClimbs, layoutId, angle, authToken).catch(
+            (err) => {
+              console.warn('[OCR Upload] Background upload failed:', err);
+            },
+          );
         }
       }
       if (skippedDuplicateCount > 0) {
@@ -448,20 +426,11 @@ export default function MoonBoardBulkImport({
       </div>
 
       {!session?.user && (
-        <MuiAlert
-          severity="warning"
-          variant="filled"
-          sx={warningAlertSx}
-          className={styles.warningAlert}
-        >
+        <MuiAlert severity="warning" variant="filled" sx={warningAlertSx} className={styles.warningAlert}>
           <AlertTitle>Login Required</AlertTitle>
           Please log in to save climbs to the database.{' '}
           <Link href="/api/auth/signin">
-            <MuiButton
-              variant="text"
-              startIcon={<LoginOutlined />}
-              sx={{ padding: 0, color: 'inherit' }}
-            >
+            <MuiButton variant="text" startIcon={<LoginOutlined />} sx={{ padding: 0, color: 'inherit' }}>
               Log in
             </MuiButton>
           </Link>
@@ -533,12 +502,7 @@ export default function MoonBoardBulkImport({
         <>
           {/* Errors */}
           {state.errors.length > 0 && (
-            <MuiAlert
-              severity="warning"
-              variant="filled"
-              sx={warningAlertSx}
-              className={styles.errorAlert}
-            >
+            <MuiAlert severity="warning" variant="filled" sx={warningAlertSx} className={styles.errorAlert}>
               <AlertTitle>{`${state.errors.length} Warning(s)`}</AlertTitle>
               <ul className={styles.errorList}>
                 {state.errors.map((err, i) => (
@@ -574,12 +538,7 @@ export default function MoonBoardBulkImport({
                     startIcon={isSaving ? <CircularProgress size={16} /> : <SaveOutlined />}
                     onClick={handleSaveAll}
                     size="large"
-                    disabled={
-                      isSaving ||
-                      isCheckingDuplicates ||
-                      !session?.user ||
-                      readyToImportClimbs.length === 0
-                    }
+                    disabled={isSaving || isCheckingDuplicates || !session?.user || readyToImportClimbs.length === 0}
                   >
                     Save All ({readyToImportClimbs.length})
                   </MuiButton>
@@ -590,10 +549,7 @@ export default function MoonBoardBulkImport({
                 {backendUrl && (
                   <FormControlLabel
                     control={
-                      <MuiCheckbox
-                        checked={contributeImages}
-                        onChange={(e) => setContributeImages(e.target.checked)}
-                      />
+                      <MuiCheckbox checked={contributeImages} onChange={(e) => setContributeImages(e.target.checked)} />
                     }
                     label="Contribute images to improve OCR accuracy"
                   />
@@ -604,10 +560,7 @@ export default function MoonBoardBulkImport({
 
           {/* Climb Cards Grid */}
           {state.climbs.length > 0 ? (
-            <Box
-              sx={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}
-              className={styles.climbGrid}
-            >
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }} className={styles.climbGrid}>
               {state.climbs.map((climb) => (
                 <Box
                   key={climb.sourceFile}
@@ -631,11 +584,7 @@ export default function MoonBoardBulkImport({
           ) : (
             <ResultPage
               status="warning"
-              title={
-                duplicateCount > 0
-                  ? 'All imported climbs already exist'
-                  : 'No climbs could be imported'
-              }
+              title={duplicateCount > 0 ? 'All imported climbs already exist' : 'No climbs could be imported'}
               subTitle={
                 duplicateCount > 0
                   ? 'Edit the duplicate climbs to change their hold selections, or try different screenshots.'

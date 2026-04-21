@@ -60,14 +60,10 @@ export function useBuildClimbDetailSections({
     if (!logbookSummary) return [];
 
     const parts: string[] = [];
-    parts.push(
-      `${logbookSummary.totalAttempts} attempt${logbookSummary.totalAttempts !== 1 ? 's' : ''}`,
-    );
+    parts.push(`${logbookSummary.totalAttempts} attempt${logbookSummary.totalAttempts !== 1 ? 's' : ''}`);
 
     if (logbookSummary.successfulAscents > 0) {
-      parts.push(
-        `${logbookSummary.successfulAscents} send${logbookSummary.successfulAscents !== 1 ? 's' : ''}`,
-      );
+      parts.push(`${logbookSummary.successfulAscents} send${logbookSummary.successfulAscents !== 1 ? 's' : ''}`);
     }
 
     return parts;
@@ -80,9 +76,7 @@ export function useBuildClimbDetailSections({
       title: 'Beta Videos',
       defaultSummary: 'No videos',
       getSummary: () =>
-        uniqueBetaLinks.length > 0
-          ? [`${uniqueBetaLinks.length} video${uniqueBetaLinks.length !== 1 ? 's' : ''}`]
-          : [],
+        uniqueBetaLinks.length > 0 ? [`${uniqueBetaLinks.length} video${uniqueBetaLinks.length !== 1 ? 's' : ''}`] : [],
       lazy: true,
       content: <BetaVideos betaLinks={uniqueBetaLinks} />,
     },

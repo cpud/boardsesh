@@ -33,18 +33,8 @@ vi.mock('../../climb-card/climb-list-item', () => ({
     onThumbnailClick?: () => void;
   }) => (
     <div data-testid="climb-list-item" data-uuid={climb.uuid}>
-      <span
-        data-testid={`row-${climb.uuid}`}
-        role="button"
-        aria-hidden
-        onClick={() => onSelect?.()}
-      />
-      <span
-        data-testid={`thumb-${climb.uuid}`}
-        role="button"
-        aria-hidden
-        onClick={() => onThumbnailClick?.()}
-      />
+      <span data-testid={`row-${climb.uuid}`} role="button" aria-hidden onClick={() => onSelect?.()} />
+      <span data-testid={`thumb-${climb.uuid}`} role="button" aria-hidden onClick={() => onThumbnailClick?.()} />
       {climb.name}
     </div>
   ),

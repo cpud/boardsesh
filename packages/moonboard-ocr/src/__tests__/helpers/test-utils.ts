@@ -51,8 +51,7 @@ export function validateParseResult(
     if (expected.setter !== null) {
       if (options.partialNameMatch) {
         // Check if setter contains the expected value or vice versa
-        const setterMatch =
-          climb.setter.includes(expected.setter) || expected.setter.includes(climb.setter);
+        const setterMatch = climb.setter.includes(expected.setter) || expected.setter.includes(climb.setter);
         expect(setterMatch).toBe(true);
       } else {
         expect(climb.setter).toBe(expected.setter);

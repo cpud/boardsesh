@@ -59,10 +59,7 @@ export async function uploadOcrTestData(
     }
   } catch (error) {
     // Fire-and-forget: log but don't throw
-    console.warn(
-      `[OCR Upload] Failed to upload test data for climb "${parsedResult.name || 'Unknown'}":`,
-      error,
-    );
+    console.warn(`[OCR Upload] Failed to upload test data for climb "${parsedResult.name || 'Unknown'}":`, error);
   }
 }
 

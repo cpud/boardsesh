@@ -23,8 +23,7 @@ const BoardPageClimbsList = ({
   angle,
 }: BoardPageClimbsListProps) => {
   const { currentClimb } = useCurrentClimb();
-  const { climbSearchResults, hasMoreResults, hasDoneFirstFetch, isFetchingClimbs } =
-    useSearchData();
+  const { climbSearchResults, hasMoreResults, hasDoneFirstFetch, isFetchingClimbs } = useSearchData();
   const { setCurrentClimb, addToQueue, fetchMoreClimbs } = useQueueActions();
 
   const searchParams = useSearchParams();

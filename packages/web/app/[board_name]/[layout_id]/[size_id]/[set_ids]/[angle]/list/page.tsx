@@ -1,15 +1,8 @@
 import React from 'react';
 
 import { notFound, permanentRedirect } from 'next/navigation';
-import {
-  BoardRouteParametersWithUuid,
-  SearchRequestPagination,
-  BoardDetails,
-} from '@/app/lib/types';
-import {
-  parsedRouteSearchParamsToSearchParams,
-  constructClimbListWithSlugs,
-} from '@/app/lib/url-utils';
+import { BoardRouteParametersWithUuid, SearchRequestPagination, BoardDetails } from '@/app/lib/types';
+import { parsedRouteSearchParamsToSearchParams, constructClimbListWithSlugs } from '@/app/lib/url-utils';
 import { parseRouteParams } from '@/app/lib/url-utils.server';
 import BoardPageClimbsList from '@/app/components/board-page/board-page-climbs-list';
 import { cachedSearchClimbs } from '@/app/lib/db/queries/climbs/search-climbs';
@@ -61,14 +54,12 @@ export default async function DynamicResultsPage(props: {
     }
   }
 
-  const searchParamsObject: SearchRequestPagination =
-    parsedRouteSearchParamsToSearchParams(searchParams);
+  const searchParamsObject: SearchRequestPagination = parsedRouteSearchParamsToSearchParams(searchParams);
 
   // For the SSR version we increase the pageSize so it also gets whatever page number
   // is in the search params. Without this, it would load the SSR version of the page on page 2
   // which would then flicker once SWR runs on the client.
-  const requestedPageSize =
-    (Number(searchParamsObject.page) + 1) * Number(searchParamsObject.pageSize);
+  const requestedPageSize = (Number(searchParamsObject.page) + 1) * Number(searchParamsObject.pageSize);
 
   // Enforce max page size to prevent excessive database queries
   searchParamsObject.pageSize = Math.min(requestedPageSize, MAX_PAGE_SIZE);
@@ -110,13 +101,9 @@ export default async function DynamicResultsPage(props: {
   let searchResponse: { climbs: import('@/app/lib/types').Climb[]; hasMore: boolean };
 
   try {
-    searchResponse = await cachedSearchClimbs(
-      parsedParams,
-      searchParamsObject,
-      isDefaultSearch,
-      userId,
-      { cacheable: !hasProgressFilters },
-    );
+    searchResponse = await cachedSearchClimbs(parsedParams, searchParamsObject, isDefaultSearch, userId, {
+      cacheable: !hasProgressFilters,
+    });
   } catch (error) {
     console.error(
       'Error fetching climb search results (degrading to empty results for SSR):',
@@ -131,18 +118,12 @@ export default async function DynamicResultsPage(props: {
   // Preload the first climb's thumbnail so the browser can fetch it before JS hydration.
   // The climb list is virtualized (client-only), so the LCP image isn't in the initial HTML.
   const firstClimb = searchResponse.climbs[0];
-  const preloadUrl = firstClimb?.frames
-    ? buildOverlayUrl(boardDetails, firstClimb.frames, true)
-    : null;
+  const preloadUrl = firstClimb?.frames ? buildOverlayUrl(boardDetails, firstClimb.frames, true) : null;
 
   return (
     <>
       {preloadUrl && <link rel="preload" as="image" href={preloadUrl} fetchPriority="high" />}
-      <BoardPageClimbsList
-        {...parsedParams}
-        boardDetails={boardDetails}
-        initialClimbs={searchResponse.climbs}
-      />
+      <BoardPageClimbsList {...parsedParams} boardDetails={boardDetails} initialClimbs={searchResponse.climbs} />
     </>
   );
 }

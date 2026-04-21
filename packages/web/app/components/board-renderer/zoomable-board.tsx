@@ -12,11 +12,7 @@ interface ZoomableBoardProps {
   resetKey: string;
 }
 
-const ZoomableBoard = memo(function ZoomableBoard({
-  children,
-  onZoomChange,
-  resetKey,
-}: ZoomableBoardProps) {
+const ZoomableBoard = memo(function ZoomableBoard({ children, onZoomChange, resetKey }: ZoomableBoardProps) {
   const { containerRef, contentRef, isZoomed, resetZoom, gestureHandlers } = useZoomPan();
   const prevResetKeyRef = useRef(resetKey);
 

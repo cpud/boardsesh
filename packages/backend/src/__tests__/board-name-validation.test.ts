@@ -14,9 +14,7 @@ describe('BoardNameSchema', () => {
     expect(result.success).toBe(false);
 
     if (!result.success) {
-      expect(result.error.issues[0]?.message).toBe(
-        `Board name must be ${SUPPORTED_BOARDS.join(', ')}`,
-      );
+      expect(result.error.issues[0]?.message).toBe(`Board name must be ${SUPPORTED_BOARDS.join(', ')}`);
     }
   });
 });

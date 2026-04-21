@@ -15,10 +15,7 @@ const path = require('path');
 
 // Read the LED placements TypeScript file and extract the data
 function extractLedPlacements() {
-  const filePath = path.join(
-    __dirname,
-    '../../../board-constants/src/generated/led-placements-data.ts',
-  );
+  const filePath = path.join(__dirname, '../../../board-constants/src/generated/led-placements-data.ts');
   const content = fs.readFileSync(filePath, 'utf8');
 
   // Find the start of the object after LED_PLACEMENTS declaration
@@ -55,17 +52,13 @@ function generateHeader(boardName, layoutId, sizeId) {
   const boardData = placements[boardName];
 
   if (!boardData) {
-    console.error(
-      `Board "${boardName}" not found. Available: ${Object.keys(placements).join(', ')}`,
-    );
+    console.error(`Board "${boardName}" not found. Available: ${Object.keys(placements).join(', ')}`);
     process.exit(1);
   }
 
   const layoutData = boardData[key];
   if (!layoutData) {
-    console.error(
-      `Layout "${key}" not found for ${boardName}. Available: ${Object.keys(boardData).join(', ')}`,
-    );
+    console.error(`Layout "${key}" not found for ${boardName}. Available: ${Object.keys(boardData).join(', ')}`);
     process.exit(1);
   }
 

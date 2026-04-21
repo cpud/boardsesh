@@ -42,10 +42,7 @@ export const SessionIdSchema = z
  */
 export const SessionNameSchema = z
   .string()
-  .max(
-    SESSION_NAME_MAX_LENGTH,
-    `Session name must be ${SESSION_NAME_MAX_LENGTH} characters or less`,
-  )
+  .max(SESSION_NAME_MAX_LENGTH, `Session name must be ${SESSION_NAME_MAX_LENGTH} characters or less`)
   .optional();
 
 /**

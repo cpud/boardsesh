@@ -16,12 +16,7 @@
  */
 
 // Main parsing functions
-export {
-  parseScreenshot,
-  parseMultipleScreenshots,
-  parseWithProcessor,
-  deduplicateClimbs,
-} from './parser';
+export { parseScreenshot, parseMultipleScreenshots, parseWithProcessor, deduplicateClimbs } from './parser';
 
 // Image processor for advanced use cases
 export { SharpImageProcessor } from './image-processor/sharp-processor';

@@ -6,11 +6,7 @@ import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { track } from '@vercel/analytics';
 import { useQueueActions } from '../graphql-queue';
 import { useFavorite } from './use-favorite';
-import {
-  constructCreateClimbUrl,
-  constructClimbInfoUrl,
-  getContextAwareClimbViewUrl,
-} from '@/app/lib/url-utils';
+import { constructCreateClimbUrl, constructClimbInfoUrl, getContextAwareClimbViewUrl } from '@/app/lib/url-utils';
 import { Climb, BoardDetails } from '@/app/lib/types';
 import { UseClimbActionsReturn } from './types';
 import { openExternalUrl } from '@/app/lib/open-external-url';
@@ -129,14 +125,7 @@ export function useClimbActions({
     } catch {
       // Silently fail
     }
-  }, [
-    climb,
-    isAuthenticated,
-    toggleFavorite,
-    boardDetails.board_name,
-    onActionComplete,
-    openAuthModal,
-  ]);
+  }, [climb, isAuthenticated, toggleFavorite, boardDetails.board_name, onActionComplete, openAuthModal]);
 
   const handleQueue = useCallback(() => {
     if (!climb || !addToQueue || recentlyAddedToQueue) return;
@@ -190,8 +179,7 @@ export function useClimbActions({
   const handleShare = useCallback(async () => {
     if (!climb) return;
 
-    const shareUrl =
-      typeof window !== 'undefined' ? `${window.location.origin}${viewDetailsUrl}` : viewDetailsUrl;
+    const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}${viewDetailsUrl}` : viewDetailsUrl;
 
     const shareData = {
       title: climb.name,

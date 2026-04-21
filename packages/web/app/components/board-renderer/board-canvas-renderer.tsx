@@ -2,11 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import type { BoardDetails } from '@/app/lib/types';
-import {
-  isWorkerRenderingSupported,
-  renderBoard,
-  computeCropTop,
-} from '@/app/lib/board-render-worker/worker-manager';
+import { isWorkerRenderingSupported, renderBoard, computeCropTop } from '@/app/lib/board-render-worker/worker-manager';
 import { trackRenderError, type RenderContext } from '@/app/lib/rendering-metrics';
 import { THUMBNAIL_WIDTH } from './types';
 import BoardImageLayers from './board-image-layers';

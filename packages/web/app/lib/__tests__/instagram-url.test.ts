@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vite-plus/test';
 import type { BetaLink } from '@/app/lib/api-wrappers/sync-api-types';
-import {
-  dedupeBetaLinks,
-  getInstagramEmbedUrl,
-  getInstagramMediaId,
-  isInstagramUrl,
-} from '../instagram-url';
+import { dedupeBetaLinks, getInstagramEmbedUrl, getInstagramMediaId, isInstagramUrl } from '../instagram-url';
 
 function makeBetaLink(overrides: Partial<BetaLink>): BetaLink {
   return {
@@ -23,9 +18,7 @@ function makeBetaLink(overrides: Partial<BetaLink>): BetaLink {
 describe('instagram-url', () => {
   it('extracts the Instagram media id from post and reel links', () => {
     expect(getInstagramMediaId('https://www.instagram.com/reel/DJ5Cw5OIS82/')).toBe('DJ5Cw5OIS82');
-    expect(getInstagramMediaId('https://www.instagram.com/p/DEdQNTzScjp/?img_index=1')).toBe(
-      'DEdQNTzScjp',
-    );
+    expect(getInstagramMediaId('https://www.instagram.com/p/DEdQNTzScjp/?img_index=1')).toBe('DEdQNTzScjp');
   });
 
   it('builds embed URLs from the extracted media id', () => {
@@ -51,9 +44,7 @@ describe('instagram-url', () => {
 
     it('rejects URLs that contain instagram.com as a path or query parameter', () => {
       expect(isInstagramUrl('https://evil.com?ref=instagram.com/reel/ABC')).toBe(false);
-      expect(isInstagramUrl('https://evil.com/redirect?url=https://instagram.com/p/ABC')).toBe(
-        false,
-      );
+      expect(isInstagramUrl('https://evil.com/redirect?url=https://instagram.com/p/ABC')).toBe(false);
       expect(isInstagramUrl('https://notinstagram.com/reel/ABC')).toBe(false);
     });
 

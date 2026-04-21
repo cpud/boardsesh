@@ -16,11 +16,7 @@ import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
  * in isolation to verify correctness without coupling to the full React hook.
  */
 
-type GetLedPlacementsFn = (
-  boardName: string,
-  layoutId: number,
-  sizeId: number,
-) => Record<number, number>;
+type GetLedPlacementsFn = (boardName: string, layoutId: number, sizeId: number) => Record<number, number>;
 
 describe('LED placements cache', () => {
   let cachedGetLedPlacements: GetLedPlacementsFn | null;

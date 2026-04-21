@@ -558,8 +558,7 @@ The web app needs minimal changes to work well inside the Capacitor shell. All c
 
 ```typescript
 // packages/web/app/lib/capacitor.ts
-export const isCapacitor = (): boolean =>
-  typeof window !== 'undefined' && window.Capacitor !== undefined;
+export const isCapacitor = (): boolean => typeof window !== 'undefined' && window.Capacitor !== undefined;
 
 export const isNativeApp = (): boolean => isCapacitor() && window.Capacitor?.isNativePlatform();
 

@@ -17,11 +17,7 @@
 import type { ClimbQueueItem } from './queue';
 import type { QueueState } from './queue';
 import type { SessionUser } from './session';
-import type {
-  SessionFeedParticipant,
-  SessionGradeDistributionItem,
-  SessionDetailTick,
-} from './activity-feed';
+import type { SessionFeedParticipant, SessionGradeDistributionItem, SessionDetailTick } from './activity-feed';
 
 // Response for delta sync event replay (Phase 2)
 // Uses QueueEvent since this is a query returning buffered events with standard field names

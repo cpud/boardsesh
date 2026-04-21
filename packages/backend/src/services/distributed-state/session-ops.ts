@@ -1,13 +1,6 @@
 import type Redis from 'ioredis';
 import type { SessionUser } from '@boardsesh/shared-schema';
-import {
-  KEYS,
-  TTL,
-  UNSET_SENTINEL,
-  validateConnectionId,
-  validateSessionId,
-  hashToConnection,
-} from './constants';
+import { KEYS, TTL, UNSET_SENTINEL, validateConnectionId, validateSessionId, hashToConnection } from './constants';
 import {
   JOIN_SESSION_SCRIPT,
   LEAVE_SESSION_SCRIPT,
@@ -87,15 +80,11 @@ export async function leaveSession(
     }
 
     if (result === '') {
-      console.log(
-        `[DistributedState] Session ${sessionId.slice(0, 8)} has no remaining members after leader left`,
-      );
+      console.log(`[DistributedState] Session ${sessionId.slice(0, 8)} has no remaining members after leader left`);
       return { newLeaderId: null };
     }
 
-    console.log(
-      `[DistributedState] Elected new leader: ${result.slice(0, 8)} for session ${sessionId.slice(0, 8)}`,
-    );
+    console.log(`[DistributedState] Elected new leader: ${result.slice(0, 8)} for session ${sessionId.slice(0, 8)}`);
     return { newLeaderId: result };
   } catch (err) {
     console.error(`[DistributedState] Failed to leave session ${sessionId.slice(0, 8)}:`, err);
@@ -259,11 +248,7 @@ export async function getSessionMemberCount(redis: Redis, sessionId: string): Pr
 /**
  * Check if a connection exists and belongs to a specific session.
  */
-export async function isConnectionInSession(
-  redis: Redis,
-  connectionId: string,
-  sessionId: string,
-): Promise<boolean> {
+export async function isConnectionInSession(redis: Redis, connectionId: string, sessionId: string): Promise<boolean> {
   validateConnectionId(connectionId);
   validateSessionId(sessionId);
   const data = await redis.hgetall(KEYS.connection(connectionId));
@@ -321,9 +306,7 @@ export async function cleanupStaleSessionMembers(redis: Redis, sessionId: string
   )) as number;
 
   if (removed > 0) {
-    console.log(
-      `[DistributedState] Pruned ${removed} stale members from session ${sessionId.slice(0, 8)}`,
-    );
+    console.log(`[DistributedState] Pruned ${removed} stale members from session ${sessionId.slice(0, 8)}`);
   }
   return removed;
 }

@@ -12,9 +12,7 @@ vi.mock('../../redis/client', () => ({
 
 const mockedRedis = vi.mocked(redisClientManager);
 
-function makeRouteParams(
-  overrides?: Partial<ParsedBoardRouteParameters>,
-): ParsedBoardRouteParameters {
+function makeRouteParams(overrides?: Partial<ParsedBoardRouteParameters>): ParsedBoardRouteParameters {
   return {
     board_name: 'kilter' as ParsedBoardRouteParameters['board_name'],
     layout_id: 1,
@@ -125,17 +123,13 @@ describe('SearchCacheService', () => {
 
     it('returns parsed JSON on cache hit', async () => {
       const data = { climbs: [{ id: 1 }], total: 5 };
-      const mockGet = vi
-        .fn<(key: string) => Promise<string | null>>()
-        .mockResolvedValue(JSON.stringify(data));
+      const mockGet = vi.fn<(key: string) => Promise<string | null>>().mockResolvedValue(JSON.stringify(data));
       mockedRedis.isRedisConnected.mockReturnValue(true);
       mockedRedis.getClients.mockReturnValue({
         publisher: { get: mockGet },
       } as unknown as ReturnType<typeof redisClientManager.getClients>);
 
-      const result = await service.getCachedResult<{ climbs: { id: number }[]; total: number }>(
-        'test-key',
-      );
+      const result = await service.getCachedResult<{ climbs: { id: number }[]; total: number }>('test-key');
 
       expect(result).toEqual(data);
       expect(mockGet).toHaveBeenCalledWith('test-key');
@@ -205,12 +199,7 @@ describe('SearchCacheService', () => {
 
       service.setCachedResult('my-key', [1, 2, 3]);
 
-      expect(mockSet).toHaveBeenCalledWith(
-        'my-key',
-        JSON.stringify([1, 2, 3]),
-        'EX',
-        DEFAULT_SEARCH_CACHE_TTL,
-      );
+      expect(mockSet).toHaveBeenCalledWith('my-key', JSON.stringify([1, 2, 3]), 'EX', DEFAULT_SEARCH_CACHE_TTL);
     });
 
     it('catches and logs errors from publisher.set', async () => {
@@ -226,11 +215,7 @@ describe('SearchCacheService', () => {
 
       // The .catch handler is async, so flush microtasks
       await vi.waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith(
-          '[SearchCache] Error writing cache key',
-          'fail-key',
-          setError,
-        );
+        expect(consoleSpy).toHaveBeenCalledWith('[SearchCache] Error writing cache key', 'fail-key', setError);
       });
 
       consoleSpy.mockRestore();

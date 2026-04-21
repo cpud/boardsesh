@@ -70,10 +70,7 @@ function setupTransactionMock(options?: { failOnUserDelete?: boolean }) {
             call.args = args;
             txCalls.push(call);
             // Fail on the second delete (user row) if requested
-            if (
-              options?.failOnUserDelete &&
-              txCalls.filter((c) => c.method === 'delete').length === 2
-            ) {
+            if (options?.failOnUserDelete && txCalls.filter((c) => c.method === 'delete').length === 2) {
               return Promise.reject(new Error('DB error'));
             }
             return Promise.resolve(undefined);
@@ -117,20 +114,12 @@ describe('deleteAccount mutation', () => {
 
   it('should validate input and reject non-boolean removeSetterName', async () => {
     await expect(
-      userMutations.deleteAccount(
-        {},
-        { input: { removeSetterName: 'yes' as unknown as boolean } },
-        makeAuthCtx(),
-      ),
+      userMutations.deleteAccount({}, { input: { removeSetterName: 'yes' as unknown as boolean } }, makeAuthCtx()),
     ).rejects.toThrow();
   });
 
   it('should delete draft climbs and user row when removeSetterName is false', async () => {
-    const result = await userMutations.deleteAccount(
-      {},
-      { input: { removeSetterName: false } },
-      makeAuthCtx('user-1'),
-    );
+    const result = await userMutations.deleteAccount({}, { input: { removeSetterName: false } }, makeAuthCtx('user-1'));
 
     expect(result).toBe(true);
     // Should have exactly 2 operations: delete drafts + delete user
@@ -157,11 +146,7 @@ describe('deleteAccount mutation', () => {
   });
 
   it('should return true on success', async () => {
-    const result = await userMutations.deleteAccount(
-      {},
-      { input: { removeSetterName: false } },
-      makeAuthCtx(),
-    );
+    const result = await userMutations.deleteAccount({}, { input: { removeSetterName: false } }, makeAuthCtx());
 
     expect(result).toBe(true);
   });

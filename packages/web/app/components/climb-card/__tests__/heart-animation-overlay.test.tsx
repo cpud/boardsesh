@@ -23,9 +23,7 @@ import HeartAnimationOverlay from '../heart-animation-overlay';
 
 describe('HeartAnimationOverlay', () => {
   it('renders nothing when visible is false', () => {
-    const { container } = render(
-      <HeartAnimationOverlay visible={false} onAnimationEnd={vi.fn()} />,
-    );
+    const { container } = render(<HeartAnimationOverlay visible={false} onAnimationEnd={vi.fn()} />);
     expect(container.innerHTML).toBe('');
   });
 

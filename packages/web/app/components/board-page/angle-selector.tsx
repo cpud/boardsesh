@@ -46,8 +46,7 @@ export default function AngleSelector({
   // Fetch climb stats for all angles when there's a current climb
   const { data: climbStats, isLoading } = useQuery<ClimbStatsForAngle[]>({
     queryKey: ['climbStats', boardName, currentClimb?.uuid],
-    queryFn: () =>
-      fetch(`/api/v1/${boardName}/climb-stats/${currentClimb!.uuid}`).then((res) => res.json()),
+    queryFn: () => fetch(`/api/v1/${boardName}/climb-stats/${currentClimb!.uuid}`).then((res) => res.json()),
     enabled: !!currentClimb && isDrawerOpen,
     staleTime: 5 * 60 * 1000,
   });
@@ -130,12 +129,7 @@ export default function AngleSelector({
               '&:last-child': { pb: '12px' },
             }}
           >
-            <Typography
-              variant="body2"
-              component="span"
-              fontWeight={600}
-              sx={{ fontSize: 20, lineHeight: 1.2 }}
-            >
+            <Typography variant="body2" component="span" fontWeight={600} sx={{ fontSize: 20, lineHeight: 1.2 }}>
               {angle}°
             </Typography>
             {hasStats && (
@@ -149,11 +143,7 @@ export default function AngleSelector({
                 }}
               >
                 {stats.difficulty && (
-                  <Typography
-                    variant="body2"
-                    component="span"
-                    sx={{ fontSize: 12, fontWeight: 500 }}
-                  >
+                  <Typography variant="body2" component="span" sx={{ fontSize: 12, fontWeight: 500 }}>
                     {stats.difficulty}
                   </Typography>
                 )}
@@ -175,12 +165,7 @@ export default function AngleSelector({
                       ★{Number(stats.quality_average).toFixed(1)}
                     </Typography>
                   )}
-                  <Typography
-                    variant="body2"
-                    component="span"
-                    color="text.secondary"
-                    sx={{ fontSize: 10 }}
-                  >
+                  <Typography variant="body2" component="span" color="text.secondary" sx={{ fontSize: 10 }}>
                     {stats.ascensionist_count} sends
                   </Typography>
                 </Box>
@@ -231,16 +216,9 @@ export default function AngleSelector({
           </Box>
         )}
         {currentClimb && isLoading && (
-          <Box
-            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 2 }}
-          >
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 2 }}>
             <CircularProgress size={20} />
-            <Typography
-              variant="body2"
-              component="span"
-              color="text.secondary"
-              sx={{ fontSize: 12 }}
-            >
+            <Typography variant="body2" component="span" color="text.secondary" sx={{ fontSize: 12 }}>
               Loading stats...
             </Typography>
           </Box>

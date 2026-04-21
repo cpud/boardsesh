@@ -52,14 +52,7 @@ export async function updateQueueState(
 
   // Write to Redis immediately (source of truth for active sessions)
   if (redisStore) {
-    await redisStore.updateQueueState(
-      sessionId,
-      queue,
-      currentClimbQueueItem,
-      newVersion,
-      newSequence,
-      stateHash,
-    );
+    await redisStore.updateQueueState(sessionId, queue, currentClimbQueueItem, newVersion, newSequence, stateHash);
     // Debounce Postgres write (30 seconds) - eventual consistency when Redis provides fast reads
     writeScheduler.schedulePostgresWrite(
       sessionId,
@@ -138,9 +131,7 @@ export async function updateQueueStateImmediate(
         sequence: sql`${sessionQueues.sequence} + 1`,
         updatedAt: new Date(),
       })
-      .where(
-        and(eq(sessionQueues.sessionId, sessionId), eq(sessionQueues.version, expectedVersion)),
-      )
+      .where(and(eq(sessionQueues.sessionId, sessionId), eq(sessionQueues.version, expectedVersion)))
       .returning();
 
     if (result.length === 0) {
@@ -192,14 +183,7 @@ export async function updateQueueStateImmediate(
   // Also update Redis
   if (redisStore) {
     const stateHash = computeQueueStateHash(queue, currentClimbQueueItem?.uuid || null);
-    await redisStore.updateQueueState(
-      sessionId,
-      queue,
-      currentClimbQueueItem,
-      newVersion,
-      newSequence,
-      stateHash,
-    );
+    await redisStore.updateQueueState(sessionId, queue, currentClimbQueueItem, newVersion, newSequence, stateHash);
   }
 
   return newVersion;
@@ -250,14 +234,7 @@ export async function updateQueueOnly(
 
   // Write to Redis immediately (source of truth for real-time state)
   if (redisStore) {
-    await redisStore.updateQueueState(
-      sessionId,
-      queue,
-      currentClimbQueueItem,
-      newVersion,
-      newSequence,
-      stateHash,
-    );
+    await redisStore.updateQueueState(sessionId, queue, currentClimbQueueItem, newVersion, newSequence, stateHash);
     // Debounce Postgres write - eventual consistency when Redis provides fast reads
     writeScheduler.schedulePostgresWrite(
       sessionId,
@@ -282,10 +259,7 @@ export async function updateQueueOnly(
 /**
  * Get current queue state from Redis (preferred) or Postgres.
  */
-export async function getQueueState(
-  sessionId: string,
-  redisStore: RedisSessionStore | null,
-): Promise<QueueState> {
+export async function getQueueState(sessionId: string, redisStore: RedisSessionStore | null): Promise<QueueState> {
   // Check Redis first (source of truth for active sessions)
   if (redisStore) {
     const redisSession = await redisStore.getSession(sessionId);
@@ -301,11 +275,7 @@ export async function getQueueState(
   }
 
   // Fall back to Postgres (for dormant sessions or when Redis is unavailable)
-  const result = await db
-    .select()
-    .from(sessionQueues)
-    .where(eq(sessionQueues.sessionId, sessionId))
-    .limit(1);
+  const result = await db.select().from(sessionQueues).where(eq(sessionQueues.sessionId, sessionId)).limit(1);
 
   if (result.length === 0) {
     return {
@@ -317,10 +287,7 @@ export async function getQueueState(
     };
   }
 
-  const stateHash = computeQueueStateHash(
-    result[0].queue,
-    result[0].currentClimbQueueItem?.uuid || null,
-  );
+  const stateHash = computeQueueStateHash(result[0].queue, result[0].currentClimbQueueItem?.uuid || null);
 
   return {
     queue: result[0].queue,

@@ -56,10 +56,7 @@ type SocialLoginButtonsProps = {
   disabled?: boolean;
 };
 
-export default function SocialLoginButtons({
-  callbackUrl = '/',
-  disabled = false,
-}: SocialLoginButtonsProps) {
+export default function SocialLoginButtons({ callbackUrl = '/', disabled = false }: SocialLoginButtonsProps) {
   const [providers, setProviders] = useState<ProvidersConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCapacitorApp, setIsCapacitorApp] = useState(false);

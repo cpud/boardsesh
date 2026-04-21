@@ -45,10 +45,7 @@ interface CapacitorBlePlugin {
     value: string; // Continuous hex string, e.g. "0102ff"
   }): Promise<void>;
   requestMtu(options: { deviceId: string; mtu: number }): Promise<{ value: number }>;
-  addListener(
-    eventName: 'disconnected',
-    callback: (data: { deviceId: string }) => void,
-  ): Promise<PluginListenerHandle>;
+  addListener(eventName: 'disconnected', callback: (data: { deviceId: string }) => void): Promise<PluginListenerHandle>;
 }
 
 function getBlePlugin(): CapacitorBlePlugin {
@@ -108,13 +105,9 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
     const ble = getBlePlugin();
 
     const services =
-      this.boardName === 'moonboard'
-        ? [...MOONBOARD_SCAN_SERVICE_UUIDS]
-        : [...AURORA_SCAN_SERVICE_UUIDS];
+      this.boardName === 'moonboard' ? [...MOONBOARD_SCAN_SERVICE_UUIDS] : [...AURORA_SCAN_SERVICE_UUIDS];
     const optionalServices =
-      this.boardName === 'moonboard'
-        ? [...MOONBOARD_OPTIONAL_SERVICE_UUIDS]
-        : [...AURORA_OPTIONAL_SERVICE_UUIDS];
+      this.boardName === 'moonboard' ? [...MOONBOARD_OPTIONAL_SERVICE_UUIDS] : [...AURORA_OPTIONAL_SERVICE_UUIDS];
 
     // Request device — shows native scan dialog on iOS.
     // MoonBoard controllers advertise Nordic UART directly; Aurora boards use

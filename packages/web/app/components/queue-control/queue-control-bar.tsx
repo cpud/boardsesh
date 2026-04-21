@@ -192,13 +192,8 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
   const isPlayPage = pathname.includes('/play/');
   const { currentClimb } = useCurrentClimb();
   const { queue } = useQueueList();
-  const { viewOnlyMode, connectionState, sessionId, isDisconnected, users, clientId } =
-    useSessionData();
-  const {
-    activeSession,
-    session: persistentSession,
-    users: sessionUsers,
-  } = usePersistentSessionState();
+  const { viewOnlyMode, connectionState, sessionId, isDisconnected, users, clientId } = useSessionData();
+  const { activeSession, session: persistentSession, users: sessionUsers } = usePersistentSessionState();
   const {
     mirrorClimb,
     setQueue,
@@ -228,12 +223,8 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
   // QuickTickBar reads the value back out via props when saving the tick.
   const [tickComment, setTickComment] = useState('');
   const [tickCommentFocused, setTickCommentFocused] = useState(false);
-  const [isFlash, setIsFlash] = useState(
-    () => !!currentClimb && !hasPriorHistoryForClimb(currentClimb, logbook),
-  );
-  const [ascentType, setAscentType] = useState<'flash' | 'send' | 'attempt'>(() =>
-    isFlash ? 'flash' : 'send',
-  );
+  const [isFlash, setIsFlash] = useState(() => !!currentClimb && !hasPriorHistoryForClimb(currentClimb, logbook));
+  const [ascentType, setAscentType] = useState<'flash' | 'send' | 'attempt'>(() => (isFlash ? 'flash' : 'send'));
   const quickTickBarRef = useRef<QuickTickBarHandle>(null);
 
   // Whether the tick bar is in expanded mode (all pickers visible).
@@ -285,18 +276,10 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
   const isReconnecting =
     !!sessionId &&
     !isDisconnected &&
-    (connectionState === 'reconnecting' ||
-      connectionState === 'stale' ||
-      connectionState === 'error');
+    (connectionState === 'reconnecting' || connectionState === 'stale' || connectionState === 'error');
 
-  const nextClimb = useMemo(
-    () => getNextClimbQueueItem(),
-    [getNextClimbQueueItem, queue, currentClimb],
-  );
-  const previousClimb = useMemo(
-    () => getPreviousClimbQueueItem(),
-    [getPreviousClimbQueueItem, queue, currentClimb],
-  );
+  const nextClimb = useMemo(() => getNextClimbQueueItem(), [getNextClimbQueueItem, queue, currentClimb]);
+  const previousClimb = useMemo(() => getPreviousClimbQueueItem(), [getPreviousClimbQueueItem, queue, currentClimb]);
   const shouldNavigate = isViewPage || isPlayPage;
 
   // Build URL for a climb item (for navigation on view/play pages)
@@ -333,13 +316,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
           climbUrl = null;
         }
       } else {
-        climbUrl = getContextAwareClimbViewUrl(
-          pathname,
-          boardDetails,
-          angle,
-          climb.uuid,
-          climb.name,
-        );
+        climbUrl = getContextAwareClimbViewUrl(pathname, boardDetails, angle, climb.uuid, climb.name);
       }
 
       if (!climbUrl) return null;
@@ -496,10 +473,11 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
     const animations: Animation[] = [];
 
     const peekOnce = (el: HTMLElement): Promise<void> => {
-      const slideOut = el.animate(
-        [{ transform: 'translateX(0)' }, { transform: 'translateX(-40px)' }],
-        { duration: 350, easing: 'ease-out', fill: 'forwards' },
-      );
+      const slideOut = el.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-40px)' }], {
+        duration: 350,
+        easing: 'ease-out',
+        fill: 'forwards',
+      });
       animations.push(slideOut);
 
       return slideOut.finished
@@ -511,10 +489,11 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
         })
         .then(() => {
           if (cancelled) return;
-          const slideBack = el.animate(
-            [{ transform: 'translateX(-40px)' }, { transform: 'translateX(0)' }],
-            { duration: 250, easing: 'ease-out', fill: 'forwards' },
-          );
+          const slideBack = el.animate([{ transform: 'translateX(-40px)' }, { transform: 'translateX(0)' }], {
+            duration: 250,
+            easing: 'ease-out',
+            fill: 'forwards',
+          });
           animations.push(slideBack);
           return slideBack.finished as Promise<unknown> as Promise<void>;
         });
@@ -660,21 +639,15 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
     return { gridTemplateRows: `${fraction}fr`, opacity: fraction, transition: 'none' };
   }, [tickSwipeOffset]);
 
-  const {
-    swipeHandlers,
-    swipeOffset,
-    isAnimating,
-    animationDirection,
-    enterDirection,
-    clearEnterAnimation,
-  } = useCardSwipeNavigation({
-    onSwipeNext: handleSwipeNext,
-    onSwipePrevious: handleSwipePrevious,
-    canSwipeNext,
-    canSwipePrevious,
-    threshold: 80,
-    delayNavigation: true,
-  });
+  const { swipeHandlers, swipeOffset, isAnimating, animationDirection, enterDirection, clearEnterAnimation } =
+    useCardSwipeNavigation({
+      onSwipeNext: handleSwipeNext,
+      onSwipePrevious: handleSwipePrevious,
+      canSwipeNext,
+      canSwipePrevious,
+      threshold: 80,
+      delayNavigation: true,
+    });
 
   const playUrl = useMemo(() => {
     if (!currentClimb) return null;
@@ -746,8 +719,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
 
   // Peek: determine which climb to preview during swipe
   const showPeek = swipeOffset !== 0 || isAnimating;
-  const peekIsNext =
-    animationDirection === 'left' || (animationDirection === null && swipeOffset < 0);
+  const peekIsNext = animationDirection === 'left' || (animationDirection === null && swipeOffset < 0);
   const peekClimbData = peekIsNext ? nextClimb?.climb : previousClimb?.climb;
 
   // Peek transform: positioned one container-width away, moves with swipeOffset.
@@ -759,8 +731,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
       : `translateX(min(0px, calc(-100% + ${swipeOffset}px)))`;
   };
 
-  const reconnectMessage =
-    connectionState === 'error' ? 'Connection error – retrying…' : 'Reconnecting…';
+  const reconnectMessage = connectionState === 'error' ? 'Connection error – retrying…' : 'Reconnecting…';
 
   const handleLeaveSession = useCallback(() => {
     if (endSession) {
@@ -787,9 +758,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
 
   const renderConfirmRow = () => (
     <div className={styles.reconnectRow}>
-      <span className={styles.confirmText}>
-        Cancelling will leave the session. Is that what you want?
-      </span>
+      <span className={styles.confirmText}>Cancelling will leave the session. Is that what you want?</span>
       <IconButton
         aria-label="Leave session"
         color="error"
@@ -828,30 +797,20 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
   }, [enterDirection, clearEnterAnimation]);
 
   const reconnectView = (
-    <MuiCard
-      variant="outlined"
-      className={styles.card}
-      sx={{ border: 'none', backgroundColor: 'transparent' }}
-    >
+    <MuiCard variant="outlined" className={styles.card} sx={{ border: 'none', backgroundColor: 'transparent' }}>
       <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
         <div className={styles.swipeWrapper}>
           <div
             className={styles.swipeContainer}
             style={{
               padding: `${themeTokens.spacing[2]}px ${themeTokens.spacing[3]}px`,
-              backgroundColor:
-                gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
+              backgroundColor: gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
             }}
           >
-            <Box
-              sx={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center' }}
-              className={styles.row}
-            >
+            <Box sx={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center' }} className={styles.row}>
               <Box sx={{ flex: 1 }} className={styles.climbInfoCol}>
                 <div className={styles.climbInfoInner} style={{ gap: themeTokens.spacing[2] }}>
-                  <div
-                    className={`${styles.boardPreviewContainer} ${enterDirection ? styles.thumbnailEnter : ''}`}
-                  >
+                  <div className={`${styles.boardPreviewContainer} ${enterDirection ? styles.thumbnailEnter : ''}`}>
                     <ClimbThumbnail
                       boardDetails={boardDetails}
                       currentClimb={displayedClimb}
@@ -875,28 +834,16 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
 
   if (isReconnecting) {
     return (
-      <div
-        id="onboarding-queue-bar"
-        className={`queue-bar-shadow ${styles.queueBar}`}
-        data-testid="queue-control-bar"
-      >
+      <div id="onboarding-queue-bar" className={`queue-bar-shadow ${styles.queueBar}`} data-testid="queue-control-bar">
         {reconnectView}
       </div>
     );
   }
 
   return (
-    <div
-      id="onboarding-queue-bar"
-      className={`queue-bar-shadow ${styles.queueBar}`}
-      data-testid="queue-control-bar"
-    >
+    <div id="onboarding-queue-bar" className={`queue-bar-shadow ${styles.queueBar}`} data-testid="queue-control-bar">
       {/* Main Control Bar */}
-      <MuiCard
-        variant="outlined"
-        className={styles.card}
-        sx={{ border: 'none', backgroundColor: 'transparent' }}
-      >
+      <MuiCard variant="outlined" className={styles.card} sx={{ border: 'none', backgroundColor: 'transparent' }}>
         <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
           {/* Session header — name + avatars, or start sesh prompt.
             Uses CSS grid collapse instead of unmounting so the transition
@@ -941,17 +888,15 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                     if (e.key === 'Enter' || e.key === ' ') dispatchOpenSeshSettingsDrawer();
                   }}
                   style={{
-                    backgroundColor:
-                      sessionTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
+                    backgroundColor: sessionTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
                   }}
                 >
                   <span className={styles.sessionName}>
                     {persistentSession?.name ||
                       activeSession.sessionName ||
-                      generateSessionName(
-                        persistentSession?.startedAt ?? new Date().toISOString(),
-                        [boardDetails.board_name],
-                      )}
+                      generateSessionName(persistentSession?.startedAt ?? new Date().toISOString(), [
+                        boardDetails.board_name,
+                      ])}
                   </span>
                   {uniqueSessionUsers.length > 0 && (
                     <div
@@ -991,8 +936,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                               key={user.id}
                               user={user}
                               hasTicked={
-                                tickedBySet.has(user.id) ||
-                                (user.userId != null && tickedBySet.has(user.userId))
+                                tickedBySet.has(user.id) || (user.userId != null && tickedBySet.has(user.userId))
                               }
                             />
                           ))}
@@ -1011,8 +955,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                     if (e.key === 'Enter' || e.key === ' ') setStartSeshOpen(true);
                   }}
                   style={{
-                    backgroundColor:
-                      gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
+                    backgroundColor: gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
                     justifyContent: 'flex-end',
                   }}
                 >
@@ -1025,8 +968,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                 <div
                   className={`${styles.participantBar} ${participantsExpanded ? styles.participantBarExpanded : ''}`}
                   style={{
-                    backgroundColor:
-                      sessionTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
+                    backgroundColor: sessionTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
                   }}
                 >
                   <div className={styles.participantBarInner}>
@@ -1045,11 +987,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                           <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
                             Get your crew in by sharing this link or scanning the QR code
                           </Typography>
-                          <IconButton
-                            size="small"
-                            onClick={handleInviteShare}
-                            aria-label="Share session link"
-                          >
+                          <IconButton size="small" onClick={handleInviteShare} aria-label="Share session link">
                             <IosShare sx={{ fontSize: 18 }} />
                           </IconButton>
                           <IconButton
@@ -1057,10 +995,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                             onClick={() => setShowInviteQr((v) => !v)}
                             aria-label={showInviteQr ? 'Hide QR code' : 'Show QR code'}
                           >
-                            <QrCode2Outlined
-                              sx={{ fontSize: 18 }}
-                              color={showInviteQr ? 'primary' : 'inherit'}
-                            />
+                            <QrCode2Outlined sx={{ fontSize: 18 }} color={showInviteQr ? 'primary' : 'inherit'} />
                           </IconButton>
                         </Box>
                         {showInviteQr && sessionShareUrl && (
@@ -1076,8 +1011,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                             <TickBadgeAvatar
                               user={user}
                               hasTicked={
-                                tickedBySet.has(user.id) ||
-                                (user.userId != null && tickedBySet.has(user.userId))
+                                tickedBySet.has(user.id) || (user.userId != null && tickedBySet.has(user.userId))
                               }
                               size={32}
                             />
@@ -1100,8 +1034,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
               {...(tickBarActive ? tickDismissHandlers : {})}
               className={`${styles.tickRow} ${tickBarActive ? styles.tickRowExpanded : ''} ${tickSwipeOffset > 0 ? styles.tickRowSwiping : ''}`}
               style={{
-                backgroundColor:
-                  gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
+                backgroundColor: gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
                 ...tickDismissStyle,
               }}
             >
@@ -1116,8 +1049,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ')
-                        handleTickBarExpandedChange(!tickBarExpanded);
+                      if (e.key === 'Enter' || e.key === ' ') handleTickBarExpandedChange(!tickBarExpanded);
                     }}
                     aria-label={tickBarExpanded ? 'Collapse tick bar' : 'Expand tick bar'}
                   >
@@ -1126,9 +1058,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                     ) : (
                       <KeyboardArrowUpOutlined sx={{ fontSize: 16, opacity: 0.7 }} />
                     )}
-                    <span className={styles.tickExpandLabel}>
-                      {tickBarExpanded ? 'Collapse' : 'Expand'}
-                    </span>
+                    <span className={styles.tickExpandLabel}>{tickBarExpanded ? 'Collapse' : 'Expand'}</span>
                   </div>
                   <div className={styles.tickCloseButton}>
                     <IconButton
@@ -1159,17 +1089,13 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                       }
                       setActiveDrawer('none');
                     }}
-                    onError={() =>
-                      showMessage('Couldn\u2019t save your tick. Give it another go.', 'error')
-                    }
+                    onError={() => showMessage('Couldn\u2019t save your tick. Give it another go.', 'error')}
                     onDraftRestored={(draftComment) => setTickComment(draftComment)}
                     onIsFlashChange={setIsFlash}
                     onAscentTypeChange={setAscentType}
                     comment={tickComment}
                     commentSlot={
-                      <div
-                        className={`${styles.tickComment} ${tickCommentFocused ? styles.tickCommentExpanded : ''}`}
-                      >
+                      <div className={`${styles.tickComment} ${tickCommentFocused ? styles.tickCommentExpanded : ''}`}>
                         <TextField
                           fullWidth
                           size="small"
@@ -1243,8 +1169,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
               className={styles.swipeContainer}
               style={{
                 padding: `${themeTokens.spacing[2]}px ${themeTokens.spacing[3]}px`,
-                backgroundColor:
-                  gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
+                backgroundColor: gradeTintColor ?? (isDark ? 'transparent' : 'var(--semantic-surface)'),
               }}
             >
               <Box
@@ -1260,9 +1185,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                 <Box sx={{ flex: 1 }} className={styles.climbInfoCol}>
                   <div className={styles.climbInfoInner} style={{ gap: themeTokens.spacing[2] }}>
                     {/* Board preview — STATIC, with crossfade on enter */}
-                    <div
-                      className={`${styles.boardPreviewContainer} ${enterDirection ? styles.thumbnailEnter : ''}`}
-                    >
+                    <div className={`${styles.boardPreviewContainer} ${enterDirection ? styles.thumbnailEnter : ''}`}>
                       <ClimbThumbnail
                         boardDetails={boardDetails}
                         currentClimb={displayedClimb}
@@ -1354,14 +1277,8 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                     {/* Navigation buttons - desktop only */}
                     <span className={styles.navButtons}>
                       <Stack direction="row" spacing={0.5}>
-                        <PreviousClimbButton
-                          navigate={isViewPage || isPlayPage}
-                          boardDetails={boardDetails}
-                        />
-                        <NextClimbButton
-                          navigate={isViewPage || isPlayPage}
-                          boardDetails={boardDetails}
-                        />
+                        <PreviousClimbButton navigate={isViewPage || isPlayPage} boardDetails={boardDetails} />
+                        <NextClimbButton navigate={isViewPage || isPlayPage} boardDetails={boardDetails} />
                       </Stack>
                     </span>
                     {/* Attempt button — only visible in tick mode (collapsed) */}
@@ -1417,22 +1334,14 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
               okText="Clear"
               cancelText="Cancel"
             >
-              <MuiButton
-                variant="text"
-                startIcon={<DeleteOutlined />}
-                sx={{ color: 'var(--neutral-400)' }}
-              >
+              <MuiButton variant="text" startIcon={<DeleteOutlined />} sx={{ color: 'var(--neutral-400)' }}>
                 Clear
               </MuiButton>
             </ConfirmPopover>
           )
         }
       >
-        <QueueList
-          ref={queueListRef}
-          boardDetails={boardDetails}
-          active={activeDrawer === 'queue'}
-        />
+        <QueueList ref={queueListRef} boardDetails={boardDetails} active={activeDrawer === 'queue'} />
       </SwipeableDrawer>
 
       <PlayViewDrawer

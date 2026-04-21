@@ -72,8 +72,7 @@ export default function BoardScrollCard({
       if (boardConfigs) {
         const layouts = boardConfigs.layouts[storedConfig.board] || [];
         const layout = layouts.find((l) => l.id === storedConfig.layoutId);
-        cardMeta =
-          layout?.name || storedConfig.board.charAt(0).toUpperCase() + storedConfig.board.slice(1);
+        cardMeta = layout?.name || storedConfig.board.charAt(0).toUpperCase() + storedConfig.board.slice(1);
       } else {
         cardMeta = storedConfig.board.charAt(0).toUpperCase() + storedConfig.board.slice(1);
       }
@@ -81,8 +80,7 @@ export default function BoardScrollCard({
     } else if (popularConfig) {
       cardName = popularConfig.displayName;
       const parts: string[] = [];
-      if (popularConfig.boardCount > 0)
-        parts.push(`${formatCount(popularConfig.boardCount)} boards`);
+      if (popularConfig.boardCount > 0) parts.push(`${formatCount(popularConfig.boardCount)} boards`);
       parts.push(formatSends(popularConfig.totalAscents));
       cardMeta = parts.join(' \u00B7 ');
     }
@@ -97,10 +95,7 @@ export default function BoardScrollCard({
   const displayMeta = disabled && disabledText ? disabledText : meta;
 
   return (
-    <div
-      className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ''}`}
-      onClick={handleClick}
-    >
+    <div className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ''}`} onClick={handleClick}>
       <div
         className={`${styles.cardSquare} ${selected ? styles.cardSquareSelected : ''} ${disabled ? styles.cardSquareDisabled : ''}`}
       >
@@ -111,9 +106,7 @@ export default function BoardScrollCard({
             <DashboardOutlined sx={{ fontSize: iconSize }} />
           </div>
         )}
-        {distanceMeters != null && (
-          <div className={styles.distanceBadge}>{formatDistance(distanceMeters)}</div>
-        )}
+        {distanceMeters != null && <div className={styles.distanceBadge}>{formatDistance(distanceMeters)}</div>}
       </div>
       <div
         className={`${styles.cardName} ${selected ? styles.cardNameSelected : ''} ${disabled ? styles.cardNameDisabled : ''}`}
@@ -121,9 +114,7 @@ export default function BoardScrollCard({
         {name}
       </div>
       {displayMeta && (
-        <div className={`${styles.cardMeta} ${disabled ? styles.cardNameDisabled : ''}`}>
-          {displayMeta}
-        </div>
+        <div className={`${styles.cardMeta} ${disabled ? styles.cardNameDisabled : ''}`}>{displayMeta}</div>
       )}
     </div>
   );

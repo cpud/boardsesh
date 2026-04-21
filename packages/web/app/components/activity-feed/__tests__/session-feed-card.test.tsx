@@ -13,9 +13,7 @@ vi.mock('next/link', () => ({
 }));
 
 vi.mock('@/app/components/charts/css-bar-chart', () => ({
-  CssBarChart: (props: { ariaLabel?: string }) => (
-    <div data-testid="css-bar-chart" aria-label={props.ariaLabel} />
-  ),
+  CssBarChart: (props: { ariaLabel?: string }) => <div data-testid="css-bar-chart" aria-label={props.ariaLabel} />,
 }));
 
 vi.mock('@/app/components/charts/session-grade-bars', () => ({
@@ -177,9 +175,7 @@ describe('SessionFeedCard', () => {
   it('uses client navigation for profile links', () => {
     render(<SessionFeedCard session={makeSession()} />);
 
-    const profileLinks = screen
-      .getAllByRole('link')
-      .filter((link) => link.getAttribute('href') === '/profile/user-1');
+    const profileLinks = screen.getAllByRole('link').filter((link) => link.getAttribute('href') === '/profile/user-1');
     expect(profileLinks.length).toBeGreaterThanOrEqual(1);
     profileLinks.forEach((link) => {
       expect(link.getAttribute('data-next-link')).toBe('true');
@@ -248,9 +244,7 @@ describe('SessionFeedCard', () => {
 
   it('generates session name from day and board type when no name provided', () => {
     // 2024-01-15 is a Monday
-    render(
-      <SessionFeedCard session={makeSession({ sessionName: null, boardTypes: ['kilter'] })} />,
-    );
+    render(<SessionFeedCard session={makeSession({ sessionName: null, boardTypes: ['kilter'] })} />);
     expect(screen.getByText('Monday Kilter Session')).toBeTruthy();
   });
 });

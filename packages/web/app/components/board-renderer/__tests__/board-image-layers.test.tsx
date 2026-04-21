@@ -43,15 +43,11 @@ describe('BoardImageLayers', () => {
   });
 
   it('renders background images when no frames are provided', () => {
-    const { container } = render(
-      <BoardImageLayers boardDetails={mockBoardDetails} mirrored={false} />,
-    );
+    const { container } = render(<BoardImageLayers boardDetails={mockBoardDetails} mirrored={false} />);
 
     const images = container.querySelectorAll('img');
     expect(images).toHaveLength(1);
-    expect(images[0].getAttribute('src')).toBe(
-      '/images/kilter/product_sizes_layouts_sets/36-1.png',
-    );
+    expect(images[0].getAttribute('src')).toBe('/images/kilter/product_sizes_layouts_sets/36-1.png');
   });
 
   it('renders multiple background images when no frames and board has multiple sets', () => {
@@ -63,9 +59,7 @@ describe('BoardImageLayers', () => {
       },
     };
 
-    const { container } = render(
-      <BoardImageLayers boardDetails={multiSetBoard} mirrored={false} />,
-    );
+    const { container } = render(<BoardImageLayers boardDetails={multiSetBoard} mirrored={false} />);
 
     expect(container.querySelectorAll('img')).toHaveLength(2);
   });
@@ -79,9 +73,7 @@ describe('BoardImageLayers', () => {
       },
     };
 
-    const { container } = render(
-      <BoardImageLayers boardDetails={multiSetBoard} frames="p1r42" mirrored={false} />,
-    );
+    const { container } = render(<BoardImageLayers boardDetails={multiSetBoard} frames="p1r42" mirrored={false} />);
 
     // Only 1 composited image, no separate backgrounds
     expect(container.querySelectorAll('img')).toHaveLength(1);
@@ -89,12 +81,7 @@ describe('BoardImageLayers', () => {
 
   it('applies scaleX(-1) transform when mirrored', () => {
     const { container } = render(
-      <BoardImageLayers
-        boardDetails={mockBoardDetails}
-        frames="p1r42"
-        mirrored={true}
-        style={{ width: '100%' }}
-      />,
+      <BoardImageLayers boardDetails={mockBoardDetails} frames="p1r42" mirrored={true} style={{ width: '100%' }} />,
     );
 
     const wrapper = container.firstChild as HTMLElement;
@@ -103,12 +90,7 @@ describe('BoardImageLayers', () => {
 
   it('does not apply transform when not mirrored', () => {
     const { container } = render(
-      <BoardImageLayers
-        boardDetails={mockBoardDetails}
-        frames="p1r42"
-        mirrored={false}
-        style={{ width: '100%' }}
-      />,
+      <BoardImageLayers boardDetails={mockBoardDetails} frames="p1r42" mirrored={false} style={{ width: '100%' }} />,
     );
 
     const wrapper = container.firstChild as HTMLElement;
@@ -116,14 +98,7 @@ describe('BoardImageLayers', () => {
   });
 
   it('passes thumbnail flag to buildOverlayUrl', () => {
-    render(
-      <BoardImageLayers
-        boardDetails={mockBoardDetails}
-        frames="p1r42"
-        mirrored={false}
-        thumbnail
-      />,
-    );
+    render(<BoardImageLayers boardDetails={mockBoardDetails} frames="p1r42" mirrored={false} thumbnail />);
 
     expect(buildOverlayUrl).toHaveBeenCalledWith(mockBoardDetails, 'p1r42', true);
   });
@@ -141,12 +116,7 @@ describe('BoardImageLayers', () => {
 
   it('uses object-fit contain when thumbnail prop is set', () => {
     const { container } = render(
-      <BoardImageLayers
-        boardDetails={mockBoardDetails}
-        frames="p1r42"
-        mirrored={false}
-        thumbnail
-      />,
+      <BoardImageLayers boardDetails={mockBoardDetails} frames="p1r42" mirrored={false} thumbnail />,
     );
 
     const images = container.querySelectorAll('img');
@@ -157,12 +127,7 @@ describe('BoardImageLayers', () => {
 
   it('uses thumbnail dimensions for img width/height when thumbnail is set', () => {
     const { container } = render(
-      <BoardImageLayers
-        boardDetails={mockBoardDetails}
-        frames="p1r42"
-        mirrored={false}
-        thumbnail
-      />,
+      <BoardImageLayers boardDetails={mockBoardDetails} frames="p1r42" mirrored={false} thumbnail />,
     );
 
     const img = container.querySelector('img')!;
@@ -172,9 +137,7 @@ describe('BoardImageLayers', () => {
   });
 
   it('uses full board dimensions for img width/height when not thumbnail', () => {
-    const { container } = render(
-      <BoardImageLayers boardDetails={mockBoardDetails} frames="p1r42" mirrored={false} />,
-    );
+    const { container } = render(<BoardImageLayers boardDetails={mockBoardDetails} frames="p1r42" mirrored={false} />);
 
     const img = container.querySelector('img')!;
     expect(img.getAttribute('width')).toBe('1080');

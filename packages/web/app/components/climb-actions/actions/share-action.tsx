@@ -23,21 +23,14 @@ export function ShareAction({
   const { showMessage } = useSnackbar();
   const { iconSize } = computeActionDisplay(viewMode, size, showLabel);
 
-  const viewUrl = getContextAwareClimbViewUrl(
-    currentPathname ?? '',
-    boardDetails,
-    angle,
-    climb.uuid,
-    climb.name,
-  );
+  const viewUrl = getContextAwareClimbViewUrl(currentPathname ?? '', boardDetails, angle, climb.uuid, climb.name);
 
   const handleClick = useCallback(
     async (e?: React.MouseEvent) => {
       e?.stopPropagation();
       e?.preventDefault();
 
-      const shareUrl =
-        typeof window !== 'undefined' ? `${window.location.origin}${viewUrl}` : viewUrl;
+      const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}${viewUrl}` : viewUrl;
 
       const shared = await shareWithFallback({
         url: shareUrl,

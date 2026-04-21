@@ -231,10 +231,7 @@ describe('useClimbActionsData', () => {
     });
 
     await waitFor(() => {
-      expect(mockShowMessage).toHaveBeenCalledWith(
-        'Failed to update favorite. Please try again.',
-        'error',
-      );
+      expect(mockShowMessage).toHaveBeenCalledWith('Failed to update favorite. Please try again.', 'error');
     });
 
     vi.restoreAllMocks();
@@ -280,9 +277,7 @@ describe('useClimbActionsData', () => {
 
     // Membership should be updated via accumulated cache
     await waitFor(() => {
-      expect(
-        result.current.playlistsProviderProps.playlistMemberships.get('climb-1')?.has('pl-1'),
-      ).toBe(true);
+      expect(result.current.playlistsProviderProps.playlistMemberships.get('climb-1')?.has('pl-1')).toBe(true);
     });
   });
 
@@ -299,9 +294,7 @@ describe('useClimbActionsData', () => {
     const { result } = renderHook(() => useClimbActionsData(defaultOptions), { wrapper });
 
     await waitFor(() => {
-      expect(
-        result.current.playlistsProviderProps.playlistMemberships.get('climb-1')?.has('pl-1'),
-      ).toBe(true);
+      expect(result.current.playlistsProviderProps.playlistMemberships.get('climb-1')?.has('pl-1')).toBe(true);
     });
 
     // Now remove
@@ -369,9 +362,7 @@ describe('useClimbActionsData', () => {
     // The query should have been refetched
     await waitFor(() => {
       const lastCallArgs = mockRequest.mock.calls;
-      const hasRefetchCall = lastCallArgs.some(
-        (call: unknown[]) => call[0] === 'GET_ALL_USER_PLAYLISTS',
-      );
+      const hasRefetchCall = lastCallArgs.some((call: unknown[]) => call[0] === 'GET_ALL_USER_PLAYLISTS');
       expect(hasRefetchCall).toBe(true);
     });
   });
@@ -405,9 +396,7 @@ describe('useClimbActionsData', () => {
     });
 
     // The favorites fetch should only include climb-3 (not climb-1, climb-2)
-    const favCalls = mockRequest.mock.calls.filter(
-      (call: unknown[]) => call[0] === 'GET_FAVORITES',
-    );
+    const favCalls = mockRequest.mock.calls.filter((call: unknown[]) => call[0] === 'GET_FAVORITES');
     // Second favorites call should only contain the new UUID
     const lastFavCall = favCalls[favCalls.length - 1];
     expect(lastFavCall[1].climbUuids).toEqual(['climb-3']);

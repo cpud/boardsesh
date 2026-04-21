@@ -4,11 +4,7 @@ import { Metadata } from 'next';
 import { resolveBoardBySlug } from '@/app/lib/board-slug-utils';
 import { constructBoardSlugPlaylistsUrl } from '@/app/lib/url-utils';
 import { getServerAuthToken } from '@/app/lib/auth/server-auth';
-import {
-  serverMyBoards,
-  serverUserPlaylists,
-  cachedDiscoverPlaylists,
-} from '@/app/lib/graphql/server-cached-client';
+import { serverMyBoards, serverUserPlaylists, cachedDiscoverPlaylists } from '@/app/lib/graphql/server-cached-client';
 import LibraryPageContent from '@/app/playlists/library-page-content';
 import styles from '@/app/components/library/library.module.css';
 

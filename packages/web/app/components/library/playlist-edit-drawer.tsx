@@ -61,12 +61,7 @@ type PlaylistEditDrawerProps = {
 
 const INITIAL_FORM_VALUES = { name: '', description: '', color: '', icon: '', isPublic: false };
 
-export default function PlaylistEditDrawer({
-  open,
-  playlist,
-  onClose,
-  onSuccess,
-}: PlaylistEditDrawerProps) {
+export default function PlaylistEditDrawer({ open, playlist, onClose, onSuccess }: PlaylistEditDrawerProps) {
   const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -118,10 +113,7 @@ export default function PlaylistEditDrawer({
         colorHex = formValues.color;
       }
 
-      const response = await executeGraphQL<
-        UpdatePlaylistMutationResponse,
-        UpdatePlaylistMutationVariables
-      >(
+      const response = await executeGraphQL<UpdatePlaylistMutationResponse, UpdatePlaylistMutationVariables>(
         UPDATE_PLAYLIST,
         {
           input: {
@@ -182,9 +174,7 @@ export default function PlaylistEditDrawer({
         </Stack>
       }
     >
-      <Box
-        sx={{ maxWidth: 600, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 2 }}
-      >
+      <Box sx={{ maxWidth: 600, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Box>
           <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
             Playlist Name
@@ -284,23 +274,11 @@ export default function PlaylistEditDrawer({
           </Typography>
           <Stack spacing={0.5}>
             <Stack direction="row" spacing={1} alignItems="center">
-              <LockOutlined
-                sx={{ fontSize: 18, color: isPublic ? 'text.disabled' : 'text.secondary' }}
-              />
-              <MuiSwitch
-                checked={isPublic}
-                onChange={(_, checked) => handleVisibilityChange(checked)}
-              />
-              <PublicOutlined
-                sx={{ fontSize: 18, color: isPublic ? 'text.secondary' : 'text.disabled' }}
-              />
+              <LockOutlined sx={{ fontSize: 18, color: isPublic ? 'text.disabled' : 'text.secondary' }} />
+              <MuiSwitch checked={isPublic} onChange={(_, checked) => handleVisibilityChange(checked)} />
+              <PublicOutlined sx={{ fontSize: 18, color: isPublic ? 'text.secondary' : 'text.disabled' }} />
             </Stack>
-            <Typography
-              variant="body2"
-              component="span"
-              color="text.secondary"
-              sx={{ fontSize: 12 }}
-            >
+            <Typography variant="body2" component="span" color="text.secondary" sx={{ fontSize: 12 }}>
               {isPublic
                 ? 'Public playlists can be viewed by anyone with the link'
                 : 'Private playlists are only visible to you'}

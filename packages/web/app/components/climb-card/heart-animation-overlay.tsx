@@ -20,11 +20,7 @@ const HeartAnimationOverlay = React.memo(function HeartAnimationOverlay({
 
   return (
     <div className={styles.overlay} data-testid="heart-animation-overlay">
-      <Favorite
-        className={styles.heart}
-        onAnimationEnd={onAnimationEnd}
-        sx={{ fontSize: size, color: 'white' }}
-      />
+      <Favorite className={styles.heart} onAnimationEnd={onAnimationEnd} sx={{ fontSize: size, color: 'white' }} />
     </div>
   );
 });

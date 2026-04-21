@@ -102,10 +102,7 @@ export function formatPublicPlaylist(p: PublicPlaylistRow) {
  * Check if a user has access to a playlist. Returns the numeric playlist ID.
  * Throws if playlist not found or user lacks access to a private playlist.
  */
-export async function verifyPlaylistAccess(
-  playlistUuid: string,
-  userId: string | null,
-): Promise<bigint> {
+export async function verifyPlaylistAccess(playlistUuid: string, userId: string | null): Promise<bigint> {
   const playlistResult = await db
     .select({
       id: dbSchema.playlists.id,

@@ -44,10 +44,7 @@ const BetaVideos: React.FC<BetaVideosProps> = ({ betaLinks }) => {
 
     return (
       <Box sx={{ width: '100%' }} key={betaLink.link}>
-        <Card
-          sx={{ '&:hover': { boxShadow: 3 }, cursor: 'pointer' }}
-          onClick={() => handleVideoClick(betaLink)}
-        >
+        <Card sx={{ '&:hover': { boxShadow: 3 }, cursor: 'pointer' }} onClick={() => handleVideoClick(betaLink)}>
           <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
             {embedUrl ? (
               <Box
@@ -82,10 +79,7 @@ const BetaVideos: React.FC<BetaVideosProps> = ({ betaLinks }) => {
                 }}
               >
                 <Instagram sx={{ fontSize: 32, color: 'var(--neutral-400)' }} />
-                <Box
-                  component="p"
-                  sx={{ margin: `${themeTokens.spacing[2]}px 0 0`, color: 'var(--neutral-500)' }}
-                >
+                <Box component="p" sx={{ margin: `${themeTokens.spacing[2]}px 0 0`, color: 'var(--neutral-500)' }}>
                   Unable to load video
                 </Box>
               </Box>
@@ -106,10 +100,8 @@ const BetaVideos: React.FC<BetaVideosProps> = ({ betaLinks }) => {
                   color="text.secondary"
                   sx={{ fontSize: themeTokens.typography.fontSize.sm }}
                 >
-                  <PersonOutlined
-                    sx={{ marginRight: 4, fontSize: 'inherit', verticalAlign: 'middle' }}
-                  />
-                  @{betaLink.foreign_username}
+                  <PersonOutlined sx={{ marginRight: 4, fontSize: 'inherit', verticalAlign: 'middle' }} />@
+                  {betaLink.foreign_username}
                   {betaLink.angle && (
                     <Box component="span" sx={{ marginLeft: 8 }}>
                       {betaLink.angle}&deg;
@@ -178,9 +170,7 @@ const BetaVideos: React.FC<BetaVideosProps> = ({ betaLinks }) => {
           sx={{ '& .MuiDialog-paper': { maxWidth: '500px', width: '90%' } }}
         >
           <DialogTitle>
-            {selectedVideo?.foreign_username
-              ? `Beta by @${selectedVideo.foreign_username}`
-              : 'Beta Video'}
+            {selectedVideo?.foreign_username ? `Beta by @${selectedVideo.foreign_username}` : 'Beta Video'}
           </DialogTitle>
           <DialogContent>
             {selectedVideo && (

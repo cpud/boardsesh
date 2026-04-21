@@ -31,18 +31,8 @@ vi.mock('../../auth/auth-modal', () => ({
 }));
 
 vi.mock('../heart-animation-overlay', () => ({
-  default: ({
-    visible,
-    onAnimationEnd,
-    size,
-  }: {
-    visible: boolean;
-    onAnimationEnd: () => void;
-    size?: number;
-  }) =>
-    visible ? (
-      <div data-testid="heart-animation-overlay" data-size={size} onClick={onAnimationEnd} />
-    ) : null,
+  default: ({ visible, onAnimationEnd, size }: { visible: boolean; onAnimationEnd: () => void; size?: number }) =>
+    visible ? <div data-testid="heart-animation-overlay" data-size={size} onClick={onAnimationEnd} /> : null,
 }));
 
 vi.mock('../drawer-favorite-button', () => ({
@@ -95,9 +85,7 @@ vi.mock('../drawer-climb-header', () => ({
 }));
 
 vi.mock('../../swipeable-drawer/swipeable-drawer', () => ({
-  default: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="swipeable-drawer">{children}</div>
-  ),
+  default: ({ children }: { children: React.ReactNode }) => <div data-testid="swipeable-drawer">{children}</div>,
 }));
 
 vi.mock('../ascent-status', () => ({

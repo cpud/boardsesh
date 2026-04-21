@@ -13,13 +13,7 @@ type LoadingSpinnerProps = {
   tip?: React.ReactNode;
 };
 
-export function LoadingSpinner({
-  spinning = true,
-  size = 40,
-  children,
-  sx,
-  tip,
-}: LoadingSpinnerProps) {
+export function LoadingSpinner({ spinning = true, size = 40, children, sx, tip }: LoadingSpinnerProps) {
   if (!children) {
     if (!spinning) return null;
     return (

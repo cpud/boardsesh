@@ -51,9 +51,7 @@ export class AuroraClimbingClient {
 
     try {
       const contentType =
-        fetchOptions.headers &&
-        typeof fetchOptions.headers === 'object' &&
-        !Array.isArray(fetchOptions.headers)
+        fetchOptions.headers && typeof fetchOptions.headers === 'object' && !Array.isArray(fetchOptions.headers)
           ? (fetchOptions.headers as Record<string, string>)['Content-Type']
           : undefined;
 
@@ -109,9 +107,7 @@ export class AuroraClimbingClient {
           );
         }
         if (error.message.includes('Failed to fetch')) {
-          throw new Error(
-            `DNS/Connection error: Cannot resolve ${url}. Aurora servers may be unavailable.`,
-          );
+          throw new Error(`DNS/Connection error: Cannot resolve ${url}. Aurora servers may be unavailable.`);
         }
       }
 

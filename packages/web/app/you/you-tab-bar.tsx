@@ -12,11 +12,7 @@ export default function YouTabBar() {
   const pathname = usePathname();
 
   const activeTab: YouTab =
-    pathname === '/you/sessions'
-      ? 'sessions'
-      : pathname === '/you/logbook'
-        ? 'logbook'
-        : 'progress';
+    pathname === '/you/sessions' ? 'sessions' : pathname === '/you/logbook' ? 'logbook' : 'progress';
 
   const handleTabChange = useCallback(
     (_: React.SyntheticEvent, value: YouTab) => {

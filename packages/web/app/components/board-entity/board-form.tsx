@@ -99,9 +99,7 @@ export default function BoardForm({
   const [hideLocation, setHideLocation] = useState(initialValues.hideLocation);
   const [isOwned, setIsOwned] = useState(initialValues.isOwned);
   const [angle, setAngle] = useState(initialValues.angle ?? 40);
-  const [isAngleAdjustable, setIsAngleAdjustable] = useState(
-    initialValues.isAngleAdjustable ?? true,
-  );
+  const [isAngleAdjustable, setIsAngleAdjustable] = useState(initialValues.isAngleAdjustable ?? true);
   const [serialNumber, setSerialNumber] = useState(initialValues.serialNumber ?? '');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -113,9 +111,7 @@ export default function BoardForm({
   );
 
   const availableSizes =
-    configEditable && layoutId
-      ? (configEditable.sizes[`${configEditable.boardType}-${layoutId}`] ?? [])
-      : [];
+    configEditable && layoutId ? (configEditable.sizes[`${configEditable.boardType}-${layoutId}`] ?? []) : [];
   const availableSets =
     configEditable && layoutId && sizeId
       ? (configEditable.sets[`${configEditable.boardType}-${layoutId}-${sizeId}`] ?? [])
@@ -143,8 +139,7 @@ export default function BoardForm({
           ? {
               layoutId,
               sizeId,
-              setIds:
-                selectedSets.length > 0 ? selectedSets.sort((a, b) => a - b).join(',') : undefined,
+              setIds: selectedSets.length > 0 ? selectedSets.sort((a, b) => a - b).join(',') : undefined,
             }
           : {}),
         serialNumber: serialNumber.trim() || undefined,
@@ -155,11 +150,7 @@ export default function BoardForm({
   };
 
   return (
-    <Box
-      component="form"
-      onSubmit={handleSubmit}
-      sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-    >
+    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       {title && <MuiTypography variant="h6">{title}</MuiTypography>}
 
       {configEditable && (
@@ -177,8 +168,7 @@ export default function BoardForm({
                 const newLayout = e.target.value as number;
                 setLayoutId(newLayout);
                 // Reset dependent fields
-                const newSizes =
-                  configEditable.sizes[`${configEditable.boardType}-${newLayout}`] ?? [];
+                const newSizes = configEditable.sizes[`${configEditable.boardType}-${newLayout}`] ?? [];
                 setSizeId(newSizes.length > 0 ? newSizes[0].id : undefined);
                 setSelectedSets([]);
               }}
@@ -228,11 +218,7 @@ export default function BoardForm({
                 }
               >
                 {availableSets.map(({ id, name: setName }) => (
-                  <MenuItem
-                    key={id}
-                    value={id}
-                    sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}
-                  >
+                  <MenuItem key={id} value={id} sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
                     <ListItemText
                       primary={setName}
                       primaryTypographyProps={{
@@ -330,12 +316,7 @@ export default function BoardForm({
       )}
 
       <FormControlLabel
-        control={
-          <Switch
-            checked={isAngleAdjustable}
-            onChange={(e) => setIsAngleAdjustable(e.target.checked)}
-          />
-        }
+        control={<Switch checked={isAngleAdjustable} onChange={(e) => setIsAngleAdjustable(e.target.checked)} />}
         label="Angle is adjustable"
       />
 
@@ -346,9 +327,7 @@ export default function BoardForm({
 
       <Box>
         <FormControlLabel
-          control={
-            <Switch checked={isUnlisted} onChange={(e) => setIsUnlisted(e.target.checked)} />
-          }
+          control={<Switch checked={isUnlisted} onChange={(e) => setIsUnlisted(e.target.checked)} />}
           label="Unlisted"
         />
         <FormHelperText sx={{ mt: -0.5, ml: 7 }}>
@@ -358,9 +337,7 @@ export default function BoardForm({
 
       <Box>
         <FormControlLabel
-          control={
-            <Switch checked={hideLocation} onChange={(e) => setHideLocation(e.target.checked)} />
-          }
+          control={<Switch checked={hideLocation} onChange={(e) => setHideLocation(e.target.checked)} />}
           label="Hide from nearby boards"
         />
         <FormHelperText sx={{ mt: -0.5, ml: 7 }}>

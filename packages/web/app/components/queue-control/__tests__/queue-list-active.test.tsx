@@ -138,11 +138,7 @@ vi.mock('../../climb-card/climb-list-item', () => ({
   default: (props: MockClimbListItemProps) => {
     mockClimbListItem(props);
     return (
-      <div
-        data-testid="climb-list-item"
-        data-uuid={props.climb.uuid}
-        onClick={() => props.onThumbnailClick?.()}
-      >
+      <div data-testid="climb-list-item" data-uuid={props.climb.uuid} onClick={() => props.onThumbnailClick?.()}>
         {props.climb.name}
       </div>
     );
@@ -154,9 +150,7 @@ vi.mock('../../climb-card/drawer-climb-header', () => ({
 }));
 
 vi.mock('../../swipeable-drawer/swipeable-drawer', () => ({
-  default: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="swipeable-drawer">{children}</div>
-  ),
+  default: ({ children }: { children: React.ReactNode }) => <div data-testid="swipeable-drawer">{children}</div>,
 }));
 
 vi.mock('../../climb-actions', () => ({

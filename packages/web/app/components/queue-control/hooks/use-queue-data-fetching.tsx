@@ -2,11 +2,7 @@ import { useCallback, useRef, useEffect, useMemo } from 'react';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { PAGE_LIMIT } from '../../board-page/constants';
 import { ClimbQueue } from '../types';
-import {
-  ParsedBoardRouteParameters,
-  SearchRequestPagination,
-  SearchClimbsResult,
-} from '@/app/lib/types';
+import { ParsedBoardRouteParameters, SearchRequestPagination, SearchClimbsResult } from '@/app/lib/types';
 import { useOptionalBoardProvider } from '../../board-provider/board-provider-context';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
@@ -71,18 +67,12 @@ export const useQueueDataFetching = ({
       sortBy: searchParams.sortBy || 'ascents',
       sortOrder: searchParams.sortOrder || 'desc',
       name: searchParams.name || undefined,
-      setter:
-        searchParams.settername && searchParams.settername.length > 0
-          ? searchParams.settername
-          : undefined,
+      setter: searchParams.settername && searchParams.settername.length > 0 ? searchParams.settername : undefined,
       onlyTallClimbs: searchParams.onlyTallClimbs || undefined,
       holdsFilter:
         searchParams.holdsFilter && Object.keys(searchParams.holdsFilter).length > 0
           ? Object.fromEntries(
-              Object.entries(searchParams.holdsFilter).map(([key, value]) => [
-                key.replace('hold_', ''),
-                value.state,
-              ]),
+              Object.entries(searchParams.holdsFilter).map(([key, value]) => [key.replace('hold_', ''), value.state]),
             )
           : undefined,
       hideAttempted: searchParams.hideAttempted || undefined,
@@ -149,9 +139,7 @@ export const useQueueDataFetching = ({
       sizeId: parsedParams.size_id,
       setIds: parsedParams.set_ids.join(','),
       angle: parsedParams.angle,
-      gradeAccuracy: countSearchParams.gradeAccuracy
-        ? String(countSearchParams.gradeAccuracy)
-        : undefined,
+      gradeAccuracy: countSearchParams.gradeAccuracy ? String(countSearchParams.gradeAccuracy) : undefined,
       minGrade: countSearchParams.minGrade || undefined,
       maxGrade: countSearchParams.maxGrade || undefined,
       minAscents: countSearchParams.minAscents || undefined,
@@ -211,19 +199,14 @@ export const useQueueDataFetching = ({
   const totalSearchResultCount = countData ?? null;
   const hasMoreResults = hasNextPage ?? false;
 
-  const climbSearchResults = useMemo(
-    () => (data ? data.pages.flatMap((page) => page.climbs) : null),
-    [data],
-  );
+  const climbSearchResults = useMemo(() => (data ? data.pages.flatMap((page) => page.climbs) : null), [data]);
 
   const suggestedClimbs = useMemo(() => {
     const filtered = (climbSearchResults || []).filter(
       (item) => !queue.find((queueItem) => queueItem.climb?.uuid === item.uuid),
     );
     // Deduplicate by uuid to prevent React key warnings
-    return filtered.filter(
-      (climb, index, self) => index === self.findIndex((c) => c.uuid === climb.uuid),
-    );
+    return filtered.filter((climb, index, self) => index === self.findIndex((c) => c.uuid === climb.uuid));
   }, [climbSearchResults, queue]);
 
   // Combine and deduplicate climb UUIDs from both search results and queue.

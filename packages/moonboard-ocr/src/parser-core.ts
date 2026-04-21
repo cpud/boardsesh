@@ -111,13 +111,9 @@ export function deduplicateClimbs(climbs: MoonBoardClimb[]): MoonBoardClimb[] {
 
   for (const climb of climbs) {
     // Create a unique key from sorted hold positions
-    const key = [
-      ...climb.holds.start.sort(),
-      '|',
-      ...climb.holds.hand.sort(),
-      '|',
-      ...climb.holds.finish.sort(),
-    ].join(',');
+    const key = [...climb.holds.start.sort(), '|', ...climb.holds.hand.sort(), '|', ...climb.holds.finish.sort()].join(
+      ',',
+    );
 
     // Keep the first occurrence (or could prefer one with better OCR results)
     if (!seen.has(key)) {

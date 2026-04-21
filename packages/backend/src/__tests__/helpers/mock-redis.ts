@@ -218,9 +218,7 @@ export const createMockRedis = (): MockRedis => {
         // Clear old leader's isLeader flag
         const oldLeader = store.get(leaderKey);
         if (oldLeader) {
-          const oldLeaderConnKey = Array.from(hashes.keys()).find(
-            (k) => hashes.get(k)?.connectionId === oldLeader,
-          );
+          const oldLeaderConnKey = Array.from(hashes.keys()).find((k) => hashes.get(k)?.connectionId === oldLeader);
           if (oldLeaderConnKey) {
             hashes.get(oldLeaderConnKey)!.isLeader = 'false';
           }
@@ -241,9 +239,7 @@ export const createMockRedis = (): MockRedis => {
 
         const newLeader = candidates[0];
         store.set(leaderKey, newLeader);
-        const newLeaderConnKey = Array.from(hashes.keys()).find(
-          (k) => hashes.get(k)?.connectionId === newLeader,
-        );
+        const newLeaderConnKey = Array.from(hashes.keys()).find((k) => hashes.get(k)?.connectionId === newLeader);
         if (newLeaderConnKey) {
           hashes.get(newLeaderConnKey)!.isLeader = 'true';
         }
@@ -268,8 +264,7 @@ export const createMockRedis = (): MockRedis => {
           connData.connectionId = connectionId;
           connData.sessionId = args[4] as string;
           if (username && username !== UNSET_SENTINEL) connData.username = username;
-          if (avatarUrl !== undefined && avatarUrl !== UNSET_SENTINEL)
-            connData.avatarUrl = avatarUrl;
+          if (avatarUrl !== undefined && avatarUrl !== UNSET_SENTINEL) connData.avatarUrl = avatarUrl;
           connData.isLeader = 'false';
 
           // Add to session members set
@@ -303,9 +298,7 @@ export const createMockRedis = (): MockRedis => {
             const newLeader = Array.from(memberSet)[0];
             store.set(leaderKey, newLeader);
             // Update new leader's connection data
-            const newLeaderConnKey = Array.from(hashes.keys()).find(
-              (k) => hashes.get(k)?.connectionId === newLeader,
-            );
+            const newLeaderConnKey = Array.from(hashes.keys()).find((k) => hashes.get(k)?.connectionId === newLeader);
             if (newLeaderConnKey) {
               hashes.get(newLeaderConnKey)!.isLeader = 'true';
             }

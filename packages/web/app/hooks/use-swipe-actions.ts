@@ -142,8 +142,7 @@ export function useSwipeActions({
       if (contentEl.current) {
         contentEl.current.style.transform = `translateX(${offset}px)`;
         // Only apply transition when snapping back to zero
-        contentEl.current.style.transition =
-          offset === 0 ? 'transform 150ms ease-out, opacity 150ms ease-out' : 'none';
+        contentEl.current.style.transition = offset === 0 ? 'transform 150ms ease-out, opacity 150ms ease-out' : 'none';
       }
 
       const absOffset = Math.abs(offset);
@@ -278,8 +277,7 @@ export function useSwipeActions({
     },
     onSwipedLeft: (eventData) => {
       const swipeDistance = Math.abs(eventData.deltaX);
-      const longSwipeReady =
-        typeof longSwipeLeftThreshold === 'number' && swipeDistance >= longSwipeLeftThreshold;
+      const longSwipeReady = typeof longSwipeLeftThreshold === 'number' && swipeDistance >= longSwipeLeftThreshold;
 
       if (isHorizontalRef.current && longSwipeReady && onSwipeLeftLong) {
         handleSwipeLeftLongComplete();
@@ -292,8 +290,7 @@ export function useSwipeActions({
     },
     onSwipedRight: (eventData) => {
       const swipeDistance = Math.abs(eventData.deltaX);
-      const longSwipeReady =
-        typeof longSwipeRightThreshold === 'number' && swipeDistance >= longSwipeRightThreshold;
+      const longSwipeReady = typeof longSwipeRightThreshold === 'number' && swipeDistance >= longSwipeRightThreshold;
 
       if (isHorizontalRef.current && longSwipeReady && onSwipeRightLong) {
         handleSwipeRightLongComplete();

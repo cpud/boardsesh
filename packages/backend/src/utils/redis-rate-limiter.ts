@@ -46,12 +46,7 @@ export async function checkRateLimitRedis(
     const expireSeconds = Math.ceil(windowMs / 1000);
 
     // Atomic INCR + EXPIRE via Lua script
-    const count = (await publisher.eval(
-      RATE_LIMIT_SCRIPT,
-      1,
-      key,
-      expireSeconds.toString(),
-    )) as number;
+    const count = (await publisher.eval(RATE_LIMIT_SCRIPT, 1, key, expireSeconds.toString())) as number;
 
     if (count > maxRequests) {
       const retryAfterSeconds = Math.ceil((windowMs - (Date.now() % windowMs)) / 1000);
@@ -63,10 +58,7 @@ export async function checkRateLimitRedis(
       throw err;
     }
     // Otherwise Redis failed — fall back to in-memory
-    console.warn(
-      '[RateLimit] Redis unavailable, falling back to in-memory:',
-      (err as Error).message,
-    );
+    console.warn('[RateLimit] Redis unavailable, falling back to in-memory:', (err as Error).message);
     checkRateLimit(`${userId}:${operation}`, maxRequests, windowMs);
   }
 }

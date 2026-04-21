@@ -116,9 +116,7 @@ export const ClimbSearchInputSchema = z.object({
   setterId: z.number().int().optional(),
   onlyBenchmarks: z.boolean().optional(),
   onlyTallClimbs: z.boolean().optional(),
-  holdsFilter: z
-    .record(z.string(), z.enum(['OFF', 'STARTING', 'FINISH', 'HAND', 'FOOT', 'ANY', 'NOT']))
-    .optional(),
+  holdsFilter: z.record(z.string(), z.enum(['OFF', 'STARTING', 'FINISH', 'HAND', 'FOOT', 'ANY', 'NOT'])).optional(),
   hideAttempted: z.boolean().optional(),
   hideCompleted: z.boolean().optional(),
   showOnlyAttempted: z.boolean().optional(),

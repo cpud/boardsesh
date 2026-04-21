@@ -10,12 +10,7 @@ interface LogAscentDrawerProps {
   boardDetails: BoardDetails;
 }
 
-export const LogAscentDrawer: React.FC<LogAscentDrawerProps> = ({
-  open,
-  onClose,
-  currentClimb,
-  boardDetails,
-}) => {
+export const LogAscentDrawer: React.FC<LogAscentDrawerProps> = ({ open, onClose, currentClimb, boardDetails }) => {
   return (
     <SwipeableDrawer
       title="Log Ascent"
@@ -25,9 +20,7 @@ export const LogAscentDrawer: React.FC<LogAscentDrawerProps> = ({
       fullHeight
       styles={{ wrapper: { height: '100%' } }}
     >
-      {currentClimb && (
-        <LogAscentForm currentClimb={currentClimb} boardDetails={boardDetails} onClose={onClose} />
-      )}
+      {currentClimb && <LogAscentForm currentClimb={currentClimb} boardDetails={boardDetails} onClose={onClose} />}
     </SwipeableDrawer>
   );
 };

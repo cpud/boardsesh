@@ -157,10 +157,7 @@ describe('useMutationGuard', () => {
         result.current.guardMutation();
       });
 
-      expect(mockShowMessage).toHaveBeenCalledWith(
-        expect.stringContaining('Reconnecting'),
-        'warning',
-      );
+      expect(mockShowMessage).toHaveBeenCalledWith(expect.stringContaining('Reconnecting'), 'warning');
     });
 
     it('debounces toast within 3 seconds', () => {

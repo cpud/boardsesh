@@ -30,8 +30,7 @@ export const getPreference = async <T = unknown, K extends string = string>(
     const db = await getDB();
     if (!db) return null;
     const value = await db.get(STORE_NAME, key);
-    if (value !== undefined)
-      return value as K extends keyof UserPreferenceKeyMap ? UserPreferenceKeyMap[K] : T;
+    if (value !== undefined) return value as K extends keyof UserPreferenceKeyMap ? UserPreferenceKeyMap[K] : T;
 
     // Attempt one-time migration from localStorage
     const legacyKey = LEGACY_LOCALSTORAGE_KEYS[key];
@@ -43,8 +42,7 @@ export const getPreference = async <T = unknown, K extends string = string>(
         migratedValue = val;
         migrated = true;
       });
-      if (migrated)
-        return migratedValue as K extends keyof UserPreferenceKeyMap ? UserPreferenceKeyMap[K] : T;
+      if (migrated) return migratedValue as K extends keyof UserPreferenceKeyMap ? UserPreferenceKeyMap[K] : T;
     }
 
     return null;

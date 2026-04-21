@@ -44,16 +44,8 @@ export const notifications = pgTable(
       table.readAt,
       table.createdAt,
     ),
-    recipientCreatedAtIdx: index('notifications_recipient_created_at_idx').on(
-      table.recipientId,
-      table.createdAt,
-    ),
-    deduplicationIdx: index('notifications_dedup_idx').on(
-      table.actorId,
-      table.recipientId,
-      table.type,
-      table.entityId,
-    ),
+    recipientCreatedAtIdx: index('notifications_recipient_created_at_idx').on(table.recipientId, table.createdAt),
+    deduplicationIdx: index('notifications_dedup_idx').on(table.actorId, table.recipientId, table.type, table.entityId),
     createdAtIdx: index('notifications_created_at_idx').on(table.createdAt),
   }),
 );

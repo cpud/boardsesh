@@ -93,17 +93,16 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
     }
   }, [open]);
 
-  const { boards, isLoading, isFetching, radiusKm, hasMore, isFetchingNextPage, fetchNextPage } =
-    useSearchBoardsMap({
-      query,
-      // While the map is still at the default world-view fallback (locationResolved=false),
-      // don't fire a coordinate-based search — the 300 km bucket at zoom 3 would surface a
-      // cluster of boards in Kansas to every user until geolocation resolves.
-      latitude: locationResolved ? center.lat : null,
-      longitude: locationResolved ? center.lng : null,
-      zoom,
-      enabled: open,
-    });
+  const { boards, isLoading, isFetching, radiusKm, hasMore, isFetchingNextPage, fetchNextPage } = useSearchBoardsMap({
+    query,
+    // While the map is still at the default world-view fallback (locationResolved=false),
+    // don't fire a coordinate-based search — the 300 km bucket at zoom 3 would surface a
+    // cluster of boards in Kansas to every user until geolocation resolves.
+    latitude: locationResolved ? center.lat : null,
+    longitude: locationResolved ? center.lng : null,
+    zoom,
+    enabled: open,
+  });
 
   // Infinite scroll inside the horizontal carousel: load the next page when the
   // user scrolls within 300px of the right edge. We can't reuse the shared
@@ -119,15 +118,12 @@ export default function BoardSearchDrawer({ open, onClose, onBoardOpen }: BoardS
     [hasMore, isFetchingNextPage, fetchNextPage],
   );
 
-  const handleViewportChange = useCallback(
-    ({ lat, lng, zoom: z }: { lat: number; lng: number; zoom: number }) => {
-      setCenter({ lat, lng });
-      setZoom(z);
-      locationResolvedRef.current = true;
-      setLocationResolved(true);
-    },
-    [],
-  );
+  const handleViewportChange = useCallback(({ lat, lng, zoom: z }: { lat: number; lng: number; zoom: number }) => {
+    setCenter({ lat, lng });
+    setZoom(z);
+    locationResolvedRef.current = true;
+    setLocationResolved(true);
+  }, []);
 
   const scrollCardIntoView = useCallback((uuid: string) => {
     const node = cardRefs.current.get(uuid);

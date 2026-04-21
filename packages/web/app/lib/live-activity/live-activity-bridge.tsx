@@ -17,11 +17,7 @@ interface LiveActivityBridgeProps {
   onWidgetNavigate?: (item: ClimbQueueItem, correlationId: string) => void;
 }
 
-export default function LiveActivityBridge({
-  onSetCurrentClimb,
-  onWidgetNavigate,
-  ...props
-}: LiveActivityBridgeProps) {
+export default function LiveActivityBridge({ onSetCurrentClimb, onWidgetNavigate, ...props }: LiveActivityBridgeProps) {
   useLiveActivity(props);
 
   // Listen for widget next/previous button taps and navigate the queue.

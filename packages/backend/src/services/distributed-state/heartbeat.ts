@@ -170,9 +170,7 @@ export async function cleanupInstanceConnections(redis: Redis, instanceId: strin
 
   // Force cleanup of failed connections to prevent orphaned data
   if (failedConnectionIds.length > 0) {
-    console.warn(
-      `[DistributedState] Force cleaning ${failedConnectionIds.length} failed connections`,
-    );
+    console.warn(`[DistributedState] Force cleaning ${failedConnectionIds.length} failed connections`);
     const cleanupMulti = redis.multi();
     for (const connectionId of failedConnectionIds) {
       cleanupMulti.del(KEYS.connection(connectionId));

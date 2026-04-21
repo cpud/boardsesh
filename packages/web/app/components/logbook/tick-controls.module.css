@@ -203,22 +203,14 @@
 
 .scrollIndicatorLeft {
   left: 0;
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--neutral-400) 45%, transparent) 0%,
-    transparent 100%
-  );
+  background: linear-gradient(to right, color-mix(in srgb, var(--neutral-400) 45%, transparent) 0%, transparent 100%);
   mask-image: linear-gradient(to right, black 60%, transparent);
   -webkit-mask-image: linear-gradient(to right, black 60%, transparent);
 }
 
 .scrollIndicatorRight {
   right: 0;
-  background: linear-gradient(
-    to left,
-    color-mix(in srgb, var(--neutral-400) 45%, transparent) 0%,
-    transparent 100%
-  );
+  background: linear-gradient(to left, color-mix(in srgb, var(--neutral-400) 45%, transparent) 0%, transparent 100%);
   mask-image: linear-gradient(to left, black 60%, transparent);
   -webkit-mask-image: linear-gradient(to left, black 60%, transparent);
 }

@@ -50,12 +50,8 @@ export default function LogbookSwipeHintOrchestrator() {
       schedule(async () => {
         if (cancelled) return;
 
-        const contentEl = document.querySelector<HTMLElement>(
-          '#onboarding-logbook-card [data-swipe-content]',
-        );
-        const actionEl = document.querySelector<HTMLElement>(
-          '#onboarding-logbook-card [data-swipe-right-action]',
-        );
+        const contentEl = document.querySelector<HTMLElement>('#onboarding-logbook-card [data-swipe-content]');
+        const actionEl = document.querySelector<HTMLElement>('#onboarding-logbook-card [data-swipe-right-action]');
         if (!contentEl || !actionEl) return;
 
         const iconLayer = actionEl.firstElementChild as HTMLElement | null;

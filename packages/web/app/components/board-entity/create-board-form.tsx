@@ -39,13 +39,10 @@ export default function CreateBoardForm({
 
   const availableAngles = ANGLES[boardType as BoardName] ?? [];
 
-  const { execute } = useEntityMutation<CreateBoardMutationResponse, CreateBoardMutationVariables>(
-    CREATE_BOARD,
-    {
-      errorMessage: 'Failed to create board. It may already exist for this configuration.',
-      authRequiredMessage: 'You must be signed in to create a board',
-    },
-  );
+  const { execute } = useEntityMutation<CreateBoardMutationResponse, CreateBoardMutationVariables>(CREATE_BOARD, {
+    errorMessage: 'Failed to create board. It may already exist for this configuration.',
+    authRequiredMessage: 'You must be signed in to create a board',
+  });
 
   const handleSubmit = useCallback(
     async (values: {

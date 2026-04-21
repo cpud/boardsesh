@@ -16,9 +16,7 @@ export interface Countdown {
  * re-render every second forever after launch.
  */
 export function useCountdown(target: Date, active: boolean): Countdown {
-  const [remaining, setRemaining] = useState(() =>
-    active ? Math.max(0, target.getTime() - Date.now()) : 0,
-  );
+  const [remaining, setRemaining] = useState(() => (active ? Math.max(0, target.getTime() - Date.now()) : 0));
 
   useEffect(() => {
     if (!active) return;

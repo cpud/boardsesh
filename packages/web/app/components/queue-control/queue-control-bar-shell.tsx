@@ -12,20 +12,14 @@ interface QueueControlBarShellProps {
   message?: string;
 }
 
-export default function QueueControlBarShell({
-  message = 'No climb selected',
-}: QueueControlBarShellProps) {
+export default function QueueControlBarShell({ message = 'No climb selected' }: QueueControlBarShellProps) {
   return (
     <div
       id="onboarding-queue-bar"
       className={`queue-bar-shadow ${styles.queueBar}`}
       data-testid="queue-control-bar-shell"
     >
-      <MuiCard
-        variant="outlined"
-        className={styles.card}
-        sx={{ border: 'none', backgroundColor: 'transparent' }}
-      >
+      <MuiCard variant="outlined" className={styles.card} sx={{ border: 'none', backgroundColor: 'transparent' }}>
         <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
           <div className={styles.swipeWrapper}>
             <div
@@ -46,10 +40,7 @@ export default function QueueControlBarShell({
               >
                 <Box sx={{ flex: 1 }} className={styles.climbInfoCol}>
                   <div className={styles.climbInfoInner} style={{ gap: themeTokens.spacing[2] }}>
-                    <div
-                      aria-hidden="true"
-                      className={`${styles.boardPreviewContainer} ${styles.shellThumbnail}`}
-                    />
+                    <div aria-hidden="true" className={`${styles.boardPreviewContainer} ${styles.shellThumbnail}`} />
                     <span className={styles.shellTitle}>{message}</span>
                   </div>
                 </Box>

@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
-import {
-  readFiltersFromQuery,
-  readSortFromQuery,
-  filtersToQueryParams,
-} from '../logbook-url-utils';
+import { readFiltersFromQuery, readSortFromQuery, filtersToQueryParams } from '../logbook-url-utils';
 import { parseQueryParamBoolean, parseQueryParamInt } from '../url-utils';
 import { DEFAULT_FILTERS, DEFAULT_SORT, DEFAULT_ANGLE_RANGE } from '../logbook-preferences';
 
@@ -119,9 +115,7 @@ describe('readFiltersFromQuery', () => {
   });
 
   it('accepts valid leap-day dates', () => {
-    expect(readFiltersFromQuery(new URLSearchParams('from=2024-02-29')).fromDate).toBe(
-      '2024-02-29',
-    );
+    expect(readFiltersFromQuery(new URLSearchParams('from=2024-02-29')).fromDate).toBe('2024-02-29');
   });
 
   it('parses angle range with both params', () => {

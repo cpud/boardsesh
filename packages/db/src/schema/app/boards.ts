@@ -55,9 +55,7 @@ export const userBoards = pgTable(
     // can have the same board configuration.
     uniqueOwnerConfigIdx: uniqueIndex('user_boards_unique_owner_config')
       .on(table.ownerId, table.boardType, table.layoutId, table.sizeId, table.setIds)
-      .where(
-        sql`${table.deletedAt} IS NULL AND ${table.ownerId} != '00000000-0000-0000-0000-000000000000'`,
-      ),
+      .where(sql`${table.deletedAt} IS NULL AND ${table.ownerId} != '00000000-0000-0000-0000-000000000000'`),
     // Owner's owned boards
     ownerOwnedIdx: index('user_boards_owner_owned_idx')
       .on(table.ownerId, table.isOwned)
@@ -91,10 +89,7 @@ export const boardFollows = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => ({
-    uniqueUserBoard: uniqueIndex('board_follows_unique_user_board').on(
-      table.userId,
-      table.boardUuid,
-    ),
+    uniqueUserBoard: uniqueIndex('board_follows_unique_user_board').on(table.userId, table.boardUuid),
     userIdx: index('board_follows_user_idx').on(table.userId),
     boardUuidIdx: index('board_follows_board_uuid_idx').on(table.boardUuid),
   }),

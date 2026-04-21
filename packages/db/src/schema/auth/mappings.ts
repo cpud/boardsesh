@@ -1,12 +1,4 @@
-import {
-  pgTable,
-  bigserial,
-  text,
-  integer,
-  timestamp,
-  index,
-  uniqueIndex,
-} from 'drizzle-orm/pg-core';
+import { pgTable, bigserial, text, integer, timestamp, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import { users } from './users';
 
 // User board mappings table to link NextAuth users with Aurora board users
@@ -51,10 +43,7 @@ export const auroraCredentials = pgTable(
   },
   (table) => ({
     // Ensure unique credential per board type for each user
-    uniqueUserBoardCredential: uniqueIndex('unique_user_board_credential').on(
-      table.userId,
-      table.boardType,
-    ),
+    uniqueUserBoardCredential: uniqueIndex('unique_user_board_credential').on(table.userId, table.boardType),
     // Index for efficient lookup by user
     userCredentialsIdx: index('aurora_credentials_user_idx').on(table.userId),
   }),

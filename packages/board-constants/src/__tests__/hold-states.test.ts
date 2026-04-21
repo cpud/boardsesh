@@ -1,20 +1,9 @@
 import { describe, it, expect } from 'vite-plus/test';
-import {
-  HOLD_STATE_MAP,
-  STATE_TO_PRIMARY_CODE,
-  convertLitUpHoldsStringToMap,
-} from '../hold-states';
+import { HOLD_STATE_MAP, STATE_TO_PRIMARY_CODE, convertLitUpHoldsStringToMap } from '../hold-states';
 import type { BoardName } from '@boardsesh/shared-schema';
 
 describe('HOLD_STATE_MAP', () => {
-  const boards: BoardName[] = [
-    'kilter',
-    'tension',
-    'moonboard',
-    'decoy',
-    'touchstone',
-    'grasshopper',
-  ];
+  const boards: BoardName[] = ['kilter', 'tension', 'moonboard', 'decoy', 'touchstone', 'grasshopper'];
 
   it('has entries for every supported board', () => {
     for (const board of boards) {

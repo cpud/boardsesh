@@ -91,10 +91,7 @@ const CreateClimbHeatmapOverlay: React.FC<CreateClimbHeatmapOverlayProps> = ({
     onLoadingChange?.(loading);
   }, [loading, onLoadingChange]);
 
-  const heatmapMap = useMemo(
-    () => new Map(heatmapData?.map((data) => [data.holdId, data]) || []),
-    [heatmapData],
-  );
+  const heatmapMap = useMemo(() => new Map(heatmapData?.map((data) => [data.holdId, data]) || []), [heatmapData]);
 
   // Get value based on the selected hold types - memoized to avoid stale closures
   const getValue = useMemo(() => {

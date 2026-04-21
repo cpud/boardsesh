@@ -155,9 +155,7 @@ describe('useUpdateTick', () => {
   });
 
   it('extracts GraphQL error messages for the snackbar', async () => {
-    const graphqlError: Error & { response?: { errors: { message: string }[] } } = new Error(
-      'GraphQL error',
-    );
+    const graphqlError: Error & { response?: { errors: { message: string }[] } } = new Error('GraphQL error');
     graphqlError.response = {
       errors: [{ message: 'Not authorized to update this tick' }],
     };

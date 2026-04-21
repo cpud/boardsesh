@@ -7,8 +7,7 @@ import { roomManager } from '../services/room-manager';
 import { resetAllRateLimits } from '../utils/rate-limiter';
 
 const TEST_DB_NAME = 'boardsesh_backend_test';
-const connectionString =
-  process.env.DATABASE_URL || `postgresql://postgres:postgres@localhost:5433/${TEST_DB_NAME}`;
+const connectionString = process.env.DATABASE_URL || `postgresql://postgres:postgres@localhost:5433/${TEST_DB_NAME}`;
 
 // Parse connection string to get base URL (without database name)
 const baseConnectionString = connectionString.replace(/\/[^/]+$/, '/postgres');

@@ -41,11 +41,7 @@ export class SearchCacheService {
    * Format:
    *   `boardsesh:climb-search:{suffix}:{board}:{layout}:{size}:{sets}:{angle}:{paramsHash}`
    */
-  buildCacheKey(
-    params: ParsedBoardRouteParameters,
-    searchParams: ClimbSearchParams,
-    suffix: string,
-  ): string {
+  buildCacheKey(params: ParsedBoardRouteParameters, searchParams: ClimbSearchParams, suffix: string): string {
     // Filter out undefined values before hashing for a stable representation.
     const defined: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(searchParams)) {
@@ -55,10 +51,7 @@ export class SearchCacheService {
     }
 
     const sorted = sortKeysRecursively(defined);
-    const paramsHash = createHash('sha256')
-      .update(JSON.stringify(sorted))
-      .digest('hex')
-      .slice(0, 16);
+    const paramsHash = createHash('sha256').update(JSON.stringify(sorted)).digest('hex').slice(0, 16);
 
     const setsPart = [...params.set_ids].sort((a, b) => a - b).join(',');
 

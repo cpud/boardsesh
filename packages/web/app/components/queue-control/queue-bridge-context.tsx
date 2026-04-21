@@ -24,12 +24,7 @@ import {
   type GraphQLQueueActionsType,
   type GraphQLQueueDataType,
 } from '../graphql-queue/QueueContext';
-import type {
-  CurrentClimbDataType,
-  QueueListDataType,
-  SearchDataType,
-  SessionDataType,
-} from '../graphql-queue/types';
+import type { CurrentClimbDataType, QueueListDataType, SearchDataType, SessionDataType } from '../graphql-queue/types';
 import { usePersistentSession } from '../persistent-session';
 import { getBaseBoardPath } from '@/app/lib/url-utils';
 import { DEFAULT_SEARCH_PARAMS } from '@/app/lib/url-utils';
@@ -55,9 +50,7 @@ const LiveActivityBridge = dynamic(() => import('@/app/lib/live-activity/live-ac
  * match `getBaseBoardPath` output so queue restoration (`use-queue-restoration`)
  * and party-session transfer (`start-sesh-drawer`) keep working.
  */
-function deriveSeedStateFromClimb(
-  climb: Climb,
-): { boardDetails: BoardDetails; baseBoardPath: string } | null {
+function deriveSeedStateFromClimb(climb: Climb): { boardDetails: BoardDetails; baseBoardPath: string } | null {
   if (!climb.boardType || climb.layoutId == null) return null;
   const details = getBoardDetailsForPlaylist(climb.boardType, climb.layoutId);
   if (!details) return null;
@@ -110,11 +103,7 @@ interface QueueBridgeSetters {
     angle: Angle,
     baseBoardPath: string,
   ) => void;
-  updateContext: (
-    ctx: GraphQLQueueContextType,
-    actions: GraphQLQueueActionsType,
-    data: GraphQLQueueDataType,
-  ) => void;
+  updateContext: (ctx: GraphQLQueueContextType, actions: GraphQLQueueActionsType, data: GraphQLQueueDataType) => void;
   clear: () => void;
 }
 
@@ -137,12 +126,7 @@ function usePersistentSessionQueueAdapter(): {
   angle: Angle;
   hasActiveQueue: boolean;
   isHydrated: boolean;
-  syncFromInjected: (
-    q: ClimbQueueItem[],
-    current: ClimbQueueItem | null,
-    boardPath: string,
-    bd: BoardDetails,
-  ) => void;
+  syncFromInjected: (q: ClimbQueueItem[], current: ClimbQueueItem | null, boardPath: string, bd: BoardDetails) => void;
 } {
   const ps = usePersistentSession();
   const { showMessage } = useSnackbar();
@@ -259,8 +243,7 @@ function usePersistentSessionQueueAdapter(): {
     const r = latestRef.current;
     if (!r.boardDetails) return;
     const newQueue = r.queue.filter((q) => q.uuid !== item.uuid);
-    const newCurrent =
-      r.currentClimbQueueItem?.uuid === item.uuid ? (newQueue[0] ?? null) : r.currentClimbQueueItem;
+    const newCurrent = r.currentClimbQueueItem?.uuid === item.uuid ? (newQueue[0] ?? null) : r.currentClimbQueueItem;
     r.ps.setLocalQueueState(newQueue, newCurrent, r.baseBoardPath, r.boardDetails);
   }, []);
 
@@ -334,8 +317,7 @@ function usePersistentSessionQueueAdapter(): {
       climb,
     };
     const newQueue = r.queue.map((q) => (q.uuid === queueItemUuid ? updated : q));
-    const nextCurrent =
-      r.currentClimbQueueItem?.uuid === queueItemUuid ? updated : r.currentClimbQueueItem;
+    const nextCurrent = r.currentClimbQueueItem?.uuid === queueItemUuid ? updated : r.currentClimbQueueItem;
     r.ps.setLocalQueueState(newQueue, nextCurrent, r.baseBoardPath, r.boardDetails);
   }, []);
 
@@ -560,11 +542,7 @@ export function QueueBridgeProvider({ children }: { children: React.ReactNode })
   );
 
   const updateContext = useCallback(
-    (
-      ctx: GraphQLQueueContextType,
-      actions: GraphQLQueueActionsType,
-      data: GraphQLQueueDataType,
-    ) => {
+    (ctx: GraphQLQueueContextType, actions: GraphQLQueueActionsType, data: GraphQLQueueDataType) => {
       const actionsChanged = actions !== injectedActionsRef.current;
       const dataChanged = data !== injectedDataRef.current;
       injectedContextRef.current = ctx;
@@ -610,10 +588,7 @@ export function QueueBridgeProvider({ children }: { children: React.ReactNode })
     setDataVersion((v) => v + 1);
   }, []);
 
-  const setters = useMemo<QueueBridgeSetters>(
-    () => ({ inject, updateContext, clear }),
-    [inject, updateContext, clear],
-  );
+  const setters = useMemo<QueueBridgeSetters>(() => ({ inject, updateContext, clear }), [inject, updateContext, clear]);
 
   // Derive fine-grained context values from the effective data
   const effectiveCurrentClimb: CurrentClimbDataType = useMemo(
@@ -779,16 +754,7 @@ export function QueueBridgeInjector({ boardDetails, angle }: QueueBridgeInjector
       inject(queueContext, queueActions, queueData, boardDetails, angle, baseBoardPath);
       hasInjectedRef.current = true;
     }
-  }, [
-    queueContext,
-    queueActions,
-    queueData,
-    updateContext,
-    inject,
-    boardDetails,
-    angle,
-    baseBoardPath,
-  ]);
+  }, [queueContext, queueActions, queueData, updateContext, inject, boardDetails, angle, baseBoardPath]);
 
   return null;
 }

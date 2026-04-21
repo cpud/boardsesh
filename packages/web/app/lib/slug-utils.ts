@@ -26,16 +26,12 @@ export type SetRow = {
 };
 
 function findLayoutBySlug(rows: LayoutRow[], slug: string): LayoutRow | null {
-  const normalizedSlug = slug
-    .toLowerCase()
-    .replace(/^(kilter|tension|decoy|touchstone|grasshopper|moonboard)-/, '');
+  const normalizedSlug = slug.toLowerCase().replace(/^(kilter|tension|decoy|touchstone|grasshopper|moonboard)-/, '');
 
   return (
     rows.find(
       (layout) =>
-        layout.name &&
-        (generateLayoutSlug(layout.name) === slug ||
-          generateLayoutSlug(layout.name) === normalizedSlug),
+        layout.name && (generateLayoutSlug(layout.name) === slug || generateLayoutSlug(layout.name) === normalizedSlug),
     ) ?? null
   );
 }
@@ -110,10 +106,7 @@ function findSetsBySlug(rows: SetRow[], slug: string): SetRow[] {
 }
 
 // Reverse lookup functions for slug to ID conversion
-export const getLayoutBySlug = async (
-  board_name: BoardName,
-  slug: string,
-): Promise<LayoutRow | null> => {
+export const getLayoutBySlug = async (board_name: BoardName, slug: string): Promise<LayoutRow | null> => {
   const staticLayout = findLayoutBySlug(
     getAllLayouts(board_name).map((layout) => ({ id: layout.id, name: layout.name })),
     slug,
@@ -127,9 +120,7 @@ export const getLayoutBySlug = async (
   const rows = await dbz
     .select({ id: layouts.id, name: layouts.name })
     .from(layouts)
-    .where(
-      and(eq(layouts.boardType, board_name), eq(layouts.isListed, true), isNull(layouts.password)),
-    );
+    .where(and(eq(layouts.boardType, board_name), eq(layouts.isListed, true), isNull(layouts.password)));
 
   const layout = findLayoutBySlug(
     rows.filter((row): row is LayoutRow => row.name !== null),
@@ -167,10 +158,7 @@ export const getSizeBySlug = async (
     .from(productSizes)
     .innerJoin(
       layouts,
-      and(
-        eq(productSizes.boardType, layouts.boardType),
-        eq(productSizes.productId, layouts.productId),
-      ),
+      and(eq(productSizes.boardType, layouts.boardType), eq(productSizes.productId, layouts.productId)),
     )
     .where(and(eq(layouts.boardType, board_name), eq(layouts.id, layout_id)));
 
@@ -217,10 +205,7 @@ export const getSetsBySlug = async (
     .from(sets)
     .innerJoin(
       productSizesLayoutsSets,
-      and(
-        eq(sets.boardType, productSizesLayoutsSets.boardType),
-        eq(sets.id, productSizesLayoutsSets.setId),
-      ),
+      and(eq(sets.boardType, productSizesLayoutsSets.boardType), eq(sets.id, productSizesLayoutsSets.setId)),
     )
     .where(
       and(

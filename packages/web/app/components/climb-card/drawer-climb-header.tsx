@@ -17,12 +17,7 @@ export default function DrawerClimbHeader({ climb, boardDetails }: DrawerClimbHe
   return (
     <div className={styles.drawerHeader}>
       <div style={{ flexShrink: 0, width: 56 }}>
-        <ClimbThumbnail
-          boardDetails={boardDetails}
-          currentClimb={climb}
-          pathname={pathname}
-          maxHeight="80px"
-        />
+        <ClimbThumbnail boardDetails={boardDetails} currentClimb={climb} pathname={pathname} maxHeight="80px" />
       </div>
       <ClimbTitle
         climb={climb}

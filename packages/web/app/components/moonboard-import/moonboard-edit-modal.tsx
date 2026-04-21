@@ -90,16 +90,8 @@ export default function MoonBoardEditModal({
 
   const initialHoldsMap = convertClimbToHoldsMap(climb);
 
-  const {
-    litUpHoldsMap,
-    setLitUpHoldsMap,
-    setHoldState,
-    startingCount,
-    finishCount,
-    handCount,
-    totalHolds,
-    isValid,
-  } = useMoonBoardCreateClimb({ initialHoldsMap });
+  const { litUpHoldsMap, setLitUpHoldsMap, setHoldState, startingCount, finishCount, handCount, totalHolds, isValid } =
+    useMoonBoardCreateClimb({ initialHoldsMap });
 
   const picker = useHoldTypePicker({ litUpHoldsMap, setHoldState });
 
@@ -145,40 +137,15 @@ export default function MoonBoardEditModal({
               onClose={picker.handleClose}
             />
 
-            <Stack
-              direction="row"
-              spacing={1.5}
-              flexWrap="wrap"
-              justifyContent="center"
-              className={styles.holdCounts}
-            >
-              <HoldIndicator
-                count={startingCount}
-                max={2}
-                color={themeTokens.colors.error}
-                label="Start"
-              />
+            <Stack direction="row" spacing={1.5} flexWrap="wrap" justifyContent="center" className={styles.holdCounts}>
+              <HoldIndicator count={startingCount} max={2} color={themeTokens.colors.error} label="Start" />
               <HoldIndicator count={handCount} color={themeTokens.colors.primary} label="Hand" />
-              <HoldIndicator
-                count={finishCount}
-                max={2}
-                color={themeTokens.colors.success}
-                label="Finish"
-              />
-              <HoldIndicator
-                count={totalHolds}
-                color={themeTokens.colors.secondary}
-                label="Total"
-              />
+              <HoldIndicator count={finishCount} max={2} color={themeTokens.colors.success} label="Finish" />
+              <HoldIndicator count={totalHolds} color={themeTokens.colors.secondary} label="Total" />
             </Stack>
 
             {!isValid && totalHolds > 0 && (
-              <Typography
-                variant="body2"
-                component="span"
-                color="text.secondary"
-                className={styles.validationHint}
-              >
+              <Typography variant="body2" component="span" color="text.secondary" className={styles.validationHint}>
                 A valid climb needs at least 1 start hold and 1 finish hold
               </Typography>
             )}

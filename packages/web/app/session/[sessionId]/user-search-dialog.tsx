@@ -35,12 +35,7 @@ interface SearchResult {
   avatarUrl: string | null;
 }
 
-export default function UserSearchDialog({
-  open,
-  onClose,
-  onSelectUser,
-  excludeUserIds = [],
-}: UserSearchDialogProps) {
+export default function UserSearchDialog({ open, onClose, onSelectUser, excludeUserIds = [] }: UserSearchDialogProps) {
   const { token: authToken } = useWsAuthToken();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -59,10 +54,9 @@ export default function UserSearchDialog({
       setLoading(true);
       try {
         const client = createGraphQLHttpClient(authToken);
-        const response = await client.request<SearchUsersQueryResponse, SearchUsersQueryVariables>(
-          SEARCH_USERS,
-          { input: { query: query.trim(), limit: 10 } },
-        );
+        const response = await client.request<SearchUsersQueryResponse, SearchUsersQueryVariables>(SEARCH_USERS, {
+          input: { query: query.trim(), limit: 10 },
+        });
 
         const filtered = response.searchUsers.results
           .map((r) => ({
@@ -134,10 +128,7 @@ export default function UserSearchDialog({
                     {!user.avatarUrl && <PersonOutlined sx={{ fontSize: 16 }} />}
                   </Avatar>
                 </ListItemAvatar>
-                <ListItemText
-                  primary={user.displayName || 'Climber'}
-                  primaryTypographyProps={{ variant: 'body2' }}
-                />
+                <ListItemText primary={user.displayName || 'Climber'} primaryTypographyProps={{ variant: 'body2' }} />
               </ListItemButton>
             ))}
           </List>

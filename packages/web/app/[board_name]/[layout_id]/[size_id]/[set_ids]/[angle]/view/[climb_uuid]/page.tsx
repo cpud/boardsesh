@@ -18,9 +18,7 @@ import { scheduleOverlayWarming } from '@/app/lib/warm-overlay-cache';
 import { buildOgBoardRenderUrl } from '@/app/components/board-renderer/util';
 import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from '@/app/lib/seo/og';
 
-export async function generateMetadata(props: {
-  params: Promise<BoardRouteParametersWithUuid>;
-}): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<BoardRouteParametersWithUuid> }): Promise<Metadata> {
   const params = await props.params;
 
   try {
@@ -79,9 +77,7 @@ export async function generateMetadata(props: {
   }
 }
 
-export default async function DynamicResultsPage(props: {
-  params: Promise<BoardRouteParametersWithUuid>;
-}) {
+export default async function DynamicResultsPage(props: { params: Promise<BoardRouteParametersWithUuid> }) {
   const params = await props.params;
 
   try {
@@ -89,9 +85,7 @@ export default async function DynamicResultsPage(props: {
 
     if (isNumericFormat || isUuidOnly(params.climb_uuid)) {
       const currentClimb = await getClimb(parsedParams);
-      const layouts = await import('@/app/lib/data/queries').then((m) =>
-        m.getLayouts(parsedParams.board_name),
-      );
+      const layouts = await import('@/app/lib/data/queries').then((m) => m.getLayouts(parsedParams.board_name));
       const sizes = await import('@/app/lib/data/queries').then((m) =>
         m.getSizes(parsedParams.board_name, parsedParams.layout_id),
       );

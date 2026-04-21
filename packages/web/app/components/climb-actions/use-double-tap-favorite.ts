@@ -25,9 +25,7 @@ interface UseDoubleTapFavoriteReturn {
  * or as `onCoverDoubleClick` to ClimbCard — both already call useDoubleTap
  * internally).
  */
-export function useDoubleTapFavorite({
-  climbUuid,
-}: UseDoubleTapFavoriteOptions): UseDoubleTapFavoriteReturn {
+export function useDoubleTapFavorite({ climbUuid }: UseDoubleTapFavoriteOptions): UseDoubleTapFavoriteReturn {
   const { isFavorited, toggleFavorite, isAuthenticated } = useFavorite({ climbUuid });
   const [showHeart, setShowHeart] = useState(false);
   const { openAuthModal } = useAuthModal();

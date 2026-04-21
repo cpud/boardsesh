@@ -45,12 +45,7 @@ import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import { getExcludedClimbActions } from '@/app/lib/climb-action-utils';
 import { TENSION_KILTER_GRADES, getGradesForBoard } from '@/app/lib/board-data';
 import AscentThumbnail from '@/app/components/activity-feed/ascent-thumbnail';
-import {
-  InlineStarPicker,
-  InlineGradePicker,
-  InlineTriesPicker,
-  type ExpandedControl,
-} from '../logbook/tick-controls';
+import { InlineStarPicker, InlineGradePicker, InlineTriesPicker, type ExpandedControl } from '../logbook/tick-controls';
 import { ascentFeedItemToClimb } from './ascent-to-climb';
 import ascentStyles from '@/app/components/climb-card/ascent-status.module.css';
 import drawerCss from '@/app/components/swipeable-drawer/swipeable-drawer.module.css';
@@ -173,12 +168,9 @@ function LogbookGradeRow({
   const { formatGrade, getGradeColor } = useGradeFormat();
 
   const consensusFormatted = consensusDifficultyName ? formatGrade(consensusDifficultyName) : null;
-  const consensusColor = consensusDifficultyName
-    ? getGradeColor(consensusDifficultyName, isDark)
-    : undefined;
+  const consensusColor = consensusDifficultyName ? getGradeColor(consensusDifficultyName, isDark) : undefined;
   const consensusLabel = consensusFormatted ?? consensusDifficultyName ?? '\u2014';
-  const consensusStarsLabel =
-    qualityAverage != null ? Math.round(qualityAverage).toString() : '\u2014';
+  const consensusStarsLabel = qualityAverage != null ? Math.round(qualityAverage).toString() : '\u2014';
 
   // For non-editing mode, use item values directly
   const userFormatted = difficultyName ? formatGrade(difficultyName) : null;
@@ -528,18 +520,15 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
     // Separate ref for the left action layer DOM element so we can manipulate it directly
     const leftLayerElRef = useRef<HTMLDivElement | null>(null);
 
-    const handleSwipeZoneChange = useCallback(
-      (zone: import('@/app/hooks/use-swipe-actions').SwipeZone) => {
-        const el = leftLayerElRef.current;
-        if (!el) return;
-        if (zone === 'right-long') {
-          el.classList.add(styles.deleteReady);
-        } else {
-          el.classList.remove(styles.deleteReady);
-        }
-      },
-      [],
-    );
+    const handleSwipeZoneChange = useCallback((zone: import('@/app/hooks/use-swipe-actions').SwipeZone) => {
+      const el = leftLayerElRef.current;
+      if (!el) return;
+      if (zone === 'right-long') {
+        el.classList.add(styles.deleteReady);
+      } else {
+        el.classList.remove(styles.deleteReady);
+      }
+    }, []);
 
     const { swipeHandlers, contentRef, leftActionRef, rightActionRef } = useSwipeActions({
       onSwipeLeft: handleSwipeLeft,
@@ -618,10 +607,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
 
     return (
       <>
-        <div
-          className={styles.container}
-          id={isSwipeHintTarget ? 'onboarding-logbook-card' : undefined}
-        >
+        <div className={styles.container} id={isSwipeHintTarget ? 'onboarding-logbook-card' : undefined}>
           {/* aria-hidden: the 3-dot menu exposes Delete to assistive tech. */}
           <div ref={leftActionCombinedRef} className={styles.leftActionLayer} aria-hidden="true">
             <DeleteOutlined className={styles.swipeIcon} />
@@ -629,12 +615,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
           </div>
 
           {/* aria-hidden: the 3-dot menu exposes Edit to assistive tech. */}
-          <div
-            ref={rightActionRef}
-            className={styles.rightActionLayer}
-            aria-hidden="true"
-            data-swipe-right-action=""
-          >
+          <div ref={rightActionRef} className={styles.rightActionLayer} aria-hidden="true" data-swipe-right-action="">
             <EditOutlined className={styles.swipeIcon} />
           </div>
 
@@ -645,9 +626,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
             data-swipe-content=""
             role={!isEditing && queueActions ? 'button' : undefined}
             tabIndex={!isEditing && queueActions ? 0 : undefined}
-            aria-label={
-              !isEditing && queueActions ? `Set ${item.climbName} as active climb` : undefined
-            }
+            aria-label={!isEditing && queueActions ? `Set ${item.climbName} as active climb` : undefined}
             onClick={handleRowClick}
             onKeyDown={handleRowKeyDown}
           >
@@ -692,11 +671,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
 
                 {/* Picker panel (edit mode only) */}
                 {isEditing && (
-                  <div
-                    className={
-                      styles.pickerPanel + (expandedControl ? ' ' + styles.pickerPanelExpanded : '')
-                    }
-                  >
+                  <div className={styles.pickerPanel + (expandedControl ? ' ' + styles.pickerPanelExpanded : '')}>
                     <div className={styles.pickerPanelContent}>
                       {renderedControl === 'stars' && (
                         <div className={styles.compactStarPicker}>
@@ -768,11 +743,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
                       '&:hover': { backgroundColor: themeTokens.colors.success },
                     }}
                   >
-                    {isSaving ? (
-                      <CircularProgress size={18} color="inherit" />
-                    ) : (
-                      <SaveOutlined sx={{ fontSize: 18 }} />
-                    )}
+                    {isSaving ? <CircularProgress size={18} color="inherit" /> : <SaveOutlined sx={{ fontSize: 18 }} />}
                   </IconButton>
                 </div>
               ) : (
@@ -792,9 +763,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
               via grid-template-rows rather than popping in/out. */}
             <div
               className={
-                !isEditing && !item.comment
-                  ? `${styles.commentRow} ${styles.commentRowEmpty}`
-                  : styles.commentRow
+                !isEditing && !item.comment ? `${styles.commentRow} ${styles.commentRowEmpty}` : styles.commentRow
               }
             >
               <div className={styles.commentRowContent}>
@@ -871,11 +840,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
         {boardDetails && (
           <SwipeableDrawer
             title={
-              <div
-                data-swipe-blocked=""
-                {...actionsDragHandlers}
-                className={drawerCss.dragHeaderWrapper}
-              >
+              <div data-swipe-blocked="" {...actionsDragHandlers} className={drawerCss.dragHeaderWrapper}>
                 <DrawerClimbHeader climb={climb} boardDetails={boardDetails} />
               </div>
             }

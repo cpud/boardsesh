@@ -39,10 +39,7 @@ const SearchResultsFooter = () => {
           <Stack direction="row" spacing={1}>
             <FilterListOutlined style={{ color: themeTokens.colors.primary }} />
             <MuiTypography variant="body2" component="span" color="text.secondary">
-              <span className={styles.resultBadge}>
-                {(totalSearchResultCount ?? 0).toLocaleString()}
-              </span>{' '}
-              results
+              <span className={styles.resultBadge}>{(totalSearchResultCount ?? 0).toLocaleString()}</span> results
             </MuiTypography>
           </Stack>
         )}

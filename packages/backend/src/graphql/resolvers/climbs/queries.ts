@@ -6,10 +6,7 @@ import type {
   ConnectionContext,
 } from '@boardsesh/shared-schema';
 import { SUPPORTED_BOARDS, USER_SPECIFIC_SEARCH_PARAMS } from '@boardsesh/shared-schema';
-import type {
-  ClimbSearchParams,
-  ParsedBoardRouteParameters,
-} from '../../../db/queries/climbs/index';
+import type { ClimbSearchParams, ParsedBoardRouteParameters } from '../../../db/queries/climbs/index';
 import { getClimbByUuid } from '../../../db/queries/climbs/index';
 import { isValidBoardName } from '../../../db/queries/util/table-select';
 import { applyRateLimit, validateInput } from '../shared/helpers';
@@ -51,9 +48,7 @@ export const climbQueries = {
 
     // Validate board name
     if (!isValidBoardName(input.boardName)) {
-      throw new Error(
-        `Invalid board name: ${input.boardName}. Must be one of: ${SUPPORTED_BOARDS.join(', ')}`,
-      );
+      throw new Error(`Invalid board name: ${input.boardName}. Must be one of: ${SUPPORTED_BOARDS.join(', ')}`);
     }
 
     // Parse setIds from comma-separated string
@@ -161,9 +156,7 @@ export const climbQueries = {
     validateInput(BoardNameSchema, boardName, 'boardName');
 
     if (!isValidBoardName(boardName)) {
-      throw new Error(
-        `Invalid board name: ${boardName}. Must be one of: ${SUPPORTED_BOARDS.join(', ')}`,
-      );
+      throw new Error(`Invalid board name: ${boardName}. Must be one of: ${SUPPORTED_BOARDS.join(', ')}`);
     }
 
     // Validate all parameters
@@ -172,8 +165,7 @@ export const climbQueries = {
     if (angle < 0 || angle > 90) throw new Error('Invalid angle: must be between 0 and 90');
     validateInput(ExternalUUIDSchema, climbUuid, 'climbUuid');
 
-    if (DEBUG)
-      console.log('[climb] Fetching:', { boardName, layoutId, sizeId, setIds, angle, climbUuid });
+    if (DEBUG) console.log('[climb] Fetching:', { boardName, layoutId, sizeId, setIds, angle, climbUuid });
 
     const climb = await getClimbByUuid({
       board_name: boardName as BoardName,
@@ -189,17 +181,12 @@ export const climbQueries = {
   /**
    * Get climb stats history for the last 12 months
    */
-  climbStatsHistory: async (
-    _: unknown,
-    { boardName, climbUuid }: { boardName: string; climbUuid: string },
-  ) => {
+  climbStatsHistory: async (_: unknown, { boardName, climbUuid }: { boardName: string; climbUuid: string }) => {
     validateInput(BoardNameSchema, boardName, 'boardName');
     validateInput(ExternalUUIDSchema, climbUuid, 'climbUuid');
 
     if (!isValidBoardName(boardName)) {
-      throw new Error(
-        `Invalid board name: ${boardName}. Must be one of: ${SUPPORTED_BOARDS.join(', ')}`,
-      );
+      throw new Error(`Invalid board name: ${boardName}. Must be one of: ${SUPPORTED_BOARDS.join(', ')}`);
     }
 
     const twelveMonthsAgo = new Date();

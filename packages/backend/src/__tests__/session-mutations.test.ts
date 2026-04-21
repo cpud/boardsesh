@@ -108,11 +108,7 @@ describe('Session Mutation Resolvers', () => {
 
     it('rejects empty sessionId via validation', async () => {
       await expect(
-        sessionEditMutations.updateInferredSession(
-          null,
-          { input: { sessionId: '', name: 'Test' } },
-          makeCtx(),
-        ),
+        sessionEditMutations.updateInferredSession(null, { input: { sessionId: '', name: 'Test' } }, makeCtx()),
       ).rejects.toThrow();
     });
 
@@ -144,11 +140,7 @@ describe('Session Mutation Resolvers', () => {
 
     it('rejects empty userId via validation', async () => {
       await expect(
-        sessionEditMutations.addUserToSession(
-          null,
-          { input: { sessionId: 'session-1', userId: '' } },
-          makeCtx(),
-        ),
+        sessionEditMutations.addUserToSession(null, { input: { sessionId: 'session-1', userId: '' } }, makeCtx()),
       ).rejects.toThrow();
     });
 

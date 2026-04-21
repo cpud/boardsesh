@@ -19,9 +19,7 @@ import type { CssBarChartBar, GroupedBar } from '../css-bar-chart';
 
 describe('CssBarChart', () => {
   it('renders with correct aria-label', () => {
-    const bars: CssBarChartBar[] = [
-      { key: 'a', label: 'A', segments: [{ value: 5, color: 'red' }] },
-    ];
+    const bars: CssBarChartBar[] = [{ key: 'a', label: 'A', segments: [{ value: 5, color: 'red' }] }];
     render(<CssBarChart bars={bars} />);
     expect(screen.getByRole('img', { name: 'Bar chart' })).toBeTruthy();
   });
@@ -82,9 +80,7 @@ describe('CssBarChart', () => {
 
 describe('GroupedBarChart', () => {
   it('renders with correct aria-label', () => {
-    const bars: GroupedBar[] = [
-      { key: 'v3', label: 'V3', values: [{ value: 2, color: 'green', label: 'Flash' }] },
-    ];
+    const bars: GroupedBar[] = [{ key: 'v3', label: 'V3', values: [{ value: 2, color: 'green', label: 'Flash' }] }];
     render(<GroupedBarChart bars={bars} />);
     expect(screen.getByRole('img', { name: 'Grouped bar chart' })).toBeTruthy();
   });

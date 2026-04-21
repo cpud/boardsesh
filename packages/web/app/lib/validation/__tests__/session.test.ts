@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
-import {
-  SessionIdSchema,
-  SessionNameSchema,
-  SESSION_ID_MAX_LENGTH,
-  SESSION_NAME_MAX_LENGTH,
-} from '../session';
+import { SessionIdSchema, SessionNameSchema, SESSION_ID_MAX_LENGTH, SESSION_NAME_MAX_LENGTH } from '../session';
 
 describe('SessionIdSchema', () => {
   describe('valid session IDs', () => {
@@ -69,9 +64,7 @@ describe('SessionIdSchema', () => {
     it('should reject strings with spaces', () => {
       const result = SessionIdSchema.safeParse('my session');
       expect(result.success).toBe(false);
-      expect(result.error?.issues[0]?.message).toBe(
-        'Session ID can only contain letters, numbers, and hyphens',
-      );
+      expect(result.error?.issues[0]?.message).toBe('Session ID can only contain letters, numbers, and hyphens');
     });
 
     it('should reject strings with special characters', () => {

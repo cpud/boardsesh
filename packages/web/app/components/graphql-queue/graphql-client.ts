@@ -1,8 +1,5 @@
 import { createClient, Client, Sink } from 'graphql-ws';
-import {
-  connectionManager,
-  KEEP_ALIVE_MS,
-} from '../connection-manager/websocket-connection-manager';
+import { connectionManager, KEEP_ALIVE_MS } from '../connection-manager/websocket-connection-manager';
 
 export type { Client };
 
@@ -16,10 +13,7 @@ let clientCounter = 0;
 // Cache for parsed operation names to avoid regex on every call
 const operationNameCache = new WeakMap<{ query: string }, string>();
 
-function getOperationName(
-  operation: { query: string },
-  type: 'mutation' | 'query' | 'subscription',
-): string {
+function getOperationName(operation: { query: string }, type: 'mutation' | 'query' | 'subscription'): string {
   const cached = operationNameCache.get(operation);
   if (cached) return cached;
 
@@ -63,10 +57,7 @@ export function createGraphQLClient(
 
   const clientId = ++clientCounter;
 
-  if (DEBUG)
-    console.log(
-      `[GraphQL] Creating client #${clientId} for ${url} (authenticated: ${!!authToken})`,
-    );
+  if (DEBUG) console.log(`[GraphQL] Creating client #${clientId} for ${url} (authenticated: ${!!authToken})`);
 
   let hasConnectedOnce = false;
 
@@ -79,8 +70,7 @@ export function createGraphQLClient(
     constructor(url: string | URL, protocols?: string | string[]) {
       super(url, protocols);
       this.addEventListener('error', (event) => {
-        if (DEBUG)
-          console.log(`[GraphQL] Client #${clientId} WebSocket native error suppressed`, event);
+        if (DEBUG) console.log(`[GraphQL] Client #${clientId} WebSocket native error suppressed`, event);
       });
     }
   }
@@ -92,12 +82,8 @@ export function createGraphQLClient(
     shouldRetry: () => true,
     // Exponential backoff: 1s, 2s, 4s, 8s, 16s, 30s, 30s, ...
     retryWait: async (retryCount) => {
-      const delay = Math.min(
-        INITIAL_RETRY_DELAY_MS * Math.pow(BACKOFF_MULTIPLIER, retryCount),
-        MAX_RETRY_DELAY_MS,
-      );
-      if (DEBUG)
-        console.log(`[GraphQL] Client #${clientId} retry #${retryCount + 1}, waiting ${delay}ms`);
+      const delay = Math.min(INITIAL_RETRY_DELAY_MS * Math.pow(BACKOFF_MULTIPLIER, retryCount), MAX_RETRY_DELAY_MS);
+      if (DEBUG) console.log(`[GraphQL] Client #${clientId} retry #${retryCount + 1}, waiting ${delay}ms`);
       await new Promise((resolve) => setTimeout(resolve, delay));
     },
     // Lazy connection - only connects when first subscription/mutation is made
@@ -108,8 +94,7 @@ export function createGraphQLClient(
     connectionParams: authToken ? { authToken } : undefined,
     on: {
       connected: () => {
-        if (DEBUG)
-          console.log(`[GraphQL] Client #${clientId} connected (first: ${!hasConnectedOnce})`);
+        if (DEBUG) console.log(`[GraphQL] Client #${clientId} connected (first: ${!hasConnectedOnce})`);
         if (hasConnectedOnce && onReconnectCallback) {
           if (DEBUG) console.log(`[GraphQL] Client #${clientId} reconnected, calling onReconnect`);
           onReconnectCallback();

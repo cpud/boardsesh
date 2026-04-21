@@ -215,8 +215,7 @@ export function buildWeeklyBars(
     allWeekKeys.push(`${current.isoWeekYear()}-W${current.isoWeek()}`);
     current = current.add(1, 'week');
   }
-  const weekKeys =
-    allWeekKeys.length > DEFAULT_MAX_WEEKS ? allWeekKeys.slice(-DEFAULT_MAX_WEEKS) : allWeekKeys;
+  const weekKeys = allWeekKeys.length > DEFAULT_MAX_WEEKS ? allWeekKeys.slice(-DEFAULT_MAX_WEEKS) : allWeekKeys;
 
   const weeklyData: Record<string, Record<string, number>> = {};
   entries.forEach((entry) => {
@@ -234,17 +233,13 @@ export function buildWeeklyBars(
     Object.keys(weekGrades).forEach((grade) => usedGrades.add(grade));
   });
   const activeGrades = sortGrades(
-    Array.from(usedGrades).filter((grade) =>
-      weekKeys.some((wk) => (weeklyData[wk]?.[grade] || 0) > 0),
-    ),
+    Array.from(usedGrades).filter((grade) => weekKeys.some((wk) => (weeklyData[wk]?.[grade] || 0) > 0)),
     gradeFormat,
   );
 
   if (activeGrades.length === 0) return null;
 
-  const spansYears =
-    weekKeys.length > 1 &&
-    weekKeys[0].split('-')[0] !== weekKeys[weekKeys.length - 1].split('-')[0];
+  const spansYears = weekKeys.length > 1 && weekKeys[0].split('-')[0] !== weekKeys[weekKeys.length - 1].split('-')[0];
 
   return weekKeys.map((wk) => {
     const [year, weekPart] = wk.split('-');
@@ -386,9 +381,7 @@ export function buildVPointsTimeline(
 
   // Collect all entries to find the overall time range
   const allEntries = activeLayouts.flatMap((lk) => entriesByLayout[lk]);
-  const sorted = [...allEntries].sort(
-    (a, b) => new Date(a.climbed_at).getTime() - new Date(b.climbed_at).getTime(),
-  );
+  const sorted = [...allEntries].sort((a, b) => new Date(a.climbed_at).getTime() - new Date(b.climbed_at).getTime());
 
   // Build full week key range
   const allWeekKeys: string[] = [];
@@ -434,8 +427,7 @@ export function buildVPointsTimeline(
 
   // Week label formatting
   const spansYears =
-    cappedKeys.length > 1 &&
-    cappedKeys[0].split('-')[0] !== cappedKeys[cappedKeys.length - 1].split('-')[0];
+    cappedKeys.length > 1 && cappedKeys[0].split('-')[0] !== cappedKeys[cappedKeys.length - 1].split('-')[0];
 
   const weekLabels = cappedKeys.map((wk) => {
     const [year, weekPart] = wk.split('-');
@@ -503,8 +495,7 @@ export function buildStatisticsSummary(
 
   const layoutsWithExactPercentages = profileStats.layoutStats
     .map((stats) => {
-      const exactPercentage =
-        totalAscents > 0 ? (stats.distinctClimbCount / totalAscents) * 100 : 0;
+      const exactPercentage = totalAscents > 0 ? (stats.distinctClimbCount / totalAscents) * 100 : 0;
       const grades: Record<string, number> = {};
       stats.gradeCounts.forEach(({ grade, count }) => {
         const difficultyNum = parseInt(grade, 10);
@@ -534,16 +525,12 @@ export function buildStatisticsSummary(
   // Distribute remaining percentage points using largest remainder method
   const totalFloored = layoutsWithExactPercentages.reduce((sum, l) => sum + l.percentage, 0);
   const remaining = 100 - totalFloored;
-  const sortedByRemainder = [...layoutsWithExactPercentages].sort(
-    (a, b) => b.remainder - a.remainder,
-  );
+  const sortedByRemainder = [...layoutsWithExactPercentages].sort((a, b) => b.remainder - a.remainder);
   for (let i = 0; i < remaining && i < sortedByRemainder.length; i++) {
     sortedByRemainder[i].percentage += 1;
   }
 
-  const layoutPercentages = layoutsWithExactPercentages.map(
-    ({ exactPercentage, remainder, ...rest }) => rest,
-  );
+  const layoutPercentages = layoutsWithExactPercentages.map(({ exactPercentage, remainder, ...rest }) => rest);
 
   return { totalAscents, layoutPercentages };
 }

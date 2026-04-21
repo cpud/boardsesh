@@ -52,9 +52,7 @@ export function useHoldTypePicker({ litUpHoldsMap, setHoldState }: UseHoldTypePi
     setPickerState(null);
   }, []);
 
-  const currentState: PickerSelection = pickerState
-    ? (litUpHoldsMap[pickerState.holdId]?.state ?? 'OFF')
-    : 'OFF';
+  const currentState: PickerSelection = pickerState ? (litUpHoldsMap[pickerState.holdId]?.state ?? 'OFF') : 'OFF';
 
   return {
     anchorEl: pickerState?.anchor ?? null,

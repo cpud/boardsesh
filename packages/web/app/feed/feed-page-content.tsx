@@ -40,22 +40,12 @@ export default function FeedPageContent({
 
   // Trust the SSR hint during the loading phase to prevent flash of unauthenticated content
   const isAuthenticated =
-    status === 'authenticated'
-      ? true
-      : status === 'loading'
-        ? (isAuthenticatedSSR ?? false)
-        : false;
-  const { boards: myBoards, isLoading: isLoadingBoards } = useMyBoards(
-    isAuthenticated,
-    50,
-    initialMyBoards,
-  );
+    status === 'authenticated' ? true : status === 'loading' ? (isAuthenticatedSSR ?? false) : false;
+  const { boards: myBoards, isLoading: isLoadingBoards } = useMyBoards(isAuthenticated, 50, initialMyBoards);
 
   // Read state from URL params (with fallbacks to server-provided initial values)
   const tabParam = searchParams.get('tab');
-  const activeTab: FeedTab = VALID_TABS.includes(tabParam as FeedTab)
-    ? (tabParam as FeedTab)
-    : initialTab;
+  const activeTab: FeedTab = VALID_TABS.includes(tabParam as FeedTab) ? (tabParam as FeedTab) : initialTab;
   const selectedBoardUuid = searchParams.get('board') || initialBoardUuid || null;
   const [findClimbersOpen, setFindClimbersOpen] = useState(false);
 
@@ -103,10 +93,7 @@ export default function FeedPageContent({
       }}
     >
       {/* Feed */}
-      <Box
-        component="main"
-        sx={{ flex: 1, px: 2, py: 2, pt: 'calc(var(--global-header-height) + 16px)' }}
-      >
+      <Box component="main" sx={{ flex: 1, px: 2, py: 2, pt: 'calc(var(--global-header-height) + 16px)' }}>
         {isAuthenticated && (
           <BoardFilterStrip
             boards={myBoards}
@@ -115,13 +102,7 @@ export default function FeedPageContent({
             onBoardSelect={handleBoardSelect}
           />
         )}
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          variant="fullWidth"
-          sx={{ mb: 2 }}
-          aria-label="Feed tabs"
-        >
+        <Tabs value={activeTab} onChange={handleTabChange} variant="fullWidth" sx={{ mb: 2 }} aria-label="Feed tabs">
           <Tab label="Sessions" value="sessions" />
           <Tab label="Proposals" value="proposals" />
           <Tab label="Comments" value="comments" />
@@ -136,20 +117,12 @@ export default function FeedPageContent({
           />
         )}
 
-        {activeTab === 'proposals' && (
-          <ProposalFeed isAuthenticated={isAuthenticated} boardUuid={selectedBoardUuid} />
-        )}
+        {activeTab === 'proposals' && <ProposalFeed isAuthenticated={isAuthenticated} boardUuid={selectedBoardUuid} />}
 
-        {activeTab === 'comments' && (
-          <CommentFeed isAuthenticated={isAuthenticated} boardUuid={selectedBoardUuid} />
-        )}
+        {activeTab === 'comments' && <CommentFeed isAuthenticated={isAuthenticated} boardUuid={selectedBoardUuid} />}
       </Box>
 
-      <UnifiedSearchDrawer
-        open={findClimbersOpen}
-        onClose={() => setFindClimbersOpen(false)}
-        defaultCategory="users"
-      />
+      <UnifiedSearchDrawer open={findClimbersOpen} onClose={() => setFindClimbersOpen(false)} defaultCategory="users" />
     </Box>
   );
 }

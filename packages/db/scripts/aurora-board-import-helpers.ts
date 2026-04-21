@@ -66,23 +66,14 @@ function asImportedHoldState(value: string | null | undefined): ImportedHoldStat
     return null;
   }
 
-  if (
-    value === 'STARTING' ||
-    value === 'HAND' ||
-    value === 'FINISH' ||
-    value === 'FOOT' ||
-    value === 'OFF'
-  ) {
+  if (value === 'STARTING' || value === 'HAND' || value === 'FINISH' || value === 'FOOT' || value === 'OFF') {
     return value;
   }
 
   return null;
 }
 
-function choosePreferredHold(
-  existing: DerivedClimbHold | undefined,
-  candidate: DerivedClimbHold,
-): DerivedClimbHold {
+function choosePreferredHold(existing: DerivedClimbHold | undefined, candidate: DerivedClimbHold): DerivedClimbHold {
   if (!existing) {
     return candidate;
   }
@@ -101,10 +92,7 @@ function choosePreferredHold(
   return candidate.frameNumber < existing.frameNumber ? candidate : existing;
 }
 
-export function deriveClimbHoldsFromFrames(
-  climb: SourceClimbRow,
-  boardName: DirectAuroraBoard,
-): DerivedClimbHold[] {
+export function deriveClimbHoldsFromFrames(climb: SourceClimbRow, boardName: DirectAuroraBoard): DerivedClimbHold[] {
   if (!climb.frames) {
     return [];
   }

@@ -11,23 +11,18 @@ export const metadata: Metadata = {
   description: 'Track your sends across Kilter, Tension, and MoonBoard. One app for your boards.',
   openGraph: {
     title: 'Boardsesh - Train smarter on your climbing board',
-    description:
-      'Works with Kilter, Tension, and MoonBoard. Track sessions, control LEDs, climb together.',
+    description: 'Works with Kilter, Tension, and MoonBoard. Track sessions, control LEDs, climb together.',
     url: 'https://www.boardsesh.com',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Boardsesh - Train smarter on your climbing board',
-    description:
-      'Works with Kilter, Tension, and MoonBoard. Track sessions, control LEDs, climb together.',
+    description: 'Works with Kilter, Tension, and MoonBoard. Track sessions, control LEDs, climb together.',
   },
 };
 
 export default async function Home() {
-  const [boardConfigs, popularConfigs] = await Promise.all([
-    getAllBoardConfigs(),
-    getPopularBoardConfigs(),
-  ]);
+  const [boardConfigs, popularConfigs] = await Promise.all([getAllBoardConfigs(), getPopularBoardConfigs()]);
 
   return <HomePageContent boardConfigs={boardConfigs} initialPopularConfigs={popularConfigs} />;
 }

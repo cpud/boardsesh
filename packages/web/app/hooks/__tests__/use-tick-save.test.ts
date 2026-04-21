@@ -38,12 +38,7 @@ vi.mock('@/app/lib/tick-draft-db', () => ({
 }));
 
 // Import after mocks.
-import {
-  hasPriorHistoryForClimb,
-  buildTickTarget,
-  useTickSave,
-  type UseTickSaveOptions,
-} from '../use-tick-save';
+import { hasPriorHistoryForClimb, buildTickTarget, useTickSave, type UseTickSaveOptions } from '../use-tick-save';
 import { saveTickDraft } from '@/app/lib/tick-draft-db';
 
 // --- Fixtures ---

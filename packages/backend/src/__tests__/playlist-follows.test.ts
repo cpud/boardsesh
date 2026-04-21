@@ -64,8 +64,7 @@ function createMockChain(resolveValue: unknown = []): Record<string, unknown> {
     'set',
   ];
 
-  chain.then = (resolve: (value: unknown) => unknown) =>
-    Promise.resolve(resolveValue).then(resolve);
+  chain.then = (resolve: (value: unknown) => unknown) => Promise.resolve(resolveValue).then(resolve);
 
   for (const method of methods) {
     chain[method] = vi.fn((..._args: unknown[]) => chain);
@@ -121,11 +120,7 @@ describe('followPlaylist mutation', () => {
     const insertChain = createMockChain([{ id: 1 }]);
     mockDb.insert.mockReturnValueOnce(insertChain);
 
-    const result = await playlistMutations.followPlaylist(
-      null,
-      { input: { playlistUuid: 'playlist-1' } },
-      ctx,
-    );
+    const result = await playlistMutations.followPlaylist(null, { input: { playlistUuid: 'playlist-1' } }, ctx);
 
     expect(result).toBe(true);
     expect(mockDb.insert).toHaveBeenCalledTimes(1);
@@ -142,11 +137,7 @@ describe('followPlaylist mutation', () => {
     const insertChain = createMockChain([]);
     mockDb.insert.mockReturnValueOnce(insertChain);
 
-    const result = await playlistMutations.followPlaylist(
-      null,
-      { input: { playlistUuid: 'playlist-1' } },
-      ctx,
-    );
+    const result = await playlistMutations.followPlaylist(null, { input: { playlistUuid: 'playlist-1' } }, ctx);
 
     expect(result).toBe(true);
   });
@@ -171,11 +162,7 @@ describe('unfollowPlaylist mutation', () => {
     const deleteChain = createMockChain([{ id: 1 }]);
     mockDb.delete.mockReturnValueOnce(deleteChain);
 
-    const result = await playlistMutations.unfollowPlaylist(
-      null,
-      { input: { playlistUuid: 'playlist-1' } },
-      ctx,
-    );
+    const result = await playlistMutations.unfollowPlaylist(null, { input: { playlistUuid: 'playlist-1' } }, ctx);
 
     expect(result).toBe(true);
     expect(mockDb.delete).toHaveBeenCalledTimes(1);
@@ -188,11 +175,7 @@ describe('unfollowPlaylist mutation', () => {
     const deleteChain = createMockChain([]);
     mockDb.delete.mockReturnValueOnce(deleteChain);
 
-    const result = await playlistMutations.unfollowPlaylist(
-      null,
-      { input: { playlistUuid: 'playlist-1' } },
-      ctx,
-    );
+    const result = await playlistMutations.unfollowPlaylist(null, { input: { playlistUuid: 'playlist-1' } }, ctx);
 
     expect(result).toBe(true);
   });

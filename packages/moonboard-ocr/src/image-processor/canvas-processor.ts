@@ -1,10 +1,4 @@
-import {
-  ImageProcessor,
-  RawPixelData,
-  ImageMetadata,
-  ImageRegion,
-  BrowserImageSource,
-} from './types';
+import { ImageProcessor, RawPixelData, ImageMetadata, ImageRegion, BrowserImageSource } from './types';
 
 /**
  * Canvas-based image processor for browser environment.

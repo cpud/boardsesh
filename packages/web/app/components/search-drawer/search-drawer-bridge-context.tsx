@@ -83,14 +83,7 @@ export function SearchDrawerBridgeProvider({ children }: { children: React.React
   const setNameFilterRef = useRef<((name: string) => void) | null>(null);
 
   const register = useCallback(
-    (
-      openDrawer: () => void,
-      s: string,
-      a: boolean,
-      nf: string,
-      snf: (name: string) => void,
-      nna: boolean,
-    ) => {
+    (openDrawer: () => void, s: string, a: boolean, nf: string, snf: (name: string) => void, nna: boolean) => {
       openDrawerRef.current = openDrawer;
       setNameFilterRef.current = snf;
       setSummary(s);
@@ -136,15 +129,7 @@ export function SearchDrawerBridgeProvider({ children }: { children: React.React
       setNameFilter: isRegistered ? stableSetNameFilter : null,
       hasActiveNonNameFilters: nonNameActive,
     }),
-    [
-      isRegistered,
-      stableOpenDrawer,
-      stableSetNameFilter,
-      summary,
-      active,
-      nameFilter,
-      nonNameActive,
-    ],
+    [isRegistered, stableOpenDrawer, stableSetNameFilter, summary, active, nameFilter, nonNameActive],
   );
 
   const setters = useMemo<SearchDrawerBridgeSetters>(
@@ -154,9 +139,7 @@ export function SearchDrawerBridgeProvider({ children }: { children: React.React
 
   return (
     <SearchDrawerBridgeSetterContext.Provider value={setters}>
-      <SearchDrawerBridgeContext.Provider value={state}>
-        {children}
-      </SearchDrawerBridgeContext.Provider>
+      <SearchDrawerBridgeContext.Provider value={state}>{children}</SearchDrawerBridgeContext.Provider>
     </SearchDrawerBridgeSetterContext.Provider>
   );
 }

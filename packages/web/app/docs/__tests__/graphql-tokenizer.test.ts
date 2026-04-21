@@ -126,9 +126,7 @@ describe('GraphQL Tokenizer', () => {
         expect(reconstructed).toBe(input);
         // Verify no token type is 'html' or similar
         for (const token of tokens) {
-          expect(['keyword', 'type', 'string', 'comment', 'parameter', 'default']).toContain(
-            token.type,
-          );
+          expect(['keyword', 'type', 'string', 'comment', 'parameter', 'default']).toContain(token.type);
         }
       }
     });

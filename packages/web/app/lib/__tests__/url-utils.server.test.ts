@@ -48,9 +48,7 @@ describe('url-utils.server concepts', () => {
         return match ? match[0] : slugOrUuid;
       };
 
-      expect(extractUuidFromSlug('ABCDEF1234567890ABCDEF1234567890')).toBe(
-        'ABCDEF1234567890ABCDEF1234567890',
-      );
+      expect(extractUuidFromSlug('ABCDEF1234567890ABCDEF1234567890')).toBe('ABCDEF1234567890ABCDEF1234567890');
       expect(extractUuidFromSlug('climb-name-ABCDEF1234567890ABCDEF1234567890')).toBe(
         'ABCDEF1234567890ABCDEF1234567890',
       );
@@ -83,9 +81,7 @@ describe('url-utils.server concepts', () => {
       };
 
       expect(() => validateRequired(null, 'Layout')).toThrow('Layout not found for slug: null');
-      expect(() => validateRequired(undefined, 'Size')).toThrow(
-        'Size not found for slug: undefined',
-      );
+      expect(() => validateRequired(undefined, 'Size')).toThrow('Size not found for slug: undefined');
       expect(() => validateRequired('', 'Board name')).toThrow('Board name not found for slug: ');
       expect(validateRequired('valid-value', 'Test')).toBe('valid-value');
     });

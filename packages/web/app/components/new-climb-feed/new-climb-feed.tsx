@@ -18,10 +18,7 @@ import {
   type GetNewClimbFeedVariables,
   type NewClimbCreatedSubscriptionPayload,
 } from '@/app/lib/graphql/operations/new-climb-feed';
-import type {
-  NewClimbFeedItem as NewClimbFeedItemType,
-  NewClimbFeedResult,
-} from '@boardsesh/shared-schema';
+import type { NewClimbFeedItem as NewClimbFeedItemType, NewClimbFeedResult } from '@boardsesh/shared-schema';
 import NewClimbFeedItem from './new-climb-feed-item';
 import SubscribeButton from './subscribe-button';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
@@ -60,32 +57,28 @@ export default function NewClimbFeed({
     return clientRef.current;
   }, [wsAuthToken]);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error } =
-    useInfiniteQuery<NewClimbFeedResult, Error>({
-      queryKey,
-      queryFn: async ({ pageParam }) => {
-        const client = createGraphQLHttpClient(wsAuthToken);
-        const variables: GetNewClimbFeedVariables = {
-          input: { boardType, layoutId, limit: PAGE_SIZE, offset: pageParam as number },
-        };
-        const response = await client.request<GetNewClimbFeedResponse>(
-          GET_NEW_CLIMB_FEED,
-          variables,
-        );
-        return response.newClimbFeed;
-      },
-      initialPageParam: 0,
-      getNextPageParam: (lastPage, _allPages, lastPageParam) => {
-        if (!lastPage.hasMore) return undefined;
-        return (lastPageParam as number) + lastPage.items.length;
-      },
-      staleTime: 60 * 1000,
-    });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error } = useInfiniteQuery<
+    NewClimbFeedResult,
+    Error
+  >({
+    queryKey,
+    queryFn: async ({ pageParam }) => {
+      const client = createGraphQLHttpClient(wsAuthToken);
+      const variables: GetNewClimbFeedVariables = {
+        input: { boardType, layoutId, limit: PAGE_SIZE, offset: pageParam as number },
+      };
+      const response = await client.request<GetNewClimbFeedResponse>(GET_NEW_CLIMB_FEED, variables);
+      return response.newClimbFeed;
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, _allPages, lastPageParam) => {
+      if (!lastPage.hasMore) return undefined;
+      return (lastPageParam as number) + lastPage.items.length;
+    },
+    staleTime: 60 * 1000,
+  });
 
-  const items: NewClimbFeedItemType[] = useMemo(
-    () => data?.pages.flatMap((p) => p.items) ?? [],
-    [data],
-  );
+  const items: NewClimbFeedItemType[] = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: fetchNextPage,
@@ -165,10 +158,7 @@ export default function NewClimbFeed({
       )}
 
       {!isLoading && items.length > 0 && (
-        <Box
-          ref={sentinelRef}
-          sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}
-        >
+        <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}>
           {isFetchingNextPage && <CircularProgress size={24} />}
         </Box>
       )}

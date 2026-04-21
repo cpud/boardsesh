@@ -242,11 +242,7 @@ type AvailableFirmwareResponse {
 ```graphql
 extend type Mutation {
   # Called by ESP32 to check for updates (uses controller's channel preference)
-  checkFirmwareUpdate(
-    currentVersion: String!
-    currentVersionCode: Int!
-    boardType: String!
-  ): FirmwareUpdateInfo!
+  checkFirmwareUpdate(currentVersion: String!, currentVersionCode: Int!, boardType: String!): FirmwareUpdateInfo!
 
   # Called by ESP32 to report update progress
   reportFirmwareStatus(input: ReportFirmwareStatusInput!): Boolean!
@@ -1157,9 +1153,7 @@ The firmware browser UI is served as a single-page application:
       }
 
       async function installFirmware(fw) {
-        if (
-          !confirm(`Install firmware ${fw.version}? The device will reboot after installation.`)
-        ) {
+        if (!confirm(`Install firmware ${fw.version}? The device will reboot after installation.`)) {
           return;
         }
 
@@ -1289,11 +1283,7 @@ export const firmwareQueries = {
 
 export const firmwareMutations = {
   // CI: Register a new firmware build (requires CI_API_KEY in connectionParams)
-  registerFirmwareBuild: async (
-    _: unknown,
-    { input }: { input: RegisterFirmwareBuildInput },
-    ctx: Context,
-  ) => {
+  registerFirmwareBuild: async (_: unknown, { input }: { input: RegisterFirmwareBuildInput }, ctx: Context) => {
     requireCIAuth(ctx);
 
     const {
@@ -1342,11 +1332,7 @@ export const firmwareMutations = {
         publishedAt: new Date(),
       })
       .onConflictDoUpdate({
-        target: [
-          esp32FirmwareReleases.boardType,
-          esp32FirmwareReleases.channel,
-          esp32FirmwareReleases.gitSha,
-        ],
+        target: [esp32FirmwareReleases.boardType, esp32FirmwareReleases.channel, esp32FirmwareReleases.gitSha],
         set: { binaryUrl, binarySize, checksumSha256, version },
       })
       .returning();
@@ -1365,21 +1351,13 @@ export const firmwareMutations = {
     const builds = await db
       .select()
       .from(esp32FirmwareReleases)
-      .where(
-        and(
-          eq(esp32FirmwareReleases.channel, 'alpha'),
-          eq(esp32FirmwareReleases.prNumber, prNumber),
-        ),
-      )
+      .where(and(eq(esp32FirmwareReleases.channel, 'alpha'), eq(esp32FirmwareReleases.prNumber, prNumber)))
       .orderBy(desc(esp32FirmwareReleases.createdAt));
 
     const toDeactivate = builds.slice(keepCount);
 
     for (const build of toDeactivate) {
-      await db
-        .update(esp32FirmwareReleases)
-        .set({ isActive: false })
-        .where(eq(esp32FirmwareReleases.id, build.id));
+      await db.update(esp32FirmwareReleases).set({ isActive: false }).where(eq(esp32FirmwareReleases.id, build.id));
     }
 
     return { deactivatedCount: toDeactivate.length };

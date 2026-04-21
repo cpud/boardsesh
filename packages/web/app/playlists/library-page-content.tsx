@@ -147,10 +147,11 @@ export default function LibraryPageContent({
         ? { boardType: selectedBoard.boardType, layoutId: selectedBoard.layoutId }
         : {};
 
-      const playlistsRes = await executeGraphQL<
-        GetAllUserPlaylistsQueryResponse,
-        { input: GetAllUserPlaylistsInput }
-      >(GET_ALL_USER_PLAYLISTS, { input }, token);
+      const playlistsRes = await executeGraphQL<GetAllUserPlaylistsQueryResponse, { input: GetAllUserPlaylistsInput }>(
+        GET_ALL_USER_PLAYLISTS,
+        { input },
+        token,
+      );
 
       setPlaylists(playlistsRes.allUserPlaylists);
       hasPlaylistDataRef.current = true;
@@ -179,14 +180,12 @@ export default function LibraryPageContent({
       };
 
       const [popularRes, recentRes] = await Promise.all([
-        executeGraphQL<DiscoverPlaylistsQueryResponse, { input: DiscoverPlaylistsInput }>(
-          DISCOVER_PLAYLISTS,
-          { input: { ...baseInput, sortBy: 'popular' } },
-        ),
-        executeGraphQL<DiscoverPlaylistsQueryResponse, { input: DiscoverPlaylistsInput }>(
-          DISCOVER_PLAYLISTS,
-          { input: { ...baseInput, sortBy: 'recent' } },
-        ),
+        executeGraphQL<DiscoverPlaylistsQueryResponse, { input: DiscoverPlaylistsInput }>(DISCOVER_PLAYLISTS, {
+          input: { ...baseInput, sortBy: 'popular' },
+        }),
+        executeGraphQL<DiscoverPlaylistsQueryResponse, { input: DiscoverPlaylistsInput }>(DISCOVER_PLAYLISTS, {
+          input: { ...baseInput, sortBy: 'recent' },
+        }),
       ]);
 
       setPopularPlaylists(popularRes.discoverPlaylists.playlists);
@@ -271,8 +270,7 @@ export default function LibraryPageContent({
     );
   }
 
-  const isLoading =
-    playlistsLoading || tokenLoading || (!hasServerUserData && sessionStatus === 'loading');
+  const isLoading = playlistsLoading || tokenLoading || (!hasServerUserData && sessionStatus === 'loading');
   const discoverItems = getDiscoverPlaylists();
 
   // Server query already filters by boardType + layoutId; no client-side filter needed
@@ -322,11 +320,7 @@ export default function LibraryPageContent({
 
       {/* Authenticated: Recent Playlists Grid */}
       {isAuthenticated && (
-        <PlaylistCardGrid
-          playlists={filteredPlaylists}
-          getPlaylistUrl={getPlaylistUrl}
-          loading={isLoading}
-        />
+        <PlaylistCardGrid playlists={filteredPlaylists} getPlaylistUrl={getPlaylistUrl} loading={isLoading} />
       )}
 
       {/* Empty state if no playlists (authenticated only) */}

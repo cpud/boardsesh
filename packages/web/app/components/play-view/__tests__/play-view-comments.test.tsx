@@ -10,9 +10,7 @@ vi.mock('../../board-provider/board-provider-context', () => ({
 }));
 
 vi.mock('@/app/components/ascent-status/ascent-status-icon', () => ({
-  AscentStatusIcon: ({ status }: { status: string }) => (
-    <div data-testid="ascent-status-icon" data-status={status} />
-  ),
+  AscentStatusIcon: ({ status }: { status: string }) => <div data-testid="ascent-status-icon" data-status={status} />,
 }));
 
 vi.mock('@mui/material/Rating', () => ({
@@ -74,9 +72,7 @@ describe('PlayViewComments', () => {
     expect(screen.getByText('2 tries')).toBeTruthy();
     expect(screen.getByText('3 tries')).toBeTruthy();
 
-    const statuses = screen
-      .getAllByTestId('ascent-status-icon')
-      .map((node) => node.getAttribute('data-status'));
+    const statuses = screen.getAllByTestId('ascent-status-icon').map((node) => node.getAttribute('data-status'));
     expect(statuses).toEqual(['flash', 'send', 'attempt']);
     expect(screen.getAllByTestId('rating')).toHaveLength(2);
     expect(screen.getByText('Still trying')).toBeTruthy();

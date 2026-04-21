@@ -33,12 +33,7 @@ interface MyBoardsDrawerProps {
   onTransitionEnd?: (open: boolean) => void;
 }
 
-export default function MyBoardsDrawer({
-  open,
-  onClose,
-  onCreateBoard,
-  onTransitionEnd,
-}: MyBoardsDrawerProps) {
+export default function MyBoardsDrawer({ open, onClose, onCreateBoard, onTransitionEnd }: MyBoardsDrawerProps) {
   const { boards, isLoading, error } = useMyBoards(open);
   const { token } = useWsAuthToken();
   const [view, setView] = useState<DrawerView>({ type: 'list' });
@@ -104,11 +99,7 @@ export default function MyBoardsDrawer({
   const headerExtra =
     view.type === 'list' ? (
       <>
-        <IconButton
-          size="small"
-          onClick={() => setView({ type: 'search' })}
-          aria-label="Find a board"
-        >
+        <IconButton size="small" onClick={() => setView({ type: 'search' })} aria-label="Find a board">
           <SearchOutlined fontSize="small" />
         </IconButton>
         {onCreateBoard && (

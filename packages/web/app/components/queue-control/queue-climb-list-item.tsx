@@ -10,15 +10,9 @@ import CheckOutlined from '@mui/icons-material/CheckOutlined';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import PersonOutlined from '@mui/icons-material/PersonOutlined';
 import { BoardDetails, Climb } from '@/app/lib/types';
-import {
-  draggable,
-  dropTargetForElements,
-} from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
+import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { DropIndicator } from '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box';
-import {
-  attachClosestEdge,
-  extractClosestEdge,
-} from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
+import { attachClosestEdge, extractClosestEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
 import type { Edge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import BluetoothIcon from './bluetooth-icon';
@@ -88,9 +82,7 @@ const QueueClimbListItem: React.FC<QueueClimbListItemProps> = ({
   // Background color based on current/history state
   const backgroundColor = useMemo(() => {
     if (isCurrent) {
-      return (
-        getGradeTintColor(item.climb.difficulty, 'light', isDark) ?? 'var(--semantic-selected)'
-      );
+      return getGradeTintColor(item.climb.difficulty, 'light', isDark) ?? 'var(--semantic-selected)';
     }
     if (isHistory) return 'var(--neutral-100)';
     return 'transparent';
@@ -169,10 +161,7 @@ const QueueClimbListItem: React.FC<QueueClimbListItemProps> = ({
       dropTargetForElements({
         element,
         getData: ({ input }) =>
-          attachClosestEdge(
-            { index, id: item.uuid },
-            { element, input, allowedEdges: ['top', 'bottom'] },
-          ),
+          attachClosestEdge({ index, id: item.uuid }, { element, input, allowedEdges: ['top', 'bottom'] }),
         onDrag({ self }) {
           const edge = extractClosestEdge(self.data);
           setClosestEdge(edge);

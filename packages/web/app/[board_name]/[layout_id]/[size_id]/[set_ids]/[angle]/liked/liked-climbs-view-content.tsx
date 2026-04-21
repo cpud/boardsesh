@@ -7,12 +7,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  FavoriteOutlined,
-  SentimentDissatisfiedOutlined,
-  MoreVertOutlined,
-  AddOutlined,
-} from '@mui/icons-material';
+import { FavoriteOutlined, SentimentDissatisfiedOutlined, MoreVertOutlined, AddOutlined } from '@mui/icons-material';
 import { track } from '@vercel/analytics';
 import { BoardDetails, Climb } from '@/app/lib/types';
 import { executeGraphQL } from '@/app/lib/graphql/client';
@@ -34,10 +29,7 @@ type LikedClimbsViewContentProps = {
   angle: number;
 };
 
-export default function LikedClimbsViewContent({
-  boardDetails,
-  angle,
-}: LikedClimbsViewContentProps) {
+export default function LikedClimbsViewContent({ boardDetails, angle }: LikedClimbsViewContentProps) {
   const { showMessage } = useSnackbar();
   const [isAddingToQueue, setIsAddingToQueue] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
@@ -70,10 +62,7 @@ export default function LikedClimbsViewContent({
       while (hasMore) {
         if (abortController.signal.aborted) return;
 
-        const response = await executeGraphQL<
-          GetUserFavoriteClimbsQueryResponse,
-          GetUserFavoriteClimbsQueryVariables
-        >(
+        const response = await executeGraphQL<GetUserFavoriteClimbsQueryResponse, GetUserFavoriteClimbsQueryVariables>(
           GET_USER_FAVORITE_CLIMBS,
           {
             input: {
@@ -112,10 +101,7 @@ export default function LikedClimbsViewContent({
         climbCount: allClimbs.length,
       });
 
-      showMessage(
-        `Added ${allClimbs.length} ${allClimbs.length === 1 ? 'climb' : 'climbs'} to queue`,
-        'success',
-      );
+      showMessage(`Added ${allClimbs.length} ${allClimbs.length === 1 ? 'climb' : 'climbs'} to queue`, 'success');
     } catch (err) {
       if (abortController.signal.aborted) return;
       console.error('Error adding climbs to queue:', err);
@@ -181,11 +167,7 @@ export default function LikedClimbsViewContent({
             <MoreVertOutlined />
           </IconButton>
 
-          <Menu
-            anchorEl={menuAnchor}
-            open={Boolean(menuAnchor)}
-            onClose={() => setMenuAnchor(null)}
-          >
+          <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>
             <MenuItem onClick={handleAddAllToQueue} disabled={isAddingToQueue}>
               <ListItemIcon>
                 <AddOutlined />

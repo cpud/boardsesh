@@ -38,10 +38,7 @@ export function useUpdateTick() {
 
       const client = createGraphQLHttpClient(token);
       const variables: UpdateTickVariables = { uuid, input };
-      const response = await client.request<UpdateTickResponse, UpdateTickVariables>(
-        UPDATE_TICK,
-        variables,
-      );
+      const response = await client.request<UpdateTickResponse, UpdateTickVariables>(UPDATE_TICK, variables);
       return response.updateTick;
     },
     onSuccess: () => {

@@ -46,9 +46,7 @@ export function useProfileData(userId: string, initialData?: InitialData) {
   const { showMessage } = useSnackbar();
   const { gradeFormat } = useGradeFormat();
 
-  const [loading, setLoading] = useState(
-    !initialData?.initialProfile && !initialData?.initialNotFound,
-  );
+  const [loading, setLoading] = useState(!initialData?.initialProfile && !initialData?.initialNotFound);
   const [notFound, setNotFound] = useState(initialData?.initialNotFound ?? false);
   const [profile, setProfile] = useState<UserProfile | null>(initialData?.initialProfile ?? null);
   const [selectedBoard, setSelectedBoard] = useState<string>('all');
@@ -59,9 +57,9 @@ export function useProfileData(userId: string, initialData?: InitialData) {
     initialData?.initialAllBoardsTicks ?? {},
   );
   const [loadingAggregated, setLoadingAggregated] = useState(!initialData?.initialAllBoardsTicks);
-  const [profileStats, setProfileStats] = useState<
-    GetUserProfileStatsQueryResponse['userProfileStats'] | null
-  >(initialData?.initialProfileStats ?? null);
+  const [profileStats, setProfileStats] = useState<GetUserProfileStatsQueryResponse['userProfileStats'] | null>(
+    initialData?.initialProfileStats ?? null,
+  );
   const [loadingProfileStats, setLoadingProfileStats] = useState(!initialData?.initialProfileStats);
   const [percentile, setPercentile] = useState<{
     totalDistinctClimbs: number;
@@ -69,9 +67,7 @@ export function useProfileData(userId: string, initialData?: InitialData) {
     totalActiveUsers: number;
   } | null>(null);
 
-  const isOwnProfile = session?.user?.id
-    ? session.user.id === userId
-    : (initialData?.initialIsOwnProfile ?? false);
+  const isOwnProfile = session?.user?.id ? session.user.id === userId : (initialData?.initialIsOwnProfile ?? false);
   const hasCredentials = (profile?.credentials?.length ?? 0) > 0;
   const authToken = (session as { authToken?: string } | null)?.authToken ?? null;
 
@@ -111,10 +107,7 @@ export function useProfileData(userId: string, initialData?: InitialData) {
       await Promise.all(
         BOARD_TYPES.map(async (boardType) => {
           const variables: GetUserTicksQueryVariables = { userId, boardType };
-          const response = await client.request<GetUserTicksQueryResponse>(
-            GET_USER_TICKS,
-            variables,
-          );
+          const response = await client.request<GetUserTicksQueryResponse>(GET_USER_TICKS, variables);
           results[boardType] = response.userTicks.map((tick) => ({
             climbed_at: tick.climbedAt,
             difficulty: tick.difficulty,
@@ -141,10 +134,7 @@ export function useProfileData(userId: string, initialData?: InitialData) {
     try {
       const client = createGraphQLHttpClient(null);
       const variables: GetUserProfileStatsQueryVariables = { userId };
-      const response = await client.request<GetUserProfileStatsQueryResponse>(
-        GET_USER_PROFILE_STATS,
-        variables,
-      );
+      const response = await client.request<GetUserProfileStatsQueryResponse>(GET_USER_PROFILE_STATS, variables);
       setProfileStats(response.userProfileStats);
     } catch (error) {
       console.error('Error fetching profile stats:', error);
@@ -157,10 +147,7 @@ export function useProfileData(userId: string, initialData?: InitialData) {
   const fetchPercentile = useCallback(async () => {
     try {
       const client = createGraphQLHttpClient(null);
-      const response = await client.request<GetUserClimbPercentileQueryResponse>(
-        GET_USER_CLIMB_PERCENTILE,
-        { userId },
-      );
+      const response = await client.request<GetUserClimbPercentileQueryResponse>(GET_USER_CLIMB_PERCENTILE, { userId });
       setPercentile(response.userClimbPercentile);
     } catch {
       // Percentile is not critical — silently fail
@@ -196,14 +183,7 @@ export function useProfileData(userId: string, initialData?: InitialData) {
   }, [filteredBoardsTicks, unifiedTimeframe, fromDate, toDate]);
 
   const aggregatedStackedBars = useMemo(
-    () =>
-      buildAggregatedStackedBars(
-        filteredBoardsTicks,
-        unifiedTimeframe,
-        gradeFormat,
-        fromDate,
-        toDate,
-      ),
+    () => buildAggregatedStackedBars(filteredBoardsTicks, unifiedTimeframe, gradeFormat, fromDate, toDate),
     [filteredBoardsTicks, unifiedTimeframe, gradeFormat, fromDate, toDate],
   );
 
@@ -213,14 +193,7 @@ export function useProfileData(userId: string, initialData?: InitialData) {
   );
 
   const aggregatedFlashRedpointBars = useMemo(
-    () =>
-      buildAggregatedFlashRedpointBars(
-        filteredBoardsTicks,
-        unifiedTimeframe,
-        gradeFormat,
-        fromDate,
-        toDate,
-      ),
+    () => buildAggregatedFlashRedpointBars(filteredBoardsTicks, unifiedTimeframe, gradeFormat, fromDate, toDate),
     [filteredBoardsTicks, unifiedTimeframe, gradeFormat, fromDate, toDate],
   );
 

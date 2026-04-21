@@ -216,9 +216,7 @@ describe('AscentStatus', () => {
     };
 
     act(() => {
-      queryClient.setQueryData<LogbookEntry[]>(accumulatedLogbookQueryKey('kilter'), [
-        optimisticEntry,
-      ]);
+      queryClient.setQueryData<LogbookEntry[]>(accumulatedLogbookQueryKey('kilter'), [optimisticEntry]);
     });
 
     await waitFor(() => {

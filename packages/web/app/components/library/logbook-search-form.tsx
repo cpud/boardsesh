@@ -18,12 +18,7 @@ import FilterListOutlined from '@mui/icons-material/FilterListOutlined';
 import ClearOutlined from '@mui/icons-material/ClearOutlined';
 import { BOULDER_GRADES } from '@/app/lib/board-data';
 import { DEFAULT_ANGLE_RANGE, DEFAULT_FILTERS, DEFAULT_SORT } from '@/app/lib/logbook-preferences';
-import type {
-  LogbookFilterState,
-  LogbookSortState,
-  SortField,
-  SortDirection,
-} from '@/app/lib/logbook-preferences';
+import type { LogbookFilterState, LogbookSortState, SortField, SortDirection } from '@/app/lib/logbook-preferences';
 import type { UserBoard } from '@boardsesh/shared-schema';
 import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
 import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
@@ -100,11 +95,7 @@ function countActiveFilters(
   if (filters.benchmarkOnly) count++;
   if (filters.fromDate) count++;
   if (filters.toDate) count++;
-  if (
-    filters.angleRange[0] !== DEFAULT_ANGLE_RANGE[0] ||
-    filters.angleRange[1] !== DEFAULT_ANGLE_RANGE[1]
-  )
-    count++;
+  if (filters.angleRange[0] !== DEFAULT_ANGLE_RANGE[0] || filters.angleRange[1] !== DEFAULT_ANGLE_RANGE[1]) count++;
   if (sortState.mode === 'custom') count++;
   return count;
 }
@@ -205,9 +196,7 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
               color="primary"
               checked={filters.includeSends}
               disabled={!filters.includeAttempts}
-              onChange={(_, checked) =>
-                onFiltersChange((prev) => ({ ...prev, includeSends: checked }))
-              }
+              onChange={(_, checked) => onFiltersChange((prev) => ({ ...prev, includeSends: checked }))}
             />
           </div>
           <div className={styles.switchRow}>
@@ -219,9 +208,7 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
               color="primary"
               checked={filters.includeAttempts}
               disabled={!filters.includeSends}
-              onChange={(_, checked) =>
-                onFiltersChange((prev) => ({ ...prev, includeAttempts: checked }))
-              }
+              onChange={(_, checked) => onFiltersChange((prev) => ({ ...prev, includeAttempts: checked }))}
             />
           </div>
           <div className={styles.switchRow}>
@@ -233,9 +220,7 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
               color="primary"
               checked={filters.flashOnly}
               disabled={!filters.includeSends}
-              onChange={(_, checked) =>
-                onFiltersChange((prev) => ({ ...prev, flashOnly: checked }))
-              }
+              onChange={(_, checked) => onFiltersChange((prev) => ({ ...prev, flashOnly: checked }))}
             />
           </div>
           <div className={styles.switchRow}>
@@ -246,9 +231,7 @@ const LogbookSearchForm: React.FC<LogbookSearchFormProps> = ({
               size="small"
               color="primary"
               checked={filters.benchmarkOnly}
-              onChange={(_, checked) =>
-                onFiltersChange((prev) => ({ ...prev, benchmarkOnly: checked }))
-              }
+              onChange={(_, checked) => onFiltersChange((prev) => ({ ...prev, benchmarkOnly: checked }))}
             />
           </div>
         </div>

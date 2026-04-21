@@ -122,9 +122,7 @@ describe('sessionGroupedFeed user filtering', () => {
     const mainQueryText = sqlToText(sessionFeedTestState.executeMock.mock.calls[0][0]);
 
     expect(mainQueryText).toContain('eligible_party_sessions');
-    expect(mainQueryText).toContain(
-      'INNER JOIN eligible_party_sessions eps ON eps.session_id = t.session_id',
-    );
+    expect(mainQueryText).toContain('INNER JOIN eligible_party_sessions eps ON eps.session_id = t.session_id');
 
     expect(result.sessions).toHaveLength(1);
     expect(result.sessions[0]).toMatchObject({

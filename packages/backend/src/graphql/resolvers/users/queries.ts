@@ -48,11 +48,7 @@ export const userQueries = {
   /**
    * Get all Aurora credentials for the authenticated user
    */
-  auroraCredentials: async (
-    _: unknown,
-    __: unknown,
-    ctx: ConnectionContext,
-  ): Promise<AuroraCredentialStatus[]> => {
+  auroraCredentials: async (_: unknown, __: unknown, ctx: ConnectionContext): Promise<AuroraCredentialStatus[]> => {
     if (!ctx.isAuthenticated || !ctx.userId) {
       return [];
     }
@@ -74,11 +70,7 @@ export const userQueries = {
   /**
    * Get a specific Aurora credential for the authenticated user by board type
    */
-  auroraCredential: async (
-    _: unknown,
-    { boardType }: { boardType: string },
-    ctx: ConnectionContext,
-  ) => {
+  auroraCredential: async (_: unknown, { boardType }: { boardType: string }, ctx: ConnectionContext) => {
     if (!ctx.isAuthenticated || !ctx.userId) {
       return null;
     }
@@ -89,10 +81,7 @@ export const userQueries = {
       .select()
       .from(dbSchema.auroraCredentials)
       .where(
-        and(
-          eq(dbSchema.auroraCredentials.userId, ctx.userId),
-          eq(dbSchema.auroraCredentials.boardType, boardType),
-        ),
+        and(eq(dbSchema.auroraCredentials.userId, ctx.userId), eq(dbSchema.auroraCredentials.boardType, boardType)),
       )
       .limit(1);
 
@@ -114,19 +103,13 @@ export const userQueries = {
   /**
    * Get info needed before account deletion (published climb count)
    */
-  deleteAccountInfo: async (
-    _: unknown,
-    __: unknown,
-    ctx: ConnectionContext,
-  ): Promise<DeleteAccountInfo> => {
+  deleteAccountInfo: async (_: unknown, __: unknown, ctx: ConnectionContext): Promise<DeleteAccountInfo> => {
     requireAuthenticated(ctx);
 
     const result = await db
       .select({ count: count() })
       .from(dbSchema.boardClimbs)
-      .where(
-        and(eq(dbSchema.boardClimbs.userId, ctx.userId!), eq(dbSchema.boardClimbs.isDraft, false)),
-      );
+      .where(and(eq(dbSchema.boardClimbs.userId, ctx.userId!), eq(dbSchema.boardClimbs.isDraft, false)));
 
     return {
       publishedClimbCount: result[0]?.count ?? 0,

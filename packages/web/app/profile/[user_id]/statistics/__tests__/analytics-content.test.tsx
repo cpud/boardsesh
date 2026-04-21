@@ -16,9 +16,7 @@ vi.mock('../../components/board-stats-section', () => ({
   default: (props: Record<string, unknown>) => (
     <div
       data-testid="board-stats-section"
-      data-has-weekly-bars-prop={
-        Object.prototype.hasOwnProperty.call(props, 'weeklyBars') ? 'true' : 'false'
-      }
+      data-has-weekly-bars-prop={Object.prototype.hasOwnProperty.call(props, 'weeklyBars') ? 'true' : 'false'}
     />
   ),
 }));
@@ -85,17 +83,13 @@ describe('AnalyticsContent', () => {
             climbUuid: 'climb-1',
           },
         ],
-        weeklyBars: [
-          { key: '2026-W1', label: 'W1', segments: [{ value: 2, color: '#ccc', label: 'V3' }] },
-        ],
+        weeklyBars: [{ key: '2026-W1', label: 'W1', segments: [{ value: 2, color: '#ccc', label: 'V3' }] }],
       }),
     );
 
     render(<AnalyticsContent userId="user-2" />);
 
     expect(screen.getByTestId('stats-summary').getAttribute('data-has-weekly-bars')).toBe('true');
-    expect(
-      screen.getByTestId('board-stats-section').getAttribute('data-has-weekly-bars-prop'),
-    ).toBe('false');
+    expect(screen.getByTestId('board-stats-section').getAttribute('data-has-weekly-bars-prop')).toBe('false');
   });
 });

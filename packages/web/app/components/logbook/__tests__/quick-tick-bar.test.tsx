@@ -154,9 +154,7 @@ describe('QuickTickBar', () => {
       // Climb is created via makeClimb without userAscents / userAttempts.
       expect(hasPriorHistoryForClimb(climb, [])).toBe(false);
       expect(hasPriorHistoryForClimb(climb, [makeLogbookEntry({ climb_uuid: 'c1' })])).toBe(true);
-      expect(hasPriorHistoryForClimb(climb, [makeLogbookEntry({ climb_uuid: 'other' })])).toBe(
-        false,
-      );
+      expect(hasPriorHistoryForClimb(climb, [makeLogbookEntry({ climb_uuid: 'other' })])).toBe(false);
     });
   });
 
@@ -251,9 +249,7 @@ describe('QuickTickBar', () => {
     });
 
     it('ignores logbook rows for other climbs when deciding flash vs send', async () => {
-      mockLogbookRef.current = [
-        makeLogbookEntry({ uuid: 'other-climb', climb_uuid: 'climb-other', angle: 40 }),
-      ];
+      mockLogbookRef.current = [makeLogbookEntry({ uuid: 'other-climb', climb_uuid: 'climb-other', angle: 40 })];
       const ref = React.createRef<QuickTickBarHandle>();
       render(<QuickTickBar ref={ref} {...defaultProps} />);
 
@@ -434,9 +430,7 @@ describe('QuickTickBar', () => {
       ];
 
       const ref = React.createRef<QuickTickBarHandle>();
-      const { rerender } = render(
-        <QuickTickBar ref={ref} {...defaultProps} currentClimb={originalClimb} />,
-      );
+      const { rerender } = render(<QuickTickBar ref={ref} {...defaultProps} currentClimb={originalClimb} />);
 
       // Simulate another party member advancing the queue mid-tick.
       rerender(<QuickTickBar ref={ref} {...defaultProps} currentClimb={newClimb} />);
@@ -517,9 +511,7 @@ describe('QuickTickBar', () => {
         expect(selectedItems).toHaveLength(1);
         expect(selectedItems[0].textContent).toBe('—');
         // The consensus grade should be labeled as such but not selected
-        const consensusItem = items.find(
-          (el) => el.getAttribute('aria-label') === 'V5 (consensus)',
-        );
+        const consensusItem = items.find((el) => el.getAttribute('aria-label') === 'V5 (consensus)');
         expect(consensusItem).toBeTruthy();
         expect(consensusItem?.getAttribute('aria-selected')).toBe('false');
       });
@@ -785,13 +777,7 @@ describe('QuickTickBar', () => {
       mockLogbookRef.current = [];
       const climbWithHistory = makeClimb({ userAscents: 1, userAttempts: 0 });
       const onIsFlashChange = vi.fn();
-      render(
-        <QuickTickBar
-          {...defaultProps}
-          currentClimb={climbWithHistory}
-          onIsFlashChange={onIsFlashChange}
-        />,
-      );
+      render(<QuickTickBar {...defaultProps} currentClimb={climbWithHistory} onIsFlashChange={onIsFlashChange} />);
 
       expect(onIsFlashChange).toHaveBeenCalledWith(false);
     });
@@ -800,13 +786,7 @@ describe('QuickTickBar', () => {
       mockLogbookRef.current = [];
       const climbWithAttempts = makeClimb({ userAscents: 0, userAttempts: 3 });
       const onIsFlashChange = vi.fn();
-      render(
-        <QuickTickBar
-          {...defaultProps}
-          currentClimb={climbWithAttempts}
-          onIsFlashChange={onIsFlashChange}
-        />,
-      );
+      render(<QuickTickBar {...defaultProps} currentClimb={climbWithAttempts} onIsFlashChange={onIsFlashChange} />);
 
       expect(onIsFlashChange).toHaveBeenCalledWith(false);
     });
@@ -856,9 +836,7 @@ describe('QuickTickBar', () => {
 
     it('does not fire when currentClimb is null (no tickTarget)', () => {
       const onIsFlashChange = vi.fn();
-      render(
-        <QuickTickBar {...defaultProps} currentClimb={null} onIsFlashChange={onIsFlashChange} />,
-      );
+      render(<QuickTickBar {...defaultProps} currentClimb={null} onIsFlashChange={onIsFlashChange} />);
 
       // isFlash is false when tickTarget is null, so it fires with false
       expect(onIsFlashChange).toHaveBeenCalledWith(false);
@@ -918,9 +896,7 @@ describe('QuickTickBar', () => {
 
     it('does not render save button in expanded mode', () => {
       const onExpandedChange = vi.fn();
-      render(
-        <QuickTickBar {...defaultProps} expanded={true} onExpandedChange={onExpandedChange} />,
-      );
+      render(<QuickTickBar {...defaultProps} expanded={true} onExpandedChange={onExpandedChange} />);
 
       // There should be no "Save tick" button in expanded mode.
       expect(screen.queryByRole('button', { name: /save tick/i })).toBeNull();

@@ -160,9 +160,7 @@ export function useTickSave(options: UseTickSaveOptions): {
         climbedAt: new Date().toISOString(),
         layoutId: targetBoard.layout_id,
         sizeId: targetBoard.size_id,
-        setIds: Array.isArray(targetBoard.set_ids)
-          ? targetBoard.set_ids.join(',')
-          : String(targetBoard.set_ids),
+        setIds: Array.isArray(targetBoard.set_ids) ? targetBoard.set_ids.join(',') : String(targetBoard.set_ids),
       })
         .then(() => {
           track('Quick Tick Saved', {

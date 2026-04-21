@@ -200,12 +200,7 @@ describe('GoToQueueAction', () => {
       const onGoToQueue = vi.fn();
       const onComplete = vi.fn();
       render(
-        <TestGoToQueueAction
-          {...defaultProps}
-          viewMode="list"
-          onGoToQueue={onGoToQueue}
-          onComplete={onComplete}
-        />,
+        <TestGoToQueueAction {...defaultProps} viewMode="list" onGoToQueue={onGoToQueue} onComplete={onComplete} />,
       );
 
       screen.getByRole('button', { name: /go to queue/i }).click();
@@ -241,12 +236,7 @@ describe('GoToQueueAction', () => {
       const onGoToQueue = vi.fn();
       const onComplete = vi.fn();
       render(
-        <TestGoToQueueAction
-          {...defaultProps}
-          viewMode="icon"
-          onGoToQueue={onGoToQueue}
-          onComplete={onComplete}
-        />,
+        <TestGoToQueueAction {...defaultProps} viewMode="icon" onGoToQueue={onGoToQueue} onComplete={onComplete} />,
       );
 
       screen.getByTestId('action-icon').click();
@@ -274,12 +264,7 @@ describe('GoToQueueAction', () => {
       const onGoToQueue = vi.fn();
       const onComplete = vi.fn();
       render(
-        <TestGoToQueueAction
-          {...defaultProps}
-          viewMode="button"
-          onGoToQueue={onGoToQueue}
-          onComplete={onComplete}
-        />,
+        <TestGoToQueueAction {...defaultProps} viewMode="button" onGoToQueue={onGoToQueue} onComplete={onComplete} />,
       );
 
       screen.getByRole('button', { name: /go to queue/i }).click();

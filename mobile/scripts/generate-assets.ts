@@ -59,13 +59,7 @@ const S_START_Y = 6;
 // SVG builder helpers
 // ---------------------------------------------------------------------------
 
-function buildPixelRects(
-  pixels: number[][],
-  startX: number,
-  startY: number,
-  pixelSize: number,
-  fill: string,
-): string {
+function buildPixelRects(pixels: number[][], startX: number, startY: number, pixelSize: number, fill: string): string {
   const rects: string[] = [];
   for (let y = 0; y < pixels.length; y++) {
     for (let x = 0; x < pixels[y].length; x++) {
@@ -87,12 +81,7 @@ function buildPixelRects(
  * @param logoScale  How much to scale the 48x48 logo (e.g. 13.75 gives ~660px)
  * @param options.background  Fill colour for background rect (set to "none" or "transparent" to skip)
  */
-function buildLogoSvg(
-  width: number,
-  height: number,
-  logoScale: number,
-  options: { background?: string } = {},
-): string {
+function buildLogoSvg(width: number, height: number, logoScale: number, options: { background?: string } = {}): string {
   const bg = options.background ?? BACKGROUND;
 
   // Scaled pixel size
@@ -143,12 +132,7 @@ function ensureDir(filePath: string): void {
   }
 }
 
-async function writePng(
-  svgString: string,
-  outputPath: string,
-  width: number,
-  height: number,
-): Promise<void> {
+async function writePng(svgString: string, outputPath: string, width: number, height: number): Promise<void> {
   ensureDir(outputPath);
   await sharp(Buffer.from(svgString)).resize(width, height).png().toFile(outputPath);
   console.log(`  -> ${path.relative(MOBILE_ROOT, outputPath)} (${width}x${height})`);
@@ -171,10 +155,7 @@ async function main() {
     // ~65% of canvas -> logoScale so that 48 * scale ~ 660
     const logoScale = (size * 0.65) / VIEWBOX_SIZE;
     const svg = buildLogoSvg(size, size, logoScale);
-    const outPath = path.join(
-      MOBILE_ROOT,
-      'ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png',
-    );
+    const outPath = path.join(MOBILE_ROOT, 'ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png');
     await writePng(svg, outPath, size, size);
   }
 
@@ -187,11 +168,7 @@ async function main() {
     // ~18% of canvas -> logoScale so that 48 * scale ~ 480
     const logoScale = (size * 0.18) / VIEWBOX_SIZE;
     const svg = buildLogoSvg(size, size, logoScale);
-    const splashNames = [
-      'splash-2732x2732.png',
-      'splash-2732x2732-1.png',
-      'splash-2732x2732-2.png',
-    ];
+    const splashNames = ['splash-2732x2732.png', 'splash-2732x2732-1.png', 'splash-2732x2732-2.png'];
     // Generate the PNG once, then copy for the other two
     const pngBuffer = await sharp(Buffer.from(svg)).resize(size, size).png().toBuffer();
 

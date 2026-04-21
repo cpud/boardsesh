@@ -96,9 +96,7 @@ export const UISearchParamsProvider: React.FC<{ children: React.ReactNode }> = (
   const clearClimbSearchParams = () => updateFilters(DEFAULT_SEARCH_PARAMS, true);
 
   return (
-    <UISearchParamsContext.Provider
-      value={{ uiSearchParams, updateFilters, clearClimbSearchParams }}
-    >
+    <UISearchParamsContext.Provider value={{ uiSearchParams, updateFilters, clearClimbSearchParams }}>
       {children}
     </UISearchParamsContext.Provider>
   );

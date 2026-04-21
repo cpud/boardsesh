@@ -57,9 +57,7 @@ describe('FindNearbyCard', () => {
 
   it('renders geo-denied state with "Location unavailable" and location-off icon', () => {
     const onClick = vi.fn();
-    const { getByText, container } = render(
-      <FindNearbyCard onClick={onClick} status="geo-denied" />,
-    );
+    const { getByText, container } = render(<FindNearbyCard onClick={onClick} status="geo-denied" />);
 
     const label = getByText('Location unavailable');
     expect(label).toBeDefined();
@@ -79,9 +77,7 @@ describe('FindNearbyCard', () => {
 
   it('renders no-results state with "No nearby boards found" and search-off icon', () => {
     const onClick = vi.fn();
-    const { getByText, container } = render(
-      <FindNearbyCard onClick={onClick} status="no-results" />,
-    );
+    const { getByText, container } = render(<FindNearbyCard onClick={onClick} status="no-results" />);
 
     const label = getByText('No nearby boards found');
     expect(label).toBeDefined();

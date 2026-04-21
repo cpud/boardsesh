@@ -63,9 +63,7 @@ describe('useFollowToggle', () => {
       error: null,
     });
 
-    const { result } = renderHook(() =>
-      useFollowToggle(createDefaultConfig() as FollowToggleConfig),
-    );
+    const { result } = renderHook(() => useFollowToggle(createDefaultConfig() as FollowToggleConfig));
 
     await act(async () => {
       await result.current.handleToggle();
@@ -140,9 +138,7 @@ describe('useFollowToggle', () => {
     mockRequest.mockRejectedValue(new Error('Oops'));
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    const { result } = renderHook(() =>
-      useFollowToggle(createDefaultConfig() as FollowToggleConfig),
-    );
+    const { result } = renderHook(() => useFollowToggle(createDefaultConfig() as FollowToggleConfig));
 
     await act(async () => {
       await result.current.handleToggle();
@@ -157,9 +153,7 @@ describe('useFollowToggle', () => {
     const onFollowChange = vi.fn();
 
     const { result } = renderHook(() =>
-      useFollowToggle(
-        createDefaultConfig({ onFollowChange, initialIsFollowing: false }) as FollowToggleConfig,
-      ),
+      useFollowToggle(createDefaultConfig({ onFollowChange, initialIsFollowing: false }) as FollowToggleConfig),
     );
 
     await act(async () => {
@@ -178,9 +172,7 @@ describe('useFollowToggle', () => {
       }),
     );
 
-    const { result } = renderHook(() =>
-      useFollowToggle(createDefaultConfig() as FollowToggleConfig),
-    );
+    const { result } = renderHook(() => useFollowToggle(createDefaultConfig() as FollowToggleConfig));
 
     expect(result.current.isLoading).toBe(false);
 
@@ -198,9 +190,7 @@ describe('useFollowToggle', () => {
   });
 
   it('provides setIsHovered for hover state', () => {
-    const { result } = renderHook(() =>
-      useFollowToggle(createDefaultConfig() as FollowToggleConfig),
-    );
+    const { result } = renderHook(() => useFollowToggle(createDefaultConfig() as FollowToggleConfig));
 
     expect(result.current.isHovered).toBe(false);
 

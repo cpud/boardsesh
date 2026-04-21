@@ -1,8 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vite-plus/test';
-import {
-  issueNativeOAuthTransferToken,
-  verifyNativeOAuthTransferToken,
-} from '../native-oauth-transfer';
+import { issueNativeOAuthTransferToken, verifyNativeOAuthTransferToken } from '../native-oauth-transfer';
 
 describe('native OAuth transfer token', () => {
   beforeEach(() => {

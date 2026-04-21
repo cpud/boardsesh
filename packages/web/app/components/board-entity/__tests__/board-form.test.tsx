@@ -11,11 +11,7 @@ vi.mock('../map-location-picker', () => ({
     onChange: (lat: number, lng: number) => void;
   }) => (
     <div data-testid="map-location-picker">
-      <button
-        type="button"
-        data-testid="map-select-location"
-        onClick={() => onChange(51.5074, -0.1278)}
-      >
+      <button type="button" data-testid="map-select-location" onClick={() => onChange(51.5074, -0.1278)}>
         Select Location
       </button>
     </div>
@@ -47,14 +43,7 @@ describe('BoardForm', () => {
   });
 
   it('renders all form fields', () => {
-    render(
-      <BoardForm
-        title="Edit Board"
-        submitLabel="Save"
-        initialValues={defaultValues}
-        onSubmit={mockOnSubmit}
-      />,
-    );
+    render(<BoardForm title="Edit Board" submitLabel="Save" initialValues={defaultValues} onSubmit={mockOnSubmit} />);
 
     expect(screen.getByLabelText('Board Name *')).toBeDefined();
     expect(screen.getByLabelText('Description')).toBeDefined();
@@ -79,14 +68,7 @@ describe('BoardForm', () => {
   });
 
   it('allows editing the serial number field', () => {
-    render(
-      <BoardForm
-        title="Edit Board"
-        submitLabel="Save"
-        initialValues={defaultValues}
-        onSubmit={mockOnSubmit}
-      />,
-    );
+    render(<BoardForm title="Edit Board" submitLabel="Save" initialValues={defaultValues} onSubmit={mockOnSubmit} />);
 
     const serialField = screen.getByLabelText('Controller Serial Number') as HTMLInputElement;
     fireEvent.change(serialField, { target: { value: 'NEW-SERIAL' } });
@@ -117,14 +99,7 @@ describe('BoardForm', () => {
   });
 
   it('submits undefined serialNumber when field is empty', async () => {
-    render(
-      <BoardForm
-        title="Edit Board"
-        submitLabel="Save"
-        initialValues={defaultValues}
-        onSubmit={mockOnSubmit}
-      />,
-    );
+    render(<BoardForm title="Edit Board" submitLabel="Save" initialValues={defaultValues} onSubmit={mockOnSubmit} />);
 
     fireEvent.submit(screen.getByText('Save').closest('form')!);
 
@@ -183,27 +158,13 @@ describe('BoardForm', () => {
   });
 
   it('renders map location picker', () => {
-    render(
-      <BoardForm
-        title="Edit Board"
-        submitLabel="Save"
-        initialValues={defaultValues}
-        onSubmit={mockOnSubmit}
-      />,
-    );
+    render(<BoardForm title="Edit Board" submitLabel="Save" initialValues={defaultValues} onSubmit={mockOnSubmit} />);
 
     expect(screen.getByTestId('map-location-picker')).toBeDefined();
   });
 
   it('submits form with updated location from map picker', async () => {
-    render(
-      <BoardForm
-        title="Edit Board"
-        submitLabel="Save"
-        initialValues={defaultValues}
-        onSubmit={mockOnSubmit}
-      />,
-    );
+    render(<BoardForm title="Edit Board" submitLabel="Save" initialValues={defaultValues} onSubmit={mockOnSubmit} />);
 
     fireEvent.click(screen.getByTestId('map-select-location'));
     fireEvent.submit(screen.getByText('Save').closest('form')!);

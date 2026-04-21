@@ -65,10 +65,7 @@ vi.mock('../db/queries/util/hold-state', () => ({
 }));
 
 import type { ConnectionContext } from '@boardsesh/shared-schema';
-import {
-  setterFollowMutations,
-  setterFollowQueries,
-} from '../graphql/resolvers/social/setter-follows';
+import { setterFollowMutations, setterFollowQueries } from '../graphql/resolvers/social/setter-follows';
 
 function makeCtx(overrides: Partial<ConnectionContext> = {}): ConnectionContext {
   return {
@@ -110,8 +107,7 @@ function createMockChain(resolveValue: unknown = []): Record<string, unknown> {
   ];
 
   // Make the chain a thenable (for destructuring awaits like `const [x] = await db.select()...`)
-  chain.then = (resolve: (value: unknown) => unknown) =>
-    Promise.resolve(resolveValue).then(resolve);
+  chain.then = (resolve: (value: unknown) => unknown) => Promise.resolve(resolveValue).then(resolve);
 
   for (const method of methods) {
     chain[method] = vi.fn((..._args: unknown[]) => chain);
@@ -152,20 +148,14 @@ describe('followSetter mutation', () => {
     mockDb.select.mockReturnValueOnce(existsChain);
 
     // 2. Insert follow → returns row (new follow)
-    const insertChain = createMockChain([
-      { id: 1, followerId: 'user-123', setterUsername: 'setter1' },
-    ]);
+    const insertChain = createMockChain([{ id: 1, followerId: 'user-123', setterUsername: 'setter1' }]);
     mockDb.insert.mockReturnValueOnce(insertChain);
 
     // 3. Check linked user → no linked users
     const linkedChain = createMockChain([]);
     mockDb.select.mockReturnValueOnce(linkedChain);
 
-    const result = await setterFollowMutations.followSetter(
-      null,
-      { input: { setterUsername: 'setter1' } },
-      ctx,
-    );
+    const result = await setterFollowMutations.followSetter(null, { input: { setterUsername: 'setter1' } }, ctx);
 
     expect(result).toBe(true);
     expect(mockDb.insert).toHaveBeenCalled();
@@ -182,11 +172,7 @@ describe('followSetter mutation', () => {
     const insertChain = createMockChain([]);
     mockDb.insert.mockReturnValueOnce(insertChain);
 
-    const result = await setterFollowMutations.followSetter(
-      null,
-      { input: { setterUsername: 'setter1' } },
-      ctx,
-    );
+    const result = await setterFollowMutations.followSetter(null, { input: { setterUsername: 'setter1' } }, ctx);
 
     expect(result).toBe(true);
     // No additional insert for user_follows since result was empty
@@ -212,11 +198,7 @@ describe('followSetter mutation', () => {
     const userFollowInsertChain = createMockChain(undefined);
     mockDb.insert.mockReturnValueOnce(userFollowInsertChain);
 
-    const result = await setterFollowMutations.followSetter(
-      null,
-      { input: { setterUsername: 'setter1' } },
-      ctx,
-    );
+    const result = await setterFollowMutations.followSetter(null, { input: { setterUsername: 'setter1' } }, ctx);
 
     expect(result).toBe(true);
     // Insert called twice: once for setter_follows, once for user_follows
@@ -247,11 +229,7 @@ describe('unfollowSetter mutation', () => {
     const linkedChain = createMockChain([]);
     mockDb.select.mockReturnValueOnce(linkedChain);
 
-    const result = await setterFollowMutations.unfollowSetter(
-      null,
-      { input: { setterUsername: 'setter1' } },
-      ctx,
-    );
+    const result = await setterFollowMutations.unfollowSetter(null, { input: { setterUsername: 'setter1' } }, ctx);
 
     expect(result).toBe(true);
     expect(mockDb.delete).toHaveBeenCalledTimes(1);
@@ -272,11 +250,7 @@ describe('unfollowSetter mutation', () => {
     const deleteUserFollowChain = createMockChain(undefined);
     mockDb.delete.mockReturnValueOnce(deleteUserFollowChain);
 
-    const result = await setterFollowMutations.unfollowSetter(
-      null,
-      { input: { setterUsername: 'setter1' } },
-      ctx,
-    );
+    const result = await setterFollowMutations.unfollowSetter(null, { input: { setterUsername: 'setter1' } }, ctx);
 
     expect(result).toBe(true);
     // Delete called twice: setter_follows and user_follows
@@ -291,9 +265,7 @@ describe('userClimbs query', () => {
 
   it('should reject empty userId', async () => {
     const ctx = makeCtx();
-    await expect(
-      setterFollowQueries.userClimbs(null, { input: { userId: '' } }, ctx),
-    ).rejects.toThrow();
+    await expect(setterFollowQueries.userClimbs(null, { input: { userId: '' } }, ctx)).rejects.toThrow();
   });
 
   it('should return climbs for user with no linked usernames', async () => {
@@ -327,11 +299,7 @@ describe('userClimbs query', () => {
     ]);
     mockDb.select.mockReturnValueOnce(climbsChain);
 
-    const result = await setterFollowQueries.userClimbs(
-      null,
-      { input: { userId: 'user-123' } },
-      ctx,
-    );
+    const result = await setterFollowQueries.userClimbs(null, { input: { userId: 'user-123' } }, ctx);
 
     expect(result.totalCount).toBe(1);
     expect(result.hasMore).toBe(false);
@@ -386,11 +354,7 @@ describe('userClimbs query', () => {
     ]);
     mockDb.select.mockReturnValueOnce(climbsChain);
 
-    const result = await setterFollowQueries.userClimbs(
-      null,
-      { input: { userId: 'user-123' } },
-      ctx,
-    );
+    const result = await setterFollowQueries.userClimbs(null, { input: { userId: 'user-123' } }, ctx);
 
     expect(result.totalCount).toBe(2);
     expect(result.climbs).toHaveLength(2);
@@ -458,11 +422,7 @@ describe('userClimbs query', () => {
     ]);
     mockDb.select.mockReturnValueOnce(climbsChain);
 
-    const result = await setterFollowQueries.userClimbs(
-      null,
-      { input: { userId: 'user-123', limit: 2 } },
-      ctx,
-    );
+    const result = await setterFollowQueries.userClimbs(null, { input: { userId: 'user-123', limit: 2 } }, ctx);
 
     expect(result.hasMore).toBe(true);
     expect(result.climbs).toHaveLength(2);
@@ -484,11 +444,7 @@ describe('userClimbs query', () => {
     const climbsChain = createMockChain([]);
     mockDb.select.mockReturnValueOnce(climbsChain);
 
-    const result = await setterFollowQueries.userClimbs(
-      null,
-      { input: { userId: 'user-123' } },
-      ctx,
-    );
+    const result = await setterFollowQueries.userClimbs(null, { input: { userId: 'user-123' } }, ctx);
 
     expect(result.totalCount).toBe(0);
     expect(result.hasMore).toBe(false);

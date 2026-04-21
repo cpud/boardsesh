@@ -1,9 +1,4 @@
-import {
-  S3Client,
-  PutObjectCommand,
-  DeleteObjectCommand,
-  GetObjectCommand,
-} from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import type { Readable } from 'stream';
 
 let s3Client: S3Client | null = null;
@@ -14,11 +9,7 @@ let endpointUrl: string | null = null;
  * Check if S3 storage is configured
  */
 export function isS3Configured(): boolean {
-  return !!(
-    process.env.AWS_S3_BUCKET_NAME &&
-    process.env.AWS_ACCESS_KEY_ID &&
-    process.env.AWS_SECRET_ACCESS_KEY
-  );
+  return !!(process.env.AWS_S3_BUCKET_NAME && process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY);
 }
 
 /**

@@ -214,10 +214,7 @@ async function assignInferredSessionWithConn(
       .update(dbSchema.inferredSessions)
       .set({ endedAt: prevTick.climbedAt })
       .where(
-        and(
-          eq(dbSchema.inferredSessions.id, prevTick.inferredSessionId),
-          isNull(dbSchema.inferredSessions.endedAt),
-        ),
+        and(eq(dbSchema.inferredSessions.id, prevTick.inferredSessionId), isNull(dbSchema.inferredSessions.endedAt)),
       );
   }
 
@@ -298,10 +295,7 @@ export async function runInferredSessionBuilderBatched(options?: {
         isNull(dbSchema.boardseshTicks.inferredSessionId),
         eq(dbSchema.boardseshTicks.userId, options.userId),
       )
-    : and(
-        isNull(dbSchema.boardseshTicks.sessionId),
-        isNull(dbSchema.boardseshTicks.inferredSessionId),
-      );
+    : and(isNull(dbSchema.boardseshTicks.sessionId), isNull(dbSchema.boardseshTicks.inferredSessionId));
 
   const usersWithUnassigned = await db
     .selectDistinct({ userId: dbSchema.boardseshTicks.userId })
@@ -346,12 +340,7 @@ export async function runInferredSessionBuilderBatched(options?: {
         lastTickAt: dbSchema.inferredSessions.lastTickAt,
       })
       .from(dbSchema.inferredSessions)
-      .where(
-        and(
-          eq(dbSchema.inferredSessions.userId, userId),
-          isNull(dbSchema.inferredSessions.endedAt),
-        ),
-      )
+      .where(and(eq(dbSchema.inferredSessions.userId, userId), isNull(dbSchema.inferredSessions.endedAt)))
       .orderBy(desc(dbSchema.inferredSessions.lastTickAt))
       .limit(1);
 
@@ -439,9 +428,7 @@ export async function adoptRecentTicksForSession(
 
     // Collect affected inferred session IDs (some ticks may not have one yet)
     const affectedInferredSessionIds = [
-      ...new Set(
-        recentTicks.map((t) => t.inferredSessionId).filter((id): id is string => id !== null),
-      ),
+      ...new Set(recentTicks.map((t) => t.inferredSessionId).filter((id): id is string => id !== null)),
     ];
 
     // Reassign ticks to the party session
@@ -458,17 +445,13 @@ export async function adoptRecentTicksForSession(
         .where(eq(dbSchema.boardseshTicks.inferredSessionId, inferredId));
 
       if (!remaining || remaining.count === 0) {
-        await tx
-          .delete(dbSchema.inferredSessions)
-          .where(eq(dbSchema.inferredSessions.id, inferredId));
+        await tx.delete(dbSchema.inferredSessions).where(eq(dbSchema.inferredSessions.id, inferredId));
       } else {
         await recalculateSessionStats(inferredId, tx);
       }
     }
 
-    console.log(
-      `[adoptRecentTicks] Adopted ${tickUuids.length} tick(s) into session ${sessionId} for user ${userId}`,
-    );
+    console.log(`[adoptRecentTicks] Adopted ${tickUuids.length} tick(s) into session ${sessionId} for user ${userId}`);
 
     return tickUuids.length;
   });

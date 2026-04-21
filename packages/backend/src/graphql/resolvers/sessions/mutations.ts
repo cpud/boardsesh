@@ -21,19 +21,13 @@ import { esp32Controllers, userBoards } from '@boardsesh/db/schema/app';
 import { sessionBoards, sessions } from '../../../db/schema';
 import { eq, inArray } from 'drizzle-orm';
 import { generateSessionSummary } from './session-summary';
-import {
-  adoptRecentTicksForSession,
-  extractBoardType,
-} from '../../../jobs/inferred-session-builder';
+import { adoptRecentTicksForSession, extractBoardType } from '../../../jobs/inferred-session-builder';
 
 /**
  * Auto-authorize all controllers owned by a user for a session.
  * Called when user joins a session to allow their ESP32 devices to connect.
  */
-async function authorizeUserControllersForSession(
-  userId: string,
-  sessionId: string,
-): Promise<void> {
+async function authorizeUserControllersForSession(userId: string, sessionId: string): Promise<void> {
   try {
     // Update all controllers owned by this user to be authorized for this session
     const result = await db
@@ -94,8 +88,7 @@ export const sessionMutations = {
     if (avatarUrl) validateInput(AvatarUrlSchema, avatarUrl, 'avatarUrl');
     if (sessionName) validateInput(SessionNameSchema, sessionName, 'sessionName');
     if (initialQueue) validateInput(QueueArraySchema, initialQueue, 'initialQueue');
-    if (initialCurrentClimb)
-      validateInput(ClimbQueueItemSchema, initialCurrentClimb, 'initialCurrentClimb');
+    if (initialCurrentClimb) validateInput(ClimbQueueItemSchema, initialCurrentClimb, 'initialCurrentClimb');
 
     const result = await roomManager.joinSession(
       ctx.connectionId,
@@ -170,15 +163,8 @@ export const sessionMutations = {
    * Only authenticated users can create sessions
    * Optionally creates a discoverable session with GPS coordinates
    */
-  createSession: async (
-    _: unknown,
-    { input }: { input: CreateSessionInput },
-    ctx: ConnectionContext,
-  ) => {
-    if (DEBUG)
-      console.log(
-        `[createSession] START - connectionId: ${ctx.connectionId}, boardPath: ${input.boardPath}`,
-      );
+  createSession: async (_: unknown, { input }: { input: CreateSessionInput }, ctx: ConnectionContext) => {
+    if (DEBUG) console.log(`[createSession] START - connectionId: ${ctx.connectionId}, boardPath: ${input.boardPath}`);
 
     await applyRateLimit(ctx, 5); // Limit session creation to prevent abuse
 
@@ -253,9 +239,7 @@ export const sessionMutations = {
         input.discoverable ? undefined : input.name,
       );
       if (DEBUG)
-        console.log(
-          `[createSession] Joined session - clientId: ${result.clientId}, isLeader: ${result.isLeader}`,
-        );
+        console.log(`[createSession] Joined session - clientId: ${result.clientId}, isLeader: ${result.isLeader}`);
 
       updateContext(ctx.connectionId, { sessionId, userId: result.clientId });
 
@@ -264,10 +248,7 @@ export const sessionMutations = {
       if (ctx.isAuthenticated && ctx.userId) {
         const boardTypeFromPath = extractBoardType(input.boardPath);
         adoptRecentTicksForSession(ctx.userId, sessionId, boardTypeFromPath).catch((err) => {
-          console.error(
-            `[createSession] Failed to adopt recent ticks for session ${sessionId}:`,
-            err,
-          );
+          console.error(`[createSession] Failed to adopt recent ticks for session ${sessionId}:`, err);
         });
       }
 
@@ -297,8 +278,7 @@ export const sessionMutations = {
     // via WebSocket (avoids double invocation for HTTP + discoverable sessions).
 
     // HTTP path: return session metadata only; client joins via WebSocket later
-    if (DEBUG)
-      console.log(`[createSession] HTTP request - returning session metadata without joining`);
+    if (DEBUG) console.log(`[createSession] HTTP request - returning session metadata without joining`);
 
     return {
       id: sessionId,

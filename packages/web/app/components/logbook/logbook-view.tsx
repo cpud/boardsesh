@@ -61,9 +61,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({ currentClimb }) => {
                       <AscentStatusIcon status={ascentStatus} variant="icon" />
                     </>
                   )}
-                  {showMirrorTag && ascent.is_mirror && (
-                    <Chip label="Mirrored" size="small" color="secondary" />
-                  )}
+                  {showMirrorTag && ascent.is_mirror && <Chip label="Mirrored" size="small" color="secondary" />}
                 </Stack>
                 {hasSuccess && ascent.quality && (
                   <Stack direction="row" spacing={1}>
@@ -77,12 +75,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({ currentClimb }) => {
                 </Stack>
 
                 {ascent.comment && (
-                  <Typography
-                    variant="body2"
-                    component="span"
-                    color="text.secondary"
-                    sx={{ whiteSpace: 'pre-wrap' }}
-                  >
+                  <Typography variant="body2" component="span" color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>
                     {ascent.comment}
                   </Typography>
                 )}

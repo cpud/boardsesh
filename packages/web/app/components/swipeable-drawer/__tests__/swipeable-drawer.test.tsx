@@ -116,12 +116,7 @@ describe('SwipeableDrawer', () => {
 
     it('preserves user-supplied className/rootClassName when showCloseButtonOnMobile is true', () => {
       const { container } = render(
-        <SwipeableDrawer
-          {...baseProps}
-          placement="top"
-          showCloseButtonOnMobile
-          className="custom-class"
-        >
+        <SwipeableDrawer {...baseProps} placement="top" showCloseButtonOnMobile className="custom-class">
           <div>body</div>
         </SwipeableDrawer>,
       );

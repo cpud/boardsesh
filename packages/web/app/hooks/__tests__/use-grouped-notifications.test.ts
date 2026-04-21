@@ -23,10 +23,7 @@ vi.mock('../use-unread-notification-count', () => ({
 
 import type { GroupedNotificationConnection } from '@boardsesh/shared-schema';
 import { useWsAuthToken } from '../use-ws-auth-token';
-import {
-  useGroupedNotifications,
-  GROUPED_NOTIFICATIONS_QUERY_KEY,
-} from '../use-grouped-notifications';
+import { useGroupedNotifications, GROUPED_NOTIFICATIONS_QUERY_KEY } from '../use-grouped-notifications';
 
 const mockUseWsAuthToken = vi.mocked(useWsAuthToken);
 

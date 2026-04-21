@@ -78,15 +78,12 @@ function createMockUserBoard(overrides?: Partial<UserBoard>): UserBoard {
 // --- Mocks (must be before imports) ---
 
 const mockUseOptionalBoardProvider = vi.fn();
-const MockBoardProvider = vi.fn(
-  ({ children }: { boardName: string; children: React.ReactNode }) => (
-    <div data-testid="mock-board-provider">{children}</div>
-  ),
-);
+const MockBoardProvider = vi.fn(({ children }: { boardName: string; children: React.ReactNode }) => (
+  <div data-testid="mock-board-provider">{children}</div>
+));
 vi.mock('../../board-provider/board-provider-context', () => ({
   useOptionalBoardProvider: () => mockUseOptionalBoardProvider(),
-  BoardProvider: (props: { boardName: string; children: React.ReactNode }) =>
-    MockBoardProvider(props),
+  BoardProvider: (props: { boardName: string; children: React.ReactNode }) => MockBoardProvider(props),
 }));
 
 const mockUseSession = vi.fn();
@@ -122,15 +119,7 @@ vi.mock('@/app/lib/open-external-url', () => ({
 
 // Simplified component mocks
 vi.mock('../../swipeable-drawer/swipeable-drawer', () => ({
-  default: ({
-    children,
-    title,
-    open,
-  }: {
-    children: React.ReactNode;
-    title: string;
-    open: boolean;
-  }) =>
+  default: ({ children, title, open }: { children: React.ReactNode; title: string; open: boolean }) =>
     open ? (
       <div data-testid="swipeable-drawer" data-title={title}>
         {children}
@@ -163,22 +152,14 @@ vi.mock('../../logbook/logascent-form', () => ({
       data-testid="log-ascent-form"
       data-layout-id={boardDetails.layout_id}
       data-size-id={boardDetails.size_id}
-      data-set-ids={
-        typeof boardDetails.set_ids === 'string'
-          ? boardDetails.set_ids
-          : String(boardDetails.set_ids)
-      }
+      data-set-ids={typeof boardDetails.set_ids === 'string' ? boardDetails.set_ids : String(boardDetails.set_ids)}
     />
   ),
 }));
 
 vi.mock('../../board-scroll/board-scroll-section', () => ({
   default: ({ children, loading }: { children: React.ReactNode; loading?: boolean }) =>
-    loading ? (
-      <div data-testid="board-scroll-loading" />
-    ) : (
-      <div data-testid="board-scroll-section">{children}</div>
-    ),
+    loading ? <div data-testid="board-scroll-loading" /> : <div data-testid="board-scroll-section">{children}</div>,
 }));
 
 vi.mock('../../board-scroll/board-scroll-card', () => ({
@@ -472,9 +453,7 @@ describe('TickAction', () => {
         screen.getByTestId('board-card-board-1').click();
       });
 
-      expect(MockBoardProvider).toHaveBeenCalledWith(
-        expect.objectContaining({ boardName: 'kilter' }),
-      );
+      expect(MockBoardProvider).toHaveBeenCalledWith(expect.objectContaining({ boardName: 'kilter' }));
     });
 
     it('fetches user boards when outside board route and authenticated', () => {
@@ -624,9 +603,7 @@ describe('TickAction', () => {
       });
 
       // Should use boardDetails.board_name (kilter) as the provider boardName
-      expect(MockBoardProvider).toHaveBeenCalledWith(
-        expect.objectContaining({ boardName: 'kilter' }),
-      );
+      expect(MockBoardProvider).toHaveBeenCalledWith(expect.objectContaining({ boardName: 'kilter' }));
     });
 
     it('skips board selector when only non-matching boards exist', async () => {
@@ -742,9 +719,7 @@ describe('TickAction', () => {
       });
 
       // BoardProvider should receive the fallback board_name from boardDetails
-      expect(MockBoardProvider).toHaveBeenCalledWith(
-        expect.objectContaining({ boardName: 'unknown_board' }),
-      );
+      expect(MockBoardProvider).toHaveBeenCalledWith(expect.objectContaining({ boardName: 'unknown_board' }));
     });
   });
 

@@ -52,14 +52,10 @@ export async function cachedGetHoldHeatmapData(
     ),
   ];
 
-  const cachedFn = unstable_cache(
-    async () => getHoldHeatmapData(params, searchParams, undefined),
-    cacheKey,
-    {
-      revalidate: CACHE_DURATION_HEATMAP,
-      tags: ['heatmap'],
-    },
-  );
+  const cachedFn = unstable_cache(async () => getHoldHeatmapData(params, searchParams, undefined), cacheKey, {
+    revalidate: CACHE_DURATION_HEATMAP,
+    tags: ['heatmap'],
+  });
 
   return cachedFn();
 }

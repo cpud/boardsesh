@@ -4540,8 +4540,7 @@ export function getConversationsByTheme(theme: string): FixtureConversation[] {
 /** Get the fixture tick for a conversation by theme + index (0-based) */
 export function getConversationTick(theme: string, index: number): FixtureTick {
   const conv = FIXTURE_CONVERSATIONS.find(
-    (c) =>
-      c.theme === theme && c.comments[0]?.uuid.includes(`-${String(index + 1).padStart(2, '0')}-`),
+    (c) => c.theme === theme && c.comments[0]?.uuid.includes(`-${String(index + 1).padStart(2, '0')}-`),
   );
   if (!conv) throw new Error(`No fixture conversation for theme="${theme}" index=${index}`);
   const tick = FIXTURE_TICKS.find((t) => t.uuid === conv.tickUuid);
@@ -4556,7 +4555,5 @@ export function tickCreatedAt(tick: FixtureTick): Date {
 
 /** Compute a comment's createdAt date */
 export function commentCreatedAt(tick: FixtureTick, comment: FixtureComment): Date {
-  return new Date(
-    FIXTURE_BASE_TIMESTAMP - tick.globalIndex * 9 * 3600000 + comment.minutesAfterTick * 60000,
-  );
+  return new Date(FIXTURE_BASE_TIMESTAMP - tick.globalIndex * 9 * 3600000 + comment.minutesAfterTick * 60000);
 }

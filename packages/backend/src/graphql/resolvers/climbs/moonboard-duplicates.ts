@@ -46,8 +46,7 @@ const MOONBOARD_COORDINATE_GROUPS: Array<{
   { key: 'finish', state: 'FINISH' },
 ];
 
-export const MOONBOARD_DUPLICATE_ERROR_PREFIX =
-  'A MoonBoard climb with the same holds already exists';
+export const MOONBOARD_DUPLICATE_ERROR_PREFIX = 'A MoonBoard climb with the same holds already exists';
 
 function getExecuteRows<T extends Record<string, unknown>>(result: unknown): T[] {
   return Array.isArray(result) ? (result as T[]) : ((result as { rows?: T[] }).rows ?? []);
@@ -119,10 +118,7 @@ type DuplicateMatchRow = {
   ascensionistCount: number;
 };
 
-function shouldReplaceMatch(
-  current: DuplicateMatchRow | undefined,
-  next: DuplicateMatchRow,
-): boolean {
+function shouldReplaceMatch(current: DuplicateMatchRow | undefined, next: DuplicateMatchRow): boolean {
   if (!current) return true;
   if (next.ascensionistCount !== current.ascensionistCount) {
     return next.ascensionistCount > current.ascensionistCount;
@@ -150,11 +146,7 @@ export async function findMoonBoardDuplicateMatches(
   }));
 
   const uniqueSignatures = Array.from(
-    new Set(
-      candidateSignatures
-        .map((candidate) => candidate.signature)
-        .filter((signature) => signature.length > 0),
-    ),
+    new Set(candidateSignatures.map((candidate) => candidate.signature).filter((signature) => signature.length > 0)),
   );
 
   const bestMatchBySignature = new Map<string, DuplicateMatchRow>();
@@ -268,8 +260,6 @@ export async function findMoonBoardDuplicateMatch(
   angle: number,
   holds: MoonBoardHoldsInput,
 ): Promise<MoonBoardClimbDuplicateMatch | null> {
-  const [match] = await findMoonBoardDuplicateMatches(layoutId, angle, [
-    { clientKey: 'save', holds },
-  ]);
+  const [match] = await findMoonBoardDuplicateMatches(layoutId, angle, [{ clientKey: 'save', holds }]);
   return match?.exists ? match : null;
 }

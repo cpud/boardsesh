@@ -59,11 +59,7 @@ type ColorMode =
   | 'userAscents'
   | 'userAttempts';
 
-const BoardHeatmap: React.FC<BoardHeatmapProps> = ({
-  boardDetails,
-  litUpHoldsMap,
-  onHoldClick,
-}) => {
+const BoardHeatmap: React.FC<BoardHeatmapProps> = ({ boardDetails, litUpHoldsMap, onHoldClick }) => {
   const pathname = usePathname();
   const { uiSearchParams } = useUISearchParams();
 
@@ -90,10 +86,7 @@ const BoardHeatmap: React.FC<BoardHeatmapProps> = ({
   const [animationFrame, setAnimationFrame] = useState(0);
   const { boardWidth, boardHeight, holdsData } = boardDetails;
 
-  const heatmapMap = useMemo(
-    () => new Map(heatmapData?.map((data) => [data.holdId, data]) || []),
-    [heatmapData],
-  );
+  const heatmapMap = useMemo(() => new Map(heatmapData?.map((data) => [data.holdId, data]) || []), [heatmapData]);
 
   // Animated holds map for the mini loading board (radial sweep like clock hands)
   const animatedHoldsMap = useMemo<LitUpHoldsMap>(() => {
@@ -149,9 +142,7 @@ const BoardHeatmap: React.FC<BoardHeatmapProps> = ({
   // Helper to check if a hold is exclusively used as a foot hold
   const isFootOnlyHold = useCallback((data: HeatmapData | undefined): boolean => {
     if (!data) return false;
-    return (
-      data.footUses > 0 && data.handUses === 0 && data.startingUses === 0 && data.finishUses === 0
-    );
+    return data.footUses > 0 && data.handUses === 0 && data.startingUses === 0 && data.finishUses === 0;
   }, []);
 
   // Updated getValue function to handle user-specific data
@@ -263,11 +254,7 @@ const BoardHeatmap: React.FC<BoardHeatmapProps> = ({
         <defs>
           <linearGradient id={gradientId}>
             {HEATMAP_COLORS.map((color, index) => (
-              <stop
-                key={color}
-                offset={`${(index / (HEATMAP_COLORS.length - 1)) * 100}%`}
-                stopColor={color}
-              />
+              <stop key={color} offset={`${(index / (HEATMAP_COLORS.length - 1)) * 100}%`} stopColor={color} />
             ))}
           </linearGradient>
         </defs>
@@ -511,11 +498,7 @@ const BoardHeatmap: React.FC<BoardHeatmapProps> = ({
             </MuiSelect>
             <FormControlLabel
               control={
-                <MuiSwitch
-                  checked={showNumbers}
-                  onChange={(_, checked) => setShowNumbers(checked)}
-                  size="small"
-                />
+                <MuiSwitch checked={showNumbers} onChange={(_, checked) => setShowNumbers(checked)} size="small" />
               }
               label="#"
             />

@@ -11,10 +11,7 @@ import { themeTokens } from '@/app/theme/theme-config';
 import dayjs from 'dayjs';
 import type { LogbookEntry } from '@/app/hooks/use-logbook';
 import { AscentStatusIcon } from '@/app/components/ascent-status/ascent-status-icon';
-import {
-  normalizeAscentStatus,
-  type AscentStatusValue,
-} from '@/app/components/ascent-status/ascent-status-utils';
+import { normalizeAscentStatus, type AscentStatusValue } from '@/app/components/ascent-status/ascent-status-utils';
 
 function getAscentChipLabel(status: AscentStatusValue): string {
   if (status === 'flash') return 'Flash';

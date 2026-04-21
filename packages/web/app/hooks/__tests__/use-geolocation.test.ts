@@ -14,11 +14,7 @@ function createPositionError(code: number, message = ''): GeolocationPositionErr
 }
 
 // Helper to create a mock GeolocationPosition
-function createPosition(
-  latitude: number,
-  longitude: number,
-  accuracy: number,
-): GeolocationPosition {
+function createPosition(latitude: number, longitude: number, accuracy: number): GeolocationPosition {
   const coords: GeolocationCoordinates = {
     latitude,
     longitude,
@@ -120,11 +116,9 @@ describe('useGeolocation', () => {
 
   it('requestPermission handles permission denied (error code 1)', async () => {
     const posError = createPositionError(1, 'User denied Geolocation');
-    mockGetCurrentPosition.mockImplementation(
-      (_success: PositionCallback, error: PositionErrorCallback) => {
-        error(posError);
-      },
-    );
+    mockGetCurrentPosition.mockImplementation((_success: PositionCallback, error: PositionErrorCallback) => {
+      error(posError);
+    });
 
     const { result } = renderHook(() => useGeolocation());
 
@@ -140,11 +134,9 @@ describe('useGeolocation', () => {
 
   it('requestPermission handles position unavailable', async () => {
     const posError = createPositionError(2, 'Position unavailable');
-    mockGetCurrentPosition.mockImplementation(
-      (_success: PositionCallback, error: PositionErrorCallback) => {
-        error(posError);
-      },
-    );
+    mockGetCurrentPosition.mockImplementation((_success: PositionCallback, error: PositionErrorCallback) => {
+      error(posError);
+    });
 
     const { result } = renderHook(() => useGeolocation());
 
@@ -286,11 +278,9 @@ describe('useGeolocation', () => {
 
     // Now make the next call fail
     const posError = createPositionError(2, 'Position unavailable');
-    mockGetCurrentPosition.mockImplementationOnce(
-      (_success: PositionCallback, error: PositionErrorCallback) => {
-        error(posError);
-      },
-    );
+    mockGetCurrentPosition.mockImplementationOnce((_success: PositionCallback, error: PositionErrorCallback) => {
+      error(posError);
+    });
 
     await act(async () => {
       await result.current.refresh();
@@ -344,11 +334,7 @@ describe('useGeolocation', () => {
       await result.current.requestPermission();
     });
 
-    expect(mockGetCurrentPosition).toHaveBeenCalledWith(
-      expect.any(Function),
-      expect.any(Function),
-      customOptions,
-    );
+    expect(mockGetCurrentPosition).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), customOptions);
   });
 
   it('loading state is set correctly during async operations', async () => {
@@ -387,9 +373,7 @@ describe('getGeolocationErrorMessage', () => {
   it('returns correct message for PERMISSION_DENIED', () => {
     const error = createPositionError(1);
     const message = getGeolocationErrorMessage(error);
-    expect(message).toBe(
-      'Location permission was denied. Please enable location access in your browser settings.',
-    );
+    expect(message).toBe('Location permission was denied. Please enable location access in your browser settings.');
   });
 
   it('returns correct message for POSITION_UNAVAILABLE', () => {

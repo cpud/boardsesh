@@ -37,9 +37,7 @@ export default async function ImportPage(props: ImportPageProps) {
   // Only MoonBoard supports bulk import for now
   if (parsedParams.board_name !== 'moonboard') {
     // Redirect to the board's climb list page
-    redirect(
-      `/${params.board_name}/${params.layout_id}/${params.size_id}/${params.set_ids}/${params.angle}`,
-    );
+    redirect(`/${params.board_name}/${params.layout_id}/${params.size_id}/${params.set_ids}/${params.angle}`);
   }
 
   const layoutInfo = getMoonBoardLayoutInfo(parsedParams.layout_id);

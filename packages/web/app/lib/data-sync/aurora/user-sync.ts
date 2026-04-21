@@ -1,22 +1,11 @@
 import { getPool } from '@/app/lib/db/db';
 import { userSync } from '../../api-wrappers/aurora/userSync';
-import {
-  SyncOptions,
-  USER_TABLES,
-  UserSyncData,
-  AuroraBoardName,
-} from '../../api-wrappers/aurora/types';
+import { SyncOptions, USER_TABLES, UserSyncData, AuroraBoardName } from '../../api-wrappers/aurora/types';
 import { eq, and, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import { NeonDatabase } from 'drizzle-orm/neon-serverless';
 import { UNIFIED_TABLES } from '../../db/queries/util/table-select';
-import {
-  boardseshTicks,
-  auroraCredentials,
-  playlists,
-  playlistClimbs,
-  playlistOwnership,
-} from '../../db/schema';
+import { boardseshTicks, auroraCredentials, playlists, playlistClimbs, playlistOwnership } from '../../db/schema';
 import { randomUUID } from 'crypto';
 import { convertQuality } from './convert-quality';
 
@@ -35,12 +24,7 @@ async function getNextAuthUserId(
   const result = await db
     .select({ userId: auroraCredentials.userId })
     .from(auroraCredentials)
-    .where(
-      and(
-        eq(auroraCredentials.boardType, boardName),
-        eq(auroraCredentials.auroraUserId, auroraUserId),
-      ),
-    )
+    .where(and(eq(auroraCredentials.boardType, boardName), eq(auroraCredentials.auroraUserId, auroraUserId)))
     .limit(1);
 
   return result[0]?.userId || null;
@@ -186,9 +170,7 @@ async function upsertTableData(
             isBenchmark: Boolean(item.is_benchmark || 0),
             comment: item.comment || '',
             climbedAt: new Date(item.climbed_at).toISOString(),
-            createdAt: item.created_at
-              ? new Date(item.created_at).toISOString()
-              : new Date().toISOString(),
+            createdAt: item.created_at ? new Date(item.created_at).toISOString() : new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             auroraType: 'ascents',
             auroraId: item.uuid,
@@ -422,11 +404,7 @@ async function updateUserSyncs(
   }
 }
 
-export async function getLastSyncTimes(
-  boardName: AuroraBoardName,
-  userId: number,
-  tableNames: string[],
-) {
+export async function getLastSyncTimes(boardName: AuroraBoardName, userId: number, tableNames: string[]) {
   const userSyncsSchema = UNIFIED_TABLES.userSyncs;
   const pool = getPool();
   const client = await pool.connect();
@@ -465,9 +443,7 @@ export async function syncUserData(
     const allSyncTimes = await getLastSyncTimes(board, userId, tables);
 
     // Create a map of existing sync times
-    const userSyncMap = new Map(
-      allSyncTimes.map((sync) => [sync.tableName, sync.lastSynchronizedAt]),
-    );
+    const userSyncMap = new Map(allSyncTimes.map((sync) => [sync.tableName, sync.lastSynchronizedAt]));
 
     // Ensure all user tables have a sync entry (default to 1970 if not synced)
     const defaultTimestamp = '1970-01-01 00:00:00.000000';
@@ -508,9 +484,7 @@ export async function syncUserData(
         // Get NextAuth user ID for dual write to boardsesh_ticks
         const nextAuthUserId = await getNextAuthUserId(tx, board, userId);
         if (!nextAuthUserId) {
-          console.warn(
-            `No NextAuth user found for Aurora user ${userId} on ${board}, skipping ascents/bids sync`,
-          );
+          console.warn(`No NextAuth user found for Aurora user ${userId} on ${board}, skipping ascents/bids sync`);
           // We can still sync other tables (users, walls, etc.) that don't need NextAuth user ID
         }
 
@@ -522,9 +496,7 @@ export async function syncUserData(
 
             // Skip ascents/bids if no NextAuth user (can't dual write)
             if ((tableName === 'ascents' || tableName === 'bids') && !nextAuthUserId) {
-              console.warn(
-                `Skipping ${tableName} sync for Aurora user ${userId} - no NextAuth mapping`,
-              );
+              console.warn(`Skipping ${tableName} sync for Aurora user ${userId} - no NextAuth mapping`);
               continue;
             }
 
@@ -583,8 +555,7 @@ export async function syncUserData(
     }
 
     // Build inferred sessions for any newly-imported ticks
-    const hasTickData =
-      (totalResults['ascents']?.synced ?? 0) > 0 || (totalResults['bids']?.synced ?? 0) > 0;
+    const hasTickData = (totalResults['ascents']?.synced ?? 0) > 0 || (totalResults['bids']?.synced ?? 0) > 0;
     if (hasTickData) {
       try {
         const pool = getPool();
@@ -595,9 +566,7 @@ export async function syncUserData(
           if (nextAuthUserId) {
             const assigned = await buildInferredSessionsForUser(nextAuthUserId);
             if (assigned > 0) {
-              console.log(
-                `Built inferred sessions: assigned ${assigned} ticks for user ${nextAuthUserId}`,
-              );
+              console.log(`Built inferred sessions: assigned ${assigned} ticks for user ${nextAuthUserId}`);
             }
           }
         } finally {

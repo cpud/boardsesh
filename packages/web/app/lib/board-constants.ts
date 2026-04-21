@@ -26,10 +26,7 @@ export type {
 export const AURORA_BOARD_NAMES = [...AURORA_BOARDS];
 export const KILTER_HOMEWALL_LAYOUT_ID = 8;
 export const KILTER_HOMEWALL_PRODUCT_ID = 7;
-export const BOARD_NAME_PREFIX_REGEX = new RegExp(
-  `^(?:${SUPPORTED_BOARDS.join('|')})\\s*(?:board)?\\s*`,
-  'i',
-);
+export const BOARD_NAME_PREFIX_REGEX = new RegExp(`^(?:${SUPPORTED_BOARDS.join('|')})\\s*(?:board)?\\s*`, 'i');
 
 export function isAuroraBoardName(boardName: string): boardName is AuroraBoardName {
   return AURORA_BOARD_NAMES.includes(boardName as AuroraBoardName);
@@ -61,19 +58,12 @@ export const getBoardDetails = ({
   for (const setId of set_ids) {
     const imageFilename = getImageFilename(board_name, layout_id, size_id, setId);
     if (!imageFilename) {
-      throw new Error(
-        `Could not find image for set_id ${setId} for layout_id: ${layout_id} and size_id: ${size_id}`,
-      );
+      throw new Error(`Could not find image for set_id ${setId} for layout_id: ${layout_id} and size_id: ${size_id}`);
     }
     imagesToHolds[imageFilename] = getHolePlacements(board_name, layout_id, setId);
   }
 
-  const {
-    edgeLeft: edge_left,
-    edgeRight: edge_right,
-    edgeBottom: edge_bottom,
-    edgeTop: edge_top,
-  } = sizeData;
+  const { edgeLeft: edge_left, edgeRight: edge_right, edgeBottom: edge_bottom, edgeTop: edge_top } = sizeData;
 
   const firstImage = Object.keys(imagesToHolds)[0];
   const dimensions = BOARD_IMAGE_DIMENSIONS[board_name][firstImage];

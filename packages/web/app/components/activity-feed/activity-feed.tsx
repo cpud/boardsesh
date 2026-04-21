@@ -11,10 +11,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { EmptyState } from '@/app/components/ui/empty-state';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  GET_SESSION_GROUPED_FEED,
-  type GetSessionGroupedFeedQueryResponse,
-} from '@/app/lib/graphql/operations';
+import { GET_SESSION_GROUPED_FEED, type GetSessionGroupedFeedQueryResponse } from '@/app/lib/graphql/operations';
 import type { SessionFeedItem, SessionFeedResult } from '@boardsesh/shared-schema';
 import { VoteSummaryProvider } from '@/app/components/social/vote-summary-context';
 import SessionFeedCard from './session-feed-card';
@@ -47,46 +44,42 @@ export default function ActivityFeed({
 
   const queryKey = ['sessionFeed', boardUuid, userId] as const;
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } =
-    useInfiniteQuery<SessionFeedPage, Error>({
-      queryKey,
-      queryFn: async ({ pageParam }) => {
-        const client = createGraphQLHttpClient(isAuthenticated ? token : null);
-        const input = {
-          limit: 20,
-          cursor: pageParam as string | null,
-          boardUuid: boardUuid || undefined,
-          userId: userId || undefined,
-        };
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } = useInfiniteQuery<
+    SessionFeedPage,
+    Error
+  >({
+    queryKey,
+    queryFn: async ({ pageParam }) => {
+      const client = createGraphQLHttpClient(isAuthenticated ? token : null);
+      const input = {
+        limit: 20,
+        cursor: pageParam as string | null,
+        boardUuid: boardUuid || undefined,
+        userId: userId || undefined,
+      };
 
-        const response = await client.request<GetSessionGroupedFeedQueryResponse>(
-          GET_SESSION_GROUPED_FEED,
-          { input },
-        );
-        return response.sessionGroupedFeed;
-      },
-      initialPageParam: null as string | null,
-      getNextPageParam: (lastPage) => {
-        if (!lastPage.hasMore) return undefined;
-        return lastPage.cursor ?? undefined;
-      },
-      enabled: isAuthenticated ? !!token : true,
-      staleTime: isAuthenticated ? 60 * 1000 : 24 * 60 * 60 * 1000,
-      ...(hasInitialData
-        ? {
-            initialData: {
-              pages: [initialFeedResult!],
-              pageParams: [null],
-            },
-            initialDataUpdatedAt: Date.now(),
-          }
-        : {}),
-    });
+      const response = await client.request<GetSessionGroupedFeedQueryResponse>(GET_SESSION_GROUPED_FEED, { input });
+      return response.sessionGroupedFeed;
+    },
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.hasMore) return undefined;
+      return lastPage.cursor ?? undefined;
+    },
+    enabled: isAuthenticated ? !!token : true,
+    staleTime: isAuthenticated ? 60 * 1000 : 24 * 60 * 60 * 1000,
+    ...(hasInitialData
+      ? {
+          initialData: {
+            pages: [initialFeedResult!],
+            pageParams: [null],
+          },
+          initialDataUpdatedAt: Date.now(),
+        }
+      : {}),
+  });
 
-  const sessions: SessionFeedItem[] = useMemo(
-    () => data?.pages.flatMap((p) => p.sessions) ?? [],
-    [data],
-  );
+  const sessions: SessionFeedItem[] = useMemo(() => data?.pages.flatMap((p) => p.sessions) ?? [], [data]);
 
   const sessionIds = useMemo(() => sessions.map((s) => s.sessionId), [sessions]);
 
@@ -98,10 +91,7 @@ export default function ActivityFeed({
 
   if ((authLoading || isLoading) && sessions.length === 0) {
     return (
-      <Box
-        data-testid="activity-feed"
-        sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
-      >
+      <Box data-testid="activity-feed" sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <FeedItemSkeleton />
         <FeedItemSkeleton />
         <FeedItemSkeleton />
@@ -149,10 +139,7 @@ export default function ActivityFeed({
             )}
           </EmptyState>
         ) : (
-          <EmptyState
-            icon={<PublicOutlined fontSize="inherit" />}
-            description="No recent activity yet"
-          />
+          <EmptyState icon={<PublicOutlined fontSize="inherit" />} description="No recent activity yet" />
         )
       ) : (
         <VoteSummaryProvider entityType="session" entityIds={sessionIds}>

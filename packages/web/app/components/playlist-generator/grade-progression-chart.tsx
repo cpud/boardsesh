@@ -16,15 +16,11 @@ interface GradeProgressionChartProps {
 
 function getGradeName(difficultyId: number): string {
   return (
-    TENSION_KILTER_GRADES.find((g) => g.difficulty_id === difficultyId)?.difficulty_name ??
-    `Grade ${difficultyId}`
+    TENSION_KILTER_GRADES.find((g) => g.difficulty_id === difficultyId)?.difficulty_name ?? `Grade ${difficultyId}`
   );
 }
 
-const GradeProgressionChart: React.FC<GradeProgressionChartProps> = ({
-  plannedSlots,
-  height = 120,
-}) => {
+const GradeProgressionChart: React.FC<GradeProgressionChartProps> = ({ plannedSlots, height = 120 }) => {
   const bars: CssBarChartBar[] = useMemo(() => {
     if (plannedSlots.length === 0) return [];
 
@@ -70,13 +66,7 @@ const GradeProgressionChart: React.FC<GradeProgressionChartProps> = ({
   }
 
   return (
-    <CssBarChart
-      bars={bars}
-      height={height}
-      mobileHeight={height}
-      showLegend
-      ariaLabel="Grade distribution preview"
-    />
+    <CssBarChart bars={bars} height={height} mobileHeight={height} showLegend ariaLabel="Grade distribution preview" />
   );
 };
 

@@ -1,14 +1,6 @@
 'use client';
 
-import React, {
-  useState,
-  useCallback,
-  useEffect,
-  useMemo,
-  useImperativeHandle,
-  useRef,
-  forwardRef,
-} from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useImperativeHandle, useRef, forwardRef } from 'react';
 import Stack from '@mui/material/Stack';
 import KeyboardArrowUpOutlined from '@mui/icons-material/KeyboardArrowUpOutlined';
 import KeyboardArrowDownOutlined from '@mui/icons-material/KeyboardArrowDownOutlined';
@@ -117,8 +109,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(
     const [expandedControl, setExpandedControl] = useState<ExpandedControl>(null);
 
     // Explicit ascent type — initialized from inferred value, auto-updated on state changes.
-    const inferredType: TickStatus =
-      tickTarget && !tickTarget.hasPriorHistory && attemptCount === 1 ? 'flash' : 'send';
+    const inferredType: TickStatus = tickTarget && !tickTarget.hasPriorHistory && attemptCount === 1 ? 'flash' : 'send';
     const [ascentType, setAscentType] = useState<TickStatus>(inferredType);
     const userOverrodeType = useRef(false);
 
@@ -350,13 +341,9 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(
         {/* Compact mode — single picker panel + controls row (hidden when expanded) */}
         {!expanded && (
           <>
-            <div
-              className={`${styles.pickerPanel} ${expandedControl ? styles.pickerPanelExpanded : ''}`}
-            >
+            <div className={`${styles.pickerPanel} ${expandedControl ? styles.pickerPanelExpanded : ''}`}>
               <div className={styles.pickerPanelContent}>
-                {renderedControl === 'stars' && (
-                  <InlineStarPicker quality={quality} onSelect={handleStarSelect} />
-                )}
+                {renderedControl === 'stars' && <InlineStarPicker quality={quality} onSelect={handleStarSelect} />}
                 {renderedControl === 'grade' && (
                   <InlineGradePicker
                     grades={grades}
@@ -378,11 +365,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(
 
             <div className={styles.controlsRow}>
               <div className={styles.leftSection}>
-                <div
-                  role="group"
-                  onFocus={() => setExpandedControl(null)}
-                  className={styles.commentWrapper}
-                >
+                <div role="group" onFocus={() => setExpandedControl(null)} className={styles.commentWrapper}>
                   {commentSlot}
                 </div>
                 <TickGradeButton

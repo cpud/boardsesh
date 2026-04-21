@@ -9,11 +9,7 @@ import { requireAdminOrLeader } from '../roles';
 /**
  * Setter override: directly set community grade/benchmark status on a climb.
  */
-export async function setterOverrideCommunityStatus(
-  _: unknown,
-  { input }: { input: unknown },
-  ctx: ConnectionContext,
-) {
+export async function setterOverrideCommunityStatus(_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) {
   requireAuthenticated(ctx);
   await applyRateLimit(ctx, 10);
 
@@ -50,12 +46,7 @@ export async function setterOverrideCommunityStatus(
     const [cred] = await db
       .select({ auroraUserId: dbSchema.auroraCredentials.auroraUserId })
       .from(dbSchema.auroraCredentials)
-      .where(
-        and(
-          eq(dbSchema.auroraCredentials.userId, userId),
-          eq(dbSchema.auroraCredentials.boardType, boardType),
-        ),
-      )
+      .where(and(eq(dbSchema.auroraCredentials.userId, userId), eq(dbSchema.auroraCredentials.boardType, boardType)))
       .limit(1);
 
     if (cred?.auroraUserId === climb.setterId) {
@@ -123,11 +114,7 @@ export async function setterOverrideCommunityStatus(
 /**
  * Freeze/unfreeze a climb to prevent new proposals.
  */
-export async function freezeClimb(
-  _: unknown,
-  { input }: { input: unknown },
-  ctx: ConnectionContext,
-) {
+export async function freezeClimb(_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) {
   const validated = validateInput(FreezeClimbInputSchema, input, 'input');
   const { climbUuid, boardType, frozen, reason } = validated;
 

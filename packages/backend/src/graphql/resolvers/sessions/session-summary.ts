@@ -44,10 +44,7 @@ export async function generateSessionSummary(sessionId: string): Promise<Session
           isNotNull(dbSchema.boardseshTicks.difficulty),
         ),
       )
-      .groupBy(
-        dbSchema.boardDifficultyGrades.boulderName,
-        dbSchema.boardDifficultyGrades.difficulty,
-      )
+      .groupBy(dbSchema.boardDifficultyGrades.boulderName, dbSchema.boardDifficultyGrades.difficulty)
       .orderBy(desc(dbSchema.boardDifficultyGrades.difficulty)),
 
     // Hardest climb: highest difficulty send with climb name (JOINed to avoid N+1)
@@ -67,10 +64,7 @@ export async function generateSessionSummary(sessionId: string): Promise<Session
           eq(dbSchema.boardDifficultyGrades.boardType, dbSchema.boardseshTicks.boardType),
         ),
       )
-      .leftJoin(
-        dbSchema.boardClimbs,
-        eq(dbSchema.boardClimbs.uuid, dbSchema.boardseshTicks.climbUuid),
-      )
+      .leftJoin(dbSchema.boardClimbs, eq(dbSchema.boardClimbs.uuid, dbSchema.boardseshTicks.climbUuid))
       .where(
         and(
           eq(dbSchema.boardseshTicks.sessionId, sessionId),

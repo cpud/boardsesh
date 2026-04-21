@@ -15,11 +15,7 @@ const registerSchema = z.object({
     .string()
     .min(8, 'Password must be at least 8 characters')
     .max(128, 'Password must be less than 128 characters'),
-  name: z
-    .string()
-    .min(1, 'Name is required')
-    .max(100, 'Name must be less than 100 characters')
-    .optional(),
+  name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters').optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -45,21 +41,14 @@ export async function POST(request: NextRequest) {
     // Validate input
     const validationResult = registerSchema.safeParse(body);
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: validationResult.error.issues[0].message },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: validationResult.error.issues[0].message }, { status: 400 });
     }
 
     const { email, password, name } = validationResult.data;
     const db = getDb();
 
     // Check if user already exists
-    const existingUser = await db
-      .select()
-      .from(schema.users)
-      .where(eq(schema.users.email, email))
-      .limit(1);
+    const existingUser = await db.select().from(schema.users).where(eq(schema.users.email, email)).limit(1);
 
     if (existingUser.length > 0) {
       // An account with this email already exists
@@ -67,8 +56,7 @@ export async function POST(request: NextRequest) {
       // This prevents account takeover attacks where someone registers with an OAuth user's email
       return NextResponse.json(
         {
-          error:
-            'An account with this email already exists. Please sign in with your existing account.',
+          error: 'An account with this email already exists. Please sign in with your existing account.',
         },
         { status: 409 },
       );
@@ -78,9 +66,7 @@ export async function POST(request: NextRequest) {
     const userId = crypto.randomUUID();
     const passwordHash = await bcrypt.hash(password, 12);
     const verificationToken = emailVerificationEnabled ? crypto.randomUUID() : null;
-    const tokenExpires = emailVerificationEnabled
-      ? new Date(Date.now() + 24 * 60 * 60 * 1000)
-      : null; // 24 hours
+    const tokenExpires = emailVerificationEnabled ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null; // 24 hours
 
     // Use transaction to ensure user, credentials, profile, and token are created atomically
     // If any insert fails, all changes are rolled back
@@ -117,16 +103,8 @@ export async function POST(request: NextRequest) {
     } catch (insertError) {
       // Handle race condition: another request created this user between our check and insert
       // PostgreSQL unique constraint violation code is '23505'
-      if (
-        insertError &&
-        typeof insertError === 'object' &&
-        'code' in insertError &&
-        insertError.code === '23505'
-      ) {
-        return NextResponse.json(
-          { error: 'An account with this email already exists' },
-          { status: 409 },
-        );
+      if (insertError && typeof insertError === 'object' && 'code' in insertError && insertError.code === '23505') {
+        return NextResponse.json({ error: 'An account with this email already exists' }, { status: 409 });
       }
       throw insertError;
     }

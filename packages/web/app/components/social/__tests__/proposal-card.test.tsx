@@ -44,12 +44,8 @@ vi.mock('@/app/components/climb-card/climb-list-item', () => ({
     return (
       <div data-testid="climb-list-item-mock">
         {props.climb.name && <span data-testid="climb-name">{props.climb.name}</span>}
-        {props.climb.difficulty && (
-          <span data-testid="climb-difficulty">{props.climb.difficulty}</span>
-        )}
-        {props.climb.setter_username && (
-          <span data-testid="climb-setter">{props.climb.setter_username}</span>
-        )}
+        {props.climb.difficulty && <span data-testid="climb-difficulty">{props.climb.difficulty}</span>}
+        {props.climb.setter_username && <span data-testid="climb-setter">{props.climb.setter_username}</span>}
         {props.disableSwipe && <span data-testid="disable-swipe">true</span>}
       </div>
     );
@@ -176,9 +172,7 @@ describe('ProposalCard', () => {
     it('passes disableSwipe prop to ClimbListItem', () => {
       render(<ProposalCard proposal={makeProposal()} />);
       expect(screen.getByTestId('disable-swipe')).toBeTruthy();
-      expect(mockClimbListItem).toHaveBeenCalledWith(
-        expect.objectContaining({ disableSwipe: true }),
-      );
+      expect(mockClimbListItem).toHaveBeenCalledWith(expect.objectContaining({ disableSwipe: true }));
     });
 
     it('constructs climb data from proposal fields', () => {

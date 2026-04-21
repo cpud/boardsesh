@@ -36,10 +36,7 @@ export const inferredSessions = pgTable(
   },
   (table) => ({
     userIdx: index('inferred_sessions_user_idx').on(table.userId),
-    userLastTickIdx: index('inferred_sessions_user_last_tick_idx').on(
-      table.userId,
-      table.lastTickAt,
-    ),
+    userLastTickIdx: index('inferred_sessions_user_last_tick_idx').on(table.userId, table.lastTickAt),
     lastTickIdx: index('inferred_sessions_last_tick_idx').on(table.lastTickAt),
   }),
 );

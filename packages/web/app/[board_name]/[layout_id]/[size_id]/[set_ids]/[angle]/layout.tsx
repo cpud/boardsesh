@@ -18,9 +18,7 @@ import { QueueBridgeInjector } from '@/app/components/queue-control/queue-bridge
 import LastUsedBoardTracker from '@/app/components/board-page/last-used-board-tracker';
 import { themeTokens } from '@/app/theme/theme-config';
 
-export async function generateMetadata(props: {
-  params: Promise<BoardRouteParameters>;
-}): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<BoardRouteParameters> }): Promise<Metadata> {
   const params = await props.params;
 
   try {

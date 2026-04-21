@@ -278,8 +278,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     const { handleDoubleTap, showHeart, dismissHeart, isFavorited } = useDoubleTapFavorite({
       climbUuid: climb.uuid,
     });
-    const { ref: doubleTapRef, onDoubleClick: handleDoubleTapClick } =
-      useDoubleTap(handleDoubleTap);
+    const { ref: doubleTapRef, onDoubleClick: handleDoubleTapClick } = useDoubleTap(handleDoubleTap);
     // Store onThumbnailClick in a ref so the memoized handler always reads the latest
     // value without requiring onThumbnailClick in the memo comparator.
     const onThumbnailClickRef = useRef(onThumbnailClick);
@@ -321,9 +320,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
     }, [swipeRightAction]);
 
     const resolvedSwipeLeft = hasRightOverride ? handleOverrideSwipeLeft : handleDefaultSwipeLeft;
-    const rightActionRevealWidth = hasRightOverride
-      ? RIGHT_OVERRIDE_ACTION_WIDTH
-      : RIGHT_ACTION_WIDTH;
+    const rightActionRevealWidth = hasRightOverride ? RIGHT_OVERRIDE_ACTION_WIDTH : RIGHT_ACTION_WIDTH;
 
     // Direct DOM manipulation for swipe layer opacities — zero React re-renders during gesture
     const handleSwipeOffset = useCallback((offset: number) => {
@@ -334,9 +331,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
       const rightBaseOpacity = Math.min(1, rightOffset / SHORT_SWIPE_THRESHOLD);
       const transitionRange = LONG_SWIPE_THRESHOLD - TRANSITION_START;
       const blend =
-        transitionRange > 0
-          ? Math.max(0, Math.min(1, (rightOffset - TRANSITION_START) / transitionRange))
-          : 1;
+        transitionRange > 0 ? Math.max(0, Math.min(1, (rightOffset - TRANSITION_START) / transitionRange)) : 1;
 
       if (shortSwipeLayerRef.current) {
         shortSwipeLayerRef.current.style.opacity = String(rightBaseOpacity * (1 - blend));
@@ -350,25 +345,22 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
 
       // Left swipe: queue/tick action opacity
       if (rightActionLayerRef.current) {
-        rightActionLayerRef.current.style.opacity = String(
-          Math.min(1, leftOffset / SHORT_SWIPE_THRESHOLD),
-        );
+        rightActionLayerRef.current.style.opacity = String(Math.min(1, leftOffset / SHORT_SWIPE_THRESHOLD));
       }
     }, []);
 
-    const { swipeHandlers, swipeLeftConfirmed, contentRef, leftActionRef, rightActionRef } =
-      useSwipeActions({
-        onSwipeLeft: resolvedSwipeLeft,
-        onSwipeRight: handleDefaultSwipeRight,
-        onSwipeRightLong: handleDefaultSwipeRightLong,
-        onSwipeOffsetChange: handleSwipeOffset,
-        swipeThreshold: SHORT_SWIPE_THRESHOLD,
-        longSwipeRightThreshold: LONG_SWIPE_THRESHOLD,
-        maxSwipe: MAX_GESTURE_SWIPE,
-        maxSwipeLeft: rightActionRevealWidth,
-        disabled: disableSwipe,
-        confirmationPeekOffset: rightActionRevealWidth,
-      });
+    const { swipeHandlers, swipeLeftConfirmed, contentRef, leftActionRef, rightActionRef } = useSwipeActions({
+      onSwipeLeft: resolvedSwipeLeft,
+      onSwipeRight: handleDefaultSwipeRight,
+      onSwipeRightLong: handleDefaultSwipeRightLong,
+      onSwipeOffsetChange: handleSwipeOffset,
+      swipeThreshold: SHORT_SWIPE_THRESHOLD,
+      longSwipeRightThreshold: LONG_SWIPE_THRESHOLD,
+      maxSwipe: MAX_GESTURE_SWIPE,
+      maxSwipeLeft: rightActionRevealWidth,
+      disabled: disableSwipe,
+      confirmationPeekOffset: rightActionRevealWidth,
+    });
 
     // Combined ref callback for left action container — avoids inline function recreation
     const leftActionCombinedRef = useCallback(
@@ -511,9 +503,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
 
     const resolvedBg =
       backgroundColor ??
-      (selected
-        ? (getGradeTintColor(climb.difficulty, 'light', isDark) ?? 'var(--semantic-selected)')
-        : 'transparent');
+      (selected ? (getGradeTintColor(climb.difficulty, 'light', isDark) ?? 'var(--semantic-selected)') : 'transparent');
 
     const swipeableContentStyle = useMemo(
       () => ({
@@ -545,10 +535,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
 
     // Memoize right action layer styles to avoid inline object creation per render
     const rightActionDefaultLayerStyle = useMemo(
-      () =>
-        swipeLeftConfirmed
-          ? { ...rightActionLayerDefaultStyle, opacity: 0 }
-          : rightActionLayerDefaultStyle,
+      () => (swipeLeftConfirmed ? { ...rightActionLayerDefaultStyle, opacity: 0 } : rightActionLayerDefaultStyle),
       [swipeLeftConfirmed],
     );
 
@@ -574,19 +561,11 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
 
               {/* Right action (revealed on swipe left) */}
               {hasRightOverride ? (
-                <div
-                  ref={rightActionRef}
-                  style={rightOverrideActionStyle}
-                  data-swipe-right-action=""
-                >
+                <div ref={rightActionRef} style={rightOverrideActionStyle} data-swipe-right-action="">
                   {swipeRightAction?.icon ?? null}
                 </div>
               ) : (
-                <div
-                  ref={rightActionRef}
-                  style={defaultRightActionStyle}
-                  data-swipe-right-action=""
-                >
+                <div ref={rightActionRef} style={defaultRightActionStyle} data-swipe-right-action="">
                   {/* Default layer (Add icon) — opacity driven by swipe gesture via ref */}
                   <div ref={rightActionLayerRef} style={rightActionDefaultLayerStyle}>
                     <AddOutlined style={iconStyle} />
@@ -610,11 +589,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
           >
             {/* Thumbnail with ascent status badge */}
             {thumbnailSlot ? (
-              <div
-                style={thumbnailStyle}
-                data-testid="climb-thumbnail"
-                onClick={handleThumbnailClick}
-              >
+              <div style={thumbnailStyle} data-testid="climb-thumbnail" onClick={handleThumbnailClick}>
                 {thumbnailSlot}
               </div>
             ) : (
@@ -635,11 +610,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
                   />
                 )}
                 {!disableFavorite && (
-                  <HeartAnimationOverlay
-                    visible={showHeart}
-                    onAnimationEnd={dismissHeart}
-                    size={32}
-                  />
+                  <HeartAnimationOverlay visible={showHeart} onAnimationEnd={dismissHeart} size={32} />
                 )}
                 <AscentStatus
                   climbUuid={climb.uuid}
@@ -682,11 +653,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
           <>
             <SwipeableDrawer
               title={
-                <div
-                  data-swipe-blocked=""
-                  {...actionsDragHandlers}
-                  className={drawerCss.dragHeaderWrapper}
-                >
+                <div data-swipe-blocked="" {...actionsDragHandlers} className={drawerCss.dragHeaderWrapper}>
                   <DrawerClimbHeader climb={climb} boardDetails={boardDetails} />
                 </div>
               }
@@ -728,11 +695,7 @@ const ClimbListItem: React.FC<ClimbListItemProps> = React.memo(
             </SwipeableDrawer>
 
             {isQueueListOpen && (
-              <QueueDrawer
-                open={isQueueListOpen}
-                onClose={handleCloseQueueList}
-                boardDetails={boardDetails}
-              />
+              <QueueDrawer open={isQueueListOpen} onClose={handleCloseQueueList} boardDetails={boardDetails} />
             )}
           </>
         )}

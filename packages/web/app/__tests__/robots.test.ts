@@ -13,9 +13,7 @@ describe('robots', () => {
   it('disallows crawling /feed, /api/, /auth/, and /settings', () => {
     const result = robots();
     const rules = Array.isArray(result.rules) ? result.rules[0] : result.rules;
-    expect(rules.disallow).toEqual(
-      expect.arrayContaining(['/feed', '/api/', '/auth/', '/settings']),
-    );
+    expect(rules.disallow).toEqual(expect.arrayContaining(['/feed', '/api/', '/auth/', '/settings']));
   });
 
   it('includes a sitemap URL', () => {

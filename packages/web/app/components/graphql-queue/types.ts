@@ -6,11 +6,7 @@ import type { ParsedBoardRouteParameters, BoardDetails } from '@/app/lib/types';
 
 // Stable action functions extended with session management
 export interface GraphQLQueueActionsType extends QueueActionsType {
-  startSession: (options?: {
-    discoverable?: boolean;
-    name?: string;
-    sessionId?: string;
-  }) => Promise<string>;
+  startSession: (options?: { discoverable?: boolean; name?: string; sessionId?: string }) => Promise<string>;
   joinSession: (sessionId: string) => Promise<void>;
   endSession: () => void;
   dismissSessionSummary: () => void;

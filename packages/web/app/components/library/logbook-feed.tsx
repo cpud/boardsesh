@@ -14,11 +14,7 @@ import {
   type LogbookFilterState as FilterState,
   type LogbookSortState as SortState,
 } from '@/app/lib/logbook-preferences';
-import {
-  readFiltersFromQuery,
-  readSortFromQuery,
-  filtersToQueryParams,
-} from '@/app/lib/logbook-url-utils';
+import { readFiltersFromQuery, readSortFromQuery, filtersToQueryParams } from '@/app/lib/logbook-url-utils';
 import { getPreference, setPreference } from '@/app/lib/user-preferences-db';
 import { useSession } from 'next-auth/react';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
@@ -102,8 +98,7 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
             const sets = getSetsForLayoutAndSize(boardName, layoutId, sizeId);
             setIds = sets.map((s) => s.id).join(',');
           } else {
-            const fallback =
-              boardName === 'kilter' ? ORPHANED_KILTER_LAYOUT_DEFAULTS[layoutId] : undefined;
+            const fallback = boardName === 'kilter' ? ORPHANED_KILTER_LAYOUT_DEFAULTS[layoutId] : undefined;
             if (fallback) {
               sizeId = fallback.sizeId;
               setIds = fallback.setIds;
@@ -332,10 +327,8 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
       maxDifficulty: filters.maxGrade !== '' ? filters.maxGrade : undefined,
       fromDate: filters.fromDate || undefined,
       toDate: filters.toDate || undefined,
-      minAngle:
-        filters.angleRange[0] !== DEFAULT_ANGLE_RANGE[0] ? filters.angleRange[0] : undefined,
-      maxAngle:
-        filters.angleRange[1] !== DEFAULT_ANGLE_RANGE[1] ? filters.angleRange[1] : undefined,
+      minAngle: filters.angleRange[0] !== DEFAULT_ANGLE_RANGE[0] ? filters.angleRange[0] : undefined,
+      maxAngle: filters.angleRange[1] !== DEFAULT_ANGLE_RANGE[1] ? filters.angleRange[1] : undefined,
       benchmarkOnly: filters.benchmarkOnly || undefined,
     }),
     [filters],
@@ -377,12 +370,8 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
           ...(climbNameParam ? { climbName: climbNameParam } : {}),
           statusMode: activeFilters.statusMode,
           flashOnly: activeFilters.flashOnly,
-          ...(activeFilters.minDifficulty !== undefined
-            ? { minDifficulty: activeFilters.minDifficulty }
-            : {}),
-          ...(activeFilters.maxDifficulty !== undefined
-            ? { maxDifficulty: activeFilters.maxDifficulty }
-            : {}),
+          ...(activeFilters.minDifficulty !== undefined ? { minDifficulty: activeFilters.minDifficulty } : {}),
+          ...(activeFilters.maxDifficulty !== undefined ? { maxDifficulty: activeFilters.maxDifficulty } : {}),
           ...(activeFilters.fromDate ? { fromDate: activeFilters.fromDate } : {}),
           ...(activeFilters.toDate ? { toDate: activeFilters.toDate } : {}),
           ...(activeFilters.minAngle !== undefined ? { minAngle: activeFilters.minAngle } : {}),
@@ -391,10 +380,7 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
           ...sortParams,
         },
       };
-      const response = await client.request<GetUserAscentsFeedQueryResponse>(
-        GET_USER_ASCENTS_FEED,
-        variables,
-      );
+      const response = await client.request<GetUserAscentsFeedQueryResponse>(GET_USER_ASCENTS_FEED, variables);
       return response.userAscentsFeed;
     },
     initialPageParam: 0,
@@ -461,11 +447,7 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
       // Optimistically remove the item from the cache
       queryClient.setQueryData(
         feedQueryKey,
-        (
-          old:
-            | { pages: { items: AscentFeedItem[]; hasMore: boolean }[]; pageParams: number[] }
-            | undefined,
-        ) => {
+        (old: { pages: { items: AscentFeedItem[]; hasMore: boolean }[]; pageParams: number[] } | undefined) => {
           if (!old) return old;
           return {
             ...old,
@@ -539,8 +521,7 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
     filters.angleRange[0] !== DEFAULT_ANGLE_RANGE[0] ||
     filters.angleRange[1] !== DEFAULT_ANGLE_RANGE[1];
   // Posting and linking are mutually exclusive — see `allowInstagramLinking` below.
-  const enableInstagramPosting =
-    pathname === '/you/logbook' && isNarrowViewport && isInstagramPostingSupported();
+  const enableInstagramPosting = pathname === '/you/logbook' && isNarrowViewport && isInstagramPostingSupported();
   const enableInstagramLinking = pathname === '/you/logbook';
 
   const searchForm = (
@@ -553,16 +534,14 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
         setFilters((prev) => ({
           ...prev,
           minGrade: value,
-          maxGrade:
-            value !== '' && prev.maxGrade !== '' && value > prev.maxGrade ? value : prev.maxGrade,
+          maxGrade: value !== '' && prev.maxGrade !== '' && value > prev.maxGrade ? value : prev.maxGrade,
         }))
       }
       onMaxGradeChange={(value) =>
         setFilters((prev) => ({
           ...prev,
           maxGrade: value,
-          minGrade:
-            value !== '' && prev.minGrade !== '' && value < prev.minGrade ? value : prev.minGrade,
+          minGrade: value !== '' && prev.minGrade !== '' && value < prev.minGrade ? value : prev.minGrade,
         }))
       }
       sortState={sortState}
@@ -644,10 +623,7 @@ export default function LogbookFeed({ layoutStats, loadingLayoutStats }: Logbook
           ))}
         </Box>
 
-        <Box
-          ref={sentinelRef}
-          sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}
-        >
+        <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}>
           {isFetchingNextPage && <CircularProgress size={24} />}
         </Box>
       </div>

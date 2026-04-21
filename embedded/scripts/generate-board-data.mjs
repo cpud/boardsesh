@@ -105,14 +105,8 @@ function loadBoardData() {
   console.log('Loading board data from TypeScript source files...');
 
   // Read raw file contents
-  const productSizesContent = fs.readFileSync(
-    path.join(BOARD_CONSTANTS_GENERATED, 'product-sizes-data.ts'),
-    'utf-8',
-  );
-  const ledPlacementsContent = fs.readFileSync(
-    path.join(BOARD_CONSTANTS_GENERATED, 'led-placements-data.ts'),
-    'utf-8',
-  );
+  const productSizesContent = fs.readFileSync(path.join(BOARD_CONSTANTS_GENERATED, 'product-sizes-data.ts'), 'utf-8');
+  const ledPlacementsContent = fs.readFileSync(path.join(BOARD_CONSTANTS_GENERATED, 'led-placements-data.ts'), 'utf-8');
   const boardDataContent = fs.readFileSync(path.join(WEB_LIB, 'board-data.ts'), 'utf-8');
 
   // Extract data objects
@@ -124,14 +118,7 @@ function loadBoardData() {
   const LED_PLACEMENTS = extractJsObject(ledPlacementsContent, 'LED_PLACEMENTS');
   const BOARD_IMAGE_DIMENSIONS = extractJsObject(boardDataContent, 'BOARD_IMAGE_DIMENSIONS');
 
-  if (
-    !PRODUCT_SIZES ||
-    !SETS ||
-    !IMAGE_FILENAMES ||
-    !HOLE_PLACEMENTS ||
-    !LED_PLACEMENTS ||
-    !BOARD_IMAGE_DIMENSIONS
-  ) {
+  if (!PRODUCT_SIZES || !SETS || !IMAGE_FILENAMES || !HOLE_PLACEMENTS || !LED_PLACEMENTS || !BOARD_IMAGE_DIMENSIONS) {
     throw new Error('Failed to load one or more required data objects');
   }
 
@@ -591,9 +578,7 @@ async function main() {
   const imageHeader = generateImageHeader(results);
   const imageHeaderPath = path.join(OUTPUT_DIR, 'board_image_data.h');
   fs.writeFileSync(imageHeaderPath, imageHeader);
-  console.log(
-    `  Written: ${imageHeaderPath} (${(imageHeader.length / 1024).toFixed(0)} KB source)`,
-  );
+  console.log(`  Written: ${imageHeaderPath} (${(imageHeader.length / 1024).toFixed(0)} KB source)`);
 
   // Generate hold data header (types + declarations only)
   const holdHeader = generateHoldHeader(results);

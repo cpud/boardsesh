@@ -30,9 +30,7 @@ export default function BoardThumbnailGrid() {
     <div className={styles.customBoardGrid}>
       {boardDetailsList.map(({ key, details }) => (
         <div key={key} className={styles.customBoardGridCell}>
-          {details && (
-            <BoardRenderer mirrored={false} boardDetails={details} thumbnail fillHeight />
-          )}
+          {details && <BoardRenderer mirrored={false} boardDetails={details} thumbnail fillHeight />}
         </div>
       ))}
     </div>

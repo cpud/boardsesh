@@ -26,9 +26,7 @@ export const getClimbByUuid = async (params: GetClimbParams): Promise<Climb | nu
         frames: tables.climbs.frames,
         angle: sql<number>`COALESCE(${tables.climbStats.angle}, ${params.angle})`,
         ascensionist_count: sql<number>`COALESCE(${tables.climbStats.ascensionistCount}, 0)`,
-        difficulty_id: sql<
-          number | null
-        >`ROUND(${tables.climbStats.displayDifficulty}::numeric, 0)`,
+        difficulty_id: sql<number | null>`ROUND(${tables.climbStats.displayDifficulty}::numeric, 0)`,
         quality_average: sql<number>`ROUND(${tables.climbStats.qualityAverage}::numeric, 2)`,
         difficulty_error: sql<number>`ROUND(${tables.climbStats.difficultyAverage}::numeric - ${tables.climbStats.displayDifficulty}::numeric, 2)`,
         benchmark_difficulty: tables.climbStats.benchmarkDifficulty,
@@ -71,9 +69,7 @@ export const getClimbByUuid = async (params: GetClimbParams): Promise<Climb | nu
       stars: Math.round((Number(row.quality_average) || 0) * 5),
       difficulty_error: row.difficulty_error?.toString() || '0',
       benchmark_difficulty:
-        row.benchmark_difficulty && row.benchmark_difficulty > 0
-          ? row.benchmark_difficulty.toString()
-          : null,
+        row.benchmark_difficulty && row.benchmark_difficulty > 0 ? row.benchmark_difficulty.toString() : null,
       is_draft: row.is_draft ?? false,
       created_at: row.created_at ?? null,
       published_at: row.published_at ?? null,

@@ -37,12 +37,7 @@ const createTestClimb = (uuid?: string): ClimbQueueItem => ({
 });
 
 // Helper function to register a client before joining
-const registerAndJoinSession = async (
-  clientId: string,
-  sessionId: string,
-  boardPath: string,
-  username: string,
-) => {
+const registerAndJoinSession = async (clientId: string, sessionId: string, boardPath: string, username: string) => {
   await roomManager.registerClient(clientId);
   return roomManager.joinSession(clientId, sessionId, boardPath, username);
 };
@@ -73,12 +68,7 @@ describe('updateQueueOnly - Redis-first approach', () => {
 
       // Update state to get a known version/sequence
       const initialState = await roomManager.getQueueState(sessionId);
-      await roomManager.updateQueueState(
-        sessionId,
-        [createTestClimb()],
-        null,
-        initialState.version,
-      );
+      await roomManager.updateQueueState(sessionId, [createTestClimb()], null, initialState.version);
 
       // Get state after update
       const state = await roomManager.getQueueState(sessionId);
@@ -86,10 +76,7 @@ describe('updateQueueOnly - Redis-first approach', () => {
       const previousSequence = state.sequence;
 
       // Call updateQueueOnly
-      const result = await roomManager.updateQueueOnly(sessionId, [
-        createTestClimb(),
-        createTestClimb(),
-      ]);
+      const result = await roomManager.updateQueueOnly(sessionId, [createTestClimb(), createTestClimb()]);
 
       // Should have incremented version and sequence
       expect(result.version).toBe(previousVersion + 1);
@@ -189,9 +176,9 @@ describe('updateQueueOnly - Redis-first approach', () => {
       const currentVersion = state.version;
 
       // Try to update with wrong version
-      await expect(
-        roomManager.updateQueueOnly(sessionId, [createTestClimb()], currentVersion + 100),
-      ).rejects.toThrow(VersionConflictError);
+      await expect(roomManager.updateQueueOnly(sessionId, [createTestClimb()], currentVersion + 100)).rejects.toThrow(
+        VersionConflictError,
+      );
     });
 
     it('should succeed when expectedVersion matches current version', async () => {
@@ -206,11 +193,7 @@ describe('updateQueueOnly - Redis-first approach', () => {
       const currentVersion = state.version;
 
       // Update with correct version
-      const result = await roomManager.updateQueueOnly(
-        sessionId,
-        [createTestClimb()],
-        currentVersion,
-      );
+      const result = await roomManager.updateQueueOnly(sessionId, [createTestClimb()], currentVersion);
 
       expect(result.version).toBe(currentVersion + 1);
     });

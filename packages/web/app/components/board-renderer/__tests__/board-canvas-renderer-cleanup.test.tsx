@@ -6,27 +6,24 @@ import type { BoardDetails } from '@/app/lib/types';
 
 // --- Mocks ---
 
-const {
-  isWorkerRenderingSupportedMock,
-  renderBoardMock,
-  setResolveRenderBoard,
-  getResolveRenderBoard,
-} = vi.hoisted(() => {
-  let resolveRenderBoard: ((bitmap: ImageBitmap) => void) | undefined;
-  return {
-    isWorkerRenderingSupportedMock: vi.fn(() => true),
-    renderBoardMock: vi.fn(
-      () =>
-        new Promise<ImageBitmap>((resolve) => {
-          resolveRenderBoard = resolve;
-        }),
-    ),
-    setResolveRenderBoard: (fn?: (bitmap: ImageBitmap) => void) => {
-      resolveRenderBoard = fn;
-    },
-    getResolveRenderBoard: () => resolveRenderBoard,
-  };
-});
+const { isWorkerRenderingSupportedMock, renderBoardMock, setResolveRenderBoard, getResolveRenderBoard } = vi.hoisted(
+  () => {
+    let resolveRenderBoard: ((bitmap: ImageBitmap) => void) | undefined;
+    return {
+      isWorkerRenderingSupportedMock: vi.fn(() => true),
+      renderBoardMock: vi.fn(
+        () =>
+          new Promise<ImageBitmap>((resolve) => {
+            resolveRenderBoard = resolve;
+          }),
+      ),
+      setResolveRenderBoard: (fn?: (bitmap: ImageBitmap) => void) => {
+        resolveRenderBoard = fn;
+      },
+      getResolveRenderBoard: () => resolveRenderBoard,
+    };
+  },
+);
 
 vi.mock('@/app/lib/board-render-worker/worker-manager', () => ({
   isWorkerRenderingSupported: isWorkerRenderingSupportedMock,
@@ -139,21 +136,14 @@ describe('BoardCanvasRenderer cleanup', () => {
 
   it('uses thumbnail dimensions when thumbnail prop is set', () => {
     const { container } = render(
-      <BoardCanvasRenderer
-        boardDetails={mockBoardDetails}
-        frames="p1r42p2r43"
-        mirrored={false}
-        thumbnail
-      />,
+      <BoardCanvasRenderer boardDetails={mockBoardDetails} frames="p1r42p2r43" mirrored={false} thumbnail />,
     );
 
     const canvas = container.querySelector('canvas') as HTMLCanvasElement;
     expect(canvas).toBeTruthy();
 
     // Thumbnail width is 200, height scales proportionally
-    const expectedHeight = Math.round(
-      (200 * mockBoardDetails.boardHeight) / mockBoardDetails.boardWidth,
-    );
+    const expectedHeight = Math.round((200 * mockBoardDetails.boardHeight) / mockBoardDetails.boardWidth);
     expect(canvas.width).toBe(200);
     expect(canvas.height).toBe(expectedHeight);
   });

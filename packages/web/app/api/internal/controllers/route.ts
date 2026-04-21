@@ -54,10 +54,7 @@ export async function GET() {
 
     const db = getDb();
 
-    const controllers = await db
-      .select()
-      .from(esp32Controllers)
-      .where(eq(esp32Controllers.userId, session.user.id));
+    const controllers = await db.select().from(esp32Controllers).where(eq(esp32Controllers.userId, session.user.id));
 
     const now = Date.now();
 
@@ -68,9 +65,7 @@ export async function GET() {
       layoutId: controller.layoutId,
       sizeId: controller.sizeId,
       setIds: controller.setIds,
-      isOnline: controller.lastSeenAt
-        ? now - controller.lastSeenAt.getTime() < ONLINE_THRESHOLD_MS
-        : false,
+      isOnline: controller.lastSeenAt ? now - controller.lastSeenAt.getTime() < ONLINE_THRESHOLD_MS : false,
       lastSeen: controller.lastSeenAt?.toISOString() ?? null,
       createdAt: controller.createdAt.toISOString(),
     }));
@@ -98,10 +93,7 @@ export async function POST(request: NextRequest) {
 
     const validationResult = registerControllerSchema.safeParse(body);
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: validationResult.error.issues[0].message },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: validationResult.error.issues[0].message }, { status: 400 });
     }
 
     const { name, boardName, layoutId, sizeId, setIds } = validationResult.data;
@@ -159,10 +151,7 @@ export async function DELETE(request: NextRequest) {
 
     const validationResult = deleteControllerSchema.safeParse(body);
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: validationResult.error.issues[0].message },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: validationResult.error.issues[0].message }, { status: 400 });
     }
 
     const { controllerId } = validationResult.data;
@@ -171,9 +160,7 @@ export async function DELETE(request: NextRequest) {
     // Only delete if user owns the controller
     await db
       .delete(esp32Controllers)
-      .where(
-        and(eq(esp32Controllers.id, controllerId), eq(esp32Controllers.userId, session.user.id)),
-      );
+      .where(and(eq(esp32Controllers.id, controllerId), eq(esp32Controllers.userId, session.user.id)));
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -35,12 +35,7 @@ describe('Redis PubSub Adapter', () => {
   });
 
   afterAll(async () => {
-    await Promise.all([
-      publisher1.quit(),
-      subscriber1.quit(),
-      publisher2.quit(),
-      subscriber2.quit(),
-    ]);
+    await Promise.all([publisher1.quit(), subscriber1.quit(), publisher2.quit(), subscriber2.quit()]);
   });
 
   describe('Cross-instance message delivery', () => {

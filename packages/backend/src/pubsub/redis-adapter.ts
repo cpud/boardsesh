@@ -55,11 +55,9 @@ export function createRedisPubSubAdapter(publisher: Redis, subscriber: Redis): R
 
   let queueMessageCallback: ((sessionId: string, event: QueueEvent) => void) | null = null;
   let sessionMessageCallback: ((sessionId: string, event: SessionEvent) => void) | null = null;
-  let notificationMessageCallback: ((userId: string, event: NotificationEvent) => void) | null =
-    null;
+  let notificationMessageCallback: ((userId: string, event: NotificationEvent) => void) | null = null;
   let commentMessageCallback: ((entityKey: string, event: CommentEvent) => void) | null = null;
-  let newClimbMessageCallback: ((channelKey: string, event: NewClimbCreatedEvent) => void) | null =
-    null;
+  let newClimbMessageCallback: ((channelKey: string, event: NewClimbCreatedEvent) => void) | null = null;
 
   // Set up message handler
   subscriber.on('message', (channel: string, message: string) => {
@@ -114,9 +112,7 @@ export function createRedisPubSubAdapter(publisher: Redis, subscriber: Redis): R
         event,
         timestamp: Date.now(),
       };
-      console.log(
-        `[Redis] Publishing queue event to channel: ${sessionId} (type: ${event.__typename})`,
-      );
+      console.log(`[Redis] Publishing queue event to channel: ${sessionId} (type: ${event.__typename})`);
       await publisher.publish(channel, JSON.stringify(message));
     },
 
@@ -127,9 +123,7 @@ export function createRedisPubSubAdapter(publisher: Redis, subscriber: Redis): R
         event,
         timestamp: Date.now(),
       };
-      console.log(
-        `[Redis] Publishing session event to channel: ${sessionId} (type: ${event.__typename})`,
-      );
+      console.log(`[Redis] Publishing session event to channel: ${sessionId} (type: ${event.__typename})`);
       await publisher.publish(channel, JSON.stringify(message));
     },
 

@@ -29,8 +29,7 @@ Branch deploys stopped working after migrating from Vercel Postgres (which was a
 - Vercel still creates preview deployments for every PR (frontend builds succeed)
 - The backend CORS handler already allows Vercel preview origins (`packages/backend/src/handlers/cors.ts:4`):
   ```ts
-  const VERCEL_PREVIEW_REGEX =
-    /^https:\/\/boardsesh-[a-z0-9]+-marcodejonghs-projects\.vercel\.app$/;
+  const VERCEL_PREVIEW_REGEX = /^https:\/\/boardsesh-[a-z0-9]+-marcodejonghs-projects\.vercel\.app$/;
   ```
 - The join handler already uses a `backendUrl` query param pattern (`packages/backend/src/handlers/join.ts:56`)
 - GitHub Actions CI runs on PRs (typecheck, lint, tests)

@@ -35,11 +35,7 @@ interface FollowerCountProps {
 
 type DrawerMode = 'followers' | 'following' | null;
 
-export default function FollowerCount({
-  userId,
-  followerCount,
-  followingCount,
-}: FollowerCountProps) {
+export default function FollowerCount({ userId, followerCount, followingCount }: FollowerCountProps) {
   const [drawerMode, setDrawerMode] = useState<DrawerMode>(null);
   const [users, setUsers] = useState<PublicUserProfile[]>([]);
   const [loading, setLoading] = useState(false);
@@ -54,10 +50,9 @@ export default function FollowerCount({
         const client = createGraphQLHttpClient(token);
 
         if (mode === 'followers') {
-          const response = await client.request<
-            GetFollowersQueryResponse,
-            GetFollowersQueryVariables
-          >(GET_FOLLOWERS, { input: { userId, limit: 20, offset } });
+          const response = await client.request<GetFollowersQueryResponse, GetFollowersQueryVariables>(GET_FOLLOWERS, {
+            input: { userId, limit: 20, offset },
+          });
           if (offset === 0) {
             setUsers(response.followers.users);
           } else {
@@ -66,10 +61,9 @@ export default function FollowerCount({
           setHasMore(response.followers.hasMore);
           setTotalCount(response.followers.totalCount);
         } else {
-          const response = await client.request<
-            GetFollowingQueryResponse,
-            GetFollowingQueryVariables
-          >(GET_FOLLOWING, { input: { userId, limit: 20, offset } });
+          const response = await client.request<GetFollowingQueryResponse, GetFollowingQueryVariables>(GET_FOLLOWING, {
+            input: { userId, limit: 20, offset },
+          });
           if (offset === 0) {
             setUsers(response.following.users);
           } else {
@@ -186,10 +180,7 @@ export default function FollowerCount({
                       {!user.avatarUrl && <PersonOutlined />}
                     </MuiAvatar>
                   </ListItemAvatar>
-                  <ListItemText
-                    primary={user.displayName || 'User'}
-                    secondary={`${user.followerCount} followers`}
-                  />
+                  <ListItemText primary={user.displayName || 'User'} secondary={`${user.followerCount} followers`} />
                 </ListItem>
               ))}
             </List>

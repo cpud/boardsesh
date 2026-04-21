@@ -1,12 +1,4 @@
-import {
-  pgTable,
-  bigserial,
-  text,
-  timestamp,
-  uniqueIndex,
-  index,
-  check,
-} from 'drizzle-orm/pg-core';
+import { pgTable, bigserial, text, timestamp, uniqueIndex, index, check } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { users } from '../auth/users';
 import { playlists } from './playlists';

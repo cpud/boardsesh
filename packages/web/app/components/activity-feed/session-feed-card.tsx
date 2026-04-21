@@ -106,10 +106,7 @@ export default function SessionFeedCard({ session }: SessionFeedCardProps) {
         {/* Header: Avatar(s) + name(s) + time + duration */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
           {isMultiUser ? (
-            <AvatarGroup
-              max={3}
-              sx={{ '& .MuiAvatar-root': { width: 28, height: 28, fontSize: 12 } }}
-            >
+            <AvatarGroup max={3} sx={{ '& .MuiAvatar-root': { width: 28, height: 28, fontSize: 12 } }}>
               {participants.map((p) => (
                 <Avatar
                   key={p.userId}
@@ -126,9 +123,7 @@ export default function SessionFeedCard({ session }: SessionFeedCardProps) {
           ) : (
             <Avatar
               src={primaryParticipant?.avatarUrl ?? undefined}
-              {...(primaryParticipant
-                ? { component: Link, href: `/profile/${primaryParticipant.userId}` }
-                : {})}
+              {...(primaryParticipant ? { component: Link, href: `/profile/${primaryParticipant.userId}` } : {})}
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
               sx={{ width: 32, height: 32, cursor: primaryParticipant ? 'pointer' : 'default' }}
             >
@@ -141,9 +136,7 @@ export default function SessionFeedCard({ session }: SessionFeedCardProps) {
               variant="body2"
               fontWeight={600}
               noWrap
-              {...(primaryParticipant
-                ? { component: Link, href: `/profile/${primaryParticipant.userId}` }
-                : {})}
+              {...(primaryParticipant ? { component: Link, href: `/profile/${primaryParticipant.userId}` } : {})}
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
               sx={{
                 textDecoration: 'none',

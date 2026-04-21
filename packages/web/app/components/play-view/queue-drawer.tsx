@@ -35,12 +35,7 @@ export interface QueueDrawerProps {
   boardDetails: BoardDetails;
 }
 
-const QueueDrawer: React.FC<QueueDrawerProps> = ({
-  open,
-  onClose,
-  onTransitionEnd,
-  boardDetails,
-}) => {
+const QueueDrawer: React.FC<QueueDrawerProps> = ({ open, onClose, onTransitionEnd, boardDetails }) => {
   // Internal state
   const [isEditMode, setIsEditMode] = useState(false);
   const [showHistory, setShowHistory] = useState(false);

@@ -33,9 +33,7 @@ const ClimbCardCover = ({
 
   let renderContent: React.ReactNode;
   if (!climb) {
-    renderContent = (
-      <BoardImageLayers boardDetails={boardDetails} mirrored={false} style={boardStyle} />
-    );
+    renderContent = <BoardImageLayers boardDetails={boardDetails} mirrored={false} style={boardStyle} />;
   } else if (!preferImageLayers && canvasReady) {
     renderContent = (
       <BoardCanvasRenderer

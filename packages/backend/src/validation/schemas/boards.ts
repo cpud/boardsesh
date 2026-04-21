@@ -1,11 +1,5 @@
 import { z } from 'zod';
-import {
-  UUIDSchema,
-  BoardNameSchema,
-  LatitudeSchema,
-  LongitudeSchema,
-  SlugSchema,
-} from './primitives';
+import { UUIDSchema, BoardNameSchema, LatitudeSchema, LongitudeSchema, SlugSchema } from './primitives';
 
 /**
  * Create board input validation schema

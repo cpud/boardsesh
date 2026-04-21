@@ -119,11 +119,7 @@ vi.mock('@/app/components/swipeable-drawer/swipeable-drawer', () => ({
     paperRef?: React.Ref<HTMLDivElement>;
   }) =>
     open ? (
-      <div
-        data-testid="drawer"
-        data-placement={placement}
-        ref={typeof paperRef === 'function' ? undefined : paperRef}
-      >
+      <div data-testid="drawer" data-placement={placement} ref={typeof paperRef === 'function' ? undefined : paperRef}>
         {children}
         {footer}
       </div>
@@ -272,12 +268,7 @@ describe('StartSeshDrawer', () => {
       expect(mockCreateSession).toHaveBeenCalled();
     });
 
-    expect(mockSetInitialQueueForSession).toHaveBeenCalledWith(
-      'new-session-id',
-      [item1],
-      item1,
-      undefined,
-    );
+    expect(mockSetInitialQueueForSession).toHaveBeenCalledWith('new-session-id', [item1], item1, undefined);
     expect(mockRouterPush).toHaveBeenCalled();
   });
 
@@ -333,12 +324,7 @@ describe('StartSeshDrawer', () => {
     await submitSesh();
 
     await waitFor(() => {
-      expect(mockSetInitialQueueForSession).toHaveBeenCalledWith(
-        'new-session-id',
-        [item1, item2],
-        item1,
-        undefined,
-      );
+      expect(mockSetInitialQueueForSession).toHaveBeenCalledWith('new-session-id', [item1, item2], item1, undefined);
     });
 
     expect(mockRouterPush).toHaveBeenCalled();
@@ -409,12 +395,7 @@ describe('StartSeshDrawer', () => {
     await submitSesh();
 
     await waitFor(() => {
-      expect(mockSetInitialQueueForSession).toHaveBeenCalledWith(
-        'new-session-id',
-        [],
-        item1,
-        undefined,
-      );
+      expect(mockSetInitialQueueForSession).toHaveBeenCalledWith('new-session-id', [], item1, undefined);
     });
   });
 
@@ -546,12 +527,7 @@ describe('StartSeshDrawer', () => {
     });
 
     // Queue should be transferred from bridge state
-    expect(mockSetInitialQueueForSession).toHaveBeenCalledWith(
-      'new-session-id',
-      [bridgeItem],
-      bridgeItem,
-      undefined,
-    );
+    expect(mockSetInitialQueueForSession).toHaveBeenCalledWith('new-session-id', [bridgeItem], bridgeItem, undefined);
 
     // activateSession should fire using bridge board details
     expect(mockActivateSession).toHaveBeenCalledWith({

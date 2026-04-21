@@ -21,9 +21,7 @@ let transporter: Transporter | null = null;
 function getTransporter(): Transporter {
   if (!transporter) {
     if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
-      throw new Error(
-        'SMTP credentials not configured. Set SMTP_USER and SMTP_PASSWORD environment variables.',
-      );
+      throw new Error('SMTP credentials not configured. Set SMTP_USER and SMTP_PASSWORD environment variables.');
     }
 
     transporter = nodemailer.createTransport({
@@ -51,11 +49,7 @@ function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (char) => htmlEscapes[char]);
 }
 
-export async function sendVerificationEmail(
-  email: string,
-  token: string,
-  baseUrl: string,
-): Promise<void> {
+export async function sendVerificationEmail(email: string, token: string, baseUrl: string): Promise<void> {
   // Validate email format before using in URL to prevent injection
   const validatedEmail = emailSchema.parse(email);
 

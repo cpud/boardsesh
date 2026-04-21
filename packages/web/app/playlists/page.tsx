@@ -1,10 +1,6 @@
 import React from 'react';
 import { getServerAuthToken } from '@/app/lib/auth/server-auth';
-import {
-  serverMyBoards,
-  serverUserPlaylists,
-  cachedDiscoverPlaylists,
-} from '@/app/lib/graphql/server-cached-client';
+import { serverMyBoards, serverUserPlaylists, cachedDiscoverPlaylists } from '@/app/lib/graphql/server-cached-client';
 import LibraryPageContent from './library-page-content';
 import { getPlaylistLcpPreloadUrl } from '@/app/lib/lcp-preload-url';
 import styles from '@/app/components/library/library.module.css';
@@ -26,9 +22,7 @@ export default async function PlaylistsPage() {
     cachedDiscoverPlaylists(),
   ]);
 
-  const lcpPreloadUrl = getPlaylistLcpPreloadUrl(
-    initialPlaylists?.[0] ?? initialDiscoverPlaylists?.popular?.[0],
-  );
+  const lcpPreloadUrl = getPlaylistLcpPreloadUrl(initialPlaylists?.[0] ?? initialDiscoverPlaylists?.popular?.[0]);
 
   return (
     <>

@@ -103,8 +103,7 @@ function createMockChain(resolveValue: unknown = []): Record<string, unknown> {
     'set',
   ];
 
-  chain.then = (resolve: (value: unknown) => unknown) =>
-    Promise.resolve(resolveValue).then(resolve);
+  chain.then = (resolve: (value: unknown) => unknown) => Promise.resolve(resolveValue).then(resolve);
 
   for (const method of methods) {
     chain[method] = vi.fn((..._args: unknown[]) => chain);
@@ -167,9 +166,9 @@ describe('playlistClimbs resolver', () => {
     const selectChain = createMockChain([]);
     mockDb.select.mockReturnValueOnce(selectChain);
 
-    await expect(
-      playlistQueries.playlistClimbs(null, { input: { playlistId: 'nonexistent' } }, ctx),
-    ).rejects.toThrow('Playlist not found or access denied');
+    await expect(playlistQueries.playlistClimbs(null, { input: { playlistId: 'nonexistent' } }, ctx)).rejects.toThrow(
+      'Playlist not found or access denied',
+    );
   });
 
   it('should throw for private playlist when not authenticated', async () => {
@@ -179,9 +178,9 @@ describe('playlistClimbs resolver', () => {
     const playlistChain = createMockChain([{ id: BigInt(1), isPublic: false }]);
     mockDb.select.mockReturnValueOnce(playlistChain);
 
-    await expect(
-      playlistQueries.playlistClimbs(null, { input: { playlistId: 'private-pl' } }, ctx),
-    ).rejects.toThrow('Playlist not found or access denied');
+    await expect(playlistQueries.playlistClimbs(null, { input: { playlistId: 'private-pl' } }, ctx)).rejects.toThrow(
+      'Playlist not found or access denied',
+    );
   });
 
   it('should return climbs in all-boards mode when boardName is omitted', async () => {
@@ -236,11 +235,7 @@ describe('playlistClimbs resolver', () => {
     ]);
     mockDb.select.mockReturnValueOnce(climbsChain);
 
-    const result = await playlistQueries.playlistClimbs(
-      null,
-      { input: { playlistId: 'test-pl' } },
-      ctx,
-    );
+    const result = await playlistQueries.playlistClimbs(null, { input: { playlistId: 'test-pl' } }, ctx);
 
     expect(result.totalCount).toBe(2);
     expect(result.climbs).toHaveLength(2);

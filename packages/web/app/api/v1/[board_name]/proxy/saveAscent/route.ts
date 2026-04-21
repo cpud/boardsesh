@@ -32,10 +32,7 @@ export async function POST(request: Request, props: { params: Promise<BoardOnlyR
 
   // MoonBoard doesn't use Aurora APIs
   if (params.board_name === 'moonboard') {
-    return NextResponse.json(
-      { error: 'MoonBoard does not support this endpoint' },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: 'MoonBoard does not support this endpoint' }, { status: 400 });
   }
 
   const board_name = params.board_name as AuroraBoardName;
@@ -51,12 +48,7 @@ export async function POST(request: Request, props: { params: Promise<BoardOnlyR
     const validatedData = saveAscentSchema.parse(body);
 
     // saveAscent now writes to boardsesh_ticks using NextAuth userId
-    const response = await saveAscent(
-      board_name,
-      validatedData.token,
-      validatedData.options,
-      session.user.id,
-    );
+    const response = await saveAscent(board_name, validatedData.token, validatedData.options, session.user.id);
     return NextResponse.json(response);
   } catch (error) {
     console.error('SaveAscent error details:', {
@@ -66,10 +58,7 @@ export async function POST(request: Request, props: { params: Promise<BoardOnlyR
     });
 
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request data', details: error.issues },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Invalid request data', details: error.issues }, { status: 400 });
     }
 
     // Only database errors should reach here now

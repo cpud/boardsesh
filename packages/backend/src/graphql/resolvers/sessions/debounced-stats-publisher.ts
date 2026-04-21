@@ -63,10 +63,7 @@ export function publishDebouncedSessionStats(sessionId: string): void {
           // Clean up the key now that we're publishing.
           await publisher.del(redisKey);
         } catch (err) {
-          console.error(
-            `[debouncedStats] Redis GET failed for ${sessionId}, publishing anyway:`,
-            err,
-          );
+          console.error(`[debouncedStats] Redis GET failed for ${sessionId}, publishing anyway:`, err);
           // Fall through to publish — better to duplicate than to drop.
         }
       }
@@ -77,10 +74,7 @@ export function publishDebouncedSessionStats(sessionId: string): void {
           pubsub.publishSessionEvent(sessionId, event);
         }
       } catch (error) {
-        console.error(
-          `[debouncedStats] Failed to publish SessionStatsUpdated for session ${sessionId}:`,
-          error,
-        );
+        console.error(`[debouncedStats] Failed to publish SessionStatsUpdated for session ${sessionId}:`, error);
       }
     }, DEBOUNCE_MS),
   );

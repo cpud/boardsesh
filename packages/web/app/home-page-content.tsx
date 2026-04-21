@@ -24,31 +24,22 @@ import { useRouter } from 'next/navigation';
 import { themeTokens } from '@/app/theme/theme-config';
 import { usePersistentSession } from '@/app/components/persistent-session';
 import BoardDiscoveryScroll from '@/app/components/board-scroll/board-discovery-scroll';
-import {
-  constructBoardSlugListUrl,
-  constructClimbListWithSlugs,
-  tryConstructSlugListUrl,
-} from '@/app/lib/url-utils';
+import { constructBoardSlugListUrl, constructClimbListWithSlugs, tryConstructSlugListUrl } from '@/app/lib/url-utils';
 import { getDefaultAngleForBoard } from '@/app/lib/board-config-for-playlist';
 import type { BoardConfigData } from '@/app/lib/server-board-configs';
 import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
 import { track } from '@vercel/analytics';
 import { setClimbSessionCookie } from '@/app/lib/climb-session-cookie';
 
-const StartSeshDrawer = dynamic(
-  () => import('@/app/components/session-creation/start-sesh-drawer'),
-  { ssr: false },
-);
+const StartSeshDrawer = dynamic(() => import('@/app/components/session-creation/start-sesh-drawer'), { ssr: false });
 
-const UnifiedSearchDrawer = dynamic(
-  () => import('@/app/components/search-drawer/unified-search-drawer'),
-  { ssr: false },
-);
+const UnifiedSearchDrawer = dynamic(() => import('@/app/components/search-drawer/unified-search-drawer'), {
+  ssr: false,
+});
 
-const BoardSelectorDrawer = dynamic(
-  () => import('@/app/components/board-selector-drawer/board-selector-drawer'),
-  { ssr: false },
-);
+const BoardSelectorDrawer = dynamic(() => import('@/app/components/board-selector-drawer/board-selector-drawer'), {
+  ssr: false,
+});
 
 interface HomePageContentProps {
   boardConfigs: BoardConfigData;
@@ -203,10 +194,7 @@ function InstallAppCard({ platform }: { platform: InstallPlatform }) {
   );
 }
 
-export default function HomePageContent({
-  boardConfigs,
-  initialPopularConfigs,
-}: HomePageContentProps) {
+export default function HomePageContent({ boardConfigs, initialPopularConfigs }: HomePageContentProps) {
   const { status } = useSession();
   const router = useRouter();
   const { activeSession } = usePersistentSession();
@@ -288,13 +276,8 @@ export default function HomePageContent({
         const setIds = config.setIds.join(',');
         const numericFallback = `/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`;
         router.push(
-          tryConstructSlugListUrl(
-            config.boardType,
-            config.layoutId,
-            config.sizeId,
-            config.setIds,
-            angle,
-          ) ?? numericFallback,
+          tryConstructSlugListUrl(config.boardType, config.layoutId, config.sizeId, config.setIds, angle) ??
+            numericFallback,
         );
       }
     },
@@ -456,9 +439,7 @@ export default function HomePageContent({
             icon={<DiscordIcon />}
             title="Join the crew on Discord"
             description="Share beta, report bugs, and help shape what's next"
-            onClick={() =>
-              window.open('https://discord.gg/YXA8GsXfQK', '_blank', 'noopener,noreferrer')
-            }
+            onClick={() => window.open('https://discord.gg/YXA8GsXfQK', '_blank', 'noopener,noreferrer')}
           />
         </Box>
 
@@ -468,12 +449,7 @@ export default function HomePageContent({
             <Typography variant="body2" sx={{ color: 'var(--neutral-400)', mb: 1 }}>
               Your friends are climbing.
             </Typography>
-            <Button
-              variant="text"
-              size="small"
-              onClick={() => router.push('/feed')}
-              sx={{ textTransform: 'none' }}
-            >
+            <Button variant="text" size="small" onClick={() => router.push('/feed')} sx={{ textTransform: 'none' }}>
               See the feed
             </Button>
           </Box>
@@ -481,11 +457,7 @@ export default function HomePageContent({
       </Box>
 
       {seshDrawerMounted && (
-        <StartSeshDrawer
-          open={seshDrawerOpen}
-          onClose={() => setSeshDrawerOpen(false)}
-          boardConfigs={boardConfigs}
-        />
+        <StartSeshDrawer open={seshDrawerOpen} onClose={() => setSeshDrawerOpen(false)} boardConfigs={boardConfigs} />
       )}
 
       {findClimbersMounted && (

@@ -12,12 +12,7 @@ export async function GET(
   const { board_name, layout_id, size_id, slug } = params;
 
   try {
-    const sets = await getSetsBySlug(
-      board_name as BoardName,
-      Number(layout_id),
-      Number(size_id),
-      slug,
-    );
+    const sets = await getSetsBySlug(board_name as BoardName, Number(layout_id), Number(size_id), slug);
 
     if (sets.length === 0) {
       return NextResponse.json(

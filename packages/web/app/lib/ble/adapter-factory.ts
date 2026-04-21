@@ -1,10 +1,5 @@
 import type { BoardName } from '@/app/lib/types';
-import {
-  isCapacitor,
-  isCapacitorWebView,
-  waitForCapacitor,
-  CAPACITOR_BRIDGE_TIMEOUT_MS,
-} from './capacitor-utils';
+import { isCapacitor, isCapacitorWebView, waitForCapacitor, CAPACITOR_BRIDGE_TIMEOUT_MS } from './capacitor-utils';
 import type { BluetoothAdapter } from './types';
 
 // Cache the detected adapter class after the first call so subsequent

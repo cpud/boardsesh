@@ -384,10 +384,9 @@ describe('usePopularBoardConfigs', () => {
     const page1 = [makeConfig('kilter', 500)];
     mockRequest.mockResolvedValueOnce(makeResponse(page1, false));
 
-    const { result, rerender } = renderHook(
-      ({ limit }: { limit: number }) => usePopularBoardConfigs({ limit }),
-      { initialProps: { limit: 5 } },
-    );
+    const { result, rerender } = renderHook(({ limit }: { limit: number }) => usePopularBoardConfigs({ limit }), {
+      initialProps: { limit: 5 },
+    });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -441,11 +440,7 @@ describe('usePopularBoardConfigs', () => {
   });
 
   it('loadMore uses correct offset from initialData length', async () => {
-    const ssrData = [
-      makeConfig('kilter', 500),
-      makeConfig('tension', 300),
-      makeConfig('moonboard', 200),
-    ];
+    const ssrData = [makeConfig('kilter', 500), makeConfig('tension', 300), makeConfig('moonboard', 200)];
     const page2 = [makeConfig('decoy', 100)];
     mockRequest.mockResolvedValueOnce(makeResponse(page2, false));
 

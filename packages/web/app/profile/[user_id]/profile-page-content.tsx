@@ -42,15 +42,14 @@ export default function ProfilePageContent({
 }: ProfilePageContentProps) {
   const { gradeFormat } = useGradeFormat();
 
-  const { loading, notFound, profile, setProfile, isOwnProfile, statisticsSummary } =
-    useProfileData(userId, {
-      initialProfile: initialProfile ?? undefined,
-      initialProfileStats: initialProfileStats ?? undefined,
-      initialAllBoardsTicks,
-      initialLogbook,
-      initialIsOwnProfile,
-      initialNotFound,
-    });
+  const { loading, notFound, profile, setProfile, isOwnProfile, statisticsSummary } = useProfileData(userId, {
+    initialProfile: initialProfile ?? undefined,
+    initialProfileStats: initialProfileStats ?? undefined,
+    initialAllBoardsTicks,
+    initialLogbook,
+    initialIsOwnProfile,
+    initialNotFound,
+  });
 
   // Build overview bars: last 3 months across all boards
   const overviewBars = useMemo(() => {
@@ -64,10 +63,7 @@ export default function ProfilePageContent({
     return buildWeeklyBars(allTicks, fromDate, toDate, gradeFormat);
   }, [initialAllBoardsTicks, gradeFormat]);
 
-  const sharedDisplayName = useMemo(
-    () => profile?.profile?.displayName || profile?.name || null,
-    [profile],
-  );
+  const sharedDisplayName = useMemo(() => profile?.profile?.displayName || profile?.name || null, [profile]);
 
   if (loading) {
     return (
@@ -96,24 +92,14 @@ export default function ProfilePageContent({
       <ProfileHeaderShareInjector displayName={sharedDisplayName} isActive={Boolean(profile)} />
       <Box component="main" className={styles.content}>
         {profile && (
-          <UserCard
-            userId={userId}
-            profile={profile}
-            isOwnProfile={isOwnProfile}
-            onProfileUpdate={setProfile}
-          />
+          <UserCard userId={userId} profile={profile} isOwnProfile={isOwnProfile} onProfileUpdate={setProfile} />
         )}
 
         {/* Overview: last 3 months activity */}
         {overviewBars && overviewBars.length > 0 && (
           <MuiCard className={styles.statsCard}>
             <CardContent>
-              <Typography
-                variant="body2"
-                component="span"
-                fontWeight={600}
-                sx={{ mb: 1, display: 'block' }}
-              >
+              <Typography variant="body2" component="span" fontWeight={600} sx={{ mb: 1, display: 'block' }}>
                 Last 3 months
               </Typography>
               <CssBarChart

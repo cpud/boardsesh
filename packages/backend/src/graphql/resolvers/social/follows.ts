@@ -40,10 +40,7 @@ export const socialFollowQueries = {
       })
       .from(dbSchema.userFollows)
       .innerJoin(dbSchema.users, eq(dbSchema.userFollows.followerId, dbSchema.users.id))
-      .leftJoin(
-        dbSchema.userProfiles,
-        eq(dbSchema.userFollows.followerId, dbSchema.userProfiles.userId),
-      )
+      .leftJoin(dbSchema.userProfiles, eq(dbSchema.userFollows.followerId, dbSchema.userProfiles.userId))
       .where(eq(dbSchema.userFollows.followingId, userId))
       .orderBy(dbSchema.userFollows.createdAt)
       .limit(limit)
@@ -51,10 +48,7 @@ export const socialFollowQueries = {
 
     // Batch-fetch follower/following counts and isFollowedByMe (3 queries instead of 3N)
     const userIds = results.map((r) => r.followerId);
-    const enrichments = await batchEnrichUserProfiles(
-      userIds,
-      ctx.isAuthenticated ? ctx.userId : undefined,
-    );
+    const enrichments = await batchEnrichUserProfiles(userIds, ctx.isAuthenticated ? ctx.userId : undefined);
 
     const users = results.map((row) => {
       const enrichment = enrichments.get(row.followerId);
@@ -107,10 +101,7 @@ export const socialFollowQueries = {
       })
       .from(dbSchema.userFollows)
       .innerJoin(dbSchema.users, eq(dbSchema.userFollows.followingId, dbSchema.users.id))
-      .leftJoin(
-        dbSchema.userProfiles,
-        eq(dbSchema.userFollows.followingId, dbSchema.userProfiles.userId),
-      )
+      .leftJoin(dbSchema.userProfiles, eq(dbSchema.userFollows.followingId, dbSchema.userProfiles.userId))
       .where(eq(dbSchema.userFollows.followerId, userId))
       .orderBy(dbSchema.userFollows.createdAt)
       .limit(limit)
@@ -118,10 +109,7 @@ export const socialFollowQueries = {
 
     // Batch-fetch follower/following counts and isFollowedByMe (3 queries instead of 3N)
     const userIds = results.map((r) => r.followingId);
-    const enrichments = await batchEnrichUserProfiles(
-      userIds,
-      ctx.isAuthenticated ? ctx.userId : undefined,
-    );
+    const enrichments = await batchEnrichUserProfiles(userIds, ctx.isAuthenticated ? ctx.userId : undefined);
 
     const users = results.map((row) => {
       const enrichment = enrichments.get(row.followingId);
@@ -156,12 +144,7 @@ export const socialFollowQueries = {
     const [result] = await db
       .select({ count: count() })
       .from(dbSchema.userFollows)
-      .where(
-        and(
-          eq(dbSchema.userFollows.followerId, myUserId),
-          eq(dbSchema.userFollows.followingId, targetUserId),
-        ),
-      );
+      .where(and(eq(dbSchema.userFollows.followerId, myUserId), eq(dbSchema.userFollows.followingId, targetUserId)));
 
     return Number(result?.count || 0) > 0;
   },
@@ -191,10 +174,7 @@ export const socialFollowQueries = {
     const user = users[0];
 
     // Batch-fetch counts (single user, but uses same efficient pattern)
-    const enrichments = await batchEnrichUserProfiles(
-      [userId],
-      ctx.isAuthenticated ? ctx.userId : undefined,
-    );
+    const enrichments = await batchEnrichUserProfiles([userId], ctx.isAuthenticated ? ctx.userId : undefined);
     const enrichment = enrichments.get(userId);
 
     return {
@@ -281,12 +261,7 @@ export const socialFollowMutations = {
 
     await db
       .delete(dbSchema.userFollows)
-      .where(
-        and(
-          eq(dbSchema.userFollows.followerId, myUserId),
-          eq(dbSchema.userFollows.followingId, targetUserId),
-        ),
-      );
+      .where(and(eq(dbSchema.userFollows.followerId, myUserId), eq(dbSchema.userFollows.followingId, targetUserId)));
 
     return true;
   },

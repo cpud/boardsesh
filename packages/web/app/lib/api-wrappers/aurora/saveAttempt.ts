@@ -64,9 +64,7 @@ export async function saveAttempt(
       statusText: response.statusText,
       errors: errorData,
     });
-    throw new Error(
-      `HTTP error! status: ${response.status}, details: ${JSON.stringify(errorData)}`,
-    );
+    throw new Error(`HTTP error! status: ${response.status}, details: ${JSON.stringify(errorData)}`);
   }
 
   // Handle response

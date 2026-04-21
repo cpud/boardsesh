@@ -105,10 +105,7 @@ test.describe('Layout Screenshots', () => {
       await thumbnail.click();
 
       // ── 4. Wait for the play-view drawer ───────────────────────────────────
-      await page
-        .locator('[data-swipeable-drawer="true"]:visible')
-        .first()
-        .waitFor({ timeout: 15_000 });
+      await page.locator('[data-swipeable-drawer="true"]:visible').first().waitFor({ timeout: 15_000 });
 
       // ── 5. Screenshot: play-view drawer ────────────────────────────────────
       await page.screenshot({

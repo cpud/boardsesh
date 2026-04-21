@@ -12,10 +12,7 @@ export async function POST(request: Request, props: { params: Promise<BoardOnlyR
 
   // MoonBoard doesn't use Aurora APIs
   if (params.board_name === 'moonboard') {
-    return NextResponse.json(
-      { error: 'MoonBoard does not support this endpoint' },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: 'MoonBoard does not support this endpoint' }, { status: 400 });
   }
 
   const board_name = params.board_name as AuroraBoardName;
@@ -37,10 +34,7 @@ export async function POST(request: Request, props: { params: Promise<BoardOnlyR
     return NextResponse.json(response);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request data', details: error.issues },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Invalid request data', details: error.issues }, { status: 400 });
     }
 
     // Handle fetch errors

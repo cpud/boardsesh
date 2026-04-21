@@ -79,10 +79,7 @@ describe('Controller Mutations', () => {
       expect(result.apiKey).toHaveLength(64); // 32 bytes hex = 64 chars
 
       // Verify controller was created in database
-      const [controller] = await db
-        .select()
-        .from(esp32Controllers)
-        .where(eq(esp32Controllers.id, result.controllerId));
+      const [controller] = await db.select().from(esp32Controllers).where(eq(esp32Controllers.id, result.controllerId));
 
       expect(controller).toBeDefined();
       expect(controller.userId).toBe(TEST_USER_ID);
@@ -177,11 +174,7 @@ describe('Controller Mutations', () => {
       );
 
       // Try to delete as user-2 (should not throw but won't delete)
-      await controllerMutations.deleteController(
-        undefined,
-        { controllerId: registered.controllerId },
-        ctx2,
-      );
+      await controllerMutations.deleteController(undefined, { controllerId: registered.controllerId }, ctx2);
 
       // Verify controller still exists
       const [controller] = await db

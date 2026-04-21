@@ -26,8 +26,7 @@ async function consistentDelay(startTime: number): Promise<void> {
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
-  const genericMessage =
-    'If an account exists and needs verification, a verification email will be sent';
+  const genericMessage = 'If an account exists and needs verification, a verification email will be sent';
 
   try {
     // Rate limiting - 5 requests per minute per IP
@@ -53,10 +52,7 @@ export async function POST(request: NextRequest) {
     const validationResult = resendVerificationSchema.safeParse(body);
     if (!validationResult.success) {
       await consistentDelay(startTime);
-      return NextResponse.json(
-        { error: validationResult.error.issues[0].message },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: validationResult.error.issues[0].message }, { status: 400 });
     }
 
     const { email } = validationResult.data;
@@ -78,9 +74,7 @@ export async function POST(request: NextRequest) {
 
     // Delete existing tokens and create new one atomically
     await db.transaction(async (tx) => {
-      await tx
-        .delete(schema.verificationTokens)
-        .where(eq(schema.verificationTokens.identifier, email));
+      await tx.delete(schema.verificationTokens).where(eq(schema.verificationTokens.identifier, email));
 
       await tx.insert(schema.verificationTokens).values({
         identifier: email,

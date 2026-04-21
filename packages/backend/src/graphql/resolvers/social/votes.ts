@@ -3,11 +3,7 @@ import type { ConnectionContext, SocialEntityType } from '@boardsesh/shared-sche
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { requireAuthenticated, applyRateLimit, validateInput } from '../shared/helpers';
-import {
-  VoteInputSchema,
-  BulkVoteSummaryInputSchema,
-  SocialEntityTypeSchema,
-} from '../../../validation/schemas';
+import { VoteInputSchema, BulkVoteSummaryInputSchema, SocialEntityTypeSchema } from '../../../validation/schemas';
 import { validateEntityExists } from './entity-validation';
 import { publishSocialEvent } from '../../../events/index';
 
@@ -24,12 +20,7 @@ async function getVoteSummary(
       score: dbSchema.voteCounts.score,
     })
     .from(dbSchema.voteCounts)
-    .where(
-      and(
-        eq(dbSchema.voteCounts.entityType, entityType),
-        eq(dbSchema.voteCounts.entityId, entityId),
-      ),
-    )
+    .where(and(eq(dbSchema.voteCounts.entityType, entityType), eq(dbSchema.voteCounts.entityId, entityId)))
     .limit(1);
 
   const upvotes = counts?.upvotes ?? 0;
@@ -67,11 +58,7 @@ export const socialVoteQueries = {
     { entityType, entityId }: { entityType: string; entityId: string },
     ctx: ConnectionContext,
   ) => {
-    const validatedType = validateInput(
-      SocialEntityTypeSchema,
-      entityType,
-      'entityType',
-    ) as SocialEntityType;
+    const validatedType = validateInput(SocialEntityTypeSchema, entityType, 'entityType') as SocialEntityType;
     const authenticatedUserId = ctx.isAuthenticated ? ctx.userId : null;
 
     return getVoteSummary(validatedType, entityId, authenticatedUserId);
@@ -92,12 +79,7 @@ export const socialVoteQueries = {
         downvotes: dbSchema.voteCounts.downvotes,
       })
       .from(dbSchema.voteCounts)
-      .where(
-        and(
-          eq(dbSchema.voteCounts.entityType, entityType),
-          inArray(dbSchema.voteCounts.entityId, entityIds),
-        ),
-      );
+      .where(and(eq(dbSchema.voteCounts.entityType, entityType), inArray(dbSchema.voteCounts.entityId, entityIds)));
 
     const votesMap = new Map<string, { upvotes: number; downvotes: number }>();
     for (const row of countResults) {

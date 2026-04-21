@@ -72,15 +72,8 @@ vi.mock('@/app/components/ui/follow-button', () => ({
 }));
 
 vi.mock('../board-search-map', () => ({
-  default: ({
-    onViewportChange,
-  }: {
-    onViewportChange: (v: { lat: number; lng: number; zoom: number }) => void;
-  }) => (
-    <div
-      data-testid="board-search-map"
-      onClick={() => onViewportChange({ lat: 51.5, lng: -0.1, zoom: 12 })}
-    />
+  default: ({ onViewportChange }: { onViewportChange: (v: { lat: number; lng: number; zoom: number }) => void }) => (
+    <div data-testid="board-search-map" onClick={() => onViewportChange({ lat: 51.5, lng: -0.1, zoom: 12 })} />
   ),
 }));
 
@@ -172,9 +165,7 @@ describe('BoardSearchDrawer', () => {
   it('clears the typed query when the drawer closes', () => {
     mockBoards = [makeBoard('b1')];
 
-    const { rerender, container } = render(
-      <BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />,
-    );
+    const { rerender, container } = render(<BoardSearchDrawer open onClose={vi.fn()} onBoardOpen={vi.fn()} />);
     const input = container.querySelector('input') as HTMLInputElement;
     expect(input).toBeTruthy();
 

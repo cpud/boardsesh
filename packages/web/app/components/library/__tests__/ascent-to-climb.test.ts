@@ -42,23 +42,17 @@ describe('ascentFeedItemToClimb', () => {
   });
 
   it('prefers consensusDifficultyName over difficultyName for difficulty', () => {
-    const result = ascentFeedItemToClimb(
-      makeItem({ consensusDifficultyName: '7a+/V7', difficultyName: '7a/V6' }),
-    );
+    const result = ascentFeedItemToClimb(makeItem({ consensusDifficultyName: '7a+/V7', difficultyName: '7a/V6' }));
     expect(result.difficulty).toBe('7a+/V7');
   });
 
   it('falls back to difficultyName when consensusDifficultyName is null', () => {
-    const result = ascentFeedItemToClimb(
-      makeItem({ consensusDifficultyName: null, difficultyName: '7a/V6' }),
-    );
+    const result = ascentFeedItemToClimb(makeItem({ consensusDifficultyName: null, difficultyName: '7a/V6' }));
     expect(result.difficulty).toBe('7a/V6');
   });
 
   it('uses empty string when both difficulty names are null', () => {
-    const result = ascentFeedItemToClimb(
-      makeItem({ consensusDifficultyName: null, difficultyName: null }),
-    );
+    const result = ascentFeedItemToClimb(makeItem({ consensusDifficultyName: null, difficultyName: null }));
     expect(result.difficulty).toBe('');
   });
 
@@ -73,9 +67,7 @@ describe('ascentFeedItemToClimb', () => {
   });
 
   it('sets benchmark_difficulty to consensusDifficultyName when isBenchmark is true', () => {
-    const result = ascentFeedItemToClimb(
-      makeItem({ isBenchmark: true, consensusDifficultyName: '7a+/V7' }),
-    );
+    const result = ascentFeedItemToClimb(makeItem({ isBenchmark: true, consensusDifficultyName: '7a+/V7' }));
     expect(result.benchmark_difficulty).toBe('7a+/V7');
   });
 
@@ -85,9 +77,7 @@ describe('ascentFeedItemToClimb', () => {
   });
 
   it('sets benchmark_difficulty to null when isBenchmark is true but consensusDifficultyName is null', () => {
-    const result = ascentFeedItemToClimb(
-      makeItem({ isBenchmark: true, consensusDifficultyName: null }),
-    );
+    const result = ascentFeedItemToClimb(makeItem({ isBenchmark: true, consensusDifficultyName: null }));
     expect(result.benchmark_difficulty).toBeNull();
   });
 

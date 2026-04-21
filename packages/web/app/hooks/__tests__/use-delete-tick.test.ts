@@ -167,9 +167,7 @@ describe('useDeleteTick', () => {
   });
 
   it('extracts GraphQL error message from response', async () => {
-    const graphqlError: Error & { response?: { errors: { message: string }[] } } = new Error(
-      'GraphQL error',
-    );
+    const graphqlError: Error & { response?: { errors: { message: string }[] } } = new Error('GraphQL error');
     graphqlError.response = {
       errors: [{ message: 'You can only delete your own ticks' }],
     };

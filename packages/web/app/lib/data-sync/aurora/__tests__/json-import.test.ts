@@ -107,121 +107,43 @@ describe('normalizeTimestamp', () => {
 
 describe('generateJsonImportAuroraId', () => {
   it('produces deterministic IDs for same inputs', () => {
-    const id1 = generateJsonImportAuroraId(
-      'user-1',
-      'uuid-1',
-      40,
-      '2024-01-15T10:00:00.000Z',
-      'ascents',
-    );
-    const id2 = generateJsonImportAuroraId(
-      'user-1',
-      'uuid-1',
-      40,
-      '2024-01-15T10:00:00.000Z',
-      'ascents',
-    );
+    const id1 = generateJsonImportAuroraId('user-1', 'uuid-1', 40, '2024-01-15T10:00:00.000Z', 'ascents');
+    const id2 = generateJsonImportAuroraId('user-1', 'uuid-1', 40, '2024-01-15T10:00:00.000Z', 'ascents');
     expect(id1).toBe(id2);
   });
 
   it('produces different IDs for different users', () => {
-    const id1 = generateJsonImportAuroraId(
-      'user-1',
-      'uuid-1',
-      40,
-      '2024-01-15T10:00:00.000Z',
-      'ascents',
-    );
-    const id2 = generateJsonImportAuroraId(
-      'user-2',
-      'uuid-1',
-      40,
-      '2024-01-15T10:00:00.000Z',
-      'ascents',
-    );
+    const id1 = generateJsonImportAuroraId('user-1', 'uuid-1', 40, '2024-01-15T10:00:00.000Z', 'ascents');
+    const id2 = generateJsonImportAuroraId('user-2', 'uuid-1', 40, '2024-01-15T10:00:00.000Z', 'ascents');
     expect(id1).not.toBe(id2);
   });
 
   it('produces different IDs for different climb UUIDs', () => {
-    const id1 = generateJsonImportAuroraId(
-      'user-1',
-      'uuid-1',
-      40,
-      '2024-01-15T10:00:00.000Z',
-      'ascents',
-    );
-    const id2 = generateJsonImportAuroraId(
-      'user-1',
-      'uuid-2',
-      40,
-      '2024-01-15T10:00:00.000Z',
-      'ascents',
-    );
+    const id1 = generateJsonImportAuroraId('user-1', 'uuid-1', 40, '2024-01-15T10:00:00.000Z', 'ascents');
+    const id2 = generateJsonImportAuroraId('user-1', 'uuid-2', 40, '2024-01-15T10:00:00.000Z', 'ascents');
     expect(id1).not.toBe(id2);
   });
 
   it('produces different IDs for different angles', () => {
-    const id1 = generateJsonImportAuroraId(
-      'user-1',
-      'uuid-1',
-      40,
-      '2024-01-15T10:00:00.000Z',
-      'ascents',
-    );
-    const id2 = generateJsonImportAuroraId(
-      'user-1',
-      'uuid-1',
-      45,
-      '2024-01-15T10:00:00.000Z',
-      'ascents',
-    );
+    const id1 = generateJsonImportAuroraId('user-1', 'uuid-1', 40, '2024-01-15T10:00:00.000Z', 'ascents');
+    const id2 = generateJsonImportAuroraId('user-1', 'uuid-1', 45, '2024-01-15T10:00:00.000Z', 'ascents');
     expect(id1).not.toBe(id2);
   });
 
   it('produces different IDs for different timestamps', () => {
-    const id1 = generateJsonImportAuroraId(
-      'user-1',
-      'uuid-1',
-      40,
-      '2024-01-15T10:00:00.000Z',
-      'ascents',
-    );
-    const id2 = generateJsonImportAuroraId(
-      'user-1',
-      'uuid-1',
-      40,
-      '2024-01-15T11:00:00.000Z',
-      'ascents',
-    );
+    const id1 = generateJsonImportAuroraId('user-1', 'uuid-1', 40, '2024-01-15T10:00:00.000Z', 'ascents');
+    const id2 = generateJsonImportAuroraId('user-1', 'uuid-1', 40, '2024-01-15T11:00:00.000Z', 'ascents');
     expect(id1).not.toBe(id2);
   });
 
   it('produces different IDs for ascents vs bids', () => {
-    const id1 = generateJsonImportAuroraId(
-      'user-1',
-      'uuid-1',
-      40,
-      '2024-01-15T10:00:00.000Z',
-      'ascents',
-    );
-    const id2 = generateJsonImportAuroraId(
-      'user-1',
-      'uuid-1',
-      40,
-      '2024-01-15T10:00:00.000Z',
-      'bids',
-    );
+    const id1 = generateJsonImportAuroraId('user-1', 'uuid-1', 40, '2024-01-15T10:00:00.000Z', 'ascents');
+    const id2 = generateJsonImportAuroraId('user-1', 'uuid-1', 40, '2024-01-15T10:00:00.000Z', 'bids');
     expect(id1).not.toBe(id2);
   });
 
   it('starts with json-import- prefix', () => {
-    const id = generateJsonImportAuroraId(
-      'user-1',
-      'uuid-1',
-      40,
-      '2024-01-15T10:00:00.000Z',
-      'ascents',
-    );
+    const id = generateJsonImportAuroraId('user-1', 'uuid-1', 40, '2024-01-15T10:00:00.000Z', 'ascents');
     expect(id).toMatch(/^json-import-[0-9a-f]{32}$/);
   });
 });

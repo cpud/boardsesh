@@ -30,9 +30,7 @@ export function getScriptDatabaseUrl(): string {
 
   // Safety: Block local dev URLs in production builds
   const isLocalUrl =
-    databaseUrl.includes('localhost') ||
-    databaseUrl.includes('localtest.me') ||
-    databaseUrl.includes('127.0.0.1');
+    databaseUrl.includes('localhost') || databaseUrl.includes('localtest.me') || databaseUrl.includes('127.0.0.1');
 
   if (process.env.VERCEL && isLocalUrl) {
     console.error('Refusing to run with local DATABASE_URL in Vercel build');

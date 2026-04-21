@@ -12,21 +12,14 @@ export const controllerQueries = {
    * Get all controllers registered by the current user
    * Requires authentication
    */
-  myControllers: async (
-    _: unknown,
-    __: unknown,
-    ctx: ConnectionContext,
-  ): Promise<ControllerInfo[]> => {
+  myControllers: async (_: unknown, __: unknown, ctx: ConnectionContext): Promise<ControllerInfo[]> => {
     requireAuthenticated(ctx);
 
     if (!ctx.userId) {
       throw new Error('User ID not available');
     }
 
-    const controllers = await db
-      .select()
-      .from(esp32Controllers)
-      .where(eq(esp32Controllers.userId, ctx.userId));
+    const controllers = await db.select().from(esp32Controllers).where(eq(esp32Controllers.userId, ctx.userId));
 
     const now = Date.now();
 
@@ -37,9 +30,7 @@ export const controllerQueries = {
       layoutId: controller.layoutId,
       sizeId: controller.sizeId,
       setIds: controller.setIds,
-      isOnline: controller.lastSeenAt
-        ? now - controller.lastSeenAt.getTime() < ONLINE_THRESHOLD_MS
-        : false,
+      isOnline: controller.lastSeenAt ? now - controller.lastSeenAt.getTime() < ONLINE_THRESHOLD_MS : false,
       lastSeen: controller.lastSeenAt?.toISOString(),
       createdAt: controller.createdAt.toISOString(),
     }));

@@ -13,12 +13,7 @@ type UsePlaylistsReturn = {
   playlistsContainingClimb: Set<string>;
   addToPlaylist: (playlistId: string) => Promise<void>;
   removeFromPlaylist: (playlistId: string) => Promise<void>;
-  createPlaylist: (
-    name: string,
-    description?: string,
-    color?: string,
-    icon?: string,
-  ) => Promise<Playlist>;
+  createPlaylist: (name: string, description?: string, color?: string, icon?: string) => Promise<Playlist>;
   isLoading: boolean;
   isAuthenticated: boolean;
   refreshPlaylists: () => Promise<void>;

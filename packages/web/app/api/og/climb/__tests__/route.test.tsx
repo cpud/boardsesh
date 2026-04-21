@@ -37,9 +37,7 @@ vi.mock('@/app/lib/board-utils', () => ({
 }));
 
 vi.mock('@/app/components/board-renderer/util', () => ({
-  buildOgBoardRenderUrl: vi.fn(
-    () => '/api/internal/board-render?board_name=kilter&variant=og&format=png',
-  ),
+  buildOgBoardRenderUrl: vi.fn(() => '/api/internal/board-render?board_name=kilter&variant=og&format=png'),
 }));
 
 import { GET } from '../route';

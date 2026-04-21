@@ -23,10 +23,7 @@ import { themeTokens } from '@/app/theme/theme-config';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { useSessionTimer } from '@/app/hooks/use-session-timer';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  GET_SESSION_DETAIL,
-  type GetSessionDetailQueryResponse,
-} from '@/app/lib/graphql/operations/activity-feed';
+import { GET_SESSION_DETAIL, type GetSessionDetailQueryResponse } from '@/app/lib/graphql/operations/activity-feed';
 import { clearClimbSessionCookie } from '@/app/lib/climb-session-cookie';
 import { shareWithFallback } from '@/app/lib/share-utils';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
@@ -49,13 +46,8 @@ interface SeshSettingsDrawerProps {
   onTransitionEnd?: (open: boolean) => void;
 }
 
-export default function SeshSettingsDrawer({
-  open,
-  onClose,
-  onTransitionEnd,
-}: SeshSettingsDrawerProps) {
-  const { activeSession, session, users, deactivateSession, liveSessionStats } =
-    usePersistentSession();
+export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: SeshSettingsDrawerProps) {
+  const { activeSession, session, users, deactivateSession, liveSessionStats } = usePersistentSession();
   const { boardDetails, angle } = useQueueBridgeBoardInfo();
   const { token: authToken } = useWsAuthToken();
   const router = useRouter();
@@ -150,12 +142,7 @@ export default function SeshSettingsDrawer({
     const stableNow = fallbackTimestampRef.current!;
     const fallbackFirstTick = session?.startedAt ?? stableNow;
     const fallbackDurationMinutes = session?.startedAt
-      ? Math.max(
-          0,
-          Math.round(
-            (new Date(stableNow).getTime() - new Date(session.startedAt).getTime()) / 60000,
-          ),
-        )
+      ? Math.max(0, Math.round((new Date(stableNow).getTime() - new Date(session.startedAt).getTime()) / 60000))
       : null;
 
     return {
@@ -206,8 +193,7 @@ export default function SeshSettingsDrawer({
     if (!mergedStats) return base;
 
     const mergedTicks = mergedStats.ticks;
-    const firstTickAt =
-      mergedTicks.length > 0 ? mergedTicks[mergedTicks.length - 1].climbedAt : base.firstTickAt;
+    const firstTickAt = mergedTicks.length > 0 ? mergedTicks[mergedTicks.length - 1].climbedAt : base.firstTickAt;
     const lastTickAt = mergedTicks.length > 0 ? mergedTicks[0].climbedAt : base.lastTickAt;
 
     return {
@@ -236,8 +222,7 @@ export default function SeshSettingsDrawer({
   const timerText = useSessionTimer(session?.startedAt ?? displaySession?.firstTickAt);
 
   const drawerTitle = displaySession
-    ? displaySession.sessionName ||
-      generateSessionName(displaySession.firstTickAt, displaySession.boardTypes)
+    ? displaySession.sessionName || generateSessionName(displaySession.firstTickAt, displaySession.boardTypes)
     : 'Session';
 
   const inviteContent =
@@ -250,10 +235,7 @@ export default function SeshSettingsDrawer({
           <IconButton onClick={handleShareSession} aria-label="Share session link">
             <IosShare />
           </IconButton>
-          <IconButton
-            onClick={() => setShowQr((v) => !v)}
-            aria-label={showQr ? 'Hide QR code' : 'Show QR code'}
-          >
+          <IconButton onClick={() => setShowQr((v) => !v)} aria-label={showQr ? 'Hide QR code' : 'Show QR code'}>
             <QrCode2Outlined color={showQr ? 'primary' : 'inherit'} />
           </IconButton>
         </Box>
@@ -283,12 +265,7 @@ export default function SeshSettingsDrawer({
                   aspectRatio: '1',
                 }}
               >
-                <BoardRenderer
-                  boardDetails={sessionBoardDetails}
-                  mirrored={false}
-                  thumbnail
-                  fillHeight
-                />
+                <BoardRenderer boardDetails={sessionBoardDetails} mirrored={false} thumbnail fillHeight />
               </Box>
             )}
             <Typography
@@ -331,12 +308,7 @@ export default function SeshSettingsDrawer({
                 <StopCircleOutlined />
               </IconButton>
             ) : (
-              <IconButton
-                size="small"
-                onClick={handleClose}
-                aria-label="Dismiss"
-                sx={{ flexShrink: 0 }}
-              >
+              <IconButton size="small" onClick={handleClose} aria-label="Dismiss" sx={{ flexShrink: 0 }}>
                 <CloseOutlined />
               </IconButton>
             )}

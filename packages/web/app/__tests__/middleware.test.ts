@@ -21,15 +21,11 @@ describe('getListPageCacheTTL', () => {
     });
 
     it('matches tension board (legacy format)', () => {
-      expect(getListPageCacheTTL('/tension/original/12x12-square/screw_bolt/40/list', sp())).toBe(
-        TTL_24H,
-      );
+      expect(getListPageCacheTTL('/tension/original/12x12-square/screw_bolt/40/list', sp())).toBe(TTL_24H);
     });
 
     it('rejects unsupported board (legacy format)', () => {
-      expect(
-        getListPageCacheTTL('/fakeboard/original/12x12-square/screw_bolt/40/list', sp()),
-      ).toBeNull();
+      expect(getListPageCacheTTL('/fakeboard/original/12x12-square/screw_bolt/40/list', sp())).toBeNull();
     });
 
     it('rejects legacy path with too few segments', () => {
@@ -59,9 +55,7 @@ describe('getListPageCacheTTL', () => {
 
     // Non-list pages
     it('rejects non-list page (legacy format)', () => {
-      expect(
-        getListPageCacheTTL('/kilter/original/12x12-square/screw_bolt/40/climb/abc', sp()),
-      ).toBeNull();
+      expect(getListPageCacheTTL('/kilter/original/12x12-square/screw_bolt/40/climb/abc', sp())).toBeNull();
     });
 
     it('rejects non-list page (slug format)', () => {
@@ -69,9 +63,7 @@ describe('getListPageCacheTTL', () => {
     });
 
     it('rejects path not ending in /list', () => {
-      expect(
-        getListPageCacheTTL('/kilter/original/12x12-square/screw_bolt/40/queue', sp()),
-      ).toBeNull();
+      expect(getListPageCacheTTL('/kilter/original/12x12-square/screw_bolt/40/queue', sp())).toBeNull();
     });
 
     it('rejects root path', () => {
@@ -81,15 +73,11 @@ describe('getListPageCacheTTL', () => {
 
   describe('non-user-specific filters are always cacheable', () => {
     it('caches with grade filters', () => {
-      expect(getListPageCacheTTL(LEGACY_LIST, sp({ minGrade: '10', maxGrade: '20' }))).toBe(
-        TTL_24H,
-      );
+      expect(getListPageCacheTTL(LEGACY_LIST, sp({ minGrade: '10', maxGrade: '20' }))).toBe(TTL_24H);
     });
 
     it('caches with sort params', () => {
-      expect(getListPageCacheTTL(LEGACY_LIST, sp({ sortBy: 'difficulty', sortOrder: 'asc' }))).toBe(
-        TTL_24H,
-      );
+      expect(getListPageCacheTTL(LEGACY_LIST, sp({ sortBy: 'difficulty', sortOrder: 'asc' }))).toBe(TTL_24H);
     });
 
     it('caches with name search', () => {
@@ -148,20 +136,14 @@ describe('getListPageCacheTTL', () => {
   describe('mixed params', () => {
     it('skips cache when one user-specific param is true among non-specific ones', () => {
       expect(
-        getListPageCacheTTL(
-          LEGACY_LIST,
-          sp({ minGrade: '10', hideAttempted: 'true', sortBy: 'difficulty' }),
-        ),
+        getListPageCacheTTL(LEGACY_LIST, sp({ minGrade: '10', hideAttempted: 'true', sortBy: 'difficulty' })),
       ).toBeNull();
     });
 
     it('caches when user-specific params are all falsy', () => {
-      expect(
-        getListPageCacheTTL(
-          LEGACY_LIST,
-          sp({ minGrade: '10', hideAttempted: 'false', onlyDrafts: '0' }),
-        ),
-      ).toBe(TTL_24H);
+      expect(getListPageCacheTTL(LEGACY_LIST, sp({ minGrade: '10', hideAttempted: 'false', onlyDrafts: '0' }))).toBe(
+        TTL_24H,
+      );
     });
   });
 });
@@ -195,15 +177,12 @@ describe('hasUserSpecificFilters', () => {
     expect(hasUserSpecificFilters(baseParams)).toBe(false);
   });
 
-  it.each([
-    'hideAttempted',
-    'hideCompleted',
-    'showOnlyAttempted',
-    'showOnlyCompleted',
-    'onlyDrafts',
-  ] as const)('returns true when %s is true', (param) => {
-    expect(hasUserSpecificFilters({ ...baseParams, [param]: true })).toBe(true);
-  });
+  it.each(['hideAttempted', 'hideCompleted', 'showOnlyAttempted', 'showOnlyCompleted', 'onlyDrafts'] as const)(
+    'returns true when %s is true',
+    (param) => {
+      expect(hasUserSpecificFilters({ ...baseParams, [param]: true })).toBe(true);
+    },
+  );
 
   it('returns false when all user-specific filters are explicitly false', () => {
     expect(
@@ -237,9 +216,7 @@ function makeRequest(url: string): NextRequest {
 
 describe('middleware session redirect', () => {
   it('redirects when ?session= is present on a list page', async () => {
-    const response = await middleware(
-      makeRequest('/b/kilter-original-12x12/40/list?session=abc-123'),
-    );
+    const response = await middleware(makeRequest('/b/kilter-original-12x12/40/list?session=abc-123'));
     expect(response.status).toBe(307);
     const location = response.headers.get('location');
     expect(location).toBe('http://localhost:3000/b/kilter-original-12x12/40/list');
@@ -253,9 +230,7 @@ describe('middleware session redirect', () => {
   });
 
   it('sets the climb session cookie on redirect', async () => {
-    const response = await middleware(
-      makeRequest('/b/kilter-original-12x12/40/list?session=abc-123'),
-    );
+    const response = await middleware(makeRequest('/b/kilter-original-12x12/40/list?session=abc-123'));
     const setCookie = response.headers.get('set-cookie');
     expect(setCookie).toContain(CLIMB_SESSION_COOKIE);
     expect(setCookie).toContain('abc-123');
@@ -278,9 +253,7 @@ describe('middleware session redirect', () => {
   });
 
   it('session redirect takes priority over CDN cache headers', async () => {
-    const response = await middleware(
-      makeRequest('/kilter/original/12x12-square/screw_bolt/40/list?session=abc-123'),
-    );
+    const response = await middleware(makeRequest('/kilter/original/12x12-square/screw_bolt/40/list?session=abc-123'));
     expect(response.status).toBe(307);
     expect(response.headers.has('Vercel-CDN-Cache-Control')).toBe(false);
   });

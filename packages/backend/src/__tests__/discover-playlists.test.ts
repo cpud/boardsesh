@@ -108,8 +108,7 @@ function createMockChain(resolveValue: unknown = []) {
     'set',
   ];
 
-  chain.then = (resolve: (value: unknown) => unknown) =>
-    Promise.resolve(resolveValue).then(resolve);
+  chain.then = (resolve: (value: unknown) => unknown) => Promise.resolve(resolveValue).then(resolve);
 
   for (const method of methods) {
     calls[method] = [];
@@ -191,11 +190,7 @@ describe('discoverPlaylists resolver', () => {
     ]);
     mockDb.select.mockReturnValueOnce(resultsChain);
 
-    const result = await playlistQueries.discoverPlaylists(
-      null,
-      { input: { boardType: 'kilter' } },
-      ctx,
-    );
+    const result = await playlistQueries.discoverPlaylists(null, { input: { boardType: 'kilter' } }, ctx);
 
     expect(result.totalCount).toBe(1);
     expect(result.playlists).toHaveLength(1);
@@ -221,11 +216,7 @@ describe('discoverPlaylists resolver', () => {
     ]);
     mockDb.select.mockReturnValueOnce(resultsChain);
 
-    const result = await playlistQueries.discoverPlaylists(
-      null,
-      { input: { boardType: 'kilter', layoutId: 8 } },
-      ctx,
-    );
+    const result = await playlistQueries.discoverPlaylists(null, { input: { boardType: 'kilter', layoutId: 8 } }, ctx);
 
     expect(result.totalCount).toBe(1);
     expect(result.playlists).toHaveLength(1);
@@ -248,11 +239,7 @@ describe('discoverPlaylists resolver', () => {
     const { chain: resultsChain, calls: resultsCalls } = createMockChain(rows);
     mockDb.select.mockReturnValueOnce(resultsChain);
 
-    const result = await playlistQueries.discoverPlaylists(
-      null,
-      { input: { pageSize: 10, page: 0 } },
-      ctx,
-    );
+    const result = await playlistQueries.discoverPlaylists(null, { input: { pageSize: 10, page: 0 } }, ctx);
 
     expect(result.hasMore).toBe(true);
     expect(result.playlists).toHaveLength(10);
@@ -293,16 +280,10 @@ describe('discoverPlaylists resolver', () => {
     const { chain: countChain } = createMockChain([{ count: 1 }]);
     mockDb.select.mockReturnValueOnce(countChain);
 
-    const { chain: resultsChain } = createMockChain([
-      makePlaylistRow({ uuid: 'pl-1', name: 'Hard Boulders' }),
-    ]);
+    const { chain: resultsChain } = createMockChain([makePlaylistRow({ uuid: 'pl-1', name: 'Hard Boulders' })]);
     mockDb.select.mockReturnValueOnce(resultsChain);
 
-    const result = await playlistQueries.discoverPlaylists(
-      null,
-      { input: { name: 'boulders' } },
-      ctx,
-    );
+    const result = await playlistQueries.discoverPlaylists(null, { input: { name: 'boulders' } }, ctx);
 
     expect(result.playlists).toHaveLength(1);
     expect(result.playlists[0]).toMatchObject({ name: 'Hard Boulders' });
@@ -334,11 +315,7 @@ describe('discoverPlaylists resolver', () => {
     ]);
     mockDb.select.mockReturnValueOnce(resultsChain);
 
-    const result = await playlistQueries.discoverPlaylists(
-      null,
-      { input: { sortBy: 'popular' } },
-      ctx,
-    );
+    const result = await playlistQueries.discoverPlaylists(null, { input: { sortBy: 'popular' } }, ctx);
 
     expect(result.playlists).toHaveLength(2);
     expect(result.playlists[0]).toMatchObject({ uuid: 'pl-popular' });
@@ -353,17 +330,11 @@ describe('discoverPlaylists resolver', () => {
     const { chain: countChain } = createMockChain([{ count: 50 }]);
     mockDb.select.mockReturnValueOnce(countChain);
 
-    const rows = Array.from({ length: 5 }, (_, i) =>
-      makePlaylistRow({ uuid: `pl-${i}`, id: BigInt(i + 1) }),
-    );
+    const rows = Array.from({ length: 5 }, (_, i) => makePlaylistRow({ uuid: `pl-${i}`, id: BigInt(i + 1) }));
     const { chain: resultsChain, calls: resultsCalls } = createMockChain(rows);
     mockDb.select.mockReturnValueOnce(resultsChain);
 
-    const result = await playlistQueries.discoverPlaylists(
-      null,
-      { input: { page: 2, pageSize: 5 } },
-      ctx,
-    );
+    const result = await playlistQueries.discoverPlaylists(null, { input: { page: 2, pageSize: 5 } }, ctx);
 
     expect(result.playlists).toHaveLength(5);
     expect(result.hasMore).toBe(false);

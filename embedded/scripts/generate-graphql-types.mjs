@@ -218,9 +218,7 @@ function generateCppStruct(type) {
   const guardName = `${type.name.toUpperCase()}_DEFINED`;
 
   if (needsGuard) {
-    lines.push(
-      `// Include guard: ${type.name} may also be defined in led_controller.h for native tests`,
-    );
+    lines.push(`// Include guard: ${type.name} may also be defined in led_controller.h for native tests`);
     lines.push(`#ifndef ${guardName}`);
     lines.push(`#define ${guardName}`);
   }

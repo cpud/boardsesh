@@ -168,10 +168,7 @@ const GroupedFeedItem: React.FC<{
             />
           )}
 
-          <Box
-            sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
-            className={styles.feedItemContent}
-          >
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }} className={styles.feedItemContent}>
             <Box
               sx={{
                 display: 'flex',
@@ -194,36 +191,19 @@ const GroupedFeedItem: React.FC<{
                   }
                   className={styles.statusTag}
                 />
-                <MuiTypography
-                  variant="body2"
-                  component="span"
-                  fontWeight={600}
-                  className={styles.climbName}
-                >
+                <MuiTypography variant="body2" component="span" fontWeight={600} className={styles.climbName}>
                   {group.climbName}
                 </MuiTypography>
               </Box>
-              <MuiTypography
-                variant="body2"
-                component="span"
-                color="text.secondary"
-                className={styles.timeAgo}
-              >
+              <MuiTypography variant="body2" component="span" color="text.secondary" className={styles.timeAgo}>
                 {timeAgo}
               </MuiTypography>
             </Box>
 
             <Box sx={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-              {group.difficultyName && (
-                <Chip label={group.difficultyName} size="small" color="primary" />
-              )}
+              {group.difficultyName && <Chip label={group.difficultyName} size="small" color="primary" />}
               <Chip icon={<LocationOnOutlined />} label={`${group.angle}°`} size="small" />
-              <MuiTypography
-                variant="body2"
-                component="span"
-                color="text.secondary"
-                className={styles.boardType}
-              >
+              <MuiTypography variant="body2" component="span" color="text.secondary" className={styles.boardType}>
                 {boardDisplay}
               </MuiTypography>
               {group.isMirror && <Chip label="Mirrored" size="small" color="secondary" />}
@@ -235,12 +215,7 @@ const GroupedFeedItem: React.FC<{
             )}
 
             {group.setterUsername && (
-              <MuiTypography
-                variant="body2"
-                component="span"
-                color="text.secondary"
-                className={styles.setter}
-              >
+              <MuiTypography variant="body2" component="span" color="text.secondary" className={styles.setter}>
                 Set by {group.setterUsername}
               </MuiTypography>
             )}
@@ -262,12 +237,7 @@ const GroupedFeedItem: React.FC<{
                 }}
               >
                 {group.items.map((item) => (
-                  <TickItemRow
-                    key={item.uuid}
-                    item={item}
-                    onDelete={onDeleteTick}
-                    isDeleting={isDeleting}
-                  />
+                  <TickItemRow key={item.uuid} item={item} onDelete={onDeleteTick} isDeleting={isDeleting} />
                 ))}
               </Box>
             )}
@@ -278,39 +248,31 @@ const GroupedFeedItem: React.FC<{
   );
 };
 
-export const AscentsFeed: React.FC<AscentsFeedProps> = ({
-  userId,
-  pageSize = 10,
-  isOwnProfile = false,
-}) => {
+export const AscentsFeed: React.FC<AscentsFeedProps> = ({ userId, pageSize = 10, isOwnProfile = false }) => {
   const deleteTick = useDeleteTick();
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error } =
-    useInfiniteQuery({
-      queryKey: ['ascentsFeed', userId, pageSize],
-      queryFn: async ({ pageParam }) => {
-        const client = createGraphQLHttpClient(null);
-        const variables: GetUserGroupedAscentsFeedQueryVariables = {
-          userId,
-          input: { limit: pageSize, offset: pageParam },
-        };
-        const response = await client.request<GetUserGroupedAscentsFeedQueryResponse>(
-          GET_USER_GROUPED_ASCENTS_FEED,
-          variables,
-        );
-        return response.userGroupedAscentsFeed;
-      },
-      initialPageParam: 0,
-      getNextPageParam: (lastPage, _allPages, lastPageParam) => {
-        if (!lastPage.hasMore) return undefined;
-        return lastPageParam + lastPage.groups.length;
-      },
-      staleTime: 60 * 1000,
-    });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error } = useInfiniteQuery({
+    queryKey: ['ascentsFeed', userId, pageSize],
+    queryFn: async ({ pageParam }) => {
+      const client = createGraphQLHttpClient(null);
+      const variables: GetUserGroupedAscentsFeedQueryVariables = {
+        userId,
+        input: { limit: pageSize, offset: pageParam },
+      };
+      const response = await client.request<GetUserGroupedAscentsFeedQueryResponse>(
+        GET_USER_GROUPED_ASCENTS_FEED,
+        variables,
+      );
+      return response.userGroupedAscentsFeed;
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, _allPages, lastPageParam) => {
+      if (!lastPage.hasMore) return undefined;
+      return lastPageParam + lastPage.groups.length;
+    },
+    staleTime: 60 * 1000,
+  });
 
-  const groups: GroupedAscentFeedItem[] = useMemo(
-    () => data?.pages.flatMap((p) => p.groups) ?? [],
-    [data],
-  );
+  const groups: GroupedAscentFeedItem[] = useMemo(() => data?.pages.flatMap((p) => p.groups) ?? [], [data]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: fetchNextPage,
@@ -348,10 +310,7 @@ export const AscentsFeed: React.FC<AscentsFeedProps> = ({
         ))}
       </Box>
 
-      <Box
-        ref={sentinelRef}
-        sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}
-      >
+      <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}>
         {isFetchingNextPage && <CircularProgress size={24} />}
       </Box>
     </div>

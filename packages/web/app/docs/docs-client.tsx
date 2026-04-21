@@ -22,12 +22,7 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import MuiDivider from '@mui/material/Divider';
-import {
-  ApiOutlined,
-  CloudOutlined,
-  ElectricBoltOutlined,
-  MenuBookOutlined,
-} from '@mui/icons-material';
+import { ApiOutlined, CloudOutlined, ElectricBoltOutlined, MenuBookOutlined } from '@mui/icons-material';
 import { TabPanel } from '@/app/components/ui/tab-panel';
 import styles from './docs.module.css';
 
@@ -55,8 +50,8 @@ function OverviewTab() {
       </Typography>
 
       <Typography variant="body1" component="p" sx={{ mb: 2 }}>
-        Boardsesh provides two complementary APIs for interacting with interactive climbing training
-        boards (Kilter, Tension):
+        Boardsesh provides two complementary APIs for interacting with interactive climbing training boards (Kilter,
+        Tension):
       </Typography>
 
       <Stack spacing={3} className={styles.fullWidth}>
@@ -66,8 +61,8 @@ function OverviewTab() {
               <ApiOutlined /> REST API
             </Typography>
             <Typography variant="body1" component="p" sx={{ mb: 1 }}>
-              Use the REST API for stateless operations like searching climbs, fetching board
-              configuration, and user authentication. The REST API is ideal for:
+              Use the REST API for stateless operations like searching climbs, fetching board configuration, and user
+              authentication. The REST API is ideal for:
             </Typography>
             <ul>
               <li>Fetching climb data and statistics</li>
@@ -87,8 +82,8 @@ function OverviewTab() {
               <ElectricBoltOutlined /> WebSocket GraphQL API
             </Typography>
             <Typography variant="body1" component="p" sx={{ mb: 1 }}>
-              Use the WebSocket API for real-time features like party sessions and queue
-              synchronization. The GraphQL API provides:
+              Use the WebSocket API for real-time features like party sessions and queue synchronization. The GraphQL
+              API provides:
             </Typography>
             <ul>
               <li>Real-time queue updates via subscriptions</li>
@@ -108,12 +103,12 @@ function OverviewTab() {
               <CloudOutlined /> Authentication
             </Typography>
             <Typography variant="body1" component="p" sx={{ mb: 1 }}>
-              <strong>REST API:</strong> Uses NextAuth session cookies. Authenticate via{' '}
-              <code>/api/auth/...</code> endpoints.
+              <strong>REST API:</strong> Uses NextAuth session cookies. Authenticate via <code>/api/auth/...</code>{' '}
+              endpoints.
             </Typography>
             <Typography variant="body1" component="p" sx={{ mb: 1 }}>
-              <strong>WebSocket API:</strong> Obtain a JWT token from{' '}
-              <code>GET /api/internal/ws-auth</code> and include it in the connection parameters:
+              <strong>WebSocket API:</strong> Obtain a JWT token from <code>GET /api/internal/ws-auth</code> and include
+              it in the connection parameters:
             </Typography>
             <pre className={styles.codeBlockLight}>
               {`import { createClient } from 'graphql-ws';
@@ -130,8 +125,8 @@ const client = createClient({
 
         <MuiAlert severity="info">
           <AlertTitle>Rate Limiting</AlertTitle>
-          Authentication endpoints are rate-limited to prevent abuse. Rate limit headers are
-          included in responses. Public read endpoints have generous limits.
+          Authentication endpoints are rate-limited to prevent abuse. Rate limit headers are included in responses.
+          Public read endpoints have generous limits.
         </MuiAlert>
       </Stack>
     </div>
@@ -281,8 +276,8 @@ lastSequence = eventsReplay.currentSequence;`}
 
       <MuiAlert severity="warning" className={styles.alertWithMargin}>
         <AlertTitle>Connection Handling</AlertTitle>
-        The WebSocket connection may be interrupted by network changes. Implement reconnection logic
-        with the graphql-ws retry options and use delta sync to maintain state consistency.
+        The WebSocket connection may be interrupted by network changes. Implement reconnection logic with the graphql-ws
+        retry options and use delta sync to maintain state consistency.
       </MuiAlert>
     </div>
   );

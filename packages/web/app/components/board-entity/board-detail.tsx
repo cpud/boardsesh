@@ -118,10 +118,9 @@ export function BoardDetailContent({
     setIsDeleting(true);
     try {
       const client = createGraphQLHttpClient(token);
-      await client.request<DeleteBoardMutationResponse, DeleteBoardMutationVariables>(
-        DELETE_BOARD,
-        { boardUuid: board.uuid },
-      );
+      await client.request<DeleteBoardMutationResponse, DeleteBoardMutationVariables>(DELETE_BOARD, {
+        boardUuid: board.uuid,
+      });
       showMessage('Board deleted', 'success');
       onDeleted?.();
     } catch (error) {
@@ -141,10 +140,9 @@ export function BoardDetailContent({
     if (!token || !board) return;
     try {
       const client = createGraphQLHttpClient(token);
-      await client.request<LinkBoardToGymMutationResponse, LinkBoardToGymMutationVariables>(
-        LINK_BOARD_TO_GYM,
-        { input: { boardUuid: board.uuid, gymUuid } },
-      );
+      await client.request<LinkBoardToGymMutationResponse, LinkBoardToGymMutationVariables>(LINK_BOARD_TO_GYM, {
+        input: { boardUuid: board.uuid, gymUuid },
+      });
       showMessage(gymUuid ? 'Board linked to gym' : 'Board unlinked from gym', 'success');
       setShowGymSelector(false);
       fetchBoard();
@@ -218,19 +216,12 @@ export function BoardDetailContent({
               </Box>
             )}
           </Box>
-          <Chip
-            label={BOARD_TYPE_LABELS[board.boardType] || board.boardType}
-            size="small"
-            variant="outlined"
-          />
+          <Chip label={BOARD_TYPE_LABELS[board.boardType] || board.boardType} size="small" variant="outlined" />
         </Box>
 
         {/* Owner info */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5 }}>
-          <Avatar
-            src={board.ownerAvatarUrl ?? undefined}
-            sx={{ width: 24, height: 24, fontSize: 11 }}
-          >
+          <Avatar src={board.ownerAvatarUrl ?? undefined} sx={{ width: 24, height: 24, fontSize: 11 }}>
             {board.ownerDisplayName?.[0]?.toUpperCase()}
           </Avatar>
           <MuiTypography variant="body2" color="text.secondary">
@@ -246,12 +237,8 @@ export function BoardDetailContent({
 
         {isOwner && (board.isUnlisted || board.hideLocation) && (
           <Box sx={{ display: 'flex', gap: 1, mt: 1.5, flexWrap: 'wrap' }}>
-            {board.isUnlisted && (
-              <Chip label="Unlisted" size="small" variant="outlined" color="warning" />
-            )}
-            {board.hideLocation && (
-              <Chip label="Location hidden" size="small" variant="outlined" color="warning" />
-            )}
+            {board.isUnlisted && <Chip label="Unlisted" size="small" variant="outlined" color="warning" />}
+            {board.hideLocation && <Chip label="Location hidden" size="small" variant="outlined" color="warning" />}
           </Box>
         )}
 
@@ -287,35 +274,16 @@ export function BoardDetailContent({
         )}
         {showGymSelector && isOwner && (
           <Box sx={{ mt: 1.5 }}>
-            <GymSelector
-              selectedGymUuid={board.gymUuid ?? null}
-              onSelect={(gymUuid) => handleLinkGym(gymUuid)}
-            />
+            <GymSelector selectedGymUuid={board.gymUuid ?? null} onSelect={(gymUuid) => handleLinkGym(gymUuid)} />
           </Box>
         )}
 
         {/* Stats */}
         <Box sx={{ display: 'flex', gap: 2.5, mt: 2, flexWrap: 'wrap' }}>
-          <StatChip
-            icon={<TrendingUpOutlined sx={{ fontSize: 16 }} />}
-            value={board.totalAscents}
-            label="ascents"
-          />
-          <StatChip
-            icon={<PersonOutlined sx={{ fontSize: 16 }} />}
-            value={board.uniqueClimbers}
-            label="climbers"
-          />
-          <StatChip
-            icon={<PeopleOutlined sx={{ fontSize: 16 }} />}
-            value={board.followerCount}
-            label="followers"
-          />
-          <StatChip
-            icon={<ChatBubbleOutlined sx={{ fontSize: 16 }} />}
-            value={board.commentCount}
-            label="comments"
-          />
+          <StatChip icon={<TrendingUpOutlined sx={{ fontSize: 16 }} />} value={board.totalAscents} label="ascents" />
+          <StatChip icon={<PersonOutlined sx={{ fontSize: 16 }} />} value={board.uniqueClimbers} label="climbers" />
+          <StatChip icon={<PeopleOutlined sx={{ fontSize: 16 }} />} value={board.followerCount} label="followers" />
+          <StatChip icon={<ChatBubbleOutlined sx={{ fontSize: 16 }} />} value={board.commentCount} label="comments" />
         </Box>
 
         {/* Actions */}
@@ -369,19 +337,12 @@ export function BoardDetailContent({
       {/* Tab content */}
       <Box sx={{ flex: 1, overflow: 'auto', px: 2, py: 2 }}>
         {activeTab === 0 && <BoardLeaderboard boardUuid={board.uuid} />}
-        {activeTab === 1 && (
-          <CommentSection entityType="board" entityId={board.uuid} title="Board Discussion" />
-        )}
+        {activeTab === 1 && <CommentSection entityType="board" entityId={board.uuid} title="Board Discussion" />}
       </Box>
 
       {/* Gym detail drawer */}
       {board.gymUuid && (
-        <GymDetail
-          gymUuid={board.gymUuid}
-          open={showGymDetail}
-          onClose={() => setShowGymDetail(false)}
-          anchor="top"
-        />
+        <GymDetail gymUuid={board.gymUuid} open={showGymDetail} onClose={() => setShowGymDetail(false)} anchor="top" />
       )}
     </>
   );
@@ -395,13 +356,7 @@ interface BoardDetailProps {
   anchor?: 'top' | 'bottom';
 }
 
-export default function BoardDetail({
-  boardUuid,
-  open,
-  onClose,
-  onDeleted,
-  anchor = 'bottom',
-}: BoardDetailProps) {
+export default function BoardDetail({ boardUuid, open, onClose, onDeleted, anchor = 'bottom' }: BoardDetailProps) {
   return (
     <SwipeableDrawer
       placement={anchor}
@@ -427,10 +382,7 @@ function StatChip({ icon, value, label }: { icon: React.ReactNode; value: number
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
       <Box sx={{ color: 'var(--neutral-400)', display: 'flex' }}>{icon}</Box>
-      <MuiTypography
-        variant="body2"
-        sx={{ fontWeight: themeTokens.typography.fontWeight.semibold }}
-      >
+      <MuiTypography variant="body2" sx={{ fontWeight: themeTokens.typography.fontWeight.semibold }}>
         {value}
       </MuiTypography>
       <MuiTypography variant="body2" color="text.secondary">

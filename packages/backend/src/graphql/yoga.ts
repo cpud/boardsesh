@@ -30,9 +30,7 @@ export function createYogaInstance() {
 
       // Extract client IP for rate limiting anonymous HTTP requests
       const clientIp =
-        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-        request.headers.get('x-real-ip') ||
-        undefined;
+        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || undefined;
 
       if (authHeader?.startsWith('Bearer ')) {
         const token = authHeader.slice(7);

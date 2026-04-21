@@ -7,21 +7,12 @@ import { userFollows } from '../src/schema/app/follows.js';
 import { boardseshTicks } from '../src/schema/app/ascents.js';
 import { userBoards, boardFollows } from '../src/schema/app/boards.js';
 import { boardSessions } from '../src/schema/app/sessions.js';
-import {
-  boardClimbs,
-  boardClimbStats,
-  boardDifficultyGrades,
-} from '../src/schema/boards/unified.js';
+import { boardClimbs, boardClimbStats, boardDifficultyGrades } from '../src/schema/boards/unified.js';
 import { notifications } from '../src/schema/app/notifications.js';
 import { comments, votes } from '../src/schema/app/social.js';
 import { feedItems } from '../src/schema/app/feed.js';
 import { createScriptDb, getScriptDatabaseUrl } from './db-connection.js';
-import {
-  pickTickComment,
-  pickSocialComment,
-  pickThread,
-  type TickStatus,
-} from './fixtures/comment-templates.js';
+import { pickTickComment, pickSocialComment, pickThread, type TickStatus } from './fixtures/comment-templates.js';
 import {
   FIXTURE_USERS,
   FIXTURE_TICKS,
@@ -158,9 +149,7 @@ async function seedSocialData() {
       .from(users)
       .where(sql`${users.email} NOT LIKE ${'%@' + FAKE_EMAIL_DOMAIN}`);
 
-    console.log(
-      `Found ${devUsers.length} dev user(s): ${devUsers.map((u) => u.email).join(', ') || '(none)'}`,
-    );
+    console.log(`Found ${devUsers.length} dev user(s): ${devUsers.map((u) => u.email).join(', ') || '(none)'}`);
 
     // =========================================================================
     // Step 2: Create fake users
@@ -192,13 +181,9 @@ async function seedSocialData() {
       const user = fakeUserRecords[i];
       profileRecords.push({
         userId: user.id!,
-        displayName: faker.datatype.boolean(0.7)
-          ? CLIMBING_NICKNAMES[i % CLIMBING_NICKNAMES.length]
-          : null,
+        displayName: faker.datatype.boolean(0.7) ? CLIMBING_NICKNAMES[i % CLIMBING_NICKNAMES.length] : null,
         avatarUrl: faker.datatype.boolean(0.8) ? faker.image.avatar() : null,
-        instagramUrl: faker.datatype.boolean(0.4)
-          ? `https://instagram.com/${faker.internet.username()}`
-          : null,
+        instagramUrl: faker.datatype.boolean(0.4) ? `https://instagram.com/${faker.internet.username()}` : null,
       });
     }
 
@@ -444,12 +429,7 @@ async function seedSocialData() {
       const grades = await db
         .select({ difficulty: boardDifficultyGrades.difficulty })
         .from(boardDifficultyGrades)
-        .where(
-          and(
-            eq(boardDifficultyGrades.boardType, boardType),
-            eq(boardDifficultyGrades.isListed, true),
-          ),
-        );
+        .where(and(eq(boardDifficultyGrades.boardType, boardType), eq(boardDifficultyGrades.isListed, true)));
 
       gradesByBoard[boardType] = grades.map((g) => g.difficulty);
       console.log(`  ${boardType}: ${grades.length} difficulty grades`);
@@ -491,10 +471,7 @@ async function seedSocialData() {
         .from(boardClimbs)
         .innerJoin(
           boardClimbStats,
-          and(
-            eq(boardClimbs.uuid, boardClimbStats.climbUuid),
-            eq(boardClimbs.boardType, boardClimbStats.boardType),
-          ),
+          and(eq(boardClimbs.uuid, boardClimbStats.climbUuid), eq(boardClimbs.boardType, boardClimbStats.boardType)),
         )
         .where(and(eq(boardClimbs.boardType, boardType), eq(boardClimbs.isListed, true)))
         .limit(10000);
@@ -514,9 +491,7 @@ async function seedSocialData() {
       }
 
       climbsByDifficultyPerBoard[boardType] = byDifficulty;
-      console.log(
-        `  ${boardType}: ${climbsWithStats.length} climbs across ${byDifficulty.size} difficulty levels`,
-      );
+      console.log(`  ${boardType}: ${climbsWithStats.length} climbs across ${byDifficulty.size} difficulty levels`);
     }
 
     // =========================================================================
@@ -545,9 +520,7 @@ async function seedSocialData() {
       const weekStartDaysAgo = SESSION_SPAN_DAYS - weekOffset * 7;
 
       const isRestWeek = faker.datatype.boolean(0.1);
-      const sessionsThisWeek = isRestWeek
-        ? faker.number.int({ min: 0, max: 1 })
-        : faker.number.int({ min: 2, max: 4 });
+      const sessionsThisWeek = isRestWeek ? faker.number.int({ min: 0, max: 1 }) : faker.number.int({ min: 2, max: 4 });
 
       for (let s = 0; s < sessionsThisWeek; s++) {
         const dayInWeek = faker.number.int({ min: 0, max: 6 });
@@ -557,9 +530,7 @@ async function seedSocialData() {
       }
     }
 
-    console.log(
-      `    ${sessionDates.length} session dates over ${Math.round(SESSION_SPAN_DAYS / 365)} years`,
-    );
+    console.log(`    ${sessionDates.length} session dates over ${Math.round(SESSION_SPAN_DAYS / 365)} years`);
 
     for (const boardType of availableBoardTypes) {
       const byDifficulty = climbsByDifficultyPerBoard[boardType];
@@ -709,11 +680,7 @@ async function seedSocialData() {
           // Weighted status: flash 20%, send 50%, attempt 30%
           const statusRoll = faker.number.float({ min: 0, max: 1 });
           const status =
-            statusRoll < 0.2
-              ? ('flash' as const)
-              : statusRoll < 0.7
-                ? ('send' as const)
-                : ('attempt' as const);
+            statusRoll < 0.2 ? ('flash' as const) : statusRoll < 0.7 ? ('send' as const) : ('attempt' as const);
 
           // Each tick in the session is 10-30 minutes after the previous
           const minutesIntoSession = j * faker.number.int({ min: 10, max: 30 });
@@ -778,9 +745,7 @@ async function seedSocialData() {
     for (let i = 0; i < tickRecords.length; i += BATCH_SIZE) {
       const batch = tickRecords.slice(i, i + BATCH_SIZE);
       await db.insert(boardseshTicks).values(batch).onConflictDoNothing();
-      process.stdout.write(
-        `\r  Ticks: ${Math.min(i + BATCH_SIZE, tickRecords.length)}/${tickRecords.length}`,
-      );
+      process.stdout.write(`\r  Ticks: ${Math.min(i + BATCH_SIZE, tickRecords.length)}/${tickRecords.length}`);
     }
     console.log('');
 
@@ -863,15 +828,7 @@ async function seedSocialData() {
       null,
       null,
     ];
-    const SESSION_GOALS = [
-      'Send V7',
-      'Flash V5',
-      'Work on crimps',
-      'Practice volumes',
-      null,
-      null,
-      null,
-    ];
+    const SESSION_GOALS = ['Send V7', 'Flash V5', 'Work on crimps', 'Practice volumes', null, null, null];
 
     let partySessions = 0;
     let partyTicks = 0;
@@ -889,9 +846,7 @@ async function seedSocialData() {
 
       // Pick 2-4 participants from fixture users
       const numParticipants = faker.number.int({ min: 2, max: 4 });
-      const participantIds = faker.helpers
-        .shuffle(FIXTURE_USERS.map((u) => u.id))
-        .slice(0, numParticipants);
+      const participantIds = faker.helpers.shuffle(FIXTURE_USERS.map((u) => u.id)).slice(0, numParticipants);
 
       const sessionName = faker.helpers.arrayElement(SESSION_NAMES);
       const sessionGoal = faker.helpers.arrayElement(SESSION_GOALS);
@@ -923,11 +878,7 @@ async function seedSocialData() {
           const climb = faker.helpers.arrayElement(climbs);
           const statusRoll = faker.number.float({ min: 0, max: 1 });
           const status =
-            statusRoll < 0.2
-              ? ('flash' as const)
-              : statusRoll < 0.7
-                ? ('send' as const)
-                : ('attempt' as const);
+            statusRoll < 0.2 ? ('flash' as const) : statusRoll < 0.7 ? ('send' as const) : ('attempt' as const);
 
           const minutesIntoSession = ti * faker.number.int({ min: 8, max: 20 });
           const climbedAt = new Date(sessionBaseTime + minutesIntoSession * 60 * 1000);
@@ -975,9 +926,7 @@ async function seedSocialData() {
     console.log('\n--- Step 8.6: Seeding feed_items for activity feed ---');
 
     // Find which fake users the test user follows
-    const testUserFollowing = followRecords
-      .filter((f) => f.followerId === TEST_USER_ID)
-      .map((f) => f.followingId!);
+    const testUserFollowing = followRecords.filter((f) => f.followerId === TEST_USER_ID).map((f) => f.followingId!);
 
     // Collect ticks from followed users (flash/send only, matching the trendingFeed filter)
     const followedUserTicks = tickRecords.filter(
@@ -985,10 +934,7 @@ async function seedSocialData() {
     );
 
     // Build a profile lookup for metadata
-    const profileLookup = new Map<
-      string,
-      { displayName: string | null; avatarUrl: string | null }
-    >();
+    const profileLookup = new Map<string, { displayName: string | null; avatarUrl: string | null }>();
     for (const p of profileRecords) {
       profileLookup.set(p.userId!, {
         displayName: p.displayName ?? null,
@@ -1176,9 +1122,7 @@ async function seedSocialData() {
 
     for (let i = 0; i < parentRecords.length; i += BATCH_SIZE) {
       const batch = parentRecords.slice(i, i + BATCH_SIZE);
-      const insertBatch = batch.map(
-        ({ _tickUuid, _tickUserId, _tickStatus, _hasThread, ...record }) => record,
-      );
+      const insertBatch = batch.map(({ _tickUuid, _tickUserId, _tickStatus, _hasThread, ...record }) => record);
       const returned = await db
         .insert(comments)
         .values(insertBatch)
@@ -1244,9 +1188,7 @@ async function seedSocialData() {
 
     for (let i = 0; i < replyRecords.length; i += BATCH_SIZE) {
       const batch = replyRecords.slice(i, i + BATCH_SIZE);
-      const insertBatch = batch.map(
-        ({ _parentUuid, _parentUserId, _tickUuid, _tickUserId, ...record }) => record,
-      );
+      const insertBatch = batch.map(({ _parentUuid, _parentUserId, _tickUuid, _tickUserId, ...record }) => record);
       const returned = await db
         .insert(comments)
         .values(insertBatch)
@@ -1286,20 +1228,14 @@ async function seedSocialData() {
 
     while (remaining.length > 0) {
       const canInsert = remaining.filter(
-        (fc) =>
-          fc.comment.parentCommentUuid === null ||
-          fixtureCommentIdMap.has(fc.comment.parentCommentUuid),
+        (fc) => fc.comment.parentCommentUuid === null || fixtureCommentIdMap.has(fc.comment.parentCommentUuid),
       );
       const cantInsert = remaining.filter(
-        (fc) =>
-          fc.comment.parentCommentUuid !== null &&
-          !fixtureCommentIdMap.has(fc.comment.parentCommentUuid),
+        (fc) => fc.comment.parentCommentUuid !== null && !fixtureCommentIdMap.has(fc.comment.parentCommentUuid),
       );
 
       if (canInsert.length === 0 && cantInsert.length > 0) {
-        console.warn(
-          `  Warning: ${cantInsert.length} fixture comments have broken parent references, skipping`,
-        );
+        console.warn(`  Warning: ${cantInsert.length} fixture comments have broken parent references, skipping`);
         break;
       }
 
@@ -1338,20 +1274,14 @@ async function seedSocialData() {
       remaining = cantInsert;
     }
 
-    const fixtureParentCount = allFixtureComments.filter(
-      (fc) => fc.comment.parentCommentUuid === null,
-    ).length;
-    const fixtureReplyCount = allFixtureComments.filter(
-      (fc) => fc.comment.parentCommentUuid !== null,
-    ).length;
+    const fixtureParentCount = allFixtureComments.filter((fc) => fc.comment.parentCommentUuid === null).length;
+    const fixtureReplyCount = allFixtureComments.filter((fc) => fc.comment.parentCommentUuid !== null).length;
     console.log(
       `  Fixture comments: ${fixtureParentCount} parents + ${fixtureReplyCount} replies = ${fixtureCommentIdMap.size} inserted`,
     );
 
     // Insert fixture votes
-    const fixtureVoteRecords = FIXTURE_VOTES.filter((v) =>
-      fixtureCommentIdMap.has(v.commentUuid),
-    ).map((v) => ({
+    const fixtureVoteRecords = FIXTURE_VOTES.filter((v) => fixtureCommentIdMap.has(v.commentUuid)).map((v) => ({
       userId: v.userId,
       entityType: 'comment' as const,
       entityId: v.commentUuid,
@@ -1423,19 +1353,8 @@ async function seedSocialData() {
     const fakeToFakeFollows = followRecords.filter(
       (f) => !devUserIds.has(f.followingId!) && !devUserIds.has(f.followerId!),
     );
-    for (const follow of faker.helpers.arrayElements(
-      fakeToFakeFollows,
-      Math.min(50, fakeToFakeFollows.length),
-    )) {
-      createNotification(
-        follow.followingId!,
-        follow.followerId!,
-        'new_follower',
-        'tick',
-        follow.followerId!,
-        null,
-        21,
-      );
+    for (const follow of faker.helpers.arrayElements(fakeToFakeFollows, Math.min(50, fakeToFakeFollows.length))) {
+      createNotification(follow.followingId!, follow.followerId!, 'new_follower', 'tick', follow.followerId!, null, 21);
     }
 
     // 2. comment_on_tick notifications — from parent comments (not replies)
@@ -1474,15 +1393,7 @@ async function seedSocialData() {
       if (otherUsersForVote.length === 0) continue;
 
       const voterId = faker.helpers.arrayElement(otherUsersForVote);
-      createNotification(
-        comment.userId!,
-        voterId,
-        'vote_on_comment',
-        'comment',
-        comment.uuid!,
-        null,
-        14,
-      );
+      createNotification(comment.userId!, voterId, 'vote_on_comment', 'comment', comment.uuid!, null, 14);
     }
 
     // 5. comment_reply notifications — from actual reply comments
@@ -1509,15 +1420,7 @@ async function seedSocialData() {
 
         if (c.parentCommentUuid === null) {
           // Top-level comment → comment_on_tick notification to tick owner
-          createNotification(
-            tick.userId,
-            c.userId,
-            'comment_on_tick',
-            'tick',
-            conv.tickUuid,
-            commentId,
-            14,
-          );
+          createNotification(tick.userId, c.userId, 'comment_on_tick', 'tick', conv.tickUuid, commentId, 14);
         } else {
           // Reply → comment_reply notification to parent comment author
           const parentComment = conv.comments.find((pc) => pc.uuid === c.parentCommentUuid);
@@ -1550,12 +1453,8 @@ async function seedSocialData() {
     console.log('');
 
     const unreadNotifications = notificationRecords.filter((n) => n.readAt == null).length;
-    const devUserNotifications = notificationRecords.filter((n) =>
-      devUserIds.has(n.recipientId!),
-    ).length;
-    const devUserUnread = notificationRecords.filter(
-      (n) => devUserIds.has(n.recipientId!) && n.readAt == null,
-    ).length;
+    const devUserNotifications = notificationRecords.filter((n) => devUserIds.has(n.recipientId!)).length;
+    const devUserUnread = notificationRecords.filter((n) => devUserIds.has(n.recipientId!) && n.readAt == null).length;
 
     // =========================================================================
     // Summary

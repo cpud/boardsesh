@@ -1,13 +1,5 @@
 'use client';
-import React, {
-  useEffect,
-  useState,
-  useCallback,
-  useRef,
-  useImperativeHandle,
-  forwardRef,
-  useMemo,
-} from 'react';
+import React, { useEffect, useState, useCallback, useRef, useImperativeHandle, forwardRef, useMemo } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import Skeleton from '@mui/material/Skeleton';
 import Button from '@mui/material/Button';
@@ -17,13 +9,7 @@ import MuiDivider from '@mui/material/Divider';
 import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
 import drawerCss from '../swipeable-drawer/swipeable-drawer.module.css';
 import LoginOutlined from '@mui/icons-material/LoginOutlined';
-import {
-  useQueueActions,
-  useCurrentClimbUuid,
-  useQueueList,
-  useSearchData,
-  useSessionData,
-} from '../graphql-queue';
+import { useQueueActions, useCurrentClimbUuid, useQueueList, useSearchData, useSessionData } from '../graphql-queue';
 import { Climb, BoardDetails } from '@/app/lib/types';
 import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { extractClosestEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
@@ -524,10 +510,7 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
             open={tickDrawerVisible}
             styles={{ wrapper: { height: '50%' } }}
           >
-            <Stack
-              spacing={3}
-              sx={{ width: '100%', textAlign: 'center', padding: `${themeTokens.spacing[6]}px 0` }}
-            >
+            <Stack spacing={3} sx={{ width: '100%', textAlign: 'center', padding: `${themeTokens.spacing[6]}px 0` }}>
               <Typography
                 variant="body2"
                 component="span"
@@ -560,11 +543,7 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
         {actionsClimb && (
           <SwipeableDrawer
             title={
-              <div
-                data-swipe-blocked=""
-                {...actionsDragHandlers}
-                className={drawerCss.dragHeaderWrapper}
-              >
+              <div data-swipe-blocked="" {...actionsDragHandlers} className={drawerCss.dragHeaderWrapper}>
                 <DrawerClimbHeader climb={actionsClimb} boardDetails={boardDetails} />
               </div>
             }

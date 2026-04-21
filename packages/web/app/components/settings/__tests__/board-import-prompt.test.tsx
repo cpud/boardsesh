@@ -216,12 +216,10 @@ describe('BoardImportPrompt', () => {
     });
 
     it('shows error when unlink fails', async () => {
-      mockFetch
-        .mockResolvedValueOnce(mockCredentialsResponse([tensionCredential]))
-        .mockResolvedValueOnce({
-          ok: false,
-          json: () => Promise.resolve({ error: 'Server error' }),
-        });
+      mockFetch.mockResolvedValueOnce(mockCredentialsResponse([tensionCredential])).mockResolvedValueOnce({
+        ok: false,
+        json: () => Promise.resolve({ error: 'Server error' }),
+      });
 
       render(<BoardImportPrompt boardType="tension" />);
 
@@ -310,10 +308,7 @@ describe('BoardImportPrompt', () => {
       fireEvent.change(fileInput, { target: { files: [file] } });
 
       await waitFor(() => {
-        expect(mockShowMessage).toHaveBeenCalledWith(
-          expect.stringContaining('Kilter Board Original'),
-          'warning',
-        );
+        expect(mockShowMessage).toHaveBeenCalledWith(expect.stringContaining('Kilter Board Original'), 'warning');
       });
     });
 
@@ -359,20 +354,18 @@ describe('BoardImportPrompt', () => {
   describe('import flow', () => {
     it('calls streamImport on confirm and shows success', async () => {
       mockFetch.mockResolvedValue(mockCredentialsResponse([]));
-      mockStreamImport.mockImplementation(
-        async (_board: string, _data: unknown, onEvent: (e: unknown) => void) => {
-          onEvent({
-            type: 'complete',
-            results: {
-              ascents: { imported: 5, skipped: 0, failed: 0 },
-              attempts: { imported: 0, skipped: 0, failed: 0 },
-              circuits: { imported: 0, skipped: 0, failed: 0 },
-              climbs: { imported: 0, skipped: 0, failed: 0 },
-              unresolvedClimbs: [],
-            },
-          });
-        },
-      );
+      mockStreamImport.mockImplementation(async (_board: string, _data: unknown, onEvent: (e: unknown) => void) => {
+        onEvent({
+          type: 'complete',
+          results: {
+            ascents: { imported: 5, skipped: 0, failed: 0 },
+            attempts: { imported: 0, skipped: 0, failed: 0 },
+            circuits: { imported: 0, skipped: 0, failed: 0 },
+            climbs: { imported: 0, skipped: 0, failed: 0 },
+            unresolvedClimbs: [],
+          },
+        });
+      });
 
       render(<BoardImportPrompt boardType="kilter" />);
 
@@ -408,11 +401,7 @@ describe('BoardImportPrompt', () => {
       fireEvent.click(screen.getAllByText('Import').find((el) => el.closest('[role="dialog"]'))!);
 
       await waitFor(() => {
-        expect(mockStreamImport).toHaveBeenCalledWith(
-          'kilter',
-          expect.anything(),
-          expect.any(Function),
-        );
+        expect(mockStreamImport).toHaveBeenCalledWith('kilter', expect.anything(), expect.any(Function));
       });
 
       await waitFor(() => {

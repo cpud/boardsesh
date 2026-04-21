@@ -13,11 +13,7 @@ import {
   type GetUnreadNotificationCountQueryResponse,
   type NotificationReceivedSubscriptionResponse,
 } from '@/app/lib/graphql/operations';
-import type {
-  Notification,
-  GroupedNotification,
-  GroupedNotificationConnection,
-} from '@boardsesh/shared-schema';
+import type { Notification, GroupedNotification, GroupedNotificationConnection } from '@boardsesh/shared-schema';
 import { UNREAD_COUNT_QUERY_KEY } from './use-unread-notification-count';
 import { GROUPED_NOTIFICATIONS_QUERY_KEY } from './use-grouped-notifications';
 
@@ -65,9 +61,7 @@ export function useNotificationSubscription() {
         const currentToken = tokenRef.current;
         if (!currentToken) return;
         const client = createGraphQLHttpClient(currentToken);
-        const data = await client.request<GetUnreadNotificationCountQueryResponse>(
-          GET_UNREAD_NOTIFICATION_COUNT,
-        );
+        const data = await client.request<GetUnreadNotificationCountQueryResponse>(GET_UNREAD_NOTIFICATION_COUNT);
         queryClient.setQueryData(UNREAD_COUNT_QUERY_KEY, data.unreadNotificationCount);
       } catch (err) {
         console.error('[Notifications] Failed to refresh unread count:', err);
@@ -114,9 +108,7 @@ export function useNotificationSubscription() {
 
               if (matchIdx >= 0) {
                 const existing = allGroups[matchIdx];
-                const actorAlreadyPresent = existing.actors.some(
-                  (a) => a.id === notification.actorId,
-                );
+                const actorAlreadyPresent = existing.actors.some((a) => a.id === notification.actorId);
                 newGroup = {
                   ...existing,
                   uuid: notification.uuid,
@@ -167,10 +159,7 @@ export function useNotificationSubscription() {
 
               const updatedPages = old.pages.map((page, pageIdx) => ({
                 ...page,
-                groups:
-                  pageIdx === 0
-                    ? [newGroup, ...withoutExisting(page.groups)]
-                    : withoutExisting(page.groups),
+                groups: pageIdx === 0 ? [newGroup, ...withoutExisting(page.groups)] : withoutExisting(page.groups),
               }));
 
               return { ...old, pages: updatedPages };

@@ -24,11 +24,7 @@ const loginSchema = z.object({
  * @param password - User's password
  * @returns Login response from the board's API
  */
-async function login(
-  boardName: AuroraBoardName,
-  username: string,
-  password: string,
-): Promise<Session> {
+async function login(boardName: AuroraBoardName, username: string, password: string): Promise<Session> {
   const auroraClient = new AuroraClimbingClient({ boardName: boardName });
   const loginResponse = await auroraClient.signIn(username, password);
 

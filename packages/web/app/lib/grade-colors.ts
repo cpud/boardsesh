@@ -9,14 +9,7 @@ import {
 import { BOULDER_GRADES } from './board-data';
 
 // Re-export grade color data and core lookups from the canonical source
-export {
-  V_GRADE_COLORS,
-  FONT_GRADE_COLORS,
-  DEFAULT_GRADE_COLOR,
-  getVGradeColor,
-  getFontGradeColor,
-  getGradeColor,
-};
+export { V_GRADE_COLORS, FONT_GRADE_COLORS, DEFAULT_GRADE_COLOR, getVGradeColor, getFontGradeColor, getGradeColor };
 
 /**
  * Extract V-grade from a difficulty string (e.g., "6a/V3" -> "V3")
@@ -105,10 +98,7 @@ export type GradeDisplayFormat = 'v-grade' | 'font';
  * @param format - Display format: 'v-grade' or 'font'
  * @returns Formatted grade string based on the format, or null if not found
  */
-export function formatGrade(
-  difficulty: string | null | undefined,
-  format: GradeDisplayFormat,
-): string | null {
+export function formatGrade(difficulty: string | null | undefined, format: GradeDisplayFormat): string | null {
   if (format === 'font') {
     return formatFontGrade(difficulty);
   }
@@ -224,10 +214,7 @@ function softenColor(hex: string, darkMode?: boolean): string {
  * Get a softened color for a V-grade string (e.g., "V3", "V10").
  * Returns a muted version of the grade color suitable for large/bold text in list views.
  */
-export function getSoftVGradeColor(
-  vGrade: string | null | undefined,
-  darkMode?: boolean,
-): string | undefined {
+export function getSoftVGradeColor(vGrade: string | null | undefined, darkMode?: boolean): string | undefined {
   const color = getVGradeColor(vGrade);
   if (!color) return undefined;
   return softenColor(color, darkMode);
@@ -237,10 +224,7 @@ export function getSoftVGradeColor(
  * Get a softened color for a Font grade string (e.g., "6a", "7b+").
  * Returns a muted version of the grade color suitable for large/bold text in list views.
  */
-export function getSoftFontGradeColor(
-  fontGrade: string | null | undefined,
-  darkMode?: boolean,
-): string | undefined {
+export function getSoftFontGradeColor(fontGrade: string | null | undefined, darkMode?: boolean): string | undefined {
   const color = getFontGradeColor(fontGrade);
   if (!color) return undefined;
   return softenColor(color, darkMode);
@@ -250,10 +234,7 @@ export function getSoftFontGradeColor(
  * Get a softened color for a difficulty string (e.g., "6a/V3", "V5").
  * Returns a muted version of the grade color suitable for large/bold text in list views.
  */
-export function getSoftGradeColor(
-  difficulty: string | null | undefined,
-  darkMode?: boolean,
-): string | undefined {
+export function getSoftGradeColor(difficulty: string | null | undefined, darkMode?: boolean): string | undefined {
   const color = getGradeColor(difficulty);
   if (!color) return undefined;
   return softenColor(color, darkMode);

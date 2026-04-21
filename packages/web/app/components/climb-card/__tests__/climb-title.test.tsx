@@ -30,9 +30,7 @@ const defaultGradeFormatReturn: {
   setGradeFormat: vi.fn(),
 };
 
-const mockUseGradeFormat = vi.fn<() => typeof defaultGradeFormatReturn>(
-  () => defaultGradeFormatReturn,
-);
+const mockUseGradeFormat = vi.fn<() => typeof defaultGradeFormatReturn>(() => defaultGradeFormatReturn);
 
 vi.mock('@/app/hooks/use-grade-format', () => ({
   useGradeFormat: () => mockUseGradeFormat(),
@@ -165,11 +163,7 @@ describe('ClimbTitle', () => {
 
     it('renders rightAddon', () => {
       render(
-        <ClimbTitle
-          climb={makeClimb()}
-          layout="horizontal"
-          rightAddon={<span data-testid="right-addon">tick</span>}
-        />,
+        <ClimbTitle climb={makeClimb()} layout="horizontal" rightAddon={<span data-testid="right-addon">tick</span>} />,
       );
       expect(screen.getByTestId('right-addon')).toBeTruthy();
     });
@@ -194,13 +188,7 @@ describe('ClimbTitle', () => {
     });
 
     it('renders setter name in subtitle when showSetterInfo is true', () => {
-      render(
-        <ClimbTitle
-          climb={makeClimb({ setter_username: 'DanielBolts' })}
-          gradePosition="right"
-          showSetterInfo
-        />,
-      );
+      render(<ClimbTitle climb={makeClimb({ setter_username: 'DanielBolts' })} gradePosition="right" showSetterInfo />);
       expect(screen.getByText(/4\.2|3\.5/)).toBeTruthy(); // stars present
       expect(screen.getByText(/DanielBolts/)).toBeTruthy();
     });
@@ -223,13 +211,7 @@ describe('ClimbTitle', () => {
     });
 
     it('renders only sends and stars when setter_username is missing', () => {
-      render(
-        <ClimbTitle
-          climb={makeClimb({ setter_username: undefined })}
-          gradePosition="right"
-          showSetterInfo
-        />,
-      );
+      render(<ClimbTitle climb={makeClimb({ setter_username: undefined })} gradePosition="right" showSetterInfo />);
       expect(screen.getByText('10 sends · 3.5★')).toBeTruthy();
     });
 
@@ -239,13 +221,7 @@ describe('ClimbTitle', () => {
     });
 
     it('renders send count', () => {
-      render(
-        <ClimbTitle
-          climb={makeClimb({ ascensionist_count: 72 })}
-          gradePosition="right"
-          showSetterInfo
-        />,
-      );
+      render(<ClimbTitle climb={makeClimb({ ascensionist_count: 72 })} gradePosition="right" showSetterInfo />);
       expect(screen.getByText(/72 sends/)).toBeTruthy();
     });
 
@@ -255,32 +231,19 @@ describe('ClimbTitle', () => {
     });
 
     it('renders only send count when difficulty is null', () => {
-      render(
-        <ClimbTitle
-          climb={makeClimb({ difficulty: null, quality_average: null })}
-          gradePosition="right"
-        />,
-      );
+      render(<ClimbTitle climb={makeClimb({ difficulty: null, quality_average: null })} gradePosition="right" />);
       expect(screen.getByText('10 sends')).toBeTruthy();
     });
 
     it('renders "project" when no grade and no ascents', () => {
       render(
-        <ClimbTitle
-          climb={makeClimb({ quality_average: '0', ascensionist_count: undefined })}
-          gradePosition="right"
-        />,
+        <ClimbTitle climb={makeClimb({ quality_average: '0', ascensionist_count: undefined })} gradePosition="right" />,
       );
       expect(screen.getByText('project')).toBeTruthy();
     });
 
     it('renders "project" when ascensionist_count is 0 and no grade', () => {
-      render(
-        <ClimbTitle
-          climb={makeClimb({ quality_average: '0', ascensionist_count: 0 })}
-          gradePosition="right"
-        />,
-      );
+      render(<ClimbTitle climb={makeClimb({ quality_average: '0', ascensionist_count: 0 })} gradePosition="right" />);
       expect(screen.getByText('project')).toBeTruthy();
     });
 
@@ -290,19 +253,13 @@ describe('ClimbTitle', () => {
     });
 
     it('renders benchmark icon after climb name', () => {
-      render(
-        <ClimbTitle climb={makeClimb({ benchmark_difficulty: '10' })} gradePosition="right" />,
-      );
+      render(<ClimbTitle climb={makeClimb({ benchmark_difficulty: '10' })} gradePosition="right" />);
       expect(screen.getByTestId('CopyrightOutlinedIcon')).toBeTruthy();
     });
 
     it('renders nameAddon in the name row', () => {
       render(
-        <ClimbTitle
-          climb={makeClimb()}
-          gradePosition="right"
-          nameAddon={<span data-testid="name-addon">✓</span>}
-        />,
+        <ClimbTitle climb={makeClimb()} gradePosition="right" nameAddon={<span data-testid="name-addon">✓</span>} />,
       );
       expect(screen.getByTestId('name-addon')).toBeTruthy();
     });
@@ -325,19 +282,12 @@ describe('ClimbTitle', () => {
     });
 
     it('uses communityGrade when available', () => {
-      render(
-        <ClimbTitle
-          climb={makeClimb({ difficulty: '6a/V3', communityGrade: '6b/V4' })}
-          gradePosition="right"
-        />,
-      );
+      render(<ClimbTitle climb={makeClimb({ difficulty: '6a/V3', communityGrade: '6b/V4' })} gradePosition="right" />);
       expect(screen.getByText('V4')).toBeTruthy();
     });
 
     it('renders with custom titleFontSize', () => {
-      const { container } = render(
-        <ClimbTitle climb={makeClimb()} gradePosition="right" titleFontSize={20} />,
-      );
+      const { container } = render(<ClimbTitle climb={makeClimb()} gradePosition="right" titleFontSize={20} />);
       // Name should be rendered (basic rendering check with custom size)
       expect(screen.getByText('Test Boulder')).toBeTruthy();
       expect(container.firstChild).toBeTruthy();
@@ -468,25 +418,19 @@ describe('ClimbTitle', () => {
     });
 
     it('renders a Skeleton instead of grade text in gradePosition="right" layout', () => {
-      const { container } = render(
-        <ClimbTitle climb={makeClimb({ difficulty: '6a/V3' })} gradePosition="right" />,
-      );
+      const { container } = render(<ClimbTitle climb={makeClimb({ difficulty: '6a/V3' })} gradePosition="right" />);
       expect(container.querySelector('.MuiSkeleton-root')).toBeTruthy();
       expect(screen.queryByText('V3')).toBeNull();
     });
 
     it('renders a Skeleton instead of grade text in horizontal layout', () => {
-      const { container } = render(
-        <ClimbTitle climb={makeClimb({ difficulty: '6a/V3' })} layout="horizontal" />,
-      );
+      const { container } = render(<ClimbTitle climb={makeClimb({ difficulty: '6a/V3' })} layout="horizontal" />);
       expect(container.querySelector('.MuiSkeleton-root')).toBeTruthy();
       expect(screen.queryByText('V3')).toBeNull();
     });
 
     it('does not render a Skeleton when difficulty is null', () => {
-      const { container } = render(
-        <ClimbTitle climb={makeClimb({ difficulty: null })} gradePosition="right" />,
-      );
+      const { container } = render(<ClimbTitle climb={makeClimb({ difficulty: null })} gradePosition="right" />);
       expect(container.querySelector('.MuiSkeleton-root')).toBeNull();
     });
   });

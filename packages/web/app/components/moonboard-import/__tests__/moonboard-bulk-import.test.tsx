@@ -53,9 +53,7 @@ vi.mock('../moonboard-import-card', () => ({
   }) => (
     <div>
       <div>{climb.name}</div>
-      {duplicateMatch?.exists && (
-        <div>{`Skipping: Already Exists as "${duplicateMatch.existingClimbName}"`}</div>
-      )}
+      {duplicateMatch?.exists && <div>{`Skipping: Already Exists as "${duplicateMatch.existingClimbName}"`}</div>}
     </div>
   ),
 }));
@@ -133,8 +131,6 @@ describe('MoonBoardBulkImport', () => {
     });
 
     expect(screen.queryByText('1 Duplicate Climb(s)')).toBeNull();
-    expect(screen.getByRole('button', { name: 'Save All (0)' }).hasAttribute('disabled')).toBe(
-      true,
-    );
+    expect(screen.getByRole('button', { name: 'Save All (0)' }).hasAttribute('disabled')).toBe(true);
   });
 });

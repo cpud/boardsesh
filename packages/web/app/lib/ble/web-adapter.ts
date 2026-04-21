@@ -25,9 +25,7 @@ export class WebBluetoothAdapter implements BluetoothAdapter {
     this.cleanupListeners();
 
     const requestOptions =
-      this.boardName === 'moonboard'
-        ? MOONBOARD_REQUEST_DEVICE_OPTIONS
-        : AURORA_REQUEST_DEVICE_OPTIONS;
+      this.boardName === 'moonboard' ? MOONBOARD_REQUEST_DEVICE_OPTIONS : AURORA_REQUEST_DEVICE_OPTIONS;
 
     const device = await requestBluetoothDevice(requestOptions);
     const characteristic = await getUartCharacteristic(device);

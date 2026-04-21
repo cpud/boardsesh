@@ -43,11 +43,7 @@ export const climbFieldResolvers = {
     parent._cachedClimbs = result.climbs;
     parent._cachedHasMore = result.hasMore;
 
-    searchCache.setCachedResult(
-      cacheKey,
-      { climbs: result.climbs, hasMore: result.hasMore },
-      DEFAULT_SEARCH_CACHE_TTL,
-    );
+    searchCache.setCachedResult(cacheKey, { climbs: result.climbs, hasMore: result.hasMore }, DEFAULT_SEARCH_CACHE_TTL);
     return result.climbs;
   },
 

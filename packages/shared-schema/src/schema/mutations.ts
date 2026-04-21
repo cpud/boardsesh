@@ -57,11 +57,7 @@ export const mutationsTypeDefs = /* GraphQL */ `
     Set the currently displayed climb.
     Optionally adds it to the queue if not already present.
     """
-    setCurrentClimb(
-      item: ClimbQueueItemInput
-      shouldAddToQueue: Boolean
-      correlationId: ID
-    ): ClimbQueueItem
+    setCurrentClimb(item: ClimbQueueItemInput, shouldAddToQueue: Boolean, correlationId: ID): ClimbQueueItem
 
     """
     Toggle mirrored display for the current climb.
@@ -77,10 +73,7 @@ export const mutationsTypeDefs = /* GraphQL */ `
     Replace the entire queue state.
     Used for bulk operations or syncing from external sources.
     """
-    setQueue(
-      queue: [ClimbQueueItemInput!]!
-      currentClimbQueueItem: ClimbQueueItemInput
-    ): QueueState!
+    setQueue(queue: [ClimbQueueItemInput!]!, currentClimbQueueItem: ClimbQueueItemInput): QueueState!
 
     # ============================================
     # User Management Mutations (require auth)
@@ -373,11 +366,7 @@ export const mutationsTypeDefs = /* GraphQL */ `
     Mark all notifications in a group as read.
     Returns the number of notifications that were marked as read.
     """
-    markGroupNotificationsRead(
-      type: NotificationType!
-      entityType: SocialEntityType
-      entityId: String
-    ): Int!
+    markGroupNotificationsRead(type: NotificationType!, entityType: SocialEntityType, entityId: String): Int!
 
     """
     Mark all notifications as read.
@@ -461,22 +450,13 @@ export const mutationsTypeDefs = /* GraphQL */ `
     # frames: Pre-built frames string from ESP32 (preferred)
     # positions: Legacy LED positions array (for backwards compatibility)
     # Requires controller API key in connectionParams
-    setClimbFromLedPositions(
-      sessionId: ID!
-      frames: String
-      positions: [LedCommandInput!]
-    ): ClimbMatchResult!
+    setClimbFromLedPositions(sessionId: ID!, frames: String, positions: [LedCommandInput!]): ClimbMatchResult!
     # Navigate to previous or next climb in the queue
     # queueItemUuid: Directly navigate to this queue item (preferred)
     # direction: "next" or "previous" (fallback if queueItemUuid not provided)
     # currentClimbUuid: DEPRECATED - UUID of climb currently displayed (unreliable with duplicates)
     # Requires controller API key in connectionParams
-    navigateQueue(
-      sessionId: ID!
-      direction: String!
-      currentClimbUuid: String
-      queueItemUuid: String
-    ): ClimbQueueItem
+    navigateQueue(sessionId: ID!, direction: String!, currentClimbUuid: String, queueItemUuid: String): ClimbQueueItem
     # ESP32 heartbeat to update lastSeenAt - uses API key auth via connectionParams
     controllerHeartbeat(sessionId: ID!): Boolean!
     # Authorize a controller for a specific session (requires user auth, auto-called on joinSession)

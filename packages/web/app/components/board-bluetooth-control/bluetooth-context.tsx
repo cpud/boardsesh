@@ -18,11 +18,7 @@ interface BluetoothContextValue {
   loading: boolean;
   connect: (initialFrames?: string, mirrored?: boolean) => Promise<boolean>;
   disconnect: () => void;
-  sendFramesToBoard: (
-    frames: string,
-    mirrored?: boolean,
-    signal?: AbortSignal,
-  ) => Promise<boolean | undefined>;
+  sendFramesToBoard: (frames: string, mirrored?: boolean, signal?: AbortSignal) => Promise<boolean | undefined>;
   isBluetoothSupported: boolean;
   isIOS: boolean;
 }
@@ -39,11 +35,7 @@ function BluetoothAutoSender({
   sendFramesToBoard,
   layoutName,
 }: {
-  sendFramesToBoard: (
-    frames: string,
-    mirrored?: boolean,
-    signal?: AbortSignal,
-  ) => Promise<boolean | undefined>;
+  sendFramesToBoard: (frames: string, mirrored?: boolean, signal?: AbortSignal) => Promise<boolean | undefined>;
   layoutName: string;
 }) {
   const { currentClimbQueueItem } = useCurrentClimb();
@@ -137,9 +129,7 @@ export function BluetoothProvider({
 
     if (
       typeof navigator !== 'undefined' &&
-      /iPhone|iPad|iPod/i.test(
-        navigator.userAgent || (navigator as { vendor?: string }).vendor || '',
-      )
+      /iPhone|iPad|iPod/i.test(navigator.userAgent || (navigator as { vendor?: string }).vendor || '')
     ) {
       setIsIOS(true);
     }
@@ -172,10 +162,7 @@ export function BluetoothProvider({
   return (
     <BluetoothContext.Provider value={value}>
       {isConnected && (
-        <BluetoothAutoSender
-          sendFramesToBoard={sendFramesToBoard}
-          layoutName={boardDetails.layout_name ?? ''}
-        />
+        <BluetoothAutoSender sendFramesToBoard={sendFramesToBoard} layoutName={boardDetails.layout_name ?? ''} />
       )}
       {children}
     </BluetoothContext.Provider>

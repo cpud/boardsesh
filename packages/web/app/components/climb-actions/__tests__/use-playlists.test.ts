@@ -111,20 +111,10 @@ describe('usePlaylists', () => {
 
       let created;
       await act(async () => {
-        created = await result.current.createPlaylist(
-          'New Playlist',
-          'A description',
-          '#ff0000',
-          'star',
-        );
+        created = await result.current.createPlaylist('New Playlist', 'A description', '#ff0000', 'star');
       });
 
-      expect(mockCreatePlaylist).toHaveBeenCalledWith(
-        'New Playlist',
-        'A description',
-        '#ff0000',
-        'star',
-      );
+      expect(mockCreatePlaylist).toHaveBeenCalledWith('New Playlist', 'A description', '#ff0000', 'star');
       expect(created).toEqual(mockPlaylist);
     });
 

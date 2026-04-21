@@ -58,10 +58,7 @@ function mergeResults(a: ImportResult, b: ImportResult): ImportResult {
  * Sends a single chunk to the import endpoint and reads the streaming response.
  * Returns the ImportResult from the 'complete' event, or throws on error.
  */
-async function sendChunk(
-  payload: ChunkPayload,
-  onEvent: (event: ImportProgressEvent) => void,
-): Promise<ImportResult> {
+async function sendChunk(payload: ChunkPayload, onEvent: (event: ImportProgressEvent) => void): Promise<ImportResult> {
   const response = await fetch('/api/internal/aurora-import', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

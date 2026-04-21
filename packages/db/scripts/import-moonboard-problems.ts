@@ -265,8 +265,7 @@ async function importMoonBoardProblems() {
       }
 
       if (skippedGrade > 0) console.log(`   Skipped ${skippedGrade} problems with unknown grade`);
-      if (skippedLayout > 0)
-        console.log(`   Skipped ${skippedLayout} problems with unknown holdsetup`);
+      if (skippedLayout > 0) console.log(`   Skipped ${skippedLayout} problems with unknown holdsetup`);
 
       // Batch insert climbs
       console.log(`   Inserting ${climbRecords.length} climbs...`);
@@ -274,9 +273,7 @@ async function importMoonBoardProblems() {
         const batch = climbRecords.slice(i, i + BATCH_SIZE);
         await db.insert(boardClimbs).values(batch).onConflictDoNothing();
         if ((i + BATCH_SIZE) % 5000 === 0 || i + BATCH_SIZE >= climbRecords.length) {
-          process.stdout.write(
-            `\r   Climbs: ${Math.min(i + BATCH_SIZE, climbRecords.length)}/${climbRecords.length}`,
-          );
+          process.stdout.write(`\r   Climbs: ${Math.min(i + BATCH_SIZE, climbRecords.length)}/${climbRecords.length}`);
         }
       }
       console.log('');
@@ -300,9 +297,7 @@ async function importMoonBoardProblems() {
             },
           });
         if ((i + BATCH_SIZE) % 5000 === 0 || i + BATCH_SIZE >= statsRecords.length) {
-          process.stdout.write(
-            `\r   Stats: ${Math.min(i + BATCH_SIZE, statsRecords.length)}/${statsRecords.length}`,
-          );
+          process.stdout.write(`\r   Stats: ${Math.min(i + BATCH_SIZE, statsRecords.length)}/${statsRecords.length}`);
         }
       }
       console.log('');
@@ -314,9 +309,7 @@ async function importMoonBoardProblems() {
         const batch = holdsRecords.slice(i, i + BATCH_SIZE);
         await db.insert(boardClimbHolds).values(batch).onConflictDoNothing();
         if ((i + BATCH_SIZE) % 5000 === 0 || i + BATCH_SIZE >= holdsRecords.length) {
-          process.stdout.write(
-            `\r   Holds: ${Math.min(i + BATCH_SIZE, holdsRecords.length)}/${holdsRecords.length}`,
-          );
+          process.stdout.write(`\r   Holds: ${Math.min(i + BATCH_SIZE, holdsRecords.length)}/${holdsRecords.length}`);
         }
       }
       console.log('');

@@ -9,11 +9,7 @@ import AddOutlined from '@mui/icons-material/AddOutlined';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  GET_MY_GYMS,
-  type GetMyGymsQueryVariables,
-  type GetMyGymsQueryResponse,
-} from '@/app/lib/graphql/operations';
+import { GET_MY_GYMS, type GetMyGymsQueryVariables, type GetMyGymsQueryResponse } from '@/app/lib/graphql/operations';
 import type { Gym } from '@boardsesh/shared-schema';
 import CreateGymForm from './create-gym-form';
 
@@ -31,10 +27,9 @@ export default function GymSelector({ selectedGymUuid, onSelect }: GymSelectorPr
     queryKey: ['myGyms'],
     queryFn: async () => {
       const client = createGraphQLHttpClient(token!);
-      const response = await client.request<GetMyGymsQueryResponse, GetMyGymsQueryVariables>(
-        GET_MY_GYMS,
-        { input: { limit: 50 } },
-      );
+      const response = await client.request<GetMyGymsQueryResponse, GetMyGymsQueryVariables>(GET_MY_GYMS, {
+        input: { limit: 50 },
+      });
       return response.myGyms.gyms;
     },
     enabled: !!token,

@@ -166,19 +166,16 @@ function querySizes(boardName: GeneratedBoardName): ProductSize[] {
     `SELECT id, REPLACE(name, E'\\n', ' '), COALESCE(REPLACE(description, E'\\n', ' '), ''), edge_left, edge_right, edge_bottom, edge_top, product_id FROM board_product_sizes WHERE board_type = '${boardName}' ORDER BY id;`,
   );
 
-  return parseRows(
-    result,
-    ([id, name, description, edgeLeft, edgeRight, edgeBottom, edgeTop, productId]) => ({
-      id: parseInt(id, 10),
-      name: name.trim(),
-      description: description.trim(),
-      edgeLeft: parseInt(edgeLeft, 10),
-      edgeRight: parseInt(edgeRight, 10),
-      edgeBottom: parseInt(edgeBottom, 10),
-      edgeTop: parseInt(edgeTop, 10),
-      productId: parseInt(productId, 10),
-    }),
-  );
+  return parseRows(result, ([id, name, description, edgeLeft, edgeRight, edgeBottom, edgeTop, productId]) => ({
+    id: parseInt(id, 10),
+    name: name.trim(),
+    description: description.trim(),
+    edgeLeft: parseInt(edgeLeft, 10),
+    edgeRight: parseInt(edgeRight, 10),
+    edgeBottom: parseInt(edgeBottom, 10),
+    edgeTop: parseInt(edgeTop, 10),
+    productId: parseInt(productId, 10),
+  }));
 }
 
 function queryLayouts(boardName: GeneratedBoardName): Layout[] {
@@ -301,9 +298,7 @@ function generateSetsTypeScript(boardName: GeneratedBoardName, sets: SetMapping[
 
   const entries = Object.entries(grouped)
     .map(([key, setList]) => {
-      const setArray = setList
-        .map((set) => `{ id: ${set.id}, name: '${escapeString(set.name)}' }`)
-        .join(', ');
+      const setArray = setList.map((set) => `{ id: ${set.id}, name: '${escapeString(set.name)}' }`).join(', ');
       return `    '${key}': [${setArray}],`;
     })
     .join('\n');
@@ -311,10 +306,7 @@ function generateSetsTypeScript(boardName: GeneratedBoardName, sets: SetMapping[
   return `  ${boardName}: {\n${entries}\n  }`;
 }
 
-function generateImageFilenamesTypeScript(
-  boardName: GeneratedBoardName,
-  mappings: ImageFilenameMapping[],
-): string {
+function generateImageFilenamesTypeScript(boardName: GeneratedBoardName, mappings: ImageFilenameMapping[]): string {
   const entries = mappings
     .map(
       (mapping) =>
@@ -325,29 +317,19 @@ function generateImageFilenamesTypeScript(
   return `  ${boardName}: {\n${entries}\n  }`;
 }
 
-function generateHolePlacementsTypeScript(
-  boardName: GeneratedBoardName,
-  placements: HolePlacement[],
-): string {
+function generateHolePlacementsTypeScript(boardName: GeneratedBoardName, placements: HolePlacement[]): string {
   const grouped: Record<string, Array<[number, number | null, number, number]>> = {};
 
   for (const placement of placements) {
     const key = `${placement.layoutId}-${placement.setId}`;
     grouped[key] ??= [];
-    grouped[key].push([
-      placement.placementId,
-      placement.mirroredPlacementId,
-      placement.x,
-      placement.y,
-    ]);
+    grouped[key].push([placement.placementId, placement.mirroredPlacementId, placement.x, placement.y]);
   }
 
   const entries = Object.entries(grouped)
     .map(([key, holds]) => {
       const holdsArray = holds
-        .map(
-          ([id, mirrorId, x, y]) => `[${id}, ${mirrorId === null ? 'null' : mirrorId}, ${x}, ${y}]`,
-        )
+        .map(([id, mirrorId, x, y]) => `[${id}, ${mirrorId === null ? 'null' : mirrorId}, ${x}, ${y}]`)
         .join(', ');
       return `    '${key}': [${holdsArray}],`;
     })
@@ -356,10 +338,7 @@ function generateHolePlacementsTypeScript(
   return `  ${boardName}: {\n${entries}\n  }`;
 }
 
-function generateLedPlacementsTypeScript(
-  boardName: GeneratedBoardName,
-  placements: LedPlacement[],
-): string {
+function generateLedPlacementsTypeScript(boardName: GeneratedBoardName, placements: LedPlacement[]): string {
   const grouped: Record<string, Record<number, number>> = {};
 
   for (const placement of placements) {
@@ -380,9 +359,7 @@ function generateLedPlacementsTypeScript(
   return `  ${boardName}: {\n${entries}\n  }`;
 }
 
-function generateProductDataFile(
-  boardData: Record<GeneratedBoardName, GeneratedBoardData>,
-): string {
+function generateProductDataFile(boardData: Record<GeneratedBoardName, GeneratedBoardData>): string {
   const generatedAt = new Date().toISOString();
 
   return `/**

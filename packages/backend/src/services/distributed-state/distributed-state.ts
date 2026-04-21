@@ -2,12 +2,7 @@ import type Redis from 'ioredis';
 import { v4 as uuidv4 } from 'uuid';
 import type { SessionUser } from '@boardsesh/shared-schema';
 import { KEYS, type DistributedConnection } from './constants';
-import {
-  registerConnection,
-  getConnection,
-  removeConnection,
-  updateUsername,
-} from './connection-ops';
+import { registerConnection, getConnection, removeConnection, updateUsername } from './connection-ops';
 import {
   joinSession,
   leaveSession,
@@ -110,14 +105,7 @@ export class DistributedStateManager {
     userId?: string | null,
     avatarUrl?: string | null,
   ): Promise<void> {
-    return registerConnection(
-      this.redis,
-      this.instanceId,
-      connectionId,
-      username,
-      userId,
-      avatarUrl,
-    );
+    return registerConnection(this.redis, this.instanceId, connectionId, username, userId, avatarUrl);
   }
 
   /** Remove a connection from distributed state. */
@@ -149,10 +137,7 @@ export class DistributedStateManager {
   }
 
   /** Leave a session. Handles leader election if leaving member was leader. */
-  async leaveSession(
-    connectionId: string,
-    sessionId: string,
-  ): Promise<{ newLeaderId: string | null }> {
+  async leaveSession(connectionId: string, sessionId: string): Promise<{ newLeaderId: string | null }> {
     return leaveSession(this.redis, connectionId, sessionId);
   }
 
@@ -251,9 +236,7 @@ export class DistributedStateManager {
 
       // Heartbeat succeeded - reset failure counter and restore health
       if (this.consecutiveHeartbeatFailures > 0) {
-        console.log(
-          `[DistributedState] Heartbeat recovered after ${this.consecutiveHeartbeatFailures} failures`,
-        );
+        console.log(`[DistributedState] Heartbeat recovered after ${this.consecutiveHeartbeatFailures} failures`);
         this.consecutiveHeartbeatFailures = 0;
       }
       if (!this.isHealthy) {

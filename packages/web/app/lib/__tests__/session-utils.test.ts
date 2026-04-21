@@ -8,15 +8,11 @@ describe('generateSessionName', () => {
   });
 
   it('joins multiple board types with &', () => {
-    expect(generateSessionName('2024-06-03T10:00:00Z', ['kilter', 'tension'])).toBe(
-      'Monday Kilter & Tension Session',
-    );
+    expect(generateSessionName('2024-06-03T10:00:00Z', ['kilter', 'tension'])).toBe('Monday Kilter & Tension Session');
   });
 
   it('capitalizes first letter of each board type', () => {
-    expect(generateSessionName('2024-06-07T10:00:00Z', ['moonboard'])).toBe(
-      'Friday Moonboard Session',
-    );
+    expect(generateSessionName('2024-06-07T10:00:00Z', ['moonboard'])).toBe('Friday Moonboard Session');
   });
 
   it('handles Sunday correctly', () => {

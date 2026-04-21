@@ -90,10 +90,7 @@ export async function POST(request: NextRequest) {
 
     const validationResult = saveCredentialsSchema.safeParse(body);
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: validationResult.error.issues[0].message },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: validationResult.error.issues[0].message }, { status: 400 });
     }
 
     const { boardType, username, password } = validationResult.data;
@@ -127,10 +124,7 @@ export async function POST(request: NextRequest) {
       .select()
       .from(schema.auroraCredentials)
       .where(
-        and(
-          eq(schema.auroraCredentials.userId, session.user.id),
-          eq(schema.auroraCredentials.boardType, boardType),
-        ),
+        and(eq(schema.auroraCredentials.userId, session.user.id), eq(schema.auroraCredentials.boardType, boardType)),
       )
       .limit(1);
 
@@ -149,10 +143,7 @@ export async function POST(request: NextRequest) {
           updatedAt: now,
         })
         .where(
-          and(
-            eq(schema.auroraCredentials.userId, session.user.id),
-            eq(schema.auroraCredentials.boardType, boardType),
-          ),
+          and(eq(schema.auroraCredentials.userId, session.user.id), eq(schema.auroraCredentials.boardType, boardType)),
         );
     } else {
       // Insert new credentials
@@ -174,10 +165,7 @@ export async function POST(request: NextRequest) {
       .select()
       .from(schema.userBoardMappings)
       .where(
-        and(
-          eq(schema.userBoardMappings.userId, session.user.id),
-          eq(schema.userBoardMappings.boardType, boardType),
-        ),
+        and(eq(schema.userBoardMappings.userId, session.user.id), eq(schema.userBoardMappings.boardType, boardType)),
       )
       .limit(1);
 
@@ -190,10 +178,7 @@ export async function POST(request: NextRequest) {
           linkedAt: now,
         })
         .where(
-          and(
-            eq(schema.userBoardMappings.userId, session.user.id),
-            eq(schema.userBoardMappings.boardType, boardType),
-          ),
+          and(eq(schema.userBoardMappings.userId, session.user.id), eq(schema.userBoardMappings.boardType, boardType)),
         );
     } else {
       await db.insert(schema.userBoardMappings).values({
@@ -237,10 +222,7 @@ export async function DELETE(request: NextRequest) {
 
     const validationResult = deleteCredentialsSchema.safeParse(body);
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: validationResult.error.issues[0].message },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: validationResult.error.issues[0].message }, { status: 400 });
     }
 
     const { boardType } = validationResult.data;
@@ -250,20 +232,14 @@ export async function DELETE(request: NextRequest) {
     await db
       .delete(schema.auroraCredentials)
       .where(
-        and(
-          eq(schema.auroraCredentials.userId, session.user.id),
-          eq(schema.auroraCredentials.boardType, boardType),
-        ),
+        and(eq(schema.auroraCredentials.userId, session.user.id), eq(schema.auroraCredentials.boardType, boardType)),
       );
 
     // Also remove the board mapping
     await db
       .delete(schema.userBoardMappings)
       .where(
-        and(
-          eq(schema.userBoardMappings.userId, session.user.id),
-          eq(schema.userBoardMappings.boardType, boardType),
-        ),
+        and(eq(schema.userBoardMappings.userId, session.user.id), eq(schema.userBoardMappings.boardType, boardType)),
       );
 
     return NextResponse.json({ success: true });

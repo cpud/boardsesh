@@ -10,15 +10,10 @@ import { sql } from '@/app/lib/db/db';
 import { getGradeLabel } from '@boardsesh/db/queries';
 
 import { Climb, ParsedBoardRouteParametersWithUuid, BoardName, LayoutId, Size } from '../types';
-import {
-  getSizesForLayoutId,
-  getAllLayouts,
-  getSetsForLayoutAndSize,
-} from '@/app/lib/board-constants';
+import { getSizesForLayoutId, getAllLayouts, getSetsForLayoutAndSize } from '@/app/lib/board-constants';
 
-export const getClimb = cache(
-  async (params: ParsedBoardRouteParametersWithUuid): Promise<Climb> => {
-    const result = await sql`
+export const getClimb = cache(async (params: ParsedBoardRouteParametersWithUuid): Promise<Climb> => {
+  const result = await sql`
         SELECT climbs.uuid, climbs.setter_username, climbs.user_id as "userId", climbs.name, climbs.description,
         climbs.frames, COALESCE(climb_stats.angle, ${params.angle}) as angle, COALESCE(climb_stats.ascensionist_count, 0) as ascensionist_count,
         ROUND(climb_stats.display_difficulty::numeric, 0) as difficulty_id,
@@ -37,10 +32,9 @@ export const getClimb = cache(
         AND climbs.frames_count = 1
         limit 1
       `;
-    const row = result[0] as Climb & { difficulty_id: number | null };
-    return { ...row, difficulty: getGradeLabel(row.difficulty_id) } as Climb;
-  },
-);
+  const row = result[0] as Climb & { difficulty_id: number | null };
+  return { ...row, difficulty: getGradeLabel(row.difficulty_id) } as Climb;
+});
 
 export interface ClimbStatsForAngle {
   angle: number;

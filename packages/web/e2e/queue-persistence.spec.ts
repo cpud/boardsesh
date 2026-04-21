@@ -116,9 +116,7 @@ test.describe('Queue Persistence - Local Mode', () => {
     await verifyQueueShowsClimb(page, climbName, 15000);
   });
 
-  test('clicking global bar thumbnail should keep current route and open play drawer context', async ({
-    page,
-  }) => {
+  test('clicking global bar thumbnail should keep current route and open play drawer context', async ({ page }) => {
     test.slow(); // Queue setup + navigation + thumbnail click
     const climbName = await addClimbToQueue(page);
 
@@ -141,9 +139,7 @@ test.describe('Queue Persistence - Local Mode', () => {
 });
 
 test.describe('Queue Persistence - Board Switch', () => {
-  test('queue should NOT persist across full page navigations (no IndexedDB persistence)', async ({
-    page,
-  }) => {
+  test('queue should NOT persist across full page navigations (no IndexedDB persistence)', async ({ page }) => {
     const boardUrl1 = '/kilter/original/12x12-square/screw_bolt/40/list';
     const boardUrl2 = '/kilter/original/12x12-square/screw_bolt/45/list'; // Different angle
 

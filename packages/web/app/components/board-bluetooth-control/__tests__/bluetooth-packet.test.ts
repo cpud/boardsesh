@@ -41,9 +41,7 @@ function toHex(data: Uint8Array | number[]): string {
 function decodeLedPositionsV3(input: Uint8Array | string): { position: number; color: number }[] {
   const bytes =
     typeof input === 'string'
-      ? Array.from({ length: input.length / 2 }, (_, i) =>
-          parseInt(input.substring(i * 2, i * 2 + 2), 16),
-        )
+      ? Array.from({ length: input.length / 2 }, (_, i) => parseInt(input.substring(i * 2, i * 2 + 2), 16))
       : Array.from(input);
   // SOH(1) Length(1) Checksum(1) STX(1) Command(1) ...ledData... ETX(1)
   const ledData = bytes.slice(5, -1);
@@ -58,14 +56,10 @@ function decodeLedPositionsV3(input: Uint8Array | string): { position: number; c
 }
 
 /** Decode v2 LED data (2 bytes per LED) from a single framed packet. */
-function decodeLedPositionsV2(
-  input: Uint8Array | string,
-): { position: number; colorByte: number }[] {
+function decodeLedPositionsV2(input: Uint8Array | string): { position: number; colorByte: number }[] {
   const bytes =
     typeof input === 'string'
-      ? Array.from({ length: input.length / 2 }, (_, i) =>
-          parseInt(input.substring(i * 2, i * 2 + 2), 16),
-        )
+      ? Array.from({ length: input.length / 2 }, (_, i) => parseInt(input.substring(i * 2, i * 2 + 2), 16))
       : Array.from(input);
   const ledData = bytes.slice(5, -1);
   const leds: { position: number; colorByte: number }[] = [];
@@ -177,9 +171,7 @@ describe('§6 Message Framing Protocol', () => {
       // which implicitly verifies checksum correctness against the real hardware.
       // This is more authoritative than the spec's worked examples which
       // contain arithmetic errors in the checksum calculation.
-      const payload = [
-        0x54, 0x44, 0x00, 0xe3, 0xdc, 0x01, 0xe3, 0x00, 0x00, 0xf4, 0x21, 0x00, 0xf4,
-      ];
+      const payload = [0x54, 0x44, 0x00, 0xe3, 0xdc, 0x01, 0xe3, 0x00, 0x00, 0xf4, 0x21, 0x00, 0xf4];
       const frame = wrapBytes(payload);
       // This checksum matches the validated 12x12 payload: 010dbb0254...
       expect(frame[2]).toBe(0xbb);
@@ -638,9 +630,7 @@ describe('§9 BLE Transmission — splitMessages', () => {
   });
 
   it('preserves data content through chunking', () => {
-    const original = new Uint8Array([
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
-    ]);
+    const original = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]);
     const chunks = splitMessages(original);
     const reassembled = new Uint8Array([...chunks[0], ...chunks[1]]);
     expect(Array.from(reassembled)).toEqual(Array.from(original));
@@ -768,9 +758,7 @@ describe('getBluetoothPacket — v2 encoding integration', () => {
 
   it('throws when v2 position exceeds 10-bit limit', () => {
     const positions: Record<number, number> = { 1: 39, 2: 1024 };
-    expect(() => getBluetoothPacket('p1r42p2r42', positions, 'kilter', 2)).toThrow(
-      'exceeds 10-bit limit',
-    );
+    expect(() => getBluetoothPacket('p1r42p2r42', positions, 'kilter', 2)).toThrow('exceeds 10-bit limit');
   });
 });
 
@@ -896,11 +884,7 @@ describe('Kilter Original (Layout 1) — 3rd-party validated payloads (byte-exac
   });
 
   it('8x12 Original full packet byte-exact match', () => {
-    const packet = getBluetoothPacket(
-      CORNERS_8x12_ORIGINAL_FRAMES,
-      CORRECT_8x12_ORIGINAL_POSITIONS,
-      'kilter',
-    );
+    const packet = getBluetoothPacket(CORNERS_8x12_ORIGINAL_FRAMES, CORRECT_8x12_ORIGINAL_POSITIONS, 'kilter');
     expect(toHex(packet)).toBe(VALIDATED_8x12_ORIGINAL_HEX);
   });
 
@@ -932,9 +916,7 @@ describe('Kilter Original (Layout 1) — 3rd-party validated payloads (byte-exac
     const ledMap = getLedPlacements('kilter', 1, 8);
     const packet = getBluetoothPacket(CORNERS_8x12_ORIGINAL_FRAMES, ledMap, 'kilter');
     const ourPositions = decodeLedPositionsV3(packet).map((l) => l.position);
-    const validatedPositions = decodeLedPositionsV3(VALIDATED_8x12_ORIGINAL_HEX).map(
-      (l) => l.position,
-    );
+    const validatedPositions = decodeLedPositionsV3(VALIDATED_8x12_ORIGINAL_HEX).map((l) => l.position);
     expect(ourPositions).toEqual(validatedPositions);
   });
 });

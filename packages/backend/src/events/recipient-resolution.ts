@@ -66,10 +66,7 @@ export async function resolveCommentRecipients(
 /**
  * Resolve recipients for a vote event.
  */
-export async function resolveVoteRecipients(
-  entityType: string,
-  entityId: string,
-): Promise<RecipientInfo[]> {
+export async function resolveVoteRecipients(entityType: string, entityId: string): Promise<RecipientInfo[]> {
   if (entityType === 'tick') {
     const [tick] = await db
       .select({ userId: dbSchema.boardseshTicks.userId })
@@ -111,9 +108,7 @@ export async function resolveVoteRecipients(
  * Resolve recipients for a proposal vote event.
  * Notifies the proposer.
  */
-export async function resolveProposalVoteRecipients(
-  proposalUuid: string,
-): Promise<RecipientInfo[]> {
+export async function resolveProposalVoteRecipients(proposalUuid: string): Promise<RecipientInfo[]> {
   const [proposal] = await db
     .select({ proposerId: dbSchema.climbProposals.proposerId })
     .from(dbSchema.climbProposals)
@@ -134,9 +129,7 @@ export async function resolveProposalVoteRecipients(
  * Resolve recipients for a proposal approval event.
  * Notifies the proposer and all upvoters.
  */
-export async function resolveProposalApprovalRecipients(
-  proposalUuid: string,
-): Promise<RecipientInfo[]> {
+export async function resolveProposalApprovalRecipients(proposalUuid: string): Promise<RecipientInfo[]> {
   const [proposal] = await db
     .select({
       id: dbSchema.climbProposals.id,
@@ -159,9 +152,7 @@ export async function resolveProposalApprovalRecipients(
   const upvoters = await db
     .select({ userId: dbSchema.proposalVotes.userId })
     .from(dbSchema.proposalVotes)
-    .where(
-      and(eq(dbSchema.proposalVotes.proposalId, proposal.id), eq(dbSchema.proposalVotes.value, 1)),
-    );
+    .where(and(eq(dbSchema.proposalVotes.proposalId, proposal.id), eq(dbSchema.proposalVotes.value, 1)));
 
   const seen = new Set<string>([proposal.proposerId]);
   for (const v of upvoters) {
@@ -181,9 +172,7 @@ export async function resolveProposalApprovalRecipients(
  * Resolve recipients for a proposal rejection event.
  * Notifies the proposer.
  */
-export async function resolveProposalRejectionRecipients(
-  proposalUuid: string,
-): Promise<RecipientInfo[]> {
+export async function resolveProposalRejectionRecipients(proposalUuid: string): Promise<RecipientInfo[]> {
   const [proposal] = await db
     .select({ proposerId: dbSchema.climbProposals.proposerId })
     .from(dbSchema.climbProposals)
@@ -212,12 +201,7 @@ export async function resolveProposalCreatedRecipients(
   const climbers = await db
     .select({ userId: dbSchema.boardseshTicks.userId })
     .from(dbSchema.boardseshTicks)
-    .where(
-      and(
-        eq(dbSchema.boardseshTicks.climbUuid, climbUuid),
-        eq(dbSchema.boardseshTicks.boardType, boardType),
-      ),
-    )
+    .where(and(eq(dbSchema.boardseshTicks.climbUuid, climbUuid), eq(dbSchema.boardseshTicks.boardType, boardType)))
     .groupBy(dbSchema.boardseshTicks.userId);
 
   return climbers
@@ -244,9 +228,7 @@ export function resolveFollowRecipient(metadata: Record<string, string>): Recipi
 /**
  * Resolve recipients when a user creates a climb: all followers of the setter.
  */
-export async function resolveClimbCreatedFollowerRecipients(
-  setterId: string,
-): Promise<RecipientInfo[]> {
+export async function resolveClimbCreatedFollowerRecipients(setterId: string): Promise<RecipientInfo[]> {
   const followers = await db
     .select({ followerId: dbSchema.userFollows.followerId })
     .from(dbSchema.userFollows)

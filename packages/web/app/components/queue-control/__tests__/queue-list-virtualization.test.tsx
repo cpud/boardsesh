@@ -122,15 +122,7 @@ vi.mock('@/app/components/providers/auth-modal-provider', () => ({
 
 // Mock child components as simple stubs
 vi.mock('../queue-climb-list-item', () => ({
-  default: ({
-    item,
-    isCurrent,
-    isHistory,
-  }: {
-    item: ClimbQueueItem;
-    isCurrent: boolean;
-    isHistory: boolean;
-  }) => (
+  default: ({ item, isCurrent, isHistory }: { item: ClimbQueueItem; isCurrent: boolean; isHistory: boolean }) => (
     <div
       data-testid="queue-climb-list-item"
       data-uuid={item.uuid}
@@ -155,9 +147,7 @@ vi.mock('../../climb-card/drawer-climb-header', () => ({
 }));
 
 vi.mock('../../swipeable-drawer/swipeable-drawer', () => ({
-  default: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="swipeable-drawer">{children}</div>
-  ),
+  default: ({ children }: { children: React.ReactNode }) => <div data-testid="swipeable-drawer">{children}</div>,
 }));
 
 vi.mock('../../climb-actions', () => ({

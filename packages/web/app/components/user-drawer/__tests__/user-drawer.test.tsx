@@ -83,14 +83,8 @@ vi.mock('@/app/lib/url-utils', () => ({
 }));
 
 vi.mock('@/app/components/swipeable-drawer/swipeable-drawer', () => ({
-  default: ({
-    children,
-    open,
-  }: {
-    children?: React.ReactNode;
-    open: boolean;
-    [key: string]: unknown;
-  }) => (open ? React.createElement('div', { 'data-testid': 'swipeable-drawer' }, children) : null),
+  default: ({ children, open }: { children?: React.ReactNode; open: boolean; [key: string]: unknown }) =>
+    open ? React.createElement('div', { 'data-testid': 'swipeable-drawer' }, children) : null,
 }));
 
 vi.mock('@/app/components/hold-classification', () => ({
@@ -140,14 +134,8 @@ async function openBoardSelector() {
   expect(screen.getByTestId('board-discovery-scroll')).toBeTruthy();
   // Verify the mock captured the callbacks — a null here would otherwise surface
   // as a confusing "TypeError: null is not a function" inside individual tests.
-  expect(
-    captured.onBoardClick,
-    'onBoardClick not captured by BoardDiscoveryScroll mock',
-  ).not.toBeNull();
-  expect(
-    captured.onConfigClick,
-    'onConfigClick not captured by BoardDiscoveryScroll mock',
-  ).not.toBeNull();
+  expect(captured.onBoardClick, 'onBoardClick not captured by BoardDiscoveryScroll mock').not.toBeNull();
+  expect(captured.onConfigClick, 'onConfigClick not captured by BoardDiscoveryScroll mock').not.toBeNull();
 }
 
 function makeUserBoard(overrides: Partial<UserBoard> = {}): UserBoard {
@@ -203,9 +191,7 @@ describe('UserDrawer', () => {
     captured.onBoardClick = null;
     captured.onConfigClick = null;
     mockSessionData = null;
-    mockConstructBoardSlugListUrl.mockImplementation(
-      (slug: string, angle: number) => `/b/${slug}/${angle}/list`,
-    );
+    mockConstructBoardSlugListUrl.mockImplementation((slug: string, angle: number) => `/b/${slug}/${angle}/list`);
     mockConstructClimbListWithSlugs.mockReturnValue('/slug-based-url');
     mockTryConstructSlugListUrl.mockReturnValue('/try-slug-url');
   });
@@ -253,9 +239,7 @@ describe('UserDrawer', () => {
       await openBoardSelector();
 
       act(() => {
-        captured.onBoardClick!(
-          makeUserBoard({ boardType: 'unsupported-board', slug: 'some-slug', angle: 40 }),
-        );
+        captured.onBoardClick!(makeUserBoard({ boardType: 'unsupported-board', slug: 'some-slug', angle: 40 }));
       });
 
       expect(mockGuardBoardSwitch).not.toHaveBeenCalled();
@@ -297,9 +281,7 @@ describe('UserDrawer', () => {
       mockConstructBoardSlugListUrl.mockReturnValue('/b/kilter-standard-full/40/list');
 
       act(() => {
-        captured.onBoardClick!(
-          makeUserBoard({ boardType: 'kilter', slug: 'kilter-standard-full', angle: 40 }),
-        );
+        captured.onBoardClick!(makeUserBoard({ boardType: 'kilter', slug: 'kilter-standard-full', angle: 40 }));
       });
 
       const [, navigate] = mockGuardBoardSwitch.mock.calls[0] as [unknown, () => void];
@@ -366,9 +348,7 @@ describe('UserDrawer', () => {
       await openBoardSelector();
 
       act(() => {
-        captured.onConfigClick!(
-          makePopularConfig({ boardType: 'tension', layoutId: 3, sizeId: 4, setIds: [7, 8] }),
-        );
+        captured.onConfigClick!(makePopularConfig({ boardType: 'tension', layoutId: 3, sizeId: 4, setIds: [7, 8] }));
       });
 
       expect(mockGuardBoardSwitch).toHaveBeenCalledOnce();
@@ -387,9 +367,7 @@ describe('UserDrawer', () => {
 
     it('uses slug-based URL when layoutName, sizeName, and setNames are all present', async () => {
       await openBoardSelector();
-      mockConstructClimbListWithSlugs.mockReturnValue(
-        '/kilter/original/full-48/original-holds/40/list',
-      );
+      mockConstructClimbListWithSlugs.mockReturnValue('/kilter/original/full-48/original-holds/40/list');
 
       act(() => {
         captured.onConfigClick!(
@@ -415,9 +393,7 @@ describe('UserDrawer', () => {
       mockTryConstructSlugListUrl.mockReturnValue('/kilter/1/2/1,2,3/40/list');
 
       act(() => {
-        captured.onConfigClick!(
-          makePopularConfig({ layoutName: null, sizeName: null, setNames: [] }),
-        );
+        captured.onConfigClick!(makePopularConfig({ layoutName: null, sizeName: null, setNames: [] }));
       });
 
       const [, navigate] = mockGuardBoardSwitch.mock.calls[0] as [unknown, () => void];

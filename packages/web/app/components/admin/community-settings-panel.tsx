@@ -21,10 +21,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import { themeTokens } from '@/app/theme/theme-config';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  GET_COMMUNITY_SETTINGS,
-  SET_COMMUNITY_SETTING,
-} from '@/app/lib/graphql/operations/proposals';
+import { GET_COMMUNITY_SETTINGS, SET_COMMUNITY_SETTING } from '@/app/lib/graphql/operations/proposals';
 import type { CommunitySettingType } from '@boardsesh/shared-schema';
 
 const DEFAULT_SETTINGS = [
@@ -73,10 +70,10 @@ export default function CommunitySettingsPanel() {
     if (!token) return;
     try {
       const client = createGraphQLHttpClient(token);
-      const result = await client.request<{ communitySettings: CommunitySettingType[] }>(
-        GET_COMMUNITY_SETTINGS,
-        { scope, scopeKey: scope === 'global' ? '' : scopeKey },
-      );
+      const result = await client.request<{ communitySettings: CommunitySettingType[] }>(GET_COMMUNITY_SETTINGS, {
+        scope,
+        scopeKey: scope === 'global' ? '' : scopeKey,
+      });
       setSettings(result.communitySettings);
       const values: Record<string, string> = {};
       for (const s of result.communitySettings) {
@@ -190,9 +187,7 @@ export default function CommunitySettingsPanel() {
                 <TableCell>
                   <TextField
                     value={editValues[def.key] || ''}
-                    onChange={(e) =>
-                      setEditValues((prev) => ({ ...prev, [def.key]: e.target.value }))
-                    }
+                    onChange={(e) => setEditValues((prev) => ({ ...prev, [def.key]: e.target.value }))}
                     size="small"
                     sx={{ width: 100 }}
                     placeholder={def.defaultValue}
@@ -220,12 +215,7 @@ export default function CommunitySettingsPanel() {
         </Button>
       </Box>
 
-      <Snackbar
-        open={!!snackbar}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar('')}
-        message={snackbar}
-      />
+      <Snackbar open={!!snackbar} autoHideDuration={3000} onClose={() => setSnackbar('')} message={snackbar} />
     </Box>
   );
 }

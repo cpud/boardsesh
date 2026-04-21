@@ -47,10 +47,9 @@ export default function BoardSearchResults({
     queryKey: ['searchBoards', debouncedQuery, authToken],
     queryFn: async ({ pageParam }) => {
       const client = createGraphQLHttpClient(authToken);
-      const response = await client.request<SearchBoardsQueryResponse, SearchBoardsQueryVariables>(
-        SEARCH_BOARDS,
-        { input: { query: debouncedQuery, limit: 20, offset: pageParam as number } },
-      );
+      const response = await client.request<SearchBoardsQueryResponse, SearchBoardsQueryVariables>(SEARCH_BOARDS, {
+        input: { query: debouncedQuery, limit: 20, offset: pageParam as number },
+      });
       return response.searchBoards;
     },
     initialPageParam: 0,
@@ -160,10 +159,7 @@ export default function BoardSearchResults({
           />
         ))}
       </Stack>
-      <Box
-        ref={sentinelRef}
-        sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}
-      >
+      <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}>
         {isFetchingNextPage && <CircularProgress size={24} />}
       </Box>
       {!onBoardSelect && (

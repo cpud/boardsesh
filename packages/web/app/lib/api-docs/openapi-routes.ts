@@ -281,8 +281,7 @@ registry.registerPath({
   method: 'get',
   path: '/api/v1/{board_name}/slugs/layout/{slug}',
   summary: 'Resolve layout slug to ID',
-  description:
-    'Converts a human-readable layout slug (e.g., "kilter-home-board") to its numeric ID.',
+  description: 'Converts a human-readable layout slug (e.g., "kilter-home-board") to its numeric ID.',
   tags: ['Slug Resolution'],
   request: {
     params: z.object({
@@ -687,8 +686,7 @@ registry.registerPath({
   method: 'get',
   path: '/api/internal/ws-auth',
   summary: 'Get WebSocket authentication token',
-  description:
-    'Returns a JWT token for authenticating WebSocket connections. Requires an active session.',
+  description: 'Returns a JWT token for authenticating WebSocket connections. Requires an active session.',
   tags: ['WebSocket'],
   security: [{ session: [] }],
   responses: {

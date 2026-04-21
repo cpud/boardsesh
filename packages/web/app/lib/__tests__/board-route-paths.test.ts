@@ -12,9 +12,7 @@ describe('board-route-paths', () => {
     });
 
     it('detects new aurora board routes', () => {
-      expect(
-        isBoardRoutePath('/grasshopper/2020/grandmaster-12-x-12/power_flow_engage/40/list'),
-      ).toBe(true);
+      expect(isBoardRoutePath('/grasshopper/2020/grandmaster-12-x-12/power_flow_engage/40/list')).toBe(true);
       expect(isBoardRoutePath('/decoy/dungeon-trainer/12x12/foundation/40/list')).toBe(true);
     });
 
@@ -33,9 +31,7 @@ describe('board-route-paths', () => {
     });
 
     it('matches new aurora board list routes', () => {
-      expect(
-        isBoardListPath('/grasshopper/2020/grandmaster-12-x-12/power_flow_engage/40/list'),
-      ).toBe(true);
+      expect(isBoardListPath('/grasshopper/2020/grandmaster-12-x-12/power_flow_engage/40/list')).toBe(true);
     });
 
     it('rejects non-list board routes', () => {
@@ -59,18 +55,14 @@ describe('board-route-paths', () => {
     });
 
     it('matches board-name create routes', () => {
-      expect(
-        isBoardCreatePath('/moonboard/moonboard-2024/standard-11x18-grid/wooden-holds/40/create'),
-      ).toBe(true);
+      expect(isBoardCreatePath('/moonboard/moonboard-2024/standard-11x18-grid/wooden-holds/40/create')).toBe(true);
     });
 
     it('rejects non-create board routes', () => {
       expect(isBoardCreatePath('/b/test-board/40/list')).toBe(false);
-      expect(
-        isBoardCreatePath(
-          '/moonboard/moonboard-2024/standard-11x18-grid/wooden-holds/40/view/climb-123',
-        ),
-      ).toBe(false);
+      expect(isBoardCreatePath('/moonboard/moonboard-2024/standard-11x18-grid/wooden-holds/40/view/climb-123')).toBe(
+        false,
+      );
     });
   });
 });

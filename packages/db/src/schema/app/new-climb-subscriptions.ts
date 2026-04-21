@@ -1,12 +1,4 @@
-import {
-  pgTable,
-  bigserial,
-  text,
-  integer,
-  timestamp,
-  uniqueIndex,
-  index,
-} from 'drizzle-orm/pg-core';
+import { pgTable, bigserial, text, integer, timestamp, uniqueIndex, index } from 'drizzle-orm/pg-core';
 import { users } from '../auth/users';
 
 export const newClimbSubscriptions = pgTable(
@@ -27,10 +19,7 @@ export const newClimbSubscriptions = pgTable(
       table.layoutId,
     ),
     userIdx: index('new_climb_subscriptions_user_idx').on(table.userId),
-    boardLayoutIdx: index('new_climb_subscriptions_board_layout_idx').on(
-      table.boardType,
-      table.layoutId,
-    ),
+    boardLayoutIdx: index('new_climb_subscriptions_board_layout_idx').on(table.boardType, table.layoutId),
   }),
 );
 

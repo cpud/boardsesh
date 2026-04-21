@@ -109,9 +109,7 @@ function sanitizeAngleRange(value: unknown): [number, number] {
 
 function sanitizeLayoutSelections(value: unknown): Record<Exclude<BoardFilter, 'all'>, number[]> {
   const source =
-    value && typeof value === 'object'
-      ? (value as Partial<Record<Exclude<BoardFilter, 'all'>, unknown>>)
-      : {};
+    value && typeof value === 'object' ? (value as Partial<Record<Exclude<BoardFilter, 'all'>, unknown>>) : {};
 
   return {
     kilter: sanitizeBoardLayouts(source.kilter, 'kilter'),
@@ -123,15 +121,10 @@ function sanitizeLayoutSelections(value: unknown): Record<Exclude<BoardFilter, '
 function sanitizeBoardLayouts(value: unknown, board: Exclude<BoardFilter, 'all'>): number[] {
   const validIds = new Set(ALL_LAYOUT_SELECTIONS[board]);
   const ids = Array.isArray(value)
-    ? value.filter(
-        (candidate): candidate is number =>
-          typeof candidate === 'number' && validIds.has(candidate),
-      )
+    ? value.filter((candidate): candidate is number => typeof candidate === 'number' && validIds.has(candidate))
     : [];
 
-  return ids.length > 0
-    ? Array.from(new Set(ids)).sort((a, b) => a - b)
-    : ALL_LAYOUT_SELECTIONS[board];
+  return ids.length > 0 ? Array.from(new Set(ids)).sort((a, b) => a - b) : ALL_LAYOUT_SELECTIONS[board];
 }
 
 export function sanitizeLogbookPreferences(value: unknown): LogbookPreferences {
@@ -144,18 +137,12 @@ export function sanitizeLogbookPreferences(value: unknown): LogbookPreferences {
   const sort = source.sort && typeof source.sort === 'object' ? source.sort : {};
 
   const sanitizedFilters: LogbookFilterState = {
-    includeSends: sanitizeBoolean(
-      (filters as Partial<LogbookFilterState>).includeSends,
-      DEFAULT_FILTERS.includeSends,
-    ),
+    includeSends: sanitizeBoolean((filters as Partial<LogbookFilterState>).includeSends, DEFAULT_FILTERS.includeSends),
     includeAttempts: sanitizeBoolean(
       (filters as Partial<LogbookFilterState>).includeAttempts,
       DEFAULT_FILTERS.includeAttempts,
     ),
-    flashOnly: sanitizeBoolean(
-      (filters as Partial<LogbookFilterState>).flashOnly,
-      DEFAULT_FILTERS.flashOnly,
-    ),
+    flashOnly: sanitizeBoolean((filters as Partial<LogbookFilterState>).flashOnly, DEFAULT_FILTERS.flashOnly),
     minGrade: sanitizeDifficulty((filters as Partial<LogbookFilterState>).minGrade),
     maxGrade: sanitizeDifficulty((filters as Partial<LogbookFilterState>).maxGrade),
     fromDate: sanitizeDate((filters as Partial<LogbookFilterState>).fromDate),
@@ -179,24 +166,16 @@ export function sanitizeLogbookPreferences(value: unknown): LogbookPreferences {
     preset: VALID_SORT_PRESETS.includes((sort as Partial<LogbookSortState>).preset ?? 'recent')
       ? ((sort as Partial<LogbookSortState>).preset as SortPreset)
       : DEFAULT_SORT.preset,
-    primaryField: VALID_SORT_FIELDS.includes(
-      (sort as Partial<LogbookSortState>).primaryField ?? 'date',
-    )
+    primaryField: VALID_SORT_FIELDS.includes((sort as Partial<LogbookSortState>).primaryField ?? 'date')
       ? (((sort as Partial<LogbookSortState>).primaryField || 'date') as SortField)
       : DEFAULT_SORT.primaryField,
-    primaryDirection: VALID_SORT_DIRECTIONS.includes(
-      (sort as Partial<LogbookSortState>).primaryDirection ?? 'desc',
-    )
+    primaryDirection: VALID_SORT_DIRECTIONS.includes((sort as Partial<LogbookSortState>).primaryDirection ?? 'desc')
       ? ((sort as Partial<LogbookSortState>).primaryDirection as SortDirection)
       : DEFAULT_SORT.primaryDirection,
-    secondaryField: VALID_SORT_FIELDS.includes(
-      (sort as Partial<LogbookSortState>).secondaryField ?? '',
-    )
+    secondaryField: VALID_SORT_FIELDS.includes((sort as Partial<LogbookSortState>).secondaryField ?? '')
       ? (((sort as Partial<LogbookSortState>).secondaryField ?? '') as '' | SortField)
       : DEFAULT_SORT.secondaryField,
-    secondaryDirection: VALID_SORT_DIRECTIONS.includes(
-      (sort as Partial<LogbookSortState>).secondaryDirection ?? 'desc',
-    )
+    secondaryDirection: VALID_SORT_DIRECTIONS.includes((sort as Partial<LogbookSortState>).secondaryDirection ?? 'desc')
       ? ((sort as Partial<LogbookSortState>).secondaryDirection as SortDirection)
       : DEFAULT_SORT.secondaryDirection,
   };

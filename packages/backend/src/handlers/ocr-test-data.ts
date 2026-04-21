@@ -79,10 +79,7 @@ function generateFolderName(): string {
  *
  * This is a fire-and-forget upload - errors are logged but don't fail the request.
  */
-export async function handleOcrTestDataUpload(
-  req: IncomingMessage,
-  res: ServerResponse,
-): Promise<void> {
+export async function handleOcrTestDataUpload(req: IncomingMessage, res: ServerResponse): Promise<void> {
   if (!applyCorsHeaders(req, res)) return;
 
   // Check if S3 is configured - if not, skip silently
@@ -134,37 +131,30 @@ export async function handleOcrTestDataUpload(
       if (name === 'metadata') metadataJson = value;
     });
 
-    busboy.on(
-      'file',
-      (
-        name: string,
-        stream: NodeJS.ReadableStream,
-        info: { filename: string; mimeType: string },
-      ) => {
-        if (name !== 'image') {
-          stream.resume();
-          return;
-        }
+    busboy.on('file', (name: string, stream: NodeJS.ReadableStream, info: { filename: string; mimeType: string }) => {
+      if (name !== 'image') {
+        stream.resume();
+        return;
+      }
 
-        mimeType = info.mimeType;
-        originalFilename = info.filename;
+      mimeType = info.mimeType;
+      originalFilename = info.filename;
 
-        if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
-          invalidMimeType = true;
-          stream.resume();
-          return;
-        }
+      if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
+        invalidMimeType = true;
+        stream.resume();
+        return;
+      }
 
-        const chunks: Buffer[] = [];
-        stream.on('data', (chunk: Buffer) => chunks.push(chunk));
-        stream.on('end', () => {
-          fileBuffer = Buffer.concat(chunks);
-        });
-        stream.on('limit', () => {
-          fileTruncated = true;
-        });
-      },
-    );
+      const chunks: Buffer[] = [];
+      stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+      stream.on('end', () => {
+        fileBuffer = Buffer.concat(chunks);
+      });
+      stream.on('limit', () => {
+        fileTruncated = true;
+      });
+    });
 
     busboy.on('finish', async () => {
       // Validate file size

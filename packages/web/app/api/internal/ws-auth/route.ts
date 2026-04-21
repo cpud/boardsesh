@@ -25,9 +25,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('[ws-auth] Error getting token:', error);
-    return NextResponse.json(
-      { token: null, authenticated: false, error: 'Failed to get token' },
-      { status: 500 },
-    );
+    return NextResponse.json({ token: null, authenticated: false, error: 'Failed to get token' }, { status: 500 });
   }
 }

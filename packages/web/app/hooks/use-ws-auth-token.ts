@@ -40,10 +40,6 @@ export function useWsAuthToken() {
     token: data?.token ?? null,
     isAuthenticated: data?.authenticated ?? false,
     isLoading: isLoading || status === 'loading',
-    error: error
-      ? error instanceof Error
-        ? error.message
-        : 'Unknown error'
-      : (data?.error ?? null),
+    error: error ? (error instanceof Error ? error.message : 'Unknown error') : (data?.error ?? null),
   };
 }

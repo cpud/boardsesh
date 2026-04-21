@@ -25,12 +25,7 @@ vi.mock('@/app/lib/graphql/operations', () => ({
 }));
 
 vi.mock('../multiboard-climb-list', () => ({
-  default: (props: {
-    climbs: unknown[];
-    totalCount: number;
-    isLoading: boolean;
-    hasMore: boolean;
-  }) => (
+  default: (props: { climbs: unknown[]; totalCount: number; isLoading: boolean; hasMore: boolean }) => (
     <div
       data-testid="multiboard-climb-list"
       data-count={props.climbs.length}

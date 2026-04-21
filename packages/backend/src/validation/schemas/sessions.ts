@@ -1,11 +1,5 @@
 import { z } from 'zod';
-import {
-  BoardPathSchema,
-  SessionIdSchema,
-  SessionNameSchema,
-  LatitudeSchema,
-  LongitudeSchema,
-} from './primitives';
+import { BoardPathSchema, SessionIdSchema, SessionNameSchema, LatitudeSchema, LongitudeSchema } from './primitives';
 
 /**
  * Create session input validation schema

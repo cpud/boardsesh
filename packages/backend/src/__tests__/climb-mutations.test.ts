@@ -46,23 +46,11 @@ function makeCtx(overrides: Partial<ConnectionContext> = {}): ConnectionContext 
   } as ConnectionContext;
 }
 
-function createMockChain(
-  resolveValue: unknown = [],
-  onValues?: (values: unknown) => void,
-): Record<string, unknown> {
+function createMockChain(resolveValue: unknown = [], onValues?: (values: unknown) => void): Record<string, unknown> {
   const chain: Record<string, unknown> = {};
-  const methods = [
-    'from',
-    'where',
-    'leftJoin',
-    'limit',
-    'values',
-    'onConflictDoNothing',
-    'onConflictDoUpdate',
-  ];
+  const methods = ['from', 'where', 'leftJoin', 'limit', 'values', 'onConflictDoNothing', 'onConflictDoUpdate'];
 
-  chain.then = (resolve: (value: unknown) => unknown) =>
-    Promise.resolve(resolveValue).then(resolve);
+  chain.then = (resolve: (value: unknown) => unknown) => Promise.resolve(resolveValue).then(resolve);
 
   for (const method of methods) {
     chain[method] = vi.fn((...args: unknown[]) => {
@@ -84,9 +72,7 @@ describe('climb mutations', () => {
 
   it('stores non-draft Aurora climbs as listed', async () => {
     mockDb.select.mockReturnValueOnce(
-      createMockChain([
-        { name: 'Alice', displayName: 'Alice Setter', image: null, avatarUrl: null },
-      ]),
+      createMockChain([{ name: 'Alice', displayName: 'Alice Setter', image: null, avatarUrl: null }]),
     );
     mockDb.insert.mockImplementation((table: unknown) =>
       createMockChain(undefined, (values) => insertCalls.push({ table, values })),
@@ -119,9 +105,7 @@ describe('climb mutations', () => {
     mockDb.execute.mockResolvedValueOnce([]).mockResolvedValueOnce([]);
     mockDb.select
       .mockReturnValueOnce(
-        createMockChain([
-          { name: 'Alice', displayName: 'Alice Setter', image: null, avatarUrl: null },
-        ]),
+        createMockChain([{ name: 'Alice', displayName: 'Alice Setter', image: null, avatarUrl: null }]),
       )
       .mockReturnValueOnce(createMockChain([{ difficulty: 12 }]));
     mockDb.insert.mockImplementation((table: unknown) =>
@@ -188,9 +172,7 @@ describe('climb mutations', () => {
       ])
       .mockResolvedValueOnce([]);
     mockDb.select.mockReturnValueOnce(
-      createMockChain([
-        { name: 'Alice', displayName: 'Alice Setter', image: null, avatarUrl: null },
-      ]),
+      createMockChain([{ name: 'Alice', displayName: 'Alice Setter', image: null, avatarUrl: null }]),
     );
     mockDb.insert.mockImplementation((table: unknown) =>
       createMockChain(undefined, (values) => insertCalls.push({ table, values })),

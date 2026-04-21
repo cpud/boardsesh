@@ -20,10 +20,7 @@ export const boardQueries = {
       })
       .from(dbSchema.boardDifficultyGrades)
       .where(
-        and(
-          eq(dbSchema.boardDifficultyGrades.boardType, boardName),
-          eq(dbSchema.boardDifficultyGrades.isListed, true),
-        ),
+        and(eq(dbSchema.boardDifficultyGrades.boardType, boardName), eq(dbSchema.boardDifficultyGrades.isListed, true)),
       )
       .orderBy(asc(dbSchema.boardDifficultyGrades.difficulty));
 
@@ -36,10 +33,7 @@ export const boardQueries = {
   /**
    * Get available angles for a specific board layout
    */
-  angles: async (
-    _: unknown,
-    { boardName, layoutId }: { boardName: string; layoutId: number },
-  ): Promise<Angle[]> => {
+  angles: async (_: unknown, { boardName, layoutId }: { boardName: string; layoutId: number }): Promise<Angle[]> => {
     validateInput(BoardNameSchema, boardName, 'boardName');
 
     // Use raw SQL with unified tables

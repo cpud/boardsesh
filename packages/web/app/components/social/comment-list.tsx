@@ -26,12 +26,7 @@ interface CommentListProps {
 
 const PAGE_SIZE = 20;
 
-export default function CommentList({
-  entityType,
-  entityId,
-  refreshKey = 0,
-  currentUserId,
-}: CommentListProps) {
+export default function CommentList({ entityType, entityId, refreshKey = 0, currentUserId }: CommentListProps) {
   const [comments, setComments] = useState<CommentType[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [hasMore, setHasMore] = useState(false);
@@ -44,18 +39,15 @@ export default function CommentList({
     async (offset: number, append: boolean) => {
       try {
         const client = createGraphQLHttpClient(token);
-        const response = await client.request<GetCommentsQueryResponse, GetCommentsQueryVariables>(
-          GET_COMMENTS,
-          {
-            input: {
-              entityType,
-              entityId,
-              sortBy,
-              limit: PAGE_SIZE,
-              offset,
-            },
+        const response = await client.request<GetCommentsQueryResponse, GetCommentsQueryVariables>(GET_COMMENTS, {
+          input: {
+            entityType,
+            entityId,
+            sortBy,
+            limit: PAGE_SIZE,
+            offset,
           },
-        );
+        });
 
         const result = response.comments;
         if (append) {
@@ -83,14 +75,11 @@ export default function CommentList({
     setIsLoadingMore(false);
   }, [fetchComments, comments.length]);
 
-  const handleSortChange = useCallback(
-    (_: React.MouseEvent<HTMLElement>, newSort: SortMode | null) => {
-      if (newSort) {
-        setSortBy(newSort);
-      }
-    },
-    [],
-  );
+  const handleSortChange = useCallback((_: React.MouseEvent<HTMLElement>, newSort: SortMode | null) => {
+    if (newSort) {
+      setSortBy(newSort);
+    }
+  }, []);
 
   const handleCommentUpdated = useCallback((updated: CommentType) => {
     setComments((prev) => prev.map((c) => (c.uuid === updated.uuid ? updated : c)));
@@ -157,10 +146,7 @@ export default function CommentList({
             <ToggleButton value="top" sx={{ textTransform: 'none', px: 1, py: 0.25, fontSize: 12 }}>
               Top
             </ToggleButton>
-            <ToggleButton
-              value="controversial"
-              sx={{ textTransform: 'none', px: 1, py: 0.25, fontSize: 12 }}
-            >
+            <ToggleButton value="controversial" sx={{ textTransform: 'none', px: 1, py: 0.25, fontSize: 12 }}>
               Controversial
             </ToggleButton>
             <ToggleButton value="hot" sx={{ textTransform: 'none', px: 1, py: 0.25, fontSize: 12 }}>
@@ -192,10 +178,7 @@ export default function CommentList({
             />
           ))}
           {hasMore && (
-            <Box
-              ref={sentinelRef}
-              sx={{ display: 'flex', justifyContent: 'center', py: 1, minHeight: 20 }}
-            >
+            <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 1, minHeight: 20 }}>
               {isLoadingMore && <CircularProgress size={16} />}
             </Box>
           )}

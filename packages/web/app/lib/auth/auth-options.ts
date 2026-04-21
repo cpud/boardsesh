@@ -66,11 +66,7 @@ providers.push(
       }
 
       const db = getDb();
-      const users = await db
-        .select()
-        .from(schema.users)
-        .where(eq(schema.users.id, decoded.userId))
-        .limit(1);
+      const users = await db.select().from(schema.users).where(eq(schema.users.id, decoded.userId)).limit(1);
 
       if (users.length === 0) {
         return null;
@@ -103,11 +99,7 @@ providers.push(
       const db = getDb();
 
       // Look up user by email
-      const users = await db
-        .select()
-        .from(schema.users)
-        .where(eq(schema.users.email, credentials.email))
-        .limit(1);
+      const users = await db.select().from(schema.users).where(eq(schema.users.email, credentials.email)).limit(1);
 
       if (users.length === 0) {
         return null;
@@ -128,10 +120,7 @@ providers.push(
       }
 
       // Verify password
-      const isValidPassword = await bcrypt.compare(
-        credentials.password,
-        userCredentials[0].passwordHash,
-      );
+      const isValidPassword = await bcrypt.compare(credentials.password, userCredentials[0].passwordHash);
 
       if (!isValidPassword) {
         return null;
@@ -150,8 +139,7 @@ providers.push(
 // Apple Sign-In posts its callback cross-origin (response_mode=form_post),
 // so verification cookies need SameSite=None (which requires Secure).
 // We override callbackUrl, state, nonce, and pkceCodeVerifier cookies for this reason.
-const useSecureCookies =
-  process.env.NEXTAUTH_URL?.startsWith('https://') ?? !!process.env.VERCEL_URL;
+const useSecureCookies = process.env.NEXTAUTH_URL?.startsWith('https://') ?? !!process.env.VERCEL_URL;
 
 export const authOptions: NextAuthOptions = {
   adapter: DrizzleAdapter(getDb(), {
@@ -239,11 +227,7 @@ export const authOptions: NextAuthOptions = {
       }
 
       const db = getDb();
-      const existingUser = await db
-        .select()
-        .from(schema.users)
-        .where(eq(schema.users.email, user.email))
-        .limit(1);
+      const existingUser = await db.select().from(schema.users).where(eq(schema.users.email, user.email)).limit(1);
 
       // Check if email verification is enabled (disabled by default until Fastmail auth is set up)
       const emailVerificationEnabled = process.env.EMAIL_VERIFICATION_ENABLED === 'true';

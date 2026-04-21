@@ -102,10 +102,7 @@ const PlaylistGeneratorDrawer: React.FC<PlaylistGeneratorDrawerProps> = ({
   }, [selectedType, defaultTargetGrade]);
 
   // Search for climbs at a specific grade
-  const searchClimbsForGrade = async (
-    grade: number,
-    excludeUuids: Set<string>,
-  ): Promise<Climb[]> => {
+  const searchClimbsForGrade = async (grade: number, excludeUuids: Set<string>): Promise<Climb[]> => {
     const input: ClimbSearchInputVariables['input'] = {
       boardName: boardDetails.board_name,
       layoutId: boardDetails.layout_id,
@@ -200,10 +197,7 @@ const PlaylistGeneratorDrawer: React.FC<PlaylistGeneratorDrawerProps> = ({
         const selectedClimb = availableClimbs[selectedIndex];
 
         // Add to playlist
-        await executeGraphQL<
-          AddClimbToPlaylistMutationResponse,
-          AddClimbToPlaylistMutationVariables
-        >(
+        await executeGraphQL<AddClimbToPlaylistMutationResponse, AddClimbToPlaylistMutationVariables>(
           ADD_CLIMB_TO_PLAYLIST,
           {
             input: {
@@ -218,9 +212,7 @@ const PlaylistGeneratorDrawer: React.FC<PlaylistGeneratorDrawerProps> = ({
         addedUuids.add(selectedClimb.uuid);
 
         // Remove from cache
-        const updatedCache = (climbCache.get(slot.grade) || []).filter(
-          (c) => c.uuid !== selectedClimb.uuid,
-        );
+        const updatedCache = (climbCache.get(slot.grade) || []).filter((c) => c.uuid !== selectedClimb.uuid);
         climbCache.set(slot.grade, updatedCache);
       } catch (error) {
         console.error('Error adding climb:', error);
@@ -246,17 +238,7 @@ const PlaylistGeneratorDrawer: React.FC<PlaylistGeneratorDrawerProps> = ({
 
     onSuccess?.();
     onClose();
-  }, [
-    options,
-    plannedSlots,
-    playlistUuid,
-    angle,
-    token,
-    isAuthenticated,
-    boardDetails,
-    onSuccess,
-    onClose,
-  ]);
+  }, [options, plannedSlots, playlistUuid, angle, token, isAuthenticated, boardDetails, onSuccess, onClose]);
 
   // Get workout type info
   const workoutTypeInfo = selectedType ? WORKOUT_TYPES.find((t) => t.type === selectedType) : null;
@@ -307,8 +289,7 @@ const PlaylistGeneratorDrawer: React.FC<PlaylistGeneratorDrawerProps> = ({
                   {group.label}
                 </Typography>
                 <Typography variant="body2" component="span">
-                  {group.slots.length} climb{group.slots.length !== 1 ? 's' : ''} (
-                  {getGradeName(group.slots[0].grade)}
+                  {group.slots.length} climb{group.slots.length !== 1 ? 's' : ''} ({getGradeName(group.slots[0].grade)}
                   {group.slots[0].grade !== group.slots[group.slots.length - 1].grade &&
                     ` - ${getGradeName(group.slots[group.slots.length - 1].grade)}`}
                   )

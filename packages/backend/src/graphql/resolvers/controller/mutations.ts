@@ -123,21 +123,14 @@ export const controllerMutations = {
     const { controllerId } = await requireControllerAuthorizedForSession(ctx, sessionId);
 
     // Get controller details
-    const [controller] = await db
-      .select()
-      .from(esp32Controllers)
-      .where(eq(esp32Controllers.id, controllerId))
-      .limit(1);
+    const [controller] = await db.select().from(esp32Controllers).where(eq(esp32Controllers.id, controllerId)).limit(1);
 
     if (!controller) {
       throw new Error('Controller not found');
     }
 
     // Update lastSeenAt
-    await db
-      .update(esp32Controllers)
-      .set({ lastSeenAt: new Date() })
-      .where(eq(esp32Controllers.id, controller.id));
+    await db.update(esp32Controllers).set({ lastSeenAt: new Date() }).where(eq(esp32Controllers.id, controller.id));
 
     // Require either frames or positions
     if (!frames && (!positions || positions.length === 0)) {
@@ -172,9 +165,7 @@ export const controllerMutations = {
         controller.layoutId,
         controller.sizeId,
       );
-      console.log(
-        `[Controller] Built frames string from ${positions.length} positions: ${framesString}`,
-      );
+      console.log(`[Controller] Built frames string from ${positions.length} positions: ${framesString}`);
     }
 
     if (!framesString) {
@@ -187,12 +178,7 @@ export const controllerMutations = {
     }
 
     // Find matching climb by frames string
-    const match = await matchClimbByFrames(
-      controller.boardName as BoardName,
-      controller.layoutId,
-      framesString,
-      angle,
-    );
+    const match = await matchClimbByFrames(controller.boardName as BoardName, controller.layoutId, framesString, angle);
 
     if (!match) {
       console.log(`[Controller] No climb found matching frames for session ${sessionId}`);
@@ -200,9 +186,7 @@ export const controllerMutations = {
       // Publish event so ESP32 display shows "Unknown Climb" with ability to navigate back
       // Use controllerMac as clientId so ESP32 can compare with its own MAC address
       const clientIdForEvent = ctx.controllerMac || controllerId;
-      console.log(
-        `[Controller] Publishing CurrentClimbChanged (no match) with clientId: ${clientIdForEvent}`,
-      );
+      console.log(`[Controller] Publishing CurrentClimbChanged (no match) with clientId: ${clientIdForEvent}`);
       pubsub.publishQueueEvent(sessionId, {
         __typename: 'CurrentClimbChanged',
         sequence: currentState.sequence,
@@ -245,20 +229,14 @@ export const controllerMutations = {
 
     // Insert the new climb after the current climb in the queue (matching double-click behavior)
     const currentIndex = currentState.currentClimbQueueItem
-      ? currentState.queue.findIndex(
-          ({ uuid }) => uuid === currentState.currentClimbQueueItem?.uuid,
-        )
+      ? currentState.queue.findIndex(({ uuid }) => uuid === currentState.currentClimbQueueItem?.uuid)
       : -1;
 
     // Insert after current climb, or at end if no current climb
     const updatedQueue =
       currentIndex === -1
         ? [...currentState.queue, queueItem]
-        : [
-            ...currentState.queue.slice(0, currentIndex + 1),
-            queueItem,
-            ...currentState.queue.slice(currentIndex + 1),
-          ];
+        : [...currentState.queue.slice(0, currentIndex + 1), queueItem, ...currentState.queue.slice(currentIndex + 1)];
 
     // Calculate the position where the item was inserted
     const insertPosition = currentIndex === -1 ? currentState.queue.length : currentIndex + 1;
@@ -465,9 +443,7 @@ export const controllerMutations = {
     console.log(
       `[Controller] Navigate ${direction}: index ${currentIndex} -> ${targetIndex}, climb: ${newCurrentClimb.climb.name} (queueItem uuid: ${newCurrentClimb.uuid})`,
     );
-    console.log(
-      `[Controller] Queue has ${queue.length} items, updating current to index ${targetIndex}`,
-    );
+    console.log(`[Controller] Queue has ${queue.length} items, updating current to index ${targetIndex}`);
 
     // Update queue state (keep the same queue, just change current climb)
     const { sequence } = await roomManager.updateQueueState(sessionId, queue, newCurrentClimb);

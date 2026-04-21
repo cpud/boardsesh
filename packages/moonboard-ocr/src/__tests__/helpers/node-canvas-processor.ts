@@ -6,12 +6,7 @@
 import { createCanvas, loadImage, Canvas, CanvasRenderingContext2D } from 'canvas';
 import fs from 'fs/promises';
 import path from 'path';
-import {
-  ImageProcessor,
-  RawPixelData,
-  ImageMetadata,
-  ImageRegion,
-} from '../../image-processor/types';
+import { ImageProcessor, RawPixelData, ImageMetadata, ImageRegion } from '../../image-processor/types';
 
 /**
  * Node-canvas implementation of ImageProcessor for testing.
@@ -81,17 +76,7 @@ export class NodeCanvasImageProcessor implements ImageProcessor {
     const tempCtx = tempCanvas.getContext('2d');
 
     // Copy the region to the temp canvas
-    tempCtx.drawImage(
-      this.canvas,
-      region.x,
-      region.y,
-      region.width,
-      region.height,
-      0,
-      0,
-      region.width,
-      region.height,
-    );
+    tempCtx.drawImage(this.canvas, region.x, region.y, region.width, region.height, 0, 0, region.width, region.height);
 
     // Apply grayscale and normalization (similar to Sharp's preprocessing)
     const imageData = tempCtx.getImageData(0, 0, region.width, region.height);

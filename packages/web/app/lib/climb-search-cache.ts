@@ -18,10 +18,7 @@ export async function invalidateClimbSearchQueries(
   ]);
 }
 
-export async function requestClimbSearchRevalidation(
-  boardName: BoardName,
-  layoutId?: number,
-): Promise<void> {
+export async function requestClimbSearchRevalidation(boardName: BoardName, layoutId?: number): Promise<void> {
   const response = await fetch('/api/internal/climb-search-cache/revalidate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

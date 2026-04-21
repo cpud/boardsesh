@@ -52,9 +52,9 @@ export function useQueueRestoration({
                 ? Q
                 : never
               : never,
-            currentClimbQueueItem: persistentSession.currentClimbQueueItem as Parameters<
-              typeof dispatch
-            >[0] extends { payload: infer P }
+            currentClimbQueueItem: persistentSession.currentClimbQueueItem as Parameters<typeof dispatch>[0] extends {
+              payload: infer P;
+            }
               ? P extends { currentClimbQueueItem?: infer C }
                 ? C
                 : never
@@ -81,8 +81,7 @@ export function useQueueRestoration({
         type: 'INITIAL_QUEUE_DATA',
         payload: {
           queue: persistentSession.localQueue as unknown as ClimbQueue,
-          currentClimbQueueItem:
-            persistentSession.localCurrentClimbQueueItem as unknown as ClimbQueueItem | null,
+          currentClimbQueueItem: persistentSession.localCurrentClimbQueueItem as unknown as ClimbQueueItem | null,
         },
       });
       setHasRestored(true);

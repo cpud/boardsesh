@@ -18,10 +18,7 @@ function SkeletonCards({ count, isSmall }: { count: number; isSmall: boolean }) 
   return (
     <>
       {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={`skeleton-${i}`}
-          className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ''}`}
-        >
+        <div key={`skeleton-${i}`} className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ''}`}>
           <Skeleton variant="rounded" className={styles.skeletonSquare} sx={{ height: 'auto' }} />
           <Skeleton variant="text" width="80%" className={styles.skeletonText} />
           <Skeleton variant="text" width="50%" className={styles.skeletonText} />
@@ -70,10 +67,7 @@ export default function BoardScrollSection({
   return (
     <div className={`${styles.scrollSection} ${isSmall ? styles.scrollSectionSmall : ''}`}>
       {title && <div className={styles.sectionTitle}>{title}</div>}
-      <div
-        ref={scrollRef}
-        className={`${styles.scrollContainer} ${isSmall ? styles.scrollContainerSmall : ''}`}
-      >
+      <div ref={scrollRef} className={`${styles.scrollContainer} ${isSmall ? styles.scrollContainerSmall : ''}`}>
         {loading ? <SkeletonCards count={4} isSmall={isSmall} /> : children}
         {hasMore && (
           <>

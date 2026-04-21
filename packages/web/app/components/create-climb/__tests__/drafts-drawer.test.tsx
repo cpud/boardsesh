@@ -28,13 +28,7 @@ vi.mock('../../swipeable-drawer/swipeable-drawer', () => ({
 }));
 
 vi.mock('../../climb-card/climb-list-item', () => ({
-  default: ({
-    climb,
-    onSelect,
-  }: {
-    climb: { uuid: string; name: string };
-    onSelect: () => void;
-  }) => (
+  default: ({ climb, onSelect }: { climb: { uuid: string; name: string }; onSelect: () => void }) => (
     <div data-testid={`climb-item-${climb.uuid}`} onClick={onSelect}>
       {climb.name}
     </div>
@@ -191,13 +185,7 @@ describe('DraftsDrawer', () => {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(
       <QueryClientProvider client={queryClient}>
-        <DraftsDrawer
-          open
-          onClose={onClose}
-          boardDetails={boardDetails}
-          angle={40}
-          onLoadDraft={onLoadDraft}
-        />
+        <DraftsDrawer open onClose={onClose} boardDetails={boardDetails} angle={40} onLoadDraft={onLoadDraft} />
       </QueryClientProvider>,
     );
 
@@ -214,10 +202,7 @@ describe('DraftsDrawer', () => {
     mockRequest.mockResolvedValue({ searchClimbs: { climbs: [], hasMore: false } });
     renderDrawer();
     await waitFor(() => expect(mockRequest).toHaveBeenCalled());
-    const [, variables] = mockRequest.mock.calls[0] as [
-      unknown,
-      { input: Record<string, unknown> },
-    ];
+    const [, variables] = mockRequest.mock.calls[0] as [unknown, { input: Record<string, unknown> }];
     expect(variables.input.onlyDrafts).toBe(true);
   });
 

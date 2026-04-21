@@ -53,11 +53,7 @@ export async function generateMetadata({
   }
 }
 
-export default async function SetterProfilePage({
-  params,
-}: {
-  params: Promise<{ setter_username: string }>;
-}) {
+export default async function SetterProfilePage({ params }: { params: Promise<{ setter_username: string }> }) {
   const { setter_username } = await params;
 
   return (

@@ -4,14 +4,7 @@ import { sharedSync } from '../../api-wrappers/aurora/sharedSync';
 import { sql, eq, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import { NeonDatabase } from 'drizzle-orm/neon-serverless';
-import {
-  Attempt,
-  BetaLink,
-  Climb,
-  ClimbStats,
-  SharedSync,
-  SyncPutFields,
-} from '../../api-wrappers/sync-api-types';
+import { Attempt, BetaLink, Climb, ClimbStats, SharedSync, SyncPutFields } from '../../api-wrappers/sync-api-types';
 import { UNIFIED_TABLES } from '../../db/queries/util/table-select';
 import { convertLitUpHoldsStringToMap } from '@/app/components/board-renderer/util';
 import { populateDenormalizedColumns } from '@boardsesh/db/queries';
@@ -45,19 +38,9 @@ export const SHARED_SYNC_TABLES: string[] = [
 ];
 
 // Tables we actually want to process and store
-const TABLES_TO_PROCESS = new Set([
-  'climbs',
-  'climb_stats',
-  'beta_links',
-  'attempts',
-  'shared_syncs',
-]);
+const TABLES_TO_PROCESS = new Set(['climbs', 'climb_stats', 'beta_links', 'attempts', 'shared_syncs']);
 
-const upsertAttempts = (
-  db: NeonDatabase<Record<string, never>>,
-  board: AuroraBoardName,
-  data: Attempt[],
-) =>
+const upsertAttempts = (db: NeonDatabase<Record<string, never>>, board: AuroraBoardName, data: Attempt[]) =>
   Promise.all(
     data.map(async (item) => {
       const attemptsSchema = UNIFIED_TABLES.attempts;
@@ -81,11 +64,7 @@ const upsertAttempts = (
     }),
   );
 
-async function upsertClimbStats(
-  db: NeonDatabase<Record<string, never>>,
-  board: AuroraBoardName,
-  data: ClimbStats[],
-) {
+async function upsertClimbStats(db: NeonDatabase<Record<string, never>>, board: AuroraBoardName, data: ClimbStats[]) {
   const climbStatsSchema = UNIFIED_TABLES.climbStats;
   const climbStatHistorySchema = UNIFIED_TABLES.climbStatsHistory;
 
@@ -100,8 +79,7 @@ async function upsertClimbStats(
             climbUuid: item.climb_uuid,
             angle: Number(item.angle),
             displayDifficulty: Number(item.display_difficulty || item.difficulty_average),
-            benchmarkDifficulty:
-              item.benchmark_difficulty != null ? Number(item.benchmark_difficulty) : null,
+            benchmarkDifficulty: item.benchmark_difficulty != null ? Number(item.benchmark_difficulty) : null,
             ascensionistCount: Number(item.ascensionist_count),
             difficultyAverage: Number(item.difficulty_average),
             qualityAverage: Number(item.quality_average),
@@ -109,15 +87,10 @@ async function upsertClimbStats(
             faAt: item.fa_at,
           })
           .onConflictDoUpdate({
-            target: [
-              climbStatsSchema.boardType,
-              climbStatsSchema.climbUuid,
-              climbStatsSchema.angle,
-            ],
+            target: [climbStatsSchema.boardType, climbStatsSchema.climbUuid, climbStatsSchema.angle],
             set: {
               displayDifficulty: Number(item.display_difficulty || item.difficulty_average),
-              benchmarkDifficulty:
-                item.benchmark_difficulty != null ? Number(item.benchmark_difficulty) : null,
+              benchmarkDifficulty: item.benchmark_difficulty != null ? Number(item.benchmark_difficulty) : null,
               ascensionistCount: Number(item.ascensionist_count),
               difficultyAverage: Number(item.difficulty_average),
               qualityAverage: Number(item.quality_average),
@@ -132,8 +105,7 @@ async function upsertClimbStats(
           climbUuid: item.climb_uuid,
           angle: Number(item.angle),
           displayDifficulty: Number(item.display_difficulty || item.difficulty_average),
-          benchmarkDifficulty:
-            item.benchmark_difficulty != null ? Number(item.benchmark_difficulty) : null,
+          benchmarkDifficulty: item.benchmark_difficulty != null ? Number(item.benchmark_difficulty) : null,
           ascensionistCount: Number(item.ascensionist_count),
           difficultyAverage: Number(item.difficulty_average),
           qualityAverage: Number(item.quality_average),
@@ -145,11 +117,7 @@ async function upsertClimbStats(
   );
 }
 
-async function upsertBetaLinks(
-  db: NeonDatabase<Record<string, never>>,
-  board: AuroraBoardName,
-  data: BetaLink[],
-) {
+async function upsertBetaLinks(db: NeonDatabase<Record<string, never>>, board: AuroraBoardName, data: BetaLink[]) {
   const betaLinksSchema = UNIFIED_TABLES.betaLinks;
 
   await Promise.all(
@@ -370,9 +338,7 @@ export async function syncSharedData(
     console.log('Fetched previous sync times:', allSyncTimes);
 
     // Create a map of existing sync times
-    const sharedSyncMap = new Map(
-      allSyncTimes.map((sync) => [sync.table_name, sync.last_synchronized_at]),
-    );
+    const sharedSyncMap = new Map(allSyncTimes.map((sync) => [sync.table_name, sync.last_synchronized_at]));
 
     // Ensure all shared tables have a sync entry (default to 1970 if not synced)
     const defaultTimestamp = '1970-01-01 00:00:00.000000';
@@ -447,9 +413,7 @@ export async function syncSharedData(
         );
 
         // Log timestamp updates for debugging
-        const climbsSync = newSharedSyncs.find(
-          (s: { table_name: string }) => s.table_name === 'climbs',
-        );
+        const climbsSync = newSharedSyncs.find((s: { table_name: string }) => s.table_name === 'climbs');
         if (climbsSync) {
           console.log(`Climbs table sync timestamp updated to: ${climbsSync.last_synchronized_at}`);
         }
@@ -472,9 +436,7 @@ export async function syncSharedData(
     // Check if sync is complete - default to true if _complete is not present (matches Android app behavior)
     isComplete = syncResults._complete !== false;
 
-    console.log(
-      `Sync complete. _complete flag: ${syncResults._complete}, isComplete: ${isComplete}`,
-    );
+    console.log(`Sync complete. _complete flag: ${syncResults._complete}, isComplete: ${isComplete}`);
 
     // Mark completion status for all tables
     Object.keys(totalResults).forEach((table) => {

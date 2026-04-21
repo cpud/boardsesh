@@ -4,6 +4,7 @@ export default defineConfig({
   fmt: {
     ignorePatterns: [],
     singleQuote: true,
+    printWidth: 120,
   },
   test: {
     projects: [

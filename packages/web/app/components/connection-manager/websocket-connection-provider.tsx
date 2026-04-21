@@ -13,9 +13,7 @@ interface ConnectionContextValue {
 
 const WebSocketConnectionContext = createContext<ConnectionContextValue | null>(null);
 
-export const WebSocketConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const WebSocketConnectionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [snapshot, setSnapshot] = useState(connectionManager.getSnapshot());
 
   useEffect(() => {
@@ -33,11 +31,7 @@ export const WebSocketConnectionProvider: React.FC<{ children: React.ReactNode }
     [snapshot],
   );
 
-  return (
-    <WebSocketConnectionContext.Provider value={value}>
-      {children}
-    </WebSocketConnectionContext.Provider>
-  );
+  return <WebSocketConnectionContext.Provider value={value}>{children}</WebSocketConnectionContext.Provider>;
 };
 
 const IDLE_FALLBACK: ConnectionContextValue = {

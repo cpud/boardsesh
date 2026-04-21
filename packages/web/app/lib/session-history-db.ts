@@ -29,9 +29,7 @@ export async function getRecentSessions(): Promise<StoredSession[]> {
     return sessions
       .filter((s) => new Date(s.lastActivity || s.createdAt) > sevenDaysAgo)
       .sort(
-        (a, b) =>
-          new Date(b.lastActivity || b.createdAt).getTime() -
-          new Date(a.lastActivity || a.createdAt).getTime(),
+        (a, b) => new Date(b.lastActivity || b.createdAt).getTime() - new Date(a.lastActivity || a.createdAt).getTime(),
       );
   } catch (error) {
     console.error('Failed to get recent sessions:', error);

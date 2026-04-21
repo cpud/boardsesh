@@ -9,13 +9,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import MoreVertOutlined from '@mui/icons-material/MoreVertOutlined';
-import {
-  ClimbActionsProps,
-  ClimbActionType,
-  ClimbActionResult,
-  ClimbActionProps,
-  DEFAULT_ACTION_ORDER,
-} from './types';
+import { ClimbActionsProps, ClimbActionType, ClimbActionResult, ClimbActionProps, DEFAULT_ACTION_ORDER } from './types';
 import {
   ViewDetailsAction,
   ForkAction,
@@ -46,23 +40,21 @@ type ActionMenuItemType = {
 };
 
 // Map action types to their handler functions
-const ACTION_FUNCTIONS: Record<
-  ClimbActionType,
-  (props: ClimbActionProps | OpenInAppActionProps) => ClimbActionResult
-> = {
-  viewDetails: ViewDetailsAction,
-  fork: ForkAction,
-  favorite: FavoriteAction,
-  setActive: SetActiveAction,
-  queue: QueueAction,
-  goToQueue: GoToQueueAction,
-  tick: TickAction,
-  openInApp: OpenInAppAction,
-  mirror: MirrorAction,
-  share: ShareAction,
-  instagram: InstagramAction,
-  playlist: PlaylistAction,
-};
+const ACTION_FUNCTIONS: Record<ClimbActionType, (props: ClimbActionProps | OpenInAppActionProps) => ClimbActionResult> =
+  {
+    viewDetails: ViewDetailsAction,
+    fork: ForkAction,
+    favorite: FavoriteAction,
+    setActive: SetActiveAction,
+    queue: QueueAction,
+    goToQueue: GoToQueueAction,
+    tick: TickAction,
+    openInApp: OpenInAppAction,
+    mirror: MirrorAction,
+    share: ShareAction,
+    instagram: InstagramAction,
+    playlist: PlaylistAction,
+  };
 
 /**
  * Helper function to create a renderer component for an action type.
@@ -81,10 +73,7 @@ function createActionRenderer(
 
 // Create stable renderer components for each action type
 // These are created once at module level, so component identity is stable
-const ACTION_RENDERERS: Record<
-  ClimbActionType,
-  React.FC<ClimbActionProps | OpenInAppActionProps>
-> = {
+const ACTION_RENDERERS: Record<ClimbActionType, React.FC<ClimbActionProps | OpenInAppActionProps>> = {
   viewDetails: createActionRenderer(ViewDetailsAction),
   fork: createActionRenderer(ForkAction),
   favorite: createActionRenderer(FavoriteAction),

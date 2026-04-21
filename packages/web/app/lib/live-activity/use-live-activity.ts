@@ -79,8 +79,7 @@ export function useLiveActivity({
   // Start/end session — reacts to session activation, content presence, and board config.
   // Does NOT restart when the current climb changes.
   const hasContent = queue.length > 0 || currentClimbQueueItem !== null;
-  const shouldBeActive =
-    isSessionActive && hasContent && stableBoardDetails !== null && available === true;
+  const shouldBeActive = isSessionActive && hasContent && stableBoardDetails !== null && available === true;
 
   useEffect(() => {
     if (!isNativeApp() || getPlatform() !== 'ios') return;
@@ -144,8 +143,7 @@ export function useLiveActivity({
   useEffect(() => {
     if (!isActiveRef.current || !stableBoardDetails) return;
 
-    const displayItem =
-      currentClimbRef.current ?? (queueRef.current.length > 0 ? queueRef.current[0] : null);
+    const displayItem = currentClimbRef.current ?? (queueRef.current.length > 0 ? queueRef.current[0] : null);
     if (!displayItem) return;
 
     const currentIndex = queueRef.current.findIndex((q) => q.uuid === displayItem.uuid);

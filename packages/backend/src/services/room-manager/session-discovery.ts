@@ -119,9 +119,7 @@ export async function findNearbySessions(
       session: s,
       distance: haversineDistance(latitude, longitude, s.latitude, s.longitude),
     }))
-    .filter(
-      (item: { session: SessionWithCoords; distance: number }) => item.distance <= radiusMeters,
-    )
+    .filter((item: { session: SessionWithCoords; distance: number }) => item.distance <= radiusMeters)
     .sort((a: { distance: number }, b: { distance: number }) => a.distance - b.distance);
 
   const sessionIds = sessionsWithDistance.map(({ session }) => session.id);
@@ -220,10 +218,7 @@ export async function endSession(
 
   // Mark as ended in Postgres
   const now = new Date();
-  await db
-    .update(sessions)
-    .set({ status: 'ended', lastActivity: now, endedAt: now })
-    .where(eq(sessions.id, sessionId));
+  await db.update(sessions).set({ status: 'ended', lastActivity: now, endedAt: now }).where(eq(sessions.id, sessionId));
 
   // Remove from memory
   sessionsMap.delete(sessionId);

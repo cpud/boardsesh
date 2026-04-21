@@ -45,12 +45,7 @@ describe('ClimbThumbnail', () => {
   it('fires onClick when a climb is present', () => {
     const onClick = vi.fn();
     render(
-      <ClimbThumbnail
-        boardDetails={boardDetails}
-        currentClimb={climb}
-        pathname={mockPathname}
-        onClick={onClick}
-      />,
+      <ClimbThumbnail boardDetails={boardDetails} currentClimb={climb} pathname={mockPathname} onClick={onClick} />,
     );
     fireEvent.click(screen.getByRole('button'));
     expect(onClick).toHaveBeenCalledOnce();
@@ -58,12 +53,7 @@ describe('ClimbThumbnail', () => {
 
   it('does not expose a button when there is no climb', () => {
     render(
-      <ClimbThumbnail
-        boardDetails={boardDetails}
-        currentClimb={null}
-        pathname={mockPathname}
-        onClick={vi.fn()}
-      />,
+      <ClimbThumbnail boardDetails={boardDetails} currentClimb={null} pathname={mockPathname} onClick={vi.fn()} />,
     );
     expect(screen.queryByRole('button')).toBeNull();
   });

@@ -132,8 +132,8 @@ export default function DeleteAccountSection() {
         <DialogTitle>Delete your account?</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            This is permanent. Your profile, draft climbs, logbook entries, and all other data will
-            be deleted and cannot be recovered.
+            This is permanent. Your profile, draft climbs, logbook entries, and all other data will be deleted and
+            cannot be recovered.
           </Typography>
 
           {loadingInfo && (
@@ -146,8 +146,7 @@ export default function DeleteAccountSection() {
             <>
               <Typography variant="body2" sx={{ mb: 1 }}>
                 You have <strong>{publishedClimbCount}</strong> published{' '}
-                {publishedClimbCount === 1 ? 'climb' : 'climbs'} that will be preserved after
-                deletion.
+                {publishedClimbCount === 1 ? 'climb' : 'climbs'} that will be preserved after deletion.
               </Typography>
               <FormControlLabel
                 control={

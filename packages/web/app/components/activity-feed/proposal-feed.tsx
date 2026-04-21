@@ -30,35 +30,34 @@ export default function ProposalFeed({ isAuthenticated, boardUuid }: ProposalFee
 
   const queryKey = ['proposalFeed', boardUuid] as const;
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } =
-    useInfiniteQuery<ProposalConnection, Error>({
-      queryKey,
-      queryFn: async ({ pageParam }) => {
-        const client = createGraphQLHttpClient(isAuthenticated ? token : null);
-        const variables: BrowseProposalsVariables = {
-          input: {
-            limit: PAGE_SIZE,
-            offset: (pageParam as number) || 0,
-            ...(boardUuid ? { boardUuid } : {}),
-          },
-        };
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, error, refetch } = useInfiniteQuery<
+    ProposalConnection,
+    Error
+  >({
+    queryKey,
+    queryFn: async ({ pageParam }) => {
+      const client = createGraphQLHttpClient(isAuthenticated ? token : null);
+      const variables: BrowseProposalsVariables = {
+        input: {
+          limit: PAGE_SIZE,
+          offset: (pageParam as number) || 0,
+          ...(boardUuid ? { boardUuid } : {}),
+        },
+      };
 
-        const response = await client.request<BrowseProposalsResponse>(BROWSE_PROPOSALS, variables);
-        return response.browseProposals;
-      },
-      initialPageParam: 0,
-      getNextPageParam: (lastPage, allPages) => {
-        if (!lastPage.hasMore) return undefined;
-        return allPages.reduce((total, page) => total + page.proposals.length, 0);
-      },
-      enabled: isAuthenticated ? !!token : true,
-      staleTime: 60 * 1000,
-    });
+      const response = await client.request<BrowseProposalsResponse>(BROWSE_PROPOSALS, variables);
+      return response.browseProposals;
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      if (!lastPage.hasMore) return undefined;
+      return allPages.reduce((total, page) => total + page.proposals.length, 0);
+    },
+    enabled: isAuthenticated ? !!token : true,
+    staleTime: 60 * 1000,
+  });
 
-  const proposals: Proposal[] = useMemo(
-    () => data?.pages.flatMap((p) => p.proposals) ?? [],
-    [data],
-  );
+  const proposals: Proposal[] = useMemo(() => data?.pages.flatMap((p) => p.proposals) ?? [], [data]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: fetchNextPage,
@@ -68,10 +67,7 @@ export default function ProposalFeed({ isAuthenticated, boardUuid }: ProposalFee
 
   if ((authLoading || isLoading) && proposals.length === 0) {
     return (
-      <Box
-        data-testid="proposal-feed"
-        sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
-      >
+      <Box data-testid="proposal-feed" sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <FeedItemSkeleton />
         <FeedItemSkeleton />
         <FeedItemSkeleton />

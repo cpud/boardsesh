@@ -22,11 +22,7 @@ vi.mock('@/app/lib/graphql/client', () => ({
 import { useSession } from 'next-auth/react';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { useGradeFormat } from '@/app/hooks/use-grade-format';
-import {
-  GET_USER_CLIMB_PERCENTILE,
-  GET_USER_PROFILE_STATS,
-  GET_USER_TICKS,
-} from '@/app/lib/graphql/operations';
+import { GET_USER_CLIMB_PERCENTILE, GET_USER_PROFILE_STATS, GET_USER_TICKS } from '@/app/lib/graphql/operations';
 import { useProfileData } from '../use-profile-data';
 
 const mockUseSession = vi.mocked(useSession);

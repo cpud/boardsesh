@@ -28,11 +28,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
         queue:
           currentIndex === -1
             ? [...state.queue, action.payload]
-            : [
-                ...state.queue.slice(0, currentIndex + 1),
-                action.payload,
-                ...state.queue.slice(currentIndex + 1),
-              ],
+            : [...state.queue.slice(0, currentIndex + 1), action.payload, ...state.queue.slice(currentIndex + 1)],
       };
 
     case 'SET_CURRENT_CLIMB_QUEUE_ITEM':
@@ -59,9 +55,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
       const hadCorruptedData = filteredQueue.length !== action.payload.queue.length;
 
       if (hadCorruptedData) {
-        console.warn(
-          '[QueueReducer] Filtered corrupted items from INITIAL_QUEUE_DATA, requesting resync',
-        );
+        console.warn('[QueueReducer] Filtered corrupted items from INITIAL_QUEUE_DATA, requesting resync');
       }
 
       return {
@@ -84,9 +78,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
       const hadCorruptedData = filteredQueue.length !== action.payload.queue.length;
 
       if (hadCorruptedData) {
-        console.warn(
-          '[QueueReducer] Filtered corrupted items from UPDATE_QUEUE, requesting resync',
-        );
+        console.warn('[QueueReducer] Filtered corrupted items from UPDATE_QUEUE, requesting resync');
       }
 
       return {
@@ -157,8 +149,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
         ...state,
         queue: state.queue.filter((item) => item.uuid !== uuid),
         // Clear current climb if it was removed
-        currentClimbQueueItem:
-          state.currentClimbQueueItem?.uuid === uuid ? null : state.currentClimbQueueItem,
+        currentClimbQueueItem: state.currentClimbQueueItem?.uuid === uuid ? null : state.currentClimbQueueItem,
       };
     }
 
@@ -167,12 +158,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
       const newQueue = [...state.queue];
 
       // Validate indices
-      if (
-        oldIndex < 0 ||
-        oldIndex >= newQueue.length ||
-        newIndex < 0 ||
-        newIndex >= newQueue.length
-      ) {
+      if (oldIndex < 0 || oldIndex >= newQueue.length || newIndex < 0 || newIndex >= newQueue.length) {
         return state;
       }
 
@@ -243,22 +229,11 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
       // Add to queue if requested and this queue item doesn't already exist
       // Check by item.uuid for idempotency - the same climb CAN appear multiple times
       // (e.g., user adds it again after completing it)
-      if (
-        item &&
-        item.climb &&
-        shouldAddToQueue &&
-        !state.queue.find((qItem) => qItem?.uuid === item.uuid)
-      ) {
+      if (item && item.climb && shouldAddToQueue && !state.queue.find((qItem) => qItem?.uuid === item.uuid)) {
         if (insertAfterCurrent && state.currentClimbQueueItem) {
-          const currentIndex = state.queue.findIndex(
-            (q) => q.uuid === state.currentClimbQueueItem?.uuid,
-          );
+          const currentIndex = state.queue.findIndex((q) => q.uuid === state.currentClimbQueueItem?.uuid);
           if (currentIndex >= 0) {
-            newQueue = [
-              ...state.queue.slice(0, currentIndex + 1),
-              item,
-              ...state.queue.slice(currentIndex + 1),
-            ];
+            newQueue = [...state.queue.slice(0, currentIndex + 1), item, ...state.queue.slice(currentIndex + 1)];
           } else {
             newQueue = [...state.queue, item];
           }
@@ -294,9 +269,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
       const idsToRemove = new Set(action.payload.correlationIds);
       return {
         ...state,
-        pendingCurrentClimbUpdates: state.pendingCurrentClimbUpdates.filter(
-          (id) => !idsToRemove.has(id),
-        ),
+        pendingCurrentClimbUpdates: state.pendingCurrentClimbUpdates.filter((id) => !idsToRemove.has(id)),
       };
     }
 
@@ -339,8 +312,7 @@ export function queueReducer(state: QueueState, action: QueueAction): QueueState
         ...state,
         queue: newQueue,
         // Update current climb if it was the replaced item
-        currentClimbQueueItem:
-          state.currentClimbQueueItem?.uuid === uuid ? item : state.currentClimbQueueItem,
+        currentClimbQueueItem: state.currentClimbQueueItem?.uuid === uuid ? item : state.currentClimbQueueItem,
       };
     }
 

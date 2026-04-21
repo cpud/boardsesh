@@ -148,13 +148,8 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
       } else {
         const setIds = config.setIds.join(',');
         url =
-          tryConstructSlugListUrl(
-            config.boardType,
-            config.layoutId,
-            config.sizeId,
-            config.setIds,
-            angle,
-          ) ?? `/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`;
+          tryConstructSlugListUrl(config.boardType, config.layoutId, config.sizeId, config.setIds, angle) ??
+          `/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`;
       }
       const navigate = () => {
         router.push(url);
@@ -235,33 +230,19 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
                     {!userAvatar ? <PersonOutlined /> : null}
                   </MuiAvatar>
                   {userName && (
-                    <MuiTypography
-                      variant="body2"
-                      component="span"
-                      fontWeight={600}
-                      className={styles.userName}
-                    >
+                    <MuiTypography variant="body2" component="span" fontWeight={600} className={styles.userName}>
                       {userName}
                     </MuiTypography>
                   )}
                   {userEmail && (
-                    <MuiTypography
-                      variant="body2"
-                      component="span"
-                      color="text.secondary"
-                      className={styles.userEmail}
-                    >
+                    <MuiTypography variant="body2" component="span" color="text.secondary" className={styles.userEmail}>
                       {userEmail}
                     </MuiTypography>
                   )}
                 </>
               ) : (
                 <>
-                  <MuiAvatar
-                    sx={{ width: 64, height: 64 }}
-                    src={userAvatar}
-                    className={avatarClass}
-                  >
+                  <MuiAvatar sx={{ width: 64, height: 64 }} src={userAvatar} className={avatarClass}>
                     {!userAvatar ? <PersonOutlined /> : null}
                   </MuiAvatar>
                   <MuiButton
@@ -353,12 +334,7 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
             {recentSessions.length > 0 && (
               <>
                 <div className={styles.divider} />
-                <MuiTypography
-                  variant="body2"
-                  component="span"
-                  color="text.secondary"
-                  className={styles.sectionLabel}
-                >
+                <MuiTypography variant="body2" component="span" color="text.secondary" className={styles.sectionLabel}>
                   Recent Sessions
                 </MuiTypography>
                 {recentSessions.slice(0, 5).map((storedSession) => (
@@ -371,18 +347,16 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
                     <HistoryOutlined className={styles.recentItemIcon} />
                     <div className={styles.recentItemInfo}>
                       <div className={styles.recentItemName}>
-                        {storedSession.name ||
-                          `${extractBoardName(storedSession.boardPath)} Session`}
+                        {storedSession.name || `${extractBoardName(storedSession.boardPath)} Session`}
                       </div>
                       <div className={styles.recentItemMeta}>
                         {extractBoardName(storedSession.boardPath)}
-                        {storedSession.participantCount !== undefined &&
-                          storedSession.participantCount > 0 && (
-                            <>
-                              {' '}
-                              <GroupOutlined /> {storedSession.participantCount}
-                            </>
-                          )}{' '}
+                        {storedSession.participantCount !== undefined && storedSession.participantCount > 0 && (
+                          <>
+                            {' '}
+                            <GroupOutlined /> {storedSession.participantCount}
+                          </>
+                        )}{' '}
                         {formatRelativeTime(storedSession.lastActivity || storedSession.createdAt)}
                       </div>
                     </div>
@@ -413,11 +387,7 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
             {session?.user && (
               <>
                 <div className={styles.divider} />
-                <button
-                  type="button"
-                  className={`${styles.menuItem} ${styles.dangerItem}`}
-                  onClick={handleSignOut}
-                >
+                <button type="button" className={`${styles.menuItem} ${styles.dangerItem}`} onClick={handleSignOut}>
                   <span className={styles.menuItemIcon}>
                     <LogoutOutlined />
                   </span>
@@ -438,17 +408,13 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
                 tabIndex={0}
                 aria-label="Toggle dark mode"
               >
-                <div
-                  className={`${styles.themeToggleThumb} ${mode === 'dark' ? styles.themeToggleThumbDark : ''}`}
-                />
+                <div className={`${styles.themeToggleThumb} ${mode === 'dark' ? styles.themeToggleThumbDark : ''}`} />
                 <div
                   className={`${styles.themeToggleOption} ${mode === 'light' ? styles.themeToggleOptionActive : ''}`}
                 >
                   <LightModeOutlined sx={{ fontSize: 16 }} />
                 </div>
-                <div
-                  className={`${styles.themeToggleOption} ${mode === 'dark' ? styles.themeToggleOptionActive : ''}`}
-                >
+                <div className={`${styles.themeToggleOption} ${mode === 'dark' ? styles.themeToggleOptionActive : ''}`}>
                   <DarkModeOutlined sx={{ fontSize: 16 }} />
                 </div>
               </div>

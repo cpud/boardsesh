@@ -1,9 +1,5 @@
 interface CapacitorGeolocationPlugin {
-  getCurrentPosition(options?: {
-    enableHighAccuracy?: boolean;
-    timeout?: number;
-    maximumAge?: number;
-  }): Promise<{
+  getCurrentPosition(options?: { enableHighAccuracy?: boolean; timeout?: number; maximumAge?: number }): Promise<{
     coords: {
       latitude: number;
       longitude: number;

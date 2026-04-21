@@ -62,10 +62,7 @@ export async function getBoardUserId(userId: string, boardType: BoardName): Prom
 export async function getUserBoardMappings(userId: string): Promise<UserBoardMapping[]> {
   const db = getDb();
 
-  const results = await db
-    .select()
-    .from(userBoardMappings)
-    .where(eq(userBoardMappings.userId, userId));
+  const results = await db.select().from(userBoardMappings).where(eq(userBoardMappings.userId, userId));
 
   return results.map((row) => ({
     id: row.id.toString(),

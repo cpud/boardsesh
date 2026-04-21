@@ -34,17 +34,10 @@ import Snackbar from '@mui/material/Snackbar';
 import { themeTokens } from '@/app/theme/theme-config';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  GET_COMMUNITY_ROLES,
-  GRANT_ROLE,
-  REVOKE_ROLE,
-} from '@/app/lib/graphql/operations/proposals';
+import { GET_COMMUNITY_ROLES, GRANT_ROLE, REVOKE_ROLE } from '@/app/lib/graphql/operations/proposals';
 import { SEARCH_USERS } from '@/app/lib/graphql/operations/social';
 import type { CommunityRoleAssignment, CommunityRoleType } from '@boardsesh/shared-schema';
-import type {
-  SearchUsersQueryResponse,
-  SearchUsersQueryVariables,
-} from '@/app/lib/graphql/operations/social';
+import type { SearchUsersQueryResponse, SearchUsersQueryVariables } from '@/app/lib/graphql/operations/social';
 
 type UserResult = SearchUsersQueryResponse['searchUsers']['results'][number]['user'];
 
@@ -66,9 +59,7 @@ export default function RoleManagement() {
     if (!token) return;
     try {
       const client = createGraphQLHttpClient(token);
-      const result = await client.request<{ communityRoles: CommunityRoleAssignment[] }>(
-        GET_COMMUNITY_ROLES,
-      );
+      const result = await client.request<{ communityRoles: CommunityRoleAssignment[] }>(GET_COMMUNITY_ROLES);
       setRoles(result.communityRoles);
     } catch (err) {
       console.error('[RoleManagement] Failed to fetch roles:', err);
@@ -93,10 +84,9 @@ export default function RoleManagement() {
       setSearching(true);
       try {
         const client = createGraphQLHttpClient(token);
-        const result = await client.request<SearchUsersQueryResponse, SearchUsersQueryVariables>(
-          SEARCH_USERS,
-          { input: { query: searchQuery, limit: 5 } },
-        );
+        const result = await client.request<SearchUsersQueryResponse, SearchUsersQueryVariables>(SEARCH_USERS, {
+          input: { query: searchQuery, limit: 5 },
+        });
         setSearchResults(result.searchUsers.results.map((r) => r.user));
       } catch {
         setSearchResults([]);
@@ -196,10 +186,7 @@ export default function RoleManagement() {
               <TableRow key={role.id}>
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Avatar
-                      src={role.userAvatarUrl || undefined}
-                      sx={{ width: 28, height: 28, fontSize: 12 }}
-                    >
+                    <Avatar src={role.userAvatarUrl || undefined} sx={{ width: 28, height: 28, fontSize: 12 }}>
                       {role.userDisplayName?.[0] || 'U'}
                     </Avatar>
                     <Typography variant="body2">{role.userDisplayName || role.userId}</Typography>
@@ -211,13 +198,8 @@ export default function RoleManagement() {
                     size="small"
                     sx={{
                       bgcolor:
-                        role.role === 'admin'
-                          ? `${themeTokens.colors.error}14`
-                          : `${themeTokens.colors.primary}14`,
-                      color:
-                        role.role === 'admin'
-                          ? themeTokens.colors.error
-                          : themeTokens.colors.primary,
+                        role.role === 'admin' ? `${themeTokens.colors.error}14` : `${themeTokens.colors.primary}14`,
+                      color: role.role === 'admin' ? themeTokens.colors.error : themeTokens.colors.primary,
                       fontWeight: 600,
                       fontSize: 11,
                     }}
@@ -263,10 +245,7 @@ export default function RoleManagement() {
                   borderRadius: 1,
                 }}
               >
-                <Avatar
-                  src={selectedUser.avatarUrl || undefined}
-                  sx={{ width: 32, height: 32, fontSize: 14 }}
-                >
+                <Avatar src={selectedUser.avatarUrl || undefined} sx={{ width: 32, height: 32, fontSize: 14 }}>
                   {selectedUser.displayName?.[0] || 'U'}
                 </Avatar>
                 <Typography variant="body2" sx={{ flex: 1, fontWeight: 500 }}>
@@ -311,10 +290,7 @@ export default function RoleManagement() {
                           }}
                         >
                           <ListItemAvatar sx={{ minWidth: 40 }}>
-                            <Avatar
-                              src={user.avatarUrl || undefined}
-                              sx={{ width: 28, height: 28, fontSize: 12 }}
-                            >
+                            <Avatar src={user.avatarUrl || undefined} sx={{ width: 28, height: 28, fontSize: 12 }}>
                               {user.displayName?.[0] || 'U'}
                             </Avatar>
                           </ListItemAvatar>
@@ -370,12 +346,7 @@ export default function RoleManagement() {
         </DialogActions>
       </Dialog>
 
-      <Snackbar
-        open={!!snackbar}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar('')}
-        message={snackbar}
-      />
+      <Snackbar open={!!snackbar} autoHideDuration={3000} onClose={() => setSnackbar('')} message={snackbar} />
     </Box>
   );
 }

@@ -72,11 +72,7 @@ const HoldView: React.FC<HoldViewProps> = ({ hold, boardDetails, expanded = fals
   const outerStrokeWidth = expanded ? 3 : 2;
 
   return (
-    <svg
-      viewBox={viewBox}
-      preserveAspectRatio="xMidYMid meet"
-      style={{ width: '100%', height: '100%' }}
-    >
+    <svg viewBox={viewBox} preserveAspectRatio="xMidYMid meet" style={{ width: '100%', height: '100%' }}>
       {/* Board background images */}
       {Object.keys(boardDetails.images_to_holds).map((imageUrl) => (
         <image
@@ -121,15 +117,11 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [classifications, setClassifications] = useState<Map<number, HoldClassification>>(
-    new Map(),
-  );
+  const [classifications, setClassifications] = useState<Map<number, HoldClassification>>(new Map());
   const [isComplete, setIsComplete] = useState(false);
   const [isHoldViewExpanded, setIsHoldViewExpanded] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const pendingSaveRef = useRef<{ holdId: number; classification: HoldClassification } | null>(
-    null,
-  );
+  const pendingSaveRef = useRef<{ holdId: number; classification: HoldClassification } | null>(null);
 
   // Get holds from board details, sorted by position (top-left to bottom-right)
   const holds = useMemo(() => {
@@ -239,10 +231,7 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
       // Set new timeout
       saveTimeoutRef.current = setTimeout(() => {
         if (pendingSaveRef.current) {
-          doSaveClassification(
-            pendingSaveRef.current.holdId,
-            pendingSaveRef.current.classification,
-          );
+          doSaveClassification(pendingSaveRef.current.holdId, pendingSaveRef.current.classification);
           pendingSaveRef.current = null;
         }
       }, 500);
@@ -365,11 +354,7 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
 
   const progress = holds.length > 0 ? ((currentIndex + 1) / holds.length) * 100 : 0;
   const classifiedCount = Array.from(classifications.values()).filter(
-    (c) =>
-      c.holdType !== null ||
-      c.handRating !== null ||
-      c.footRating !== null ||
-      c.pullDirection !== null,
+    (c) => c.holdType !== null || c.handRating !== null || c.footRating !== null || c.pullDirection !== null,
   ).length;
 
   // Filter hold types based on board type (e.g., exclude pocket for Kilter)
@@ -450,8 +435,8 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
             Classification Complete!
           </Typography>
           <Typography variant="body2" component="span" className={styles.completeSubtitle}>
-            You've classified {classifiedCount} of {holds.length} holds. You can run through this
-            wizard again anytime to update your ratings.
+            You've classified {classifiedCount} of {holds.length} holds. You can run through this wizard again anytime
+            to update your ratings.
           </Typography>
           <MuiButton variant="contained" size="large" onClick={onClose}>
             Done
@@ -496,17 +481,9 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
         </div>
 
         {/* Hold view (zoomed in on the board) */}
-        <div
-          className={`${styles.holdViewSection} ${isHoldViewExpanded ? styles.holdViewExpanded : ''}`}
-        >
+        <div className={`${styles.holdViewSection} ${isHoldViewExpanded ? styles.holdViewExpanded : ''}`}>
           <div className={styles.holdViewContainer}>
-            {currentHold && (
-              <HoldView
-                hold={currentHold}
-                boardDetails={boardDetails}
-                expanded={isHoldViewExpanded}
-              />
-            )}
+            {currentHold && <HoldView hold={currentHold} boardDetails={boardDetails} expanded={isHoldViewExpanded} />}
           </div>
           <MuiButton
             className={styles.expandButton}
@@ -531,9 +508,7 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
                 <div
                   key={option.value}
                   className={`${styles.holdTypeItem} ${
-                    currentClassification.holdType === option.value
-                      ? styles.holdTypeItemSelected
-                      : ''
+                    currentClassification.holdType === option.value ? styles.holdTypeItemSelected : ''
                   }`}
                   onClick={() => handleHoldTypeSelect(option.value)}
                 >
@@ -577,9 +552,7 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
             <Typography variant="body2" component="span" className={styles.sectionTitle}>
               Direction of Pull
             </Typography>
-            <div className={styles.ratingLabel}>
-              Click or drag to set the best pulling direction
-            </div>
+            <div className={styles.ratingLabel}>Click or drag to set the best pulling direction</div>
             <DirectionPicker
               value={currentClassification.pullDirection}
               onChange={handlePullDirectionChange}
@@ -599,12 +572,7 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
           >
             Previous
           </MuiButton>
-          <MuiButton
-            className={styles.skipButton}
-            variant="outlined"
-            onClick={handleNext}
-            disabled={saving}
-          >
+          <MuiButton className={styles.skipButton} variant="outlined" onClick={handleNext} disabled={saving}>
             Skip
           </MuiButton>
           <MuiButton

@@ -31,10 +31,7 @@ export async function POST(request: NextRequest) {
     const validationResult = favoriteSchema.safeParse(body);
 
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: validationResult.error.issues[0].message },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: validationResult.error.issues[0].message }, { status: 400 });
     }
 
     const { boardName, climbUuid, angle } = validationResult.data;
@@ -116,10 +113,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: validationResult.error.issues[0].message },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: validationResult.error.issues[0].message }, { status: 400 });
     }
 
     const db = getDb();
@@ -137,9 +131,7 @@ export async function GET(request: NextRequest) {
       );
 
     // Filter to only the requested climb UUIDs
-    const favoritedUuids = favorites
-      .map((f) => f.climbUuid)
-      .filter((uuid) => climbUuids.includes(uuid));
+    const favoritedUuids = favorites.map((f) => f.climbUuid).filter((uuid) => climbUuids.includes(uuid));
 
     return NextResponse.json({ favorites: favoritedUuids });
   } catch (error) {

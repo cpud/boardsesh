@@ -1,10 +1,6 @@
 import { describe, it, expect } from 'vite-plus/test';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  CreateSessionInputSchema,
-  EndSessionInputSchema,
-  SessionSummaryInputSchema,
-} from '../validation/schemas';
+import { CreateSessionInputSchema, EndSessionInputSchema, SessionSummaryInputSchema } from '../validation/schemas';
 
 describe('Enhanced Sessions - CreateSessionInputSchema Validation', () => {
   const validInput = {
@@ -20,8 +16,7 @@ describe('Enhanced Sessions - CreateSessionInputSchema Validation', () => {
   });
 
   it('should accept long board paths', () => {
-    const longBoardPath =
-      '/kilter/1/1/' + Array.from({ length: 100 }, (_, i) => i + 1).join(',') + '/40';
+    const longBoardPath = '/kilter/1/1/' + Array.from({ length: 100 }, (_, i) => i + 1).join(',') + '/40';
     const result = CreateSessionInputSchema.safeParse({
       ...validInput,
       boardPath: longBoardPath,

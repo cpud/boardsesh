@@ -18,11 +18,7 @@ import {
   type GetUserProfileStatsQueryResponse,
 } from '@/app/lib/graphql/operations';
 import { getDifficultyMapping, sortGrades } from '@/app/profile/[user_id]/utils/profile-constants';
-import {
-  V_GRADE_COLORS,
-  FONT_GRADE_COLORS,
-  getGradeColorWithOpacity,
-} from '@/app/lib/grade-colors';
+import { V_GRADE_COLORS, FONT_GRADE_COLORS, getGradeColorWithOpacity } from '@/app/lib/grade-colors';
 import { useGradeFormat } from '@/app/hooks/use-grade-format';
 import styles from './user-smart-card.module.css';
 
@@ -60,9 +56,7 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
   const { gradeFormat, loaded: gradeFormatLoaded } = useGradeFormat();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [totalClimbs, setTotalClimbs] = useState(0);
-  const [rawStats, setRawStats] = useState<
-    GetUserProfileStatsQueryResponse['userProfileStats'] | null
-  >(null);
+  const [rawStats, setRawStats] = useState<GetUserProfileStatsQueryResponse['userProfileStats'] | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -73,10 +67,10 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
         (async () => {
           try {
             const client = createGraphQLHttpClient(null);
-            const res = await client.request<
-              GetUserProfileStatsQueryResponse,
-              GetUserProfileStatsQueryVariables
-            >(GET_USER_PROFILE_STATS, { userId });
+            const res = await client.request<GetUserProfileStatsQueryResponse, GetUserProfileStatsQueryVariables>(
+              GET_USER_PROFILE_STATS,
+              { userId },
+            );
             return res.userProfileStats;
           } catch {
             return null;
@@ -125,10 +119,7 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
     });
   }, [rawStats, gradeFormat]);
 
-  const maxCount = useMemo(
-    () => Math.max(...gradeBars.map((b: GradeBar) => b.count), 1),
-    [gradeBars],
-  );
+  const maxCount = useMemo(() => Math.max(...gradeBars.map((b: GradeBar) => b.count), 1), [gradeBars]);
 
   const displayName = profile?.profile?.displayName || profile?.name || 'Climber';
   const avatarUrl = profile?.profile?.avatarUrl || profile?.image;
@@ -142,12 +133,7 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
             <div className={styles.skeletonInfo}>
               <Skeleton variant="text" width="60%" height={24} />
               <Skeleton variant="text" width="40%" height={16} />
-              <Skeleton
-                variant="rectangular"
-                width="100%"
-                height={32}
-                sx={{ borderRadius: 0.5, mt: 1 }}
-              />
+              <Skeleton variant="rectangular" width="100%" height={32} sx={{ borderRadius: 0.5, mt: 1 }} />
             </div>
           </div>
         </CardContent>
@@ -181,17 +167,15 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
 
               {profile.credentials && profile.credentials.length > 0 && (
                 <div className={styles.chips}>
-                  {profile.credentials.map(
-                    (cred: { boardType: string; auroraUsername: string }) => (
-                      <Chip
-                        key={cred.boardType}
-                        label={cred.boardType.charAt(0).toUpperCase() + cred.boardType.slice(1)}
-                        size="small"
-                        variant="outlined"
-                        sx={CHIP_SX}
-                      />
-                    ),
-                  )}
+                  {profile.credentials.map((cred: { boardType: string; auroraUsername: string }) => (
+                    <Chip
+                      key={cred.boardType}
+                      label={cred.boardType.charAt(0).toUpperCase() + cred.boardType.slice(1)}
+                      size="small"
+                      variant="outlined"
+                      sx={CHIP_SX}
+                    />
+                  ))}
                 </div>
               )}
             </div>
@@ -201,12 +185,7 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
 
           {gradeBars.length > 0 && (
             <div className={styles.chartSection}>
-              <Typography
-                variant="caption"
-                component="span"
-                color="text.secondary"
-                className={styles.chartLabel}
-              >
+              <Typography variant="caption" component="span" color="text.secondary" className={styles.chartLabel}>
                 {totalClimbs} distinct climb{totalClimbs !== 1 ? 's' : ''}
               </Typography>
 
@@ -229,11 +208,7 @@ export default function UserSmartCard({ userId, refreshKey = 0 }: UserSmartCardP
                     {gradeFormatLoaded ? (
                       bar.grade
                     ) : (
-                      <Skeleton
-                        variant="text"
-                        width={20}
-                        sx={{ display: 'inline-block', fontSize: 'inherit' }}
-                      />
+                      <Skeleton variant="text" width={20} sx={{ display: 'inline-block', fontSize: 'inherit' }} />
                     )}
                   </span>
                 ))}

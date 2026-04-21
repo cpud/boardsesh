@@ -101,9 +101,7 @@ export async function updateLiveActivity(options: LiveActivityUpdateOptions): Pr
 }
 
 /** Lightweight climb-only update — skips queue serialization across the bridge. */
-export async function updateLiveActivityClimb(
-  options: LiveActivityClimbUpdateOptions,
-): Promise<void> {
+export async function updateLiveActivityClimb(options: LiveActivityClimbUpdateOptions): Promise<void> {
   const plugin = getPlugin();
   if (!plugin) return;
   try {
@@ -113,9 +111,4 @@ export async function updateLiveActivityClimb(
   }
 }
 
-export type {
-  LiveActivityStartOptions,
-  LiveActivityUpdateOptions,
-  LiveActivityClimbUpdateOptions,
-  LiveActivityPlugin,
-};
+export type { LiveActivityStartOptions, LiveActivityUpdateOptions, LiveActivityClimbUpdateOptions, LiveActivityPlugin };

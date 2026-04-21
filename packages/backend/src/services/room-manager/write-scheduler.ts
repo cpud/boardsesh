@@ -90,10 +90,7 @@ export class WriteScheduler {
           this.postgresWriteTimers.delete(sessionId);
           console.log(`[RoomManager] Debounced Postgres write completed for session ${sessionId}`);
         } catch (error) {
-          console.error(
-            `[RoomManager] Debounced Postgres write failed for session ${sessionId}:`,
-            error,
-          );
+          console.error(`[RoomManager] Debounced Postgres write failed for session ${sessionId}:`, error);
           // Retry with exponential backoff instead of giving up
           await this.retryPostgresWrite(sessionId, state, error);
         }
@@ -127,9 +124,7 @@ export class WriteScheduler {
   ): Promise<void> {
     // Don't retry FK violations - session doesn't exist, retries will never succeed
     if (lastError && isForeignKeyViolation(lastError)) {
-      console.warn(
-        `[RoomManager] Not retrying write for session ${sessionId} - session doesn't exist in Postgres`,
-      );
+      console.warn(`[RoomManager] Not retrying write for session ${sessionId} - session doesn't exist in Postgres`);
       this.cancelPendingWrites(sessionId);
       return;
     }
@@ -174,10 +169,7 @@ export class WriteScheduler {
           this.writeRetryAttempts.delete(sessionId);
           console.log(`[RoomManager] Retry successful for session ${sessionId}`);
         } catch (error) {
-          console.error(
-            `[RoomManager] Retry ${attempts + 1} failed for session ${sessionId}:`,
-            error,
-          );
+          console.error(`[RoomManager] Retry ${attempts + 1} failed for session ${sessionId}:`, error);
           await this.retryPostgresWrite(sessionId, currentState, error);
         }
       }
@@ -240,11 +232,7 @@ export async function writeQueueStateToPostgres(
   scheduler: WriteScheduler,
 ): Promise<void> {
   // Check if session exists to prevent FK violation
-  const sessionExists = await db
-    .select({ id: sessions.id })
-    .from(sessions)
-    .where(eq(sessions.id, sessionId))
-    .limit(1);
+  const sessionExists = await db.select({ id: sessions.id }).from(sessions).where(eq(sessions.id, sessionId)).limit(1);
 
   if (sessionExists.length === 0) {
     console.warn(

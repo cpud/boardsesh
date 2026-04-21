@@ -69,21 +69,9 @@ export default function GymCard({ gym, onClick }: GymCardProps) {
           </Box>
 
           <Box sx={{ display: 'flex', gap: 2, mt: 1.5, flexWrap: 'wrap' }}>
-            <StatItem
-              icon={<FitnessCenterOutlined sx={{ fontSize: 14 }} />}
-              value={gym.boardCount}
-              label="boards"
-            />
-            <StatItem
-              icon={<PersonOutlined sx={{ fontSize: 14 }} />}
-              value={gym.memberCount}
-              label="members"
-            />
-            <StatItem
-              icon={<PeopleOutlined sx={{ fontSize: 14 }} />}
-              value={gym.followerCount}
-              label="followers"
-            />
+            <StatItem icon={<FitnessCenterOutlined sx={{ fontSize: 14 }} />} value={gym.boardCount} label="boards" />
+            <StatItem icon={<PersonOutlined sx={{ fontSize: 14 }} />} value={gym.memberCount} label="members" />
+            <StatItem icon={<PeopleOutlined sx={{ fontSize: 14 }} />} value={gym.followerCount} label="followers" />
           </Box>
         </CardContent>
       </CardActionArea>

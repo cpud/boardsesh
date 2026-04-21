@@ -253,17 +253,13 @@ const OnboardingTour: React.FC = () => {
   const tourSteps: TourStep[] = [
     {
       title: 'Select a Climb',
-      description: withSkip(
-        'Double-tap any climb card to make it the active climb and add it to your queue.',
-      ),
+      description: withSkip('Double-tap any climb card to make it the active climb and add it to your queue.'),
       target: getTarget('#onboarding-climb-card'),
       placement: 'bottom',
     },
     {
       title: 'Navigate Your Queue',
-      description: withSkip(
-        'Swipe left or right on this bar to go to the next or previous climb in your queue.',
-      ),
+      description: withSkip('Swipe left or right on this bar to go to the next or previous climb in your queue.'),
       target: getTarget('#onboarding-queue-bar'),
       cover: (
         <div className={styles.stepIcon}>
@@ -273,9 +269,7 @@ const OnboardingTour: React.FC = () => {
     },
     {
       title: 'View Your Queue',
-      description: withSkip(
-        'Tap here to open the queue drawer and see all your climbs, history, and suggestions.',
-      ),
+      description: withSkip('Tap here to open the queue drawer and see all your climbs, history, and suggestions.'),
       target: getTarget('#onboarding-queue-toggle'),
       cover: (
         <div className={styles.stepIcon}>
@@ -285,9 +279,7 @@ const OnboardingTour: React.FC = () => {
     },
     {
       title: 'Queue Item Actions',
-      description: withSkip(
-        'Swipe queue items left to log an ascent, or swipe right to add to a playlist.',
-      ),
+      description: withSkip('Swipe queue items left to log an ascent, or swipe right to add to a playlist.'),
       target: getTarget('[data-testid="queue-item"]'),
       mask: false,
       cover: (
@@ -298,9 +290,7 @@ const OnboardingTour: React.FC = () => {
     },
     {
       title: 'Reorder Your Queue',
-      description: withSkip(
-        'Press and hold a queue item, then drag it up or down to reorder your queue.',
-      ),
+      description: withSkip('Press and hold a queue item, then drag it up or down to reorder your queue.'),
       target: getTarget('[data-testid="queue-item"]'),
       mask: false,
       cover: (
@@ -349,13 +339,7 @@ const OnboardingTour: React.FC = () => {
   if (!isOnboardingTourEnabled || !open) return null;
 
   return (
-    <CustomTour
-      open={open}
-      current={current}
-      steps={tourSteps}
-      onStepChange={handleStepChange}
-      onClose={handleClose}
-    />
+    <CustomTour open={open} current={current} steps={tourSteps} onStepChange={handleStepChange} onClose={handleClose} />
   );
 };
 

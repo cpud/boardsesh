@@ -1,13 +1,4 @@
-import {
-  pgTable,
-  text,
-  integer,
-  timestamp,
-  bigserial,
-  index,
-  uniqueIndex,
-  pgEnum,
-} from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, timestamp, bigserial, index, uniqueIndex, pgEnum } from 'drizzle-orm/pg-core';
 import { users } from '../auth/users';
 
 /**

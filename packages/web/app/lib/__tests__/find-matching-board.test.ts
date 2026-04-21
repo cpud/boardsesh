@@ -69,24 +69,14 @@ describe('findMatchingBoard', () => {
   });
 
   it('should match by boardConfig', () => {
-    expect(
-      findMatchingBoard(boards, undefined, { boardType: 'kilter', layoutId: 1, sizeId: 12 }),
-    ).toBe(kilterBoard);
-    expect(
-      findMatchingBoard(boards, undefined, { boardType: 'tension', layoutId: 2, sizeId: 8 }),
-    ).toBe(tensionBoard);
+    expect(findMatchingBoard(boards, undefined, { boardType: 'kilter', layoutId: 1, sizeId: 12 })).toBe(kilterBoard);
+    expect(findMatchingBoard(boards, undefined, { boardType: 'tension', layoutId: 2, sizeId: 8 })).toBe(tensionBoard);
   });
 
   it('should return null for non-matching boardConfig', () => {
-    expect(
-      findMatchingBoard(boards, undefined, { boardType: 'kilter', layoutId: 1, sizeId: 999 }),
-    ).toBeNull();
-    expect(
-      findMatchingBoard(boards, undefined, { boardType: 'kilter', layoutId: 999, sizeId: 12 }),
-    ).toBeNull();
-    expect(
-      findMatchingBoard(boards, undefined, { boardType: 'moonboard', layoutId: 1, sizeId: 12 }),
-    ).toBeNull();
+    expect(findMatchingBoard(boards, undefined, { boardType: 'kilter', layoutId: 1, sizeId: 999 })).toBeNull();
+    expect(findMatchingBoard(boards, undefined, { boardType: 'kilter', layoutId: 999, sizeId: 12 })).toBeNull();
+    expect(findMatchingBoard(boards, undefined, { boardType: 'moonboard', layoutId: 1, sizeId: 12 })).toBeNull();
   });
 
   it('should prefer slug over boardConfig when both provided', () => {

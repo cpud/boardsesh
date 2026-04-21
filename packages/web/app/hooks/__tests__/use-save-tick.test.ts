@@ -368,9 +368,7 @@ describe('useSaveTick', () => {
     });
 
     await waitFor(() => {
-      const data = queryClient.getQueryData(accumulatedLogbookQueryKey('kilter')) as
-        | LogbookEntry[]
-        | undefined;
+      const data = queryClient.getQueryData(accumulatedLogbookQueryKey('kilter')) as LogbookEntry[] | undefined;
       expect(data?.length).toBe(1);
       expect(data?.[0].uuid).toMatch(/^temp-/);
       expect(data?.[0].status).toBe('flash');
@@ -406,9 +404,7 @@ describe('useSaveTick', () => {
     });
 
     await waitFor(() => {
-      const data = queryClient.getQueryData(accumulatedLogbookQueryKey('kilter')) as
-        | LogbookEntry[]
-        | undefined;
+      const data = queryClient.getQueryData(accumulatedLogbookQueryKey('kilter')) as LogbookEntry[] | undefined;
       expect(data?.length).toBe(1);
       expect(data?.[0].uuid).toMatch(/^temp-/);
     });
@@ -437,9 +433,7 @@ describe('useSaveTick', () => {
   });
 
   it('propagates GraphQL errors to the caller', async () => {
-    const graphqlError: Error & { response?: { errors: { message: string }[] } } = new Error(
-      'GraphQL error',
-    );
+    const graphqlError: Error & { response?: { errors: { message: string }[] } } = new Error('GraphQL error');
     graphqlError.response = {
       errors: [{ message: 'Climb not found' }],
     };

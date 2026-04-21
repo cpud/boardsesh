@@ -1,10 +1,5 @@
 import { gql } from 'graphql-request';
-import type {
-  Tick,
-  SaveTickInput,
-  GetTicksInput,
-  AttachBetaLinkInput,
-} from '@boardsesh/shared-schema';
+import type { Tick, SaveTickInput, GetTicksInput, AttachBetaLinkInput } from '@boardsesh/shared-schema';
 
 export const GET_TICKS = gql`
   query GetTicks($input: GetTicksInput!) {

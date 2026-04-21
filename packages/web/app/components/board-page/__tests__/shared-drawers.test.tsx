@@ -110,9 +110,7 @@ const identityResolve = (_climb: Climb) => boardDetails;
 describe('SharedDrawers imperative handle', () => {
   it('starts with both drawers closed', () => {
     const ref = createRef<SharedDrawerHandle>();
-    render(
-      <SharedDrawers ref={ref} boardDetails={boardDetails} resolveBoardDetails={identityResolve} />,
-    );
+    render(<SharedDrawers ref={ref} boardDetails={boardDetails} resolveBoardDetails={identityResolve} />);
 
     expect(screen.getByTestId('actions-drawer').dataset.open).toBe('false');
     expect(screen.getByTestId('playlist-drawer').dataset.open).toBe('false');
@@ -120,9 +118,7 @@ describe('SharedDrawers imperative handle', () => {
 
   it('openActions sets the climb and opens the actions drawer', () => {
     const ref = createRef<SharedDrawerHandle>();
-    render(
-      <SharedDrawers ref={ref} boardDetails={boardDetails} resolveBoardDetails={identityResolve} />,
-    );
+    render(<SharedDrawers ref={ref} boardDetails={boardDetails} resolveBoardDetails={identityResolve} />);
 
     const climb = makeClimb({ uuid: 'open-test', name: 'Open Me' });
     act(() => ref.current!.openActions(climb));
@@ -136,9 +132,7 @@ describe('SharedDrawers imperative handle', () => {
 
   it('openPlaylistSelector sets the climb and opens the playlist drawer', () => {
     const ref = createRef<SharedDrawerHandle>();
-    render(
-      <SharedDrawers ref={ref} boardDetails={boardDetails} resolveBoardDetails={identityResolve} />,
-    );
+    render(<SharedDrawers ref={ref} boardDetails={boardDetails} resolveBoardDetails={identityResolve} />);
 
     const climb = makeClimb({ uuid: 'playlist-test', name: 'Playlist Me' });
     act(() => ref.current!.openPlaylistSelector(climb));
@@ -152,9 +146,7 @@ describe('SharedDrawers imperative handle', () => {
 
   it('switching from actions to playlist updates correctly', () => {
     const ref = createRef<SharedDrawerHandle>();
-    render(
-      <SharedDrawers ref={ref} boardDetails={boardDetails} resolveBoardDetails={identityResolve} />,
-    );
+    render(<SharedDrawers ref={ref} boardDetails={boardDetails} resolveBoardDetails={identityResolve} />);
 
     const climb = makeClimb({ uuid: 'switch-test' });
     act(() => ref.current!.openActions(climb));
@@ -167,9 +159,7 @@ describe('SharedDrawers imperative handle', () => {
 
   it('opening for a different climb updates the climb reference', () => {
     const ref = createRef<SharedDrawerHandle>();
-    render(
-      <SharedDrawers ref={ref} boardDetails={boardDetails} resolveBoardDetails={identityResolve} />,
-    );
+    render(<SharedDrawers ref={ref} boardDetails={boardDetails} resolveBoardDetails={identityResolve} />);
 
     const climbA = makeClimb({ uuid: 'climb-a', name: 'Boulder A' });
     const climbB = makeClimb({ uuid: 'climb-b', name: 'Boulder B' });
@@ -184,9 +174,7 @@ describe('SharedDrawers imperative handle', () => {
 
   it('close resets drawer mode', () => {
     const ref = createRef<SharedDrawerHandle>();
-    render(
-      <SharedDrawers ref={ref} boardDetails={boardDetails} resolveBoardDetails={identityResolve} />,
-    );
+    render(<SharedDrawers ref={ref} boardDetails={boardDetails} resolveBoardDetails={identityResolve} />);
 
     const climb = makeClimb();
     act(() => ref.current!.openActions(climb));
@@ -204,9 +192,7 @@ describe('SharedDrawers imperative handle', () => {
     );
     const firstHandle = ref.current;
 
-    rerender(
-      <SharedDrawers ref={ref} boardDetails={boardDetails} resolveBoardDetails={identityResolve} />,
-    );
+    rerender(<SharedDrawers ref={ref} boardDetails={boardDetails} resolveBoardDetails={identityResolve} />);
     expect(ref.current).toBe(firstHandle);
   });
 });

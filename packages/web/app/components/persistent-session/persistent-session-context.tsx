@@ -32,18 +32,12 @@ export type {
 } from './types';
 
 // Split contexts: actions (stable) vs state (changes frequently)
-const PersistentSessionActionsContext = createContext<PersistentSessionActionsType | undefined>(
-  undefined,
-);
-const PersistentSessionStateContext = createContext<PersistentSessionStateType | undefined>(
-  undefined,
-);
+const PersistentSessionActionsContext = createContext<PersistentSessionActionsType | undefined>(undefined);
+const PersistentSessionStateContext = createContext<PersistentSessionStateType | undefined>(undefined);
 // Combined context for backward compatibility
 const PersistentSessionContext = createContext<PersistentSessionContextType | undefined>(undefined);
 
-export const PersistentSessionProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const PersistentSessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { token: wsAuthToken, isLoading: isAuthLoading } = useWsAuthToken();
   const { username, avatarUrl } = usePartyProfile();
 
@@ -245,9 +239,7 @@ export const PersistentSessionProvider: React.FC<{ children: React.ReactNode }> 
   return (
     <PersistentSessionActionsContext.Provider value={actionsValue}>
       <PersistentSessionStateContext.Provider value={stateValue}>
-        <PersistentSessionContext.Provider value={value}>
-          {children}
-        </PersistentSessionContext.Provider>
+        <PersistentSessionContext.Provider value={value}>{children}</PersistentSessionContext.Provider>
       </PersistentSessionStateContext.Provider>
     </PersistentSessionActionsContext.Provider>
   );

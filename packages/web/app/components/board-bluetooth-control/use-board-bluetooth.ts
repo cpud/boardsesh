@@ -13,17 +13,10 @@ import type { BluetoothAdapter } from '@/app/lib/ble/types';
 import { createBluetoothAdapter } from '@/app/lib/ble/adapter-factory';
 
 // Module-level cache for Aurora LED placements loader to avoid repeated dynamic import overhead
-type GetLedPlacementsFn = (
-  boardName: string,
-  layoutId: number,
-  sizeId: number,
-) => Record<number, number>;
+type GetLedPlacementsFn = (boardName: string, layoutId: number, sizeId: number) => Record<number, number>;
 let cachedGetLedPlacements: GetLedPlacementsFn | null = null;
 
-export const convertToMirroredFramesString = (
-  frames: string,
-  holdsData: HoldRenderData[],
-): string => {
+export const convertToMirroredFramesString = (frames: string, holdsData: HoldRenderData[]): string => {
   // Create a map for quick lookup of mirroredHoldId
   const holdIdToMirroredIdMap = new Map<number, number>();
   holdsData.forEach((hold) => {
@@ -111,10 +104,7 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
             `[BLE] LED placement map is empty for ${boardDetails.board_name} layout=${boardDetails.layout_id} size=${boardDetails.size_id}. ` +
               'Board configuration may be incorrect or LED data may need regeneration.',
           );
-          showMessage(
-            'Could not send to board — LED data missing for this board configuration.',
-            'error',
-          );
+          showMessage('Could not send to board — LED data missing for this board configuration.', 'error');
           return false;
         }
 

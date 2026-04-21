@@ -36,9 +36,7 @@ export async function registerClient(
     } catch (err) {
       clients.delete(connectionId);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      console.error(
-        `[RoomManager] Failed to register connection in distributed state: ${errorMessage}`,
-      );
+      console.error(`[RoomManager] Failed to register connection in distributed state: ${errorMessage}`);
       throw new Error(`Failed to register client: distributed state error`);
     }
   }
@@ -76,9 +74,7 @@ export async function joinSession(
     currentClimbQueueItem: ClimbQueueItem | null,
     expectedVersion?: number,
   ) => Promise<number>,
-  leaveSessionFn: (
-    connectionId: string,
-  ) => Promise<{ sessionId: string; newLeaderId?: string } | null>,
+  leaveSessionFn: (connectionId: string) => Promise<{ sessionId: string; newLeaderId?: string } | null>,
   username?: string,
   avatarUrl?: string,
   initialQueue?: ClimbQueueItem[],
@@ -121,20 +117,13 @@ export async function joinSession(
   if (graceTimer) {
     clearTimeout(graceTimer);
     sessionGraceTimers.delete(sessionId);
-    console.log(
-      `[RoomManager] Cancelled grace timer for session ${sessionId} (client reconnecting)`,
-    );
+    console.log(`[RoomManager] Cancelled grace timer for session ${sessionId} (client reconnecting)`);
   }
 
   // Create or get session in memory - with lazy restore
   if (!sessionsMap.has(sessionId)) {
     if (redisStore) {
-      isNewSession = await restoreSessionWithLock(
-        sessionId,
-        sessionsMap,
-        redisStore,
-        getSessionById,
-      );
+      isNewSession = await restoreSessionWithLock(sessionId, sessionsMap, redisStore, getSessionById);
       if (isNewSession) {
         console.log(
           `[RoomManager] Creating new session ${sessionId} with ${initialQueue?.length || 0} initial queue items`,
@@ -158,12 +147,7 @@ export async function joinSession(
   let isLeader: boolean;
 
   if (distributedState) {
-    const result = await distributedState.joinSession(
-      connectionId,
-      sessionId,
-      client.username,
-      client.avatarUrl,
-    );
+    const result = await distributedState.joinSession(connectionId, sessionId, client.username, client.avatarUrl);
     isLeader = result.isLeader;
   } else {
     isLeader = sessionClientIds.size === 0;
@@ -176,9 +160,7 @@ export async function joinSession(
   // Existing sessions stay Redis-only for join/leave activity.
   if (isNewSession) {
     const previous = pendingJoinPersists.get(sessionId) ?? Promise.resolve();
-    const chained = previous.then(() =>
-      ensureSessionRecordExists(sessionId, boardPath, client.userId, sessionName),
-    );
+    const chained = previous.then(() => ensureSessionRecordExists(sessionId, boardPath, client.userId, sessionName));
 
     pendingJoinPersists.set(sessionId, chained);
     try {
@@ -192,9 +174,7 @@ export async function joinSession(
 
   // Initialize queue state for new sessions with provided initial queue
   if (isNewSession && initialQueue && initialQueue.length > 0) {
-    console.log(
-      `[RoomManager] Initializing queue for new session ${sessionId} with ${initialQueue.length} items`,
-    );
+    console.log(`[RoomManager] Initializing queue for new session ${sessionId} with ${initialQueue.length} items`);
     await updateQueueStateImmediate(sessionId, initialQueue, initialCurrentClimb || null, 0);
   }
 
@@ -275,9 +255,7 @@ export async function leaveSession(
         if (!distributedState) {
           await redisStore.saveUsers(sessionId, []);
         }
-        console.log(
-          `[RoomManager] Session ${sessionId} marked inactive - grace period started (60s)`,
-        );
+        console.log(`[RoomManager] Session ${sessionId} marked inactive - grace period started (60s)`);
       }
 
       // Await pending session insert for brand-new sessions.
@@ -335,9 +313,7 @@ export async function removeClient(
     try {
       const result = await distributedState.removeConnection(connectionId);
       if (result.newLeaderId) {
-        console.log(
-          `[RoomManager] New leader ${result.newLeaderId.slice(0, 8)} elected after client removal`,
-        );
+        console.log(`[RoomManager] New leader ${result.newLeaderId.slice(0, 8)} elected after client removal`);
       }
     } catch (err) {
       distributedStateCleanedUp = false;

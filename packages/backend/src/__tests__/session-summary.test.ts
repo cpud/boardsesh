@@ -31,11 +31,7 @@ vi.mock('../db/client', () => ({
         if (prop === 'select') {
           return (..._args: unknown[]) => {
             const index = mockState.selectCallIndex++;
-            const dataByIndex = [
-              mockState.sessionRows,
-              mockState.gradeDistRows,
-              mockState.hardestRows,
-            ];
+            const dataByIndex = [mockState.sessionRows, mockState.gradeDistRows, mockState.hardestRows];
             return createChainableMock(dataByIndex[index] ?? []);
           };
         }
@@ -153,9 +149,7 @@ describe('generateSessionSummary', () => {
   });
 
   it('filters out null grades in grade distribution', async () => {
-    mockState.sessionRows = [
-      { id: 'session-1', startedAt: new Date(), endedAt: new Date(), goal: null },
-    ];
+    mockState.sessionRows = [{ id: 'session-1', startedAt: new Date(), endedAt: new Date(), goal: null }];
     mockState.gradeDistRows = [
       { grade: 'V3', difficulty: 14, count: 2 },
       { grade: null, difficulty: null, count: 1 },
@@ -310,9 +304,7 @@ describe('generateSessionSummary', () => {
   });
 
   it('returns null startedAt and endedAt when both are undefined', async () => {
-    mockState.sessionRows = [
-      { id: 'session-1', startedAt: undefined, endedAt: undefined, goal: null },
-    ];
+    mockState.sessionRows = [{ id: 'session-1', startedAt: undefined, endedAt: undefined, goal: null }];
     mockState.gradeDistRows = [];
     mockState.hardestRows = [];
     mockState.participantRows = [];

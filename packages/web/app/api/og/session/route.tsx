@@ -164,9 +164,7 @@ export async function GET(request: NextRequest) {
                 textAlign: 'center',
               }}
             >
-              <div style={{ fontSize: '22px', fontWeight: 700 }}>
-                {summary.boardLabel || 'Board ready'}
-              </div>
+              <div style={{ fontSize: '22px', fontWeight: 700 }}>{summary.boardLabel || 'Board ready'}</div>
               <div style={{ fontSize: '18px' }}>
                 {summary.boardAngle != null ? `${summary.boardAngle}°` : 'Session invite'}
               </div>

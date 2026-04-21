@@ -20,12 +20,7 @@ type SnackbarMessage = {
 };
 
 type SnackbarContextValue = {
-  showMessage: (
-    text: string,
-    severity: AlertColor,
-    action?: SnackbarAction,
-    duration?: number,
-  ) => void;
+  showMessage: (text: string, severity: AlertColor, action?: SnackbarAction, duration?: number) => void;
 };
 
 const SnackbarContext = createContext<SnackbarContextValue>({
@@ -37,12 +32,9 @@ export const useSnackbar = () => useContext(SnackbarContext);
 export function SnackbarProvider({ children }: { children: React.ReactNode }) {
   const [messages, setMessages] = useState<SnackbarMessage[]>([]);
 
-  const showMessage = useCallback(
-    (text: string, severity: AlertColor, action?: SnackbarAction, duration?: number) => {
-      setMessages((prev) => [...prev, { key: Date.now(), text, severity, action, duration }]);
-    },
-    [],
-  );
+  const showMessage = useCallback((text: string, severity: AlertColor, action?: SnackbarAction, duration?: number) => {
+    setMessages((prev) => [...prev, { key: Date.now(), text, severity, action, duration }]);
+  }, []);
 
   const handleClose = useCallback((key: number) => {
     setMessages((prev) => prev.filter((m) => m.key !== key));

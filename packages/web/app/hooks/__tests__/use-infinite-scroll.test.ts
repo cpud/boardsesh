@@ -33,12 +33,7 @@ function triggerIntersection(isIntersecting: boolean) {
 }
 
 // Test component that renders the sentinel div so the ref gets attached
-function TestComponent(props: {
-  onLoadMore: () => void;
-  hasMore: boolean;
-  isFetching?: boolean;
-  rootMargin?: string;
-}) {
+function TestComponent(props: { onLoadMore: () => void; hasMore: boolean; isFetching?: boolean; rootMargin?: string }) {
   const { sentinelRef } = useInfiniteScroll(props);
   return React.createElement('div', { ref: sentinelRef, 'data-testid': 'sentinel' });
 }
@@ -56,9 +51,7 @@ function DeferredSentinelComponent(props: {
     'div',
     null,
     React.createElement('span', null, 'content'),
-    showSentinel
-      ? React.createElement('div', { ref: sentinelRef, 'data-testid': 'sentinel' })
-      : null,
+    showSentinel ? React.createElement('div', { ref: sentinelRef, 'data-testid': 'sentinel' }) : null,
   );
 }
 
@@ -121,9 +114,7 @@ describe('useInfiniteScroll', () => {
     const onLoadMore1 = vi.fn();
     const onLoadMore2 = vi.fn();
 
-    const { rerender } = render(
-      React.createElement(TestComponent, { onLoadMore: onLoadMore1, hasMore: true }),
-    );
+    const { rerender } = render(React.createElement(TestComponent, { onLoadMore: onLoadMore1, hasMore: true }));
 
     // Update the callback
     rerender(React.createElement(TestComponent, { onLoadMore: onLoadMore2, hasMore: true }));
@@ -148,9 +139,7 @@ describe('useInfiniteScroll', () => {
   it('respects updated isFetching value without recreating observer', () => {
     const onLoadMore = vi.fn();
 
-    const { rerender } = render(
-      React.createElement(TestComponent, { onLoadMore, hasMore: true, isFetching: false }),
-    );
+    const { rerender } = render(React.createElement(TestComponent, { onLoadMore, hasMore: true, isFetching: false }));
 
     // Start fetching
     rerender(React.createElement(TestComponent, { onLoadMore, hasMore: true, isFetching: true }));

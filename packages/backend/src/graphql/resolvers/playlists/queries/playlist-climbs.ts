@@ -36,9 +36,7 @@ async function fetchSpecificBoardClimbs(
 ): Promise<{ climbs: Climb[]; hasMore: boolean }> {
   const boardName = input.boardName as BoardName;
   if (!isValidBoardName(boardName)) {
-    throw new Error(
-      `Invalid board name: ${boardName}. Must be one of: ${SUPPORTED_BOARDS.join(', ')}`,
-    );
+    throw new Error(`Invalid board name: ${boardName}. Must be one of: ${SUPPORTED_BOARDS.join(', ')}`);
   }
 
   const tables = UNIFIED_TABLES;
@@ -107,9 +105,7 @@ async function fetchSpecificBoardClimbs(
     stars: Math.round((Number(result.quality_average) || 0) * 5),
     difficulty_error: result.difficulty_error?.toString() || '0',
     benchmark_difficulty:
-      result.benchmark_difficulty && result.benchmark_difficulty > 0
-        ? result.benchmark_difficulty.toString()
-        : null,
+      result.benchmark_difficulty && result.benchmark_difficulty > 0 ? result.benchmark_difficulty.toString() : null,
     boardType: boardName,
   }));
 
@@ -188,9 +184,7 @@ async function fetchAllBoardsClimbs(
       stars: Math.round((Number(result.quality_average) || 0) * 5),
       difficulty_error: result.difficulty_error?.toString() || '0',
       benchmark_difficulty:
-        result.benchmark_difficulty && result.benchmark_difficulty > 0
-          ? result.benchmark_difficulty.toString()
-          : null,
+        result.benchmark_difficulty && result.benchmark_difficulty > 0 ? result.benchmark_difficulty.toString() : null,
       boardType: bt,
     };
   });

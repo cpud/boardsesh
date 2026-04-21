@@ -31,9 +31,7 @@ export function ForkAction({
 
   // Fork is not supported for moonboard yet
   const isMoonboard = boardDetails.board_name === 'moonboard';
-  const canFork =
-    !isMoonboard &&
-    !!(boardDetails.layout_name && boardDetails.size_name && boardDetails.set_names);
+  const canFork = !isMoonboard && !!(boardDetails.layout_name && boardDetails.size_name && boardDetails.set_names);
 
   const isEdit = !!climb.is_draft && !!climb.userId && climb.userId === session?.user?.id;
 
@@ -86,13 +84,7 @@ export function ForkAction({
     available: canFork,
     iconElementOverride: url ? (
       <ActionTooltip title={tooltip}>
-        <Link
-          href={url}
-          prefetch={false}
-          onClick={handleClick}
-          className={className}
-          style={linkResetStyle}
-        >
+        <Link href={url} prefetch={false} onClick={handleClick} className={className} style={linkResetStyle}>
           {icon}
         </Link>
       </ActionTooltip>

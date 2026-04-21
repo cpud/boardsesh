@@ -10,10 +10,7 @@ vi.mock('@/app/lib/user-preferences-db', () => ({
   setPreference: (...args: unknown[]) => setPreferenceMock(...args),
 }));
 
-import LogbookSwipeHintOrchestrator, {
-  REPEAT_COUNT,
-  ANIMATIONS_PER_CYCLE,
-} from '../logbook-swipe-hint-orchestrator';
+import LogbookSwipeHintOrchestrator, { REPEAT_COUNT, ANIMATIONS_PER_CYCLE } from '../logbook-swipe-hint-orchestrator';
 
 type FakeAnimation = {
   finished: Promise<void>;

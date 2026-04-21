@@ -10,11 +10,7 @@ vi.mock('react-swipeable', () => ({
   },
 }));
 
-import {
-  useCardSwipeNavigation,
-  EXIT_DURATION,
-  SNAP_BACK_DURATION,
-} from '../use-card-swipe-navigation';
+import { useCardSwipeNavigation, EXIT_DURATION, SNAP_BACK_DURATION } from '../use-card-swipe-navigation';
 
 function createDefaultOptions() {
   return {

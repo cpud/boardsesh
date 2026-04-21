@@ -8,9 +8,7 @@ interface ProfileSubPageLayoutProps {
   children: React.ReactNode;
 }
 
-function createDefaultProps(
-  overrides: Partial<ProfileSubPageLayoutProps> = {},
-): ProfileSubPageLayoutProps {
+function createDefaultProps(overrides: Partial<ProfileSubPageLayoutProps> = {}): ProfileSubPageLayoutProps {
   return {
     children: <div data-testid="child-content">Child content</div>,
     ...overrides,

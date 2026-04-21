@@ -4,9 +4,7 @@ import React from 'react';
 
 // Mock dependencies
 vi.mock('@/app/components/charts/css-bar-chart', () => ({
-  CssBarChart: (props: { ariaLabel?: string }) => (
-    <div data-testid="css-bar-chart" aria-label={props.ariaLabel} />
-  ),
+  CssBarChart: (props: { ariaLabel?: string }) => <div data-testid="css-bar-chart" aria-label={props.ariaLabel} />,
 }));
 
 vi.mock('@/app/components/charts/session-grade-bars', () => ({

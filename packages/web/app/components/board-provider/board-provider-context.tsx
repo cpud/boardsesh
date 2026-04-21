@@ -1,21 +1,10 @@
 'use client';
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  useRef,
-} from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { BoardName, ClimbUuid } from '@/app/lib/types';
 import { SaveClimbOptions } from '@/app/lib/api-wrappers/aurora/types';
 import { useSession } from 'next-auth/react';
 import { useLogbook as useLogbookQuery } from '@/app/hooks/use-logbook';
-import {
-  useSaveTick as useSaveTickMutation,
-  type SaveTickOptions,
-} from '@/app/hooks/use-save-tick';
+import { useSaveTick as useSaveTickMutation, type SaveTickOptions } from '@/app/hooks/use-save-tick';
 import {
   useSaveClimb as useSaveClimbMutation,
   useUpdateClimb as useUpdateClimbMutation,
@@ -41,21 +30,13 @@ interface BoardContextType {
   logbook: LogbookEntry[];
   getLogbook: (climbUuids: ClimbUuid[]) => Promise<void>;
   saveTick: (options: SaveTickOptions) => Promise<void>;
-  saveClimb: (
-    options: Omit<SaveClimbOptions, 'setter_id' | 'user_id'>,
-  ) => Promise<SaveClimbResponse>;
+  saveClimb: (options: Omit<SaveClimbOptions, 'setter_id' | 'user_id'>) => Promise<SaveClimbResponse>;
   updateClimb: (input: UpdateClimbInput) => Promise<UpdateClimbResponse>;
 }
 
 const BoardContext = createContext<BoardContextType | undefined>(undefined);
 
-export function BoardProvider({
-  boardName,
-  children,
-}: {
-  boardName: BoardName;
-  children: React.ReactNode;
-}) {
+export function BoardProvider({ boardName, children }: { boardName: BoardName; children: React.ReactNode }) {
   const { status: sessionStatus } = useSession();
   const { activeSession } = usePersistentSessionState();
   const [isInitialized, setIsInitialized] = useState(false);
@@ -99,9 +80,7 @@ export function BoardProvider({
   }, []);
 
   const saveClimb = useCallback(
-    async (
-      options: Omit<SaveClimbOptions, 'setter_id' | 'user_id'>,
-    ): Promise<SaveClimbResponse> => {
+    async (options: Omit<SaveClimbOptions, 'setter_id' | 'user_id'>): Promise<SaveClimbResponse> => {
       return saveClimbMutateRef.current(options);
     },
     [],
@@ -127,17 +106,7 @@ export function BoardProvider({
       saveClimb,
       updateClimb,
     }),
-    [
-      boardName,
-      isAuthenticated,
-      isLoading,
-      isInitialized,
-      logbook,
-      getLogbook,
-      saveTick,
-      saveClimb,
-      updateClimb,
-    ],
+    [boardName, isAuthenticated, isLoading, isInitialized, logbook, getLogbook, saveTick, saveClimb, updateClimb],
   );
 
   return <BoardContext.Provider value={value}>{children}</BoardContext.Provider>;

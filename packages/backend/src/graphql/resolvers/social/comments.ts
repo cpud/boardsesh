@@ -69,12 +69,7 @@ async function getCommentVoteCounts(commentUuid: string) {
       downvotes: dbSchema.voteCounts.downvotes,
     })
     .from(dbSchema.voteCounts)
-    .where(
-      and(
-        eq(dbSchema.voteCounts.entityType, 'comment'),
-        eq(dbSchema.voteCounts.entityId, commentUuid),
-      ),
-    )
+    .where(and(eq(dbSchema.voteCounts.entityType, 'comment'), eq(dbSchema.voteCounts.entityId, commentUuid)))
     .limit(1);
 
   return {
@@ -211,11 +206,7 @@ export const socialCommentQueries = {
    * Global comment feed: recent comments across all entities.
    * Supports board filtering via boardUuid. Always chronological.
    */
-  globalCommentFeed: async (
-    _: unknown,
-    { input }: { input?: Record<string, unknown> },
-    ctx: ConnectionContext,
-  ) => {
+  globalCommentFeed: async (_: unknown, { input }: { input?: Record<string, unknown> }, ctx: ConnectionContext) => {
     const validatedInput = validateInput(GlobalCommentFeedInputSchema, input || {}, 'input');
     const limit = validatedInput.limit ?? 20;
     const authenticatedUserId = ctx.isAuthenticated ? ctx.userId : null;
@@ -442,11 +433,7 @@ export const socialCommentMutations = {
     const { commentUuid, body } = validated;
     const userId = ctx.userId!;
 
-    const [comment] = await db
-      .select()
-      .from(dbSchema.comments)
-      .where(eq(dbSchema.comments.uuid, commentUuid))
-      .limit(1);
+    const [comment] = await db.select().from(dbSchema.comments).where(eq(dbSchema.comments.uuid, commentUuid)).limit(1);
 
     if (!comment) {
       throw new Error('Comment not found');
@@ -485,9 +472,7 @@ export const socialCommentMutations = {
     const replyResult = await db
       .select({ count: count() })
       .from(dbSchema.comments)
-      .where(
-        and(eq(dbSchema.comments.parentCommentId, comment.id), isNull(dbSchema.comments.deletedAt)),
-      );
+      .where(and(eq(dbSchema.comments.parentCommentId, comment.id), isNull(dbSchema.comments.deletedAt)));
     const replyCount = Number(replyResult[0]?.count || 0);
 
     // User's own vote
@@ -551,11 +536,7 @@ export const socialCommentMutations = {
     requireAuthenticated(ctx);
     const userId = ctx.userId!;
 
-    const [comment] = await db
-      .select()
-      .from(dbSchema.comments)
-      .where(eq(dbSchema.comments.uuid, commentUuid))
-      .limit(1);
+    const [comment] = await db.select().from(dbSchema.comments).where(eq(dbSchema.comments.uuid, commentUuid)).limit(1);
 
     if (!comment) {
       throw new Error('Comment not found');

@@ -1,17 +1,5 @@
-import {
-  useState,
-  useCallback,
-  useEffect,
-  useRef,
-  type Dispatch,
-  type SetStateAction,
-} from 'react';
-import {
-  createGraphQLClient,
-  execute,
-  subscribe,
-  Client,
-} from '../../graphql-queue/graphql-client';
+import { useState, useCallback, useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
+import { createGraphQLClient, execute, subscribe, Client } from '../../graphql-queue/graphql-client';
 import {
   INITIAL_RETRY_DELAY_MS,
   MAX_RETRY_DELAY_MS,
@@ -33,10 +21,7 @@ import type { ClimbQueueItem as LocalClimbQueueItem } from '../../queue-control/
 import { computeQueueStateHash } from '@/app/utils/hash';
 import { setPreference, removePreference } from '@/app/lib/user-preferences-db';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  END_SESSION as END_SESSION_GQL,
-  type EndSessionResponse,
-} from '@/app/lib/graphql/operations/sessions';
+import { END_SESSION as END_SESSION_GQL, type EndSessionResponse } from '@/app/lib/graphql/operations/sessions';
 import type { SessionSummary } from '@boardsesh/shared-schema';
 import { upsertSessionUser } from '../event-utils';
 import { TransientJoinError } from '../errors';
@@ -265,15 +250,10 @@ export function useSessionLifecycle({
     async function joinSession(clientToUse: Client): Promise<Session | null> {
       if (DEBUG) console.log('[PersistentSession] Calling joinSession mutation...');
       try {
-        const initialQueueData =
-          pendingInitialQueue?.sessionId === sessionId ? pendingInitialQueue : null;
+        const initialQueueData = pendingInitialQueue?.sessionId === sessionId ? pendingInitialQueue : null;
 
         if (DEBUG && initialQueueData) {
-          console.log(
-            '[PersistentSession] Sending initial queue with',
-            initialQueueData.queue.length,
-            'items',
-          );
+          console.log('[PersistentSession] Sending initial queue with', initialQueueData.queue.length, 'items');
         }
 
         const sessionName = activeSession?.sessionName || initialQueueData?.sessionName;
@@ -333,14 +313,11 @@ export function useSessionLifecycle({
         const gap = lastSeq !== null ? currentSeq - lastSeq : 0;
 
         if (DEBUG)
-          console.log(
-            `[PersistentSession] Reconnected. Last seq: ${lastSeq}, Current seq: ${currentSeq}, Gap: ${gap}`,
-          );
+          console.log(`[PersistentSession] Reconnected. Last seq: ${lastSeq}, Current seq: ${currentSeq}, Gap: ${gap}`);
 
         if (gap > 0 && gap <= 100 && lastSeq !== null && sessionId) {
           try {
-            if (DEBUG)
-              console.log(`[PersistentSession] Attempting delta sync for ${gap} missed events...`);
+            if (DEBUG) console.log(`[PersistentSession] Attempting delta sync for ${gap} missed events...`);
 
             const response = await execute<{ eventsReplay: EventsReplayResponse }>(graphqlClient, {
               query: EVENTS_REPLAY,
@@ -353,8 +330,7 @@ export function useSessionLifecycle({
             }
 
             if (replay.events.length > 0) {
-              if (DEBUG)
-                console.log(`[PersistentSession] Replaying ${replay.events.length} events`);
+              if (DEBUG) console.log(`[PersistentSession] Replaying ${replay.events.length} events`);
               replay.events.forEach((event) => {
                 handleQueueEvent(transformToSubscriptionEvent(event));
               });
@@ -373,15 +349,9 @@ export function useSessionLifecycle({
           if (DEBUG) console.log('[PersistentSession] First connection, applying initial state');
           applyFullSync(sessionData);
         } else if (gap === 0) {
-          const localHash = computeQueueStateHash(
-            queueRef.current,
-            currentClimbQueueItemRef.current?.uuid || null,
-          );
+          const localHash = computeQueueStateHash(queueRef.current, currentClimbQueueItemRef.current?.uuid || null);
           if (localHash !== sessionData.queueState.stateHash) {
-            if (DEBUG)
-              console.log(
-                '[PersistentSession] Hash mismatch on reconnect despite gap=0, applying full sync',
-              );
+            if (DEBUG) console.log('[PersistentSession] Hash mismatch on reconnect despite gap=0, applying full sync');
             applyFullSync(sessionData);
           } else {
             if (DEBUG) console.log('[PersistentSession] No missed events, already in sync');
@@ -389,8 +359,7 @@ export function useSessionLifecycle({
         }
 
         setSession(sessionData);
-        if (DEBUG)
-          console.log('[PersistentSession] Reconnection complete, clientId:', sessionData.clientId);
+        if (DEBUG) console.log('[PersistentSession] Reconnection complete, clientId:', sessionData.clientId);
       } finally {
         isReconnectingRef.current = false;
       }
@@ -451,8 +420,7 @@ export function useSessionLifecycle({
           throw new TransientJoinError('JoinSession returned no payload');
         }
 
-        if (DEBUG)
-          console.log('[PersistentSession] Joined session, clientId:', sessionData.clientId);
+        if (DEBUG) console.log('[PersistentSession] Joined session, clientId:', sessionData.clientId);
 
         transientRetryCount = 0;
         setSession(sessionData);
@@ -626,14 +594,7 @@ export function useSessionLifecycle({
         clearTimeout(retryConnectTimeout);
       }
     };
-  }, [
-    activeSession,
-    isAuthLoading,
-    handleQueueEvent,
-    handleSessionEvent,
-    setSession,
-    pendingInitialQueue,
-  ]);
+  }, [activeSession, isAuthLoading, handleQueueEvent, handleSessionEvent, setSession, pendingInitialQueue]);
 
   return {
     activeSession,

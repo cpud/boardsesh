@@ -227,18 +227,10 @@ async function createInlineNotification(event: SocialEvent): Promise<void> {
             dbSchema.boardDifficultyGrades,
             and(
               eq(dbSchema.boardDifficultyGrades.boardType, dbSchema.boardClimbs.boardType),
-              eq(
-                dbSchema.boardDifficultyGrades.difficulty,
-                dbSchema.boardClimbStats.displayDifficulty,
-              ),
+              eq(dbSchema.boardDifficultyGrades.difficulty, dbSchema.boardClimbStats.displayDifficulty),
             ),
           )
-          .where(
-            and(
-              eq(dbSchema.boardClimbs.uuid, event.entityId),
-              eq(dbSchema.boardClimbs.boardType, boardType),
-            ),
-          )
+          .where(and(eq(dbSchema.boardClimbs.uuid, event.entityId), eq(dbSchema.boardClimbs.boardType, boardType)))
           .limit(1);
 
         if (climb) {
@@ -249,10 +241,8 @@ async function createInlineNotification(event: SocialEvent): Promise<void> {
               name: climb.name ?? event.metadata.climbName,
               boardType,
               layoutId: climb.layoutId,
-              setterDisplayName:
-                climb.setterDisplayName ?? actor?.displayName ?? actor?.name ?? undefined,
-              setterAvatarUrl:
-                climb.setterAvatarUrl ?? actor?.avatarUrl ?? actor?.image ?? undefined,
+              setterDisplayName: climb.setterDisplayName ?? actor?.displayName ?? actor?.name ?? undefined,
+              setterAvatarUrl: climb.setterAvatarUrl ?? actor?.avatarUrl ?? actor?.image ?? undefined,
               angle: climb.angle ?? null,
               frames: climb.frames ?? null,
               difficultyName: climb.difficultyName ?? event.metadata.difficultyName ?? null,

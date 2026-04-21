@@ -44,13 +44,7 @@ export interface DraftsDrawerProps {
   onLoadDraft?: (climb: Climb) => void;
 }
 
-const DraftsDrawer: React.FC<DraftsDrawerProps> = ({
-  open,
-  onClose,
-  boardDetails,
-  angle,
-  onLoadDraft,
-}) => {
+const DraftsDrawer: React.FC<DraftsDrawerProps> = ({ open, onClose, boardDetails, angle, onLoadDraft }) => {
   const router = useRouter();
   const { mode } = useColorMode();
   const isDark = mode === 'dark';
@@ -120,13 +114,7 @@ const DraftsDrawer: React.FC<DraftsDrawerProps> = ({
         boardDetails.set_ids.join(','),
         angle,
       ] as const,
-    [
-      boardDetails.board_name,
-      boardDetails.layout_id,
-      boardDetails.size_id,
-      boardDetails.set_ids,
-      angle,
-    ],
+    [boardDetails.board_name, boardDetails.layout_id, boardDetails.size_id, boardDetails.set_ids, angle],
   );
 
   const { data, isLoading, error } = useQuery({
@@ -257,10 +245,7 @@ const DraftsDrawer: React.FC<DraftsDrawerProps> = ({
             </Box>
           ) : drafts.length === 0 ? (
             <Box sx={{ padding: themeTokens.spacing[8], textAlign: 'center' }}>
-              <Typography
-                variant="body1"
-                sx={{ fontWeight: themeTokens.typography.fontWeight.semibold }}
-              >
+              <Typography variant="body1" sx={{ fontWeight: themeTokens.typography.fontWeight.semibold }}>
                 No drafts yet
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ marginTop: 1 }}>

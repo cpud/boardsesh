@@ -15,11 +15,7 @@ interface UseEntityMutationOptions {
 
 export function useEntityMutation<TResponse, TVariables extends Variables = Variables>(
   mutation: TypedDocumentNode | string,
-  {
-    successMessage,
-    errorMessage,
-    authRequiredMessage = 'You must be signed in',
-  }: UseEntityMutationOptions,
+  { successMessage, errorMessage, authRequiredMessage = 'You must be signed in' }: UseEntityMutationOptions,
 ) {
   const { token } = useWsAuthToken();
   const { showMessage } = useSnackbar();

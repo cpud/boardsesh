@@ -38,8 +38,7 @@ vi.mock('@/app/components/persistent-session', () => ({
 }));
 
 vi.mock('@/app/components/session-creation/start-sesh-drawer', () => ({
-  default: ({ open }: { open: boolean }) =>
-    open ? <div data-testid="start-sesh-drawer">Drawer</div> : null,
+  default: ({ open }: { open: boolean }) => (open ? <div data-testid="start-sesh-drawer">Drawer</div> : null),
 }));
 
 vi.mock('@/app/components/search-drawer/unified-search-drawer', () => ({
@@ -235,9 +234,7 @@ describe('HomePageContent', () => {
       await waitFor(() => {
         expect(screen.getByText(/Get the Boardsesh app/i)).toBeTruthy();
       });
-      expect(
-        screen.getByText(/Lights up holds on your board straight from your phone/i),
-      ).toBeTruthy();
+      expect(screen.getByText(/Lights up holds on your board straight from your phone/i)).toBeTruthy();
     });
 
     it('shows the Android pre-launch sideload CTA on Android UA', async () => {

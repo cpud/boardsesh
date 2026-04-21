@@ -115,12 +115,7 @@ async function execute<T>(
 }
 
 // Helper to wait for a specific event from a subscription
-function waitForEvent<T>(
-  client: Client,
-  query: string,
-  predicate: (event: T) => boolean,
-  timeout = 5000,
-): Promise<T> {
+function waitForEvent<T>(client: Client, query: string, predicate: (event: T) => boolean, timeout = 5000): Promise<T> {
   return new Promise((resolve, reject) => {
     const timeoutId = setTimeout(() => {
       reject(new Error(`Timeout waiting for event (${timeout}ms)`));
@@ -149,12 +144,7 @@ function waitForEvent<T>(
 }
 
 // Helper to collect multiple events from a subscription
-function collectEvents<T>(
-  client: Client,
-  query: string,
-  count: number,
-  timeout = 5000,
-): Promise<T[]> {
+function collectEvents<T>(client: Client, query: string, count: number, timeout = 5000): Promise<T[]> {
   return new Promise((resolve, reject) => {
     const events: T[] = [];
     const timeoutId = setTimeout(() => {

@@ -40,18 +40,10 @@ export const feedItems = pgTable(
     ),
     actorCreatedAtIdx: index('feed_items_actor_created_at_idx').on(table.actorId, table.createdAt),
     createdAtIdx: index('feed_items_created_at_idx').on(table.createdAt),
-    entityTypeEntityIdIdx: index('feed_items_entity_type_entity_id_idx').on(
-      table.entityType,
-      table.entityId,
-    ),
+    entityTypeEntityIdIdx: index('feed_items_entity_type_entity_id_idx').on(table.entityType, table.entityId),
   }),
 );
 
 export type FeedItem = typeof feedItems.$inferSelect;
 export type NewFeedItem = typeof feedItems.$inferInsert;
-export type FeedItemType =
-  | 'ascent'
-  | 'new_climb'
-  | 'comment'
-  | 'proposal_approved'
-  | 'session_summary';
+export type FeedItemType = 'ascent' | 'new_climb' | 'comment' | 'proposal_approved' | 'session_summary';

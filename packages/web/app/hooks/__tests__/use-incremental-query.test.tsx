@@ -62,10 +62,7 @@ describe('useIncrementalQuery', () => {
 
   it('returns initialValue and isLoading=false when disabled', () => {
     const { wrapper } = createWrapper();
-    const { result } = renderHook(
-      () => useIncrementalQuery(['a'], defaultOptions({ enabled: false })),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useIncrementalQuery(['a'], defaultOptions({ enabled: false })), { wrapper });
 
     expect(result.current.data.size).toBe(0);
     expect(result.current.isLoading).toBe(false);
@@ -83,10 +80,10 @@ describe('useIncrementalQuery', () => {
     mockFetchChunk.mockResolvedValueOnce(new Set(['a']));
     const { wrapper } = createWrapper();
 
-    const { result, rerender } = renderHook(
-      ({ uuids }) => useIncrementalQuery(uuids, defaultOptions()),
-      { wrapper, initialProps: { uuids: ['a', 'b'] } },
-    );
+    const { result, rerender } = renderHook(({ uuids }) => useIncrementalQuery(uuids, defaultOptions()), {
+      wrapper,
+      initialProps: { uuids: ['a', 'b'] },
+    });
 
     await waitFor(() => {
       expect(result.current.data.has('a')).toBe(true);
@@ -111,10 +108,10 @@ describe('useIncrementalQuery', () => {
     mockFetchChunk.mockResolvedValueOnce(new Set(['a']));
     const { wrapper } = createWrapper();
 
-    const { result, rerender } = renderHook(
-      ({ uuids }) => useIncrementalQuery(uuids, defaultOptions()),
-      { wrapper, initialProps: { uuids: ['b', 'a'] } },
-    );
+    const { result, rerender } = renderHook(({ uuids }) => useIncrementalQuery(uuids, defaultOptions()), {
+      wrapper,
+      initialProps: { uuids: ['b', 'a'] },
+    });
 
     await waitFor(() => {
       expect(result.current.data.size).toBe(1);
@@ -133,15 +130,10 @@ describe('useIncrementalQuery', () => {
   it('chunks large UUID arrays into parallel requests', async () => {
     // Create 600 UUIDs — should produce 2 chunks (500 + 100)
     const uuids = Array.from({ length: 600 }, (_, i) => `uuid-${i}`);
-    mockFetchChunk
-      .mockResolvedValueOnce(new Set(['uuid-0']))
-      .mockResolvedValueOnce(new Set(['uuid-500']));
+    mockFetchChunk.mockResolvedValueOnce(new Set(['uuid-0'])).mockResolvedValueOnce(new Set(['uuid-500']));
 
     const { wrapper } = createWrapper();
-    const { result } = renderHook(
-      () => useIncrementalQuery(uuids, defaultOptions({ chunkSize: 500 })),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useIncrementalQuery(uuids, defaultOptions({ chunkSize: 500 })), { wrapper });
 
     await waitFor(() => {
       expect(result.current.data.has('uuid-0')).toBe(true);
@@ -173,16 +165,11 @@ describe('useIncrementalQuery', () => {
   it('handles partial chunk failure (all-or-nothing per batch)', async () => {
     // With 2 chunks, if Promise.all rejects (one chunk fails), the entire batch fails
     const uuids = Array.from({ length: 600 }, (_, i) => `uuid-${i}`);
-    mockFetchChunk
-      .mockResolvedValueOnce(new Set(['uuid-0']))
-      .mockRejectedValueOnce(new Error('Second chunk failed'));
+    mockFetchChunk.mockResolvedValueOnce(new Set(['uuid-0'])).mockRejectedValueOnce(new Error('Second chunk failed'));
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const { wrapper } = createWrapper();
-    const { result } = renderHook(
-      () => useIncrementalQuery(uuids, defaultOptions({ chunkSize: 500 })),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useIncrementalQuery(uuids, defaultOptions({ chunkSize: 500 })), { wrapper });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -197,10 +184,10 @@ describe('useIncrementalQuery', () => {
     mockFetchChunk.mockResolvedValueOnce(new Set(['a']));
     const { wrapper } = createWrapper();
 
-    const { result, rerender } = renderHook(
-      ({ enabled }) => useIncrementalQuery(['a'], defaultOptions({ enabled })),
-      { wrapper, initialProps: { enabled: true } },
-    );
+    const { result, rerender } = renderHook(({ enabled }) => useIncrementalQuery(['a'], defaultOptions({ enabled })), {
+      wrapper,
+      initialProps: { enabled: true },
+    });
 
     await waitFor(() => {
       expect(result.current.data.has('a')).toBe(true);

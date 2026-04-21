@@ -26,9 +26,7 @@ export function EmptyState({ icon, description = 'No data', children, sx }: Empt
         ...sx,
       }}
     >
-      <Box sx={{ fontSize: 48, mb: 1, opacity: 0.4 }}>
-        {icon || <InboxOutlined fontSize="inherit" />}
-      </Box>
+      <Box sx={{ fontSize: 48, mb: 1, opacity: 0.4 }}>{icon || <InboxOutlined fontSize="inherit" />}</Box>
       {typeof description === 'string' ? (
         <Typography variant="body2" color="text.secondary">
           {description}

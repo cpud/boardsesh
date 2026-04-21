@@ -36,19 +36,16 @@ export default function PlaylistSearchResults({ query, authToken }: PlaylistSear
   const pathname = usePathname();
   const debouncedQuery = useDebouncedValue(query, 300);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery<
-    PlaylistPage,
-    Error
-  >({
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery<PlaylistPage, Error>({
     queryKey: ['searchPlaylists', debouncedQuery, authToken],
     queryFn: async ({ pageParam }) => {
       const client = createGraphQLHttpClient(authToken);
-      const response = await client.request<
-        SearchPlaylistsQueryResponse,
-        SearchPlaylistsQueryVariables
-      >(SEARCH_PLAYLISTS, {
-        input: { query: debouncedQuery, limit: 20, offset: pageParam as number },
-      });
+      const response = await client.request<SearchPlaylistsQueryResponse, SearchPlaylistsQueryVariables>(
+        SEARCH_PLAYLISTS,
+        {
+          input: { query: debouncedQuery, limit: 20, offset: pageParam as number },
+        },
+      );
       return response.searchPlaylists;
     },
     initialPageParam: 0,
@@ -60,10 +57,7 @@ export default function PlaylistSearchResults({ query, authToken }: PlaylistSear
     staleTime: 30 * 1000,
   });
 
-  const results: DiscoverablePlaylist[] = useMemo(
-    () => data?.pages.flatMap((p) => p.playlists) ?? [],
-    [data],
-  );
+  const results: DiscoverablePlaylist[] = useMemo(() => data?.pages.flatMap((p) => p.playlists) ?? [], [data]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: fetchNextPage,
@@ -140,19 +134,11 @@ export default function PlaylistSearchResults({ query, authToken }: PlaylistSear
                 {playlist.climbCount !== 1 ? 's' : ''}
               </Typography>
             </Box>
-            <Chip
-              label={playlist.boardType}
-              size="small"
-              variant="outlined"
-              sx={{ flexShrink: 0 }}
-            />
+            <Chip label={playlist.boardType} size="small" variant="outlined" sx={{ flexShrink: 0 }} />
           </Box>
         ))}
       </Stack>
-      <Box
-        ref={sentinelRef}
-        sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}
-      >
+      <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}>
         {isFetchingNextPage && <CircularProgress size={24} />}
       </Box>
     </>

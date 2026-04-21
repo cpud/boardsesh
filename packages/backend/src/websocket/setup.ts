@@ -129,9 +129,7 @@ export function setupWebSocketServer(httpServer: HttpServer): {
           controllerMac,
         );
         await roomManager.registerClient(context.connectionId, undefined, authenticatedUserId);
-        console.log(
-          `Client connected: ${context.connectionId} (authenticated: ${isAuthenticated})`,
-        );
+        console.log(`Client connected: ${context.connectionId} (authenticated: ${isAuthenticated})`);
 
         // Store context in ctx.extra for access in other hooks
         (ctx.extra as CustomExtra).context = context;

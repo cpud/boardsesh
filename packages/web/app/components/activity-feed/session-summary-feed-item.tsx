@@ -93,12 +93,7 @@ export default function SessionSummaryFeedItem({ item }: SessionSummaryFeedItemP
           <Chip label={`${totalSends} sends`} size="small" color="primary" />
           <Chip label={`${totalAttempts} attempts`} size="small" variant="outlined" />
           {durationMinutes != null && (
-            <Chip
-              icon={<TimerOutlined />}
-              label={formatDuration(durationMinutes)}
-              size="small"
-              variant="outlined"
-            />
+            <Chip icon={<TimerOutlined />} label={formatDuration(durationMinutes)} size="small" variant="outlined" />
           )}
         </Box>
 

@@ -39,9 +39,7 @@ async function main() {
       const result = await runInferredSessionBuilderBatched({ batchSize: 10000 });
       totalAssigned += result.ticksAssigned;
 
-      console.log(
-        `  Processed ${result.usersProcessed} users, assigned ${result.ticksAssigned} ticks`,
-      );
+      console.log(`  Processed ${result.usersProcessed} users, assigned ${result.ticksAssigned} ticks`);
 
       if (result.ticksAssigned === 0) break;
     }
@@ -66,14 +64,10 @@ async function main() {
   `)
     .then((r) => (r as unknown as { rows: Array<{ count: number }> }).rows);
 
-  console.log(
-    `Found ${voteResult.count} orphaned vote_counts, ${commentResult.count} orphaned comments`,
-  );
+  console.log(`Found ${voteResult.count} orphaned vote_counts, ${commentResult.count} orphaned comments`);
 
   if (Number(voteResult.count) > 0 || Number(commentResult.count) > 0) {
-    console.log(
-      'Note: These ug: references cannot be automatically migrated to inferred session IDs',
-    );
+    console.log('Note: These ug: references cannot be automatically migrated to inferred session IDs');
     console.log('because the mapping depends on the original ungrouped session computation.');
     console.log('Consider manually reviewing and either deleting or migrating these entries.');
   }

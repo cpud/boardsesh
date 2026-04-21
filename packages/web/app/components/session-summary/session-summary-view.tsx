@@ -65,9 +65,7 @@ export default function SessionSummaryView({ summary }: SessionSummaryViewProps)
         {summary.durationMinutes != null && (
           <Card sx={{ flex: 1, minWidth: 120 }}>
             <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 }, textAlign: 'center' }}>
-              <Box
-                sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}
-              >
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
                 <TimerOutlined fontSize="small" color="action" />
                 <Typography variant="h5" fontWeight={700}>
                   {formatDuration(summary.durationMinutes)}
@@ -139,10 +137,7 @@ export default function SessionSummaryView({ summary }: SessionSummaryViewProps)
               {summary.gradeDistribution.map((g) => (
                 <Box key={g.grade} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   {gradeFormatLoaded ? (
-                    <Typography
-                      variant="body2"
-                      sx={{ minWidth: 40, fontWeight: 600, textAlign: 'right' }}
-                    >
+                    <Typography variant="body2" sx={{ minWidth: 40, fontWeight: 600, textAlign: 'right' }}>
                       {formatGrade(g.grade) ?? g.grade}
                     </Typography>
                   ) : (

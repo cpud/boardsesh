@@ -16,10 +16,7 @@ vi.mock('@/app/lib/graphql/operations', () => ({
 }));
 
 import { useWsAuthToken } from '../use-ws-auth-token';
-import {
-  useUnreadNotificationCount,
-  UNREAD_COUNT_QUERY_KEY,
-} from '../use-unread-notification-count';
+import { useUnreadNotificationCount, UNREAD_COUNT_QUERY_KEY } from '../use-unread-notification-count';
 
 const mockUseWsAuthToken = vi.mocked(useWsAuthToken);
 

@@ -14,10 +14,7 @@ import CheckCircleOutlineOutlined from '@mui/icons-material/CheckCircleOutlineOu
 import ErrorOutlineOutlined from '@mui/icons-material/ErrorOutlineOutlined';
 import type { SessionGradeDistributionItem } from '@boardsesh/shared-schema';
 import { CssBarChart } from '@/app/components/charts/css-bar-chart';
-import {
-  buildSessionGradeBars,
-  SESSION_GRADE_LEGEND,
-} from '@/app/components/charts/session-grade-bars';
+import { buildSessionGradeBars, SESSION_GRADE_LEGEND } from '@/app/components/charts/session-grade-bars';
 import { useGradeFormat } from '@/app/hooks/use-grade-format';
 import type { BoardDetails } from '@/app/lib/types';
 import BoardRenderer from '@/app/components/board-renderer/board-renderer';
@@ -35,18 +32,14 @@ export function buildSessionSummaryParts(stats: {
   formatGrade?: (g: string) => string | null;
 }): string[] {
   const parts: string[] = [];
-  if (stats.totalFlashes > 0)
-    parts.push(`${stats.totalFlashes} flash${stats.totalFlashes !== 1 ? 'es' : ''}`);
+  if (stats.totalFlashes > 0) parts.push(`${stats.totalFlashes} flash${stats.totalFlashes !== 1 ? 'es' : ''}`);
   // totalSends includes flashes, so subtract to avoid double-counting
   const nonFlashSends = stats.totalSends - stats.totalFlashes;
   if (nonFlashSends > 0) parts.push(`${nonFlashSends} send${nonFlashSends !== 1 ? 's' : ''}`);
-  if (stats.totalAttempts > 0)
-    parts.push(`${stats.totalAttempts} attempt${stats.totalAttempts !== 1 ? 's' : ''}`);
+  if (stats.totalAttempts > 0) parts.push(`${stats.totalAttempts} attempt${stats.totalAttempts !== 1 ? 's' : ''}`);
   parts.push(`${stats.tickCount} climb${stats.tickCount !== 1 ? 's' : ''}`);
   if (stats.hardestGrade) {
-    const formatted = stats.formatGrade
-      ? stats.formatGrade(stats.hardestGrade)
-      : stats.hardestGrade;
+    const formatted = stats.formatGrade ? stats.formatGrade(stats.hardestGrade) : stats.hardestGrade;
     parts.push(`Hardest: ${formatted ?? stats.hardestGrade}`);
   }
   return parts;
@@ -123,12 +116,9 @@ export default function SessionOverviewPanel({
           >
             <BoardRenderer boardDetails={boardDetails} mirrored={false} thumbnail fillHeight />
           </Box>
-          <Box
-            sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0, flexShrink: 0 }}
-          >
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0, flexShrink: 0 }}>
             <Typography variant="body2" fontWeight={600}>
-              {namedBoardName ||
-                boardDetails.board_name.charAt(0).toUpperCase() + boardDetails.board_name.slice(1)}
+              {namedBoardName || boardDetails.board_name.charAt(0).toUpperCase() + boardDetails.board_name.slice(1)}
             </Typography>
             {currentAngle != null && onAngleChange && (
               <AngleSelector
@@ -184,19 +174,12 @@ export default function SessionOverviewPanel({
               />
             )}
             {durationMinutes != null && durationMinutes > 0 && (
-              <Chip
-                icon={<TimerOutlined />}
-                label={formatDuration(durationMinutes)}
-                variant="outlined"
-              />
+              <Chip icon={<TimerOutlined />} label={formatDuration(durationMinutes)} variant="outlined" />
             )}
             <Chip label={`${tickCount} climb${tickCount !== 1 ? 's' : ''}`} variant="outlined" />
             {hardestGrade &&
               (gradeFormatLoaded ? (
-                <Chip
-                  label={`Hardest: ${formatGrade(hardestGrade) ?? hardestGrade}`}
-                  variant="outlined"
-                />
+                <Chip label={`Hardest: ${formatGrade(hardestGrade) ?? hardestGrade}`} variant="outlined" />
               ) : (
                 <Skeleton variant="rounded" width={80} height={32} />
               ))}
@@ -231,9 +214,7 @@ export default function SessionOverviewPanel({
                 <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center', mt: 1 }}>
                   {SESSION_GRADE_LEGEND.map((entry) => (
                     <Box key={entry.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Box
-                        sx={{ width: 10, height: 10, borderRadius: '2px', bgcolor: entry.color }}
-                      />
+                      <Box sx={{ width: 10, height: 10, borderRadius: '2px', bgcolor: entry.color }} />
                       <Typography variant="caption" color="text.secondary">
                         {entry.label}
                       </Typography>

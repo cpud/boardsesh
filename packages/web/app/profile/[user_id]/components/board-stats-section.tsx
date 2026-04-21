@@ -32,11 +32,7 @@ export default function BoardStatsSection({
     return null;
   }
 
-  if (
-    isOwnProfile &&
-    selectedBoard !== 'all' &&
-    (selectedBoard === 'kilter' || selectedBoard === 'tension')
-  ) {
+  if (isOwnProfile && selectedBoard !== 'all' && (selectedBoard === 'kilter' || selectedBoard === 'tension')) {
     return <BoardImportPrompt boardType={selectedBoard} />;
   }
 

@@ -11,10 +11,7 @@ vi.mock('@/app/lib/board-data', () => ({
 
 vi.mock('@/app/lib/grade-colors', () => ({
   V_GRADE_COLORS: { V3: '#FF7043', V6: '#E53935' } as Record<string, string>,
-  FONT_GRADE_COLORS: { '6a': '#FF7043', '6a+': '#FF7043', '7a': '#E53935' } as Record<
-    string,
-    string
-  >,
+  FONT_GRADE_COLORS: { '6a': '#FF7043', '6a+': '#FF7043', '7a': '#E53935' } as Record<string, string>,
   GradeDisplayFormat: {},
 }));
 

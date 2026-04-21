@@ -68,10 +68,7 @@ export const resolveBoardBySlug = cache(async (slug: string): Promise<ResolvedBo
 /**
  * Convert a resolved board entity to ParsedBoardRouteParameters.
  */
-export function boardToRouteParams(
-  board: ResolvedBoard,
-  angle: number,
-): ParsedBoardRouteParameters {
+export function boardToRouteParams(board: ResolvedBoard, angle: number): ParsedBoardRouteParameters {
   return {
     board_name: board.boardType as BoardName,
     layout_id: board.layoutId,

@@ -46,28 +46,14 @@ export async function analyzeGradeOutlier(
     if (currentIdx === -1) return null;
 
     // Resolve outlier settings
-    const minAscentsStr = await resolveCommunitySetting(
-      'outlier_min_ascents',
-      climbUuid,
-      angle,
-      boardType,
-    );
-    const gradeDiffStr = await resolveCommunitySetting(
-      'outlier_grade_diff',
-      climbUuid,
-      angle,
-      boardType,
-    );
+    const minAscentsStr = await resolveCommunitySetting('outlier_min_ascents', climbUuid, angle, boardType);
+    const gradeDiffStr = await resolveCommunitySetting('outlier_grade_diff', climbUuid, angle, boardType);
     const minAscents = parseInt(minAscentsStr, 10) || 10;
     const gradeDiffThreshold = parseInt(gradeDiffStr, 10) || 2;
 
     // Get qualifying neighbors
     const neighbors: { difficulty: number; weight: number }[] = [];
-    for (
-      let i = Math.max(0, currentIdx - 2);
-      i <= Math.min(sortedAngles.length - 1, currentIdx + 2);
-      i++
-    ) {
+    for (let i = Math.max(0, currentIdx - 2); i <= Math.min(sortedAngles.length - 1, currentIdx + 2); i++) {
       if (i === currentIdx) continue;
       const neighborRow = rows.find((r) => r.angle === sortedAngles[i]);
       if (!neighborRow) continue;
@@ -82,8 +68,7 @@ export async function analyzeGradeOutlier(
 
     // Compute weighted average
     const totalWeight = neighbors.reduce((acc, n) => acc + n.weight, 0);
-    const neighborAverage =
-      neighbors.reduce((acc, n) => acc + n.difficulty * n.weight, 0) / totalWeight;
+    const neighborAverage = neighbors.reduce((acc, n) => acc + n.difficulty * n.weight, 0) / totalWeight;
     const gradeDifference = Math.abs(currentGrade - neighborAverage);
 
     return {
@@ -107,29 +92,18 @@ export async function checkAutoApproval(
   climbUuid: string,
   angle: number | null,
 ): Promise<boolean> {
-  const threshold = await resolveCommunitySetting(
-    'approval_threshold',
-    climbUuid,
-    angle,
-    boardType,
-  );
+  const threshold = await resolveCommunitySetting('approval_threshold', climbUuid, angle, boardType);
   const required = parseInt(threshold, 10) || 5;
 
   // Sum weighted upvotes
   const result = await db
     .select({
-      weightedSum:
-        sql<number>`COALESCE(SUM(${dbSchema.proposalVotes.value} * ${dbSchema.proposalVotes.weight}), 0)`.as(
-          'weighted_sum',
-        ),
+      weightedSum: sql<number>`COALESCE(SUM(${dbSchema.proposalVotes.value} * ${dbSchema.proposalVotes.weight}), 0)`.as(
+        'weighted_sum',
+      ),
     })
     .from(dbSchema.proposalVotes)
-    .where(
-      and(
-        eq(dbSchema.proposalVotes.proposalId, proposalId),
-        sql`${dbSchema.proposalVotes.value} > 0`,
-      ),
-    );
+    .where(and(eq(dbSchema.proposalVotes.proposalId, proposalId), sql`${dbSchema.proposalVotes.value} > 0`));
 
   const weightedSum = Number(result[0]?.weightedSum || 0);
   return weightedSum >= required;

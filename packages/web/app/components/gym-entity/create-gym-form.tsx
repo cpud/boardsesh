@@ -20,13 +20,10 @@ interface CreateGymFormProps {
 export default function CreateGymForm({ boardUuid, onSuccess, onCancel }: CreateGymFormProps) {
   const { showMessage } = useSnackbar();
 
-  const { execute } = useEntityMutation<CreateGymMutationResponse, CreateGymMutationVariables>(
-    CREATE_GYM,
-    {
-      errorMessage: 'Failed to create gym',
-      authRequiredMessage: 'You must be signed in to create a gym',
-    },
-  );
+  const { execute } = useEntityMutation<CreateGymMutationResponse, CreateGymMutationVariables>(CREATE_GYM, {
+    errorMessage: 'Failed to create gym',
+    authRequiredMessage: 'You must be signed in to create a gym',
+  });
 
   const handleSubmit = useCallback(
     async (values: GymFormFieldValues) => {

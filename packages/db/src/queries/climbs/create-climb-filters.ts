@@ -1,11 +1,5 @@
 import { eq, gte, sql, like, notLike, inArray, or, and, SQL } from 'drizzle-orm';
-import {
-  boardClimbs,
-  boardClimbStats,
-  boardseshTicks,
-  boardProductSizes,
-  boardClimbHolds,
-} from '../../schema/index';
+import { boardClimbs, boardClimbStats, boardseshTicks, boardProductSizes, boardClimbHolds } from '../../schema/index';
 import type { BoardRouteParams, ClimbSearchParams } from './types';
 
 // Kilter Homewall constants for tall-climb filtering
@@ -20,28 +14,22 @@ const KILTER_HOMEWALL_PRODUCT_ID = 7;
  * @param searchParams Search/filter parameters
  * @param userId Optional user ID for personal progress filters
  */
-export const createClimbFilters = (
-  params: BoardRouteParams,
-  searchParams: ClimbSearchParams,
-  userId?: string,
-) => {
+export const createClimbFilters = (params: BoardRouteParams, searchParams: ClimbSearchParams, userId?: string) => {
   // Process hold filters
   // holdsFilter can have values like:
   // - 'ANY': hold must be present in the climb
   // - 'NOT': hold must NOT be present in the climb
   // - { state: 'STARTING' | 'HAND' | 'FOOT' | 'FINISH' }: hold must be present with that specific state
   // - 'STARTING' | 'HAND' | 'FOOT' | 'FINISH': (after URL parsing) same as above
-  const holdsToFilter = Object.entries(searchParams.holdsFilter || {}).map(
-    ([key, stateOrValue]) => {
-      const holdId = key.replace('hold_', '');
-      // Handle both object form { state: 'STARTING' } and string form 'STARTING'
-      const state =
-        typeof stateOrValue === 'object' && stateOrValue !== null
-          ? (stateOrValue as { state: string }).state
-          : stateOrValue;
-      return [holdId, state] as const;
-    },
-  );
+  const holdsToFilter = Object.entries(searchParams.holdsFilter || {}).map(([key, stateOrValue]) => {
+    const holdId = key.replace('hold_', '');
+    // Handle both object form { state: 'STARTING' } and string form 'STARTING'
+    const state =
+      typeof stateOrValue === 'object' && stateOrValue !== null
+        ? (stateOrValue as { state: string }).state
+        : stateOrValue;
+    return [holdId, state] as const;
+  });
 
   const anyHolds = holdsToFilter.filter(([, value]) => value === 'ANY').map(([key]) => Number(key));
   const notHolds = holdsToFilter.filter(([, value]) => value === 'NOT').map(([key]) => Number(key));
@@ -88,9 +76,7 @@ export const createClimbFilters = (
   // Uses denormalized compatible_size_ids array (pre-computed from edge comparison).
   // MoonBoard has a single fixed size, so skip.
   const sizeConditions: SQL[] =
-    params.board_name === 'moonboard'
-      ? []
-      : [sql`${params.size_id} = ANY(${boardClimbs.compatibleSizeIds})`];
+    params.board_name === 'moonboard' ? [] : [sql`${params.size_id} = ANY(${boardClimbs.compatibleSizeIds})`];
 
   // Projects-only: match climbs with 0 ascents OR no stats row at all.
   // Must live outside climbStatsConditions so it doesn't trigger the stats-driven
@@ -113,13 +99,9 @@ export const createClimbFilters = (
       sql`ROUND(${boardClimbStats.displayDifficulty}::numeric, 0) BETWEEN ${searchParams.minGrade} AND ${searchParams.maxGrade}`,
     );
   } else if (searchParams.minGrade) {
-    climbStatsConditions.push(
-      sql`ROUND(${boardClimbStats.displayDifficulty}::numeric, 0) >= ${searchParams.minGrade}`,
-    );
+    climbStatsConditions.push(sql`ROUND(${boardClimbStats.displayDifficulty}::numeric, 0) >= ${searchParams.minGrade}`);
   } else if (searchParams.maxGrade) {
-    climbStatsConditions.push(
-      sql`ROUND(${boardClimbStats.displayDifficulty}::numeric, 0) <= ${searchParams.maxGrade}`,
-    );
+    climbStatsConditions.push(sql`ROUND(${boardClimbStats.displayDifficulty}::numeric, 0) <= ${searchParams.maxGrade}`);
   }
 
   if (searchParams.minRating) {
@@ -133,9 +115,7 @@ export const createClimbFilters = (
   }
 
   // Name search condition
-  const nameCondition: SQL[] = searchParams.name
-    ? [sql`${boardClimbs.name} ILIKE ${`%${searchParams.name}%`}`]
-    : [];
+  const nameCondition: SQL[] = searchParams.name ? [sql`${boardClimbs.name} ILIKE ${`%${searchParams.name}%`}`] : [];
 
   // Setter name filter condition
   const setterNameCondition: SQL[] =
@@ -164,11 +144,7 @@ export const createClimbFilters = (
   // Tall climbs filter condition
   const tallClimbsConditions: SQL[] = [];
 
-  if (
-    searchParams.onlyTallClimbs &&
-    params.board_name === 'kilter' &&
-    params.layout_id === KILTER_HOMEWALL_LAYOUT_ID
-  ) {
+  if (searchParams.onlyTallClimbs && params.board_name === 'kilter' && params.layout_id === KILTER_HOMEWALL_LAYOUT_ID) {
     tallClimbsConditions.push(
       sql`${boardClimbs.edgeBottom} < (
         SELECT MAX(ps.edge_bottom)

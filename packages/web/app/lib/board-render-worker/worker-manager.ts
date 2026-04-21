@@ -19,12 +19,7 @@ import { trackWorkerRenderingDisabled } from '@/app/lib/rendering-metrics';
 const CACHE_MAX = 150;
 const bitmapCache = new Map<string, ImageBitmap>();
 
-function cacheKey(
-  boardDetails: BoardDetails,
-  frames: string,
-  mirrored: boolean,
-  thumbnail: boolean,
-): string {
+function cacheKey(boardDetails: BoardDetails, frames: string, mirrored: boolean, thumbnail: boolean): string {
   return `${boardDetails.board_name}:${boardDetails.layout_id}:${boardDetails.size_id}:${boardDetails.set_ids.join(',')}:${frames}:${mirrored ? 1 : 0}:${thumbnail ? 1 : 0}`;
 }
 

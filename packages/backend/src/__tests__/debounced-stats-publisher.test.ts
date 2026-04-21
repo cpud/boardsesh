@@ -1,19 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 // --- Hoisted mocks ---
-const {
-  buildSessionStatsUpdatedEventMock,
-  publishSessionEventMock,
-  redisSetMock,
-  redisGetMock,
-  redisDelMock,
-} = vi.hoisted(() => ({
-  buildSessionStatsUpdatedEventMock: vi.fn(),
-  publishSessionEventMock: vi.fn(),
-  redisSetMock: vi.fn().mockResolvedValue('OK'),
-  redisGetMock: vi.fn(),
-  redisDelMock: vi.fn().mockResolvedValue(1),
-}));
+const { buildSessionStatsUpdatedEventMock, publishSessionEventMock, redisSetMock, redisGetMock, redisDelMock } =
+  vi.hoisted(() => ({
+    buildSessionStatsUpdatedEventMock: vi.fn(),
+    publishSessionEventMock: vi.fn(),
+    redisSetMock: vi.fn().mockResolvedValue('OK'),
+    redisGetMock: vi.fn(),
+    redisDelMock: vi.fn().mockResolvedValue(1),
+  }));
 
 let mockRedisConnected = true;
 
@@ -113,12 +108,7 @@ describe('publishDebouncedSessionStats', () => {
   it('writes nonce to Redis with SET PX on each call', () => {
     publishDebouncedSessionStats('s1');
 
-    expect(redisSetMock).toHaveBeenCalledWith(
-      'boardsesh:debounce:stats:s1',
-      expect.any(String),
-      'PX',
-      2500,
-    );
+    expect(redisSetMock).toHaveBeenCalledWith('boardsesh:debounce:stats:s1', expect.any(String), 'PX', 2500);
   });
 
   it('cleans up Redis key after successful publish', async () => {

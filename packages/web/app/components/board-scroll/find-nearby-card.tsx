@@ -18,11 +18,7 @@ interface FindNearbyCardProps {
   size?: 'default' | 'small';
 }
 
-export default function FindNearbyCard({
-  onClick,
-  status = 'idle',
-  size = 'default',
-}: FindNearbyCardProps) {
+export default function FindNearbyCard({ onClick, status = 'idle', size = 'default' }: FindNearbyCardProps) {
   const isSmall = size === 'small';
   const iconSize = isSmall ? 28 : 36;
 

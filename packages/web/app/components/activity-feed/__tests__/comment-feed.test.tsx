@@ -115,11 +115,7 @@ describe('CommentFeed', () => {
     });
 
     it('shows entity type labels', async () => {
-      const comments = [
-        makeComment('c1', 'session'),
-        makeComment('c2', 'climb'),
-        makeComment('c3', 'proposal'),
-      ];
+      const comments = [makeComment('c1', 'session'), makeComment('c2', 'climb'), makeComment('c3', 'proposal')];
       mockRequest.mockResolvedValueOnce({
         globalCommentFeed: { comments, totalCount: 0, hasMore: false, cursor: null },
       });

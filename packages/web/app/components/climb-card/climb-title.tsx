@@ -259,10 +259,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(
     const nameElement = (
       <Typography variant="body2" component="span" sx={nameSx}>
         {climb.name}
-        <ClimbIcons
-          benchmarkDifficulty={climb.benchmark_difficulty}
-          isNoMatch={resolvedIsNoMatch}
-        />
+        <ClimbIcons benchmarkDifficulty={climb.benchmark_difficulty} isNoMatch={resolvedIsNoMatch} />
       </Typography>
     );
 
@@ -275,12 +272,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(
     const largeGradeElement =
       displayDifficulty &&
       (!gradeFormatLoaded ? (
-        <Skeleton
-          variant="rounded"
-          width={nameFontSize * 2.2}
-          height={nameFontSize}
-          sx={{ flexShrink: 0 }}
-        />
+        <Skeleton variant="rounded" width={nameFontSize * 2.2} height={nameFontSize} sx={{ flexShrink: 0 }} />
       ) : formattedGrade ? (
         <Typography variant="body2" component="span" sx={largeGradeSx}>
           {formattedGrade}
@@ -336,12 +328,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(
               {nameAddon}
             </Box>
             {/* Row 2: Stars + setter */}
-            <Typography
-              variant="body2"
-              component="span"
-              color="text.secondary"
-              sx={resolvedSubtitleSx}
-            >
+            <Typography variant="body2" component="span" color="text.secondary" sx={resolvedSubtitleSx}>
               {subtitleContent}
             </Typography>
           </Box>
@@ -350,12 +337,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(
             {rightAddon}
             {largeGradeElement}
             {!formattedGrade && displayDifficulty && (
-              <Typography
-                variant="body2"
-                component="span"
-                color="text.secondary"
-                sx={fallbackGradeSx}
-              >
+              <Typography variant="body2" component="span" color="text.secondary" sx={fallbackGradeSx}>
                 {displayDifficulty}
               </Typography>
             )}
@@ -382,9 +364,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(
       return (
         <Box sx={centered ? horizontalCenteredSx : horizontalDefaultSx} className={className}>
           {/* Colorized grade - absolutely positioned left when centered */}
-          {largeGradeElement && (
-            <Box sx={centered ? absoluteLeftSx : undefined}>{largeGradeElement}</Box>
-          )}
+          {largeGradeElement && <Box sx={centered ? absoluteLeftSx : undefined}>{largeGradeElement}</Box>}
           {/* Center: Name and quality/setter stacked */}
           <Box sx={centered ? horizontalCenterColumnCenteredSx : horizontalCenterColumnDefaultSx}>
             {/* Row 1: Name with addon */}
@@ -393,12 +373,7 @@ const ClimbTitle: React.FC<ClimbTitleProps> = React.memo(
               {nameAddon}
             </Box>
             {/* Row 2: Quality, setter, ascents */}
-            <Typography
-              variant="body2"
-              component="span"
-              color="text.secondary"
-              sx={resolvedSubtitleSx}
-            >
+            <Typography variant="body2" component="span" color="text.secondary" sx={resolvedSubtitleSx}>
               {secondLineContent.length > 0 ? (
                 secondLineContent.join(' · ')
               ) : (

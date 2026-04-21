@@ -49,12 +49,7 @@ interface StartSeshDrawerProps {
   boardConfigs?: BoardConfigData;
 }
 
-export default function StartSeshDrawer({
-  open,
-  onClose,
-  onTransitionEnd,
-  boardConfigs,
-}: StartSeshDrawerProps) {
+export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardConfigs }: StartSeshDrawerProps) {
   const { status } = useSession();
   const { paperRef, dragHandlers } = useDrawerDragResize({ open, onClose });
   const router = useRouter();
@@ -175,13 +170,8 @@ export default function StartSeshDrawer({
     } else {
       const setIds = config.setIds.join(',');
       url =
-        tryConstructSlugListUrl(
-          config.boardType,
-          config.layoutId,
-          config.sizeId,
-          config.setIds,
-          angle,
-        ) ?? `/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`;
+        tryConstructSlugListUrl(config.boardType, config.layoutId, config.sizeId, config.setIds, angle) ??
+        `/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`;
     }
     // Store as custom path selection
     setSelectedCustomPath(url);
@@ -240,8 +230,7 @@ export default function StartSeshDrawer({
           : null;
       const effectiveQueue = localQueue.length > 0 ? localQueue : bridgeQueue;
       const effectiveCurrentClimb = localCurrentClimbQueueItem ?? bridgeCurrentClimbQueueItem;
-      const boardsMatch =
-        effectiveBaseBoardPath != null && effectiveBaseBoardPath === getBaseBoardPath(boardPath);
+      const boardsMatch = effectiveBaseBoardPath != null && effectiveBaseBoardPath === getBaseBoardPath(boardPath);
 
       // Transfer existing queue to the new session if on the same board
       if (boardsMatch && (effectiveQueue.length > 0 || effectiveCurrentClimb)) {

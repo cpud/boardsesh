@@ -16,12 +16,7 @@ interface DirectionPickerProps {
  * Allows users to select a direction of pull (0-360 degrees)
  * 0 = up, 90 = right, 180 = down, 270 = left
  */
-const DirectionPicker: React.FC<DirectionPickerProps> = ({
-  value,
-  onChange,
-  disabled = false,
-  size = 120,
-}) => {
+const DirectionPicker: React.FC<DirectionPickerProps> = ({ value, onChange, disabled = false, size = 120 }) => {
   const circleRef = useRef<SVGSVGElement>(null);
 
   const calculateAngleFromEvent = useCallback((clientX: number, clientY: number) => {
@@ -79,8 +74,7 @@ const DirectionPicker: React.FC<DirectionPickerProps> = ({
   // 0 degrees = up, so we start from -90 in standard math coordinates
   const angleRad = value !== null ? ((value - 90) * Math.PI) / 180 : null;
   const arrowEndX = angleRad !== null ? center + Math.cos(angleRad) * arrowLength : center;
-  const arrowEndY =
-    angleRad !== null ? center + Math.sin(angleRad) * arrowLength : center - arrowLength;
+  const arrowEndY = angleRad !== null ? center + Math.sin(angleRad) * arrowLength : center - arrowLength;
 
   // Arrow head points
   const arrowHeadSize = 10;

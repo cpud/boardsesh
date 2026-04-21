@@ -175,11 +175,9 @@ describe('useCreateSession', () => {
   });
 
   it('falls back to 0,0 when geolocation fails', async () => {
-    mockGeolocation.getCurrentPosition.mockImplementation(
-      (_success: unknown, error: (err: unknown) => void) => {
-        error(new Error('Permission denied'));
-      },
-    );
+    mockGeolocation.getCurrentPosition.mockImplementation((_success: unknown, error: (err: unknown) => void) => {
+      error(new Error('Permission denied'));
+    });
 
     mockRequest.mockResolvedValue({
       createSession: {
@@ -257,10 +255,7 @@ describe('useCreateSession', () => {
 
     let createPromise: Promise<string>;
     act(() => {
-      createPromise = result.current.createSession(
-        createFormData() as SessionCreationFormData,
-        '/kilter/1/2/3/40',
-      );
+      createPromise = result.current.createSession(createFormData() as SessionCreationFormData, '/kilter/1/2/3/40');
     });
 
     expect(result.current.isCreating).toBe(true);
@@ -302,10 +297,7 @@ describe('useCreateSession', () => {
 
     let sessionId: string | undefined;
     await act(async () => {
-      sessionId = await result.current.createSession(
-        createFormData() as SessionCreationFormData,
-        '/kilter/1/2/3/40',
-      );
+      sessionId = await result.current.createSession(createFormData() as SessionCreationFormData, '/kilter/1/2/3/40');
     });
 
     expect(sessionId).toBe('returned-session-id');
@@ -318,10 +310,7 @@ describe('useCreateSession', () => {
 
     await expect(
       act(async () => {
-        await result.current.createSession(
-          createFormData() as SessionCreationFormData,
-          '/kilter/1/2/3/40',
-        );
+        await result.current.createSession(createFormData() as SessionCreationFormData, '/kilter/1/2/3/40');
       }),
     ).rejects.toThrow('Server error');
 

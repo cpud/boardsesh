@@ -96,9 +96,7 @@ export const AscentFeedInputSchema = z.object({
     ])
     .optional(),
   sortOrder: z.enum(['asc', 'desc']).optional(),
-  secondarySortBy: z
-    .enum(['climbName', 'loggedGrade', 'consensusGrade', 'date', 'attemptCount'])
-    .optional(),
+  secondarySortBy: z.enum(['climbName', 'loggedGrade', 'consensusGrade', 'date', 'attemptCount']).optional(),
   secondarySortOrder: z.enum(['asc', 'desc']).optional(),
   minDifficulty: z.number().int().min(0).optional(),
   maxDifficulty: z.number().int().min(0).optional(),
@@ -123,8 +121,7 @@ export const UpdateTickInputSchema = z
   })
   .refine(
     (data) => {
-      if (data.status === 'flash' && data.attemptCount !== undefined && data.attemptCount !== 1)
-        return false;
+      if (data.status === 'flash' && data.attemptCount !== undefined && data.attemptCount !== 1) return false;
       return true;
     },
     { message: 'Flash requires attemptCount of 1', path: ['attemptCount'] },

@@ -81,10 +81,7 @@ export function BoardSwitchConfirmProvider({ children }: { children: React.React
     setState(null);
   }, []);
 
-  const value = useMemo<BoardSwitchConfirmContextValue>(
-    () => ({ confirmBoardSwitch }),
-    [confirmBoardSwitch],
-  );
+  const value = useMemo<BoardSwitchConfirmContextValue>(() => ({ confirmBoardSwitch }), [confirmBoardSwitch]);
 
   const title = state?.reason === 'session' ? 'Leave your session?' : 'Disconnect your board?';
   const body =

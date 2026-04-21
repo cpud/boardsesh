@@ -41,14 +41,13 @@ export default function SetterClimbList({ username, boardTypes, authToken }: Set
         variables.input.layoutId = selectedBoard.layoutId;
         variables.input.sizeId = selectedBoard.sizeId;
         variables.input.setIds = selectedBoard.setIds;
-        variables.input.angle =
-          selectedBoard.angle ?? getDefaultAngleForBoard(selectedBoard.boardType);
+        variables.input.angle = selectedBoard.angle ?? getDefaultAngleForBoard(selectedBoard.boardType);
       }
 
-      const response = await client.request<
-        GetSetterClimbsFullQueryResponse,
-        GetSetterClimbsFullQueryVariables
-      >(GET_SETTER_CLIMBS_FULL, variables);
+      const response = await client.request<GetSetterClimbsFullQueryResponse, GetSetterClimbsFullQueryVariables>(
+        GET_SETTER_CLIMBS_FULL,
+        variables,
+      );
       return response.setterClimbsFull;
     },
     initialPageParam: 0,

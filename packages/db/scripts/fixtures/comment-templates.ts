@@ -1041,10 +1041,7 @@ export const GENERAL_THREADS: ThreadTemplate[] = [
 export const FLASH_THREADS: ThreadTemplate[] = [
   {
     parent: 'How did you flash this? I have been working it for weeks',
-    replies: [
-      'The trick is reading the holds from below first',
-      'That is wild, I could barely do the first move',
-    ],
+    replies: ['The trick is reading the holds from below first', 'That is wild, I could barely do the first move'],
   },
   {
     parent: 'Clean flash, the beta was so obvious once I saw the toe hook',
@@ -1070,10 +1067,7 @@ export const FLASH_THREADS: ThreadTemplate[] = [
   },
   {
     parent: 'Managed to flash the sit start variant too',
-    replies: [
-      'Now you are just showing off',
-      'The sit start is way harder, that is seriously impressive',
-    ],
+    replies: ['Now you are just showing off', 'The sit start is way harder, that is seriously impressive'],
   },
   {
     parent: 'Flash at 45 degrees, felt like the angle made it easier',
@@ -1106,10 +1100,7 @@ export const FLASH_THREADS: ThreadTemplate[] = [
   },
   {
     parent: 'Onsight flash no beta spray needed',
-    replies: [
-      'Humble brag of the year right here',
-      'Respect for not watching the video beta first',
-    ],
+    replies: ['Humble brag of the year right here', 'Respect for not watching the video beta first'],
   },
   {
     parent: 'Finally flashed something I thought was impossible last month',
@@ -1120,10 +1111,7 @@ export const FLASH_THREADS: ThreadTemplate[] = [
   },
   {
     parent: 'My partner could not believe I flashed this',
-    replies: [
-      'Having a witness makes it even sweeter',
-      'Show them the attempt count, one and done',
-    ],
+    replies: ['Having a witness makes it even sweeter', 'Show them the attempt count, one and done'],
   },
   {
     parent: 'Warmed up on this expecting to project it, sent first go',
@@ -1135,10 +1123,7 @@ export const FLASH_THREADS: ThreadTemplate[] = [
   },
   {
     parent: 'Third flash of the session, everything clicked today',
-    replies: [
-      'Those sessions where your body just works are magical',
-      'Save some sends for the rest of us',
-    ],
+    replies: ['Those sessions where your body just works are magical', 'Save some sends for the rest of us'],
   },
   {
     parent: 'Flashed it then immediately tried the next grade and got destroyed',
@@ -1149,10 +1134,7 @@ export const FLASH_THREADS: ThreadTemplate[] = [
   },
   {
     parent: 'Flash despite being pumped from the last three climbs',
-    replies: [
-      'Pumped flashes hit different, pure grit',
-      'Your endurance must be next level right now',
-    ],
+    replies: ['Pumped flashes hit different, pure grit', 'Your endurance must be next level right now'],
   },
   {
     parent: 'Casual flash while waiting for my friend to finish their project',
@@ -1197,10 +1179,7 @@ export const FLASH_THREADS: ThreadTemplate[] = [
   },
   {
     parent: 'Speed flash, barely two minutes on the wall',
-    replies: [
-      'When the beta is right the climb just happens',
-      'Two minutes? I spend longer chalking up than that',
-    ],
+    replies: ['When the beta is right the climb just happens', 'Two minutes? I spend longer chalking up than that'],
   },
   {
     parent: 'Flashed it lefty after my right hand got tweaked',
@@ -1221,10 +1200,7 @@ export const FLASH_THREADS: ThreadTemplate[] = [
 export const SEND_THREADS: ThreadTemplate[] = [
   {
     parent: 'Welcome to the send club! That crux is no joke',
-    replies: [
-      'Thanks! The heel hook changed everything',
-      'Which heel hook? I brute forced it with a campus move',
-    ],
+    replies: ['Thanks! The heel hook changed everything', 'Which heel hook? I brute forced it with a campus move'],
   },
   {
     parent: 'Finally sent after 47 attempts across eight sessions',
@@ -1236,10 +1212,7 @@ export const SEND_THREADS: ThreadTemplate[] = [
   },
   {
     parent: 'Sent it clean after resting for a week, rest days are real',
-    replies: [
-      'Rest is the most underrated training tool',
-      'I always come back stronger after a deload week',
-    ],
+    replies: ['Rest is the most underrated training tool', 'I always come back stronger after a deload week'],
   },
   {
     parent: 'That finishing jug never felt so good',
@@ -1288,10 +1261,7 @@ export const SEND_THREADS: ThreadTemplate[] = [
   },
   {
     parent: 'My kids watched me send my project, best audience ever',
-    replies: [
-      'That is awesome, getting the family stoked on climbing',
-      'Future crushers in the making',
-    ],
+    replies: ['That is awesome, getting the family stoked on climbing', 'Future crushers in the making'],
   },
   {
     parent: 'First V double digit send on the board, speechless',
@@ -1358,10 +1328,7 @@ export const SEND_THREADS: ThreadTemplate[] = [
   },
   {
     parent: 'Sent it in front of the setter, they gave me a fist bump',
-    replies: [
-      'Setter approval is the ultimate validation',
-      'That is honestly cooler than the send itself',
-    ],
+    replies: ['Setter approval is the ultimate validation', 'That is honestly cooler than the send itself'],
   },
   {
     parent: 'Everything aligned today, perfect conditions and a clean send',
@@ -1372,10 +1339,7 @@ export const SEND_THREADS: ThreadTemplate[] = [
   },
   {
     parent: 'Sent my long term project at the buzzer, gym was closing',
-    replies: [
-      'Nothing like a deadline to focus the mind',
-      'Pressure creates diamonds, or in this case sends',
-    ],
+    replies: ['Nothing like a deadline to focus the mind', 'Pressure creates diamonds, or in this case sends'],
   },
   {
     parent: 'Finally found the foot beta that unlocks this whole climb',
@@ -1598,11 +1562,7 @@ export const SALTY_THREADS: ThreadTemplate[] = [
 
 export function pickTickComment(status: TickStatus): string {
   const pool =
-    status === 'flash'
-      ? FLASH_TICK_COMMENTS
-      : status === 'send'
-        ? SEND_TICK_COMMENTS
-        : ATTEMPT_TICK_COMMENTS;
+    status === 'flash' ? FLASH_TICK_COMMENTS : status === 'send' ? SEND_TICK_COMMENTS : ATTEMPT_TICK_COMMENTS;
 
   // 70% status-specific, 30% general
   const useGeneral = Math.random() < 0.3;

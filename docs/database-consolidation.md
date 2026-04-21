@@ -615,11 +615,7 @@ export const boardClimbHolds = pgTable(
   },
   (table) => ({
     pk: primaryKey({ columns: [table.boardType, table.climbUuid, table.holdId] }),
-    holdSearchIdx: index('board_climb_holds_search_idx').on(
-      table.boardType,
-      table.holdId,
-      table.holdState,
-    ),
+    holdSearchIdx: index('board_climb_holds_search_idx').on(table.boardType, table.holdId, table.holdState),
     climbFk: foreignKey({
       columns: [table.climbUuid],
       foreignColumns: [boardClimbs.uuid],
@@ -647,11 +643,7 @@ export const boardClimbStatsHistory = pgTable(
     createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
   },
   (table) => ({
-    boardTypeClimbIdx: index('board_climb_stats_history_lookup_idx').on(
-      table.boardType,
-      table.climbUuid,
-      table.angle,
-    ),
+    boardTypeClimbIdx: index('board_climb_stats_history_lookup_idx').on(table.boardType, table.climbUuid, table.angle),
   }),
 );
 
@@ -1026,10 +1018,7 @@ export function getUnifiedTable<K extends keyof UnifiedTableSet>(tableName: K): 
 /**
  * Helper to create board_type condition for WHERE clauses
  */
-export function boardTypeCondition<T extends { boardType: unknown }>(
-  table: T,
-  boardName: BoardName,
-) {
+export function boardTypeCondition<T extends { boardType: unknown }>(table: T, boardName: BoardName) {
   return eq(table.boardType, boardName);
 }
 ```

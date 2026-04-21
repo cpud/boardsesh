@@ -53,10 +53,7 @@ export function getContext(connectionId: string): ConnectionContext | undefined 
  * Used when a user joins/leaves a session.
  * Gracefully handles missing connections (expected when WS disconnects mid-operation).
  */
-export function updateContext(
-  connectionId: string,
-  updates: Partial<Omit<ConnectionContext, 'connectionId'>>,
-): void {
+export function updateContext(connectionId: string, updates: Partial<Omit<ConnectionContext, 'connectionId'>>): void {
   const context = connections.get(connectionId);
   if (!context) {
     console.warn(
@@ -66,9 +63,7 @@ export function updateContext(
   }
 
   if (DEBUG) {
-    console.log(
-      `[Context] updateContext: ${connectionId} -> sessionId=${updates.sessionId}, userId=${updates.userId}`,
-    );
+    console.log(`[Context] updateContext: ${connectionId} -> sessionId=${updates.sessionId}, userId=${updates.userId}`);
   }
 
   if (updates.sessionId !== undefined) {

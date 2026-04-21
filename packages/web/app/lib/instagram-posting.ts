@@ -10,10 +10,7 @@ export interface InstagramCaptionInput {
   boardType?: string;
 }
 
-const BOARD_CAPTION_CONFIG: Record<
-  string,
-  { name: string; displayName: string; handle: string; hashtags: string }
-> = {
+const BOARD_CAPTION_CONFIG: Record<string, { name: string; displayName: string; handle: string; hashtags: string }> = {
   kilter: {
     name: 'Kilter Board',
     displayName: 'Kilter',
@@ -153,11 +150,7 @@ export function getBoardDisplayName(boardType: string): string {
   return boardType.charAt(0).toUpperCase() + boardType.slice(1);
 }
 
-export function buildInstagramCaption({
-  climbName,
-  angle,
-  boardType = 'kilter',
-}: InstagramCaptionInput): string {
+export function buildInstagramCaption({ climbName, angle, boardType = 'kilter' }: InstagramCaptionInput): string {
   const config = BOARD_CAPTION_CONFIG[boardType] ?? BOARD_CAPTION_CONFIG.kilter;
   return `"${climbName}" @ ${angle}\u00b0 on the ${config.name}.\n${config.handle} ${config.hashtags}`;
 }

@@ -10,11 +10,7 @@ interface FetchClimbDetailDataParams {
   angle: number;
 }
 
-export async function fetchClimbDetailData({
-  boardName,
-  climbUuid,
-  angle,
-}: FetchClimbDetailDataParams) {
+export async function fetchClimbDetailData({ boardName, climbUuid, angle }: FetchClimbDetailDataParams) {
   const fetchBetaLinks = async (): Promise<BetaLink[]> => {
     try {
       const { betaLinks } = UNIFIED_TABLES;

@@ -110,10 +110,7 @@ describe('generate-board-data', () => {
 
     it('should NOT contain data arrays (those belong in board_data.cpp)', () => {
       assert.ok(!holdContent.includes('PROGMEM'), 'hold header should not contain PROGMEM data');
-      assert.ok(
-        !holdContent.includes('holds_kilter_'),
-        'hold header should not contain hold arrays',
-      );
+      assert.ok(!holdContent.includes('holds_kilter_'), 'hold header should not contain hold arrays');
     });
   });
 
@@ -151,8 +148,7 @@ describe('generate-board-data', () => {
       assert.ok(count >= 30, `expected >= 30 configs, got ${count}`);
 
       // Count entries in BOARD_CONFIGS array
-      const tableSection =
-        dataCppContent.split('BOARD_CONFIGS[]')[1]?.split('BOARD_CONFIG_COUNT')[0] || '';
+      const tableSection = dataCppContent.split('BOARD_CONFIGS[]')[1]?.split('BOARD_CONFIG_COUNT')[0] || '';
       const entries = tableSection.match(/\{"(?:kilter|tension)\/\d+\/\d+\/[\d,]+"/g) || [];
       assert.equal(
         entries.length,
@@ -167,26 +163,17 @@ describe('generate-board-data', () => {
         const cleaned = key.replace(/"/g, '');
         const parts = cleaned.split('/');
         assert.ok(parts.length === 4, `config key "${cleaned}" should have 4 parts`);
-        assert.ok(
-          ['kilter', 'tension'].includes(parts[0]),
-          `board name "${parts[0]}" should be kilter or tension`,
-        );
+        assert.ok(['kilter', 'tension'].includes(parts[0]), `board name "${parts[0]}" should be kilter or tension`);
         assert.ok(/^\d+$/.test(parts[1]), `layout_id "${parts[1]}" should be numeric`);
         assert.ok(/^\d+$/.test(parts[2]), `size_id "${parts[2]}" should be numeric`);
-        assert.ok(
-          /^[\d,]+$/.test(parts[3]),
-          `set_ids "${parts[3]}" should be comma-separated numbers`,
-        );
+        assert.ok(/^[\d,]+$/.test(parts[3]), `set_ids "${parts[3]}" should be comma-separated numbers`);
       }
     });
 
     it('should have hold entries with coordinates within image bounds', () => {
       // Parse a few hold entries and verify coordinates are reasonable
       const holdEntries = dataCppContent.match(/\{(\d+),\s*(\d+),\s*(\d+),\s*(\d+)\}/g) || [];
-      assert.ok(
-        holdEntries.length > 100,
-        `should have many hold entries, got ${holdEntries.length}`,
-      );
+      assert.ok(holdEntries.length > 100, `should have many hold entries, got ${holdEntries.length}`);
 
       let outOfBounds = 0;
       for (const entry of holdEntries.slice(0, 1000)) {
@@ -221,24 +208,15 @@ describe('generate-board-data', () => {
 
   describe('specific configurations', () => {
     it('should include kilter/1/7/1,20 (most common Kilter board)', () => {
-      assert.ok(
-        dataCppContent.includes('"kilter/1/7/1,20"'),
-        'should include standard Kilter 12x14 config',
-      );
+      assert.ok(dataCppContent.includes('"kilter/1/7/1,20"'), 'should include standard Kilter 12x14 config');
     });
 
     it('should include tension/9/1/8,9,10,11 (standard Tension board)', () => {
-      assert.ok(
-        dataCppContent.includes('"tension/9/1/8,9,10,11"'),
-        'should include standard Tension full wall config',
-      );
+      assert.ok(dataCppContent.includes('"tension/9/1/8,9,10,11"'), 'should include standard Tension full wall config');
     });
 
     it('should include kilter/8/17/26,27 (Kilter homewall)', () => {
-      assert.ok(
-        dataCppContent.includes('"kilter/8/17/26,27"'),
-        'should include Kilter homewall config',
-      );
+      assert.ok(dataCppContent.includes('"kilter/8/17/26,27"'), 'should include Kilter homewall config');
     });
 
     it('should have non-empty hold maps for common boards', () => {
@@ -257,10 +235,7 @@ describe('generate-board-data', () => {
         const cleaned = key.replace(/"/g, '');
         const setIds = cleaned.split('/')[3].split(',').map(Number);
         for (let i = 1; i < setIds.length; i++) {
-          assert.ok(
-            setIds[i] >= setIds[i - 1],
-            `set_ids in "${cleaned}" should be sorted: ${setIds.join(',')}`,
-          );
+          assert.ok(setIds[i] >= setIds[i - 1], `set_ids in "${cleaned}" should be sorted: ${setIds.join(',')}`);
         }
       }
     });

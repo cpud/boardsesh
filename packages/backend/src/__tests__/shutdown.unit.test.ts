@@ -39,9 +39,7 @@ describe('shutdown: server resources interface', () => {
   });
 
   it('returns cleanupIntervals and shutdownServices from startServer', () => {
-    expect(serverSource).toContain(
-      'return { wss, httpServer, cleanupIntervals, shutdownServices }',
-    );
+    expect(serverSource).toContain('return { wss, httpServer, cleanupIntervals, shutdownServices }');
   });
 
   it('does not register its own SIGTERM/SIGINT handlers', () => {

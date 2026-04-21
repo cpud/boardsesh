@@ -33,12 +33,7 @@ export async function restoreSessionWithLock(
     try {
       // Double-check after acquiring lock (another instance might have initialized)
       if (!sessionsMap.has(sessionId)) {
-        const isNew = await tryRestoreFromStores(
-          sessionId,
-          sessionsMap,
-          redisStore,
-          getSessionById,
-        );
+        const isNew = await tryRestoreFromStores(sessionId, sessionsMap, redisStore, getSessionById);
         return isNew;
       }
       return false;
@@ -135,9 +130,7 @@ async function waitForRestoration(
 
     // Check if session was restored by another instance
     if (sessionsMap.has(sessionId)) {
-      console.log(
-        `[RoomManager] Session ${sessionId} restored by another instance after ${attempt + 1} attempts`,
-      );
+      console.log(`[RoomManager] Session ${sessionId} restored by another instance after ${attempt + 1} attempts`);
       sessionRestored = true;
       break;
     }
@@ -151,9 +144,7 @@ async function waitForRestoration(
     // Check Redis to see if the session was restored by another instance
     const redisSession = await redisStore.getSession(sessionId);
     if (redisSession) {
-      console.log(
-        `[RoomManager] Session ${sessionId} found in Redis after backoff, using restored state`,
-      );
+      console.log(`[RoomManager] Session ${sessionId} found in Redis after backoff, using restored state`);
       sessionsMap.set(sessionId, new Set());
       return false;
     }
@@ -163,9 +154,7 @@ async function waitForRestoration(
     if (!isNew) {
       console.log(`[RoomManager] Session ${sessionId} found in Postgres after backoff, restoring`);
     } else {
-      console.log(
-        `[RoomManager] Session ${sessionId} not found after backoff, treating as new session`,
-      );
+      console.log(`[RoomManager] Session ${sessionId} not found after backoff, treating as new session`);
     }
     sessionsMap.set(sessionId, new Set());
     return isNew;

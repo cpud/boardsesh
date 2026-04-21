@@ -92,29 +92,14 @@ export default function BoardCard({ board, onClick, trailingAction }: BoardCardP
           </Box>
 
           <Box sx={{ display: 'flex', gap: 2, mt: 1.5, flexWrap: 'wrap' }}>
-            <StatItem
-              icon={<TrendingUpOutlined sx={{ fontSize: 14 }} />}
-              value={board.totalAscents}
-              label="ascents"
-            />
-            <StatItem
-              icon={<PersonOutlined sx={{ fontSize: 14 }} />}
-              value={board.uniqueClimbers}
-              label="climbers"
-            />
-            <StatItem
-              icon={<PeopleOutlined sx={{ fontSize: 14 }} />}
-              value={board.followerCount}
-              label="followers"
-            />
+            <StatItem icon={<TrendingUpOutlined sx={{ fontSize: 14 }} />} value={board.totalAscents} label="ascents" />
+            <StatItem icon={<PersonOutlined sx={{ fontSize: 14 }} />} value={board.uniqueClimbers} label="climbers" />
+            <StatItem icon={<PeopleOutlined sx={{ fontSize: 14 }} />} value={board.followerCount} label="followers" />
           </Box>
         </CardContent>
       </CardActionArea>
       {trailingAction && (
-        <Box
-          sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, pb: 1.5 }}
-          onClick={(e) => e.stopPropagation()}
-        >
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, pb: 1.5 }} onClick={(e) => e.stopPropagation()}>
           {trailingAction}
         </Box>
       )}

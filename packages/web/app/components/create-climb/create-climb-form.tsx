@@ -71,10 +71,7 @@ import {
   type ClimbSearchCountResponse,
   type ClimbSearchInputVariables,
 } from '@/app/lib/graphql/operations/climb-search';
-import {
-  convertLitUpHoldsMapToMoonBoardHolds,
-  isMoonBoardDuplicateError,
-} from '@/app/lib/moonboard-climb-helpers';
+import { convertLitUpHoldsMapToMoonBoardHolds, isMoonBoardDuplicateError } from '@/app/lib/moonboard-climb-helpers';
 import styles from './create-climb-form.module.css';
 import {
   CHECK_MOONBOARD_CLIMB_DUPLICATES_QUERY,
@@ -176,8 +173,7 @@ export default function CreateClimbForm({
   } = boardType === 'aurora' ? auroraClimb : moonboardClimb;
 
   const handCount = boardType === 'moonboard' ? moonboardClimb.handCount : 0;
-  const generateFramesString =
-    boardType === 'aurora' ? auroraClimb.generateFramesString : undefined;
+  const generateFramesString = boardType === 'aurora' ? auroraClimb.generateFramesString : undefined;
   const setLitUpHoldsMap = boardType === 'moonboard' ? moonboardClimb.setLitUpHoldsMap : undefined;
   const loadAuroraHolds = boardType === 'aurora' ? auroraClimb.loadHolds : undefined;
 
@@ -299,10 +295,7 @@ export default function CreateClimbForm({
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [isHeatmapLoading, setIsHeatmapLoading] = useState(false);
   const heatmapOpacity = 0.7;
-  const handleHeatmapLoadingChange = useCallback(
-    (loading: boolean) => setIsHeatmapLoading(loading),
-    [],
-  );
+  const handleHeatmapLoadingChange = useCallback((loading: boolean) => setIsHeatmapLoading(loading), []);
   const [isDraft, setIsDraft] = useState(true);
 
   // MoonBoard-specific state
@@ -312,15 +305,12 @@ export default function CreateClimbForm({
   const [userGrade, setUserGrade] = useState<string | undefined>(undefined);
   const [isBenchmark, setIsBenchmark] = useState(false);
   const [selectedAngle, setSelectedAngle] = useState<number>(angle);
-  const [moonBoardDuplicateMatch, setMoonBoardDuplicateMatch] =
-    useState<MoonBoardClimbDuplicateMatch | null>(null);
+  const [moonBoardDuplicateMatch, setMoonBoardDuplicateMatch] = useState<MoonBoardClimbDuplicateMatch | null>(null);
   const [isCheckingMoonBoardDuplicate, setIsCheckingMoonBoardDuplicate] = useState(false);
 
   // Common state — in edit mode use the original name, not "{name} fork"
   const isEditMode = !!editClimb;
-  const [climbName, setClimbName] = useState(
-    isEditMode ? forkName || '' : forkName ? `${forkName} fork` : '',
-  );
+  const [climbName, setClimbName] = useState(isEditMode ? forkName || '' : forkName ? `${forkName} fork` : '');
   const [description, setDescription] = useState(forkDescription || '');
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [showDraftsDrawer, setShowDraftsDrawer] = useState(false);
@@ -395,11 +385,7 @@ export default function CreateClimbForm({
       autosaveSuppressedRef.current = false;
       return;
     }
-    if (
-      debouncedTotalHolds === 0 &&
-      !debouncedAutosave.climbName &&
-      !debouncedAutosave.description
-    ) {
+    if (debouncedTotalHolds === 0 && !debouncedAutosave.climbName && !debouncedAutosave.description) {
       clearAutosave();
       return;
     }
@@ -440,8 +426,7 @@ export default function CreateClimbForm({
   // Hold-type picker: tracks which hold the user just tapped, anchors the
   // popover against its DOM element, and routes selections back to setHoldState.
   const picker = useHoldTypePicker({ litUpHoldsMap, setHoldState });
-  const pickerBoardName =
-    boardType === 'aurora' ? (boardDetails?.board_name ?? 'kilter') : 'moonboard';
+  const pickerBoardName = boardType === 'aurora' ? (boardDetails?.board_name ?? 'kilter') : 'moonboard';
 
   // Wrap resetHolds so Clear starts a brand-new climb: holds wiped, text fields
   // cleared, Bluetooth board blanked, any lingering "Saved" confirmation
@@ -495,9 +480,7 @@ export default function CreateClimbForm({
 
         // Check angle mismatch
         if (climb.angle !== angle) {
-          warnings.push(
-            `Screenshot is for ${climb.angle}° but current page is ${angle}°. Holds imported anyway.`,
-          );
+          warnings.push(`Screenshot is for ${climb.angle}° but current page is ${angle}°. Holds imported anyway.`);
         }
 
         setOcrWarnings(warnings);
@@ -617,11 +600,7 @@ export default function CreateClimbForm({
       // leave this null; once published it stays stable until the 24h window
       // lapses and the backend refuses further updates.
       published_at:
-        !isDraft && savedClimb?.publishedAt
-          ? savedClimb.publishedAt
-          : !isDraft
-            ? new Date().toISOString()
-            : null,
+        !isDraft && savedClimb?.publishedAt ? savedClimb.publishedAt : !isDraft ? new Date().toISOString() : null,
       layoutId: boardType === 'aurora' ? (boardDetails?.layout_id ?? null) : (layoutId ?? null),
       boardType: boardType === 'aurora' ? boardDetails?.board_name : 'moonboard',
     }),
@@ -765,8 +744,7 @@ export default function CreateClimbForm({
         !!savedClimb &&
         savedClimb.boardType === boardDetails.board_name &&
         (savedClimb.isDraft ||
-          (!!savedClimb.publishedAt &&
-            Date.now() - Date.parse(savedClimb.publishedAt) <= EDIT_WINDOW_MS));
+          (!!savedClimb.publishedAt && Date.now() - Date.parse(savedClimb.publishedAt) <= EDIT_WINDOW_MS));
 
       if (canUpdate && savedClimb) {
         const updateInput: UpdateClimbInput = {
@@ -786,11 +764,7 @@ export default function CreateClimbForm({
         // otherwise we just refresh the drafts cache either way so UI stays
         // in sync.
         if (savedClimb.isDraft && !updateResult.isDraft) {
-          await refreshClimbSearchAfterSave(
-            queryClient,
-            boardDetails.board_name,
-            boardDetails.layout_id,
-          );
+          await refreshClimbSearchAfterSave(queryClient, boardDetails.board_name, boardDetails.layout_id);
         }
         await invalidateDraftCaches();
 
@@ -835,11 +809,7 @@ export default function CreateClimbForm({
       });
 
       if (!isDraft) {
-        await refreshClimbSearchAfterSave(
-          queryClient,
-          boardDetails.board_name,
-          boardDetails.layout_id,
-        );
+        await refreshClimbSearchAfterSave(queryClient, boardDetails.board_name, boardDetails.layout_id);
       }
       await invalidateDraftCaches();
 
@@ -878,10 +848,7 @@ export default function CreateClimbForm({
       track('Climb Create Failed', {
         boardLayout: boardDetails.layout_name || '',
       });
-      showMessage(
-        error instanceof Error ? error.message : 'Failed to save climb. Please try again.',
-        'error',
-      );
+      showMessage(error instanceof Error ? error.message : 'Failed to save climb. Please try again.', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -943,8 +910,7 @@ export default function CreateClimbForm({
         !!savedClimb &&
         savedClimb.boardType === 'moonboard' &&
         (savedClimb.isDraft ||
-          (!!savedClimb.publishedAt &&
-            Date.now() - Date.parse(savedClimb.publishedAt) <= EDIT_WINDOW_MS));
+          (!!savedClimb.publishedAt && Date.now() - Date.parse(savedClimb.publishedAt) <= EDIT_WINDOW_MS));
 
       if (canUpdate && savedClimb) {
         const updateInput: UpdateClimbInput = {
@@ -1008,10 +974,10 @@ export default function CreateClimbForm({
         },
       };
 
-      const moonBoardResult = await execute<
-        SaveMoonBoardClimbMutationResponse,
-        SaveMoonBoardClimbMutationVariables
-      >(graphqlClientRef.current, { query: SAVE_MOONBOARD_CLIMB_MUTATION, variables });
+      const moonBoardResult = await execute<SaveMoonBoardClimbMutationResponse, SaveMoonBoardClimbMutationVariables>(
+        graphqlClientRef.current,
+        { query: SAVE_MOONBOARD_CLIMB_MUTATION, variables },
+      );
 
       await invalidateCaches(isDraft);
 
@@ -1042,10 +1008,7 @@ export default function CreateClimbForm({
       if (error instanceof Error && isMoonBoardDuplicateError(error.message)) {
         await runMoonBoardDuplicateCheck(moonBoardHolds);
       }
-      showMessage(
-        error instanceof Error ? error.message : 'Failed to save climb. Please try again.',
-        'error',
-      );
+      showMessage(error instanceof Error ? error.message : 'Failed to save climb. Please try again.', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -1199,10 +1162,7 @@ export default function CreateClimbForm({
       const frameEntries = Object.entries(framesMap)
         .sort(([a], [b]) => Number(a) - Number(b))
         .map(([, frame]) => frame);
-      const mergedHolds = frameEntries.reduce(
-        (acc, frame) => ({ ...acc, ...frame }),
-        {} as LitUpHoldsMap,
-      );
+      const mergedHolds = frameEntries.reduce((acc, frame) => ({ ...acc, ...frame }), {} as LitUpHoldsMap);
       loadAuroraHolds(mergedHolds);
       setClimbName(climb.name || '');
       setDescription(climb.description || '');
@@ -1290,13 +1250,7 @@ export default function CreateClimbForm({
     if (boardType === 'moonboard' && !hasMoonBoardSessionUser) {
       return (
         <MuiTooltip title="Log in to save your climb">
-          <IconButton
-            size="small"
-            color="primary"
-            component={Link}
-            href="/api/auth/signin"
-            aria-label="Log in to save"
-          >
+          <IconButton size="small" color="primary" component={Link} href="/api/auth/signin" aria-label="Log in to save">
             <LoginOutlined fontSize="small" />
           </IconButton>
         </MuiTooltip>
@@ -1381,21 +1335,13 @@ export default function CreateClimbForm({
       <div className={styles.headerSection}>
         {/* MoonBoard OCR errors */}
         {boardType === 'moonboard' && ocrError && (
-          <MuiAlert
-            severity="error"
-            onClose={() => setOcrError(null)}
-            className={styles.alertBanner}
-          >
+          <MuiAlert severity="error" onClose={() => setOcrError(null)} className={styles.alertBanner}>
             Import Failed: {ocrError}
           </MuiAlert>
         )}
 
         {boardType === 'moonboard' && ocrWarnings.length > 0 && (
-          <MuiAlert
-            severity="warning"
-            onClose={() => setOcrWarnings([])}
-            className={styles.alertBanner}
-          >
+          <MuiAlert severity="warning" onClose={() => setOcrWarnings([])} className={styles.alertBanner}>
             Import Warnings:{' '}
             {ocrWarnings.map((w, i) => (
               <div key={i}>{w}</div>
@@ -1409,14 +1355,11 @@ export default function CreateClimbForm({
           </MuiAlert>
         )}
 
-        {boardType === 'moonboard' &&
-          !moonBoardDuplicateError &&
-          isCheckingMoonBoardDuplicate &&
-          isValid && (
-            <MuiAlert severity="info" className={styles.alertBanner}>
-              Checking whether this MoonBoard climb already exists...
-            </MuiAlert>
-          )}
+        {boardType === 'moonboard' && !moonBoardDuplicateError && isCheckingMoonBoardDuplicate && isValid && (
+          <MuiAlert severity="info" className={styles.alertBanner}>
+            Checking whether this MoonBoard climb already exists...
+          </MuiAlert>
+        )}
 
         {/* Title row — mirrors play view: name + byline, settings icon on right.
             Draft label floats top-right so the transparent header avatar on the
@@ -1431,11 +1374,7 @@ export default function CreateClimbForm({
               titleFontSize={themeTokens.typography.fontSize['2xl']}
             />
             {description && (
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                className={styles.climbTitleDescription}
-              >
+              <Typography variant="body2" color="text.secondary" className={styles.climbTitleDescription}>
                 {description}
               </Typography>
             )}
@@ -1585,21 +1524,12 @@ export default function CreateClimbForm({
                   onClick={() => fileInputRef.current?.click()}
                   aria-label="Import from screenshot"
                 >
-                  {isOcrProcessing ? (
-                    <CircularProgress size={16} />
-                  ) : (
-                    <CloudUploadOutlined fontSize="small" />
-                  )}
+                  {isOcrProcessing ? <CircularProgress size={16} /> : <CloudUploadOutlined fontSize="small" />}
                 </IconButton>
               </span>
             </MuiTooltip>
             <MuiTooltip title="Bulk import">
-              <IconButton
-                size="small"
-                component={Link}
-                href={bulkImportUrl}
-                aria-label="Bulk import"
-              >
+              <IconButton size="small" component={Link} href={bulkImportUrl} aria-label="Bulk import">
                 <GetAppOutlined fontSize="small" />
               </IconButton>
             </MuiTooltip>
@@ -1665,12 +1595,7 @@ export default function CreateClimbForm({
         <div className={styles.settingsDrawerContent}>
           {/* Name */}
           <div className={styles.settingsField}>
-            <Typography
-              variant="body2"
-              component="span"
-              color="text.secondary"
-              className={styles.settingsLabel}
-            >
+            <Typography variant="body2" component="span" color="text.secondary" className={styles.settingsLabel}>
               Name
             </Typography>
             <TextField
@@ -1687,11 +1612,7 @@ export default function CreateClimbForm({
           {/* Draft toggle */}
           <div className={styles.settingsField}>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <MuiSwitch
-                size="small"
-                checked={isDraft}
-                onChange={(_, checked) => setIsDraft(checked)}
-              />
+              <MuiSwitch size="small" checked={isDraft} onChange={(_, checked) => setIsDraft(checked)} />
               <Typography variant="body2" component="span">
                 Draft
               </Typography>
@@ -1700,59 +1621,22 @@ export default function CreateClimbForm({
 
           {/* Hold count indicators */}
           <div className={styles.settingsField}>
-            <Typography
-              variant="body2"
-              component="span"
-              color="text.secondary"
-              className={styles.settingsLabel}
-            >
+            <Typography variant="body2" component="span" color="text.secondary" className={styles.settingsLabel}>
               Holds
             </Typography>
             <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
               {boardType === 'aurora' ? (
                 <>
-                  <HoldIndicator
-                    count={startingCount}
-                    max={2}
-                    color={themeTokens.colors.success}
-                    label="Starting"
-                  />
-                  <HoldIndicator
-                    count={finishCount}
-                    max={2}
-                    color={themeTokens.colors.pink}
-                    label="Finish"
-                  />
-                  <HoldIndicator
-                    count={totalHolds}
-                    color={themeTokens.colors.primary}
-                    label="Total"
-                  />
+                  <HoldIndicator count={startingCount} max={2} color={themeTokens.colors.success} label="Starting" />
+                  <HoldIndicator count={finishCount} max={2} color={themeTokens.colors.pink} label="Finish" />
+                  <HoldIndicator count={totalHolds} color={themeTokens.colors.primary} label="Total" />
                 </>
               ) : (
                 <>
-                  <HoldIndicator
-                    count={startingCount}
-                    max={2}
-                    color={themeTokens.colors.error}
-                    label="Start"
-                  />
-                  <HoldIndicator
-                    count={handCount}
-                    color={themeTokens.colors.primary}
-                    label="Hand"
-                  />
-                  <HoldIndicator
-                    count={finishCount}
-                    max={2}
-                    color={themeTokens.colors.success}
-                    label="Finish"
-                  />
-                  <HoldIndicator
-                    count={totalHolds}
-                    color={themeTokens.colors.secondary}
-                    label="Total"
-                  />
+                  <HoldIndicator count={startingCount} max={2} color={themeTokens.colors.error} label="Start" />
+                  <HoldIndicator count={handCount} color={themeTokens.colors.primary} label="Hand" />
+                  <HoldIndicator count={finishCount} max={2} color={themeTokens.colors.success} label="Finish" />
+                  <HoldIndicator count={totalHolds} color={themeTokens.colors.secondary} label="Total" />
                 </>
               )}
             </Stack>
@@ -1762,12 +1646,7 @@ export default function CreateClimbForm({
           {boardType === 'moonboard' && (
             <>
               <div className={styles.settingsField}>
-                <Typography
-                  variant="body2"
-                  component="span"
-                  color="text.secondary"
-                  className={styles.settingsLabel}
-                >
+                <Typography variant="body2" component="span" color="text.secondary" className={styles.settingsLabel}>
                   Angle
                 </Typography>
                 <MuiSelect
@@ -1784,20 +1663,13 @@ export default function CreateClimbForm({
                 </MuiSelect>
               </div>
               <div className={styles.settingsField}>
-                <Typography
-                  variant="body2"
-                  component="span"
-                  color="text.secondary"
-                  className={styles.settingsLabel}
-                >
+                <Typography variant="body2" component="span" color="text.secondary" className={styles.settingsLabel}>
                   Grade
                 </Typography>
                 <MuiSelect
                   displayEmpty
                   value={userGrade ?? ''}
-                  onChange={(e) =>
-                    setUserGrade(e.target.value === '' ? undefined : (e.target.value as string))
-                  }
+                  onChange={(e) => setUserGrade(e.target.value === '' ? undefined : (e.target.value as string))}
                   className={styles.settingsGradeField}
                   size="small"
                 >
@@ -1813,11 +1685,7 @@ export default function CreateClimbForm({
               </div>
               <div className={styles.settingsField}>
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                  <MuiSwitch
-                    size="small"
-                    checked={isBenchmark}
-                    onChange={(_, checked) => setIsBenchmark(checked)}
-                  />
+                  <MuiSwitch size="small" checked={isBenchmark} onChange={(_, checked) => setIsBenchmark(checked)} />
                   <Typography variant="body2" component="span">
                     Benchmark
                   </Typography>
@@ -1827,12 +1695,7 @@ export default function CreateClimbForm({
           )}
           {/* Common: Description */}
           <div className={styles.settingsField}>
-            <Typography
-              variant="body2"
-              component="span"
-              color="text.secondary"
-              className={styles.settingsLabel}
-            >
+            <Typography variant="body2" component="span" color="text.secondary" className={styles.settingsLabel}>
               Description (optional)
             </Typography>
             <TextField

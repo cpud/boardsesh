@@ -15,10 +15,7 @@ export const ANIMATION_DELAY_MS = 210; // CLOSE_ANIMATION_MS + safety margin
  * `overflow-y: auto` or `overflow-y: scroll`. Returns null if none is found
  * before reaching `stopAt` (or the document root).
  */
-export function findScrollContainer(
-  target: HTMLElement,
-  stopAt?: HTMLElement | null,
-): HTMLElement | null {
+export function findScrollContainer(target: HTMLElement, stopAt?: HTMLElement | null): HTMLElement | null {
   let el: HTMLElement | null = target;
   while (el && el !== stopAt) {
     const style = window.getComputedStyle(el);

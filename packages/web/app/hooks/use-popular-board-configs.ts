@@ -1,9 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  GET_POPULAR_BOARD_CONFIGS,
-  type GetPopularBoardConfigsQueryResponse,
-} from '@/app/lib/graphql/operations';
+import { GET_POPULAR_BOARD_CONFIGS, type GetPopularBoardConfigsQueryResponse } from '@/app/lib/graphql/operations';
 import type { PopularBoardConfig } from '@boardsesh/shared-schema';
 
 interface UsePopularBoardConfigsOptions {
@@ -57,10 +54,9 @@ export function usePopularBoardConfigs({
 
       try {
         const client = createGraphQLHttpClient();
-        const result = await client.request<GetPopularBoardConfigsQueryResponse>(
-          GET_POPULAR_BOARD_CONFIGS,
-          { input: { limit, offset } },
-        );
+        const result = await client.request<GetPopularBoardConfigsQueryResponse>(GET_POPULAR_BOARD_CONFIGS, {
+          input: { limit, offset },
+        });
 
         const { configs: newConfigs, hasMore: more } = result.popularBoardConfigs;
 

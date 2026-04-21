@@ -6,11 +6,7 @@ import { STATE_TO_PRIMARY_CODE } from './hold-states';
 export { LED_PLACEMENTS };
 export type { LedPositionWithColor } from './types';
 
-export const getLedPlacements = (
-  boardName: BoardName,
-  layoutId: number,
-  sizeId: number,
-): Record<number, number> => {
+export const getLedPlacements = (boardName: BoardName, layoutId: number, sizeId: number): Record<number, number> => {
   const key = `${layoutId}-${sizeId}`;
   const placements = LED_PLACEMENTS[boardName]?.[key];
   if (!placements) {
@@ -69,9 +65,7 @@ export function colorToRoleCode(r: number, g: number, b: number, boardName: Boar
   }
 
   if (hasRed && !hasGreen && hasBlue) {
-    return boardName === 'kilter'
-      ? getRoleCode(boardName, 'FINISH')
-      : getRoleCode(boardName, 'FOOT');
+    return boardName === 'kilter' ? getRoleCode(boardName, 'FINISH') : getRoleCode(boardName, 'FOOT');
   }
 
   if (hasRed && hasGreen && !hasBlue) {

@@ -36,11 +36,7 @@ type BoardSeshHeaderProps = {
   isAngleAdjustable?: boolean;
 };
 
-export default function BoardSeshHeader({
-  boardDetails,
-  angle,
-  isAngleAdjustable,
-}: BoardSeshHeaderProps) {
+export default function BoardSeshHeader({ boardDetails, angle, isAngleAdjustable }: BoardSeshHeaderProps) {
   const pathname = usePathname();
   const { currentClimb } = useCurrentClimb();
   const { totalSearchResultCount, isFetchingClimbs } = useSearchData();
@@ -82,14 +78,7 @@ export default function BoardSeshHeader({
 
     let baseUrl: string;
     if (layout_name && size_name && set_names && angle !== undefined) {
-      baseUrl = constructClimbListWithSlugs(
-        board_name,
-        layout_name,
-        size_name,
-        size_description,
-        set_names,
-        angle,
-      );
+      baseUrl = constructClimbListWithSlugs(board_name, layout_name, size_name, size_description, set_names, angle);
     } else {
       baseUrl = `/${board_name}/${boardDetails.layout_id}/${boardDetails.size_id}/${boardDetails.set_ids.join(',')}/${angle}/list`;
     }
@@ -103,10 +92,7 @@ export default function BoardSeshHeader({
   };
 
   const createClimbUrl =
-    angle !== undefined &&
-    boardDetails.layout_name &&
-    boardDetails.size_name &&
-    boardDetails.set_names
+    angle !== undefined && boardDetails.layout_name && boardDetails.size_name && boardDetails.set_names
       ? `/${boardDetails.board_name}/${generateLayoutSlug(boardDetails.layout_name)}/${generateSizeSlug(boardDetails.size_name, boardDetails.size_description)}/${generateSetSlug(boardDetails.set_names)}/${angle}/create`
       : null;
 
@@ -148,10 +134,7 @@ export default function BoardSeshHeader({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
             {hasBackButton && (
               <div className={styles.mobileOnly}>
-                <IconButton
-                  aria-label="Back to climb list"
-                  onClick={() => router.push(getBackToListUrl())}
-                >
+                <IconButton aria-label="Back to climb list" onClick={() => router.push(getBackToListUrl())}>
                   <ChevronLeftOutlined />
                 </IconButton>
               </div>

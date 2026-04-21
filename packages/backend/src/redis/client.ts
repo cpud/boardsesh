@@ -25,9 +25,7 @@ class RedisClientManager {
     }
 
     if (!REDIS_URL) {
-      console.log(
-        '[Redis] No REDIS_URL configured - Redis pub/sub is required for multi-instance mode',
-      );
+      console.log('[Redis] No REDIS_URL configured - Redis pub/sub is required for multi-instance mode');
       return false;
     }
 
@@ -86,9 +84,7 @@ class RedisClientManager {
       const checkAllReady = () => {
         if (publisherReady && subscriberReady && streamConsumerReady) {
           this.isConnected = true;
-          console.log(
-            '[Redis] Connected successfully (3 connections: publisher, subscriber, streamConsumer)',
-          );
+          console.log('[Redis] Connected successfully (3 connections: publisher, subscriber, streamConsumer)');
           resolve(true);
         }
       };

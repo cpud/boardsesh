@@ -98,11 +98,7 @@ export const activityFeedQueries = {
    * Materialized activity feed for authenticated user (fan-out-on-write).
    * Reads from feed_items table with cursor-based pagination.
    */
-  activityFeed: async (
-    _: unknown,
-    { input }: { input?: Record<string, unknown> },
-    ctx: ConnectionContext,
-  ) => {
+  activityFeed: async (_: unknown, { input }: { input?: Record<string, unknown> }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     const myUserId = ctx.userId!;
 
@@ -216,10 +212,7 @@ export const activityFeedQueries = {
       })
       .from(dbSchema.boardseshTicks)
       .innerJoin(dbSchema.users, eq(dbSchema.boardseshTicks.userId, dbSchema.users.id))
-      .leftJoin(
-        dbSchema.userProfiles,
-        eq(dbSchema.boardseshTicks.userId, dbSchema.userProfiles.userId),
-      )
+      .leftJoin(dbSchema.userProfiles, eq(dbSchema.boardseshTicks.userId, dbSchema.userProfiles.userId))
       .leftJoin(
         dbSchema.boardClimbs,
         and(

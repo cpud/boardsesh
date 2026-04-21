@@ -107,9 +107,7 @@ export const CssBarChart = React.memo(function CssBarChart({
             data: categories,
             scaleType: 'band' as const,
             ...(tickInterval ? { tickInterval } : {}),
-            tickLabelStyle: angledLabels
-              ? { angle: -45, textAnchor: 'end', fontSize: 9 }
-              : { fontSize: 9 },
+            tickLabelStyle: angledLabels ? { angle: -45, textAnchor: 'end', fontSize: 9 } : { fontSize: 9 },
           },
         ]}
         height={height}

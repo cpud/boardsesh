@@ -7,12 +7,8 @@ import type { LayoutLegendEntry, VPointsTimelineData } from '../../utils/chart-d
 
 // Mock dependencies before component import
 vi.mock('@/app/components/charts/css-bar-chart', () => ({
-  CssBarChart: (props: { ariaLabel?: string }) => (
-    <div data-testid="css-bar-chart">{props.ariaLabel}</div>
-  ),
-  GroupedBarChart: (props: { ariaLabel?: string }) => (
-    <div data-testid="grouped-bar-chart">{props.ariaLabel}</div>
-  ),
+  CssBarChart: (props: { ariaLabel?: string }) => <div data-testid="css-bar-chart">{props.ariaLabel}</div>,
+  GroupedBarChart: (props: { ariaLabel?: string }) => <div data-testid="grouped-bar-chart">{props.ariaLabel}</div>,
 }));
 
 vi.mock('../v-points-chart', () => ({
@@ -20,9 +16,7 @@ vi.mock('../v-points-chart', () => ({
 }));
 
 vi.mock('@/app/components/ui/empty-state', () => ({
-  EmptyState: (props: { description: string }) => (
-    <div data-testid="empty-state">{props.description}</div>
-  ),
+  EmptyState: (props: { description: string }) => <div data-testid="empty-state">{props.description}</div>,
 }));
 
 vi.mock('@/app/theme/theme-config', () => ({
@@ -101,9 +95,7 @@ describe('StatsSummary', () => {
   });
 
   it('returns null when loadingProfileStats is true', () => {
-    const { container } = render(
-      <StatsSummary {...createDefaultProps({ loadingProfileStats: true })} />,
-    );
+    const { container } = render(<StatsSummary {...createDefaultProps({ loadingProfileStats: true })} />);
     expect(container.innerHTML).toBe('');
   });
 
@@ -171,9 +163,7 @@ describe('StatsSummary', () => {
     render(<StatsSummary {...createDefaultProps()} />);
     expect(screen.getByText('Grade Distribution')).toBeTruthy();
     expect(
-      screen
-        .getAllByTestId('css-bar-chart')
-        .some((chart) => chart.textContent === 'Grade distribution across boards'),
+      screen.getAllByTestId('css-bar-chart').some((chart) => chart.textContent === 'Grade distribution across boards'),
     ).toBe(true);
   });
 
@@ -194,10 +184,7 @@ describe('StatsSummary', () => {
     expect(screen.getByText('Activity')).toBeTruthy();
 
     const chartLabels = screen.getAllByTestId('css-bar-chart').map((chart) => chart.textContent);
-    expect(chartLabels).toEqual([
-      'Weekly attempts by difficulty',
-      'Grade distribution across boards',
-    ]);
+    expect(chartLabels).toEqual(['Weekly attempts by difficulty', 'Grade distribution across boards']);
   });
 
   it('omits activity when no weekly bars are available', () => {
@@ -229,9 +216,7 @@ describe('StatsSummary', () => {
         ],
       },
     ];
-    render(
-      <StatsSummary {...createDefaultProps({ aggregatedFlashRedpointBars: flashRedpointBars })} />,
-    );
+    render(<StatsSummary {...createDefaultProps({ aggregatedFlashRedpointBars: flashRedpointBars })} />);
     expect(screen.getByTestId('grouped-bar-chart')).toBeTruthy();
     expect(screen.getByText('Flash vs Redpoint')).toBeTruthy();
   });

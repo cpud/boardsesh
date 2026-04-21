@@ -78,9 +78,7 @@ function BoardConfigSelects({
         <MuiSelect
           value={selectedLayout ?? ''}
           label="Layout"
-          onChange={(e: SelectChangeEvent<number | string>) =>
-            onLayoutChange(e.target.value as number)
-          }
+          onChange={(e: SelectChangeEvent<number | string>) => onLayoutChange(e.target.value as number)}
           disabled={!selectedBoard}
         >
           {layouts.map(({ id, name }) => (
@@ -97,9 +95,7 @@ function BoardConfigSelects({
           <MuiSelect
             value={selectedSize ?? ''}
             label="Size"
-            onChange={(e: SelectChangeEvent<number | string>) =>
-              onSizeChange(e.target.value as number)
-            }
+            onChange={(e: SelectChangeEvent<number | string>) => onSizeChange(e.target.value as number)}
             disabled={!selectedLayout}
           >
             {sizes.map(({ id, name, description }) => (
@@ -180,10 +176,7 @@ export default function BoardSelectorDrawer({
     [selectedBoard, boardConfigs.layouts],
   );
   const sizes = useMemo(
-    () =>
-      selectedBoard && selectedLayout
-        ? boardConfigs.sizes[`${selectedBoard}-${selectedLayout}`] || []
-        : [],
+    () => (selectedBoard && selectedLayout ? boardConfigs.sizes[`${selectedBoard}-${selectedLayout}`] || [] : []),
     [selectedBoard, selectedLayout, boardConfigs.sizes],
   );
   const sets = useMemo(
@@ -244,8 +237,7 @@ export default function BoardSelectorDrawer({
       setSelectedSets([]);
       return;
     }
-    const availableSets =
-      boardConfigs.sets[`${selectedBoard}-${selectedLayout}-${selectedSize}`] || [];
+    const availableSets = boardConfigs.sets[`${selectedBoard}-${selectedLayout}-${selectedSize}`] || [];
     setSelectedSets(availableSets.map((s) => s.id));
   }, [selectedBoard, selectedLayout, selectedSize, boardConfigs]);
 
@@ -268,25 +260,10 @@ export default function BoardSelectorDrawer({
       );
     }
     return null;
-  }, [
-    selectedBoard,
-    selectedLayout,
-    selectedSize,
-    selectedSets,
-    selectedAngle,
-    layouts,
-    sizes,
-    sets,
-  ]);
+  }, [selectedBoard, selectedLayout, selectedSize, selectedSets, selectedAngle, layouts, sizes, sets]);
 
   const handleStartClimbing = useCallback(async () => {
-    if (
-      !selectedBoard ||
-      !selectedLayout ||
-      !selectedSize ||
-      selectedSets.length === 0 ||
-      !targetUrl
-    ) {
+    if (!selectedBoard || !selectedLayout || !selectedSize || selectedSets.length === 0 || !targetUrl) {
       return;
     }
 
@@ -388,13 +365,7 @@ export default function BoardSelectorDrawer({
             >
               Create board
             </Button>
-            <Button
-              variant="contained"
-              size="large"
-              fullWidth
-              onClick={handleStartClimbing}
-              disabled={!isFormComplete}
-            >
+            <Button variant="contained" size="large" fullWidth onClick={handleStartClimbing} disabled={!isFormComplete}>
               Quick session
             </Button>
           </Box>
@@ -421,8 +392,7 @@ export default function BoardSelectorDrawer({
                   defaultSummary: 'Select a board',
                   getSummary: () => {
                     const parts: string[] = [];
-                    if (selectedBoard)
-                      parts.push(selectedBoard.charAt(0).toUpperCase() + selectedBoard.slice(1));
+                    if (selectedBoard) parts.push(selectedBoard.charAt(0).toUpperCase() + selectedBoard.slice(1));
                     const layout = layouts.find((l) => l.id === selectedLayout);
                     if (layout) {
                       const cleanName = layout.name.replace(BOARD_NAME_PREFIX_REGEX, '').trim();

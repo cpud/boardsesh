@@ -61,9 +61,7 @@ export function QueueAction({
   const shortLabel = recentlyAdded ? 'Added' : 'Queue';
 
   const Icon = recentlyAdded ? CheckCircleOutlined : AddCircleOutlined;
-  const iconStyle = recentlyAdded
-    ? { color: themeTokens.colors.success, fontSize: iconSize }
-    : { fontSize: iconSize };
+  const iconStyle = recentlyAdded ? { color: themeTokens.colors.success, fontSize: iconSize } : { fontSize: iconSize };
   const icon = <Icon sx={iconStyle} />;
   const ListIcon = recentlyAdded ? CheckCircleOutlined : AddCircleOutlined;
   const listIcon = <ListIcon sx={{ fontSize: iconSize }} />;
@@ -100,12 +98,7 @@ export function QueueAction({
       />
     ),
     listElementOverride: (
-      <ActionListElement
-        icon={listIcon}
-        label={label}
-        onClick={handleClick}
-        disabled={disabled || recentlyAdded}
-      />
+      <ActionListElement icon={listIcon} label={label} onClick={handleClick} disabled={disabled || recentlyAdded} />
     ),
     menuItem: {
       key: 'queue',

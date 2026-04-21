@@ -64,10 +64,7 @@ export async function getRecentSearches(): Promise<RecentSearch[]> {
   }
 }
 
-export async function addRecentSearch(
-  label: string,
-  filters: Partial<SearchRequestPagination>,
-): Promise<void> {
+export async function addRecentSearch(label: string, filters: Partial<SearchRequestPagination>): Promise<void> {
   if (typeof window === 'undefined') return;
   try {
     const existing = await getRecentSearches();

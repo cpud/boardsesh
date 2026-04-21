@@ -1,13 +1,6 @@
 'use client';
 
-import React, {
-  useRef,
-  useState,
-  useLayoutEffect,
-  useEffect,
-  useCallback,
-  forwardRef,
-} from 'react';
+import React, { useRef, useState, useLayoutEffect, useEffect, useCallback, forwardRef } from 'react';
 import ButtonBase from '@mui/material/ButtonBase';
 import Skeleton from '@mui/material/Skeleton';
 import StarIcon from '@mui/icons-material/Star';
@@ -162,9 +155,7 @@ export const TickGradeButton = forwardRef<HTMLButtonElement, TickGradeButtonProp
     const isDark = useIsDarkMode();
     const { formatGrade, getGradeColor, loaded: gradeFormatLoaded } = useGradeFormat();
 
-    const selectedGrade = difficulty
-      ? displayedGrades.find((g) => g.difficulty_id === difficulty)
-      : undefined;
+    const selectedGrade = difficulty ? displayedGrades.find((g) => g.difficulty_id === difficulty) : undefined;
 
     const displayDifficulty = selectedGrade?.difficulty_name ?? '';
     const formattedGrade = formatGrade(displayDifficulty);
@@ -187,9 +178,7 @@ export const TickGradeButton = forwardRef<HTMLButtonElement, TickGradeButtonProp
         ) : (
           <span
             className={styles.gradeNumber}
-            {...(gradeColor
-              ? { style: { '--grade-color': gradeColor } as React.CSSProperties }
-              : {})}
+            {...(gradeColor ? { style: { '--grade-color': gradeColor } as React.CSSProperties } : {})}
           >
             {gradeLabel}
           </span>
@@ -280,11 +269,7 @@ export const InlineStarPicker: React.FC<{
   quality: number | null;
   onSelect: (value: number | null) => void;
 }> = ({ quality, onSelect }) => (
-  <div
-    className={`${styles.pickerRow} ${styles.pickerRowEnd}`}
-    role="listbox"
-    aria-label="Star rating"
-  >
+  <div className={`${styles.pickerRow} ${styles.pickerRowEnd}`} role="listbox" aria-label="Star rating">
     <ButtonBase
       onClick={() => onSelect(null)}
       className={`${styles.pickerItem} ${quality === null ? styles.pickerItemSelected : ''}`}
@@ -339,18 +324,14 @@ export const InlineGradePicker: React.FC<{
     const container = containerRef.current;
     if (!container || scrollTargetId === undefined) return;
 
-    const targetEl = container.querySelector(
-      `[data-grade-id="${scrollTargetId}"]`,
-    ) as HTMLElement | null;
+    const targetEl = container.querySelector(`[data-grade-id="${scrollTargetId}"]`) as HTMLElement | null;
     if (!targetEl) return;
 
     const containerRect = container.getBoundingClientRect();
     const gradeButton = gradeButtonRef?.current;
 
     const alignCenter = gradeButton
-      ? gradeButton.getBoundingClientRect().left +
-        gradeButton.getBoundingClientRect().width / 2 -
-        containerRect.left
+      ? gradeButton.getBoundingClientRect().left + gradeButton.getBoundingClientRect().width / 2 - containerRect.left
       : container.clientWidth / 2;
 
     const targetItemCenter = targetEl.offsetLeft + targetEl.offsetWidth / 2;
@@ -381,8 +362,7 @@ export const InlineGradePicker: React.FC<{
           const formatted = formatGrade(grade.difficulty_name) ?? grade.v_grade;
           const color = getGradeColor(grade.difficulty_name, isDark);
           const isSelected = grade.difficulty_id === currentGradeId;
-          const isFocused =
-            !isSelected && currentGradeId === undefined && grade.difficulty_id === focusGradeId;
+          const isFocused = !isSelected && currentGradeId === undefined && grade.difficulty_id === focusGradeId;
           return (
             <ButtonBase
               key={grade.difficulty_id}
@@ -427,16 +407,13 @@ export const InlineTriesPicker: React.FC<{
     const triesButton = triesButtonRef?.current;
     if (!container || !triesButton || attemptCount <= 10) return;
 
-    const selectedEl = container.querySelector(
-      `[data-tries="${attemptCount}"]`,
-    ) as HTMLElement | null;
+    const selectedEl = container.querySelector(`[data-tries="${attemptCount}"]`) as HTMLElement | null;
     if (!selectedEl) return;
 
     const containerRect = container.getBoundingClientRect();
     const triesButtonRect = triesButton.getBoundingClientRect();
 
-    const triesButtonCenterInContainer =
-      triesButtonRect.left + triesButtonRect.width / 2 - containerRect.left;
+    const triesButtonCenterInContainer = triesButtonRect.left + triesButtonRect.width / 2 - containerRect.left;
     const selectedItemCenter = selectedEl.offsetLeft + selectedEl.offsetWidth / 2;
 
     const targetScrollLeft = selectedItemCenter - triesButtonCenterInContainer;
@@ -527,9 +504,7 @@ export const InlineAscentTypePicker: React.FC<{
           >
             {opt.icon}
           </span>
-          <span
-            className={`${styles.ascentTypeLabel} ${disabled ? styles.ascentTypeItemDisabled : ''}`}
-          >
+          <span className={`${styles.ascentTypeLabel} ${disabled ? styles.ascentTypeItemDisabled : ''}`}>
             {opt.label}
           </span>
         </ButtonBase>

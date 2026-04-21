@@ -111,10 +111,10 @@ function fireThunderstrike(targetElement: HTMLElement) {
   }, 300);
 
   // Pulse the button itself (expand then contract)
-  targetElement.animate?.(
-    [{ transform: 'scale(1)' }, { transform: 'scale(1.3)' }, { transform: 'scale(1)' }],
-    { duration: 250, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
-  );
+  targetElement.animate?.([{ transform: 'scale(1)' }, { transform: 'scale(1.3)' }, { transform: 'scale(1)' }], {
+    duration: 250,
+    easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+  });
 }
 
 function getOrigin(element?: HTMLElement | null): { x: number; y: number } {
@@ -137,32 +137,29 @@ function getOrigin(element?: HTMLElement | null): { x: number; y: number } {
  * - 'flash': lightning bolt shapes radiate from the origin element
  */
 export function useConfetti() {
-  const fireConfetti = useCallback(
-    (originElement?: HTMLElement | null, variant: ConfettiVariant = 'ascent') => {
-      if (variant === 'flash') {
-        if (originElement) fireThunderstrike(originElement);
-        return;
-      }
+  const fireConfetti = useCallback((originElement?: HTMLElement | null, variant: ConfettiVariant = 'ascent') => {
+    if (variant === 'flash') {
+      if (originElement) fireThunderstrike(originElement);
+      return;
+    }
 
-      const isAttempt = variant === 'attempt';
-      confetti({
-        particleCount: 35,
-        spread: isAttempt ? 40 : 60,
-        startVelocity: isAttempt ? 12 : 25,
-        decay: 0.92,
-        scalar: 0.8,
-        ticks: 60,
-        origin: getOrigin(originElement),
-        gravity: 0.8,
-        disableForReducedMotion: true,
-        // Must be above MUI drawer z-index (1300) so confetti is visible
-        // when fired from inside a SwipeableDrawer portal.
-        zIndex: 1400,
-        ...(isAttempt && { colors: ['#d32f2f', '#b71c1c', '#e53935'] }),
-      });
-    },
-    [],
-  );
+    const isAttempt = variant === 'attempt';
+    confetti({
+      particleCount: 35,
+      spread: isAttempt ? 40 : 60,
+      startVelocity: isAttempt ? 12 : 25,
+      decay: 0.92,
+      scalar: 0.8,
+      ticks: 60,
+      origin: getOrigin(originElement),
+      gravity: 0.8,
+      disableForReducedMotion: true,
+      // Must be above MUI drawer z-index (1300) so confetti is visible
+      // when fired from inside a SwipeableDrawer portal.
+      zIndex: 1400,
+      ...(isAttempt && { colors: ['#d32f2f', '#b71c1c', '#e53935'] }),
+    });
+  }, []);
 
   return fireConfetti;
 }

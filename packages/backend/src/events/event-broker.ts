@@ -92,9 +92,7 @@ export class EventBroker {
       while (this.running) {
         // Check if Redis connection is permanently closed
         if (this.consumer?.status === 'end') {
-          console.error(
-            '[EventBroker] Redis connection permanently closed, stopping consumer loop',
-          );
+          console.error('[EventBroker] Redis connection permanently closed, stopping consumer loop');
           this.running = false;
           break;
         }
@@ -122,9 +120,7 @@ export class EventBroker {
     runLoop();
   }
 
-  private async reclaimPendingEvents(
-    handler: (event: SocialEvent) => Promise<void>,
-  ): Promise<void> {
+  private async reclaimPendingEvents(handler: (event: SocialEvent) => Promise<void>): Promise<void> {
     if (!this.consumer || !this.publisher) return;
 
     try {
@@ -150,10 +146,7 @@ export class EventBroker {
               // Only acknowledge after successful processing (non-blocking)
               await this.publisher.xack(STREAM_KEY, CONSUMER_GROUP, messageId);
             } catch (error) {
-              console.error(
-                `[EventBroker] Error processing reclaimed event ${messageId}, will retry:`,
-                error,
-              );
+              console.error(`[EventBroker] Error processing reclaimed event ${messageId}, will retry:`, error);
             }
           } else {
             // Unparseable event - ack to avoid infinite retry

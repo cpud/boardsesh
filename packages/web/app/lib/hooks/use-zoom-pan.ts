@@ -50,8 +50,7 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
     const el = contentRef.current;
     if (!el) return;
 
-    const newTransform =
-      scale === 1 ? '' : `scale(${scale}) translate(${x / scale}px, ${y / scale}px)`;
+    const newTransform = scale === 1 ? '' : `scale(${scale}) translate(${x / scale}px, ${y / scale}px)`;
 
     if (animate && el.style.transform !== newTransform) {
       isTransitioningRef.current = true;

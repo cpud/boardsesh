@@ -32,10 +32,7 @@ export function computeQueueStateHash(
   // Sort queue UUIDs for deterministic ordering
   // Defensive filter for null/undefined items that may have been introduced by state corruption
   const queueUuids = queue
-    .filter(
-      (item): item is { uuid: string } =>
-        item != null && typeof item === 'object' && item.uuid != null,
-    )
+    .filter((item): item is { uuid: string } => item != null && typeof item === 'object' && item.uuid != null)
     .map((item) => item.uuid)
     .sort()
     .join(',');

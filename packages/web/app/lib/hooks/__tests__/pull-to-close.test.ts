@@ -171,9 +171,7 @@ describe('usePullToClose', () => {
   it('respects custom close threshold', () => {
     const onClose = vi.fn();
     const paper = createPaperElement();
-    const { result } = renderHook(() =>
-      usePullToClose({ paperEl: paper, onClose, closeThreshold: 70 }),
-    );
+    const { result } = renderHook(() => usePullToClose({ paperEl: paper, onClose, closeThreshold: 70 }));
 
     act(() => {
       result.current.onTouchStart(100, null);
@@ -318,10 +316,9 @@ describe('usePullToClose', () => {
     const onClose1 = vi.fn();
     const onClose2 = vi.fn();
     const paper = createPaperElement();
-    const { result, rerender } = renderHook(
-      ({ onClose }) => usePullToClose({ paperEl: paper, onClose }),
-      { initialProps: { onClose: onClose1 } },
-    );
+    const { result, rerender } = renderHook(({ onClose }) => usePullToClose({ paperEl: paper, onClose }), {
+      initialProps: { onClose: onClose1 },
+    });
 
     rerender({ onClose: onClose2 });
 
@@ -371,9 +368,7 @@ describe('usePullToClose', () => {
       const onClose = vi.fn();
       const paper = createPaperElement();
       const scrollContainer = createScrollContainer(0);
-      const { result } = renderHook(() =>
-        usePullToClose({ paperEl: paper, onClose, trackPullOrigin: true }),
-      );
+      const { result } = renderHook(() => usePullToClose({ paperEl: paper, onClose, trackPullOrigin: true }));
 
       act(() => {
         result.current.onTouchStart(100, scrollContainer);
@@ -386,9 +381,7 @@ describe('usePullToClose', () => {
       const onClose = vi.fn();
       const paper = createPaperElement();
       const scrollContainer = createScrollContainer(50);
-      const { result } = renderHook(() =>
-        usePullToClose({ paperEl: paper, onClose, trackPullOrigin: true }),
-      );
+      const { result } = renderHook(() => usePullToClose({ paperEl: paper, onClose, trackPullOrigin: true }));
 
       act(() => {
         result.current.onTouchStart(100, scrollContainer);
@@ -401,9 +394,7 @@ describe('usePullToClose', () => {
       const onClose = vi.fn();
       const paper = createPaperElement();
       const scrollContainer = createScrollContainer(50);
-      const { result } = renderHook(() =>
-        usePullToClose({ paperEl: paper, onClose, trackPullOrigin: true }),
-      );
+      const { result } = renderHook(() => usePullToClose({ paperEl: paper, onClose, trackPullOrigin: true }));
 
       act(() => {
         result.current.onTouchStart(100, scrollContainer);

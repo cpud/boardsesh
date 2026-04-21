@@ -159,13 +159,9 @@ describe('board-render API route', () => {
     const response = await GET(makeRequest(validParams));
     expect(response.status).toBe(200);
     expect(response.headers.get('Content-Type')).toBe('image/webp');
-    expect(response.headers.get('Cache-Control')).toBe(
-      'public, max-age=31536000, s-maxage=31536000, immutable',
-    );
+    expect(response.headers.get('Cache-Control')).toBe('public, max-age=31536000, s-maxage=31536000, immutable');
     expect(response.headers.get('CDN-Cache-Control')).toBe('public, s-maxage=31536000, immutable');
-    expect(response.headers.get('Vercel-CDN-Cache-Control')).toBe(
-      'public, s-maxage=31536000, immutable',
-    );
+    expect(response.headers.get('Vercel-CDN-Cache-Control')).toBe('public, s-maxage=31536000, immutable');
   });
 
   it('returns 400 when board_name is missing', async () => {
@@ -183,9 +179,7 @@ describe('board-render API route', () => {
   });
 
   it('accepts an empty frames string for board-only previews', async () => {
-    const response = await GET(
-      makeRequest({ ...validParams, frames: '', include_background: '1', format: 'png' }),
-    );
+    const response = await GET(makeRequest({ ...validParams, frames: '', include_background: '1', format: 'png' }));
 
     expect(response.status).toBe(200);
     const configJson = mockRenderOverlay.mock.calls[0][0];
@@ -207,13 +201,10 @@ describe('board-render API route', () => {
     expect(body.error).toBe('Invalid format');
   });
 
-  it.each(['decoy', 'touchstone', 'grasshopper'])(
-    'accepts %s as a valid board_name',
-    async (board) => {
-      const response = await GET(makeRequest({ ...validParams, board_name: board }));
-      expect(response.status).toBe(200);
-    },
-  );
+  it.each(['decoy', 'touchstone', 'grasshopper'])('accepts %s as a valid board_name', async (board) => {
+    const response = await GET(makeRequest({ ...validParams, board_name: board }));
+    expect(response.status).toBe(200);
+  });
 
   it('passes thumbnail flag in render config when thumbnail=1', async () => {
     await GET(makeRequest({ ...validParams, thumbnail: '1' }));
@@ -239,9 +230,7 @@ describe('board-render API route', () => {
   });
 
   it('renders OG variant as PNG on a fixed social canvas', async () => {
-    const response = await GET(
-      makeRequest({ ...validParams, variant: 'og', format: 'png', include_background: '1' }),
-    );
+    const response = await GET(makeRequest({ ...validParams, variant: 'og', format: 'png', include_background: '1' }));
 
     expect(response.status).toBe(200);
     expect(response.headers.get('Content-Type')).toBe('image/png');
@@ -301,9 +290,7 @@ describe('board-render API route', () => {
   });
 
   it('calls composite with background when include_background=1', async () => {
-    const response = await GET(
-      makeRequest({ ...validParams, thumbnail: '1', include_background: '1' }),
-    );
+    const response = await GET(makeRequest({ ...validParams, thumbnail: '1', include_background: '1' }));
     expect(response.status).toBe(200);
     // composite() should have been called (background + overlay layers)
     expect(mockComposite).toHaveBeenCalled();

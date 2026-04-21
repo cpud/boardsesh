@@ -79,8 +79,7 @@ vi.mock('@/app/lib/instagram-posting', () => ({
 }));
 
 vi.mock('@/app/profile/[user_id]/utils/profile-constants', () => ({
-  getLayoutDisplayName: (boardType: string, layoutId: number | null) =>
-    `${boardType}-${layoutId ?? 'unknown'}`,
+  getLayoutDisplayName: (boardType: string, layoutId: number | null) => `${boardType}-${layoutId ?? 'unknown'}`,
 }));
 
 vi.mock('@boardsesh/board-constants/product-sizes', async (importOriginal) => {
@@ -119,10 +118,7 @@ vi.mock('../logbook-item-skeleton', () => ({
 }));
 
 vi.mock('../logbook-search-form', () => ({
-  default: (props: {
-    selectedBoards: Array<{ uuid: string }>;
-    boards: Array<{ uuid: string }>;
-  }) => {
+  default: (props: { selectedBoards: Array<{ uuid: string }>; boards: Array<{ uuid: string }> }) => {
     searchFormSpy(props);
     return <div data-testid="logbook-search-form" />;
   },

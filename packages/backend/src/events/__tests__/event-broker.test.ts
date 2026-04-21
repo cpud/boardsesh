@@ -4,9 +4,7 @@ import type { SocialEvent } from '@boardsesh/shared-schema';
 
 class TestableEventBroker extends EventBroker {
   public testParseEvent(fields: string[]): SocialEvent | null {
-    return (this as unknown as { parseEvent(fields: string[]): SocialEvent | null }).parseEvent(
-      fields,
-    );
+    return (this as unknown as { parseEvent(fields: string[]): SocialEvent | null }).parseEvent(fields);
   }
 }
 

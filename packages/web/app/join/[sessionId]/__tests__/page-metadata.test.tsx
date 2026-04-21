@@ -63,17 +63,11 @@ describe('join page metadata', () => {
       params: Promise.resolve({ sessionId: 'session-123' }),
     });
 
-    const image = Array.isArray(metadata.openGraph?.images)
-      ? metadata.openGraph.images[0]
-      : metadata.openGraph?.images;
+    const image = Array.isArray(metadata.openGraph?.images) ? metadata.openGraph.images[0] : metadata.openGraph?.images;
 
     expect(metadata.title).toBe('Join Alex on the wall | Boardsesh');
-    expect(metadata.description).toBe(
-      'Kilter Original 12x12 at 40°. 5 sends so far on V5. Get on the wall.',
-    );
-    expect(getOpenGraphImageUrl(image)).toBe(
-      '/api/og/session?sessionId=session-123&variant=join&v=abc123',
-    );
+    expect(metadata.description).toBe('Kilter Original 12x12 at 40°. 5 sends so far on V5. Get on the wall.');
+    expect(getOpenGraphImageUrl(image)).toBe('/api/og/session?sessionId=session-123&variant=join&v=abc123');
   });
 
   it('returns not-found metadata when the join summary is missing', async () => {

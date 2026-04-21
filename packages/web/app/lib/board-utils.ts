@@ -18,8 +18,7 @@ export function generateBoardTitle(boardDetails: BoardDetails): string {
   const parts: string[] = [];
 
   // Capitalize board name
-  const boardName =
-    boardDetails.board_name.charAt(0).toUpperCase() + boardDetails.board_name.slice(1);
+  const boardName = boardDetails.board_name.charAt(0).toUpperCase() + boardDetails.board_name.slice(1);
   parts.push(boardName);
 
   // Add layout name if available, but strip out board name prefix to avoid duplication
@@ -51,9 +50,7 @@ export function generateBoardTitle(boardDetails: BoardDetails): string {
 }
 
 export function getBoardDetailsForBoard(
-  params:
-    | ParsedBoardRouteParameters
-    | { board_name: string; layout_id: number; size_id: number; set_ids: SetIdList },
+  params: ParsedBoardRouteParameters | { board_name: string; layout_id: number; size_id: number; set_ids: SetIdList },
 ): BoardDetails {
   if (params.board_name === 'moonboard') {
     return getMoonBoardDetails({

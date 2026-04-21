@@ -26,10 +26,7 @@ export interface QueueMutationsActions {
     correlationId?: string,
   ) => Promise<void>;
   mirrorCurrentClimb: (mirrored: boolean) => Promise<void>;
-  setQueue: (
-    queue: LocalClimbQueueItem[],
-    currentClimbQueueItem?: LocalClimbQueueItem | null,
-  ) => Promise<void>;
+  setQueue: (queue: LocalClimbQueueItem[], currentClimbQueueItem?: LocalClimbQueueItem | null) => Promise<void>;
   replaceQueueItem: (uuid: string, item: LocalClimbQueueItem) => Promise<void>;
 }
 
@@ -77,10 +74,7 @@ async function executeWithLatestWins<TArgs>(
   }
 }
 
-export function useQueueMutations({
-  client,
-  session,
-}: UseQueueMutationsArgs): QueueMutationsActions {
+export function useQueueMutations({ client, session }: UseQueueMutationsArgs): QueueMutationsActions {
   // Use refs so callbacks have stable identity (never recreate)
   const clientRef = useRef(client);
   const sessionRef = useRef(session);
@@ -112,18 +106,13 @@ export function useQueueMutations({
   }, []);
 
   const setCurrentClimb = useCallback(
-    async (
-      item: LocalClimbQueueItem | null,
-      shouldAddToQueue?: boolean,
-      correlationId?: string,
-    ) => {
+    async (item: LocalClimbQueueItem | null, shouldAddToQueue?: boolean, correlationId?: string) => {
       if (!clientRef.current || !sessionRef.current) throw new Error('Not connected to session');
       await executeWithLatestWins(
         setCurrentClimbRefs.current,
         { item, shouldAddToQueue, correlationId },
         async (args) => {
-          if (!clientRef.current || !sessionRef.current)
-            throw new Error('Not connected to session');
+          if (!clientRef.current || !sessionRef.current) throw new Error('Not connected to session');
           await execute(clientRef.current, {
             query: SET_CURRENT_CLIMB,
             variables: {
@@ -157,18 +146,13 @@ export function useQueueMutations({
   }, []);
 
   const setQueue = useCallback(
-    async (
-      newQueue: LocalClimbQueueItem[],
-      newCurrentClimbQueueItem?: LocalClimbQueueItem | null,
-    ) => {
+    async (newQueue: LocalClimbQueueItem[], newCurrentClimbQueueItem?: LocalClimbQueueItem | null) => {
       if (!clientRef.current || !sessionRef.current) throw new Error('Not connected to session');
       await execute(clientRef.current, {
         query: SET_QUEUE,
         variables: {
           queue: newQueue.map(toClimbQueueItemInput),
-          currentClimbQueueItem: newCurrentClimbQueueItem
-            ? toClimbQueueItemInput(newCurrentClimbQueueItem)
-            : undefined,
+          currentClimbQueueItem: newCurrentClimbQueueItem ? toClimbQueueItemInput(newCurrentClimbQueueItem) : undefined,
         },
       });
     },

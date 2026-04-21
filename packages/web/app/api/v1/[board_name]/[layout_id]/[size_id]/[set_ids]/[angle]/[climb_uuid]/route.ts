@@ -1,11 +1,7 @@
 // api/v1/[board_name]/[layout_id]/[size_id]/[set_ids]/[climb_uuid]
 import { convertLitUpHoldsStringToMap } from '@/app/components/board-renderer/util';
 import { getClimb } from '@/app/lib/data/queries';
-import {
-  BoardRouteParametersWithUuid,
-  ErrorResponse,
-  FetchCurrentProblemResponse,
-} from '@/app/lib/types';
+import { BoardRouteParametersWithUuid, ErrorResponse, FetchCurrentProblemResponse } from '@/app/lib/types';
 import { parseBoardRouteParamsWithSlugs } from '@/app/lib/url-utils.server';
 import { NextResponse } from 'next/server';
 
@@ -19,10 +15,7 @@ export async function GET(
     const result = await getClimb(parsedParams);
 
     if (!result) {
-      return NextResponse.json(
-        { error: `Failed to find problem ${params.climb_uuid}` },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: `Failed to find problem ${params.climb_uuid}` }, { status: 404 });
     }
 
     // TODO: Multiframe support should remove the hardcoded [0]

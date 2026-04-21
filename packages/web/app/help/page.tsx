@@ -4,8 +4,7 @@ import HelpContent from './help-content';
 
 export const metadata = createPageMetadata({
   title: 'Help',
-  description:
-    'Learn about Boardsesh features including heatmaps, party mode, playlist generator, and more.',
+  description: 'Learn about Boardsesh features including heatmaps, party mode, playlist generator, and more.',
   path: '/help',
 });
 

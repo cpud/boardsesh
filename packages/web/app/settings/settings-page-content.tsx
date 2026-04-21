@@ -435,12 +435,7 @@ export default function SettingsPageContent() {
                       </Button>
                     )}
                   </Stack>
-                  <Typography
-                    variant="body2"
-                    component="span"
-                    color="text.secondary"
-                    sx={{ fontSize: 12 }}
-                  >
+                  <Typography variant="body2" component="span" color="text.secondary" sx={{ fontSize: 12 }}>
                     JPG, PNG, GIF, or WebP. Up to 10MB — auto-compressed.
                   </Typography>
                 </Stack>
@@ -456,9 +451,7 @@ export default function SettingsPageContent() {
                   size="small"
                   fullWidth
                   value={formValues.displayName}
-                  onChange={(e) =>
-                    setFormValues((prev) => ({ ...prev, displayName: e.target.value }))
-                  }
+                  onChange={(e) => setFormValues((prev) => ({ ...prev, displayName: e.target.value }))}
                   slotProps={{
                     input: {
                       startAdornment: (
@@ -482,9 +475,7 @@ export default function SettingsPageContent() {
                   size="small"
                   fullWidth
                   value={formValues.instagramUrl}
-                  onChange={(e) =>
-                    setFormValues((prev) => ({ ...prev, instagramUrl: e.target.value }))
-                  }
+                  onChange={(e) => setFormValues((prev) => ({ ...prev, instagramUrl: e.target.value }))}
                   slotProps={{
                     input: {
                       startAdornment: (

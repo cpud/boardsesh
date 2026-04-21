@@ -360,10 +360,7 @@ class PubSub {
    * Subscribe to notification events for a user.
    * @returns Promise that resolves to an unsubscribe function
    */
-  async subscribeNotifications(
-    userId: string,
-    callback: NotificationSubscriber,
-  ): Promise<() => void> {
+  async subscribeNotifications(userId: string, callback: NotificationSubscriber): Promise<() => void> {
     this.ensureRedisIfRequired();
 
     const isFirstSubscriber = !this.notificationSubscribers.has(userId);
@@ -394,9 +391,7 @@ class PubSub {
         this.notificationSubscribers.delete(userId);
         if (this.redisAdapter) {
           this.redisAdapter.unsubscribeNotificationChannel(userId).catch((error) => {
-            console.error(
-              `[PubSub] Failed to unsubscribe from Redis notification channel: ${error}`,
-            );
+            console.error(`[PubSub] Failed to unsubscribe from Redis notification channel: ${error}`);
           });
         }
       }
@@ -555,10 +550,7 @@ class PubSub {
     }
   }
 
-  private dispatchToLocalNewClimbSubscribers(
-    channelKey: string,
-    event: NewClimbCreatedEvent,
-  ): void {
+  private dispatchToLocalNewClimbSubscribers(channelKey: string, event: NewClimbCreatedEvent): void {
     const subscribers = this.newClimbSubscribers.get(channelKey);
     if (subscribers) {
       for (const callback of subscribers) {

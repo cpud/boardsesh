@@ -84,11 +84,7 @@ export const MARK_NOTIFICATION_READ = gql`
 `;
 
 export const MARK_GROUP_NOTIFICATIONS_READ = gql`
-  mutation MarkGroupNotificationsRead(
-    $type: NotificationType!
-    $entityType: SocialEntityType
-    $entityId: String
-  ) {
+  mutation MarkGroupNotificationsRead($type: NotificationType!, $entityType: SocialEntityType, $entityId: String) {
     markGroupNotificationsRead(type: $type, entityType: $entityType, entityId: $entityId)
   }
 `;

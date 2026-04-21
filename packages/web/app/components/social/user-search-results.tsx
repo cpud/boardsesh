@@ -14,12 +14,7 @@ import Link from 'next/link';
 import { PersonOutlined } from '@mui/icons-material';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import FollowButton from '@/app/components/ui/follow-button';
-import {
-  FOLLOW_USER,
-  UNFOLLOW_USER,
-  FOLLOW_SETTER,
-  UNFOLLOW_SETTER,
-} from '@/app/lib/graphql/operations';
+import { FOLLOW_USER, UNFOLLOW_USER, FOLLOW_SETTER, UNFOLLOW_SETTER } from '@/app/lib/graphql/operations';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
   SEARCH_USERS_AND_SETTERS,
@@ -45,12 +40,12 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
     queryKey: ['searchUsersAndSetters', debouncedQuery, authToken],
     queryFn: async ({ pageParam }) => {
       const client = createGraphQLHttpClient(authToken);
-      const response = await client.request<
-        SearchUsersAndSettersQueryResponse,
-        SearchUsersAndSettersQueryVariables
-      >(SEARCH_USERS_AND_SETTERS, {
-        input: { query: debouncedQuery, limit: 20, offset: pageParam as number },
-      });
+      const response = await client.request<SearchUsersAndSettersQueryResponse, SearchUsersAndSettersQueryVariables>(
+        SEARCH_USERS_AND_SETTERS,
+        {
+          input: { query: debouncedQuery, limit: 20, offset: pageParam as number },
+        },
+      );
       return response.searchUsersAndSetters;
     },
     initialPageParam: 0,
@@ -62,10 +57,7 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
     staleTime: 30 * 1000,
   });
 
-  const results: UnifiedSearchResult[] = useMemo(
-    () => data?.pages.flatMap((p) => p.results) ?? [],
-    [data],
-  );
+  const results: UnifiedSearchResult[] = useMemo(() => data?.pages.flatMap((p) => p.results) ?? [], [data]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: fetchNextPage,
@@ -128,20 +120,14 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
                 }
               >
                 <ListItemAvatar>
-                  <MuiAvatar
-                    src={result.user.avatarUrl ?? undefined}
-                    sx={{ width: 40, height: 40 }}
-                  >
+                  <MuiAvatar src={result.user.avatarUrl ?? undefined} sx={{ width: 40, height: 40 }}>
                     {!result.user.avatarUrl && <PersonOutlined />}
                   </MuiAvatar>
                 </ListItemAvatar>
                 <ListItemText
                   primary={result.user.displayName || 'User'}
                   secondary={
-                    <Box
-                      component="span"
-                      sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}
-                    >
+                    <Box component="span" sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
                       {result.recentAscentCount > 0 && (
                         <Typography variant="caption" component="span" color="text.secondary">
                           {result.recentAscentCount} ascents this month
@@ -190,10 +176,7 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
                 <ListItemText
                   primary={result.setter.username}
                   secondary={
-                    <Box
-                      component="span"
-                      sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}
-                    >
+                    <Box component="span" sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
                       <Typography variant="caption" component="span" color="text.secondary">
                         {result.setter.climbCount} climb{result.setter.climbCount !== 1 ? 's' : ''}
                       </Typography>
@@ -216,10 +199,7 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
           return null;
         })}
       </List>
-      <Box
-        ref={sentinelRef}
-        sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}
-      >
+      <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}>
         {isFetchingNextPage && <CircularProgress size={24} />}
       </Box>
     </>

@@ -33,10 +33,10 @@ export default function UserClimbList({ userId }: UserClimbListProps) {
         },
       };
 
-      const response = await client.request<
-        GetUserClimbsQueryResponse,
-        GetUserClimbsQueryVariables
-      >(GET_USER_CLIMBS, variables);
+      const response = await client.request<GetUserClimbsQueryResponse, GetUserClimbsQueryVariables>(
+        GET_USER_CLIMBS,
+        variables,
+      );
       return response.userClimbs;
     },
     initialPageParam: 0,

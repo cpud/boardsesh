@@ -80,9 +80,7 @@ vi.mock('../../social/board-search-results', () => ({
         <button
           type="button"
           data-testid="select-search-result"
-          onClick={() =>
-            onBoardSelect({ uuid: 'search-board-1', name: 'Found Board', isFollowedByMe: true })
-          }
+          onClick={() => onBoardSelect({ uuid: 'search-board-1', name: 'Found Board', isFollowedByMe: true })}
         >
           Select Board
         </button>

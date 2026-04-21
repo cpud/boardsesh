@@ -11,8 +11,7 @@ vi.mock('@/app/lib/user-preferences-db', () => ({
 
 vi.mock('@/app/lib/grade-colors', () => ({
   formatGrade: (d: string | null | undefined, format: string) => (d ? `${format}:${d}` : null),
-  getSoftGradeColorByFormat: (d: string | null | undefined, format: string) =>
-    d ? `color:${format}:${d}` : undefined,
+  getSoftGradeColorByFormat: (d: string | null | undefined, format: string) => (d ? `color:${format}:${d}` : undefined),
 }));
 
 import { useGradeFormat } from '../use-grade-format';

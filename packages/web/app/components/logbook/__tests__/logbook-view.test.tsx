@@ -11,9 +11,7 @@ vi.mock('../../board-provider/board-provider-context', () => ({
 }));
 
 vi.mock('@/app/components/ascent-status/ascent-status-icon', () => ({
-  AscentStatusIcon: ({ status }: { status: string }) => (
-    <div data-testid="ascent-status-icon" data-status={status} />
-  ),
+  AscentStatusIcon: ({ status }: { status: string }) => <div data-testid="ascent-status-icon" data-status={status} />,
 }));
 
 vi.mock('@mui/material/Rating', () => ({
@@ -21,9 +19,7 @@ vi.mock('@mui/material/Rating', () => ({
 }));
 
 vi.mock('@/app/components/ui/empty-state', () => ({
-  EmptyState: ({ description }: { description: string }) => (
-    <div data-testid="empty-state">{description}</div>
-  ),
+  EmptyState: ({ description }: { description: string }) => <div data-testid="empty-state">{description}</div>,
 }));
 
 import { LogbookView } from '../logbook-view';
@@ -88,9 +84,7 @@ describe('LogbookView', () => {
 
     render(<LogbookView currentClimb={makeClimb()} />);
 
-    const statuses = screen
-      .getAllByTestId('ascent-status-icon')
-      .map((node) => node.getAttribute('data-status'));
+    const statuses = screen.getAllByTestId('ascent-status-icon').map((node) => node.getAttribute('data-status'));
     expect(statuses).toEqual(['flash', 'attempt']);
     expect(screen.getByText('Mirrored')).toBeTruthy();
     expect(screen.getByText('Attempts: 1')).toBeTruthy();

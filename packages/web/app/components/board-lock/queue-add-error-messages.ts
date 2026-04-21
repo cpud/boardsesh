@@ -24,11 +24,7 @@ function targetSizeLabel(target: BoardDetails): string {
  * the root-level `queue-bridge-context` adapter so the copy stays in
  * one place.
  */
-export function queueAddErrorMessage(
-  climb: Climb,
-  target: BoardDetails,
-  failure: QueueAddFailure,
-): string {
+export function queueAddErrorMessage(climb: Climb, target: BoardDetails, failure: QueueAddFailure): string {
   switch (failure.reason) {
     case 'board_name':
       return `That climb is set on ${climbBoardLabel(climb)}. Your queue is on ${targetBoardLabel(target)}.`;

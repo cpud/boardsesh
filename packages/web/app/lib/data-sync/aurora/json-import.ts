@@ -289,11 +289,7 @@ async function resolveClimbNames(
 
     // Also match user's own drafts so ascents/circuits referencing their climbs resolve
     const userDraftFilter = userId
-      ? and(
-          eq(boardClimbs.boardType, boardType),
-          inArray(boardClimbs.name, chunk),
-          eq(boardClimbs.userId, userId),
-        )
+      ? and(eq(boardClimbs.boardType, boardType), inArray(boardClimbs.name, chunk), eq(boardClimbs.userId, userId))
       : undefined;
 
     const whereClause = userDraftFilter ? or(publicFilter, userDraftFilter) : publicFilter;
@@ -309,10 +305,7 @@ async function resolveClimbNames(
       .from(boardClimbs)
       .leftJoin(
         boardClimbStats,
-        and(
-          eq(boardClimbStats.climbUuid, boardClimbs.uuid),
-          eq(boardClimbStats.boardType, boardClimbs.boardType),
-        ),
+        and(eq(boardClimbStats.climbUuid, boardClimbs.uuid), eq(boardClimbStats.boardType, boardClimbs.boardType)),
       )
       .where(whereClause);
 
@@ -595,10 +588,7 @@ export async function importJsonExportData(
           }
 
           // Populate denormalized required_set_ids and compatible_size_ids
-          const allInsertedUuids = [
-            ...draftRows.map((r) => r.uuid),
-            ...publishedRows.map((r) => r.uuid),
-          ];
+          const allInsertedUuids = [...draftRows.map((r) => r.uuid), ...publishedRows.map((r) => r.uuid)];
           await populateDenormalizedColumns(db, boardType, allInsertedUuids);
 
           await client.query('COMMIT');

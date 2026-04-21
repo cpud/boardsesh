@@ -33,8 +33,7 @@ export function useQueueStorage({
   setActiveSession,
 }: UseQueueStorageArgs): QueueStorageState & QueueStorageActions {
   const [localQueue, setLocalQueue] = useState<LocalClimbQueueItem[]>([]);
-  const [localCurrentClimbQueueItem, setLocalCurrentClimbQueueItem] =
-    useState<LocalClimbQueueItem | null>(null);
+  const [localCurrentClimbQueueItem, setLocalCurrentClimbQueueItem] = useState<LocalClimbQueueItem | null>(null);
   const [localBoardPath, setLocalBoardPath] = useState<string | null>(null);
   const [localBoardDetails, setLocalBoardDetails] = useState<BoardDetails | null>(null);
   const [isLocalQueueLoaded, setIsLocalQueueLoaded] = useState(false);
@@ -57,8 +56,7 @@ export function useQueueStorage({
       try {
         const persisted = await getPreference<ActiveSessionInfo>(ACTIVE_SESSION_KEY);
         if (persisted && persisted.sessionId && persisted.boardPath && persisted.boardDetails) {
-          if (DEBUG)
-            console.log('[PersistentSession] Restoring persisted session:', persisted.sessionId);
+          if (DEBUG) console.log('[PersistentSession] Restoring persisted session:', persisted.sessionId);
           setActiveSession(persisted);
           setIsLocalQueueLoaded(true);
           return;

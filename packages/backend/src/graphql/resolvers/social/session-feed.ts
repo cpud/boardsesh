@@ -71,8 +71,7 @@ export const sessionFeedQueries = {
 
       // Build board filter conditions for party session ticks
       const partyBoardFilter = boardTypeFilter ? sql`AND t.board_type = ${boardTypeFilter}` : sql``;
-      const partyLayoutFilter =
-        layoutIdFilter !== null ? sql`AND cf.layout_id = ${layoutIdFilter}` : sql``;
+      const partyLayoutFilter = layoutIdFilter !== null ? sql`AND cf.layout_id = ${layoutIdFilter}` : sql``;
       const partyLayoutJoin =
         layoutIdFilter !== null
           ? sql`LEFT JOIN board_climbs cf ON cf.uuid = t.climb_uuid AND cf.board_type = t.board_type`
@@ -238,10 +237,7 @@ export const sessionFeedQueries = {
   /**
    * Get full detail for a single session.
    */
-  sessionDetail: async (
-    _: unknown,
-    { sessionId }: { sessionId: string },
-  ): Promise<SessionDetail | null> => {
+  sessionDetail: async (_: unknown, { sessionId }: { sessionId: string }): Promise<SessionDetail | null> => {
     if (!sessionId) return null;
 
     // Check if it's a party mode session
@@ -319,24 +315,16 @@ export const sessionFeedQueries = {
               upvotes: sql<number>`COALESCE(${dbSchema.voteCounts.upvotes}, 0)`,
             })
             .from(dbSchema.voteCounts)
-            .where(
-              and(
-                eq(dbSchema.voteCounts.entityType, 'tick'),
-                inArray(dbSchema.voteCounts.entityId, tickUuids),
-              ),
-            )
+            .where(and(eq(dbSchema.voteCounts.entityType, 'tick'), inArray(dbSchema.voteCounts.entityId, tickUuids)))
         : [];
     const tickVoteMap = new Map(tickVoteCounts.map((v) => [v.entityId, Number(v.upvotes)]));
 
     // Build ticks (totalAttempts added below)
     const ticks: SessionDetailTick[] = tickRows.map((row) => {
       const effectiveDifficulty =
-        row.tick.difficulty ??
-        (row.consensusDifficulty != null ? Math.round(row.consensusDifficulty) : null);
+        row.tick.difficulty ?? (row.consensusDifficulty != null ? Math.round(row.consensusDifficulty) : null);
       const effectiveDifficultyName =
-        row.difficultyName ||
-        (effectiveDifficulty != null ? getGradeLabel(effectiveDifficulty) : null) ||
-        null;
+        row.difficultyName || (effectiveDifficulty != null ? getGradeLabel(effectiveDifficulty) : null) || null;
       return {
         uuid: row.tick.uuid,
         userId: row.tick.userId,
@@ -466,11 +454,7 @@ export const sessionFeedQueries = {
 
     const { totalSends, totalFlashes, totalAttempts } = computeSessionAggregates(tickRows);
 
-    const participants = await fetchParticipants(
-      sessionId,
-      isParty ? 'party' : 'inferred',
-      userIds,
-    );
+    const participants = await fetchParticipants(sessionId, isParty ? 'party' : 'inferred', userIds);
     const gradeDistribution = buildGradeDistributionFromTicks(tickRows);
 
     // Timestamps
@@ -480,17 +464,13 @@ export const sessionFeedQueries = {
     const firstTickAt = sortedTicks[0].tick.climbedAt;
     const lastTickAt = sortedTicks[sortedTicks.length - 1].tick.climbedAt;
     const durationMinutes =
-      Math.round((new Date(lastTickAt).getTime() - new Date(firstTickAt).getTime()) / 60000) ||
-      null;
+      Math.round((new Date(lastTickAt).getTime() - new Date(firstTickAt).getTime()) / 60000) || null;
 
     // Hardest grade (use effective difficulty with consensus fallback)
     const gradesSorted = tickRows
       .map((r) => {
-        const effDiff =
-          r.tick.difficulty ??
-          (r.consensusDifficulty != null ? Math.round(r.consensusDifficulty) : null);
-        const effName =
-          r.difficultyName || (effDiff != null ? getGradeLabel(effDiff) : null) || null;
+        const effDiff = r.tick.difficulty ?? (r.consensusDifficulty != null ? Math.round(r.consensusDifficulty) : null);
+        const effName = r.difficultyName || (effDiff != null ? getGradeLabel(effDiff) : null) || null;
         return { ...r, effDiff, effName };
       })
       .filter((r) => r.effName && (r.tick.status === 'flash' || r.tick.status === 'send'))
@@ -505,12 +485,7 @@ export const sessionFeedQueries = {
         score: sql<number>`COALESCE(score, 0)`,
       })
       .from(dbSchema.voteCounts)
-      .where(
-        and(
-          sql`${dbSchema.voteCounts.entityType} = 'session'`,
-          eq(dbSchema.voteCounts.entityId, sessionId),
-        ),
-      )
+      .where(and(sql`${dbSchema.voteCounts.entityType} = 'session'`, eq(dbSchema.voteCounts.entityId, sessionId)))
       .limit(1);
 
     const [commentData] = await db
@@ -527,9 +502,7 @@ export const sessionFeedQueries = {
     // Session metadata
     const sessionName = isParty ? partySession?.name || null : inferredSession?.name || null;
     const goal = isParty ? partySession?.goal || null : inferredSession?.description || null;
-    const ownerUserId = isParty
-      ? partySession?.createdByUserId || null
-      : inferredSession?.userId || null;
+    const ownerUserId = isParty ? partySession?.createdByUserId || null : inferredSession?.userId || null;
 
     return {
       sessionId,
@@ -566,9 +539,7 @@ export const sessionFeedQueries = {
  * - Inferred: filter by inferred_session_id
  */
 function tickSessionFilter(sessionId: string, sessionType: string) {
-  return sessionType === 'party'
-    ? sql`t.session_id = ${sessionId}`
-    : sql`t.inferred_session_id = ${sessionId}`;
+  return sessionType === 'party' ? sql`t.session_id = ${sessionId}` : sql`t.inferred_session_id = ${sessionId}`;
 }
 
 /**
@@ -645,8 +616,7 @@ async function fetchParticipantsBatch(
       ? sql`LEFT JOIN board_climbs cf ON cf.uuid = t.climb_uuid AND cf.board_type = t.board_type`
       : sql``;
   const batchBoardFilter = boardTypeFilter ? sql`AND t.board_type = ${boardTypeFilter}` : sql``;
-  const batchLayoutFilter =
-    layoutIdFilter !== null ? sql`AND cf.layout_id = ${layoutIdFilter}` : sql``;
+  const batchLayoutFilter = layoutIdFilter !== null ? sql`AND cf.layout_id = ${layoutIdFilter}` : sql``;
 
   const result = await db.execute(sql`
     SELECT
@@ -719,8 +689,7 @@ async function fetchGradeDistributionBatch(
       ? sql`LEFT JOIN board_climbs cf ON cf.uuid = t.climb_uuid AND cf.board_type = t.board_type`
       : sql``;
   const batchBoardFilter = boardTypeFilter ? sql`AND t.board_type = ${boardTypeFilter}` : sql``;
-  const batchLayoutFilter =
-    layoutIdFilter !== null ? sql`AND cf.layout_id = ${layoutIdFilter}` : sql``;
+  const batchLayoutFilter = layoutIdFilter !== null ? sql`AND cf.layout_id = ${layoutIdFilter}` : sql``;
 
   const result = await db.execute(sql`
     SELECT
@@ -782,10 +751,7 @@ async function fetchSessionMetaBatch(
   const partyIds = sessionIds.filter((id) => sessionTypes.get(id) === 'party');
   const inferredIds = sessionIds.filter((id) => sessionTypes.get(id) === 'inferred');
 
-  const map = new Map<
-    string,
-    { name: string | null; goal: string | null; ownerUserId: string | null }
-  >();
+  const map = new Map<string, { name: string | null; goal: string | null; ownerUserId: string | null }>();
 
   // Batch fetch party sessions
   if (partyIds.length > 0) {
@@ -839,8 +805,7 @@ async function fetchBoardTypesBatch(
       ? sql`LEFT JOIN board_climbs cf ON cf.uuid = t.climb_uuid AND cf.board_type = t.board_type`
       : sql``;
   const batchBoardFilter = boardTypeFilter ? sql`AND t.board_type = ${boardTypeFilter}` : sql``;
-  const batchLayoutFilter =
-    layoutIdFilter !== null ? sql`AND cf.layout_id = ${layoutIdFilter}` : sql``;
+  const batchLayoutFilter = layoutIdFilter !== null ? sql`AND cf.layout_id = ${layoutIdFilter}` : sql``;
 
   const result = await db.execute(sql`
     SELECT

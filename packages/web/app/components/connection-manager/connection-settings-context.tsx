@@ -23,13 +23,9 @@ interface ConnectionSettingsContextType {
   isLoaded: boolean;
 }
 
-const ConnectionSettingsContext = createContext<ConnectionSettingsContextType | undefined>(
-  undefined,
-);
+const ConnectionSettingsContext = createContext<ConnectionSettingsContextType | undefined>(undefined);
 
-export const ConnectionSettingsProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const ConnectionSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [storedPartyMode, setStoredPartyMode] = useState<PartyMode>('direct');
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -77,11 +73,7 @@ export const ConnectionSettingsProvider: React.FC<{ children: React.ReactNode }>
     [partyMode, setPartyMode, isLoaded],
   );
 
-  return (
-    <ConnectionSettingsContext.Provider value={value}>
-      {children}
-    </ConnectionSettingsContext.Provider>
-  );
+  return <ConnectionSettingsContext.Provider value={value}>{children}</ConnectionSettingsContext.Provider>;
 };
 
 export function useConnectionSettings() {

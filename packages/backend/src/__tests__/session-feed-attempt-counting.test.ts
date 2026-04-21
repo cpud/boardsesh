@@ -4,12 +4,7 @@ import {
   computeSessionAggregates,
 } from '../graphql/resolvers/social/session-feed-utils';
 
-function makeTick(
-  status: string,
-  attemptCount: number,
-  difficulty: number | null = 10,
-  boardType = 'kilter',
-) {
+function makeTick(status: string, attemptCount: number, difficulty: number | null = 10, boardType = 'kilter') {
   return {
     tick: { status, attemptCount, difficulty, boardType },
     difficultyName: difficulty != null ? `V${difficulty}` : null,

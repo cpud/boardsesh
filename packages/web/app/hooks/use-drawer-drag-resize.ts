@@ -9,11 +9,7 @@ export const FLICK_VELOCITY_THRESHOLD = 0.5;
 export type DragResult = 'expand' | 'collapse' | 'close' | 'none';
 
 /** Pure decision function: determines if finger movement qualifies as a drag gesture. */
-export function isDragGestureDetected(
-  startY: number,
-  currentY: number,
-  threshold = DRAG_MOVE_THRESHOLD,
-): boolean {
+export function isDragGestureDetected(startY: number, currentY: number, threshold = DRAG_MOVE_THRESHOLD): boolean {
   return Math.abs(currentY - startY) > threshold;
 }
 
@@ -200,13 +196,7 @@ export function useDrawerDragResize({
     const initialFrac = parseFraction(initialHeight);
     const expandedFrac = parseFraction(expandedHeight);
 
-    const result = computeDragResult(
-      currentHeightPx,
-      viewportHeight,
-      velocity,
-      initialFrac,
-      expandedFrac,
-    );
+    const result = computeDragResult(currentHeightPx, viewportHeight, velocity, initialFrac, expandedFrac);
 
     switch (result) {
       case 'expand':

@@ -109,8 +109,7 @@ function createMockChain(resolveValue: unknown = []) {
     'set',
   ];
 
-  chain.then = (resolve: (value: unknown) => unknown) =>
-    Promise.resolve(resolveValue).then(resolve);
+  chain.then = (resolve: (value: unknown) => unknown) => Promise.resolve(resolveValue).then(resolve);
 
   for (const method of methods) {
     calls[method] = [];
@@ -150,9 +149,7 @@ describe('allUserPlaylists resolver', () => {
   it('should require authentication', async () => {
     const ctx = makeCtx({ isAuthenticated: false, userId: null });
 
-    await expect(playlistQueries.allUserPlaylists(null, { input: {} }, ctx)).rejects.toThrow(
-      'Authentication required',
-    );
+    await expect(playlistQueries.allUserPlaylists(null, { input: {} }, ctx)).rejects.toThrow('Authentication required');
   });
 
   it('should return all playlists when no filters provided', async () => {
@@ -208,11 +205,7 @@ describe('allUserPlaylists resolver', () => {
     const { chain: followedChain } = createMockChain([]);
     mockDb.select.mockReturnValueOnce(followedChain);
 
-    const result = await playlistQueries.allUserPlaylists(
-      null,
-      { input: { boardType: 'kilter' } },
-      ctx,
-    );
+    const result = await playlistQueries.allUserPlaylists(null, { input: { boardType: 'kilter' } }, ctx);
 
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({ uuid: 'pl-1', boardType: 'kilter' });
@@ -238,11 +231,7 @@ describe('allUserPlaylists resolver', () => {
     const { chain: followedChain } = createMockChain([]);
     mockDb.select.mockReturnValueOnce(followedChain);
 
-    const result = await playlistQueries.allUserPlaylists(
-      null,
-      { input: { boardType: 'kilter', layoutId: 8 } },
-      ctx,
-    );
+    const result = await playlistQueries.allUserPlaylists(null, { input: { boardType: 'kilter', layoutId: 8 } }, ctx);
 
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({ uuid: 'pl-1', boardType: 'kilter', layoutId: 8 });
@@ -273,11 +262,7 @@ describe('allUserPlaylists resolver', () => {
     const { chain: followedChain } = createMockChain([]);
     mockDb.select.mockReturnValueOnce(followedChain);
 
-    const result = await playlistQueries.allUserPlaylists(
-      null,
-      { input: { boardType: 'kilter', layoutId: 8 } },
-      ctx,
-    );
+    const result = await playlistQueries.allUserPlaylists(null, { input: { boardType: 'kilter', layoutId: 8 } }, ctx);
 
     // Both playlists should be returned (layoutId=8 match + layoutId=null circuit)
     expect(result).toHaveLength(2);
@@ -293,11 +278,7 @@ describe('allUserPlaylists resolver', () => {
 
     // No climb counts or follow stats queries needed for empty result
 
-    const result = await playlistQueries.allUserPlaylists(
-      null,
-      { input: { boardType: 'tension', layoutId: 99 } },
-      ctx,
-    );
+    const result = await playlistQueries.allUserPlaylists(null, { input: { boardType: 'tension', layoutId: 99 } }, ctx);
 
     expect(result).toHaveLength(0);
   });

@@ -57,15 +57,11 @@ describe('session page metadata', () => {
       params: Promise.resolve({ sessionId: 'inferred-session-1' }),
     });
 
-    const image = Array.isArray(metadata.openGraph?.images)
-      ? metadata.openGraph.images[0]
-      : metadata.openGraph?.images;
+    const image = Array.isArray(metadata.openGraph?.images) ? metadata.openGraph.images[0] : metadata.openGraph?.images;
 
     expect(metadata.title).toBe('Solo Volume Day | Boardsesh');
     expect(metadata.description).toBe('Alex — 3 sends');
-    expect(getOpenGraphImageUrl(image)).toBe(
-      '/api/og/session?sessionId=inferred-session-1&v=abc123',
-    );
+    expect(getOpenGraphImageUrl(image)).toBe('/api/og/session?sessionId=inferred-session-1&v=abc123');
   });
 
   it('returns not-found metadata when the summary is missing', async () => {

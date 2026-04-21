@@ -87,9 +87,7 @@ function testClimb(climb: ClimbTest) {
 
           it('BLE chunks fit 20-byte MTU', () => {
             for (const v of [2, 3] as const) {
-              for (const chunk of splitMessages(
-                getBluetoothPacket(climb.frames, ledMap, boardName, v),
-              )) {
+              for (const chunk of splitMessages(getBluetoothPacket(climb.frames, ledMap, boardName, v))) {
                 expect(chunk.length).toBeLessThanOrEqual(20);
               }
             }
@@ -164,8 +162,7 @@ testClimb({
 testClimb({
   climbName: 'Mid Range Game',
   board: 'kilter',
-  frames:
-    'p4119r45p4131r44p4184r43p4199r45p4208r43p4220r43p4231r42p4265r42p4270r43p4530r45p4663r45',
+  frames: 'p4119r45p4131r44p4184r43p4199r45p4208r43p4220r43p4231r42p4265r42p4270r43p4530r45p4663r45',
   layoutId: 8,
   // Only 10x12 Full Ride (size 25) resolves all 11 holds.
   // 10x12 Mainline (size 26) skips 3 Auxiliary-only holds → tested in "throws" section.
@@ -186,8 +183,7 @@ testClimb({
 testClimb({
   climbName: 'Hailey Mary.',
   board: 'kilter',
-  frames:
-    'p1143r12p1158r12p1181r13p1204r15p1229r13p1252r13p1284r13p1320r13p1322r13p1389r14p1464r15p1467r15',
+  frames: 'p1143r12p1158r12p1181r13p1204r15p1229r13p1252r13p1284r13p1320r13p1322r13p1389r14p1464r15p1467r15',
   layoutId: 1,
   // 12 holds. Sizes 8 (9/12), 14 (8/12), 27 (11/12) skip holds → tested in "throws" section.
   sizes: [
@@ -215,8 +211,7 @@ testClimb({
 testClimb({
   climbName: 'Kings Cross',
   board: 'kilter',
-  frames:
-    'p1080r15p1131r12p1134r12p1219r13p1251r13p1281r13p1301r13p1316r13p1365r13p1383r14p1452r15p1505r15p1530r15',
+  frames: 'p1080r15p1131r12p1134r12p1219r13p1251r13p1281r13p1301r13p1316r13p1365r13p1383r14p1452r15p1505r15p1530r15',
   layoutId: 1,
   // 13 holds. Sizes 14 (9/13), 27 (11/13) skip holds → tested in "throws" section.
   sizes: [
@@ -300,8 +295,7 @@ testClimb({
 testClimb({
   climbName: 'Catastrophe',
   board: 'tension',
-  frames:
-    'p452r6p473r6p550r6p563r8p577r8p589r7p689r8p695r6p704r5p722r6p727r8p728r8p733r8p734r8p744r6p750r8',
+  frames: 'p452r6p473r6p550r6p563r8p577r8p589r7p689r8p695r6p704r5p722r6p727r8p728r8p733r8p734r8p744r6p750r8',
   layoutId: 10,
   // 16 holds. Sizes 7 (14/16), 9 (14/16) skip 2 holds → tested in "throws" section.
   sizes: [
@@ -390,96 +384,68 @@ describe('Throws when any placements are missing (search filter bug)', () => {
   it('Kilter Original climb on Homewall board throws (zero overlap)', () => {
     const ledMap = getLedPlacements('kilter', 8, 17);
     const frames = 'p1080r15p1131r12p1134r12';
-    expect(() => getBluetoothPacket(frames, ledMap, 'kilter', 3)).toThrow(
-      'placements have no LED mapping',
-    );
+    expect(() => getBluetoothPacket(frames, ledMap, 'kilter', 3)).toThrow('placements have no LED mapping');
   });
 
   it('Tension climb on Kilter board throws (zero overlap)', () => {
     const ledMap = getLedPlacements('kilter', 1, 7);
     const frames = 'p452r6p473r6p550r6';
-    expect(() => getBluetoothPacket(frames, ledMap, 'tension', 3)).toThrow(
-      'placements have no LED mapping',
-    );
+    expect(() => getBluetoothPacket(frames, ledMap, 'tension', 3)).toThrow('placements have no LED mapping');
   });
 
   it('empty placements map throws', () => {
-    expect(() => getBluetoothPacket('p1r42p2r42', {}, 'kilter', 3)).toThrow(
-      'placements have no LED mapping',
-    );
+    expect(() => getBluetoothPacket('p1r42p2r42', {}, 'kilter', 3)).toThrow('placements have no LED mapping');
   });
 
   // --- Partial match (climb uses holds not on this board size) ---
 
   it('"Mid Range Game" on 10x12 Mainline throws (3 Auxiliary holds missing)', () => {
     const ledMap = getLedPlacements('kilter', 8, 26);
-    const frames =
-      'p4119r45p4131r44p4184r43p4199r45p4208r43p4220r43p4231r42p4265r42p4270r43p4530r45p4663r45';
-    expect(() => getBluetoothPacket(frames, ledMap, 'kilter', 3)).toThrow(
-      '3 of 11 placements have no LED mapping',
-    );
+    const frames = 'p4119r45p4131r44p4184r43p4199r45p4208r43p4220r43p4231r42p4265r42p4270r43p4530r45p4663r45';
+    expect(() => getBluetoothPacket(frames, ledMap, 'kilter', 3)).toThrow('3 of 11 placements have no LED mapping');
   });
 
   it('"Hailey Mary." on 8x12 Original throws (3 holds missing)', () => {
     const ledMap = getLedPlacements('kilter', 1, 8);
-    const frames =
-      'p1143r12p1158r12p1181r13p1204r15p1229r13p1252r13p1284r13p1320r13p1322r13p1389r14p1464r15p1467r15';
-    expect(() => getBluetoothPacket(frames, ledMap, 'kilter', 3)).toThrow(
-      '3 of 12 placements have no LED mapping',
-    );
+    const frames = 'p1143r12p1158r12p1181r13p1204r15p1229r13p1252r13p1284r13p1320r13p1322r13p1389r14p1464r15p1467r15';
+    expect(() => getBluetoothPacket(frames, ledMap, 'kilter', 3)).toThrow('3 of 12 placements have no LED mapping');
   });
 
   it('"Hailey Mary." on 7x10 Original throws (4 holds missing)', () => {
     const ledMap = getLedPlacements('kilter', 1, 14);
-    const frames =
-      'p1143r12p1158r12p1181r13p1204r15p1229r13p1252r13p1284r13p1320r13p1322r13p1389r14p1464r15p1467r15';
-    expect(() => getBluetoothPacket(frames, ledMap, 'kilter', 3)).toThrow(
-      '4 of 12 placements have no LED mapping',
-    );
+    const frames = 'p1143r12p1158r12p1181r13p1204r15p1229r13p1252r13p1284r13p1320r13p1322r13p1389r14p1464r15p1467r15';
+    expect(() => getBluetoothPacket(frames, ledMap, 'kilter', 3)).toThrow('4 of 12 placements have no LED mapping');
   });
 
   it('"Hailey Mary." on 12x12 w/o kick throws (1 hold missing)', () => {
     const ledMap = getLedPlacements('kilter', 1, 27);
-    const frames =
-      'p1143r12p1158r12p1181r13p1204r15p1229r13p1252r13p1284r13p1320r13p1322r13p1389r14p1464r15p1467r15';
-    expect(() => getBluetoothPacket(frames, ledMap, 'kilter', 3)).toThrow(
-      '1 of 12 placements have no LED mapping',
-    );
+    const frames = 'p1143r12p1158r12p1181r13p1204r15p1229r13p1252r13p1284r13p1320r13p1322r13p1389r14p1464r15p1467r15';
+    expect(() => getBluetoothPacket(frames, ledMap, 'kilter', 3)).toThrow('1 of 12 placements have no LED mapping');
   });
 
   it('"Kings Cross" on 7x10 Original throws (4 holds missing)', () => {
     const ledMap = getLedPlacements('kilter', 1, 14);
     const frames =
       'p1080r15p1131r12p1134r12p1219r13p1251r13p1281r13p1301r13p1316r13p1365r13p1383r14p1452r15p1505r15p1530r15';
-    expect(() => getBluetoothPacket(frames, ledMap, 'kilter', 3)).toThrow(
-      '4 of 13 placements have no LED mapping',
-    );
+    expect(() => getBluetoothPacket(frames, ledMap, 'kilter', 3)).toThrow('4 of 13 placements have no LED mapping');
   });
 
   it('"Kings Cross" on 12x12 w/o kick throws (2 holds missing)', () => {
     const ledMap = getLedPlacements('kilter', 1, 27);
     const frames =
       'p1080r15p1131r12p1134r12p1219r13p1251r13p1281r13p1301r13p1316r13p1365r13p1383r14p1452r15p1505r15p1530r15';
-    expect(() => getBluetoothPacket(frames, ledMap, 'kilter', 3)).toThrow(
-      '2 of 13 placements have no LED mapping',
-    );
+    expect(() => getBluetoothPacket(frames, ledMap, 'kilter', 3)).toThrow('2 of 13 placements have no LED mapping');
   });
 
   it('"Catastrophe" on Tension 8x12 throws (2 holds missing)', () => {
     const ledMap = getLedPlacements('tension', 10, 7);
-    const frames =
-      'p452r6p473r6p550r6p563r8p577r8p589r7p689r8p695r6p704r5p722r6p727r8p728r8p733r8p734r8p744r6p750r8';
-    expect(() => getBluetoothPacket(frames, ledMap, 'tension', 3)).toThrow(
-      '2 of 16 placements have no LED mapping',
-    );
+    const frames = 'p452r6p473r6p550r6p563r8p577r8p589r7p689r8p695r6p704r5p722r6p727r8p728r8p733r8p734r8p744r6p750r8';
+    expect(() => getBluetoothPacket(frames, ledMap, 'tension', 3)).toThrow('2 of 16 placements have no LED mapping');
   });
 
   it('"Catastrophe" on Tension 8x14 throws (2 holds missing)', () => {
     const ledMap = getLedPlacements('tension', 10, 9);
-    const frames =
-      'p452r6p473r6p550r6p563r8p577r8p589r7p689r8p695r6p704r5p722r6p727r8p728r8p733r8p734r8p744r6p750r8';
-    expect(() => getBluetoothPacket(frames, ledMap, 'tension', 3)).toThrow(
-      '2 of 16 placements have no LED mapping',
-    );
+    const frames = 'p452r6p473r6p550r6p563r8p577r8p589r7p689r8p695r6p704r5p722r6p727r8p728r8p733r8p734r8p744r6p750r8';
+    expect(() => getBluetoothPacket(frames, ledMap, 'tension', 3)).toThrow('2 of 16 placements have no LED mapping');
   });
 });

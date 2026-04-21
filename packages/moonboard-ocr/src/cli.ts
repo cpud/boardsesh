@@ -17,10 +17,7 @@ function isImageFile(filePath: string): boolean {
 
 const program = new Command();
 
-program
-  .name('moonboard-ocr')
-  .description('Extract MoonBoard climb data from screenshots using OCR')
-  .version('0.1.0');
+program.name('moonboard-ocr').description('Extract MoonBoard climb data from screenshots using OCR').version('0.1.0');
 
 // Parse command - main entry point
 program
@@ -59,12 +56,9 @@ program
 
       // Parse all images
       console.log('Parsing screenshots...');
-      const { climbs, errors } = await parseMultipleScreenshots(
-        imagePaths,
-        (current, total, file) => {
-          process.stdout.write(`\rProcessing: ${current}/${total} - ${file}`);
-        },
-      );
+      const { climbs, errors } = await parseMultipleScreenshots(imagePaths, (current, total, file) => {
+        process.stdout.write(`\rProcessing: ${current}/${total} - ${file}`);
+      });
       console.log(''); // New line after progress
 
       // Report errors

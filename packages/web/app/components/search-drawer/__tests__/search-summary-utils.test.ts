@@ -31,9 +31,7 @@ describe('hasActiveNonNameFilters', () => {
   });
 
   it('returns true when grade filters are active even with a name filter', () => {
-    expect(hasActiveNonNameFilters(makeParams({ name: 'Test', minGrade: 10, maxGrade: 20 }))).toBe(
-      true,
-    );
+    expect(hasActiveNonNameFilters(makeParams({ name: 'Test', minGrade: 10, maxGrade: 20 }))).toBe(true);
   });
 
   it('returns true when holdsFilter has entries', () => {
@@ -101,9 +99,7 @@ describe('getStatusPanelSummary', () => {
   });
 
   it('returns ["Drafts"] when onlyDrafts is true (takes precedence over minAscents)', () => {
-    expect(getStatusPanelSummary(makeParams({ onlyDrafts: true, minAscents: 5 }))).toEqual([
-      'Drafts',
-    ]);
+    expect(getStatusPanelSummary(makeParams({ onlyDrafts: true, minAscents: 5 }))).toEqual(['Drafts']);
   });
 
   it('returns ["Projects"] when projectsOnly is true', () => {

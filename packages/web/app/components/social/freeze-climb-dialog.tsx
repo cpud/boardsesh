@@ -100,12 +100,7 @@ export default function FreezeClimbDialog({
         </DialogActions>
       </Dialog>
 
-      <Snackbar
-        open={!!snackbar}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar('')}
-        message={snackbar}
-      />
+      <Snackbar open={!!snackbar} autoHideDuration={3000} onClose={() => setSnackbar('')} message={snackbar} />
     </>
   );
 }

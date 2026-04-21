@@ -62,11 +62,7 @@ export const boardSessions = pgTable(
     userSessionsIdx: index('board_sessions_user_idx').on(table.createdByUserId),
     statusIdx: index('board_sessions_status_idx').on(table.status),
     lastActivityIdx: index('board_sessions_last_activity_idx').on(table.lastActivity),
-    discoveryIdx: index('board_sessions_discovery_idx').on(
-      table.discoverable,
-      table.status,
-      table.lastActivity,
-    ),
+    discoveryIdx: index('board_sessions_discovery_idx').on(table.discoverable, table.status, table.lastActivity),
   }),
 );
 
@@ -85,9 +81,7 @@ export const boardSessionQueues = pgTable('board_session_queues', {
     .primaryKey()
     .references(() => boardSessions.id, { onDelete: 'cascade' }),
   queue: jsonb('queue').$type<ClimbQueueItem[]>().default([]).notNull(),
-  currentClimbQueueItem: jsonb('current_climb_queue_item')
-    .$type<ClimbQueueItem | null>()
-    .default(null),
+  currentClimbQueueItem: jsonb('current_climb_queue_item').$type<ClimbQueueItem | null>().default(null),
   version: integer('version').default(1).notNull(),
   // Sequence number for event ordering (separate from version used for optimistic locking)
   sequence: integer('sequence').default(0).notNull(),
@@ -108,10 +102,7 @@ export const sessionBoards = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
   },
   (table) => ({
-    uniqueSessionBoard: uniqueIndex('session_boards_session_board_idx').on(
-      table.sessionId,
-      table.boardId,
-    ),
+    uniqueSessionBoard: uniqueIndex('session_boards_session_board_idx').on(table.sessionId, table.boardId),
     sessionIdx: index('session_boards_session_idx').on(table.sessionId),
     boardIdx: index('session_boards_board_idx').on(table.boardId),
   }),

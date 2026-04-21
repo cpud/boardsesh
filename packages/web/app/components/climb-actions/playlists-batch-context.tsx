@@ -12,12 +12,7 @@ interface PlaylistsContextValue {
   getPlaylistsForClimb: (climbUuid: string) => Set<string>;
   addToPlaylist: (playlistId: string, climbUuid: string, angle: number) => Promise<void>;
   removeFromPlaylist: (playlistId: string, climbUuid: string) => Promise<void>;
-  createPlaylist: (
-    name: string,
-    description?: string,
-    color?: string,
-    icon?: string,
-  ) => Promise<Playlist>;
+  createPlaylist: (name: string, description?: string, color?: string, icon?: string) => Promise<Playlist>;
   isLoading: boolean;
   isAuthenticated: boolean;
   refreshPlaylists: () => Promise<void>;
@@ -33,12 +28,7 @@ interface PlaylistsProviderProps {
   playlistMemberships: Map<string, Set<string>>;
   addToPlaylist: (playlistId: string, climbUuid: string, angle: number) => Promise<void>;
   removeFromPlaylist: (playlistId: string, climbUuid: string) => Promise<void>;
-  createPlaylist: (
-    name: string,
-    description?: string,
-    color?: string,
-    icon?: string,
-  ) => Promise<Playlist>;
+  createPlaylist: (name: string, description?: string, color?: string, icon?: string) => Promise<Playlist>;
   isLoading: boolean;
   isAuthenticated: boolean;
   refreshPlaylists: () => Promise<void>;

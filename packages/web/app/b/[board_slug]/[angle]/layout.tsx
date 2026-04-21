@@ -24,9 +24,7 @@ interface BoardSlugRouteParams {
   angle: string;
 }
 
-export async function generateMetadata(props: {
-  params: Promise<BoardSlugRouteParams>;
-}): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<BoardSlugRouteParams> }): Promise<Metadata> {
   const params = await props.params;
 
   try {
@@ -43,9 +41,7 @@ export async function generateMetadata(props: {
   }
 }
 
-export default async function BoardSlugLayout(
-  props: PropsWithChildren<{ params: Promise<BoardSlugRouteParams> }>,
-) {
+export default async function BoardSlugLayout(props: PropsWithChildren<{ params: Promise<BoardSlugRouteParams> }>) {
   const params = await props.params;
   const { children } = props;
 

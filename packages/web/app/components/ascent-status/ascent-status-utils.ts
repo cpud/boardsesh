@@ -24,9 +24,7 @@ export function normalizeAscentStatus({
   return 'attempt';
 }
 
-export function pickHighestAscentStatus(
-  statuses: Iterable<AscentStatusValue>,
-): AscentStatusValue | null {
+export function pickHighestAscentStatus(statuses: Iterable<AscentStatusValue>): AscentStatusValue | null {
   const candidates = new Set(statuses);
 
   for (const status of STATUS_PRIORITY) {

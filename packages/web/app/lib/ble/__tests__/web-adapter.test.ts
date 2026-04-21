@@ -9,16 +9,11 @@ const mockSplitMessages = vi.fn((data: Uint8Array) => [data]);
 const mockWriteCharacteristicSeries = vi.fn();
 
 vi.mock('@/app/components/board-bluetooth-control/bluetooth-shared', async (importOriginal) => {
-  const actual =
-    await importOriginal<
-      typeof import('@/app/components/board-bluetooth-control/bluetooth-shared')
-    >();
+  const actual = await importOriginal<typeof import('@/app/components/board-bluetooth-control/bluetooth-shared')>();
   return {
     ...actual,
-    requestBluetoothDevice: (...args: Parameters<typeof actual.requestBluetoothDevice>) =>
-      mockRequestDevice(...args),
-    getUartCharacteristic: (...args: Parameters<typeof actual.getUartCharacteristic>) =>
-      mockGetCharacteristic(...args),
+    requestBluetoothDevice: (...args: Parameters<typeof actual.requestBluetoothDevice>) => mockRequestDevice(...args),
+    getUartCharacteristic: (...args: Parameters<typeof actual.getUartCharacteristic>) => mockGetCharacteristic(...args),
     splitMessages: (data: Uint8Array) => mockSplitMessages(data),
     writeCharacteristicSeries: (...args: Parameters<typeof actual.writeCharacteristicSeries>) =>
       mockWriteCharacteristicSeries(...args),
@@ -120,19 +115,14 @@ describe('WebBluetoothAdapter', () => {
 
       await adapter.requestAndConnect();
 
-      expect(mockDevice.addEventListener).toHaveBeenCalledWith(
-        'gattserverdisconnected',
-        expect.any(Function),
-      );
+      expect(mockDevice.addEventListener).toHaveBeenCalledWith('gattserverdisconnected', expect.any(Function));
     });
 
     it('throws when getCharacteristic returns undefined', async () => {
       mockRequestDevice.mockResolvedValue(createMockDevice());
       mockGetCharacteristic.mockResolvedValue(undefined);
 
-      await expect(adapter.requestAndConnect()).rejects.toThrow(
-        'Failed to get UART characteristic',
-      );
+      await expect(adapter.requestAndConnect()).rejects.toThrow('Failed to get UART characteristic');
     });
 
     it('cleans up previous device listeners on reconnect', async () => {
@@ -146,10 +136,7 @@ describe('WebBluetoothAdapter', () => {
       mockRequestDevice.mockResolvedValueOnce(secondDevice);
       await adapter.requestAndConnect();
 
-      expect(firstDevice.removeEventListener).toHaveBeenCalledWith(
-        'gattserverdisconnected',
-        expect.any(Function),
-      );
+      expect(firstDevice.removeEventListener).toHaveBeenCalledWith('gattserverdisconnected', expect.any(Function));
     });
 
     it('handles undefined device name', async () => {
@@ -183,10 +170,7 @@ describe('WebBluetoothAdapter', () => {
       await adapter.requestAndConnect();
       await adapter.disconnect();
 
-      expect(mockDevice.removeEventListener).toHaveBeenCalledWith(
-        'gattserverdisconnected',
-        expect.any(Function),
-      );
+      expect(mockDevice.removeEventListener).toHaveBeenCalledWith('gattserverdisconnected', expect.any(Function));
     });
 
     it('does nothing when not connected', async () => {
@@ -215,11 +199,7 @@ describe('WebBluetoothAdapter', () => {
       await adapter.write(data);
 
       expect(mockSplitMessages).toHaveBeenCalledWith(data);
-      expect(mockWriteCharacteristicSeries).toHaveBeenCalledWith(
-        mockCharacteristic,
-        [chunk1, chunk2],
-        undefined,
-      );
+      expect(mockWriteCharacteristicSeries).toHaveBeenCalledWith(mockCharacteristic, [chunk1, chunk2], undefined);
     });
   });
 
@@ -235,8 +215,7 @@ describe('WebBluetoothAdapter', () => {
       await adapter.requestAndConnect();
 
       // Simulate GATT disconnection by calling the registered listener
-      const addListenerCall = (mockDevice.addEventListener as ReturnType<typeof vi.fn>).mock
-        .calls[0];
+      const addListenerCall = (mockDevice.addEventListener as ReturnType<typeof vi.fn>).mock.calls[0];
       expect(addListenerCall[0]).toBe('gattserverdisconnected');
       const disconnectHandler = addListenerCall[1];
       disconnectHandler();
@@ -257,8 +236,7 @@ describe('WebBluetoothAdapter', () => {
       unsub();
 
       // Simulate disconnection after unsubscribe
-      const addListenerCall = (mockDevice.addEventListener as ReturnType<typeof vi.fn>).mock
-        .calls[0];
+      const addListenerCall = (mockDevice.addEventListener as ReturnType<typeof vi.fn>).mock.calls[0];
       const disconnectHandler = addListenerCall[1];
       disconnectHandler();
 

@@ -31,9 +31,7 @@ export async function GET(request: NextRequest) {
         name: schema.boardClimbs.name,
       })
       .from(schema.boardClimbs)
-      .where(
-        and(eq(schema.boardClimbs.uuid, climbUuid), eq(schema.boardClimbs.boardType, boardType)),
-      )
+      .where(and(eq(schema.boardClimbs.uuid, climbUuid), eq(schema.boardClimbs.boardType, boardType)))
       .limit(1);
 
     if (!climb) {
@@ -58,10 +56,7 @@ export async function GET(request: NextRequest) {
       .limit(1);
 
     if (!psls || !psls.productSizeId || !psls.setId) {
-      return NextResponse.json(
-        { error: 'No board configuration found for this climb' },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'No board configuration found for this climb' }, { status: 404 });
     }
 
     // Collect all set IDs for this product size + layout combination

@@ -71,13 +71,7 @@ export const eventsTypeDefs = /* GraphQL */ `
   """
   Union of possible queue events.
   """
-  union QueueEvent =
-    | FullSync
-    | QueueItemAdded
-    | QueueItemRemoved
-    | QueueReordered
-    | CurrentClimbChanged
-    | ClimbMirrored
+  union QueueEvent = FullSync | QueueItemAdded | QueueItemRemoved | QueueReordered | CurrentClimbChanged | ClimbMirrored
 
   """
   Full queue state sync event.

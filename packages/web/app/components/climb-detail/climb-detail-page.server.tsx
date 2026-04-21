@@ -32,12 +32,7 @@ export default function ClimbDetailPageServer({
   return (
     <div className={styles.pageContainer}>
       <div className={styles.actionsSection}>
-        <ClimbViewActions
-          climb={climb}
-          boardDetails={boardDetails}
-          auroraAppUrl={auroraAppUrl}
-          angle={angle}
-        />
+        <ClimbViewActions climb={climb} boardDetails={boardDetails} auroraAppUrl={auroraAppUrl} angle={angle} />
       </div>
 
       <div className={styles.contentWrapper}>

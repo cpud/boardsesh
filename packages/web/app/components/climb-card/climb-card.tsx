@@ -37,10 +37,7 @@ type ClimbCardProps = {
  * Compare actions arrays for memo equality.
  * Handles common cases: both undefined, both empty arrays, or same reference.
  */
-const areActionsEqual = (
-  prev: React.JSX.Element[] | undefined,
-  next: React.JSX.Element[] | undefined,
-): boolean => {
+const areActionsEqual = (prev: React.JSX.Element[] | undefined, next: React.JSX.Element[] | undefined): boolean => {
   // Same reference (including both undefined)
   if (prev === next) return true;
   // One undefined, one not
@@ -98,10 +95,7 @@ function ClimbCardWithActions({
   const excludeActions = getExcludedClimbActions(boardDetails.board_name, 'card');
 
   return (
-    <div
-      data-testid="climb-card"
-      style={unsupported ? { opacity: 0.5, filter: 'grayscale(80%)' } : undefined}
-    >
+    <div data-testid="climb-card" style={unsupported ? { opacity: 0.5, filter: 'grayscale(80%)' } : undefined}>
       <MuiCard>
         <CardHeader
           title={cardTitle}
@@ -114,8 +108,7 @@ function ClimbCardWithActions({
           sx={{
             padding: `${themeTokens.spacing[1] + 2}px`,
             backgroundColor: selected
-              ? (getGradeTintColor(climb.difficulty, 'light', isDark) ??
-                'var(--semantic-selected-light)')
+              ? (getGradeTintColor(climb.difficulty, 'light', isDark) ?? 'var(--semantic-selected-light)')
               : undefined,
           }}
         >
@@ -170,11 +163,7 @@ const ClimbCardStatic = React.memo(
         preferImageLayers={preferImageLayers}
       />
     );
-    const cardTitle = climb ? (
-      <ClimbTitle climb={climb} layout="horizontal" showSetterInfo />
-    ) : (
-      'Loading...'
-    );
+    const cardTitle = climb ? <ClimbTitle climb={climb} layout="horizontal" showSetterInfo /> : 'Loading...';
 
     return (
       <div data-testid="climb-card">
@@ -190,8 +179,7 @@ const ClimbCardStatic = React.memo(
             sx={{
               padding: `${themeTokens.spacing[1] + 2}px`,
               backgroundColor: selected
-                ? (getGradeTintColor(climb?.difficulty, 'light', isDark) ??
-                  'var(--semantic-selected-light)')
+                ? (getGradeTintColor(climb?.difficulty, 'light', isDark) ?? 'var(--semantic-selected-light)')
                 : undefined,
             }}
           >
@@ -201,9 +189,7 @@ const ClimbCardStatic = React.memo(
             </div>
           </CardContent>
           {actions && actions.length > 0 && (
-            <CardActions
-              sx={{ justifyContent: 'space-around', borderTop: `1px solid var(--neutral-200)` }}
-            >
+            <CardActions sx={{ justifyContent: 'space-around', borderTop: `1px solid var(--neutral-200)` }}>
               {actions}
             </CardActions>
           )}
@@ -251,15 +237,7 @@ ClimbCardStatic.displayName = 'ClimbCardStatic';
  * - When no climb, shows loading state
  */
 function ClimbCard(props: ClimbCardProps) {
-  const {
-    climb,
-    boardDetails,
-    onCoverClick,
-    onCoverDoubleClick,
-    unsupported,
-    actions,
-    expandedContent,
-  } = props;
+  const { climb, boardDetails, onCoverClick, onCoverDoubleClick, unsupported, actions, expandedContent } = props;
   const { preferImageLayers } = props;
 
   // When actions or expandedContent are provided externally, use the memoized static version

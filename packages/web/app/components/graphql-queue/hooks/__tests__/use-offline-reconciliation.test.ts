@@ -1,9 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
-import {
-  useOfflineReconciliation,
-  type UseOfflineReconciliationParams,
-} from '../use-offline-reconciliation';
+import { useOfflineReconciliation, type UseOfflineReconciliationParams } from '../use-offline-reconciliation';
 import type { ClimbQueueItem } from '../../../queue-control/types';
 import type { Climb } from '@/app/lib/types';
 import type { SubscriptionQueueEvent, SessionUser } from '@boardsesh/shared-schema';
@@ -82,32 +79,29 @@ describe('useOfflineReconciliation', () => {
     if (overrides.lastReceivedSequence !== undefined) {
       mockLastReceivedSequenceRef.current = overrides.lastReceivedSequence;
     }
-    return renderHook<void, UseOfflineReconciliationParams>(
-      (props) => useOfflineReconciliation(props),
-      {
-        initialProps: {
-          offlineBuffer: {
-            getBufferedAdditions: mockGetBufferedAdditions,
-            clearBuffer: mockClearBuffer,
-            hasPendingAdditions: mockGetBufferedAdditions().length > 0,
-            bufferAddition: vi.fn(),
-          },
-          isDisconnected: overrides.isDisconnected ?? false,
-          isPersistentSessionActive: overrides.isPersistentSessionActive ?? true,
-          hasConnected: overrides.hasConnected ?? true,
-          users: overrides.users ?? [createUser('me'), createUser('other')],
-          lastReceivedSequenceRef: mockLastReceivedSequenceRef,
-          persistentSession: {
-            addQueueItem: mockAddQueueItem,
-            setQueue: mockSetQueue,
-            setCurrentClimb: mockSetCurrentClimb,
-            subscribeToQueueEvents: mockSubscribeToQueueEvents,
-          },
-          currentQueue: overrides.currentQueue ?? [],
-          currentClimbQueueItem: overrides.currentClimbQueueItem ?? null,
+    return renderHook<void, UseOfflineReconciliationParams>((props) => useOfflineReconciliation(props), {
+      initialProps: {
+        offlineBuffer: {
+          getBufferedAdditions: mockGetBufferedAdditions,
+          clearBuffer: mockClearBuffer,
+          hasPendingAdditions: mockGetBufferedAdditions().length > 0,
+          bufferAddition: vi.fn(),
         },
+        isDisconnected: overrides.isDisconnected ?? false,
+        isPersistentSessionActive: overrides.isPersistentSessionActive ?? true,
+        hasConnected: overrides.hasConnected ?? true,
+        users: overrides.users ?? [createUser('me'), createUser('other')],
+        lastReceivedSequenceRef: mockLastReceivedSequenceRef,
+        persistentSession: {
+          addQueueItem: mockAddQueueItem,
+          setQueue: mockSetQueue,
+          setCurrentClimb: mockSetCurrentClimb,
+          subscribeToQueueEvents: mockSubscribeToQueueEvents,
+        },
+        currentQueue: overrides.currentQueue ?? [],
+        currentClimbQueueItem: overrides.currentClimbQueueItem ?? null,
       },
-    );
+    });
   }
 
   function goOnline(

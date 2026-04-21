@@ -41,15 +41,11 @@ const helpSections = [
             <picture>
               <source srcSet="/help/heatmap.avif" type="image/avif" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/help/heatmap.png"
-                alt="Heatmap visualization"
-                className={styles.featureImage}
-              />
+              <img src="/help/heatmap.png" alt="Heatmap visualization" className={styles.featureImage} />
             </picture>
             <Typography variant="body1" component="p">
-              The heatmap shows hold usage patterns across all climbs, helping you identify popular
-              holds and training opportunities.
+              The heatmap shows hold usage patterns across all climbs, helping you identify popular holds and training
+              opportunities.
             </Typography>
             <Typography variant="body1" component="p">
               <Typography variant="body2" component="span" fontWeight={600}>
@@ -59,9 +55,7 @@ const helpSections = [
             <ol>
               <li>Open the search drawer and expand the &quot;Holds&quot; section</li>
               <li>Click the &quot;Show Heatmap&quot; button</li>
-              <li>
-                The board will display a color overlay from green (low usage) to red (high usage)
-              </li>
+              <li>The board will display a color overlay from green (low usage) to red (high usage)</li>
             </ol>
             <Typography variant="body1" component="p">
               <Typography variant="body2" component="span" fontWeight={600}>
@@ -115,8 +109,8 @@ const helpSections = [
               />
             </picture>
             <Typography variant="body1" component="p">
-              Hold classification lets you create personal ratings for each hold on your board,
-              helping you understand your strengths and find suitable climbs.
+              Hold classification lets you create personal ratings for each hold on your board, helping you understand
+              your strengths and find suitable climbs.
             </Typography>
             <Typography variant="body1" component="p">
               <Typography variant="body2" component="span" fontWeight={600}>
@@ -150,8 +144,8 @@ const helpSections = [
               </li>
             </ul>
             <Typography variant="body1" component="p">
-              Classifications are personal and stored in your account, allowing you to build a
-              customized understanding of your board over time.
+              Classifications are personal and stored in your account, allowing you to build a customized understanding
+              of your board over time.
             </Typography>
           </div>
         ),
@@ -175,15 +169,10 @@ const helpSections = [
             <picture>
               <source srcSet="/help/party-mode-active.avif" type="image/avif" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/help/party-mode-active.png"
-                alt="Active party mode session"
-                className={styles.featureImage}
-              />
+              <img src="/help/party-mode-active.png" alt="Active party mode session" className={styles.featureImage} />
             </picture>
             <Typography variant="body1" component="p">
-              Party Mode allows multiple climbers to share a queue and take turns on the board in
-              real-time.
+              Party Mode allows multiple climbers to share a queue and take turns on the board in real-time.
             </Typography>
             <Typography variant="body1" component="p">
               <Typography variant="body2" component="span" fontWeight={600}>
@@ -218,8 +207,7 @@ const helpSections = [
                 <Typography variant="body2" component="span" fontWeight={600}>
                   Enter Session ID:
                 </Typography>{' '}
-                Go to the &quot;Join Session&quot; tab and paste either the full URL or just the
-                session ID
+                Go to the &quot;Join Session&quot; tab and paste either the full URL or just the session ID
               </li>
             </ol>
             <Typography variant="body1" component="p">
@@ -245,15 +233,10 @@ const helpSections = [
             <picture>
               <source srcSet="/help/main-interface.avif" type="image/avif" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/help/main-interface.png"
-                alt="Queue management"
-                className={styles.featureImage}
-              />
+              <img src="/help/main-interface.png" alt="Queue management" className={styles.featureImage} />
             </picture>
             <Typography variant="body1" component="p">
-              The queue lets you organize climbs for your session, whether climbing solo or with
-              others.
+              The queue lets you organize climbs for your session, whether climbing solo or with others.
             </Typography>
             <Typography variant="body1" component="p">
               <Typography variant="body2" component="span" fontWeight={600}>
@@ -293,8 +276,7 @@ const helpSections = [
               </li>
             </ul>
             <Typography variant="body1" component="p">
-              The queue syncs automatically with party members and persists offline for
-              uninterrupted sessions.
+              The queue syncs automatically with party members and persists offline for uninterrupted sessions.
             </Typography>
           </div>
         ),
@@ -370,8 +352,8 @@ const helpSections = [
         children: (
           <div className={styles.answerContent}>
             <Typography variant="body1" component="p">
-              Climb mirroring flips all holds to the opposite side of the board, perfect for
-              bilateral strength training.
+              Climb mirroring flips all holds to the opposite side of the board, perfect for bilateral strength
+              training.
             </Typography>
             <Typography variant="body1" component="p">
               <Typography variant="body2" component="span" fontWeight={600}>
@@ -384,8 +366,8 @@ const helpSections = [
               <li>Toggle it on to flip the climb horizontally</li>
             </ol>
             <Typography variant="body1" component="p">
-              When connected via Bluetooth, the LED board will automatically display the mirrored
-              pattern. This feature is available on supported boards like Kilter Homewall.
+              When connected via Bluetooth, the LED board will automatically display the mirrored pattern. This feature
+              is available on supported boards like Kilter Homewall.
             </Typography>
           </div>
         ),
@@ -409,11 +391,7 @@ const helpSections = [
             <picture>
               <source srcSet="/help/search-filters.avif" type="image/avif" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/help/search-filters.png"
-                alt="Search filters"
-                className={styles.featureImage}
-              />
+              <img src="/help/search-filters.png" alt="Search filters" className={styles.featureImage} />
             </picture>
             <Typography variant="body1" component="p">
               <Typography variant="body2" component="span" fontWeight={600}>
@@ -467,11 +445,7 @@ const helpSections = [
             <picture>
               <source srcSet="/help/personal-progress.avif" type="image/avif" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/help/personal-progress.png"
-                alt="Personal progress filters"
-                className={styles.featureImage}
-              />
+              <img src="/help/personal-progress.png" alt="Personal progress filters" className={styles.featureImage} />
             </picture>
             <ul>
               <li>Hide completed climbs</li>
@@ -490,11 +464,7 @@ const helpSections = [
             <picture>
               <source srcSet="/help/search-by-hold.avif" type="image/avif" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/help/search-by-hold.png"
-                alt="Search by hold"
-                className={styles.featureImage}
-              />
+              <img src="/help/search-by-hold.png" alt="Search by hold" className={styles.featureImage} />
             </picture>
             <Typography variant="body1" component="p">
               Search by Hold lets you find climbs that use (or avoid) specific holds on the board.
@@ -542,8 +512,7 @@ const helpSections = [
         children: (
           <div className={styles.answerContent}>
             <Typography variant="body1" component="p">
-              Boardsesh uses Web Bluetooth to control your board&apos;s LED system directly from the
-              browser.
+              Boardsesh uses Web Bluetooth to control your board&apos;s LED system directly from the browser.
             </Typography>
             <Typography variant="body1" component="p">
               <Typography variant="body2" component="span" fontWeight={600}>
@@ -567,8 +536,7 @@ const helpSections = [
               <li>Once connected, LEDs automatically show the current climb</li>
             </ol>
             <Typography variant="body1" component="p">
-              The connection supports mirrored patterns and will automatically update when you
-              change climbs.
+              The connection supports mirrored patterns and will automatically update when you change climbs.
             </Typography>
           </div>
         ),
@@ -581,11 +549,7 @@ const helpSections = [
             <picture>
               <source srcSet="/help/settings-aurora.avif" type="image/avif" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/help/settings-aurora.png"
-                alt="Aurora account settings"
-                className={styles.featureImage}
-              />
+              <img src="/help/settings-aurora.png" alt="Aurora account settings" className={styles.featureImage} />
             </picture>
             <Typography variant="body1" component="p">
               Link your Aurora account (Kilter or Tension) to sync your climb history and progress.
@@ -612,8 +576,7 @@ const helpSections = [
               <li>Circuits/playlists</li>
             </ul>
             <Typography variant="body1" component="p">
-              Changes sync bidirectionally, so ascents logged in Boardsesh will appear in the
-              official apps.
+              Changes sync bidirectionally, so ascents logged in Boardsesh will appear in the official apps.
             </Typography>
           </div>
         ),
@@ -626,11 +589,7 @@ const helpSections = [
             <picture>
               <source srcSet="/help/climb-detail.avif" type="image/avif" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/help/climb-detail.png"
-                alt="Climb detail with actions"
-                className={styles.featureImage}
-              />
+              <img src="/help/climb-detail.png" alt="Climb detail with actions" className={styles.featureImage} />
             </picture>
             <Typography variant="body1" component="p">
               Track your climbing progress by logging ascents and attempts.
@@ -661,8 +620,8 @@ const helpSections = [
               </li>
             </ul>
             <Typography variant="body1" component="p">
-              Your logbook syncs with linked Aurora accounts and can be filtered in search results
-              to find new challenges or revisit old projects.
+              Your logbook syncs with linked Aurora accounts and can be filtered in search results to find new
+              challenges or revisit old projects.
             </Typography>
           </div>
         ),
@@ -687,8 +646,7 @@ const helpSections = [
               <li>Bluetooth LED control works independently</li>
             </ul>
             <Typography variant="body1" component="p">
-              When connectivity is restored, any pending changes sync automatically in the
-              background.
+              When connectivity is restored, any pending changes sync automatically in the background.
             </Typography>
           </div>
         ),
@@ -718,12 +676,7 @@ export default function HelpContent() {
               <Typography variant="h4" component="h2" className={styles.heroTitle}>
                 How can we help?
               </Typography>
-              <Typography
-                variant="body2"
-                component="span"
-                color="text.secondary"
-                className={styles.heroSubtitle}
-              >
+              <Typography variant="body2" component="span" color="text.secondary" className={styles.heroSubtitle}>
                 Learn about Boardsesh features and get the most out of your climbing sessions
               </Typography>
             </div>
@@ -735,15 +688,11 @@ export default function HelpContent() {
                 onChange={(_, isExpanded) => setExpandedSection(isExpanded ? section.key : false)}
                 className={styles.mainCollapse}
               >
-                <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
-                  {section.label}
-                </AccordionSummary>
+                <AccordionSummary expandIcon={<ExpandMoreOutlined />}>{section.label}</AccordionSummary>
                 <AccordionDetails>
                   {section.children.map((item) => (
                     <Accordion key={item.key} className={styles.nestedCollapse}>
-                      <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
-                        {item.label}
-                      </AccordionSummary>
+                      <AccordionSummary expandIcon={<ExpandMoreOutlined />}>{item.label}</AccordionSummary>
                       <AccordionDetails>{item.children}</AccordionDetails>
                     </Accordion>
                   ))}

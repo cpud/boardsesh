@@ -97,11 +97,7 @@ export default function SessionProviderWrapper({ children }: SessionProviderWrap
   return (
     <SessionProvider refetchOnWindowFocus={false} refetchWhenOffline={false}>
       {children}
-      <Snackbar
-        open={deepLinkError}
-        autoHideDuration={8000}
-        onClose={() => setDeepLinkError(false)}
-      >
+      <Snackbar open={deepLinkError} autoHideDuration={8000} onClose={() => setDeepLinkError(false)}>
         <Alert severity="warning" onClose={() => setDeepLinkError(false)}>
           Sign-in with Google, Apple, or Facebook may not work. Try restarting the app.
         </Alert>

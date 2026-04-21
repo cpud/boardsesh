@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server';
 import { sql } from 'drizzle-orm';
-import {
-  AURORA_BOARD_NAMES,
-  getBoardSelectorOptions,
-  isAuroraBoardName,
-} from '@/app/lib/board-constants';
+import { AURORA_BOARD_NAMES, getBoardSelectorOptions, isAuroraBoardName } from '@/app/lib/board-constants';
 import type { AuroraBoardName } from '@boardsesh/shared-schema';
 import { dbz as db } from '@/app/lib/db/db';
 import { cachedGetHoldHeatmapData } from '@/app/lib/db/queries/climbs/holds-heatmap-cache';
@@ -44,10 +40,7 @@ async function getAnglesForLayout(boardName: AuroraBoardName, layoutId: number):
   return result.rows.map((row) => Number(row.angle));
 }
 
-function buildTargetsForBoard(
-  boardName: AuroraBoardName,
-  anglesByLayout: Map<number, number[]>,
-): WarmTarget[] {
+function buildTargetsForBoard(boardName: AuroraBoardName, anglesByLayout: Map<number, number[]>): WarmTarget[] {
   const selectorOptions = getBoardSelectorOptions();
   const layouts = selectorOptions.layouts[boardName] ?? [];
   const targets: WarmTarget[] = [];
@@ -161,10 +154,7 @@ export async function GET(request: Request, props: { params: Promise<PrewarmRout
           const angles = await getAnglesForLayout(boardName, layout.id);
           anglesByLayout.set(layout.id, angles);
         } catch (error) {
-          console.error(
-            `[prewarm-heatmap] failed to load angles for ${boardName} layout ${layout.id}:`,
-            error,
-          );
+          console.error(`[prewarm-heatmap] failed to load angles for ${boardName} layout ${layout.id}:`, error);
           anglesByLayout.set(layout.id, []);
         }
       }),
@@ -178,9 +168,7 @@ export async function GET(request: Request, props: { params: Promise<PrewarmRout
     );
 
     const durationMs = Date.now() - startedAt;
-    console.log(
-      `[prewarm-heatmap] ${boardName} done in ${durationMs}ms — warmed=${warmed} failed=${failed}`,
-    );
+    console.log(`[prewarm-heatmap] ${boardName} done in ${durationMs}ms — warmed=${warmed} failed=${failed}`);
 
     return NextResponse.json({
       board: boardName,

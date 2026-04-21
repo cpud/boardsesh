@@ -166,10 +166,7 @@ describe('getAllBoardConfigs', () => {
 
     // console.error should have been called for the failure
     expect(consoleSpy).toHaveBeenCalledTimes(1);
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Failed to fetch details for'),
-      expect.any(Error),
-    );
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to fetch details for'), expect.any(Error));
 
     consoleSpy.mockRestore();
   });
@@ -213,12 +210,8 @@ describe('getAllBoardConfigs', () => {
     expect(result.layouts.moonboard).toContainEqual({ id: 3, name: 'MoonBoard 2024' });
 
     // Should have sizes for each moonboard layout
-    expect(result.sizes['moonboard-2']).toEqual([
-      { id: 1, name: 'Standard', description: '11x18 Grid' },
-    ]);
-    expect(result.sizes['moonboard-3']).toEqual([
-      { id: 1, name: 'Standard', description: '11x18 Grid' },
-    ]);
+    expect(result.sizes['moonboard-2']).toEqual([{ id: 1, name: 'Standard', description: '11x18 Grid' }]);
+    expect(result.sizes['moonboard-3']).toEqual([{ id: 1, name: 'Standard', description: '11x18 Grid' }]);
 
     // Should have sets for each layout-size combination
     expect(result.sets['moonboard-2-1']).toEqual([

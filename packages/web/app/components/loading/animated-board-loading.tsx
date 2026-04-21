@@ -52,11 +52,7 @@ const AnimatedBoardLoading: React.FC<AnimatedBoardLoadingProps> = ({
 
     const holdsMap: LitUpHoldsMap = {};
     // Use theme colors for the animation - primary, secondary, and success for variety
-    const colors = [
-      themeTokens.colors.primary,
-      themeTokens.colors.secondary,
-      themeTokens.colors.success,
-    ];
+    const colors = [themeTokens.colors.primary, themeTokens.colors.secondary, themeTokens.colors.success];
 
     for (const hold of boardDetails.holdsData) {
       // Calculate angle from center (in degrees, 0-360)

@@ -13,10 +13,7 @@ import Avatar from '@mui/material/Avatar';
 import MuiTypography from '@mui/material/Typography';
 import MuiButton from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
-import type {
-  BoardLeaderboard as BoardLeaderboardType,
-  BoardLeaderboardEntry,
-} from '@boardsesh/shared-schema';
+import type { BoardLeaderboard as BoardLeaderboardType, BoardLeaderboardEntry } from '@boardsesh/shared-schema';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
@@ -57,12 +54,12 @@ export default function BoardLeaderboard({ boardUuid }: BoardLeaderboardProps) {
 
       try {
         const client = createGraphQLHttpClient(token);
-        const data = await client.request<
-          GetBoardLeaderboardQueryResponse,
-          GetBoardLeaderboardQueryVariables
-        >(GET_BOARD_LEADERBOARD, {
-          input: { boardUuid, period, limit: 20, offset },
-        });
+        const data = await client.request<GetBoardLeaderboardQueryResponse, GetBoardLeaderboardQueryVariables>(
+          GET_BOARD_LEADERBOARD,
+          {
+            input: { boardUuid, period, limit: 20, offset },
+          },
+        );
 
         if (append) {
           setLeaderboard((prev) =>
@@ -126,18 +123,9 @@ export default function BoardLeaderboard({ boardUuid }: BoardLeaderboardProps) {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell
-                    sx={{ fontWeight: themeTokens.typography.fontWeight.semibold, width: 40 }}
-                  >
-                    #
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: themeTokens.typography.fontWeight.semibold }}>
-                    Climber
-                  </TableCell>
-                  <TableCell
-                    align="right"
-                    sx={{ fontWeight: themeTokens.typography.fontWeight.semibold }}
-                  >
+                  <TableCell sx={{ fontWeight: themeTokens.typography.fontWeight.semibold, width: 40 }}>#</TableCell>
+                  <TableCell sx={{ fontWeight: themeTokens.typography.fontWeight.semibold }}>Climber</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: themeTokens.typography.fontWeight.semibold }}>
                     Sends
                   </TableCell>
                   <TableCell
@@ -149,10 +137,7 @@ export default function BoardLeaderboard({ boardUuid }: BoardLeaderboardProps) {
                   >
                     Flashes
                   </TableCell>
-                  <TableCell
-                    align="right"
-                    sx={{ fontWeight: themeTokens.typography.fontWeight.semibold }}
-                  >
+                  <TableCell align="right" sx={{ fontWeight: themeTokens.typography.fontWeight.semibold }}>
                     Hardest
                   </TableCell>
                 </TableRow>
@@ -176,10 +161,7 @@ export default function BoardLeaderboard({ boardUuid }: BoardLeaderboardProps) {
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Avatar
-                          src={entry.userAvatarUrl ?? undefined}
-                          sx={{ width: 28, height: 28, fontSize: 12 }}
-                        >
+                        <Avatar src={entry.userAvatarUrl ?? undefined} sx={{ width: 28, height: 28, fontSize: 12 }}>
                           {entry.userDisplayName?.[0]?.toUpperCase()}
                         </Avatar>
                         <MuiTypography
@@ -211,12 +193,7 @@ export default function BoardLeaderboard({ boardUuid }: BoardLeaderboardProps) {
 
           {leaderboard.hasMore && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-              <MuiButton
-                variant="text"
-                size="small"
-                onClick={handleLoadMore}
-                disabled={isLoadingMore}
-              >
+              <MuiButton variant="text" size="small" onClick={handleLoadMore} disabled={isLoadingMore}>
                 {isLoadingMore ? <CircularProgress size={16} /> : 'Load more'}
               </MuiButton>
             </Box>

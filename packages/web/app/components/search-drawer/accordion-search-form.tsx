@@ -40,18 +40,14 @@ interface AccordionSearchFormProps {
   defaultActiveKey?: string[];
 }
 
-const AccordionSearchForm: React.FC<AccordionSearchFormProps> = ({
-  boardDetails,
-  defaultActiveKey,
-}) => {
+const AccordionSearchForm: React.FC<AccordionSearchFormProps> = ({ boardDetails, defaultActiveKey }) => {
   const { uiSearchParams, updateFilters } = useUISearchParams();
   const { isAuthenticated } = useBoardProvider();
   const grades = TENSION_KILTER_GRADES;
   const { openAuthModal } = useAuthModal();
   const [showSort, setShowSort] = useState(false);
 
-  const isKilterHomewall =
-    boardDetails.board_name === 'kilter' && boardDetails.layout_id === KILTER_HOMEWALL_LAYOUT_ID;
+  const isKilterHomewall = boardDetails.board_name === 'kilter' && boardDetails.layout_id === KILTER_HOMEWALL_LAYOUT_ID;
   const isLargestSize = boardDetails.size_name?.toLowerCase().includes('12');
   const showTallClimbsFilter = isKilterHomewall && isLargestSize;
 
@@ -64,9 +60,7 @@ const AccordionSearchForm: React.FC<AccordionSearchFormProps> = ({
         : 'any';
 
   const handleGradeChange = (type: 'min' | 'max', value: number | undefined) => {
-    updateFilters(
-      buildGradeRangeUpdate(type, value, uiSearchParams.minGrade, uiSearchParams.maxGrade),
-    );
+    updateFilters(buildGradeRangeUpdate(type, value, uiSearchParams.minGrade, uiSearchParams.maxGrade));
   };
 
   const climbContent = (
@@ -160,9 +154,7 @@ const AccordionSearchForm: React.FC<AccordionSearchFormProps> = ({
           <div className={styles.sortRow}>
             <MuiSelect
               value={uiSearchParams.sortBy}
-              onChange={(e) =>
-                updateFilters({ sortBy: e.target.value as typeof uiSearchParams.sortBy })
-              }
+              onChange={(e) => updateFilters({ sortBy: e.target.value as typeof uiSearchParams.sortBy })}
               className={styles.fullWidth}
               size="small"
               MenuProps={{ disableScrollLock: true }}
@@ -176,9 +168,7 @@ const AccordionSearchForm: React.FC<AccordionSearchFormProps> = ({
             </MuiSelect>
             <MuiSelect
               value={uiSearchParams.sortOrder}
-              onChange={(e) =>
-                updateFilters({ sortOrder: e.target.value as typeof uiSearchParams.sortOrder })
-              }
+              onChange={(e) => updateFilters({ sortOrder: e.target.value as typeof uiSearchParams.sortOrder })}
               className={styles.fullWidth}
               size="small"
               MenuProps={{ disableScrollLock: true }}
@@ -232,9 +222,7 @@ const AccordionSearchForm: React.FC<AccordionSearchFormProps> = ({
             <span className={styles.fieldLabel}>Grade Accuracy</span>
             <MuiSelect
               value={uiSearchParams.gradeAccuracy ?? 0}
-              onChange={(e) =>
-                updateFilters({ gradeAccuracy: (e.target.value as number) || undefined })
-              }
+              onChange={(e) => updateFilters({ gradeAccuracy: (e.target.value as number) || undefined })}
               className={styles.fullWidth}
               size="small"
               MenuProps={{ disableScrollLock: true }}
@@ -402,8 +390,7 @@ const AccordionSearchForm: React.FC<AccordionSearchFormProps> = ({
                   onClick={() =>
                     openAuthModal({
                       title: 'Sign in to Boardsesh',
-                      description:
-                        'Create an account to filter by your climbing progress and save favorites.',
+                      description: 'Create an account to filter by your climbing progress and save favorites.',
                     })
                   }
                 >

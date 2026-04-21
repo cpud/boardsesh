@@ -300,13 +300,9 @@ describe('Climb Query Functions', () => {
 
     afterAll(async () => {
       // Clean up test data
-      await db.execute(
-        sql`DELETE FROM board_climb_holds WHERE climb_uuid LIKE ${SET_IDS_TEST_PREFIX + '%'}`,
-      );
+      await db.execute(sql`DELETE FROM board_climb_holds WHERE climb_uuid LIKE ${SET_IDS_TEST_PREFIX + '%'}`);
       await db.execute(sql`DELETE FROM board_climbs WHERE uuid LIKE ${SET_IDS_TEST_PREFIX + '%'}`);
-      await db.execute(
-        sql`DELETE FROM board_placements WHERE board_type = 'kilter' AND id IN (100, 200)`,
-      );
+      await db.execute(sql`DELETE FROM board_placements WHERE board_type = 'kilter' AND id IN (100, 200)`);
     });
 
     it('should only return climbs whose holds all belong to selected sets', async () => {

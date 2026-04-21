@@ -62,15 +62,7 @@ vi.mock('@/app/lib/seo/og', () => ({
   OG_IMAGE_WIDTH: 1200,
   OG_IMAGE_HEIGHT: 630,
   createOgImageHeaders: vi.fn(
-    ({
-      contentType,
-      version,
-      serverTiming,
-    }: {
-      contentType: string;
-      version?: string;
-      serverTiming?: string;
-    }) => ({
+    ({ contentType, version, serverTiming }: { contentType: string; version?: string; serverTiming?: string }) => ({
       'Content-Type': contentType,
       'Cache-Control': version
         ? 'public, max-age=31536000, s-maxage=31536000, immutable'
@@ -133,10 +125,7 @@ function collectImageSources(node: unknown): string[] {
   }
 
   const typedNode = node as { type?: unknown; props?: { src?: string; children?: unknown } };
-  const sources =
-    typedNode.type === 'img' && typeof typedNode.props?.src === 'string'
-      ? [typedNode.props.src]
-      : [];
+  const sources = typedNode.type === 'img' && typeof typedNode.props?.src === 'string' ? [typedNode.props.src] : [];
 
   return [...sources, ...collectImageSources(typedNode.props?.children)];
 }
@@ -164,9 +153,7 @@ describe('api/og/session route', () => {
       found: true,
     });
 
-    const response = await GET(
-      makeRequest({ sessionId: 'session-123', variant: 'join', v: 'abc123' }),
-    );
+    const response = await GET(makeRequest({ sessionId: 'session-123', variant: 'join', v: 'abc123' }));
     const textContent = collectText(sessionRouteState.capturedElement);
     const imageSources = collectImageSources(sessionRouteState.capturedElement);
 

@@ -20,12 +20,10 @@ const mockBlePlugin = {
   disconnect: vi.fn().mockResolvedValue(undefined),
   write: vi.fn().mockResolvedValue(undefined),
   requestMtu: vi.fn().mockResolvedValue({ value: 185 }),
-  addListener: vi
-    .fn()
-    .mockImplementation((_event: string, cb: (data: { deviceId: string }) => void) => {
-      disconnectListenerCallback = cb;
-      return Promise.resolve({ remove: mockListenerRemove });
-    }),
+  addListener: vi.fn().mockImplementation((_event: string, cb: (data: { deviceId: string }) => void) => {
+    disconnectListenerCallback = cb;
+    return Promise.resolve({ remove: mockListenerRemove });
+  }),
 };
 
 // Store original window.Capacitor so we can clean up

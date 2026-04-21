@@ -73,10 +73,7 @@ export interface PersistentSessionActionsType {
     correlationId?: string,
   ) => Promise<void>;
   mirrorCurrentClimb: (mirrored: boolean) => Promise<void>;
-  setQueue: (
-    queue: LocalClimbQueueItem[],
-    currentClimbQueueItem?: LocalClimbQueueItem | null,
-  ) => Promise<void>;
+  setQueue: (queue: LocalClimbQueueItem[], currentClimbQueueItem?: LocalClimbQueueItem | null) => Promise<void>;
   replaceQueueItem: (uuid: string, item: LocalClimbQueueItem) => Promise<void>;
 
   // Event subscription for board-level components
@@ -131,8 +128,7 @@ export interface PersistentSessionStateType {
 }
 
 // Combined type for backward compatibility
-export type PersistentSessionContextType = PersistentSessionStateType &
-  PersistentSessionActionsType;
+export type PersistentSessionContextType = PersistentSessionStateType & PersistentSessionActionsType;
 
 // Pending initial queue for new sessions
 export interface PendingInitialQueue {

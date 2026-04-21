@@ -78,10 +78,7 @@ export default function PlaylistSelectionContent({
           });
         }
       } catch {
-        showMessage(
-          isInPlaylist ? 'Failed to remove from playlist' : 'Failed to add to playlist',
-          'error',
-        );
+        showMessage(isInPlaylist ? 'Failed to remove from playlist' : 'Failed to add to playlist', 'error');
       }
     },
     [addToPlaylist, removeFromPlaylist, boardDetails.board_name, climbUuid, showMessage],
@@ -105,9 +102,7 @@ export default function PlaylistSelectionContent({
       setCreatingPlaylist(true);
 
       const colorHex =
-        createFormValues.color && isValidHexColor(createFormValues.color)
-          ? createFormValues.color
-          : undefined;
+        createFormValues.color && isValidHexColor(createFormValues.color) ? createFormValues.color : undefined;
       const newPlaylist = await createPlaylist(
         createFormValues.name,
         createFormValues.description,
@@ -131,14 +126,7 @@ export default function PlaylistSelectionContent({
     } finally {
       setCreatingPlaylist(false);
     }
-  }, [
-    createFormValues,
-    createPlaylist,
-    addToPlaylist,
-    boardDetails.board_name,
-    onDone,
-    showMessage,
-  ]);
+  }, [createFormValues, createPlaylist, addToPlaylist, boardDetails.board_name, onDone, showMessage]);
 
   const handlePlaylistItemKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLLIElement>, playlistId: string, isInPlaylist: boolean) => {
@@ -170,11 +158,7 @@ export default function PlaylistSelectionContent({
 
       {!isAuthenticated ? (
         <Stack spacing={1} sx={{ width: '100%', textAlign: 'center', py: themeTokens.spacing[1] }}>
-          <MuiTypography
-            component="span"
-            color="text.secondary"
-            sx={{ fontSize: themeTokens.typography.fontSize.sm }}
-          >
+          <MuiTypography component="span" color="text.secondary" sx={{ fontSize: themeTokens.typography.fontSize.sm }}>
             Sign in to create and manage playlists
           </MuiTypography>
           <MuiButton
@@ -193,11 +177,7 @@ export default function PlaylistSelectionContent({
         </Stack>
       ) : playlists.length === 0 && !showCreateForm ? (
         <Stack spacing={1} sx={{ width: '100%', textAlign: 'center', py: themeTokens.spacing[1] }}>
-          <MuiTypography
-            component="span"
-            color="text.secondary"
-            sx={{ fontSize: themeTokens.typography.fontSize.sm }}
-          >
+          <MuiTypography component="span" color="text.secondary" sx={{ fontSize: themeTokens.typography.fontSize.sm }}>
             No playlists yet
           </MuiTypography>
           <MuiButton
@@ -220,15 +200,12 @@ export default function PlaylistSelectionContent({
                 ) : (
                   playlists.map((playlist: Playlist) => {
                     const isInPlaylist = playlistsContainingClimb.has(playlist.uuid);
-                    const validColor =
-                      playlist.color && isValidHexColor(playlist.color) ? playlist.color : null;
+                    const validColor = playlist.color && isValidHexColor(playlist.color) ? playlist.color : null;
                     return (
                       <ListItem
                         key={playlist.uuid}
                         onClick={() => void handleTogglePlaylist(playlist.uuid, isInPlaylist)}
-                        onKeyDown={(event) =>
-                          handlePlaylistItemKeyDown(event, playlist.uuid, isInPlaylist)
-                        }
+                        onKeyDown={(event) => handlePlaylistItemKeyDown(event, playlist.uuid, isInPlaylist)}
                         role="button"
                         tabIndex={0}
                         aria-pressed={isInPlaylist}
@@ -236,21 +213,13 @@ export default function PlaylistSelectionContent({
                         sx={{
                           padding: `${themeTokens.spacing[2]}px ${themeTokens.spacing[2]}px`,
                           cursor: 'pointer',
-                          borderLeft: validColor
-                            ? `3px solid ${validColor}`
-                            : '3px solid transparent',
+                          borderLeft: validColor ? `3px solid ${validColor}` : '3px solid transparent',
                           borderRadius: `${themeTokens.borderRadius.sm}px`,
                           mb: 0.5,
-                          backgroundColor: isInPlaylist
-                            ? 'var(--semantic-selected-light)'
-                            : undefined,
+                          backgroundColor: isInPlaylist ? 'var(--semantic-selected-light)' : undefined,
                         }}
                       >
-                        <Stack
-                          direction="row"
-                          spacing={1}
-                          sx={{ width: '100%', justifyContent: 'space-between' }}
-                        >
+                        <Stack direction="row" spacing={1} sx={{ width: '100%', justifyContent: 'space-between' }}>
                           <Stack spacing={0}>
                             <MuiTypography
                               component="span"
@@ -267,11 +236,7 @@ export default function PlaylistSelectionContent({
                               {playlist.climbCount} {playlist.climbCount === 1 ? 'climb' : 'climbs'}
                             </MuiTypography>
                           </Stack>
-                          {isInPlaylist && (
-                            <CheckOutlined
-                              sx={{ color: themeTokens.colors.success, fontSize: 18 }}
-                            />
-                          )}
+                          {isInPlaylist && <CheckOutlined sx={{ color: themeTokens.colors.success, fontSize: 18 }} />}
                         </Stack>
                       </ListItem>
                     );
@@ -304,9 +269,7 @@ export default function PlaylistSelectionContent({
                     fullWidth
                     size="small"
                     value={createFormValues.name}
-                    onChange={(e) =>
-                      setCreateFormValues((prev) => ({ ...prev, name: e.target.value }))
-                    }
+                    onChange={(e) => setCreateFormValues((prev) => ({ ...prev, name: e.target.value }))}
                     slotProps={{ htmlInput: { maxLength: 100 } }}
                   />
                 </Box>
@@ -321,9 +284,7 @@ export default function PlaylistSelectionContent({
                     fullWidth
                     size="small"
                     value={createFormValues.description}
-                    onChange={(e) =>
-                      setCreateFormValues((prev) => ({ ...prev, description: e.target.value }))
-                    }
+                    onChange={(e) => setCreateFormValues((prev) => ({ ...prev, description: e.target.value }))}
                     slotProps={{ htmlInput: { maxLength: 500 } }}
                   />
                 </Box>
@@ -334,9 +295,7 @@ export default function PlaylistSelectionContent({
                   <TextField
                     type="color"
                     value={createFormValues.color || '#000000'}
-                    onChange={(e) =>
-                      setCreateFormValues((prev) => ({ ...prev, color: e.target.value }))
-                    }
+                    onChange={(e) => setCreateFormValues((prev) => ({ ...prev, color: e.target.value }))}
                     size="small"
                     sx={{ width: 60 }}
                   />

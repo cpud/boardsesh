@@ -57,11 +57,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         ? `${sessionName} is live on Boardsesh. Get on the wall.`
         : 'Jump into this climbing session on Boardsesh. Get on the wall.';
 
-    const ogImagePath = buildVersionedOgImagePath(
-      '/api/og/session',
-      { sessionId, variant: 'join' },
-      summary.version,
-    );
+    const ogImagePath = buildVersionedOgImagePath('/api/og/session', { sessionId, variant: 'join' }, summary.version);
 
     return {
       title,

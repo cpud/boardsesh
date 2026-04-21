@@ -44,12 +44,7 @@ export function DevicePickerDialog({ devices, onSelect, onCancel }: DevicePicker
       </DialogTitle>
       <DialogContent sx={{ minHeight: 120 }}>
         {sorted.length === 0 ? (
-          <Stack
-            direction="row"
-            alignItems="center"
-            spacing={2}
-            sx={{ py: 3, justifyContent: 'center' }}
-          >
+          <Stack direction="row" alignItems="center" spacing={2} sx={{ py: 3, justifyContent: 'center' }}>
             <CircularProgress size={20} />
             <Typography variant="body2" color="text.secondary">
               Scanning for boards nearby&hellip;

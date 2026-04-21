@@ -103,9 +103,7 @@ export function initCors(boardseshUrl: string): void {
       DEV_WEB_PORTS.forEach((port) => {
         allowedOrigins.push(`http://${tailscale.hostname}:${port}`);
       });
-      console.log(
-        `[CORS] Added Tailscale dev origins for ${tailscale.hostname} (${tailscale.reason})`,
-      );
+      console.log(`[CORS] Added Tailscale dev origins for ${tailscale.hostname} (${tailscale.reason})`);
     } else {
       console.log(`[CORS] Skipping Tailscale dev origins: ${tailscale.reason}`);
     }
@@ -121,8 +119,7 @@ export function isOriginAllowed(origin: string): boolean {
   if (allowedOrigins.includes(origin)) return true;
   if (VERCEL_PREVIEW_REGEX.test(origin)) return true;
   if (PREVIEW_ORIGIN_REGEX.test(origin)) return true;
-  if (process.env.NODE_ENV !== 'production' && DEV_PRIVATE_LAN_ORIGIN_REGEX.test(origin))
-    return true;
+  if (process.env.NODE_ENV !== 'production' && DEV_PRIVATE_LAN_ORIGIN_REGEX.test(origin)) return true;
   return false;
 }
 

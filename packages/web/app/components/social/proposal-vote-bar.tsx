@@ -21,8 +21,7 @@ export default function ProposalVoteBar({
   requiredUpvotes,
   status,
 }: ProposalVoteBarProps) {
-  const progress =
-    requiredUpvotes > 0 ? Math.min((weightedUpvotes / requiredUpvotes) * 100, 100) : 0;
+  const progress = requiredUpvotes > 0 ? Math.min((weightedUpvotes / requiredUpvotes) * 100, 100) : 0;
   const isApproved = status === 'approved';
   const isRejected = status === 'rejected';
 

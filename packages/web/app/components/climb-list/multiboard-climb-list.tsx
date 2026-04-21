@@ -13,10 +13,7 @@ import BoardFilterStrip from '@/app/components/board-scroll/board-filter-strip';
 import ClimbsList from '@/app/components/board-page/climbs-list';
 import { FavoritesProvider } from '@/app/components/climb-actions/favorites-batch-context';
 import { PlaylistsProvider } from '@/app/components/climb-actions/playlists-batch-context';
-import {
-  getDefaultAngleForBoard,
-  type SessionBoardConfig,
-} from '@/app/lib/board-config-for-playlist';
+import { getDefaultAngleForBoard, type SessionBoardConfig } from '@/app/lib/board-config-for-playlist';
 import { useOptionalQueueActions } from '@/app/components/graphql-queue';
 import { usePersistentSessionState } from '@/app/components/persistent-session/persistent-session-context';
 import type { UserBoard } from '@boardsesh/shared-schema';
@@ -95,8 +92,7 @@ export default function MultiboardClimbList({
     initialBoards,
   );
   const myBoards = externalBoards ?? fetchedBoards;
-  const isLoadingBoards =
-    externalBoards !== undefined ? (externalBoardsLoading ?? false) : fetchedBoardsLoading;
+  const isLoadingBoards = externalBoards !== undefined ? (externalBoardsLoading ?? false) : fetchedBoardsLoading;
 
   // Prefer the user's active session (the board they are actually climbing on)
   // so playlist previews match the physical wall. Falls back to the list's
@@ -113,8 +109,13 @@ export default function MultiboardClimbList({
     };
   }, [activeSession]);
 
-  const { boardDetailsByClimb, defaultBoardDetails, unsupportedClimbs, upsizedClimbs } =
-    useBoardDetailsMap(climbs, myBoards, selectedBoard, sessionBoard, fallbackBoardTypes);
+  const { boardDetailsByClimb, defaultBoardDetails, unsupportedClimbs, upsizedClimbs } = useBoardDetailsMap(
+    climbs,
+    myBoards,
+    selectedBoard,
+    sessionBoard,
+    fallbackBoardTypes,
+  );
 
   // Climb action data for favorites/playlists context
   const climbUuids = useMemo(() => climbs.map((c) => c.uuid), [climbs]);

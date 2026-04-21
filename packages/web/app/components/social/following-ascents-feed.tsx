@@ -45,10 +45,7 @@ export default function FollowingAscentsFeed({ onFindClimbers }: FollowingAscent
     staleTime: 60 * 1000,
   });
 
-  const items: FollowingAscentFeedItem[] = useMemo(
-    () => data?.pages.flatMap((p) => p.items) ?? [],
-    [data],
-  );
+  const items: FollowingAscentFeedItem[] = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data]);
 
   const tickUuids = useMemo(() => items.map((item) => item.uuid), [items]);
 
@@ -68,10 +65,7 @@ export default function FollowingAscentsFeed({ onFindClimbers }: FollowingAscent
 
   if (items.length === 0) {
     return (
-      <EmptyState
-        icon={<PersonSearchOutlined fontSize="inherit" />}
-        description="Follow some climbers to fill this up"
-      >
+      <EmptyState icon={<PersonSearchOutlined fontSize="inherit" />} description="Follow some climbers to fill this up">
         {onFindClimbers && (
           <MuiButton variant="contained" onClick={onFindClimbers}>
             Find Climbers
@@ -87,10 +81,7 @@ export default function FollowingAscentsFeed({ onFindClimbers }: FollowingAscent
         {items.map((item) => (
           <SocialFeedItem key={item.uuid} item={item} showUserHeader />
         ))}
-        <Box
-          ref={sentinelRef}
-          sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}
-        >
+        <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}>
           {isFetchingNextPage && <CircularProgress size={24} />}
         </Box>
       </Box>

@@ -52,10 +52,7 @@ async function requireSessionParticipant(sessionId: string, userId: string): Pro
     .select({ id: dbSchema.sessionMemberOverrides.id })
     .from(dbSchema.sessionMemberOverrides)
     .where(
-      and(
-        eq(dbSchema.sessionMemberOverrides.sessionId, sessionId),
-        eq(dbSchema.sessionMemberOverrides.userId, userId),
-      ),
+      and(eq(dbSchema.sessionMemberOverrides.sessionId, sessionId), eq(dbSchema.sessionMemberOverrides.userId, userId)),
     )
     .limit(1);
 
@@ -250,9 +247,7 @@ export const sessionEditMutations = {
 
       // Collect session IDs that will receive restored ticks
       const restoredSessionIds = new Set(
-        ticksToRestore
-          .map((t) => t.previousInferredSessionId)
-          .filter((id): id is string => id !== null),
+        ticksToRestore.map((t) => t.previousInferredSessionId).filter((id): id is string => id !== null),
       );
 
       // Restore ticks: set inferredSessionId back to previousInferredSessionId, clear previous
@@ -381,10 +376,7 @@ export const sessionEditMutations = {
         .select({ uuid: dbSchema.boardseshTicks.uuid })
         .from(dbSchema.boardseshTicks)
         .where(
-          and(
-            eq(dbSchema.boardseshTicks.sessionId, validated.sessionId),
-            eq(dbSchema.boardseshTicks.userId, userId),
-          ),
+          and(eq(dbSchema.boardseshTicks.sessionId, validated.sessionId), eq(dbSchema.boardseshTicks.userId, userId)),
         )
         .limit(1);
       if (!participantTick) {

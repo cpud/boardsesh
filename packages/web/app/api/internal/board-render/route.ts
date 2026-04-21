@@ -37,21 +37,11 @@ function findWasmPath(): string {
   const wasmFilename = 'board_renderer_wasm_bg.wasm';
   const candidates = [
     // Monorepo dev: cwd is packages/web, workspace deps hoisted to root
-    join(
-      process.cwd(),
-      '..',
-      '..',
-      'node_modules/@boardsesh/board-renderer-wasm/pkg',
-      wasmFilename,
-    ),
+    join(process.cwd(), '..', '..', 'node_modules/@boardsesh/board-renderer-wasm/pkg', wasmFilename),
     // Vercel standalone: cwd is /var/task, node_modules at root
     join(process.cwd(), 'node_modules/@boardsesh/board-renderer-wasm/pkg', wasmFilename),
     // Vercel standalone: nested under packages/web
-    join(
-      process.cwd(),
-      'packages/web/node_modules/@boardsesh/board-renderer-wasm/pkg',
-      wasmFilename,
-    ),
+    join(process.cwd(), 'packages/web/node_modules/@boardsesh/board-renderer-wasm/pkg', wasmFilename),
     // Relative to __dirname (works if file tracing copies it alongside the route)
     join(process.cwd(), '.next/server', wasmFilename),
   ];
@@ -77,14 +67,7 @@ async function ensureWasmInitialized() {
   await wasmInitPromise;
 }
 
-const VALID_BOARD_NAMES = new Set([
-  'kilter',
-  'tension',
-  'moonboard',
-  'decoy',
-  'touchstone',
-  'grasshopper',
-]);
+const VALID_BOARD_NAMES = new Set(['kilter', 'tension', 'moonboard', 'decoy', 'touchstone', 'grasshopper']);
 
 // THUMBNAIL_WIDTH imported from @/app/components/board-renderer/types
 // Full: native board resolution for crisp rendering in climb drawer/card cover
@@ -149,9 +132,7 @@ function getBackgroundRelPaths(boardDetails: BoardDetailsForBg, isThumbnail: boo
     const bgFile = 'moonboard-bg.png';
     paths.push(toWebpPath('images/moonboard', bgFile, isThumbnail));
     for (const holdSetImage of boardDetails.holdSetImages) {
-      paths.push(
-        toWebpPath(`images/moonboard/${boardDetails.layoutFolder}`, holdSetImage, isThumbnail),
-      );
+      paths.push(toWebpPath(`images/moonboard/${boardDetails.layoutFolder}`, holdSetImage, isThumbnail));
     }
   }
 
@@ -300,17 +281,13 @@ export async function GET(request: NextRequest) {
     if (includeBackground) {
       const bgT0 = performance.now();
       const bgRelPaths = getBackgroundRelPaths(boardDetails, thumbnail);
-      const bgFsPaths = bgRelPaths
-        .map((rp) => findPublicImagePath(rp))
-        .filter((p): p is string => p !== null);
+      const bgFsPaths = bgRelPaths.map((rp) => findPublicImagePath(rp)).filter((p): p is string => p !== null);
       bgMs = performance.now() - bgT0;
 
       if (bgFsPaths.length > 0) {
         // Load and resize background images, skipping any that fail
         const results = await Promise.allSettled(
-          bgFsPaths.map((fsPath) =>
-            sharp(fsPath).resize(width, height, { fit: 'fill' }).toBuffer(),
-          ),
+          bgFsPaths.map((fsPath) => sharp(fsPath).resize(width, height, { fit: 'fill' }).toBuffer()),
         );
         const resizedBuffers = results
           .filter((r): r is PromiseFulfilledResult<Buffer> => r.status === 'fulfilled')
@@ -344,9 +321,7 @@ export async function GET(request: NextRequest) {
           const composeT0 = performance.now();
           const overlayImage = sharp(overlayBuffer, { raw: { width, height, channels: 4 } });
           if (!isOgVariant && format === 'webp') {
-            outputBuffer = await overlayImage
-              .webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true })
-              .toBuffer();
+            outputBuffer = await overlayImage.webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true }).toBuffer();
             outputContentType = 'image/webp';
           } else {
             imageBuffer = await overlayImage.png(DEFAULT_PNG_OPTIONS).toBuffer();
@@ -358,9 +333,7 @@ export async function GET(request: NextRequest) {
         const composeT0 = performance.now();
         const overlayImage = sharp(overlayBuffer, { raw: { width, height, channels: 4 } });
         if (!isOgVariant && format === 'webp') {
-          outputBuffer = await overlayImage
-            .webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true })
-            .toBuffer();
+          outputBuffer = await overlayImage.webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true }).toBuffer();
           outputContentType = 'image/webp';
         } else {
           imageBuffer = await overlayImage.png(DEFAULT_PNG_OPTIONS).toBuffer();
@@ -372,9 +345,7 @@ export async function GET(request: NextRequest) {
       const composeT0 = performance.now();
       const overlayImage = sharp(overlayBuffer, { raw: { width, height, channels: 4 } });
       if (!isOgVariant && format === 'webp') {
-        outputBuffer = await overlayImage
-          .webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true })
-          .toBuffer();
+        outputBuffer = await overlayImage.webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true }).toBuffer();
         outputContentType = 'image/webp';
       } else {
         imageBuffer = await overlayImage.png(DEFAULT_PNG_OPTIONS).toBuffer();
@@ -399,13 +370,7 @@ export async function GET(request: NextRequest) {
       outputContentType = 'image/png';
     } else if (outputBuffer === null && imageBuffer && format === 'webp') {
       outputBuffer = await sharp(imageBuffer)
-        .webp(
-          thumbnail
-            ? THUMBNAIL_WEBP_OPTIONS
-            : didCompositeBackground
-              ? DEFAULT_WEBP_OPTIONS
-              : { lossless: true },
-        )
+        .webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : didCompositeBackground ? DEFAULT_WEBP_OPTIONS : { lossless: true })
         .toBuffer();
       outputContentType = 'image/webp';
     } else if (outputBuffer === null && imageBuffer) {
@@ -414,10 +379,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!outputBuffer) {
-      return NextResponse.json(
-        { error: 'Render failed: no output buffer generated' },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: 'Render failed: no output buffer generated' }, { status: 500 });
     }
 
     const encodeMs = performance.now() - encodeT0;

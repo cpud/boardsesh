@@ -78,19 +78,11 @@ export function useBoardDetails(
   }, [userBoard, storedConfig, popularConfig]);
 }
 
-export default function BoardThumbnail({
-  userBoard,
-  storedConfig,
-  popularConfig,
-  size,
-}: BoardThumbnailProps) {
+export default function BoardThumbnail({ userBoard, storedConfig, popularConfig, size }: BoardThumbnailProps) {
   const boardDetails = useBoardDetails(userBoard, storedConfig, popularConfig);
 
   return (
-    <div
-      className={styles.boardThumbnailInline}
-      style={size ? { width: size, height: size } : undefined}
-    >
+    <div className={styles.boardThumbnailInline} style={size ? { width: size, height: size } : undefined}>
       {boardDetails ? (
         <BoardRenderer mirrored={false} boardDetails={boardDetails} thumbnail fillHeight />
       ) : (

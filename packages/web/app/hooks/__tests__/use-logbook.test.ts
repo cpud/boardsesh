@@ -289,10 +289,10 @@ describe('useLogbook', () => {
       ],
     });
 
-    const { result, rerender } = renderHook(
-      ({ uuids }: { uuids: string[] }) => useLogbook('kilter', uuids),
-      { wrapper: createQueryWrapper(), initialProps: { uuids: ['climb-1'] } },
-    );
+    const { result, rerender } = renderHook(({ uuids }: { uuids: string[] }) => useLogbook('kilter', uuids), {
+      wrapper: createQueryWrapper(),
+      initialProps: { uuids: ['climb-1'] },
+    });
 
     await waitFor(() => {
       expect(result.current.logbook.length).toBe(1);
@@ -354,10 +354,10 @@ describe('useLogbook', () => {
       ],
     });
 
-    const { result, rerender } = renderHook(
-      ({ uuids }: { uuids: string[] }) => useLogbook('kilter', uuids),
-      { wrapper: createQueryWrapper(), initialProps: { uuids: ['climb-1'] } },
-    );
+    const { result, rerender } = renderHook(({ uuids }: { uuids: string[] }) => useLogbook('kilter', uuids), {
+      wrapper: createQueryWrapper(),
+      initialProps: { uuids: ['climb-1'] },
+    });
 
     await waitFor(() => {
       expect(result.current.logbook.length).toBe(1);

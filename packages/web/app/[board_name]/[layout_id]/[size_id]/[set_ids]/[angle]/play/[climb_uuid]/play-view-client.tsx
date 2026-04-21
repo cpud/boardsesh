@@ -9,11 +9,7 @@ import { useQueueActions, useCurrentClimb, useQueueList } from '@/app/components
 import SwipeBoardCarousel from '@/app/components/board-renderer/swipe-board-carousel';
 import ClimbTitle from '@/app/components/climb-card/climb-title';
 import { AscentStatus } from '@/app/components/climb-card/ascent-status';
-import {
-  constructClimbListWithSlugs,
-  constructPlayUrlWithSlugs,
-  extractUuidFromSlug,
-} from '@/app/lib/url-utils';
+import { constructClimbListWithSlugs, constructPlayUrlWithSlugs, extractUuidFromSlug } from '@/app/lib/url-utils';
 import { themeTokens } from '@/app/theme/theme-config';
 import { EmptyState } from '@/app/components/ui/empty-state';
 import PlayViewBetaSlider from '@/app/components/play-view/play-view-beta-slider';
@@ -31,16 +27,14 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
   const searchParams = useSearchParams();
   const { currentClimb } = useCurrentClimb();
   const { queue } = useQueueList();
-  const { setCurrentClimbQueueItem, getNextClimbQueueItem, getPreviousClimbQueueItem } =
-    useQueueActions();
+  const { setCurrentClimbQueueItem, getNextClimbQueueItem, getPreviousClimbQueueItem } = useQueueActions();
 
   // Use queue's current climb if available (has real-time state like mirrored),
   // otherwise fall back to the initial climb from SSR.
   const displayClimb = currentClimb || initialClimb;
 
   // Get the mirrored state from currentClimb when it matches the displayed climb
-  const isMirrored =
-    currentClimb?.uuid === displayClimb?.uuid ? !!currentClimb?.mirrored : !!displayClimb?.mirrored;
+  const isMirrored = currentClimb?.uuid === displayClimb?.uuid ? !!currentClimb?.mirrored : !!displayClimb?.mirrored;
 
   // Sync queue state with URL on browser back/forward navigation.
   // Uses refs to avoid re-subscribing the listener on every queue change.
@@ -69,14 +63,7 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
 
     let baseUrl: string;
     if (layout_name && size_name && set_names) {
-      baseUrl = constructClimbListWithSlugs(
-        board_name,
-        layout_name,
-        size_name,
-        size_description,
-        set_names,
-        angle,
-      );
+      baseUrl = constructClimbListWithSlugs(board_name, layout_name, size_name, size_description, set_names, angle);
     } else {
       baseUrl = `/${board_name}/${boardDetails.layout_id}/${boardDetails.size_id}/${boardDetails.set_ids.join(',')}/${angle}/list`;
     }
@@ -139,22 +126,14 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
         boardLayout: boardDetails.layout_name || '',
       });
     }
-  }, [
-    getPreviousClimbQueueItem,
-    setCurrentClimbQueueItem,
-    navigateToClimb,
-    boardDetails.layout_name,
-  ]);
+  }, [getPreviousClimbQueueItem, setCurrentClimbQueueItem, navigateToClimb, boardDetails.layout_name]);
 
   const nextItem = getNextClimbQueueItem();
   const prevItem = getPreviousClimbQueueItem();
 
   if (!displayClimb) {
     return (
-      <div
-        className={styles.pageContainer}
-        style={{ backgroundColor: 'var(--semantic-background)' }}
-      >
+      <div className={styles.pageContainer} style={{ backgroundColor: 'var(--semantic-background)' }}>
         <div className={styles.emptyState} style={{ color: 'var(--neutral-400)' }}>
           <EmptyState description="No climb selected" />
           <MuiButton variant="contained" onClick={() => router.push(getBackToListUrl())}>
@@ -183,10 +162,7 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
             titleFontSize={themeTokens.typography.fontSize['2xl']}
             rightAddon={
               displayClimb && (
-                <AscentStatus
-                  climbUuid={displayClimb.uuid}
-                  fontSize={themeTokens.typography.fontSize['2xl']}
-                />
+                <AscentStatus climbUuid={displayClimb.uuid} fontSize={themeTokens.typography.fontSize['2xl']} />
               )
             }
             isNoMatch={!!displayClimb?.is_no_match}

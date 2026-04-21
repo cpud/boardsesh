@@ -104,9 +104,7 @@ export class SyncRunner {
         userId: cred.userId,
         board: cred.boardType,
       });
-      this.log(
-        `[SyncRunner] ✗ Failed to sync user ${cred.userId} for ${cred.boardType}: ${errorMsg}`,
-      );
+      this.log(`[SyncRunner] ✗ Failed to sync user ${cred.userId} for ${cred.boardType}: ${errorMsg}`);
     }
 
     return results;
@@ -149,9 +147,7 @@ export class SyncRunner {
           userId: cred.userId,
           board: cred.boardType,
         });
-        this.log(
-          `[SyncRunner] ✗ Failed to sync user ${cred.userId} for ${cred.boardType}: ${errorMsg}`,
-        );
+        this.log(`[SyncRunner] ✗ Failed to sync user ${cred.userId} for ${cred.boardType}: ${errorMsg}`);
       }
     }
 
@@ -235,12 +231,7 @@ export class SyncRunner {
       username = decrypt(cred.encryptedUsername);
       password = decrypt(cred.encryptedPassword);
     } catch (decryptError) {
-      await this.updateCredentialStatus(
-        cred.userId,
-        cred.boardType,
-        'error',
-        `Decryption failed: ${decryptError}`,
-      );
+      await this.updateCredentialStatus(cred.userId, cred.boardType, 'error', `Decryption failed: ${decryptError}`);
       throw new Error(`Failed to decrypt credentials: ${decryptError}`);
     }
 
@@ -256,12 +247,7 @@ export class SyncRunner {
       }
       token = loginResponse.token;
     } catch (loginError) {
-      await this.updateCredentialStatus(
-        cred.userId,
-        cred.boardType,
-        'error',
-        `Login failed: ${loginError}`,
-      );
+      await this.updateCredentialStatus(cred.userId, cred.boardType, 'error', `Login failed: ${loginError}`);
       throw new Error(`Failed to login: ${loginError}`);
     }
 
@@ -273,15 +259,7 @@ export class SyncRunner {
     try {
       // Sync user data - pass NextAuth userId directly since we have it
       this.log(`[SyncRunner] Syncing user ${cred.userId} for ${boardType}...`);
-      await syncUserData(
-        pool,
-        boardType,
-        token,
-        cred.auroraUserId,
-        cred.userId,
-        undefined,
-        this.log.bind(this),
-      );
+      await syncUserData(pool, boardType, token, cred.auroraUserId, cred.userId, undefined, this.log.bind(this));
 
       // Update last sync time on success
       await this.updateCredentialStatus(cred.userId, cred.boardType, 'active', null, new Date());

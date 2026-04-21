@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
-import {
-  encodeCursor,
-  decodeCursor,
-  encodeOffsetCursor,
-  decodeOffsetCursor,
-} from '../utils/feed-cursor';
+import { encodeCursor, decodeCursor, encodeOffsetCursor, decodeOffsetCursor } from '../utils/feed-cursor';
 
 describe('Feed Cursor', () => {
   describe('encodeCursor', () => {
@@ -59,9 +54,7 @@ describe('Feed Cursor', () => {
     });
 
     it('should return null for JSON with wrong types', () => {
-      const encoded = Buffer.from(JSON.stringify({ t: 123, i: 'not-a-number' })).toString(
-        'base64url',
-      );
+      const encoded = Buffer.from(JSON.stringify({ t: 123, i: 'not-a-number' })).toString('base64url');
       expect(decodeCursor(encoded)).toBeNull();
     });
 

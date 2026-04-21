@@ -32,9 +32,7 @@ export function useLogbookSummary(climbUuid: string): LogbookSummary | null {
 
     const totalAttempts = climbAscents.reduce((sum, ascent) => sum + (ascent.tries || 1), 0);
 
-    const sessionDates = new Set(
-      climbAscents.map((ascent) => dayjs(ascent.climbed_at).format('YYYY-MM-DD')),
-    );
+    const sessionDates = new Set(climbAscents.map((ascent) => dayjs(ascent.climbed_at).format('YYYY-MM-DD')));
     const sessionCount = sessionDates.size;
 
     const successfulAscents = climbAscents.filter((a) => a.is_ascent).length;

@@ -1,9 +1,6 @@
 import { V_GRADE_COLORS, FONT_GRADE_COLORS, type GradeDisplayFormat } from '@/app/lib/grade-colors';
 import { SUPPORTED_BOARDS, BOULDER_GRADES } from '@/app/lib/board-data';
-import {
-  getLayout,
-  ORPHANED_KILTER_LAYOUT_DEFAULTS,
-} from '@boardsesh/board-constants/product-sizes';
+import { getLayout, ORPHANED_KILTER_LAYOUT_DEFAULTS } from '@boardsesh/board-constants/product-sizes';
 import { MOONBOARD_LAYOUTS } from '@/app/lib/moonboard-config';
 import type { BoardName } from '@/app/lib/types';
 
@@ -37,13 +34,7 @@ export interface LogbookEntry {
   climbUuid?: string;
 }
 
-export type UnifiedTimeframeType =
-  | 'all'
-  | 'lastYear'
-  | 'lastMonth'
-  | 'lastWeek'
-  | 'today'
-  | 'custom';
+export type UnifiedTimeframeType = 'all' | 'lastYear' | 'lastMonth' | 'lastWeek' | 'today' | 'custom';
 
 export const BOARD_TYPES = SUPPORTED_BOARDS;
 
@@ -117,10 +108,7 @@ export const getLayoutKey = (boardType: string, layoutId: number | null | undefi
   return `${boardType}-${layoutId}`;
 };
 
-export const getLayoutDisplayName = (
-  boardType: string,
-  layoutId: number | null | undefined,
-): string => {
+export const getLayoutDisplayName = (boardType: string, layoutId: number | null | undefined): string => {
   if (layoutId === null || layoutId === undefined) {
     return `${boardType.charAt(0).toUpperCase() + boardType.slice(1)} (Unknown Layout)`;
   }
@@ -154,10 +142,7 @@ export const getLayoutDisplayName = (
 
 export const getLayoutColor = (boardType: string, layoutId: number | null | undefined): string => {
   const key = getLayoutKey(boardType, layoutId);
-  return (
-    layoutColors[key] ||
-    (boardType === 'kilter' ? 'rgba(6, 182, 212, 0.5)' : 'rgba(239, 68, 68, 0.5)')
-  );
+  return layoutColors[key] || (boardType === 'kilter' ? 'rgba(6, 182, 212, 0.5)' : 'rgba(239, 68, 68, 0.5)');
 };
 
 /**

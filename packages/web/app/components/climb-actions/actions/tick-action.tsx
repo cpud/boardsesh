@@ -12,10 +12,7 @@ import CheckOutlined from '@mui/icons-material/CheckOutlined';
 import LoginOutlined from '@mui/icons-material/LoginOutlined';
 import AppsOutlined from '@mui/icons-material/AppsOutlined';
 import { ClimbActionProps, ClimbActionResult } from '../types';
-import {
-  useOptionalBoardProvider,
-  BoardProvider,
-} from '../../board-provider/board-provider-context';
+import { useOptionalBoardProvider, BoardProvider } from '../../board-provider/board-provider-context';
 import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 import { LogAscentForm } from '../../logbook/logascent-form';
 import { track } from '@vercel/analytics';
@@ -31,11 +28,7 @@ import type { UserBoard } from '@boardsesh/shared-schema';
 import type { BoardName, BoardDetails } from '@/app/lib/types';
 import { LogAscentDrawer } from '../../logbook/log-ascent-drawer';
 
-const VALID_BOARD_NAMES: ReadonlySet<string> = new Set<BoardName>([
-  'kilter',
-  'tension',
-  'moonboard',
-]);
+const VALID_BOARD_NAMES: ReadonlySet<string> = new Set<BoardName>(['kilter', 'tension', 'moonboard']);
 
 function isValidBoardName(value: string): value is BoardName {
   return VALID_BOARD_NAMES.has(value);
@@ -119,16 +112,7 @@ export function TickAction({
 
       setDrawerVisible(true);
     },
-    [
-      boardDetails,
-      badgeCount,
-      isAuthenticated,
-      alwaysUseApp,
-      loaded,
-      climb.uuid,
-      angle,
-      onTickAction,
-    ],
+    [boardDetails, badgeCount, isAuthenticated, alwaysUseApp, loaded, climb.uuid, angle, onTickAction],
   );
 
   const closeDrawer = useCallback(() => {
@@ -138,10 +122,7 @@ export function TickAction({
   }, [onComplete]);
 
   // URL for opening in the Aurora app (null for Kilter as app URL is no longer accessible)
-  const openInAppUrl = useMemo(
-    () => constructClimbInfoUrl(boardDetails, climb.uuid),
-    [boardDetails, climb.uuid],
-  );
+  const openInAppUrl = useMemo(() => constructClimbInfoUrl(boardDetails, climb.uuid), [boardDetails, climb.uuid]);
 
   const handleOpenInApp = useCallback(() => {
     if (!openInAppUrl) return;
@@ -175,12 +156,7 @@ export function TickAction({
           <Typography variant="body1" component="p" color="text.secondary">
             Or log your tick in the official app:
           </Typography>
-          <MuiButton
-            variant="outlined"
-            startIcon={<AppsOutlined />}
-            onClick={handleOpenInApp}
-            fullWidth
-          >
+          <MuiButton variant="outlined" startIcon={<AppsOutlined />} onClick={handleOpenInApp} fullWidth>
             Open in App
           </MuiButton>
           <MuiButton
@@ -210,11 +186,9 @@ export function TickAction({
   // Show board selector when outside a board route, authenticated, and either still loading or have matching boards.
   const hasMatchingBoards = boardsReady && matchingBoards.length > 0;
   const noMatchingBoards = needsBoardSelector && boardsReady && matchingBoards.length === 0;
-  const showBoardSelector =
-    needsBoardSelector && !selectedBoard && (!boardsReady || hasMatchingBoards);
+  const showBoardSelector = needsBoardSelector && !selectedBoard && (!boardsReady || hasMatchingBoards);
 
-  const boardTypeLabel =
-    boardDetails.board_name.charAt(0).toUpperCase() + boardDetails.board_name.slice(1);
+  const boardTypeLabel = boardDetails.board_name.charAt(0).toUpperCase() + boardDetails.board_name.slice(1);
 
   // When a user selects a board from the selector, use its config for the tick.
   // This ensures the tick is logged against the board the user actually climbed on.
@@ -257,11 +231,7 @@ export function TickAction({
   );
 
   const renderLogAscentForm = () => (
-    <LogAscentForm
-      currentClimb={climb}
-      boardDetails={effectiveBoardDetails}
-      onClose={closeDrawer}
-    />
+    <LogAscentForm currentClimb={climb} boardDetails={effectiveBoardDetails} onClose={closeDrawer} />
   );
 
   const renderNoMatchingBoardsMessage = () => (
@@ -337,12 +307,7 @@ export function TickAction({
           max={99}
           sx={{ '& .MuiBadge-badge': { backgroundColor: badgeColor, color: 'common.white' } }}
         >
-          <Box
-            component="span"
-            onClick={handleClick}
-            sx={{ cursor: 'pointer' }}
-            className={className}
-          >
+          <Box component="span" onClick={handleClick} sx={{ cursor: 'pointer' }} className={className}>
             {icon}
           </Box>
         </MuiBadge>

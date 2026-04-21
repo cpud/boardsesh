@@ -44,11 +44,7 @@ export default function MoonBoardImportCard({
   return (
     <MuiCard className={styles.card}>
       <div className={styles.boardPreview}>
-        <MoonBoardRenderer
-          layoutFolder={layoutFolder}
-          holdSetImages={holdSetImages}
-          litUpHoldsMap={litUpHoldsMap}
-        />
+        <MoonBoardRenderer layoutFolder={layoutFolder} holdSetImages={holdSetImages} litUpHoldsMap={litUpHoldsMap} />
       </div>
       <CardContent>
         <div className={styles.titleRow}>
@@ -77,13 +73,7 @@ export default function MoonBoardImportCard({
           )}
         </div>
         <div className={styles.metadata}>
-          <Typography
-            variant="body1"
-            component="p"
-            color="text.secondary"
-            noWrap
-            className={styles.setter}
-          >
+          <Typography variant="body1" component="p" color="text.secondary" noWrap className={styles.setter}>
             by {climb.setter || 'Unknown'}
           </Typography>
           <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>

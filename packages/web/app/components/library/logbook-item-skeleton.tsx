@@ -10,13 +10,7 @@ export default function LogbookItemSkeleton() {
     <MuiCard className={feedStyles.feedItem}>
       <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
         <Box sx={{ display: 'flex', gap: 1.5 }}>
-          <Skeleton
-            variant="rounded"
-            width={64}
-            height={64}
-            animation="wave"
-            sx={{ flexShrink: 0 }}
-          />
+          <Skeleton variant="rounded" width={64} height={64} animation="wave" sx={{ flexShrink: 0 }} />
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1, minWidth: 0 }}>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               <Skeleton variant="rounded" width={80} height={24} animation="wave" />

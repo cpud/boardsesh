@@ -307,17 +307,11 @@ describe('Integration: Parse and Generate', () => {
 
     // Verify freeLedUpdate helper is generated
     assert.ok(content.includes('inline void freeLedUpdate'), 'Should have freeLedUpdate helper');
-    assert.ok(
-      content.includes('delete[] update.commands'),
-      'freeLedUpdate should delete commands array',
-    );
+    assert.ok(content.includes('delete[] update.commands'), 'freeLedUpdate should delete commands array');
 
     // Verify ROLE_NOT_SET sentinel constant
     assert.ok(content.includes('ROLE_NOT_SET'), 'Should have ROLE_NOT_SET constant');
-    assert.ok(
-      content.includes('cmd.role != ROLE_NOT_SET'),
-      'Should use ROLE_NOT_SET for comparison',
-    );
+    assert.ok(content.includes('cmd.role != ROLE_NOT_SET'), 'Should use ROLE_NOT_SET for comparison');
 
     // Verify pointer lifetime documentation
     assert.ok(content.includes('String pointer lifetime'), 'Should document pointer lifetime');
@@ -327,26 +321,17 @@ describe('Integration: Parse and Generate', () => {
     assert.ok(!content.includes('Generated:'), 'Should not have timestamp in header');
 
     // Verify LedCommand has include guard for native test compatibility
-    assert.ok(
-      content.includes('#ifndef LEDCOMMAND_DEFINED'),
-      'LedCommand should have include guard',
-    );
+    assert.ok(content.includes('#ifndef LEDCOMMAND_DEFINED'), 'LedCommand should have include guard');
     assert.ok(content.includes('#define LEDCOMMAND_DEFINED'), 'LedCommand should define guard');
     assert.ok(content.includes('#endif // LEDCOMMAND_DEFINED'), 'LedCommand should close guard');
 
     // Verify memory allocation failure handling
     assert.ok(content.includes('std::nothrow'), 'Should use std::nothrow for allocation');
     assert.ok(content.includes('#include <new>'), 'Should include <new> header');
-    assert.ok(
-      content.includes('return false;  // Allocation failed'),
-      'Should return false on allocation failure',
-    );
+    assert.ok(content.includes('return false;  // Allocation failed'), 'Should return false on allocation failure');
 
     // Verify angle nullable documentation
-    assert.ok(
-      content.includes('ANGLE_NOT_SET'),
-      'Should document angle nullable behavior with sentinel value',
-    );
+    assert.ok(content.includes('ANGLE_NOT_SET'), 'Should document angle nullable behavior with sentinel value');
   });
 });
 
@@ -421,14 +406,8 @@ describe('Generated Code Verification', () => {
       parseFailureSection.includes('delete[] update.commands'),
       'Should delete commands array on parse failure',
     );
-    assert.ok(
-      parseFailureSection.includes('update.commands = nullptr'),
-      'Should set commands to nullptr after delete',
-    );
-    assert.ok(
-      parseFailureSection.includes('update.commandsCount = 0'),
-      'Should reset commandsCount to 0 on failure',
-    );
+    assert.ok(parseFailureSection.includes('update.commands = nullptr'), 'Should set commands to nullptr after delete');
+    assert.ok(parseFailureSection.includes('update.commandsCount = 0'), 'Should reset commandsCount to 0 on failure');
   });
 
   it('should verify constants match between JS and generated code', () => {

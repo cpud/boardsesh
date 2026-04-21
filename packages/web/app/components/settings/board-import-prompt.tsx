@@ -64,9 +64,7 @@ export default function BoardImportPrompt({ boardType, onImportComplete }: Board
       const response = await fetch('/api/internal/aurora-credentials');
       if (response.ok) {
         const data = await response.json();
-        const cred = (data.credentials as AuroraCredentialStatus[]).find(
-          (c) => c.boardType === boardType,
-        );
+        const cred = (data.credentials as AuroraCredentialStatus[]).find((c) => c.boardType === boardType);
         setCredential(cred ?? null);
       }
     } catch (error) {
@@ -170,10 +168,7 @@ export default function BoardImportPrompt({ boardType, onImportComplete }: Board
 
     const maxSizeBytes = 200 * 1024 * 1024;
     if (file.size > maxSizeBytes) {
-      showMessage(
-        'File is too large (max 200MB). Please check you selected the correct file.',
-        'error',
-      );
+      showMessage('File is too large (max 200MB). Please check you selected the correct file.', 'error');
       event.target.value = '';
       return;
     }
@@ -193,9 +188,7 @@ export default function BoardImportPrompt({ boardType, onImportComplete }: Board
         setImportPhase('preview');
       } catch (err) {
         showMessage(
-          err instanceof Error
-            ? err.message
-            : 'Failed to parse JSON file. Please check the file format.',
+          err instanceof Error ? err.message : 'Failed to parse JSON file. Please check the file format.',
           'error',
         );
       }
@@ -273,10 +266,7 @@ export default function BoardImportPrompt({ boardType, onImportComplete }: Board
 
   const isImporting = importPhase === 'importing';
   const isImportDialogOpen =
-    importPhase === 'preview' ||
-    importPhase === 'importing' ||
-    importPhase === 'complete' ||
-    importPhase === 'error';
+    importPhase === 'preview' || importPhase === 'importing' || importPhase === 'complete' || importPhase === 'error';
 
   const getImportDialogTitle = () => {
     switch (importPhase) {
@@ -322,14 +312,9 @@ export default function BoardImportPrompt({ boardType, onImportComplete }: Board
       <Dialog open={isModalOpen} onClose={handleModalCancel} maxWidth="sm" fullWidth>
         <DialogTitle>{`Link ${boardName} Account`}</DialogTitle>
         <DialogContent>
-          <Typography
-            variant="body2"
-            component="span"
-            color="text.secondary"
-            className={styles.modalDescription}
-          >
-            Enter your {boardName} Board username and password to import your Aurora data. Your
-            credentials are encrypted and securely stored. Data syncs every 12 hours.
+          <Typography variant="body2" component="span" color="text.secondary" className={styles.modalDescription}>
+            Enter your {boardName} Board username and password to import your Aurora data. Your credentials are
+            encrypted and securely stored. Data syncs every 12 hours.
           </Typography>
           <Box
             component="form"
@@ -386,13 +371,8 @@ export default function BoardImportPrompt({ boardType, onImportComplete }: Board
         <DialogContent>
           {importPhase === 'preview' && importPreview && (
             <>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                className={styles.modalDescription}
-              >
-                Import data from <strong>{importPreview.username}</strong> to{' '}
-                <strong>{boardName}</strong>:
+              <Typography variant="body2" color="text.secondary" className={styles.modalDescription}>
+                Import data from <strong>{importPreview.username}</strong> to <strong>{boardName}</strong>:
               </Typography>
               <List dense>
                 {importPreview.climbs > 0 && (
@@ -411,8 +391,8 @@ export default function BoardImportPrompt({ boardType, onImportComplete }: Board
                 </ListItem>
               </List>
               <Typography variant="body2" color="text.secondary">
-                Climbs will be matched by name. Any that can't be matched will be reported after
-                import. Re-importing the same file will not create duplicates.
+                Climbs will be matched by name. Any that can't be matched will be reported after import. Re-importing
+                the same file will not create duplicates.
               </Typography>
             </>
           )}

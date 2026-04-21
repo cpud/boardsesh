@@ -22,10 +22,10 @@ export default function GlobalAscentsFeed() {
     queryKey: ['globalAscentsFeed'],
     queryFn: async ({ pageParam }) => {
       const client = createGraphQLHttpClient(null);
-      const response = await client.request<
-        GetGlobalAscentsFeedQueryResponse,
-        GetGlobalAscentsFeedQueryVariables
-      >(GET_GLOBAL_ASCENTS_FEED, { input: { limit: 20, offset: pageParam } });
+      const response = await client.request<GetGlobalAscentsFeedQueryResponse, GetGlobalAscentsFeedQueryVariables>(
+        GET_GLOBAL_ASCENTS_FEED,
+        { input: { limit: 20, offset: pageParam } },
+      );
       return response.globalAscentsFeed;
     },
     initialPageParam: 0,
@@ -36,10 +36,7 @@ export default function GlobalAscentsFeed() {
     staleTime: 60 * 1000,
   });
 
-  const items: FollowingAscentFeedItem[] = useMemo(
-    () => data?.pages.flatMap((p) => p.items) ?? [],
-    [data],
-  );
+  const items: FollowingAscentFeedItem[] = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data]);
 
   const tickUuids = useMemo(() => items.map((item) => item.uuid), [items]);
 
@@ -58,12 +55,7 @@ export default function GlobalAscentsFeed() {
   }
 
   if (items.length === 0) {
-    return (
-      <EmptyState
-        icon={<PublicOutlined fontSize="inherit" />}
-        description="No recent activity yet"
-      />
-    );
+    return <EmptyState icon={<PublicOutlined fontSize="inherit" />} description="No recent activity yet" />;
   }
 
   return (
@@ -72,10 +64,7 @@ export default function GlobalAscentsFeed() {
         {items.map((item) => (
           <SocialFeedItem key={item.uuid} item={item} showUserHeader />
         ))}
-        <Box
-          ref={sentinelRef}
-          sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}
-        >
+        <Box ref={sentinelRef} sx={{ display: 'flex', justifyContent: 'center', py: 2, minHeight: 20 }}>
           {isFetchingNextPage && <CircularProgress size={24} />}
         </Box>
       </Box>

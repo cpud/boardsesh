@@ -122,10 +122,7 @@ export const socialSearchQueries = {
     const searchResults = results.map((row) => {
       const lowerQuery = query.toLowerCase();
       let matchReason: string | undefined;
-      if (
-        row.displayName?.toLowerCase().includes(lowerQuery) ||
-        row.name?.toLowerCase().includes(lowerQuery)
-      ) {
+      if (row.displayName?.toLowerCase().includes(lowerQuery) || row.name?.toLowerCase().includes(lowerQuery)) {
         matchReason = 'name match';
       }
 

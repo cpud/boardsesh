@@ -51,13 +51,7 @@ interface GymDetailProps {
   anchor?: 'top' | 'bottom';
 }
 
-export default function GymDetail({
-  gymUuid,
-  open,
-  onClose,
-  onDeleted,
-  anchor = 'bottom',
-}: GymDetailProps) {
+export default function GymDetail({ gymUuid, open, onClose, onDeleted, anchor = 'bottom' }: GymDetailProps) {
   const [gym, setGym] = useState<Gym | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
@@ -141,11 +135,7 @@ export default function GymDetail({
           </Box>
         ) : isEditing ? (
           <Box sx={{ px: 2, pb: 2, overflow: 'auto', flex: 1 }}>
-            <EditGymForm
-              gym={gym}
-              onSuccess={handleEditSuccess}
-              onCancel={() => setIsEditing(false)}
-            />
+            <EditGymForm gym={gym} onSuccess={handleEditSuccess} onCancel={() => setIsEditing(false)} />
           </Box>
         ) : (
           <>
@@ -160,10 +150,7 @@ export default function GymDetail({
                 }}
               >
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <MuiTypography
-                    variant="h5"
-                    sx={{ fontWeight: themeTokens.typography.fontWeight.bold }}
-                  >
+                  <MuiTypography variant="h5" sx={{ fontWeight: themeTokens.typography.fontWeight.bold }}>
                     {gym.name}
                   </MuiTypography>
                   {gym.address && (
@@ -179,10 +166,7 @@ export default function GymDetail({
 
               {/* Owner info */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1.5 }}>
-                <Avatar
-                  src={gym.ownerAvatarUrl ?? undefined}
-                  sx={{ width: 24, height: 24, fontSize: 11 }}
-                >
+                <Avatar src={gym.ownerAvatarUrl ?? undefined} sx={{ width: 24, height: 24, fontSize: 11 }}>
                   {gym.ownerDisplayName?.[0]?.toUpperCase()}
                 </Avatar>
                 <MuiTypography variant="body2" color="text.secondary">
@@ -203,16 +187,8 @@ export default function GymDetail({
                   value={gym.boardCount}
                   label="boards"
                 />
-                <StatChip
-                  icon={<PersonOutlined sx={{ fontSize: 16 }} />}
-                  value={gym.memberCount}
-                  label="members"
-                />
-                <StatChip
-                  icon={<PeopleOutlined sx={{ fontSize: 16 }} />}
-                  value={gym.followerCount}
-                  label="followers"
-                />
+                <StatChip icon={<PersonOutlined sx={{ fontSize: 16 }} />} value={gym.memberCount} label="members" />
+                <StatChip icon={<PeopleOutlined sx={{ fontSize: 16 }} />} value={gym.followerCount} label="followers" />
                 <StatChip
                   icon={<ChatBubbleOutlined sx={{ fontSize: 16 }} />}
                   value={gym.commentCount}
@@ -270,12 +246,8 @@ export default function GymDetail({
 
             {/* Tab content */}
             <Box sx={{ flex: 1, overflow: 'auto', px: 2, py: 2 }}>
-              {activeTab === 0 && (
-                <GymMemberManagement gymUuid={gym.uuid} isOwnerOrAdmin={isOwnerOrAdmin} />
-              )}
-              {activeTab === 1 && (
-                <CommentSection entityType="gym" entityId={gym.uuid} title="Gym Discussion" />
-              )}
+              {activeTab === 0 && <GymMemberManagement gymUuid={gym.uuid} isOwnerOrAdmin={isOwnerOrAdmin} />}
+              {activeTab === 1 && <CommentSection entityType="gym" entityId={gym.uuid} title="Gym Discussion" />}
             </Box>
           </>
         )}
@@ -285,9 +257,7 @@ export default function GymDetail({
       <Dialog open={showDeleteDialog} onClose={() => setShowDeleteDialog(false)}>
         <DialogTitle>Delete Gym</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Delete &quot;{gym?.name}&quot;? This action can be undone later.
-          </DialogContentText>
+          <DialogContentText>Delete &quot;{gym?.name}&quot;? This action can be undone later.</DialogContentText>
         </DialogContent>
         <DialogActions>
           <MuiButton onClick={() => setShowDeleteDialog(false)}>Cancel</MuiButton>
@@ -304,10 +274,7 @@ function StatChip({ icon, value, label }: { icon: React.ReactNode; value: number
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
       <Box sx={{ color: 'var(--neutral-400)', display: 'flex' }}>{icon}</Box>
-      <MuiTypography
-        variant="body2"
-        sx={{ fontWeight: themeTokens.typography.fontWeight.semibold }}
-      >
+      <MuiTypography variant="body2" sx={{ fontWeight: themeTokens.typography.fontWeight.semibold }}>
         {value}
       </MuiTypography>
       <MuiTypography variant="body2" color="text.secondary">

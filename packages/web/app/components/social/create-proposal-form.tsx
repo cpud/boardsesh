@@ -143,8 +143,7 @@ export default function CreateProposalForm({
 
   if (isFrozen) return null;
 
-  const gradeBackground =
-    type === 'grade' && proposedValue ? getGradeTintColor(proposedValue, 'light') : undefined;
+  const gradeBackground = type === 'grade' && proposedValue ? getGradeTintColor(proposedValue, 'light') : undefined;
 
   return (
     <>
@@ -182,11 +181,7 @@ export default function CreateProposalForm({
             <Button
               onClick={handleSubmit}
               variant="contained"
-              disabled={
-                loading ||
-                !proposedValue ||
-                (type === 'grade' && proposedValue === currentClimbDifficulty)
-              }
+              disabled={loading || !proposedValue || (type === 'grade' && proposedValue === currentClimbDifficulty)}
               sx={{
                 textTransform: 'none',
                 bgcolor: themeTokens.colors.primary,
@@ -200,13 +195,7 @@ export default function CreateProposalForm({
       >
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {/* Type selector */}
-          <ToggleButtonGroup
-            value={type}
-            exclusive
-            onChange={handleTypeChange}
-            size="small"
-            fullWidth
-          >
+          <ToggleButtonGroup value={type} exclusive onChange={handleTypeChange} size="small" fullWidth>
             <ToggleButton value="grade">Grade</ToggleButton>
             <ToggleButton value="classic">Classic</ToggleButton>
             <ToggleButton value="benchmark">Benchmark</ToggleButton>
@@ -255,9 +244,7 @@ export default function CreateProposalForm({
           {(type === 'classic' || type === 'benchmark') && (
             <>
               <Typography variant="caption" sx={{ color: themeTokens.neutral[500] }}>
-                {type === 'classic'
-                  ? 'Classic proposals apply to all angles.'
-                  : 'Benchmark proposals are per-angle.'}
+                {type === 'classic' ? 'Classic proposals apply to all angles.' : 'Benchmark proposals are per-angle.'}
               </Typography>
               <FormControl size="small" fullWidth>
                 <InputLabel>Proposed Status</InputLabel>
@@ -288,19 +275,14 @@ export default function CreateProposalForm({
           {/* Outlier warning */}
           {outlierWarning && type === 'grade' && (
             <Alert severity="info" sx={{ fontSize: 13 }}>
-              The grade at this angle appears to be an outlier compared to adjacent angles. This
-              proposal may be auto-approved if it aligns with neighboring data.
+              The grade at this angle appears to be an outlier compared to adjacent angles. This proposal may be
+              auto-approved if it aligns with neighboring data.
             </Alert>
           )}
         </Box>
       </SwipeableDrawer>
 
-      <Snackbar
-        open={!!snackbar}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar('')}
-        message={snackbar}
-      />
+      <Snackbar open={!!snackbar} autoHideDuration={3000} onClose={() => setSnackbar('')} message={snackbar} />
     </>
   );
 }

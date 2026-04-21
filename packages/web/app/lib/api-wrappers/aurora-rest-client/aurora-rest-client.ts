@@ -40,9 +40,7 @@ class AuroraClimbingClient {
    * @param data - Data to encode
    * @returns URL encoded string
    */
-  private encodeFormData(
-    data: Record<string, string | number | boolean | null | undefined>,
-  ): string {
+  private encodeFormData(data: Record<string, string | number | boolean | null | undefined>): string {
     return Object.keys(data)
       .map((key) => {
         if (data[key] === null || data[key] === undefined) {
@@ -91,9 +89,7 @@ class AuroraClimbingClient {
 
     try {
       const contentType =
-        fetchOptions.headers &&
-        typeof fetchOptions.headers === 'object' &&
-        !Array.isArray(fetchOptions.headers)
+        fetchOptions.headers && typeof fetchOptions.headers === 'object' && !Array.isArray(fetchOptions.headers)
           ? (fetchOptions.headers as Record<string, string>)['Content-Type']
           : undefined;
 
@@ -152,9 +148,7 @@ class AuroraClimbingClient {
           );
         }
         if (error.message.includes('Failed to fetch')) {
-          throw new Error(
-            `DNS/Connection error: Cannot resolve ${url}. Aurora servers may be unavailable.`,
-          );
+          throw new Error(`DNS/Connection error: Cannot resolve ${url}. Aurora servers may be unavailable.`);
         }
       }
 

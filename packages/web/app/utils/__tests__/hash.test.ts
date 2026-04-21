@@ -126,11 +126,7 @@ describe('hash utilities', () => {
       });
 
       it('should filter out items with undefined uuid', () => {
-        const queue = [
-          { uuid: 'item-1' },
-          { uuid: undefined as unknown as string },
-          { uuid: 'item-2' },
-        ];
+        const queue = [{ uuid: 'item-1' }, { uuid: undefined as unknown as string }, { uuid: 'item-2' }];
         const cleanQueue = [{ uuid: 'item-1' }, { uuid: 'item-2' }];
 
         const hashWithUndefinedUuid = computeQueueStateHash(queue, 'item-1');

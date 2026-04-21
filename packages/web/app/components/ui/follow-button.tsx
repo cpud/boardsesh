@@ -25,16 +25,15 @@ export default function FollowButton({
   getFollowVariables,
   onFollowChange,
 }: FollowButtonProps) {
-  const { isFollowing, isLoading, isHovered, isAuthenticated, handleToggle, setIsHovered } =
-    useFollowToggle({
-      entityId,
-      initialIsFollowing,
-      followMutation,
-      unfollowMutation,
-      entityLabel,
-      getFollowVariables,
-      onFollowChange,
-    });
+  const { isFollowing, isLoading, isHovered, isAuthenticated, handleToggle, setIsHovered } = useFollowToggle({
+    entityId,
+    initialIsFollowing,
+    followMutation,
+    unfollowMutation,
+    entityLabel,
+    getFollowVariables,
+    onFollowChange,
+  });
 
   if (!isAuthenticated) {
     return null;

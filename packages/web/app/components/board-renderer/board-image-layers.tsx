@@ -49,10 +49,7 @@ const BoardImageLayers = React.memo(function BoardImageLayers({
 }: BoardImageLayersProps) {
   const overlayUrl = frames ? buildOverlayUrl(boardDetails, frames, thumbnail) : null;
   const backgroundUrls = useMemo(
-    () =>
-      Object.keys(boardDetails.images_to_holds).map((img) =>
-        getImageUrl(img, boardDetails.board_name, thumbnail),
-      ),
+    () => Object.keys(boardDetails.images_to_holds).map((img) => getImageUrl(img, boardDetails.board_name, thumbnail)),
     [boardDetails.images_to_holds, boardDetails.board_name, thumbnail],
   );
 

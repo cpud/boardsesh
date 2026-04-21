@@ -6,10 +6,7 @@ import { useActiveBoardLock } from './use-active-board-lock';
 import { useBoardSwitchConfirm } from './board-switch-confirm-provider';
 import { disconnectAllBluetooth } from '../board-bluetooth-control/bluetooth-status-store';
 
-function isSameBoard(
-  a: BoardDetails | BoardRouteIdentity,
-  b: BoardDetails | BoardRouteIdentity,
-): boolean {
+function isSameBoard(a: BoardDetails | BoardRouteIdentity, b: BoardDetails | BoardRouteIdentity): boolean {
   // set_ids intentionally excluded: changing hold sets is a minor config
   // change that does not warrant a board-switch confirmation.
   return a.board_name === b.board_name && a.layout_id === b.layout_id && a.size_id === b.size_id;
@@ -24,10 +21,7 @@ export type BoardSwitchTarget = BoardDetails | BoardRouteIdentity;
  * Bluetooth is disconnected (session is left alone) and `onConfirmed` is
  * invoked. Otherwise `onConfirmed` runs immediately.
  */
-export function useBoardSwitchGuard(): (
-  target: BoardSwitchTarget,
-  onConfirmed: () => void,
-) => void {
+export function useBoardSwitchGuard(): (target: BoardSwitchTarget, onConfirmed: () => void) => void {
   const { lockedBoard, reason } = useActiveBoardLock();
   const confirmCtx = useBoardSwitchConfirm();
 

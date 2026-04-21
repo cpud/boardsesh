@@ -23,9 +23,7 @@ function toVersionMillis(value: Date | string | number | null | undefined): numb
   return Number.isFinite(millis) ? millis : null;
 }
 
-export function buildOgVersionToken(
-  ...values: Array<Date | string | number | null | undefined>
-): string {
+export function buildOgVersionToken(...values: Array<Date | string | number | null | undefined>): string {
   let maxMillis = 0;
 
   for (const value of values) {

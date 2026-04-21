@@ -20,12 +20,7 @@ export interface UserCardProps {
   onProfileUpdate: (updatedProfile: UserProfile) => void;
 }
 
-export default function UserCard({
-  userId,
-  profile,
-  isOwnProfile,
-  onProfileUpdate,
-}: UserCardProps) {
+export default function UserCard({ userId, profile, isOwnProfile, onProfileUpdate }: UserCardProps) {
   const displayName = profile.profile?.displayName || profile.name || 'Climber';
   const avatarUrl = profile.profile?.avatarUrl || profile.image;
   const instagramUrl = profile.profile?.instagramUrl;
@@ -78,11 +73,7 @@ export default function UserCard({
                 className={styles.instagramLink}
               >
                 <Instagram className={styles.instagramIcon} />
-                <span>
-                  {instagramUrl
-                    .replace(/^https?:\/\/(www\.)?instagram\.com\//, '@')
-                    .replace(/\/$/, '')}
-                </span>
+                <span>{instagramUrl.replace(/^https?:\/\/(www\.)?instagram\.com\//, '@').replace(/\/$/, '')}</span>
               </a>
             )}
           </div>

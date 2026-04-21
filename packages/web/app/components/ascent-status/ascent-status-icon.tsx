@@ -5,11 +5,7 @@ import CheckOutlined from '@mui/icons-material/CheckOutlined';
 import ElectricBoltOutlined from '@mui/icons-material/ElectricBoltOutlined';
 import { themeTokens } from '@/app/theme/theme-config';
 import { PersonFallingIcon } from '@/app/components/icons/person-falling-icon';
-import {
-  normalizeAscentStatus,
-  type AscentStatusValue,
-  type NormalizeAscentStatusInput,
-} from './ascent-status-utils';
+import { normalizeAscentStatus, type AscentStatusValue, type NormalizeAscentStatusInput } from './ascent-status-utils';
 
 interface AscentStatusIconProps extends NormalizeAscentStatusInput {
   variant?: 'icon' | 'badge';

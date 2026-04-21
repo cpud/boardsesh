@@ -115,20 +115,10 @@ export function PlaylistAction({
         onComplete?.();
         // Note: No need to call refreshPlaylists() - optimistic updates handle state
       } catch (error) {
-        showMessage(
-          isInPlaylist ? 'Failed to remove from playlist' : 'Failed to add to playlist',
-          'error',
-        );
+        showMessage(isInPlaylist ? 'Failed to remove from playlist' : 'Failed to add to playlist', 'error');
       }
     },
-    [
-      addToPlaylist,
-      removeFromPlaylist,
-      boardDetails.board_name,
-      climb.uuid,
-      onComplete,
-      showMessage,
-    ],
+    [addToPlaylist, removeFromPlaylist, boardDetails.board_name, climb.uuid, onComplete, showMessage],
   );
 
   const handleCreatePlaylist = useCallback(async () => {
@@ -151,9 +141,7 @@ export function PlaylistAction({
 
       // Extract and validate hex color
       const colorHex =
-        createFormValues.color && isValidHexColor(createFormValues.color)
-          ? createFormValues.color
-          : undefined;
+        createFormValues.color && isValidHexColor(createFormValues.color) ? createFormValues.color : undefined;
 
       const newPlaylist = await createPlaylist(
         createFormValues.name,
@@ -180,14 +168,7 @@ export function PlaylistAction({
     } finally {
       setCreatingPlaylist(false);
     }
-  }, [
-    createFormValues,
-    createPlaylist,
-    addToPlaylist,
-    boardDetails.board_name,
-    onComplete,
-    showMessage,
-  ]);
+  }, [createFormValues, createPlaylist, addToPlaylist, boardDetails.board_name, onComplete, showMessage]);
 
   const inlineContent = (
     <div
@@ -210,10 +191,7 @@ export function PlaylistAction({
         </MuiTypography>
       </div>
       {playlists.length === 0 && !showCreateForm ? (
-        <Stack
-          spacing={1}
-          style={{ width: '100%', textAlign: 'center', padding: themeTokens.spacing[2] }}
-        >
+        <Stack spacing={1} style={{ width: '100%', textAlign: 'center', padding: themeTokens.spacing[2] }}>
           <MuiTypography variant="body2" component="span" color="text.secondary">
             No playlists yet
           </MuiTypography>
@@ -237,8 +215,7 @@ export function PlaylistAction({
                 ) : (
                   playlists.map((playlist: Playlist) => {
                     const isInPlaylist = playlistsContainingClimb.has(playlist.uuid);
-                    const validColor =
-                      playlist.color && isValidHexColor(playlist.color) ? playlist.color : null;
+                    const validColor = playlist.color && isValidHexColor(playlist.color) ? playlist.color : null;
                     return (
                       <ListItem
                         key={playlist.uuid}
@@ -246,28 +223,15 @@ export function PlaylistAction({
                         sx={{
                           padding: `${themeTokens.spacing[1] + 2}px ${themeTokens.spacing[2]}px`,
                           cursor: 'pointer',
-                          borderLeft: validColor
-                            ? `3px solid ${validColor}`
-                            : '3px solid transparent',
+                          borderLeft: validColor ? `3px solid ${validColor}` : '3px solid transparent',
                           borderRadius: `${themeTokens.borderRadius.sm}px`,
                           mb: 0.5,
-                          backgroundColor: isInPlaylist
-                            ? 'var(--semantic-selected-light)'
-                            : undefined,
+                          backgroundColor: isInPlaylist ? 'var(--semantic-selected-light)' : undefined,
                         }}
                       >
-                        <Stack
-                          direction="row"
-                          spacing={1}
-                          sx={{ width: '100%', justifyContent: 'space-between' }}
-                        >
+                        <Stack direction="row" spacing={1} sx={{ width: '100%', justifyContent: 'space-between' }}>
                           <Stack spacing={0}>
-                            <MuiTypography
-                              variant="body2"
-                              component="span"
-                              fontWeight={600}
-                              sx={{ fontSize: 13 }}
-                            >
+                            <MuiTypography variant="body2" component="span" fontWeight={600} sx={{ fontSize: 13 }}>
                               {playlist.name}
                             </MuiTypography>
                             <MuiTypography
@@ -279,11 +243,7 @@ export function PlaylistAction({
                               {playlist.climbCount} {playlist.climbCount === 1 ? 'climb' : 'climbs'}
                             </MuiTypography>
                           </Stack>
-                          {isInPlaylist && (
-                            <CheckOutlined
-                              sx={{ color: themeTokens.colors.success, fontSize: 14 }}
-                            />
-                          )}
+                          {isInPlaylist && <CheckOutlined sx={{ color: themeTokens.colors.success, fontSize: 14 }} />}
                         </Stack>
                       </ListItem>
                     );
@@ -316,9 +276,7 @@ export function PlaylistAction({
                     fullWidth
                     size="small"
                     value={createFormValues.name}
-                    onChange={(e) =>
-                      setCreateFormValues((prev) => ({ ...prev, name: e.target.value }))
-                    }
+                    onChange={(e) => setCreateFormValues((prev) => ({ ...prev, name: e.target.value }))}
                     slotProps={{ htmlInput: { maxLength: 100 } }}
                   />
                 </Box>
@@ -333,9 +291,7 @@ export function PlaylistAction({
                     fullWidth
                     size="small"
                     value={createFormValues.description}
-                    onChange={(e) =>
-                      setCreateFormValues((prev) => ({ ...prev, description: e.target.value }))
-                    }
+                    onChange={(e) => setCreateFormValues((prev) => ({ ...prev, description: e.target.value }))}
                     slotProps={{ htmlInput: { maxLength: 500 } }}
                   />
                 </Box>
@@ -346,19 +302,13 @@ export function PlaylistAction({
                   <TextField
                     type="color"
                     value={createFormValues.color || '#000000'}
-                    onChange={(e) =>
-                      setCreateFormValues((prev) => ({ ...prev, color: e.target.value }))
-                    }
+                    onChange={(e) => setCreateFormValues((prev) => ({ ...prev, color: e.target.value }))}
                     size="small"
                     sx={{ width: 60 }}
                   />
                 </Box>
               </Box>
-              <Stack
-                direction="row"
-                spacing={1}
-                style={{ width: '100%', justifyContent: 'flex-end' }}
-              >
+              <Stack direction="row" spacing={1} style={{ width: '100%', justifyContent: 'flex-end' }}>
                 <MuiButton
                   variant="outlined"
                   size="small"

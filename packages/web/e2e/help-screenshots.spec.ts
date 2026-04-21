@@ -65,9 +65,7 @@ test.describe('Help Page Screenshots', () => {
     await page.getByRole('button', { name: 'Show Heatmap' }).click();
 
     // Wait for heatmap loading to complete
-    await page
-      .waitForSelector('text=Loading heatmap...', { state: 'hidden', timeout: 10000 })
-      .catch(() => {});
+    await page.waitForSelector('text=Loading heatmap...', { state: 'hidden', timeout: 10000 }).catch(() => {});
     await page.waitForSelector('button:has-text("Hide Heatmap")', { state: 'visible' });
 
     await page.screenshot({ path: `${SCREENSHOT_DIR}/heatmap.png` });
@@ -84,10 +82,7 @@ test.describe('Help Page Screenshots', () => {
     // Click the queue toggle text to open play drawer with climb details
     await page.locator('#onboarding-queue-toggle').click();
     // Wait for play drawer to open
-    await page
-      .locator('[data-swipeable-drawer="true"]:visible')
-      .first()
-      .waitFor({ timeout: 10000 });
+    await page.locator('[data-swipeable-drawer="true"]:visible').first().waitFor({ timeout: 10000 });
 
     await page.screenshot({ path: `${SCREENSHOT_DIR}/climb-detail.png` });
   });
@@ -103,10 +98,7 @@ test.describe('Help Page Screenshots', () => {
 
     // Click "Sesh" button in the global header to open the start session drawer
     await page.getByRole('button', { name: 'Sesh', exact: true }).click();
-    await page
-      .locator('[data-swipeable-drawer="true"]:visible')
-      .first()
-      .waitFor({ timeout: 10000 });
+    await page.locator('[data-swipeable-drawer="true"]:visible').first().waitFor({ timeout: 10000 });
 
     await page.screenshot({ path: `${SCREENSHOT_DIR}/party-mode.png` });
   });
@@ -183,10 +175,7 @@ test.describe('Help Page Screenshots - Authenticated', () => {
 
     // Open start session drawer via "Sesh" button in the global header
     await page.getByRole('button', { name: 'Sesh', exact: true }).click();
-    await page
-      .locator('[data-swipeable-drawer="true"]:visible')
-      .first()
-      .waitFor({ timeout: 10000 });
+    await page.locator('[data-swipeable-drawer="true"]:visible').first().waitFor({ timeout: 10000 });
 
     // Start the session — we're already on a board route so no board selection needed.
     // The footer "Sesh" button submits the session creation form.

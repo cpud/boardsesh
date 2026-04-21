@@ -101,21 +101,21 @@ describe('instagram-posting', () => {
   });
 
   it('builds the caption for Tension', () => {
-    expect(
-      buildInstagramCaption({ climbName: 'High Hopes', angle: 40, boardType: 'tension' }),
-    ).toBe(`"High Hopes" @ 40° on the Tension Board.\n@tensionclimbing #tensionboard`);
+    expect(buildInstagramCaption({ climbName: 'High Hopes', angle: 40, boardType: 'tension' })).toBe(
+      `"High Hopes" @ 40° on the Tension Board.\n@tensionclimbing #tensionboard`,
+    );
   });
 
   it('builds the caption for MoonBoard', () => {
-    expect(
-      buildInstagramCaption({ climbName: 'Wheel of Fortune', angle: 40, boardType: 'moonboard' }),
-    ).toBe(`"Wheel of Fortune" @ 40° on the MoonBoard.\n@moon_climbing #moonboard`);
+    expect(buildInstagramCaption({ climbName: 'Wheel of Fortune', angle: 40, boardType: 'moonboard' })).toBe(
+      `"Wheel of Fortune" @ 40° on the MoonBoard.\n@moon_climbing #moonboard`,
+    );
   });
 
   it('falls back to Kilter caption for an unknown boardType', () => {
-    expect(
-      buildInstagramCaption({ climbName: 'Mystery Route', angle: 50, boardType: 'unknownboard' }),
-    ).toBe(`"Mystery Route" @ 50° on the Kilter Board.\n@kilterboard #kilterboard #kiltergrips`);
+    expect(buildInstagramCaption({ climbName: 'Mystery Route', angle: 50, boardType: 'unknownboard' })).toBe(
+      `"Mystery Route" @ 50° on the Kilter Board.\n@kilterboard #kilterboard #kiltergrips`,
+    );
   });
 
   describe('getBoardDisplayName', () => {
@@ -139,8 +139,7 @@ describe('instagram-posting', () => {
     Object.defineProperty(global, 'navigator', {
       configurable: true,
       value: {
-        userAgent:
-          'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 Chrome/136.0 Mobile Safari/537.36',
+        userAgent: 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 Chrome/136.0 Mobile Safari/537.36',
       },
     });
 
@@ -152,8 +151,7 @@ describe('instagram-posting', () => {
     Object.defineProperty(global, 'navigator', {
       configurable: true,
       value: {
-        userAgent:
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/136.0 Safari/537.36',
+        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/136.0 Safari/537.36',
       },
     });
 

@@ -1,12 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
-import {
-  LitUpHoldsMap,
-  HoldState,
-  HOLD_STATE_MAP,
-  STATE_TO_PRIMARY_CODE,
-} from '../board-renderer/types';
+import { LitUpHoldsMap, HoldState, HOLD_STATE_MAP, STATE_TO_PRIMARY_CODE } from '../board-renderer/types';
 import { BoardName } from '@/app/lib/types';
 
 interface UseCreateClimbOptions {

@@ -68,19 +68,13 @@ export default function SwaggerUIComponent() {
         <AlertTitle>OpenAPI Specification Not Generated</AlertTitle>
         <div>
           <Typography variant="body1" component="p" className={styles.swaggerInstructions}>
-            The OpenAPI specification file has not been generated yet. This is expected during local
-            development.
+            The OpenAPI specification file has not been generated yet. This is expected during local development.
           </Typography>
           <Typography variant="body1" component="p" className={styles.swaggerInstructionsFinal}>
             Run the following command to generate it:
           </Typography>
           <pre className={styles.swaggerCommandBlock}>bun run generate:openapi</pre>
-          <Typography
-            variant="body1"
-            component="p"
-            color="text.secondary"
-            className={styles.swaggerNote}
-          >
+          <Typography variant="body1" component="p" color="text.secondary" className={styles.swaggerNote}>
             In production, this runs automatically during the build process.
           </Typography>
         </div>

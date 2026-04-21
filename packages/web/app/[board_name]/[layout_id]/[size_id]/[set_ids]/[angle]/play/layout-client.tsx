@@ -52,12 +52,7 @@ const QueueSidebar: React.FC<{ boardDetails: BoardDetails }> = ({ boardDetails }
             okText="Clear"
             cancelText="Cancel"
           >
-            <MuiButton
-              variant="text"
-              startIcon={<DeleteOutlined />}
-              size="small"
-              sx={{ color: 'var(--neutral-400)' }}
-            >
+            <MuiButton variant="text" startIcon={<DeleteOutlined />} size="small" sx={{ color: 'var(--neutral-400)' }}>
               Clear
             </MuiButton>
           </ConfirmPopover>
@@ -70,10 +65,7 @@ const QueueSidebar: React.FC<{ boardDetails: BoardDetails }> = ({ boardDetails }
   );
 };
 
-const PlayLayoutClient: React.FC<PropsWithChildren<PlayLayoutClientProps>> = ({
-  boardDetails,
-  children,
-}) => {
+const PlayLayoutClient: React.FC<PropsWithChildren<PlayLayoutClientProps>> = ({ boardDetails, children }) => {
   return (
     <Box className={styles.playLayout}>
       <Box component="main" className={styles.mainContent}>

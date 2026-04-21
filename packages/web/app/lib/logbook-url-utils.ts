@@ -105,10 +105,8 @@ export function filtersToQueryParams(
 
   if (searchText) params.q = searchText;
   if (selectedBoardUuids.length > 0) params.boards = selectedBoardUuids.join(',');
-  if (filters.minGrade !== '' && filters.minGrade !== undefined)
-    params.minGrade = String(filters.minGrade);
-  if (filters.maxGrade !== '' && filters.maxGrade !== undefined)
-    params.maxGrade = String(filters.maxGrade);
+  if (filters.minGrade !== '' && filters.minGrade !== undefined) params.minGrade = String(filters.minGrade);
+  if (filters.maxGrade !== '' && filters.maxGrade !== undefined) params.maxGrade = String(filters.maxGrade);
 
   // Only write non-default filter values
   if (!filters.includeSends) params.sends = '0';
@@ -117,16 +115,13 @@ export function filtersToQueryParams(
   if (filters.benchmarkOnly) params.benchmark = '1';
   if (filters.fromDate) params.from = filters.fromDate;
   if (filters.toDate) params.to = filters.toDate;
-  if (filters.angleRange[0] !== DEFAULT_ANGLE_RANGE[0])
-    params.minAngle = String(filters.angleRange[0]);
-  if (filters.angleRange[1] !== DEFAULT_ANGLE_RANGE[1])
-    params.maxAngle = String(filters.angleRange[1]);
+  if (filters.angleRange[0] !== DEFAULT_ANGLE_RANGE[0]) params.minAngle = String(filters.angleRange[0]);
+  if (filters.angleRange[1] !== DEFAULT_ANGLE_RANGE[1]) params.maxAngle = String(filters.angleRange[1]);
 
   if (sortState.mode === 'custom') {
     // Always emit the sort field so direction-only URLs don't occur
     params.sort = sortState.primaryField;
-    if (sortState.primaryDirection !== DEFAULT_SORT.primaryDirection)
-      params.order = sortState.primaryDirection;
+    if (sortState.primaryDirection !== DEFAULT_SORT.primaryDirection) params.order = sortState.primaryDirection;
     if (sortState.secondaryField) params.sort2 = sortState.secondaryField;
     if (sortState.secondaryField && sortState.secondaryDirection !== 'desc')
       params.order2 = sortState.secondaryDirection;

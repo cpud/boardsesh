@@ -49,11 +49,7 @@ function mapNotificationRow(row: NotificationRow) {
 export const socialNotificationQueries = {
   notifications: async (
     _: unknown,
-    {
-      unreadOnly,
-      limit = 20,
-      offset = 0,
-    }: { unreadOnly?: boolean; limit?: number; offset?: number },
+    { unreadOnly, limit = 20, offset = 0 }: { unreadOnly?: boolean; limit?: number; offset?: number },
     ctx: ConnectionContext,
   ) => {
     requireAuthenticated(ctx);
@@ -111,11 +107,7 @@ export const socialNotificationQueries = {
     };
   },
 
-  groupedNotifications: async (
-    _: unknown,
-    args: { limit?: number; offset?: number },
-    ctx: ConnectionContext,
-  ) => {
+  groupedNotifications: async (_: unknown, args: { limit?: number; offset?: number }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     const userId = ctx.userId!;
 
@@ -221,19 +213,12 @@ export const socialNotificationQueries = {
         setterUsername: undefined as string | undefined,
         isRead: row.allRead,
         createdAt:
-          row.latestCreatedAt instanceof Date
-            ? row.latestCreatedAt.toISOString()
-            : String(row.latestCreatedAt),
+          row.latestCreatedAt instanceof Date ? row.latestCreatedAt.toISOString() : String(row.latestCreatedAt),
       };
     });
 
     // Enrich groups with climb/proposal data (batched to avoid N+1)
-    const proposalTypes = [
-      'proposal_created',
-      'proposal_approved',
-      'proposal_rejected',
-      'proposal_vote',
-    ];
+    const proposalTypes = ['proposal_created', 'proposal_approved', 'proposal_rejected', 'proposal_vote'];
     const climbTypes = ['new_climb', 'new_climb_global'];
 
     // Collect entity IDs by type
@@ -249,10 +234,7 @@ export const socialNotificationQueries = {
     }
 
     // Batch-fetch climbs
-    const climbMap = new Map<
-      string,
-      { name: string | null; boardType: string; setterUsername: string | null }
-    >();
+    const climbMap = new Map<string, { name: string | null; boardType: string; setterUsername: string | null }>();
     if (climbEntityIds.length > 0) {
       const climbRows = await db
         .select({
@@ -346,9 +328,7 @@ export const socialNotificationQueries = {
     const unreadCountResult = await db
       .select({ count: count() })
       .from(dbSchema.notifications)
-      .where(
-        and(eq(dbSchema.notifications.recipientId, userId), isNull(dbSchema.notifications.readAt)),
-      );
+      .where(and(eq(dbSchema.notifications.recipientId, userId), isNull(dbSchema.notifications.readAt)));
     const unreadCount = Number(unreadCountResult[0]?.count || 0);
 
     return {
@@ -359,20 +339,14 @@ export const socialNotificationQueries = {
     };
   },
 
-  unreadNotificationCount: async (
-    _: unknown,
-    __: unknown,
-    ctx: ConnectionContext,
-  ): Promise<number> => {
+  unreadNotificationCount: async (_: unknown, __: unknown, ctx: ConnectionContext): Promise<number> => {
     requireAuthenticated(ctx);
     const userId = ctx.userId!;
 
     const result = await db
       .select({ count: count() })
       .from(dbSchema.notifications)
-      .where(
-        and(eq(dbSchema.notifications.recipientId, userId), isNull(dbSchema.notifications.readAt)),
-      );
+      .where(and(eq(dbSchema.notifications.recipientId, userId), isNull(dbSchema.notifications.readAt)));
 
     return Number(result[0]?.count || 0);
   },
@@ -391,23 +365,14 @@ export const socialNotificationMutations = {
     await db
       .update(dbSchema.notifications)
       .set({ readAt: new Date() })
-      .where(
-        and(
-          eq(dbSchema.notifications.uuid, notificationUuid),
-          eq(dbSchema.notifications.recipientId, userId),
-        ),
-      );
+      .where(and(eq(dbSchema.notifications.uuid, notificationUuid), eq(dbSchema.notifications.recipientId, userId)));
 
     return true;
   },
 
   markGroupNotificationsRead: async (
     _: unknown,
-    {
-      type,
-      entityType,
-      entityId,
-    }: { type: string; entityType?: string | null; entityId?: string | null },
+    { type, entityType, entityId }: { type: string; entityType?: string | null; entityId?: string | null },
     ctx: ConnectionContext,
   ): Promise<number> => {
     requireAuthenticated(ctx);
@@ -442,11 +407,7 @@ export const socialNotificationMutations = {
     return result.length;
   },
 
-  markAllNotificationsRead: async (
-    _: unknown,
-    __: unknown,
-    ctx: ConnectionContext,
-  ): Promise<boolean> => {
+  markAllNotificationsRead: async (_: unknown, __: unknown, ctx: ConnectionContext): Promise<boolean> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 5, 'notification_read_all');
     const userId = ctx.userId!;
@@ -454,9 +415,7 @@ export const socialNotificationMutations = {
     await db
       .update(dbSchema.notifications)
       .set({ readAt: new Date() })
-      .where(
-        and(eq(dbSchema.notifications.recipientId, userId), isNull(dbSchema.notifications.readAt)),
-      );
+      .where(and(eq(dbSchema.notifications.recipientId, userId), isNull(dbSchema.notifications.readAt)));
 
     return true;
   },

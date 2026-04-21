@@ -6,9 +6,7 @@ import { AscentStatusIcon } from '../ascent-status-icon';
 
 describe('AscentStatusIcon', () => {
   it('renders the flash icon variant with explicit status metadata', () => {
-    render(
-      <AscentStatusIcon status="flash" variant="icon" fontSize={18} testId="flash-status-icon" />,
-    );
+    render(<AscentStatusIcon status="flash" variant="icon" fontSize={18} testId="flash-status-icon" />);
 
     const icon = screen.getByTestId('flash-status-icon');
     expect(icon.getAttribute('data-status')).toBe('flash');

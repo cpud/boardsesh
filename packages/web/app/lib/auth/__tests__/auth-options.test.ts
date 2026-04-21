@@ -30,8 +30,7 @@ vi.mock('next-auth/providers/credentials', () => ({
 // Mock native-oauth transfer verification
 const mockVerifyNativeOAuthTransferToken = vi.fn();
 vi.mock('../native-oauth-transfer', () => ({
-  verifyNativeOAuthTransferToken: (...args: unknown[]) =>
-    mockVerifyNativeOAuthTransferToken(...args),
+  verifyNativeOAuthTransferToken: (...args: unknown[]) => mockVerifyNativeOAuthTransferToken(...args),
 }));
 
 // Mock bcrypt
@@ -143,10 +142,7 @@ describe('authOptions.callbacks.signIn', () => {
       });
 
       expect(result).toBe(true);
-      expect(warnSpy).toHaveBeenCalledWith(
-        'Failed to mark email as verified during OAuth sign-in:',
-        expect.any(Error),
-      );
+      expect(warnSpy).toHaveBeenCalledWith('Failed to mark email as verified during OAuth sign-in:', expect.any(Error));
       warnSpy.mockRestore();
     });
 
@@ -219,9 +215,7 @@ describe('authOptions.callbacks.signIn', () => {
 
     it('returns true when email verification is disabled (default)', async () => {
       // EMAIL_VERIFICATION_ENABLED not set → disabled
-      mockDbLimit.mockResolvedValue([
-        { id: 'user-1', email: 'user@example.com', emailVerified: null },
-      ]);
+      mockDbLimit.mockResolvedValue([{ id: 'user-1', email: 'user@example.com', emailVerified: null }]);
 
       const result = await callSignIn({
         user: { id: 'user-1', email: 'user@example.com' },
@@ -233,9 +227,7 @@ describe('authOptions.callbacks.signIn', () => {
 
     it('returns true when email verification enabled and email is verified', async () => {
       vi.stubEnv('EMAIL_VERIFICATION_ENABLED', 'true');
-      mockDbLimit.mockResolvedValue([
-        { id: 'user-1', email: 'user@example.com', emailVerified: new Date() },
-      ]);
+      mockDbLimit.mockResolvedValue([{ id: 'user-1', email: 'user@example.com', emailVerified: new Date() }]);
 
       const result = await callSignIn({
         user: { id: 'user-1', email: 'user@example.com' },
@@ -247,9 +239,7 @@ describe('authOptions.callbacks.signIn', () => {
 
     it('returns redirect URL when email verification enabled and email is not verified', async () => {
       vi.stubEnv('EMAIL_VERIFICATION_ENABLED', 'true');
-      mockDbLimit.mockResolvedValue([
-        { id: 'user-1', email: 'user@example.com', emailVerified: null },
-      ]);
+      mockDbLimit.mockResolvedValue([{ id: 'user-1', email: 'user@example.com', emailVerified: null }]);
 
       const result = await callSignIn({
         user: { id: 'user-1', email: 'user@example.com' },
@@ -274,9 +264,7 @@ describe('authOptions.callbacks.signIn', () => {
 
     it('returns true when EMAIL_VERIFICATION_ENABLED is not "true" (e.g. "false")', async () => {
       vi.stubEnv('EMAIL_VERIFICATION_ENABLED', 'false');
-      mockDbLimit.mockResolvedValue([
-        { id: 'user-1', email: 'user@example.com', emailVerified: null },
-      ]);
+      mockDbLimit.mockResolvedValue([{ id: 'user-1', email: 'user@example.com', emailVerified: null }]);
 
       const result = await callSignIn({
         user: { id: 'user-1', email: 'user@example.com' },
@@ -365,9 +353,7 @@ describe('CredentialsProvider.authorize — email/password', () => {
   it('returns null when user has no password (OAuth-only account)', async () => {
     // First select (users) → user found; second select (userCredentials) → empty
     mockDbLimit
-      .mockResolvedValueOnce([
-        { id: 'user-1', email: 'user@example.com', name: 'Test', image: null },
-      ])
+      .mockResolvedValueOnce([{ id: 'user-1', email: 'user@example.com', name: 'Test', image: null }])
       .mockResolvedValueOnce([]);
 
     const provider = getEmailCredentialsProvider();
@@ -380,9 +366,7 @@ describe('CredentialsProvider.authorize — email/password', () => {
 
   it('returns null when password is incorrect', async () => {
     mockDbLimit
-      .mockResolvedValueOnce([
-        { id: 'user-1', email: 'user@example.com', name: 'Test', image: null },
-      ])
+      .mockResolvedValueOnce([{ id: 'user-1', email: 'user@example.com', name: 'Test', image: null }])
       .mockResolvedValueOnce([{ userId: 'user-1', passwordHash: '$2a$12$hashed' }]);
     mockBcryptCompare.mockResolvedValue(false);
 

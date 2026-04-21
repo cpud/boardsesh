@@ -51,9 +51,7 @@ describe('AuroraMigrationContent', () => {
     render(<AuroraMigrationContent />);
     const emailButton = screen.getByText('Email peter@auroraclimbing.com');
     expect(emailButton.closest('a')).toBeTruthy();
-    expect(emailButton.closest('a')?.getAttribute('href')).toContain(
-      'mailto:peter@auroraclimbing.com',
-    );
+    expect(emailButton.closest('a')?.getAttribute('href')).toContain('mailto:peter@auroraclimbing.com');
   });
 
   it('renders the "Get Help" section with Discord and GitHub links', () => {

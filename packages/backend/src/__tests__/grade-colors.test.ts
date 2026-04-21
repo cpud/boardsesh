@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vite-plus/test';
-import {
-  getVGradeColor,
-  getFontGradeColor,
-  getGradeColor,
-} from '../graphql/resolvers/controller/grade-colors';
+import { getVGradeColor, getFontGradeColor, getGradeColor } from '../graphql/resolvers/controller/grade-colors';
 
 const DEFAULT_GRADE_COLOR = '#808080';
 

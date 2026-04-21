@@ -53,9 +53,7 @@ export default function ClimbDetailInfoShellClient({
           boardDetails={boardDetails}
           actions={[]}
           onCoverDoubleClick={handleDoubleTap}
-          expandedContent={
-            <HeartAnimationOverlay visible={showHeart} onAnimationEnd={dismissHeart} />
-          }
+          expandedContent={<HeartAnimationOverlay visible={showHeart} onAnimationEnd={dismissHeart} />}
         />
       }
       sections={sections}

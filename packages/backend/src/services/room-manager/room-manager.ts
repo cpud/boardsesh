@@ -97,20 +97,8 @@ class RoomManager {
     return this.distributedState !== null;
   }
 
-  async registerClient(
-    connectionId: string,
-    username?: string,
-    userId?: string,
-    avatarUrl?: string,
-  ): Promise<string> {
-    return registerClientFn(
-      connectionId,
-      this.clients,
-      this.distributedState,
-      username,
-      userId,
-      avatarUrl,
-    );
+  async registerClient(connectionId: string, username?: string, userId?: string, avatarUrl?: string): Promise<string> {
+    return registerClientFn(connectionId, this.clients, this.distributedState, username, userId, avatarUrl);
   }
 
   getClient(connectionId: string): ConnectedClient | undefined {
@@ -165,9 +153,7 @@ class RoomManager {
     );
   }
 
-  async leaveSession(
-    connectionId: string,
-  ): Promise<{ sessionId: string; newLeaderId?: string } | null> {
+  async leaveSession(connectionId: string): Promise<{ sessionId: string; newLeaderId?: string } | null> {
     return leaveSessionFn(
       connectionId,
       this.clients,
@@ -282,13 +268,7 @@ class RoomManager {
     currentClimbQueueItem: ClimbQueueItem | null,
     expectedVersion?: number,
   ): Promise<number> {
-    return updateQueueStateImmediateFn(
-      sessionId,
-      queue,
-      currentClimbQueueItem,
-      expectedVersion,
-      this.redisStore,
-    );
+    return updateQueueStateImmediateFn(sessionId, queue, currentClimbQueueItem, expectedVersion, this.redisStore);
   }
 
   async updateQueueOnly(
@@ -338,11 +318,7 @@ class RoomManager {
     );
   }
 
-  async findNearbySessions(
-    latitude: number,
-    longitude: number,
-    radiusMeters?: number,
-  ): Promise<DiscoverableSession[]> {
+  async findNearbySessions(latitude: number, longitude: number, radiusMeters?: number): Promise<DiscoverableSession[]> {
     return findNearbySessionsFn(
       latitude,
       longitude,

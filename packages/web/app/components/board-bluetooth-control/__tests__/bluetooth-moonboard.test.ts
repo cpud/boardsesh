@@ -22,9 +22,7 @@ describe('getMoonboardBluetoothPacket', () => {
   });
 
   it('throws on unsupported Moonboard hold state codes', () => {
-    expect(() => getMoonboardBluetoothPacket('p1r45')).toThrow(
-      'Unsupported MoonBoard hold state code: 45',
-    );
+    expect(() => getMoonboardBluetoothPacket('p1r45')).toThrow('Unsupported MoonBoard hold state code: 45');
   });
 
   it('skips invalid Moonboard hold ids and keeps the remaining payload', () => {
@@ -33,9 +31,7 @@ describe('getMoonboardBluetoothPacket', () => {
     const packet = getMoonboardBluetoothPacket('p1r42p999r43p198r44');
 
     expect(new TextDecoder().decode(packet)).toBe('l#S0,E197#');
-    expect(warnSpy).toHaveBeenCalledWith(
-      '[BLE] Skipped 1 MoonBoard holds with invalid ids for this payload',
-    );
+    expect(warnSpy).toHaveBeenCalledWith('[BLE] Skipped 1 MoonBoard holds with invalid ids for this payload');
 
     warnSpy.mockRestore();
   });

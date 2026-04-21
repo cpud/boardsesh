@@ -13,10 +13,7 @@ export function generateUuid(): string {
  * Use for Aurora API responses where a simple error throw is sufficient.
  * Accepts both native fetch Response and undici Response.
  */
-export function handleAuroraApiResponse(
-  response: { ok: boolean; status: number },
-  context?: string,
-): void {
+export function handleAuroraApiResponse(response: { ok: boolean; status: number }, context?: string): void {
   if (!response.ok) {
     const prefix = context ? `${context}: ` : '';
     throw new Error(`${prefix}HTTP error! status: ${response.status}`);

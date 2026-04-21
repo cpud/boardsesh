@@ -92,9 +92,7 @@ describe('PlaylistAction (list mode)', () => {
   it('opens playlist selector callback in list mode when authenticated', () => {
     const onOpenPlaylistSelector = vi.fn();
     const onComplete = vi.fn();
-    const { result } = renderHook(() =>
-      PlaylistAction(createProps({ onOpenPlaylistSelector, onComplete })),
-    );
+    const { result } = renderHook(() => PlaylistAction(createProps({ onOpenPlaylistSelector, onComplete })));
 
     render(<>{result.current.element}</>);
     fireEvent.click(screen.getByRole('button', { name: /add to playlist/i }));
@@ -117,9 +115,7 @@ describe('PlaylistAction (list mode)', () => {
 
     const onOpenPlaylistSelector = vi.fn();
     const onComplete = vi.fn();
-    const { result } = renderHook(() =>
-      PlaylistAction(createProps({ onOpenPlaylistSelector, onComplete })),
-    );
+    const { result } = renderHook(() => PlaylistAction(createProps({ onOpenPlaylistSelector, onComplete })));
 
     render(<>{result.current.element}</>);
     fireEvent.click(screen.getByRole('button', { name: /add to playlist/i }));

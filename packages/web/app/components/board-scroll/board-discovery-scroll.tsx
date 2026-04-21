@@ -71,9 +71,7 @@ export default function BoardDiscoveryScroll({
   } = usePopularBoardConfigs({ limit: 12, initialData: initialPopularConfigs });
 
   // Use externally-provided boards if available, otherwise fetch internally
-  const { boards: internalMyBoards } = useMyBoards(
-    externalMyBoards === undefined && isAuthenticated,
-  );
+  const { boards: internalMyBoards } = useMyBoards(externalMyBoards === undefined && isAuthenticated);
   const myBoards = externalMyBoards ?? internalMyBoards;
   const [myBoardsVisible, setMyBoardsVisible] = useState(false);
 

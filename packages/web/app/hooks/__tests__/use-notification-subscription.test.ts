@@ -20,8 +20,7 @@ const mockCreateGraphQLClient = vi.fn(() => ({
 const mockSubscribe = vi.fn(() => mockUnsub);
 
 vi.mock('@/app/components/graphql-queue/graphql-client', () => ({
-  createGraphQLClient: (...args: Parameters<typeof mockCreateGraphQLClient>) =>
-    mockCreateGraphQLClient(...args),
+  createGraphQLClient: (...args: Parameters<typeof mockCreateGraphQLClient>) => mockCreateGraphQLClient(...args),
   subscribe: (...args: Parameters<typeof mockSubscribe>) => mockSubscribe(...args),
 }));
 
@@ -215,15 +214,11 @@ describe('useNotificationSubscription', () => {
     });
 
     // Should increment unread count
-    expect(mockSetQueryData).toHaveBeenCalledWith(
-      ['notifications', 'unreadCount'],
-      expect.any(Function),
-    );
+    expect(mockSetQueryData).toHaveBeenCalledWith(['notifications', 'unreadCount'], expect.any(Function));
 
     // Call the updater function to verify it increments
     const updaterFn = mockSetQueryData.mock.calls.find(
-      (call: unknown[]) =>
-        (call[0] as string[])[0] === 'notifications' && (call[0] as string[])[1] === 'unreadCount',
+      (call: unknown[]) => (call[0] as string[])[0] === 'notifications' && (call[0] as string[])[1] === 'unreadCount',
     )?.[1];
 
     if (typeof updaterFn === 'function') {
@@ -334,10 +329,7 @@ describe('useNotificationSubscription', () => {
     });
 
     // Should call setQueriesData for grouped notifications
-    expect(mockSetQueriesData).toHaveBeenCalledWith(
-      { queryKey: ['notifications', 'grouped'] },
-      expect.any(Function),
-    );
+    expect(mockSetQueriesData).toHaveBeenCalledWith({ queryKey: ['notifications', 'grouped'] }, expect.any(Function));
 
     // Get the updater function and test it creates a new group
     const updaterFn = mockSetQueriesData.mock.calls[0][1];

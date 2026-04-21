@@ -48,9 +48,7 @@ describe('REST vs GraphQL Parity Tests', () => {
     it('grades should match between REST and GraphQL for kilter', async () => {
       // REST API call
       const restResult =
-        await fetchRest<Array<{ difficulty_id: number; difficulty_name: string }>>(
-          '/api/v1/grades/kilter',
-        );
+        await fetchRest<Array<{ difficulty_id: number; difficulty_name: string }>>('/api/v1/grades/kilter');
 
       // GraphQL API call
       const gqlResult = await fetchGraphQL<{
@@ -70,9 +68,7 @@ describe('REST vs GraphQL Parity Tests', () => {
     it('grades should match between REST and GraphQL for tension', async () => {
       // REST API call
       const restResult =
-        await fetchRest<Array<{ difficulty_id: number; difficulty_name: string }>>(
-          '/api/v1/grades/tension',
-        );
+        await fetchRest<Array<{ difficulty_id: number; difficulty_name: string }>>('/api/v1/grades/tension');
 
       // GraphQL API call
       const gqlResult = await fetchGraphQL<{
@@ -91,9 +87,7 @@ describe('REST vs GraphQL Parity Tests', () => {
 
     it('should return error for invalid board name', async () => {
       try {
-        await fetchGraphQL<{ grades: unknown }>(
-          `query { grades(boardName: "invalid") { difficultyId name } }`,
-        );
+        await fetchGraphQL<{ grades: unknown }>(`query { grades(boardName: "invalid") { difficultyId name } }`);
         expect.fail('Should have thrown an error');
       } catch (error) {
         expect((error as Error).message).toContain('Board name must be');
@@ -106,9 +100,7 @@ describe('REST vs GraphQL Parity Tests', () => {
       const layoutId = 1;
 
       // REST API call
-      const restResult = await fetchRest<Array<{ angle: number }>>(
-        `/api/v1/angles/kilter/${layoutId}`,
-      );
+      const restResult = await fetchRest<Array<{ angle: number }>>(`/api/v1/angles/kilter/${layoutId}`);
 
       // GraphQL API call
       const gqlResult = await fetchGraphQL<{

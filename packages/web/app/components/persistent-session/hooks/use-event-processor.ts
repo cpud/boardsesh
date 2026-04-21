@@ -1,9 +1,5 @@
 import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
-import type {
-  SubscriptionQueueEvent,
-  SessionEvent,
-  SessionLiveStats,
-} from '@boardsesh/shared-schema';
+import type { SubscriptionQueueEvent, SessionEvent, SessionLiveStats } from '@boardsesh/shared-schema';
 import type { ClimbQueueItem as LocalClimbQueueItem } from '../../queue-control/types';
 import { evaluateQueueEventSequence, insertQueueItemIdempotent } from '../event-utils';
 import type { SharedRefs } from '../types';
@@ -39,9 +35,7 @@ export interface EventProcessorActions {
   notifySessionSubscribers: (event: SessionEvent) => void;
 }
 
-export function useEventProcessor({
-  refs,
-}: UseEventProcessorArgs): EventProcessorState & EventProcessorActions {
+export function useEventProcessor({ refs }: UseEventProcessorArgs): EventProcessorState & EventProcessorActions {
   const {
     lastReceivedSequenceRef,
     triggerResyncRef,
@@ -53,9 +47,7 @@ export function useEventProcessor({
   } = refs;
 
   const [queue, setQueueState] = useState<LocalClimbQueueItem[]>([]);
-  const [currentClimbQueueItem, setCurrentClimbQueueItem] = useState<LocalClimbQueueItem | null>(
-    null,
-  );
+  const [currentClimbQueueItem, setCurrentClimbQueueItem] = useState<LocalClimbQueueItem | null>(null);
   const [lastReceivedStateHash, setLastReceivedStateHash] = useState<string | null>(null);
   const [liveSessionStats, setLiveSessionStats] = useState<SessionLiveStats | null>(null);
 
@@ -116,9 +108,7 @@ export function useEventProcessor({
 
       switch (event.__typename) {
         case 'FullSync': {
-          const serverQueue = (event.state.queue as LocalClimbQueueItem[]).filter(
-            (item) => item != null,
-          );
+          const serverQueue = (event.state.queue as LocalClimbQueueItem[]).filter((item) => item != null);
           // Merge offline-buffered items for visual continuity during reconciliation
           const pending = offlineBufferRef.current;
           if (pending.length > 0) {
@@ -137,18 +127,12 @@ export function useEventProcessor({
         }
         case 'QueueItemAdded':
           if (event.addedItem == null) {
-            console.error(
-              '[PersistentSession] Received QueueItemAdded with null/undefined item, skipping',
-            );
+            console.error('[PersistentSession] Received QueueItemAdded with null/undefined item, skipping');
             updateLastReceivedSequence(event.sequence);
             break;
           }
           setQueueState((prev) => {
-            return insertQueueItemIdempotent(
-              prev,
-              event.addedItem as LocalClimbQueueItem,
-              event.position,
-            );
+            return insertQueueItemIdempotent(prev, event.addedItem as LocalClimbQueueItem, event.position);
           });
           updateLastReceivedSequence(event.sequence);
           break;
@@ -187,13 +171,7 @@ export function useEventProcessor({
       // Notify external subscribers
       notifyQueueSubscribers(event);
     },
-    [
-      lastReceivedSequenceRef,
-      triggerResyncRef,
-      notifyQueueSubscribers,
-      updateLastReceivedSequence,
-      offlineBufferRef,
-    ],
+    [lastReceivedSequenceRef, triggerResyncRef, notifyQueueSubscribers, updateLastReceivedSequence, offlineBufferRef],
   );
 
   // Handle session events internally

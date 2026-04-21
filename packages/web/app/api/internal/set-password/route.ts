@@ -64,10 +64,7 @@ export async function POST(request: NextRequest) {
     // Validate input
     const validationResult = setPasswordSchema.safeParse(body);
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: validationResult.error.issues[0].message },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: validationResult.error.issues[0].message }, { status: 400 });
     }
 
     const { password } = validationResult.data;
@@ -104,12 +101,7 @@ export async function POST(request: NextRequest) {
       });
     } catch (insertError) {
       // Handle race condition: another request inserted credentials between our check and insert
-      if (
-        insertError &&
-        typeof insertError === 'object' &&
-        'code' in insertError &&
-        insertError.code === '23505'
-      ) {
+      if (insertError && typeof insertError === 'object' && 'code' in insertError && insertError.code === '23505') {
         return NextResponse.json({ error: 'Password already set.' }, { status: 409 });
       }
       throw insertError;
@@ -120,9 +112,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Set password error:', error);
-    return NextResponse.json(
-      { error: 'An error occurred while setting the password' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'An error occurred while setting the password' }, { status: 500 });
   }
 }

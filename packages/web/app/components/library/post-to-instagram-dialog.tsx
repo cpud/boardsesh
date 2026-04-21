@@ -17,11 +17,7 @@ import { useQuery } from '@tanstack/react-query';
 import BetaVideos from '@/app/components/beta-videos/beta-videos';
 import AttachBetaLinkForm from '@/app/components/beta-videos/attach-beta-link-form';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
-import {
-  buildInstagramCaption,
-  copyAndOpenInstagram,
-  getBoardDisplayName,
-} from '@/app/lib/instagram-posting';
+import { buildInstagramCaption, copyAndOpenInstagram, getBoardDisplayName } from '@/app/lib/instagram-posting';
 import type { BetaLink } from '@/app/lib/api-wrappers/sync-api-types';
 import { themeTokens } from '@/app/theme/theme-config';
 
@@ -87,10 +83,7 @@ export default function PostToInstagramDialog({ open, onClose, item }: PostToIns
     }
 
     if (!result.opened) {
-      showMessage(
-        'Couldn’t open Instagram. Open it manually and paste the copied caption.',
-        'error',
-      );
+      showMessage('Couldn’t open Instagram. Open it manually and paste the copied caption.', 'error');
       return;
     }
 
@@ -178,20 +171,14 @@ export default function PostToInstagramDialog({ open, onClose, item }: PostToIns
                   Share your beta video
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  We’ll copy the caption, open Instagram, and let you paste the final link back into
-                  Boardsesh.
+                  We’ll copy the caption, open Instagram, and let you paste the final link back into Boardsesh.
                 </Typography>
               </Box>
               <InstagramIcon sx={{ color: 'primary.main', fontSize: 28, flexShrink: 0 }} />
             </Box>
 
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              <Chip
-                size="small"
-                label={getBoardDisplayName(item.boardType)}
-                color="primary"
-                variant="outlined"
-              />
+              <Chip size="small" label={getBoardDisplayName(item.boardType)} color="primary" variant="outlined" />
               <Chip size="small" label={`${item.angle}°`} variant="outlined" />
               <Chip
                 size="small"
@@ -303,8 +290,7 @@ export default function PostToInstagramDialog({ open, onClose, item }: PostToIns
               </Typography>
             </Box>
             <Typography variant="body2" color="text.secondary">
-              When your post is live, paste the reel or post link here so Boardsesh can show your
-              ascent video.
+              When your post is live, paste the reel or post link here so Boardsesh can show your ascent video.
             </Typography>
             <AttachBetaLinkForm
               boardType={item.boardType}

@@ -1,14 +1,6 @@
 'use client';
 
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  useMemo,
-  useDeferredValue,
-} from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState, useMemo, useDeferredValue } from 'react';
 import { track } from '@vercel/analytics';
 import MuiBadge from '@mui/material/Badge';
 import IconButton from '@mui/material/IconButton';
@@ -147,11 +139,7 @@ export const PlayViewActionBar = React.memo(function PlayViewActionBar({
         </IconButton>
       )}
       <IconButton onClick={onToggleFavorite}>
-        {isFavorited ? (
-          <Favorite sx={{ color: themeTokens.colors.error }} />
-        ) : (
-          <FavoriteBorderOutlined />
-        )}
+        {isFavorited ? <Favorite sx={{ color: themeTokens.colors.error }} /> : <FavoriteBorderOutlined />}
       </IconButton>
       <ShareBoardButton />
       {angleSelector}
@@ -254,17 +242,13 @@ export const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayVie
   }, [currentClimb.uuid, currentClimb, logbook]);
 
   return (
-    <div
-      className={`${styles.tickBarContainer} ${isTickBarActive ? styles.tickBarContainerActive : ''}`}
-    >
+    <div className={`${styles.tickBarContainer} ${isTickBarActive ? styles.tickBarContainerActive : ''}`}>
       <div
         className={styles.tickBarInner}
         style={{
           backgroundColor: isDark ? 'var(--semantic-surfaceElevated)' : 'var(--semantic-surface)',
           // Grade tint as a solid overlay via linear-gradient (single-color gradient)
-          ...(gradeTintColor
-            ? { backgroundImage: `linear-gradient(${gradeTintColor}, ${gradeTintColor})` }
-            : {}),
+          ...(gradeTintColor ? { backgroundImage: `linear-gradient(${gradeTintColor}, ${gradeTintColor})` } : {}),
         }}
       >
         {isTickBarActive && (
@@ -277,8 +261,7 @@ export const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayVie
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ')
-                    handleTickBarExpandedChange(!tickBarExpanded);
+                  if (e.key === 'Enter' || e.key === ' ') handleTickBarExpandedChange(!tickBarExpanded);
                 }}
                 aria-label={tickBarExpanded ? 'Collapse tick bar' : 'Expand tick bar'}
               >
@@ -287,9 +270,7 @@ export const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayVie
                 ) : (
                   <KeyboardArrowUpOutlined sx={{ fontSize: 16, opacity: 0.7 }} />
                 )}
-                <span className={styles.tickBarExpandLabel}>
-                  {tickBarExpanded ? 'Collapse' : 'Expand'}
-                </span>
+                <span className={styles.tickBarExpandLabel}>{tickBarExpanded ? 'Collapse' : 'Expand'}</span>
               </div>
               <div className={styles.tickBarCloseButton}>
                 <IconButton
@@ -319,9 +300,7 @@ export const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayVie
               comment={tickComment}
               expanded={tickBarExpanded}
               commentSlot={
-                <div
-                  className={`${styles.tickBarComment} ${commentFocused ? styles.tickBarCommentExpanded : ''}`}
-                >
+                <div className={`${styles.tickBarComment} ${commentFocused ? styles.tickBarCommentExpanded : ''}`}>
                   <TextField
                     fullWidth
                     size="small"
@@ -392,15 +371,11 @@ export const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayVie
                     id="button-tick"
                     onClick={(e) => quickTickBarRef.current?.save(e.currentTarget)}
                     sx={{
-                      backgroundColor: isFlash
-                        ? themeTokens.colors.amber
-                        : themeTokens.colors.success,
+                      backgroundColor: isFlash ? themeTokens.colors.amber : themeTokens.colors.success,
                       color: isFlash ? themeTokens.neutral[900] : 'common.white',
                       transition: 'background-color 150ms ease, color 150ms ease',
                       '&:hover': {
-                        backgroundColor: isFlash
-                          ? themeTokens.colors.amber
-                          : themeTokens.colors.successHover,
+                        backgroundColor: isFlash ? themeTokens.colors.amber : themeTokens.colors.successHover,
                       },
                     }}
                     aria-label="Save tick"
@@ -438,12 +413,7 @@ interface PlayViewDrawerProps {
   angle: Angle;
 }
 
-const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
-  activeDrawer,
-  setActiveDrawer,
-  boardDetails,
-  angle,
-}) => {
+const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({ activeDrawer, setActiveDrawer, boardDetails, angle }) => {
   const isOpen = activeDrawer === 'play';
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [isQueueOpen, setIsQueueOpen] = useState(false);
@@ -453,9 +423,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   const [isBoardZoomed, setIsBoardZoomed] = useState(false);
 
   useEffect(() => {
-    const scrollContainer = playPaperRef.current?.querySelector(
-      '[data-scroll-container]',
-    ) as HTMLElement | null;
+    const scrollContainer = playPaperRef.current?.querySelector('[data-scroll-container]') as HTMLElement | null;
     if (!scrollContainer) return;
     scrollContainer.style.overflowY = isBoardZoomed ? 'hidden' : '';
   }, [isBoardZoomed, isOpen]);
@@ -487,23 +455,16 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   const { currentClimb, currentClimbQueueItem } = isOpen ? currentClimbData : deferredCurrentClimb;
   const { queue } = isOpen ? queueListData : deferredQueue;
   const { viewOnlyMode } = isOpen ? sessionData : deferredSession;
-  const {
-    mirrorClimb,
-    getNextClimbQueueItem,
-    getPreviousClimbQueueItem,
-    setCurrentClimbQueueItem,
-  } = useQueueActions();
+  const { mirrorClimb, getNextClimbQueueItem, getPreviousClimbQueueItem, setCurrentClimbQueueItem } = useQueueActions();
 
-  const { handleDoubleTap, showHeart, dismissHeart, isFavorited, toggleFavorite } =
-    useDoubleTapFavorite({
-      climbUuid: currentClimb?.uuid ?? '',
-    });
+  const { handleDoubleTap, showHeart, dismissHeart, isFavorited, toggleFavorite } = useDoubleTapFavorite({
+    climbUuid: currentClimb?.uuid ?? '',
+  });
 
   const currentQueueIndex = currentClimbQueueItem
     ? queue.findIndex((item) => item.uuid === currentClimbQueueItem.uuid)
     : -1;
-  const remainingQueueCount =
-    currentQueueIndex >= 0 ? queue.length - currentQueueIndex : queue.length;
+  const remainingQueueCount = currentQueueIndex >= 0 ? queue.length - currentQueueIndex : queue.length;
 
   useWakeLock(isOpen);
 
@@ -539,9 +500,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
   const currentAngle = typeof angle === 'string' ? parseInt(angle, 10) : angle;
   const filteredLogbook = useMemo(() => {
     if (!logbook || !currentClimb) return [];
-    return logbook.filter(
-      (asc) => asc.climb_uuid === currentClimb.uuid && Number(asc.angle) === currentAngle,
-    );
+    return logbook.filter((asc) => asc.climb_uuid === currentClimb.uuid && Number(asc.angle) === currentAngle);
   }, [logbook, currentClimb, currentAngle]);
 
   const hasSuccessfulAscent = filteredLogbook.some((asc) => asc.is_ascent);
@@ -943,11 +902,7 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({
                 placement="bottom"
                 title={
                   currentClimb ? (
-                    <div
-                      data-swipe-blocked=""
-                      {...actionsDragHandlers}
-                      className={drawerCss.dragHeaderWrapper}
-                    >
+                    <div data-swipe-blocked="" {...actionsDragHandlers} className={drawerCss.dragHeaderWrapper}>
                       <DrawerClimbHeader climb={currentClimb} boardDetails={boardDetails} />
                     </div>
                   ) : undefined

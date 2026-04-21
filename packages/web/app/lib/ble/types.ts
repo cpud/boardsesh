@@ -16,9 +16,7 @@ export interface DiscoveredDevice {
  * live device list updates. Must resolve with a deviceId when the user
  * selects a device, or reject/throw to cancel.
  */
-export type DevicePickerFn = (
-  subscribe: (onUpdate: (devices: DiscoveredDevice[]) => void) => void,
-) => Promise<string>;
+export type DevicePickerFn = (subscribe: (onUpdate: (devices: DiscoveredDevice[]) => void) => void) => Promise<string>;
 
 export interface BluetoothAdapter {
   /** Check if BLE is available and enabled */

@@ -107,9 +107,7 @@ function makeClimbQueueItem(overrides: Partial<ClimbQueueItem> = {}): ClimbQueue
   };
 }
 
-function makeParsedParams(
-  overrides: Partial<ParsedBoardRouteParameters> = {},
-): ParsedBoardRouteParameters {
+function makeParsedParams(overrides: Partial<ParsedBoardRouteParameters> = {}): ParsedBoardRouteParameters {
   return {
     board_name: 'kilter',
     layout_id: 1,
@@ -120,9 +118,7 @@ function makeParsedParams(
   };
 }
 
-function makeSearchParams(
-  overrides: Partial<SearchRequestPagination> = {},
-): SearchRequestPagination {
+function makeSearchParams(overrides: Partial<SearchRequestPagination> = {}): SearchRequestPagination {
   return {
     gradeAccuracy: 1,
     maxGrade: 30,
@@ -214,9 +210,7 @@ function createTestWrapper() {
 
   const Wrapper = ({ children }: { children: React.ReactNode }) => {
     const [currentClimb, _setCurrentClimb] = useState<CurrentClimbDataType>(makeCurrentClimbData());
-    const [currentClimbUuid, _setCurrentClimbUuid] = useState<string | null>(
-      makeClimbQueueItem().uuid,
-    );
+    const [currentClimbUuid, _setCurrentClimbUuid] = useState<string | null>(makeClimbQueueItem().uuid);
     const [queueList, _setQueueList] = useState<QueueListDataType>(makeQueueListData());
     const [search, _setSearch] = useState<SearchDataType>(makeSearchData());
     const [session, _setSession] = useState<SessionDataType>(makeSessionData());
@@ -279,10 +273,7 @@ describe('Fine-grained context split isolation', () => {
 
     // Update queue list context -- should NOT trigger a re-render for useCurrentClimb
     update.queueList({
-      queue: [
-        makeClimbQueueItem({ uuid: 'new-item-1' }),
-        makeClimbQueueItem({ uuid: 'new-item-2' }),
-      ],
+      queue: [makeClimbQueueItem({ uuid: 'new-item-1' }), makeClimbQueueItem({ uuid: 'new-item-2' })],
     });
 
     expect(result.current.renderCount.current).toBe(initialRenderCount);
@@ -391,11 +382,7 @@ describe('Fine-grained context split isolation', () => {
     const initialRenderCount = result.current.renderCount.current;
 
     update.queueList({
-      queue: [
-        makeClimbQueueItem({ uuid: 'a' }),
-        makeClimbQueueItem({ uuid: 'b' }),
-        makeClimbQueueItem({ uuid: 'c' }),
-      ],
+      queue: [makeClimbQueueItem({ uuid: 'a' }), makeClimbQueueItem({ uuid: 'b' }), makeClimbQueueItem({ uuid: 'c' })],
     });
 
     expect(result.current.renderCount.current).toBeGreaterThan(initialRenderCount);
@@ -507,8 +494,7 @@ describe('Fine-grained context split isolation', () => {
     let setCurrentClimb: React.Dispatch<React.SetStateAction<CurrentClimbDataType>>;
 
     function TestTree({ children }: { children: React.ReactNode }) {
-      const [currentClimb, _setCurrentClimb] =
-        useState<CurrentClimbDataType>(makeCurrentClimbData());
+      const [currentClimb, _setCurrentClimb] = useState<CurrentClimbDataType>(makeCurrentClimbData());
       const [currentClimbUuid] = useState<string | null>('queue-item-1');
 
       setCurrentClimb = _setCurrentClimb;
@@ -637,8 +623,7 @@ describe('Fine-grained context split isolation', () => {
     let setSession: React.Dispatch<React.SetStateAction<SessionDataType>>;
 
     function TestTree() {
-      const [currentClimb, _setCurrentClimb] =
-        useState<CurrentClimbDataType>(makeCurrentClimbData());
+      const [currentClimb, _setCurrentClimb] = useState<CurrentClimbDataType>(makeCurrentClimbData());
       const [queueList, _setQueueList] = useState<QueueListDataType>(makeQueueListData());
       const [search, _setSearch] = useState<SearchDataType>(makeSearchData());
       const [session, _setSession] = useState<SessionDataType>(makeSessionData());

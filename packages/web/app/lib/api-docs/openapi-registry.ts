@@ -73,14 +73,8 @@ export const ClimbSchema = z
     litUpHoldsMap: LitUpHoldsMapSchema.describe('Map of holds to light up on the board'),
     mirrored: z.boolean().optional().describe('Whether the climb is displayed mirrored'),
     benchmark_difficulty: z.string().nullable().describe('Official benchmark difficulty if set'),
-    userAscents: z
-      .number()
-      .optional()
-      .describe('Number of times the current user has sent this climb'),
-    userAttempts: z
-      .number()
-      .optional()
-      .describe('Number of times the current user has attempted this climb'),
+    userAscents: z.number().optional().describe('Number of times the current user has sent this climb'),
+    userAttempts: z.number().optional().describe('Number of times the current user has attempted this climb'),
   })
   .openapi('Climb');
 

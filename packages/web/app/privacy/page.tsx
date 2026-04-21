@@ -42,74 +42,70 @@ export default function PrivacyPolicyPage() {
       <Divider sx={{ mb: 4 }} />
 
       <Paragraph>
-        Boardsesh is an open-source app for controlling climbing training boards (Kilter, Tension,
-        MoonBoard) over Bluetooth. This policy explains what data we collect, why, and what we do
-        with it.
+        Boardsesh is an open-source app for controlling climbing training boards (Kilter, Tension, MoonBoard) over
+        Bluetooth. This policy explains what data we collect, why, and what we do with it.
       </Paragraph>
       <Paragraph>
-        The short version: we collect only what we need to make the app work. We do not sell your
-        data, we do not run ads, and we do not use third-party tracking.
+        The short version: we collect only what we need to make the app work. We do not sell your data, we do not run
+        ads, and we do not use third-party tracking.
       </Paragraph>
 
       <Section title="What we collect">
         <Paragraph>
-          <strong>Account information.</strong> When you create an account, we store your email
-          address and username. Your email is used for authentication. Your username is displayed on
-          your profile and visible to other users in Party Mode sessions and social features.
+          <strong>Account information.</strong> When you create an account, we store your email address and username.
+          Your email is used for authentication. Your username is displayed on your profile and visible to other users
+          in Party Mode sessions and social features.
         </Paragraph>
         <Paragraph>
-          <strong>Climb activity.</strong> When you log a send or attempt, we store the climb
-          details, grade, date, and any notes you add. This powers your logbook and progression
-          tracking.
+          <strong>Climb activity.</strong> When you log a send or attempt, we store the climb details, grade, date, and
+          any notes you add. This powers your logbook and progression tracking.
         </Paragraph>
         <Paragraph>
-          <strong>Location.</strong> If you grant location permission, we use your approximate
-          location to help you discover nearby Party Mode sessions. We do not track your location in
-          the background or store location history.
+          <strong>Location.</strong> If you grant location permission, we use your approximate location to help you
+          discover nearby Party Mode sessions. We do not track your location in the background or store location
+          history.
         </Paragraph>
         <Paragraph>
-          <strong>Analytics.</strong> We use Vercel Analytics to collect anonymous page view and
-          performance data. This helps us understand which features are used and where the app is
-          slow. This data is not linked to your account.
+          <strong>Analytics.</strong> We use Vercel Analytics to collect anonymous page view and performance data. This
+          helps us understand which features are used and where the app is slow. This data is not linked to your
+          account.
         </Paragraph>
       </Section>
 
       <Section title="Bluetooth">
         <Paragraph>
-          Boardsesh uses Bluetooth Low Energy (BLE) to connect to your climbing board&apos;s LED
-          controller. The Bluetooth connection is used exclusively to send hold lighting commands to
-          the board. No personal data is transmitted over Bluetooth. The app does not read data from
-          the board beyond basic device identification during pairing.
+          Boardsesh uses Bluetooth Low Energy (BLE) to connect to your climbing board&apos;s LED controller. The
+          Bluetooth connection is used exclusively to send hold lighting commands to the board. No personal data is
+          transmitted over Bluetooth. The app does not read data from the board beyond basic device identification
+          during pairing.
         </Paragraph>
       </Section>
 
       <Section title="Location data">
         <Paragraph>
-          Location access is optional. When granted, it is used for one purpose: making your Party
-          Mode session discoverable to nearby climbers. Your location is shared with the server only
-          while a Party Mode session is active. We do not store your location history, build a
-          location profile, or share location data with anyone outside of the party session
-          discovery feature.
+          Location access is optional. When granted, it is used for one purpose: making your Party Mode session
+          discoverable to nearby climbers. Your location is shared with the server only while a Party Mode session is
+          active. We do not store your location history, build a location profile, or share location data with anyone
+          outside of the party session discovery feature.
         </Paragraph>
         <Paragraph>
-          You can revoke location permission at any time in your device settings. The app works
-          fully without it.
+          You can revoke location permission at any time in your device settings. The app works fully without it.
         </Paragraph>
       </Section>
 
       <Section title="Third-party services">
         <Paragraph>
-          <strong>Vercel.</strong> We use Vercel for hosting and analytics. Vercel processes
-          requests to serve the app and collects anonymous usage metrics. See{' '}
+          <strong>Vercel.</strong> We use Vercel for hosting and analytics. Vercel processes requests to serve the app
+          and collects anonymous usage metrics. See{' '}
           <Link href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener">
             Vercel&apos;s privacy policy
           </Link>
           .
         </Paragraph>
         <Paragraph>
-          <strong>Aurora Climbing API.</strong> If you link your Aurora Climbing account (used by
-          Kilter and Tension boards), we sync your climb data with Aurora&apos;s servers so your
-          logbook stays consistent across apps. This sync only happens when you initiate it. See{' '}
+          <strong>Aurora Climbing API.</strong> If you link your Aurora Climbing account (used by Kilter and Tension
+          boards), we sync your climb data with Aurora&apos;s servers so your logbook stays consistent across apps. This
+          sync only happens when you initiate it. See{' '}
           <Link href="https://auroraclimbing.com" target="_blank" rel="noopener">
             Aurora Climbing
           </Link>{' '}
@@ -119,33 +115,30 @@ export default function PrivacyPolicyPage() {
 
       <Section title="Data sharing">
         <Paragraph>
-          We do not sell your data. We do not run ads. We do not share your information with
-          third-party marketers or data brokers. The only data shared externally is what is
-          described above (Vercel hosting/analytics, Aurora Climbing sync when you opt in).
+          We do not sell your data. We do not run ads. We do not share your information with third-party marketers or
+          data brokers. The only data shared externally is what is described above (Vercel hosting/analytics, Aurora
+          Climbing sync when you opt in).
         </Paragraph>
         <Paragraph>
-          Other Boardsesh users can see your username, profile, and logged climbs if you participate
-          in social features like Party Mode. This is visible in the app and is part of how the
-          product works.
+          Other Boardsesh users can see your username, profile, and logged climbs if you participate in social features
+          like Party Mode. This is visible in the app and is part of how the product works.
         </Paragraph>
       </Section>
 
       <Section title="Data retention">
         <Paragraph>
-          We keep your account data and climb history for as long as your account is active. If you
-          stop using Boardsesh, your data stays until you delete your account.
+          We keep your account data and climb history for as long as your account is active. If you stop using
+          Boardsesh, your data stays until you delete your account.
         </Paragraph>
       </Section>
 
       <Section title="Account deletion">
         <Paragraph>
-          You can delete your account and all associated data at any time. There are two ways to do
-          it:
+          You can delete your account and all associated data at any time. There are two ways to do it:
         </Paragraph>
         <Paragraph>
-          <strong>In the app:</strong> Go to <strong>Settings</strong>, scroll to the bottom, and
-          tap <strong>Delete Account</strong>. You will be asked to confirm before anything is
-          removed.
+          <strong>In the app:</strong> Go to <strong>Settings</strong>, scroll to the bottom, and tap{' '}
+          <strong>Delete Account</strong>. You will be asked to confirm before anything is removed.
         </Paragraph>
         <Paragraph>
           <strong>On the web:</strong> Log in at{' '}
@@ -155,24 +148,22 @@ export default function PrivacyPolicyPage() {
           and scroll to the bottom of the page to find the same Delete Account button.
         </Paragraph>
         <Paragraph>
-          Deletion is immediate and permanent. Once confirmed, we remove your email address,
-          username, logbook entries, queue data, and party session history from our servers. This
-          cannot be undone.
+          Deletion is immediate and permanent. Once confirmed, we remove your email address, username, logbook entries,
+          queue data, and party session history from our servers. This cannot be undone.
         </Paragraph>
       </Section>
 
       <Section title="Children">
         <Paragraph>
-          Boardsesh is not directed at children under 13. We do not knowingly collect personal
-          information from children under 13. If you believe a child under 13 has created an
-          account, contact us and we will delete it.
+          Boardsesh is not directed at children under 13. We do not knowingly collect personal information from children
+          under 13. If you believe a child under 13 has created an account, contact us and we will delete it.
         </Paragraph>
       </Section>
 
       <Section title="Changes to this policy">
         <Paragraph>
-          If we change this privacy policy, we will update this page with the new text and the
-          &quot;last updated&quot; date. For significant changes, we may also notify you in the app.
+          If we change this privacy policy, we will update this page with the new text and the &quot;last updated&quot;
+          date. For significant changes, we may also notify you in the app.
         </Paragraph>
       </Section>
 
@@ -182,8 +173,8 @@ export default function PrivacyPolicyPage() {
           <Link href="mailto:support@boardsesh.com">support@boardsesh.com</Link>.
         </Paragraph>
         <Paragraph>
-          Boardsesh is open source. You can see exactly what data the app collects and how it is
-          processed by reading the source code on{' '}
+          Boardsesh is open source. You can see exactly what data the app collects and how it is processed by reading
+          the source code on{' '}
           <Link href="https://github.com/boardsesh/boardsesh" target="_blank" rel="noopener">
             GitHub
           </Link>

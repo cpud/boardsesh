@@ -1,17 +1,7 @@
 import type { UserBoard } from '@boardsesh/shared-schema';
 import { BoardName, BoardDetails, Climb } from './types';
-import {
-  getSizesForLayoutId,
-  getSetsForLayoutAndSize,
-  getBoardDetails,
-  LAYOUTS,
-} from './board-constants';
-import {
-  getMoonBoardDetails,
-  MOONBOARD_LAYOUTS,
-  MOONBOARD_SETS,
-  MoonBoardLayoutKey,
-} from './moonboard-config';
+import { getSizesForLayoutId, getSetsForLayoutAndSize, getBoardDetails, LAYOUTS } from './board-constants';
+import { getMoonBoardDetails, MOONBOARD_LAYOUTS, MOONBOARD_SETS, MoonBoardLayoutKey } from './moonboard-config';
 import { canAddClimbToBoard } from './board-compatibility';
 
 /**
@@ -61,9 +51,7 @@ export function getBoardDetailsForPlaylist(
 function getMoonBoardDetailsForPlaylist(layoutId: number | null | undefined): BoardDetails | null {
   const effectiveLayoutId = layoutId ?? MOONBOARD_LAYOUTS['moonboard-2024'].id;
 
-  const layoutEntry = Object.entries(MOONBOARD_LAYOUTS).find(
-    ([, layout]) => layout.id === effectiveLayoutId,
-  );
+  const layoutEntry = Object.entries(MOONBOARD_LAYOUTS).find(([, layout]) => layout.id === effectiveLayoutId);
   if (!layoutEntry) return null;
 
   const [layoutKey] = layoutEntry;
@@ -197,10 +185,7 @@ export function resolveBoardDetailsForClimb(
     climbLayoutId == null ||
     climbLayoutId !== sessionBoard.layoutId
   ) {
-    const details = getBoardDetailsForPlaylist(
-      climbBoardType ?? sessionBoard.boardType,
-      climbLayoutId,
-    );
+    const details = getBoardDetailsForPlaylist(climbBoardType ?? sessionBoard.boardType, climbLayoutId);
     return details ? { details, status: 'incompatible' } : null;
   }
 
@@ -225,8 +210,7 @@ export function resolveBoardDetailsForClimb(
   // through as "upsized" candidates.
   if (sessionBoard.boardType !== 'moonboard' && exactDetails) {
     const sessionArea =
-      (exactDetails.edge_right - exactDetails.edge_left) *
-      (exactDetails.edge_top - exactDetails.edge_bottom);
+      (exactDetails.edge_right - exactDetails.edge_left) * (exactDetails.edge_top - exactDetails.edge_bottom);
 
     const candidates = getSizesForLayoutId(sessionBoard.boardType, sessionBoard.layoutId)
       .filter((size) => size.id !== sessionBoard.sizeId)
@@ -238,26 +222,16 @@ export function resolveBoardDetailsForClimb(
       .sort((a, b) => a.area - b.area);
 
     for (const { size } of candidates) {
-      const availableSets = getSetsForLayoutAndSize(
-        sessionBoard.boardType,
-        sessionBoard.layoutId,
-        size.id,
-      );
+      const availableSets = getSetsForLayoutAndSize(sessionBoard.boardType, sessionBoard.layoutId, size.id);
       if (availableSets.length === 0) continue;
 
       const availableSetIds = new Set(availableSets.map((s) => s.id));
       const preferredSetIds = sessionBoard.setIds.filter((id) => availableSetIds.has(id));
       // If the user's session sets don't exist on this size, use every set the
       // size publishes so the climb's holds stand a chance of rendering.
-      const setIdsToTry =
-        preferredSetIds.length > 0 ? preferredSetIds : availableSets.map((s) => s.id);
+      const setIdsToTry = preferredSetIds.length > 0 ? preferredSetIds : availableSets.map((s) => s.id);
 
-      const candidateDetails = buildDetailsSafely(
-        sessionBoard.boardType,
-        sessionBoard.layoutId,
-        size.id,
-        setIdsToTry,
-      );
+      const candidateDetails = buildDetailsSafely(sessionBoard.boardType, sessionBoard.layoutId, size.id, setIdsToTry);
       if (!candidateDetails) continue;
 
       const fit = canAddClimbToBoard(climb, candidateDetails);

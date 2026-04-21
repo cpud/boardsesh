@@ -109,8 +109,7 @@ program
         console.log('No credentials found.');
       } else {
         credentials.forEach((cred) => {
-          const status =
-            cred.syncStatus === 'active' ? '✓' : cred.syncStatus === 'error' ? '✗' : '○';
+          const status = cred.syncStatus === 'active' ? '✓' : cred.syncStatus === 'error' ? '✗' : '○';
           const lastSync = cred.lastSyncAt ? new Date(cred.lastSyncAt).toISOString() : 'never';
           console.log(`${status} ${cred.userId} (${cred.boardType})`);
           console.log(`    Aurora ID: ${cred.auroraUserId}`);

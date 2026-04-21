@@ -5,12 +5,7 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import type { NeonDatabase } from 'drizzle-orm/neon-serverless';
 import type { Pool } from '@neondatabase/serverless';
 import { UNIFIED_TABLES } from '../db/table-select';
-import {
-  boardseshTicks,
-  playlists,
-  playlistClimbs,
-  playlistOwnership,
-} from '@boardsesh/db/schema/app';
+import { boardseshTicks, playlists, playlistClimbs, playlistOwnership } from '@boardsesh/db/schema/app';
 import { randomUUID } from 'crypto';
 import { convertQuality } from './convert-quality';
 
@@ -178,10 +173,7 @@ async function upsertTableData(
             climbUuid: item.climb_uuid,
             angle: Number(item.angle),
             isMirror: Boolean(item.is_mirror),
-            status: (Number(item.attempt_id) === 1 ? 'flash' : 'send') as
-              | 'flash'
-              | 'send'
-              | 'attempt',
+            status: (Number(item.attempt_id) === 1 ? 'flash' : 'send') as 'flash' | 'send' | 'attempt',
             attemptCount: Number(item.bid_count || 1),
             quality: convertQuality(item.quality ? Number(item.quality) : null),
             difficulty: item.difficulty ? Number(item.difficulty) : null,
@@ -450,12 +442,7 @@ async function updateUserSyncs(
   }
 }
 
-export async function getLastSyncTimes(
-  pool: Pool,
-  boardName: AuroraBoardName,
-  userId: number,
-  tableNames: string[],
-) {
+export async function getLastSyncTimes(pool: Pool, boardName: AuroraBoardName, userId: number, tableNames: string[]) {
   const userSyncsSchema = UNIFIED_TABLES.userSyncs;
   const client = await pool.connect();
 
@@ -478,11 +465,7 @@ export async function getLastSyncTimes(
   }
 }
 
-export async function getLastSharedSyncTimes(
-  pool: Pool,
-  boardName: AuroraBoardName,
-  tableNames: string[],
-) {
+export async function getLastSharedSyncTimes(pool: Pool, boardName: AuroraBoardName, tableNames: string[]) {
   const sharedSyncsSchema = UNIFIED_TABLES.sharedSyncs;
   const client = await pool.connect();
 
@@ -491,12 +474,7 @@ export async function getLastSharedSyncTimes(
     const result = await db
       .select()
       .from(sharedSyncsSchema)
-      .where(
-        and(
-          eq(sharedSyncsSchema.boardType, boardName),
-          inArray(sharedSyncsSchema.tableName, tableNames),
-        ),
-      );
+      .where(and(eq(sharedSyncsSchema.boardType, boardName), inArray(sharedSyncsSchema.tableName, tableNames)));
 
     return result;
   } finally {
@@ -532,9 +510,7 @@ export async function syncUserData(
     const allSyncTimes = await getLastSyncTimes(pool, board, auroraUserId, tables);
 
     // Create a map of existing sync times
-    const userSyncMap = new Map(
-      allSyncTimes.map((sync) => [sync.tableName, sync.lastSynchronizedAt]),
-    );
+    const userSyncMap = new Map(allSyncTimes.map((sync) => [sync.tableName, sync.lastSynchronizedAt]));
 
     // Ensure all user tables have a sync entry (default to 1970 if not synced)
     const defaultTimestamp = '1970-01-01 00:00:00.000000';
@@ -576,15 +552,7 @@ export async function syncUserData(
           if (syncResults[tableName] && Array.isArray(syncResults[tableName])) {
             const data = syncResults[tableName];
 
-            const upsertResult = await upsertTableData(
-              tx,
-              board,
-              tableName,
-              auroraUserId,
-              nextAuthUserId,
-              data,
-              log,
-            );
+            const upsertResult = await upsertTableData(tx, board, tableName, auroraUserId, nextAuthUserId, data, log);
 
             // Accumulate results
             if (!totalResults[tableName]) {
@@ -592,8 +560,7 @@ export async function syncUserData(
             }
             totalResults[tableName].synced += upsertResult.synced;
             if (upsertResult.skipped > 0) {
-              totalResults[tableName].skipped =
-                (totalResults[tableName].skipped || 0) + upsertResult.skipped;
+              totalResults[tableName].skipped = (totalResults[tableName].skipped || 0) + upsertResult.skipped;
               totalResults[tableName].skippedReason = upsertResult.skippedReason;
             }
           } else if (!totalResults[tableName]) {

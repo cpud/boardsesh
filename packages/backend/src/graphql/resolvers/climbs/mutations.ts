@@ -1,10 +1,6 @@
 import crypto from 'crypto';
 import { and, eq, sql } from 'drizzle-orm';
-import type {
-  ConnectionContext,
-  SaveClimbResult,
-  UpdateClimbResult,
-} from '@boardsesh/shared-schema';
+import type { ConnectionContext, SaveClimbResult, UpdateClimbResult } from '@boardsesh/shared-schema';
 import { SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
@@ -51,10 +47,7 @@ async function getUserProfile(userId: string) {
   };
 }
 
-async function resolveDifficultyId(
-  boardType: string,
-  grade?: string | null,
-): Promise<number | null> {
+async function resolveDifficultyId(boardType: string, grade?: string | null): Promise<number | null> {
   if (!grade) return null;
   const fontPart = grade.split('/')[0].trim().toLowerCase();
 
@@ -77,11 +70,7 @@ export const climbMutations = {
    * Save a new climb for Aurora-style boards (kilter/tension) via GraphQL.
    * Persists to the unified board_climbs table and publishes a climb.created event.
    */
-  saveClimb: async (
-    _: unknown,
-    { input }: SaveClimbArgs,
-    ctx: ConnectionContext,
-  ): Promise<SaveClimbResult> => {
+  saveClimb: async (_: unknown, { input }: SaveClimbArgs, ctx: ConnectionContext): Promise<SaveClimbResult> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 10);
 
@@ -89,9 +78,7 @@ export const climbMutations = {
     const isListed = !validated.isDraft;
 
     if (!isValidBoardName(validated.boardType)) {
-      throw new Error(
-        `Invalid board type: ${validated.boardType}. Must be one of ${SUPPORTED_BOARDS.join(', ')}`,
-      );
+      throw new Error(`Invalid board type: ${validated.boardType}. Must be one of ${SUPPORTED_BOARDS.join(', ')}`);
     }
 
     const now = new Date().toISOString();
@@ -172,11 +159,7 @@ export const climbMutations = {
     const { displayName, name, avatarUrl } = await getUserProfile(ctx.userId!);
     const preferredSetter = validated.setter || displayName || name || null;
 
-    const duplicateMatch = await findMoonBoardDuplicateMatch(
-      validated.layoutId,
-      validated.angle,
-      validated.holds,
-    );
+    const duplicateMatch = await findMoonBoardDuplicateMatch(validated.layoutId, validated.angle, validated.holds);
     if (duplicateMatch) {
       throw new Error(buildMoonBoardDuplicateError(duplicateMatch.existingClimbName));
     }
@@ -281,9 +264,7 @@ export const climbMutations = {
     const validated = validateInput(UpdateClimbInputSchema, input, 'input');
 
     if (!isValidBoardName(validated.boardType)) {
-      throw new Error(
-        `Invalid board type: ${validated.boardType}. Must be one of ${SUPPORTED_BOARDS.join(', ')}`,
-      );
+      throw new Error(`Invalid board type: ${validated.boardType}. Must be one of ${SUPPORTED_BOARDS.join(', ')}`);
     }
 
     // Load the existing row and verify ownership + edit window.
@@ -297,10 +278,7 @@ export const climbMutations = {
       })
       .from(dbSchema.boardClimbs)
       .where(
-        and(
-          eq(dbSchema.boardClimbs.uuid, validated.uuid),
-          eq(dbSchema.boardClimbs.boardType, validated.boardType),
-        ),
+        and(eq(dbSchema.boardClimbs.uuid, validated.uuid), eq(dbSchema.boardClimbs.boardType, validated.boardType)),
       )
       .limit(1);
 
@@ -356,10 +334,7 @@ export const climbMutations = {
       .update(dbSchema.boardClimbs)
       .set(updateSet)
       .where(
-        and(
-          eq(dbSchema.boardClimbs.uuid, validated.uuid),
-          eq(dbSchema.boardClimbs.boardType, validated.boardType),
-        ),
+        and(eq(dbSchema.boardClimbs.uuid, validated.uuid), eq(dbSchema.boardClimbs.boardType, validated.boardType)),
       );
 
     // If frames changed we need to refresh the denormalized edge/set columns

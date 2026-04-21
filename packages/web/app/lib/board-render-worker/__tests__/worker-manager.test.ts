@@ -184,9 +184,7 @@ const mockBoardDetails = {
 // Helpers to find render messages in fake workers
 // ---------------------------------------------------------------------------
 
-function isRenderMessage(
-  msg: unknown,
-): msg is Record<string, unknown> & { id: number; frames: string } {
+function isRenderMessage(msg: unknown): msg is Record<string, unknown> & { id: number; frames: string } {
   const m = msg as Record<string, unknown>;
   return typeof m.id === 'number' && 'frames' in m;
 }
@@ -413,19 +411,13 @@ describe('renderBoard', () => {
     expect(firstResult).toBe(fakeBitmap);
 
     // Second call — should resolve immediately from cache without posting a new message
-    const postMessageCallCountBefore = fakeWorkerInstances.reduce(
-      (sum, w) => sum + w.postMessage.mock.calls.length,
-      0,
-    );
+    const postMessageCallCountBefore = fakeWorkerInstances.reduce((sum, w) => sum + w.postMessage.mock.calls.length, 0);
 
     const secondResult = await renderBoard(options);
     expect(secondResult).toBe(fakeBitmap);
 
     // No additional postMessage calls should have occurred (cache hit)
-    const postMessageCallCountAfter = fakeWorkerInstances.reduce(
-      (sum, w) => sum + w.postMessage.mock.calls.length,
-      0,
-    );
+    const postMessageCallCountAfter = fakeWorkerInstances.reduce((sum, w) => sum + w.postMessage.mock.calls.length, 0);
     expect(postMessageCallCountAfter).toBe(postMessageCallCountBefore);
   });
 
@@ -523,8 +515,7 @@ describe('renderBoard', () => {
     // Resolve both to clean up
     await vi.waitFor(() => {
       const renderMsgCount = fakeWorkerInstances.reduce(
-        (count, w) =>
-          count + w.postMessage.mock.calls.filter((call) => isRenderMessage(call[0])).length,
+        (count, w) => count + w.postMessage.mock.calls.filter((call) => isRenderMessage(call[0])).length,
         0,
       );
       expect(renderMsgCount).toBeGreaterThanOrEqual(2);
@@ -560,8 +551,7 @@ describe('renderBoard', () => {
     // Resolve both to clean up
     await vi.waitFor(() => {
       const renderMsgCount = fakeWorkerInstances.reduce(
-        (count, w) =>
-          count + w.postMessage.mock.calls.filter((call) => isRenderMessage(call[0])).length,
+        (count, w) => count + w.postMessage.mock.calls.filter((call) => isRenderMessage(call[0])).length,
         0,
       );
       expect(renderMsgCount).toBeGreaterThanOrEqual(2);

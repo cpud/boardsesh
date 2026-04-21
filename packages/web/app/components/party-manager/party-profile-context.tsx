@@ -2,12 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
-import {
-  PartyProfile,
-  getPartyProfile,
-  clearPartyProfile,
-  ensurePartyProfile,
-} from '@/app/lib/party-profile-db';
+import { PartyProfile, getPartyProfile, clearPartyProfile, ensurePartyProfile } from '@/app/lib/party-profile-db';
 
 interface UserProfileData {
   displayName: string | null;
@@ -149,16 +144,7 @@ export const PartyProfileProvider: React.FC<{ children: React.ReactNode }> = ({ 
       clearProfile: clearProfileHandler,
       refreshProfile,
     }),
-    [
-      profile,
-      isLoading,
-      hasProfile,
-      username,
-      avatarUrl,
-      isAuthenticated,
-      clearProfileHandler,
-      refreshProfile,
-    ],
+    [profile, isLoading, hasProfile, username, avatarUrl, isAuthenticated, clearProfileHandler, refreshProfile],
   );
 
   return <PartyProfileContext.Provider value={value}>{children}</PartyProfileContext.Provider>;

@@ -25,20 +25,8 @@ const ClimbCardTitleSkeleton = () => (
   <Box sx={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
     {/* Left side: Name and info stacked */}
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: 0 }}>
-      <MuiSkeleton
-        variant="rounded"
-        width="60%"
-        height={24}
-        sx={{ minWidth: 80 }}
-        animation="wave"
-      />
-      <MuiSkeleton
-        variant="rounded"
-        width="80%"
-        height={14}
-        sx={{ minWidth: 100 }}
-        animation="wave"
-      />
+      <MuiSkeleton variant="rounded" width="60%" height={24} sx={{ minWidth: 80 }} animation="wave" />
+      <MuiSkeleton variant="rounded" width="80%" height={14} sx={{ minWidth: 100 }} animation="wave" />
     </Box>
     {/* Right side: V grade placeholder */}
     <MuiSkeleton variant="rounded" width={32} height={32} animation="wave" />
@@ -70,10 +58,7 @@ const ClimbCardSkeleton = ({ aspectRatio }: { aspectRatio?: number }) => (
       backgroundColor: 'var(--semantic-surface)',
     }}
   >
-    <CardHeader
-      title={<ClimbCardTitleSkeleton />}
-      sx={{ paddingTop: '8px', paddingBottom: '6px' }}
-    />
+    <CardHeader title={<ClimbCardTitleSkeleton />} sx={{ paddingTop: '8px', paddingBottom: '6px' }} />
     <CardContent sx={{ p: '6px', display: 'flex', justifyContent: 'center' }}>
       <BoardRendererSkeleton aspectRatio={aspectRatio} />
     </CardContent>
@@ -107,26 +92,12 @@ const ClimbListItemSkeleton = () => (
 
     {/* Center: Name and setter lines */}
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: 0 }}>
-      <MuiSkeleton
-        variant="rounded"
-        width="55%"
-        height={16}
-        sx={{ minWidth: 80 }}
-        animation="wave"
-      />
-      <MuiSkeleton
-        variant="rounded"
-        width="35%"
-        height={12}
-        sx={{ minWidth: 60 }}
-        animation="wave"
-      />
+      <MuiSkeleton variant="rounded" width="55%" height={16} sx={{ minWidth: 80 }} animation="wave" />
+      <MuiSkeleton variant="rounded" width="35%" height={12} sx={{ minWidth: 60 }} animation="wave" />
     </Box>
 
     {/* Right: Ascent + Grade placeholder - matches ClimbListItem flex container */}
-    <div
-      style={{ display: 'flex', alignItems: 'center', gap: themeTokens.spacing[1], flexShrink: 0 }}
-    >
+    <div style={{ display: 'flex', alignItems: 'center', gap: themeTokens.spacing[1], flexShrink: 0 }}>
       <MuiSkeleton variant="rounded" width={24} height={24} animation="wave" />
     </div>
 

@@ -37,12 +37,7 @@ export const socialProposalMutations = {
     }
 
     // Check not frozen
-    const frozenSetting = await resolveCommunitySetting(
-      'climb_frozen',
-      climbUuid,
-      angle,
-      boardType,
-    );
+    const frozenSetting = await resolveCommunitySetting('climb_frozen', climbUuid, angle, boardType);
     if (frozenSetting === 'true') {
       throw new Error('This climb is frozen and cannot receive new proposals');
     }
@@ -76,8 +71,7 @@ export const socialProposalMutations = {
               AND cs.board_type = ${boardType}
             LIMIT 1
           `);
-          const rows = (result as unknown as { rows: Array<{ difficulty_id: number | null }> })
-            .rows;
+          const rows = (result as unknown as { rows: Array<{ difficulty_id: number | null }> }).rows;
           currentValue = getGradeLabel(rows[0]?.difficulty_id ?? null) || 'Unknown';
         } catch {
           currentValue = 'Unknown';
@@ -162,12 +156,7 @@ export const socialProposalMutations = {
       const [approved] = await db
         .update(dbSchema.climbProposals)
         .set({ status: 'approved', resolvedAt: new Date() })
-        .where(
-          and(
-            eq(dbSchema.climbProposals.id, proposal.id),
-            eq(dbSchema.climbProposals.status, 'open'),
-          ),
-        )
+        .where(and(eq(dbSchema.climbProposals.id, proposal.id), eq(dbSchema.climbProposals.status, 'open')))
         .returning();
 
       if (approved) {
@@ -229,20 +218,13 @@ export const socialProposalMutations = {
     const [existingVote] = await db
       .select()
       .from(dbSchema.proposalVotes)
-      .where(
-        and(
-          eq(dbSchema.proposalVotes.proposalId, proposal.id),
-          eq(dbSchema.proposalVotes.userId, userId),
-        ),
-      )
+      .where(and(eq(dbSchema.proposalVotes.proposalId, proposal.id), eq(dbSchema.proposalVotes.userId, userId)))
       .limit(1);
 
     if (existingVote) {
       if (existingVote.value === value) {
         // Toggle off
-        await db
-          .delete(dbSchema.proposalVotes)
-          .where(eq(dbSchema.proposalVotes.id, existingVote.id));
+        await db.delete(dbSchema.proposalVotes).where(eq(dbSchema.proposalVotes.id, existingVote.id));
       } else {
         // Change direction
         await db
@@ -251,28 +233,16 @@ export const socialProposalMutations = {
           .where(eq(dbSchema.proposalVotes.id, existingVote.id));
       }
     } else {
-      await db
-        .insert(dbSchema.proposalVotes)
-        .values({ proposalId: proposal.id, userId, value, weight });
+      await db.insert(dbSchema.proposalVotes).values({ proposalId: proposal.id, userId, value, weight });
     }
 
     // Check auto-approval (atomic: only transition if still 'open')
-    const shouldApprove = await checkAutoApproval(
-      proposal.id,
-      proposal.boardType,
-      proposal.climbUuid,
-      proposal.angle,
-    );
+    const shouldApprove = await checkAutoApproval(proposal.id, proposal.boardType, proposal.climbUuid, proposal.angle);
     if (shouldApprove) {
       const [approved] = await db
         .update(dbSchema.climbProposals)
         .set({ status: 'approved', resolvedAt: new Date() })
-        .where(
-          and(
-            eq(dbSchema.climbProposals.id, proposal.id),
-            eq(dbSchema.climbProposals.status, 'open'),
-          ),
-        )
+        .where(and(eq(dbSchema.climbProposals.id, proposal.id), eq(dbSchema.climbProposals.status, 'open')))
         .returning();
 
       if (approved) {

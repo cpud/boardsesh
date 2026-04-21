@@ -89,20 +89,7 @@ function groupByAngleAndMonth(
 
 function formatMonthLabel(yyyymm: string): string {
   const [year, month] = yyyymm.split('-');
-  const monthNames = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   return `${monthNames[parseInt(month, 10) - 1]} ${year.slice(2)}`;
 }
 
@@ -167,9 +154,7 @@ export default function ClimbAnalytics({ climbUuid, boardType }: ClimbAnalyticsP
         });
         if (!cancelled) {
           setRows(data.climbStatsHistory);
-          const angles = new Set(
-            data.climbStatsHistory.map((r: ClimbStatsHistoryEntry) => r.angle),
-          );
+          const angles = new Set(data.climbStatsHistory.map((r: ClimbStatsHistoryEntry) => r.angle));
           setSelectedAngles(angles);
         }
       } catch {
@@ -259,11 +244,7 @@ export default function ClimbAnalytics({ climbUuid, boardType }: ClimbAnalyticsP
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <AngleFilter
-        angles={allAngles}
-        selected={selectedAngles ?? new Set()}
-        onToggle={handleToggleAngle}
-      />
+      <AngleFilter angles={allAngles} selected={selectedAngles ?? new Set()} onToggle={handleToggleAngle} />
 
       {ascentsData && ascentsData.labels.length > 0 && (
         <Box>

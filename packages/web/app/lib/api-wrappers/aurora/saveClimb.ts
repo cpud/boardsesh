@@ -18,10 +18,7 @@ export interface SaveClimbResponse {
   synced: boolean;
 }
 
-export async function saveClimb(
-  board: BoardName,
-  options: SaveClimbOptions,
-): Promise<SaveClimbResponse> {
+export async function saveClimb(board: BoardName, options: SaveClimbOptions): Promise<SaveClimbResponse> {
   const uuid = generateUuid();
   const createdAt = dayjs().format('YYYY-MM-DD HH:mm:ss');
   const isListed = !options.is_draft;
@@ -90,10 +87,7 @@ export interface SaveClimbStatsOptions {
   benchmarkDifficulty?: number | null;
 }
 
-export async function saveClimbStats(
-  board: BoardName,
-  options: SaveClimbStatsOptions,
-): Promise<void> {
+export async function saveClimbStats(board: BoardName, options: SaveClimbStatsOptions): Promise<void> {
   await dbz
     .insert(boardClimbStats)
     .values({

@@ -150,12 +150,11 @@ function ApiKeySuccessModal({ isOpen, apiKey, controllerName, onClose }: ApiKeyS
       <DialogContent>
         <MuiAlert severity="warning" icon={<WarningOutlined />} sx={{ marginBottom: 2 }}>
           <AlertTitle>Save this API key now!</AlertTitle>
-          This is the only time you'll see this key. If you lose it, you'll need to delete and
-          re-register the controller.
+          This is the only time you'll see this key. If you lose it, you'll need to delete and re-register the
+          controller.
         </MuiAlert>
         <Typography variant="body1" component="p">
-          Your controller <strong>{controllerName || 'Unnamed Controller'}</strong> has been
-          registered.
+          Your controller <strong>{controllerName || 'Unnamed Controller'}</strong> has been registered.
         </Typography>
         <Typography variant="body1" component="p" color="text.secondary">
           Enter this API key in your ESP32 configuration:
@@ -170,12 +169,7 @@ function ApiKeySuccessModal({ isOpen, apiKey, controllerName, onClose }: ApiKeyS
           slotProps={{ input: { readOnly: true, style: { fontFamily: 'monospace' } } }}
           sx={{ marginBottom: 1 }}
         />
-        <Button
-          variant="outlined"
-          startIcon={<ContentCopyOutlined />}
-          onClick={handleCopy}
-          fullWidth
-        >
+        <Button variant="outlined" startIcon={<ContentCopyOutlined />} onClick={handleCopy} fullWidth>
           Copy API Key
         </Button>
       </DialogContent>
@@ -211,9 +205,7 @@ export default function ControllersSection() {
 
   const sizes = useMemo(
     () =>
-      selectedBoard && selectedLayout
-        ? boardSelectorOptions.sizes[`${selectedBoard}-${selectedLayout}`] || []
-        : [],
+      selectedBoard && selectedLayout ? boardSelectorOptions.sizes[`${selectedBoard}-${selectedLayout}`] || [] : [],
     [selectedBoard, selectedLayout],
   );
 
@@ -331,10 +323,7 @@ export default function ControllersSection() {
 
       await fetchControllers();
     } catch (error) {
-      showMessage(
-        error instanceof Error ? error.message : 'Failed to register controller',
-        'error',
-      );
+      showMessage(error instanceof Error ? error.message : 'Failed to register controller', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -385,14 +374,9 @@ export default function ControllersSection() {
       <Card>
         <CardContent>
           <Typography variant="h5">ESP32 Controllers</Typography>
-          <Typography
-            variant="body2"
-            component="span"
-            color="text.secondary"
-            className={styles.sectionDescription}
-          >
-            Register ESP32 devices to control your board via Bluetooth bridge. This allows you to
-            use BoardSesh with official Kilter/Tension apps.
+          <Typography variant="body2" component="span" color="text.secondary" className={styles.sectionDescription}>
+            Register ESP32 devices to control your board via Bluetooth bridge. This allows you to use BoardSesh with
+            official Kilter/Tension apps.
           </Typography>
 
           {controllers.length === 0 ? (
@@ -429,21 +413,15 @@ export default function ControllersSection() {
       <Dialog open={isModalOpen} onClose={handleModalCancel} maxWidth="sm" fullWidth>
         <DialogTitle>Register ESP32 Controller</DialogTitle>
         <DialogContent>
-          <Typography
-            variant="body2"
-            component="span"
-            color="text.secondary"
-            className={styles.modalDescription}
-          >
-            Register a new ESP32 controller to receive LED commands from BoardSesh. You'll receive
-            an API key to configure on the device.
+          <Typography variant="body2" component="span" color="text.secondary" className={styles.modalDescription}>
+            Register a new ESP32 controller to receive LED commands from BoardSesh. You'll receive an API key to
+            configure on the device.
           </Typography>
           <Box
             component="form"
             onSubmit={(e: React.FormEvent) => {
               e.preventDefault();
-              if (!selectedBoard || !selectedLayout || !selectedSize || selectedSets.length === 0)
-                return;
+              if (!selectedBoard || !selectedLayout || !selectedSize || selectedSets.length === 0) return;
               handleRegister({
                 name: formValues.name,
                 boardName: selectedBoard,

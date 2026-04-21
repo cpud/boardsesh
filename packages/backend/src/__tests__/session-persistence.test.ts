@@ -30,12 +30,7 @@ const createTestClimb = (): ClimbQueueItem => ({
 });
 
 // Helper function to register a client before joining
-const registerAndJoinSession = async (
-  clientId: string,
-  sessionId: string,
-  boardPath: string,
-  username?: string,
-) => {
+const registerAndJoinSession = async (clientId: string, sessionId: string, boardPath: string, username?: string) => {
   await roomManager.registerClient(clientId);
   return roomManager.joinSession(clientId, sessionId, boardPath, username);
 };
@@ -258,10 +253,7 @@ describe('Session Persistence - Hybrid Redis + Postgres', () => {
       await roomManager.updateQueueState(sessionId, [climb1, climb2], null, currentState.version);
 
       // Check Postgres immediately - should not have latest state yet
-      let queueRows = await db
-        .select()
-        .from(sessionQueues)
-        .where(eq(sessionQueues.sessionId, sessionId));
+      let queueRows = await db.select().from(sessionQueues).where(eq(sessionQueues.sessionId, sessionId));
 
       // Either no row yet, or old state
       if (queueRows.length > 0) {
@@ -278,10 +270,7 @@ describe('Session Persistence - Hybrid Redis + Postgres', () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
 
       // Now check Postgres - should have latest state
-      queueRows = await db
-        .select()
-        .from(sessionQueues)
-        .where(eq(sessionQueues.sessionId, sessionId));
+      queueRows = await db.select().from(sessionQueues).where(eq(sessionQueues.sessionId, sessionId));
 
       expect(queueRows.length).toBe(1);
       const queue = queueRows[0]?.queue as unknown[];
@@ -302,10 +291,7 @@ describe('Session Persistence - Hybrid Redis + Postgres', () => {
       await roomManager.flushPendingWrites();
 
       // Verify data in Postgres
-      const queueRows = await db
-        .select()
-        .from(sessionQueues)
-        .where(eq(sessionQueues.sessionId, sessionId));
+      const queueRows = await db.select().from(sessionQueues).where(eq(sessionQueues.sessionId, sessionId));
 
       expect(queueRows.length).toBe(1);
       const queue = queueRows[0]?.queue as unknown[];
@@ -336,10 +322,7 @@ describe('Session Persistence - Hybrid Redis + Postgres', () => {
       await vi.advanceTimersByTimeAsync(15000);
 
       // Should not be written yet (timer was reset)
-      let queueRows = await db
-        .select()
-        .from(sessionQueues)
-        .where(eq(sessionQueues.sessionId, sessionId));
+      let queueRows = await db.select().from(sessionQueues).where(eq(sessionQueues.sessionId, sessionId));
 
       if (queueRows.length > 0) {
         const queue = queueRows[0]?.queue as unknown[];
@@ -355,10 +338,7 @@ describe('Session Persistence - Hybrid Redis + Postgres', () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
 
       // Now should be written
-      queueRows = await db
-        .select()
-        .from(sessionQueues)
-        .where(eq(sessionQueues.sessionId, sessionId));
+      queueRows = await db.select().from(sessionQueues).where(eq(sessionQueues.sessionId, sessionId));
 
       expect(queueRows.length).toBe(1);
       const queue = queueRows[0]?.queue as unknown[];
@@ -372,14 +352,7 @@ describe('Session Persistence - Hybrid Redis + Postgres', () => {
       const boardPath = '/kilter/1/2/3/40';
 
       // Create discoverable session
-      await roomManager.createDiscoverableSession(
-        sessionId,
-        boardPath,
-        'user-123',
-        37.7749,
-        -122.4194,
-        'Test Session',
-      );
+      await roomManager.createDiscoverableSession(sessionId, boardPath, 'user-123', 37.7749, -122.4194, 'Test Session');
 
       await registerAndJoinSession('client-1', sessionId, boardPath, 'User1');
 
@@ -396,14 +369,7 @@ describe('Session Persistence - Hybrid Redis + Postgres', () => {
       const boardPath = '/kilter/1/2/3/40';
 
       // Create discoverable session
-      await roomManager.createDiscoverableSession(
-        sessionId,
-        boardPath,
-        'user-123',
-        37.7749,
-        -122.4194,
-        'Test Session',
-      );
+      await roomManager.createDiscoverableSession(sessionId, boardPath, 'user-123', 37.7749, -122.4194, 'Test Session');
 
       await registerAndJoinSession('client-1', sessionId, boardPath, 'User1');
       await roomManager.leaveSession('client-1');
@@ -425,14 +391,7 @@ describe('Session Persistence - Hybrid Redis + Postgres', () => {
       const boardPath = '/kilter/1/2/3/40';
 
       // Create discoverable session
-      await roomManager.createDiscoverableSession(
-        sessionId,
-        boardPath,
-        'user-123',
-        37.7749,
-        -122.4194,
-        'Test Session',
-      );
+      await roomManager.createDiscoverableSession(sessionId, boardPath, 'user-123', 37.7749, -122.4194, 'Test Session');
 
       await registerAndJoinSession('client-1', sessionId, boardPath, 'User1');
       await roomManager.leaveSession('client-1');
@@ -456,14 +415,7 @@ describe('Session Persistence - Hybrid Redis + Postgres', () => {
       const boardPath = '/kilter/1/2/3/40';
 
       // Create discoverable session
-      await roomManager.createDiscoverableSession(
-        sessionId,
-        boardPath,
-        'user-123',
-        37.7749,
-        -122.4194,
-        'Test Session',
-      );
+      await roomManager.createDiscoverableSession(sessionId, boardPath, 'user-123', 37.7749, -122.4194, 'Test Session');
 
       await registerAndJoinSession('client-1', sessionId, boardPath, 'User1');
       await roomManager.endSession(sessionId);
@@ -549,10 +501,7 @@ describe('Session Persistence - Hybrid Redis + Postgres', () => {
       expect(redisSession?.queue).toBeDefined();
 
       // Verify in Postgres
-      const pgQueue = await db
-        .select()
-        .from(sessionQueues)
-        .where(eq(sessionQueues.sessionId, sessionId));
+      const pgQueue = await db.select().from(sessionQueues).where(eq(sessionQueues.sessionId, sessionId));
       expect(pgQueue).toHaveLength(1);
       expect(pgQueue[0]?.queue as unknown[]).toHaveLength(1);
     });
@@ -630,9 +579,9 @@ describe('Session Persistence - Hybrid Redis + Postgres', () => {
       // calls redis.multi().hmset()...exec() which triggers the error. The room
       // manager catches this and throws "Failed to register client: distributed
       // state error", preventing the client from being in an inconsistent state.
-      await expect(
-        registerAndJoinSession('client-1', sessionId, boardPath, 'User1'),
-      ).rejects.toThrow('Failed to register client: distributed state error');
+      await expect(registerAndJoinSession('client-1', sessionId, boardPath, 'User1')).rejects.toThrow(
+        'Failed to register client: distributed state error',
+      );
     });
   });
 });

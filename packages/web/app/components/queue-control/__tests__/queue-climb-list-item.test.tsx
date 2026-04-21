@@ -67,9 +67,7 @@ vi.mock('../../climb-card/drawer-climb-header', () => ({
 }));
 
 vi.mock('../../swipeable-drawer/swipeable-drawer', () => ({
-  default: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="swipeable-drawer">{children}</div>
-  ),
+  default: ({ children }: { children: React.ReactNode }) => <div data-testid="swipeable-drawer">{children}</div>,
 }));
 
 vi.mock('../../climb-card/ascent-status', () => ({

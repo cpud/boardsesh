@@ -71,10 +71,7 @@ export const favoriteQueries = {
     const playlistBoards = await db
       .selectDistinct({ boardName: dbSchema.playlists.boardType })
       .from(dbSchema.playlists)
-      .innerJoin(
-        dbSchema.playlistOwnership,
-        eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id),
-      )
+      .innerJoin(dbSchema.playlistOwnership, eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id))
       .where(eq(dbSchema.playlistOwnership.userId, userId));
 
     // Get distinct board names from favorites

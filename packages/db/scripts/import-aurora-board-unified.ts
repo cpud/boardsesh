@@ -526,9 +526,7 @@ async function clearBoardData(tx: any, boardName: DirectAuroraBoard) {
   await tx.delete(boardUserSyncs).where(eq(boardUserSyncs.boardType, boardName));
   await tx.delete(boardWalls).where(eq(boardWalls.boardType, boardName));
   await tx.delete(boardClimbs).where(eq(boardClimbs.boardType, boardName));
-  await tx
-    .delete(boardProductSizesLayoutsSets)
-    .where(eq(boardProductSizesLayoutsSets.boardType, boardName));
+  await tx.delete(boardProductSizesLayoutsSets).where(eq(boardProductSizesLayoutsSets.boardType, boardName));
   await tx.delete(boardPlacements).where(eq(boardPlacements.boardType, boardName));
   await tx.delete(boardLeds).where(eq(boardLeds.boardType, boardName));
   await tx.delete(boardPlacementRoles).where(eq(boardPlacementRoles.boardType, boardName));
@@ -598,9 +596,7 @@ async function main() {
       : sourceClimbRows.flatMap((row) => deriveClimbHoldsFromFrames(row, boardName));
 
   if (sourceClimbRows.length > 0 && importedClimbHolds.length === 0) {
-    throw new Error(
-      `No climb holds could be imported for ${boardName}; aborting to avoid empty set-filter data`,
-    );
+    throw new Error(`No climb holds could be imported for ${boardName}; aborting to avoid empty set-filter data`);
   }
 
   const mappedClimbHolds = importedClimbHolds.map((row) => ({

@@ -25,13 +25,7 @@ export default function FeedItemSkeleton() {
         {/* Content row */}
         <Box sx={{ display: 'flex', gap: '12px' }}>
           {/* Thumbnail */}
-          <Skeleton
-            variant="rounded"
-            width={64}
-            height={64}
-            animation="wave"
-            sx={{ flexShrink: 0 }}
-          />
+          <Skeleton variant="rounded" width={64} height={64} animation="wave" sx={{ flexShrink: 0 }} />
 
           {/* Details */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, minWidth: 0 }}>

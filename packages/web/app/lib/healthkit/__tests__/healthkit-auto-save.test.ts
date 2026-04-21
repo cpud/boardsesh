@@ -1,10 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import type { SessionSummary } from '@boardsesh/shared-schema';
-import {
-  autoSaveToHealthKit,
-  _resetAutoSaveGuard,
-  isSessionSavedOrInFlight,
-} from '../healthkit-auto-save';
+import { autoSaveToHealthKit, _resetAutoSaveGuard, isSessionSavedOrInFlight } from '../healthkit-auto-save';
 
 // Mock dependencies
 vi.mock('../healthkit-bridge', () => ({

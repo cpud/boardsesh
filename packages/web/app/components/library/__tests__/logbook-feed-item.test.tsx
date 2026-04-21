@@ -348,9 +348,7 @@ describe('LogbookFeedItem', () => {
     const row = container.querySelector('.swipeableContent') as HTMLElement;
     fireEvent.click(row);
     expect(setCurrentClimbMock).toHaveBeenCalledTimes(1);
-    expect(setCurrentClimbMock).toHaveBeenCalledWith(
-      expect.objectContaining({ uuid: 'climb-1', name: 'Test Climb' }),
-    );
+    expect(setCurrentClimbMock).toHaveBeenCalledWith(expect.objectContaining({ uuid: 'climb-1', name: 'Test Climb' }));
     expect(dispatchOpenPlayDrawerMock).not.toHaveBeenCalled();
   });
 
