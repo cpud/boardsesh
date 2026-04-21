@@ -2,9 +2,9 @@ import { defineConfig } from 'vite-plus';
 
 export default defineConfig({
   fmt: {
-    ignorePatterns: [],
     singleQuote: true,
-    printWidth: 120,
+    semi: true,
+    trailingComma: 'all',
   },
   test: {
     projects: [
