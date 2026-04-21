@@ -2,17 +2,25 @@
 
 import React, { useState, useCallback, useEffect, useMemo, useImperativeHandle, useRef, forwardRef } from 'react';
 import Stack from '@mui/material/Stack';
+import IconButton from '@mui/material/IconButton';
+import KeyboardArrowUpOutlined from '@mui/icons-material/KeyboardArrowUpOutlined';
+import KeyboardArrowDownOutlined from '@mui/icons-material/KeyboardArrowDownOutlined';
+import SaveOutlined from '@mui/icons-material/SaveOutlined';
+import ElectricBoltOutlined from '@mui/icons-material/ElectricBoltOutlined';
 import { Angle, Climb, BoardDetails } from '@/app/lib/types';
 import { useBoardProvider } from '../board-provider/board-provider-context';
 import { TENSION_KILTER_GRADES } from '@/app/lib/board-data';
 import { loadTickDraft } from '@/app/lib/tick-draft-db';
 import { useTickSave, buildTickTarget, type TickTarget } from '@/app/hooks/use-tick-save';
+import type { TickStatus } from '@/app/hooks/use-logbook';
+import { themeTokens } from '@/app/theme/theme-config';
 import {
   TickControls,
   TickGradeButton,
   InlineStarPicker,
   InlineGradePicker,
   InlineTriesPicker,
+  InlineAscentTypePicker,
   type ExpandedControl,
 } from './tick-controls';
 import styles from './quick-tick-bar.module.css';
@@ -33,22 +41,31 @@ export interface QuickTickBarProps {
   comment: string;
   /** Comment input element rendered by the parent — placed in the row next to tick controls. */
   commentSlot: React.ReactNode;
+  /** Whether the tick bar is in expanded mode (all pickers visible). */
+  expanded?: boolean;
+  /** Toggle expanded/collapsed state. */
+  onExpandedChange?: (expanded: boolean) => void;
+  /** Close the tick bar entirely (cancel). */
+  onClose?: () => void;
+  /** Expanded-mode comment slot — taller, for the expanded layout. */
+  expandedCommentSlot?: React.ReactNode;
 }
 
 export interface QuickTickBarHandle {
-  /** Trigger a save (ascent). Pass the origin element for confetti positioning. */
+  /** Trigger a save using the selected ascent type. Pass the origin element for confetti positioning. */
   save: (originElement?: HTMLElement | null) => void;
-  /** Trigger a save (attempt). Pass the origin element for confetti positioning. */
+  /** Trigger a save as attempt. Pass the origin element for confetti positioning. */
   saveAttempt: (originElement?: HTMLElement | null) => void;
 }
 
 /**
  * Stateful tick entry wrapper. Manages the tick target snapshot, form state
- * (quality, difficulty, attempts), expansion state, and save logic.
+ * (quality, difficulty, attempts, ascent type), expansion state, and save logic.
  *
- * Layout mirrors the queue control bar below:
+ * Compact layout mirrors the queue control bar below:
  *   [comment (flex:1) + grade] [stars + tries]
- * so the user grade aligns vertically with the consensus grade.
+ *
+ * Expanded layout shows all pickers simultaneously with icon+label on the left.
  */
 export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
   currentClimb,
@@ -60,14 +77,13 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
   onIsFlashChange,
   comment,
   commentSlot,
+  expanded = false,
+  onExpandedChange,
+  expandedCommentSlot,
 }, ref) => {
   const { logbook } = useBoardProvider();
 
   // Snapshot the target climb the first time we get a non-null climb.
-  // Uses a ref flag so it only fires once, avoiding re-snapshot when
-  // angle/boardDetails/logbook change after the initial capture.
-  // NOTE: tickTargetTaken resets only on unmount — this works because
-  // QuickTickBar is unmounted when tick mode closes (see queue-control-bar).
   const tickTargetTaken = useRef(false);
   const [tickTarget, setTickTarget] = useState<TickTarget | null>(() => {
     if (currentClimb) {
@@ -88,8 +104,30 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
   const [attemptCount, setAttemptCount] = useState<number>(1);
   const [expandedControl, setExpandedControl] = useState<ExpandedControl>(null);
 
+  // Explicit ascent type — initialized from inferred value, auto-updated on state changes.
+  const inferredType: TickStatus = tickTarget && !tickTarget.hasPriorHistory && attemptCount === 1 ? 'flash' : 'send';
+  const [ascentType, setAscentType] = useState<TickStatus>(inferredType);
+  const userOverrodeType = useRef(false);
+
+  // Auto-update ascent type when tries or prior history changes (unless user explicitly chose).
+  useEffect(() => {
+    if (userOverrodeType.current) {
+      // If user manually selected flash but now tries > 1, correct to send.
+      if (ascentType === 'flash' && (attemptCount > 1 || tickTarget?.hasPriorHistory)) {
+        setAscentType('send');
+      }
+      return;
+    }
+    setAscentType(inferredType);
+  }, [inferredType, attemptCount, tickTarget?.hasPriorHistory, ascentType]);
+
+  const handleAscentTypeSelect = useCallback((value: TickStatus) => {
+    userOverrodeType.current = true;
+    setAscentType(value);
+  }, []);
+
   // Report flash state to the parent so tick buttons can show the flash icon.
-  const isFlash = !!tickTarget && !tickTarget.hasPriorHistory && attemptCount === 1;
+  const isFlash = ascentType === 'flash';
   useEffect(() => {
     onIsFlashChange?.(isFlash);
   }, [isFlash, onIsFlashChange]);
@@ -111,6 +149,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
     });
     return () => { cancelled = true; };
   }, [tickTarget, onDraftRestored]);
+
   // Track which picker was last open so we can keep it mounted during collapse.
   const [lastExpandedControl, setLastExpandedControl] = useState<ExpandedControl>(null);
   const [pickerVisible, setPickerVisible] = useState(false);
@@ -120,21 +159,22 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
       setLastExpandedControl(expandedControl);
       setPickerVisible(true);
     } else {
-      // Keep content mounted during the 200ms CSS grid collapse transition.
       const timer = setTimeout(() => setPickerVisible(false), 200);
       return () => clearTimeout(timer);
     }
   }, [expandedControl]);
 
-  // The control to actually render — either the currently expanded one, or
-  // the last one that was open (kept alive during the collapse animation).
   const renderedControl = expandedControl ?? (pickerVisible ? lastExpandedControl : null);
+
+  // Collapse any open individual picker when entering expanded mode.
+  useEffect(() => {
+    if (expanded) setExpandedControl(null);
+  }, [expanded]);
 
   const gradeButtonRef = useRef<HTMLButtonElement>(null);
   const triesButtonRef = useRef<HTMLButtonElement>(null);
 
   const grades = TENSION_KILTER_GRADES;
-
   const currentGradeId = difficulty;
 
   const consensusGradeId = useMemo(() => {
@@ -143,21 +183,21 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
     return grades.find((g) => g.difficulty_name === source)?.difficulty_id;
   }, [tickTarget, grades]);
 
-  // Picker selection handlers — select the value and collapse the picker.
+  // Picker selection handlers.
   const handleStarSelect = useCallback((value: number | null) => {
     setQuality(value);
-    setExpandedControl(null);
-  }, []);
+    if (!expanded) setExpandedControl(null);
+  }, [expanded]);
 
   const handleGradeSelect = useCallback((value: number | undefined) => {
     setDifficulty(value);
-    setExpandedControl(null);
-  }, []);
+    if (!expanded) setExpandedControl(null);
+  }, [expanded]);
 
   const handleTriesSelect = useCallback((value: number) => {
     setAttemptCount(value);
-    setExpandedControl(null);
-  }, []);
+    if (!expanded) setExpandedControl(null);
+  }, [expanded]);
 
   const { save, saveAttempt } = useTickSave({
     tickTarget,
@@ -165,6 +205,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
     difficulty,
     attemptCount,
     comment,
+    ascentType,
     onSave,
     onError,
   });
@@ -174,63 +215,170 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
     saveAttempt,
   }), [save, saveAttempt]);
 
+  // Color for the save button based on selected ascent type.
+  const saveButtonColor = ascentType === 'flash'
+    ? themeTokens.colors.amber
+    : ascentType === 'attempt'
+      ? themeTokens.colors.error
+      : themeTokens.colors.success;
+
+  const saveButtonTextColor = ascentType === 'flash' ? 'var(--neutral-900)' : 'white';
+
   return (
     <div data-testid="quick-tick-bar" className={styles.tickBar}>
-      {/* Picker panel — expands above the controls row when a control is active */}
-      <div className={`${styles.pickerPanel} ${expandedControl ? styles.pickerPanelExpanded : ''}`}>
-        <div className={styles.pickerPanelContent}>
-          {renderedControl === 'stars' && (
-            <InlineStarPicker quality={quality} onSelect={handleStarSelect} />
+      {/* Expand/collapse header — styled to match the session header ("Start sesh") strip.
+          Also serves as the swipe-hint drag handle. */}
+      {onExpandedChange && (
+        <div
+          className={styles.expandHeader}
+          onClick={() => onExpandedChange(!expanded)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onExpandedChange(!expanded); }}
+          aria-label={expanded ? 'Collapse tick bar' : 'Expand tick bar'}
+        >
+          {expanded ? (
+            <KeyboardArrowDownOutlined sx={{ fontSize: 16, opacity: 0.7 }} />
+          ) : (
+            <KeyboardArrowUpOutlined sx={{ fontSize: 16, opacity: 0.7 }} />
           )}
-          {renderedControl === 'grade' && (
-            <InlineGradePicker
-              grades={grades}
-              currentGradeId={currentGradeId}
-              focusGradeId={consensusGradeId}
-              onSelect={handleGradeSelect}
-              gradeButtonRef={gradeButtonRef}
-            />
-          )}
-          {renderedControl === 'tries' && (
-            <InlineTriesPicker attemptCount={attemptCount} onSelect={handleTriesSelect} triesButtonRef={triesButtonRef} />
-          )}
-        </div>
-      </div>
-
-      {/* Controls row — mirrors the queue bar layout:
-          [comment + grade (flex:1)] [stars + tries (flex:none)]
-          so user grade aligns with the consensus grade below. */}
-      <div className={styles.controlsRow}>
-        {/* Left section: comment fills space, grade sits at right edge —
-            mirrors the queue bar's [thumbnail + title + grade] column. */}
-        <div className={styles.leftSection}>
-          {/* Collapse any open picker when the comment field gains focus */}
-          <div role="group" onFocus={() => setExpandedControl(null)} className={styles.commentWrapper}>
-            {commentSlot}
+          <span className={styles.expandLabel}>{expanded ? 'collapse' : 'expand'}</span>
+          <div className={styles.expandDragBar} aria-hidden="true">
+            <div className={styles.expandDragBarPill} />
           </div>
-          <TickGradeButton
-            ref={gradeButtonRef}
-            difficulty={difficulty}
-            displayedGrades={grades}
-            expandedControl={expandedControl}
-            onExpandedControlChange={setExpandedControl}
-          />
         </div>
+      )}
 
-        {/* Right section: stars + tries — mirrors the queue bar's button
-            cluster (Close + Tick) so widths match and grades align. */}
-        <div className={styles.rightControls}>
-          <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
-            <TickControls
-              quality={quality}
-              attemptCount={attemptCount}
-              expandedControl={expandedControl}
-              onExpandedControlChange={setExpandedControl}
-              triesButtonRef={triesButtonRef}
-            />
-          </Stack>
+      {/* Expanded mode — all pickers visible at once with labels.
+          Only mount content when expanded to avoid duplicate picker DOM elements
+          that would confuse screen reader queries and tests. */}
+      {expanded && (
+        <div className={`${styles.expandedPanel} ${styles.expandedPanelOpen}`}>
+          <div className={styles.expandedPanelContent}>
+            {/* Ascent type row */}
+            <div className={styles.labeledRow}>
+              <span className={styles.labeledRowLabel}>
+                <ElectricBoltOutlined sx={{ fontSize: 14 }} />
+                type
+              </span>
+              <div className={styles.labeledRowPicker}>
+                <InlineAscentTypePicker ascentType={ascentType} onSelect={handleAscentTypeSelect} />
+              </div>
+            </div>
+
+            {/* Grade row */}
+            <div className={styles.labeledRow}>
+              <span className={styles.labeledRowLabel}>
+                grade
+              </span>
+              <div className={styles.labeledRowPicker}>
+                <InlineGradePicker
+                  grades={grades}
+                  currentGradeId={currentGradeId}
+                  focusGradeId={consensusGradeId}
+                  onSelect={handleGradeSelect}
+                  gradeButtonRef={gradeButtonRef}
+                />
+              </div>
+            </div>
+
+            {/* Tries row */}
+            <div className={styles.labeledRow}>
+              <span className={styles.labeledRowLabel}>
+                tries
+              </span>
+              <div className={styles.labeledRowPicker}>
+                <InlineTriesPicker attemptCount={attemptCount} onSelect={handleTriesSelect} triesButtonRef={triesButtonRef} />
+              </div>
+            </div>
+
+            {/* Stars row — left-aligned since picker is shorter */}
+            <div className={styles.labeledRow}>
+              <span className={styles.labeledRowLabel}>
+                stars
+              </span>
+              <div className={styles.labeledRowPickerStart}>
+                <InlineStarPicker quality={quality} onSelect={handleStarSelect} />
+              </div>
+            </div>
+
+          {/* Expanded comment */}
+          {expandedCommentSlot && (
+            <div className={styles.expandedComment}>
+              {expandedCommentSlot}
+            </div>
+          )}
+
+          {/* Save button */}
+          <div className={styles.saveRow}>
+            <IconButton
+              onClick={(e) => save(e.currentTarget)}
+              aria-label="Save tick"
+              sx={{
+                backgroundColor: saveButtonColor,
+                color: saveButtonTextColor,
+                transition: 'background-color 150ms ease, color 150ms ease',
+                '&:hover': { backgroundColor: saveButtonColor },
+              }}
+            >
+              <SaveOutlined />
+            </IconButton>
+          </div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Compact mode — single picker panel + controls row (hidden when expanded) */}
+      {!expanded && (
+        <>
+          <div className={`${styles.pickerPanel} ${expandedControl ? styles.pickerPanelExpanded : ''}`}>
+            <div className={styles.pickerPanelContent}>
+              {renderedControl === 'stars' && (
+                <InlineStarPicker quality={quality} onSelect={handleStarSelect} />
+              )}
+              {renderedControl === 'grade' && (
+                <InlineGradePicker
+                  grades={grades}
+                  currentGradeId={currentGradeId}
+                  focusGradeId={consensusGradeId}
+                  onSelect={handleGradeSelect}
+                  gradeButtonRef={gradeButtonRef}
+                />
+              )}
+              {renderedControl === 'tries' && (
+                <InlineTriesPicker attemptCount={attemptCount} onSelect={handleTriesSelect} triesButtonRef={triesButtonRef} />
+              )}
+            </div>
+          </div>
+
+          <div className={styles.controlsRow}>
+            <div className={styles.leftSection}>
+              <div role="group" onFocus={() => setExpandedControl(null)} className={styles.commentWrapper}>
+                {commentSlot}
+              </div>
+              <TickGradeButton
+                ref={gradeButtonRef}
+                difficulty={difficulty}
+                displayedGrades={grades}
+                expandedControl={expandedControl}
+                onExpandedControlChange={setExpandedControl}
+              />
+            </div>
+
+            <div className={styles.rightControls}>
+              <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+                <TickControls
+                  quality={quality}
+                  attemptCount={attemptCount}
+                  expandedControl={expandedControl}
+                  onExpandedControlChange={setExpandedControl}
+                  triesButtonRef={triesButtonRef}
+                />
+              </Stack>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 });

@@ -398,24 +398,32 @@
   transition: none;
 }
 
-/* Drag handle row — centers the handle pill with close button at the right */
-.tickDragHandleRow {
-  position: relative;
+/* Toolbar row — expand on left, drag handle centered, close on right */
+.tickToolbar {
   display: flex;
-  justify-content: center;
-  padding: 0 0 4px;
+  align-items: center;
+  padding: 4px 4px 4px 12px;
+}
+
+.tickExpandHeader {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  touch-action: manipulation;
+  flex-shrink: 0;
+}
+
+.tickExpandLabel {
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .tickDragHandle {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 0;
-  cursor: grab;
-}
-
-.tickDragHandle:active {
-  cursor: grabbing;
 }
 
 .tickDragHandleBar {
@@ -425,11 +433,12 @@
   background-color: var(--neutral-200, #E5E7EB);
 }
 
+:global(html[data-theme="dark"]) .tickDragHandleBar {
+  background-color: var(--neutral-500, #6B7280);
+}
+
 .tickCloseButton {
-  position: absolute;
-  right: 2px;
-  top: 2px;
-  z-index: 2;
+  flex-shrink: 0;
 }
 
 /* Comment input — fills available space in the left section */
