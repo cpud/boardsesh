@@ -13,11 +13,13 @@ import SkipPreviousOutlined from '@mui/icons-material/SkipPreviousOutlined';
 import SkipNextOutlined from '@mui/icons-material/SkipNextOutlined';
 import MoreHorizOutlined from '@mui/icons-material/MoreHorizOutlined';
 import CloseOutlined from '@mui/icons-material/CloseOutlined';
+import KeyboardArrowUpOutlined from '@mui/icons-material/KeyboardArrowUpOutlined';
+import KeyboardArrowDownOutlined from '@mui/icons-material/KeyboardArrowDownOutlined';
 import FormatListBulletedOutlined from '@mui/icons-material/FormatListBulletedOutlined';
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
 import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
-import SaveOutlined from '@mui/icons-material/SaveOutlined';
-import { TickButtonWithLabel } from '../logbook/tick-icon';
+import { TickIcon, TickButtonWithLabel } from '../logbook/tick-icon';
+import { PersonFallingIcon } from '@/app/components/icons/person-falling-icon';
 import { usePathname } from 'next/navigation';
 import { useQueueActions, useCurrentClimb, useQueueList, useSessionData } from '../graphql-queue';
 import { ClimbActions } from '../climb-actions';
@@ -219,17 +221,26 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
           ...(gradeTintColor ? { backgroundImage: `linear-gradient(${gradeTintColor}, ${gradeTintColor})` } : {}),
         }}
       >
-        {/* Drag handle — identical to queue control bar */}
-        <div className={styles.tickBarDragHandleRow}>
-          <div className={styles.tickBarDragHandle}>
-            <div className={styles.tickBarDragHandleBar} />
-          </div>
-        </div>
         {isTickBarActive && (
           <>
-            {/* Close button — top-right corner, hidden when expanded (QuickTickBar shows its own cancel) */}
-            {!tickBarExpanded && (
-              <div className={styles.tickBarClose}>
+            {/* Toolbar: expand left, close right — same pattern as queue-control-bar */}
+            <div className={styles.tickBarToolbar}>
+              <div
+                className={styles.tickBarExpandButton}
+                onClick={() => setTickBarExpanded((v) => !v)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setTickBarExpanded((v) => !v); }}
+                aria-label={tickBarExpanded ? 'Collapse tick bar' : 'Expand tick bar'}
+              >
+                {tickBarExpanded ? (
+                  <KeyboardArrowDownOutlined sx={{ fontSize: 16, opacity: 0.7 }} />
+                ) : (
+                  <KeyboardArrowUpOutlined sx={{ fontSize: 16, opacity: 0.7 }} />
+                )}
+                <span className={styles.tickBarExpandLabel}>{tickBarExpanded ? 'Collapse' : 'Expand'}</span>
+              </div>
+              <div className={styles.tickBarCloseButton}>
                 <IconButton
                   size="small"
                   onClick={handleClose}
@@ -238,12 +249,13 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
                     color: 'text.primary',
                     backgroundColor: 'action.selected',
                     '&:hover': { backgroundColor: 'action.focus' },
+                    padding: '2px',
                   }}
                 >
                   <CloseOutlined sx={{ fontSize: 16 }} />
                 </IconButton>
               </div>
-            )}
+            </div>
             <QuickTickBar
               ref={quickTickBarRef}
               currentClimb={currentClimb}
@@ -255,8 +267,6 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
               onIsFlashChange={setIsFlash}
               comment={tickComment}
               expanded={tickBarExpanded}
-              onExpandedChange={setTickBarExpanded}
-              onClose={handleClose}
               commentSlot={
                 <div className={`${styles.tickBarComment} ${commentFocused ? styles.tickBarCommentExpanded : ''}`}>
                   <TextField
@@ -308,13 +318,6 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
                   onBlur={handleCommentBlur}
                   slotProps={{
                     htmlInput: { maxLength: 2000, 'aria-label': 'Tick comment' },
-                    input: {
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <ChatBubbleOutlineOutlined sx={{ fontSize: 16, opacity: 0.5 }} />
-                        </InputAdornment>
-                      ),
-                    },
                   }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
@@ -328,22 +331,35 @@ const PlayViewTickBar = React.memo<PlayViewTickBarProps>(function PlayViewTickBa
                 />
               }
             />
-            {/* Action buttons — save button, hidden when expanded (QuickTickBar shows its own) */}
+            {/* Action buttons — save + attempt, hidden when expanded */}
             {!tickBarExpanded && (
               <div className={styles.tickBarButtons}>
-                <TickButtonWithLabel label="save">
+                <TickButtonWithLabel label={isFlash ? 'flash' : 'tick'}>
                   <IconButton
                     id="button-tick"
                     onClick={(e) => quickTickBarRef.current?.save(e.currentTarget)}
                     sx={{
-                      backgroundColor: themeTokens.colors.success,
-                      color: 'common.white',
+                      backgroundColor: isFlash ? themeTokens.colors.amber : themeTokens.colors.success,
+                      color: isFlash ? themeTokens.neutral[900] : 'common.white',
                       transition: 'background-color 150ms ease, color 150ms ease',
-                      '&:hover': { backgroundColor: themeTokens.colors.successHover },
+                      '&:hover': { backgroundColor: isFlash ? themeTokens.colors.amber : themeTokens.colors.successHover },
                     }}
                     aria-label="Save tick"
                   >
-                    <SaveOutlined />
+                    <TickIcon isFlash={!!isFlash} />
+                  </IconButton>
+                </TickButtonWithLabel>
+                <TickButtonWithLabel label="attempt">
+                  <IconButton
+                    onClick={(e) => quickTickBarRef.current?.saveAttempt(e.currentTarget)}
+                    sx={{
+                      backgroundColor: themeTokens.colors.errorMuted,
+                      color: themeTokens.colors.error,
+                      '&:hover': { backgroundColor: themeTokens.colors.errorMutedHover },
+                    }}
+                    aria-label="Log attempt"
+                  >
+                    <PersonFallingIcon />
                   </IconButton>
                 </TickButtonWithLabel>
               </div>

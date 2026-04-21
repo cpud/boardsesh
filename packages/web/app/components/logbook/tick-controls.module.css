@@ -253,6 +253,12 @@
   background-color: rgba(128, 128, 128, 0.18);
 }
 
+.pickerItemFocused {
+  opacity: 1;
+  outline: 1.5px dashed rgba(128, 128, 128, 0.5);
+  outline-offset: -1.5px;
+}
+
 @media (hover: hover) {
   :global(html[data-theme="dark"]) .pickerItem:hover {
     background-color: rgba(255, 255, 255, 0.1);

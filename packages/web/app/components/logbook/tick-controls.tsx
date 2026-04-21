@@ -314,13 +314,13 @@ export const InlineGradePicker: React.FC<{
   useStopHorizontalTouchPropagation(containerRef);
   const { canScrollLeft, canScrollRight } = useScrollIndicators(containerRef);
 
-  // On mount, scroll so the selected (or focus) grade aligns above the grade button.
-  // When no grade is selected, scroll to the consensus grade (focusGradeId) as a reference point.
+  // On mount, scroll so the selected (or focus) grade is visible.
+  // When a gradeButtonRef is available (compact mode), align above the button.
+  // Otherwise (expanded mode), center the grade in the container.
   const scrollTargetId = currentGradeId ?? focusGradeId;
   useLayoutEffect(() => {
     const container = containerRef.current;
-    const gradeButton = gradeButtonRef?.current;
-    if (!container || !gradeButton || scrollTargetId === undefined) return;
+    if (!container || scrollTargetId === undefined) return;
 
     const targetEl = container.querySelector(
       `[data-grade-id="${scrollTargetId}"]`,
@@ -328,14 +328,14 @@ export const InlineGradePicker: React.FC<{
     if (!targetEl) return;
 
     const containerRect = container.getBoundingClientRect();
-    const gradeButtonRect = gradeButton.getBoundingClientRect();
+    const gradeButton = gradeButtonRef?.current;
 
-    const gradeButtonCenterInContainer =
-      gradeButtonRect.left + gradeButtonRect.width / 2 - containerRect.left;
-    const targetItemCenter =
-      targetEl.offsetLeft + targetEl.offsetWidth / 2;
+    const alignCenter = gradeButton
+      ? gradeButton.getBoundingClientRect().left + gradeButton.getBoundingClientRect().width / 2 - containerRect.left
+      : container.clientWidth / 2;
 
-    const targetScrollLeft = targetItemCenter - gradeButtonCenterInContainer;
+    const targetItemCenter = targetEl.offsetLeft + targetEl.offsetWidth / 2;
+    const targetScrollLeft = targetItemCenter - alignCenter;
     const maxScroll = container.scrollWidth - container.clientWidth;
     container.scrollLeft = Math.max(0, Math.min(targetScrollLeft, maxScroll));
   }, [scrollTargetId, gradeButtonRef]);
@@ -362,7 +362,7 @@ export const InlineGradePicker: React.FC<{
               key={grade.difficulty_id}
               data-grade-id={grade.difficulty_id}
               onClick={() => onSelect(grade.difficulty_id)}
-              className={`${styles.pickerItem} ${isSelected || isFocused ? styles.pickerItemSelected : ''}`}
+              className={`${styles.pickerItem} ${isSelected ? styles.pickerItemSelected : ''} ${isFocused ? styles.pickerItemFocused : ''}`}
               aria-label={isFocused ? `${formatted} (consensus)` : formatted}
               aria-selected={isSelected || isFocused}
               role="option"
@@ -450,20 +450,27 @@ const ASCENT_TYPE_OPTIONS: readonly { value: TickStatus; label: string; icon: Re
 export const InlineAscentTypePicker: React.FC<{
   ascentType: TickStatus;
   onSelect: (value: TickStatus) => void;
-}> = ({ ascentType, onSelect }) => (
+  /** Whether flash is available (no prior history and 1 try). */
+  canFlash?: boolean;
+}> = ({ ascentType, onSelect, canFlash = true }) => (
   <div className={styles.pickerRow} role="listbox" aria-label="Ascent type">
-    {ASCENT_TYPE_OPTIONS.map((opt) => (
-      <ButtonBase
-        key={opt.value}
-        onClick={() => onSelect(opt.value)}
-        className={`${styles.pickerItem} ${styles.ascentTypeItem} ${opt.value === ascentType ? styles.pickerItemSelected : ''}`}
-        aria-label={opt.label}
-        aria-selected={opt.value === ascentType}
-        role="option"
-      >
-        <span style={{ color: opt.value === ascentType ? opt.color : 'inherit', display: 'flex' }}>{opt.icon}</span>
-        <span className={styles.ascentTypeLabel}>{opt.label}</span>
-      </ButtonBase>
-    ))}
+    {ASCENT_TYPE_OPTIONS.map((opt) => {
+      const disabled = opt.value === 'flash' && !canFlash;
+      return (
+        <ButtonBase
+          key={opt.value}
+          onClick={() => !disabled && onSelect(opt.value)}
+          className={`${styles.pickerItem} ${styles.ascentTypeItem} ${opt.value === ascentType ? styles.pickerItemSelected : ''}`}
+          aria-label={opt.label}
+          aria-selected={opt.value === ascentType}
+          aria-disabled={disabled}
+          role="option"
+          disabled={disabled}
+        >
+          <span style={{ color: opt.value === ascentType ? opt.color : 'inherit', display: 'flex', opacity: disabled ? 0.3 : 1 }}>{opt.icon}</span>
+          <span className={styles.ascentTypeLabel} style={{ opacity: disabled ? 0.3 : 1 }}>{opt.label}</span>
+        </ButtonBase>
+      );
+    })}
   </div>
 );

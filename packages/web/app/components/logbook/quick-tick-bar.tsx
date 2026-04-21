@@ -259,7 +259,7 @@ export const QuickTickBar = forwardRef<QuickTickBarHandle, QuickTickBarProps>(({
                 type
               </span>
               <div className={styles.labeledRowPicker}>
-                <InlineAscentTypePicker ascentType={ascentType} onSelect={handleAscentTypeSelect} />
+                <InlineAscentTypePicker ascentType={ascentType} onSelect={handleAscentTypeSelect} canFlash={!tickTarget?.hasPriorHistory && attemptCount === 1} />
               </div>
             </div>
 

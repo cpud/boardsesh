@@ -376,7 +376,7 @@ const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(({
         input: {
           status: editStatus,
           attemptCount: editAttemptCount,
-          quality: editStatus === 'attempt' ? null : (editQuality ?? null),
+          quality: editQuality ?? null,
           difficulty: editDifficulty ?? null,
           comment: editComment,
         },
