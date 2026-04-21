@@ -908,7 +908,11 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
             }}
           >
             <div className={styles.tickRowInner}>
-              {/* Toolbar: expand on left, drag handle centered, close on right */}
+              {/* Drag handle — swipe hint, always at top */}
+              <div className={styles.tickDragHandleRow}>
+                <div className={styles.tickDragHandleBar} />
+              </div>
+              {/* Toolbar: expand on left, close on right */}
               <div className={styles.tickToolbar}>
                 <div
                   className={styles.tickExpandHeader}
@@ -924,9 +928,6 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                     <KeyboardArrowUpOutlined sx={{ fontSize: 16, opacity: 0.7 }} />
                   )}
                   <span className={styles.tickExpandLabel}>{tickBarExpanded ? 'collapse' : 'expand'}</span>
-                </div>
-                <div className={styles.tickDragHandle} aria-hidden="true">
-                  <div className={styles.tickDragHandleBar} />
                 </div>
                 <div className={styles.tickCloseButton}>
                   <IconButton

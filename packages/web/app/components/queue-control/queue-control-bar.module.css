@@ -398,32 +398,11 @@
   transition: none;
 }
 
-/* Toolbar row — expand on left, drag handle centered, close on right */
-.tickToolbar {
+/* Drag handle row — centered pill at top of tick bar */
+.tickDragHandleRow {
   display: flex;
-  align-items: center;
-  padding: 4px 4px 4px 12px;
-}
-
-.tickExpandHeader {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  touch-action: manipulation;
-  flex-shrink: 0;
-}
-
-.tickExpandLabel {
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.tickDragHandle {
-  flex: 1;
-  display: flex;
-  align-items: center;
   justify-content: center;
+  padding: 6px 0 2px;
 }
 
 .tickDragHandleBar {
@@ -437,7 +416,29 @@
   background-color: var(--neutral-500, #6B7280);
 }
 
+/* Toolbar row — expand on left, close on right */
+.tickToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 0 12px;
+}
+
+.tickExpandHeader {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.tickExpandLabel {
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .tickCloseButton {
+  position: static;
   flex-shrink: 0;
 }
 
