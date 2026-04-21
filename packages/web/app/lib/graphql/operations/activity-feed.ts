@@ -56,6 +56,7 @@ export const GET_SESSION_DETAIL = gql`
   query GetSessionDetail($sessionId: ID!) {
     sessionDetail(sessionId: $sessionId) {
       ${SESSION_FEED_ITEM_FIELDS}
+      healthKitWorkoutId
       ticks {
         uuid
         userId

@@ -167,3 +167,178 @@ describe('isCapacitor', () => {
     expect(isCapacitor()).toBe(false);
   });
 });
+
+describe('supportsCapacitorBleManualScan', () => {
+  const originalCapacitor = window.Capacitor;
+
+  afterEach(() => {
+    if (originalCapacitor === undefined) {
+      delete (window as unknown as Record<string, unknown>).Capacitor;
+    } else {
+      window.Capacitor = originalCapacitor;
+    }
+  });
+
+  it('returns false when Capacitor is not present', async () => {
+    delete (window as unknown as Record<string, unknown>).Capacitor;
+    const { supportsCapacitorBleManualScan } = await loadUtils();
+    expect(supportsCapacitorBleManualScan()).toBe(false);
+  });
+
+  it('returns false when BluetoothLe plugin is not present', async () => {
+    Object.defineProperty(window, 'Capacitor', {
+      value: { isNativePlatform: () => true, getPlatform: () => 'ios', Plugins: {} },
+      writable: true,
+      configurable: true,
+    });
+    const { supportsCapacitorBleManualScan } = await loadUtils();
+    expect(supportsCapacitorBleManualScan()).toBe(false);
+  });
+
+  it('returns false when requestLEScan is missing but stopLEScan exists', async () => {
+    Object.defineProperty(window, 'Capacitor', {
+      value: {
+        isNativePlatform: () => true,
+        getPlatform: () => 'ios',
+        Plugins: { BluetoothLe: { stopLEScan: () => Promise.resolve() } },
+      },
+      writable: true,
+      configurable: true,
+    });
+    const { supportsCapacitorBleManualScan } = await loadUtils();
+    expect(supportsCapacitorBleManualScan()).toBe(false);
+  });
+
+  it('returns false when stopLEScan is missing but requestLEScan exists', async () => {
+    Object.defineProperty(window, 'Capacitor', {
+      value: {
+        isNativePlatform: () => true,
+        getPlatform: () => 'ios',
+        Plugins: { BluetoothLe: { requestLEScan: () => Promise.resolve() } },
+      },
+      writable: true,
+      configurable: true,
+    });
+    const { supportsCapacitorBleManualScan } = await loadUtils();
+    expect(supportsCapacitorBleManualScan()).toBe(false);
+  });
+
+  it('returns false when both are present but not functions', async () => {
+    Object.defineProperty(window, 'Capacitor', {
+      value: {
+        isNativePlatform: () => true,
+        getPlatform: () => 'ios',
+        Plugins: { BluetoothLe: { requestLEScan: 'yes', stopLEScan: 'yes' } },
+      },
+      writable: true,
+      configurable: true,
+    });
+    const { supportsCapacitorBleManualScan } = await loadUtils();
+    expect(supportsCapacitorBleManualScan()).toBe(false);
+  });
+
+  it('returns true when both requestLEScan and stopLEScan are functions', async () => {
+    Object.defineProperty(window, 'Capacitor', {
+      value: {
+        isNativePlatform: () => true,
+        getPlatform: () => 'ios',
+        Plugins: {
+          BluetoothLe: {
+            requestLEScan: () => Promise.resolve(),
+            stopLEScan: () => Promise.resolve(),
+          },
+        },
+      },
+      writable: true,
+      configurable: true,
+    });
+    const { supportsCapacitorBleManualScan } = await loadUtils();
+    expect(supportsCapacitorBleManualScan()).toBe(true);
+  });
+});
+
+describe('isNativeApp', () => {
+  const originalCapacitor = window.Capacitor;
+
+  afterEach(() => {
+    if (originalCapacitor === undefined) {
+      delete (window as unknown as Record<string, unknown>).Capacitor;
+    } else {
+      window.Capacitor = originalCapacitor;
+    }
+  });
+
+  it('returns false when Capacitor is not present', async () => {
+    delete (window as unknown as Record<string, unknown>).Capacitor;
+    const { isNativeApp } = await loadUtils();
+    expect(isNativeApp()).toBe(false);
+  });
+
+  it('returns true when isNativePlatform() returns true', async () => {
+    Object.defineProperty(window, 'Capacitor', {
+      value: { isNativePlatform: () => true, getPlatform: () => 'ios', Plugins: {} },
+      writable: true,
+      configurable: true,
+    });
+    const { isNativeApp } = await loadUtils();
+    expect(isNativeApp()).toBe(true);
+  });
+
+  it('returns false when isNativePlatform() returns false', async () => {
+    Object.defineProperty(window, 'Capacitor', {
+      value: { isNativePlatform: () => false, getPlatform: () => 'web', Plugins: {} },
+      writable: true,
+      configurable: true,
+    });
+    const { isNativeApp } = await loadUtils();
+    expect(isNativeApp()).toBe(false);
+  });
+});
+
+describe('getPlatform', () => {
+  const originalCapacitor = window.Capacitor;
+
+  afterEach(() => {
+    if (originalCapacitor === undefined) {
+      delete (window as unknown as Record<string, unknown>).Capacitor;
+    } else {
+      window.Capacitor = originalCapacitor;
+    }
+  });
+
+  it('returns web when Capacitor is not present', async () => {
+    delete (window as unknown as Record<string, unknown>).Capacitor;
+    const { getPlatform } = await loadUtils();
+    expect(getPlatform()).toBe('web');
+  });
+
+  it('returns ios when getPlatform() returns ios', async () => {
+    Object.defineProperty(window, 'Capacitor', {
+      value: { isNativePlatform: () => true, getPlatform: () => 'ios', Plugins: {} },
+      writable: true,
+      configurable: true,
+    });
+    const { getPlatform } = await loadUtils();
+    expect(getPlatform()).toBe('ios');
+  });
+
+  it('returns android when getPlatform() returns android', async () => {
+    Object.defineProperty(window, 'Capacitor', {
+      value: { isNativePlatform: () => true, getPlatform: () => 'android', Plugins: {} },
+      writable: true,
+      configurable: true,
+    });
+    const { getPlatform } = await loadUtils();
+    expect(getPlatform()).toBe('android');
+  });
+
+  it('returns web for unrecognized platform string', async () => {
+    Object.defineProperty(window, 'Capacitor', {
+      value: { isNativePlatform: () => true, getPlatform: () => 'electron', Plugins: {} },
+      writable: true,
+      configurable: true,
+    });
+    const { getPlatform } = await loadUtils();
+    expect(getPlatform()).toBe('web');
+  });
+});

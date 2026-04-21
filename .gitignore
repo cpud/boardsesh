@@ -30,6 +30,9 @@ bun-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Performance traces
+*.trace.json.gz
+
 # local env files
 .env*.local
 !.env.local

@@ -751,6 +751,7 @@ export default function SessionDetailContent({
                   <SaveToHealthKitButton
                     summary={healthKitSummary}
                     boardType={healthKitBoardType}
+                    existingWorkoutId={session.healthKitWorkoutId}
                   />
                 </Box>
               )}

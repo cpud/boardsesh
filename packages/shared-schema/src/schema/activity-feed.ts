@@ -453,5 +453,6 @@ export const activityFeedTypeDefs = /* GraphQL */ `
     downvotes: Int!
     voteScore: Int!
     commentCount: Int!
+    healthKitWorkoutId: String
   }
 `;

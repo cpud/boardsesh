@@ -62,6 +62,15 @@ export async function saveSessionToHealthKit(
     console.warn('[HealthKit] Skipping save: missing startedAt/endedAt');
     return null;
   }
+  const startMs = new Date(summary.startedAt).getTime();
+  const endMs = new Date(summary.endedAt).getTime();
+  const durationSec = Math.round((endMs - startMs) / 1000);
+  console.info(
+    `[HealthKit] Saving workout: startedAt=${summary.startedAt} endedAt=${summary.endedAt} duration=${durationSec}s durationMinutes=${summary.durationMinutes}`,
+  );
+  if (durationSec < 60) {
+    console.warn(`[HealthKit] Duration is only ${durationSec}s — workout will appear as <1 min in Apple Health`);
+  }
   try {
     const result = await plugin.saveWorkout({
       sessionId: summary.sessionId,

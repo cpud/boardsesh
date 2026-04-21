@@ -3,6 +3,7 @@ import { coordinateToHoldId } from '@/app/lib/moonboard-config';
 import {
   getMoonboardBluetoothPacket,
   getMoonboardSerialPosition,
+  isMoonboardDeviceName,
 } from '../bluetooth-moonboard';
 import { splitMessages } from '../bluetooth-shared';
 
@@ -55,5 +56,39 @@ describe('getMoonboardBluetoothPacket', () => {
     expect(new TextDecoder().decode(Uint8Array.from(chunks.flatMap((chunk) => [...chunk])))).toBe(
       new TextDecoder().decode(packet),
     );
+  });
+});
+
+describe('isMoonboardDeviceName', () => {
+  it('returns true for "MoonBoard 2016"', () => {
+    expect(isMoonboardDeviceName('MoonBoard 2016')).toBe(true);
+  });
+
+  it('returns true for any text after "MoonBoard"', () => {
+    expect(isMoonboardDeviceName('MoonBoard A')).toBe(true);
+  });
+
+  it('returns true for the lowercase-b variant "Moonboard"', () => {
+    expect(isMoonboardDeviceName('Moonboard')).toBe(true);
+  });
+
+  it('returns false for all-lowercase "moonboard"', () => {
+    expect(isMoonboardDeviceName('moonboard')).toBe(false);
+  });
+
+  it('returns false for a non-MoonBoard device name', () => {
+    expect(isMoonboardDeviceName('UART Widget')).toBe(false);
+  });
+
+  it('returns false for an empty string', () => {
+    expect(isMoonboardDeviceName('')).toBe(false);
+  });
+
+  it('returns false for undefined', () => {
+    expect(isMoonboardDeviceName(undefined)).toBe(false);
+  });
+
+  it('returns false when the prefix appears mid-string', () => {
+    expect(isMoonboardDeviceName('NotAMoonBoard')).toBe(false);
   });
 });

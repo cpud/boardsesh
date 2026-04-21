@@ -99,5 +99,14 @@ export default async function JoinSessionPage({ params }: Props) {
   const { sessionId: rawSessionId } = await params;
   const sessionId = decodeURIComponent(rawSessionId);
 
-  return <JoinRedirect sessionId={sessionId} />;
+  const joinUrl = `/api/internal/join/${encodeURIComponent(sessionId)}`;
+
+  return (
+    <>
+      <noscript>
+        <meta httpEquiv="refresh" content={`0;url=${joinUrl}`} />
+      </noscript>
+      <JoinRedirect sessionId={sessionId} joinUrl={joinUrl} />
+    </>
+  );
 }

@@ -228,6 +228,7 @@ export type SessionDetail = {
   downvotes: number;
   voteScore: number;
   commentCount: number;
+  healthKitWorkoutId?: string | null;
 };
 
 export type SessionLiveStats = {

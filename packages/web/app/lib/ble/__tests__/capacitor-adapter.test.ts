@@ -12,10 +12,24 @@ import {
 const mockListenerRemove = vi.fn().mockResolvedValue(undefined);
 let disconnectListenerCallback: ((data: { deviceId: string }) => void) | null = null;
 
-const mockBlePlugin = {
+// Capture the scan callback so tests can simulate device discovery
+let scanCallback: ((result: { device: { deviceId: string; name?: string }; localName?: string; rssi: number }) => void) | null = null;
+
+const createRequestLEScanMock = () =>
+  vi.fn().mockImplementation((_options: unknown, callback: typeof scanCallback) => {
+    scanCallback = callback;
+    return Promise.resolve();
+  });
+
+const createStopLEScanMock = () => vi.fn().mockResolvedValue(undefined);
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- vi.fn() mock record needs any for dynamic key access + mock methods + undefined assignment
+const mockBlePlugin: Record<string, any> = { // NOSONAR
   initialize: vi.fn().mockResolvedValue(undefined),
   isEnabled: vi.fn().mockResolvedValue({ value: true }),
   requestDevice: vi.fn().mockResolvedValue({ deviceId: 'dev-1', name: 'Kilter Board' }),
+  requestLEScan: createRequestLEScanMock(),
+  stopLEScan: createStopLEScanMock(),
   connect: vi.fn().mockResolvedValue(undefined),
   disconnect: vi.fn().mockResolvedValue(undefined),
   write: vi.fn().mockResolvedValue(undefined),
@@ -57,7 +71,21 @@ describe('CapacitorBleAdapter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     disconnectListenerCallback = null;
+    scanCallback = null;
     _resetInitCache();
+    mockBlePlugin.initialize.mockResolvedValue(undefined);
+    mockBlePlugin.isEnabled.mockResolvedValue({ value: true });
+    mockBlePlugin.requestDevice.mockResolvedValue({ deviceId: 'dev-1', name: 'Kilter Board' });
+    mockBlePlugin.requestLEScan = createRequestLEScanMock();
+    mockBlePlugin.stopLEScan = createStopLEScanMock();
+    mockBlePlugin.connect.mockResolvedValue(undefined);
+    mockBlePlugin.disconnect.mockResolvedValue(undefined);
+    mockBlePlugin.write.mockResolvedValue(undefined);
+    mockBlePlugin.requestMtu.mockResolvedValue({ value: 185 });
+    mockBlePlugin.addListener.mockImplementation((_event: string, cb: (data: { deviceId: string }) => void) => {
+      disconnectListenerCallback = cb;
+      return Promise.resolve({ remove: mockListenerRemove });
+    });
     adapter = new CapacitorBleAdapter();
   });
 
@@ -315,6 +343,150 @@ describe('CapacitorBleAdapter', () => {
       await adapter.disconnect();
 
       expect(callback).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('requestAndConnect with devicePicker', () => {
+    it('uses manual scan and custom picker when devicePicker is provided', async () => {
+      const pickerAdapter = new CapacitorBleAdapter('kilter', (subscribe) => {
+        // Subscribe to device updates
+        subscribe(() => {});
+        // Simulate immediate user selection
+        return Promise.resolve('scan-dev-1');
+      });
+
+      // Simulate device discovery after requestLEScan starts
+      mockBlePlugin.requestLEScan.mockImplementation((_opts: unknown, cb: typeof scanCallback) => {
+        cb?.({ device: { deviceId: 'scan-dev-1', name: 'My Kilter' }, rssi: -60 });
+        return Promise.resolve();
+      });
+
+      const connection = await pickerAdapter.requestAndConnect();
+
+      expect(connection.deviceId).toBe('scan-dev-1');
+      expect(connection.deviceName).toBe('My Kilter');
+      expect(mockBlePlugin.requestLEScan).toHaveBeenCalledWith(
+        { services: [...AURORA_SCAN_SERVICE_UUIDS] },
+        expect.any(Function),
+      );
+      expect(mockBlePlugin.stopLEScan).toHaveBeenCalled();
+      expect(mockBlePlugin.requestDevice).not.toHaveBeenCalled();
+      expect(mockBlePlugin.connect).toHaveBeenCalledWith({ deviceId: 'scan-dev-1' });
+    });
+
+    it('deduplicates devices by deviceId', async () => {
+      let receivedDevices: Array<{ deviceId: string; name?: string; rssi: number }> = [];
+
+      const pickerAdapter = new CapacitorBleAdapter('kilter', (subscribe) => {
+        subscribe((devices) => {
+          receivedDevices = devices;
+        });
+        // Yield to the microtask queue so scan callbacks fire first, then select
+        return Promise.resolve().then(() => 'dev-A');
+      });
+
+      // Emit the same device twice with updated RSSI
+      mockBlePlugin.requestLEScan.mockImplementation((_opts: unknown, cb: typeof scanCallback) => {
+        cb?.({ device: { deviceId: 'dev-A', name: 'Board A' }, rssi: -80 });
+        cb?.({ device: { deviceId: 'dev-A', name: 'Board A' }, rssi: -55 });
+        return Promise.resolve();
+      });
+
+      await pickerAdapter.requestAndConnect();
+
+      // Should have exactly 1 device (deduplicated), with updated RSSI
+      expect(receivedDevices).toHaveLength(1);
+      expect(receivedDevices[0].rssi).toBe(-55);
+    });
+
+    it('stops scanning even when picker rejects', async () => {
+      const pickerAdapter = new CapacitorBleAdapter('kilter', () => {
+        return Promise.reject(new Error('User cancelled'));
+      });
+
+      await expect(pickerAdapter.requestAndConnect()).rejects.toThrow('User cancelled');
+
+      expect(mockBlePlugin.stopLEScan).toHaveBeenCalled();
+    });
+
+    it('swallows stopLEScan cleanup errors and preserves the original picker rejection', async () => {
+      mockBlePlugin.stopLEScan.mockRejectedValueOnce(new Error('Scan already stopped'));
+
+      const pickerAdapter = new CapacitorBleAdapter('kilter', () => {
+        return Promise.reject(new Error('User cancelled'));
+      });
+
+      await expect(pickerAdapter.requestAndConnect()).rejects.toThrow('User cancelled');
+      expect(mockBlePlugin.stopLEScan).toHaveBeenCalled();
+    });
+
+    it('falls back to requestDevice when no devicePicker is provided', async () => {
+      const fallbackAdapter = new CapacitorBleAdapter('kilter');
+      await fallbackAdapter.requestAndConnect();
+
+      expect(mockBlePlugin.requestDevice).toHaveBeenCalled();
+      expect(mockBlePlugin.requestLEScan).not.toHaveBeenCalled();
+    });
+
+    it('falls back to requestDevice when requestLEScan is unavailable', async () => {
+      mockBlePlugin.requestLEScan = undefined;
+
+      const fallbackAdapter = new CapacitorBleAdapter('kilter', () => Promise.resolve('scan-dev-1'));
+      const connection = await fallbackAdapter.requestAndConnect();
+
+      expect(connection.deviceId).toBe('dev-1');
+      expect(mockBlePlugin.requestDevice).toHaveBeenCalled();
+      expect(mockBlePlugin.connect).toHaveBeenCalledWith({ deviceId: 'dev-1' });
+    });
+
+    it('falls back to requestDevice when stopLEScan is unavailable', async () => {
+      mockBlePlugin.stopLEScan = undefined;
+
+      const fallbackAdapter = new CapacitorBleAdapter('kilter', () => Promise.resolve('scan-dev-1'));
+      const connection = await fallbackAdapter.requestAndConnect();
+
+      expect(connection.deviceId).toBe('dev-1');
+      expect(mockBlePlugin.requestDevice).toHaveBeenCalled();
+      expect(mockBlePlugin.requestLEScan).not.toHaveBeenCalled();
+    });
+
+    it('uses localName from scan result when device.name is missing', async () => {
+      const pickerAdapter = new CapacitorBleAdapter('kilter', (subscribe) => {
+        subscribe(() => {});
+        return Promise.resolve('dev-local');
+      });
+
+      mockBlePlugin.requestLEScan.mockImplementation((_opts: unknown, cb: typeof scanCallback) => {
+        cb?.({ device: { deviceId: 'dev-local' }, localName: 'Local Name', rssi: -70 });
+        return Promise.resolve();
+      });
+
+      const connection = await pickerAdapter.requestAndConnect();
+      expect(connection.deviceName).toBe('Local Name');
+    });
+
+    it('filters out non-MoonBoard Nordic UART devices from the manual picker list', async () => {
+      let receivedDevices: Array<{ deviceId: string; name?: string; rssi: number }> = [];
+
+      const pickerAdapter = new CapacitorBleAdapter('moonboard', (subscribe) => {
+        subscribe((devices) => {
+          receivedDevices = devices;
+        });
+        return Promise.resolve().then(() => 'moon-1');
+      });
+
+      mockBlePlugin.requestLEScan.mockImplementation((_opts: unknown, cb: typeof scanCallback) => {
+        cb?.({ device: { deviceId: 'uart-1', name: 'UART Widget' }, rssi: -50 });
+        cb?.({ device: { deviceId: 'moon-1', name: 'MoonBoard 2016' }, rssi: -60 });
+        return Promise.resolve();
+      });
+
+      const connection = await pickerAdapter.requestAndConnect();
+
+      expect(connection.deviceId).toBe('moon-1');
+      expect(receivedDevices).toEqual([
+        { deviceId: 'moon-1', name: 'MoonBoard 2016', rssi: -60 },
+      ]);
     });
   });
 });
