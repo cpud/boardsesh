@@ -91,7 +91,9 @@ test.describe('Bottom Tab Bar - Navigation', () => {
   });
 
   test('notifications bell in global header should navigate to /notifications', async ({ page }) => {
-    await page.goto('/');
+    // The bell is not rendered on `/` (HIDDEN_HEADER_PAGES suppresses the full header
+    // there). `/you` renders the full header with the bell unconditionally.
+    await loginAs(page, '/you');
     await waitForPageReady(page);
 
     await page.getByRole('link', { name: 'Notifications' }).click();
