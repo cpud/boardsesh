@@ -42,7 +42,7 @@ Before working on a specific part of the codebase, check the `docs/` directory f
 
 ### Development Setup
 
-The development database uses a **pre-built Docker image** (`ghcr.io/boardsesh/boardsesh-dev-db`) that already contains all Kilter, Tension, and MoonBoard board data, a test user, and social seed data with migrations applied. This means `bun run db:up` is fast — it just pulls the image, starts containers, and runs any newer migrations.
+The development database uses a **pre-built Docker image** (`ghcr.io/boardsesh/boardsesh-dev-db`) that already contains all Kilter, Tension, and MoonBoard board data, a test user, and social seed data with migrations applied. This means `vp run db:up` is fast — it just pulls the image, starts containers, and runs any newer migrations.
 
 ```bash
 # Install Vite+ CLI (one-time, manages Node.js, linting, formatting, testing)
@@ -60,7 +60,10 @@ TENSION_SYNC_TOKEN=your_tension_token_here
 # For local development, the app defaults to http://localhost:3000
 
 # Install all dependencies (from root)
-bun install
+vp install
+
+# Install Git hooks (runs vp staged on commit)
+vp config
 
 # Start everything (databases, backend, web)
 # First run pulls the pre-built image (~1GB) with all board data included.

@@ -2,7 +2,10 @@
 set -euo pipefail
 
 echo "==> Installing dependencies..."
-bun install --frozen-lockfile 2>/dev/null || bun install
+vp install
+
+echo "==> Installing git hooks..."
+vp config
 
 echo "==> Ensuring gh CLI is installed..."
 if ! command -v gh &>/dev/null; then

@@ -116,10 +116,14 @@ else
     print_success "Vite+ installed successfully"
 fi
 
+echo "Setting up Git hooks..."
+vp config
+print_success "Git hooks installed (pre-commit will run vp staged)"
+
 print_step "Step 3: Installing Dependencies"
 
-echo "Installing packages with Bun..."
-if ! bun install; then
+echo "Installing packages..."
+if ! vp install; then
     print_error "Failed to install dependencies"
 fi
 print_success "Dependencies installed successfully"
@@ -190,7 +194,8 @@ get_aurora_token() {
     payload=$(jq -n --arg u "$username" --arg p "$password" \
         '{"username":$u,"password":$p,"tou":"accepted","pp":"accepted","ua":"app"}')
 
-    local token_response=$(curl -s -X POST "$board_url/sessions" \
+    local token_response
+    token_response=$(curl -s -X POST "$board_url/sessions" \
         -H "Content-Type: application/json" \
         -H "Accept: application/json" \
         -H "User-Agent: Kilter%20Board/202 CFNetwork/1568.100.1 Darwin/24.0.0" \
@@ -200,7 +205,8 @@ get_aurora_token() {
         -d "$payload")
 
     if [ $? -eq 0 ]; then
-        local token=$(echo "$token_response" | jq -r '.session.token // empty')
+        local token
+        token=$(echo "$token_response" | jq -r '.session.token // empty')
         if [ -n "$token" ] && [ "$token" != "null" ]; then
             echo "$token"
             return 0

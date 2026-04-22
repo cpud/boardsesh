@@ -93,9 +93,9 @@ PG_CONTAINER=$(docker ps --filter "publish=5432" --filter "status=running" -q 2>
 if [ -n "$PG_CONTAINER" ]; then
   PG_IMAGE=$(docker inspect "$PG_CONTAINER" --format='{{.Config.Image}}' 2>/dev/null)
   case "$PG_IMAGE" in
-    *boardsesh*) ;;
+    *boardsesh-dev-db*) ;;
     *)
-      echo "WARNING: A postgres container is running on port 5432 but it is not the boardsesh dev DB (image: $PG_IMAGE). Skipping cross-worktree fast path."
+      echo "WARNING: A postgres container is running on port 5432 but it is not the boardsesh dev DB (expected image matching *boardsesh-dev-db*, got: $PG_IMAGE). Skipping cross-worktree fast path."
       PG_CONTAINER=""
       ;;
   esac
