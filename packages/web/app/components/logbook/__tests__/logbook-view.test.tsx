@@ -22,16 +22,30 @@ vi.mock('@/app/components/ui/empty-state', () => ({
   EmptyState: ({ description }: { description: string }) => <div data-testid="empty-state">{description}</div>,
 }));
 
+const mockVoteSummaryProvider = vi.fn();
 vi.mock('@/app/components/social/vote-summary-context', () => ({
-  VoteSummaryProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  VoteSummaryProvider: ({
+    entityType,
+    entityIds,
+    children,
+  }: {
+    entityType: string;
+    entityIds: string[];
+    children: React.ReactNode;
+  }) => {
+    mockVoteSummaryProvider({ entityType, entityIds });
+    return <>{children}</>;
+  },
 }));
 
 vi.mock('@/app/components/social/vote-button', () => ({
-  default: () => <div data-testid="vote-button" />,
+  default: ({ entityId }: { entityId: string }) => <div data-testid="vote-button" data-entity-id={entityId} />,
 }));
 
 vi.mock('@/app/components/social/feed-comment-button', () => ({
-  default: () => <div data-testid="feed-comment-button" />,
+  default: ({ entityId }: { entityId: string }) => (
+    <div data-testid="feed-comment-button" data-entity-id={entityId} />
+  ),
 }));
 
 import { LogbookView } from '../logbook-view';
@@ -63,6 +77,56 @@ describe('LogbookView', () => {
     render(<LogbookView currentClimb={makeClimb()} />);
     expect(screen.getByTestId('empty-state')).toBeTruthy();
     expect(screen.getByText('No ascents logged for this climb')).toBeTruthy();
+  });
+
+  it('suppresses the social footer and excludes temp- UUIDs from the vote-summary fetch for optimistic entries', () => {
+    mockUseBoardProvider.mockReturnValue({
+      boardName: 'kilter',
+      logbook: [
+        {
+          uuid: 'temp-123',
+          climb_uuid: 'climb-1',
+          climbed_at: '2025-02-02T12:00:00Z',
+          angle: 40,
+          tries: 1,
+          is_ascent: true,
+          status: 'flash',
+          is_mirror: false,
+          quality: null,
+          comment: 'optimistic',
+        },
+        {
+          uuid: 'persisted-456',
+          climb_uuid: 'climb-1',
+          climbed_at: '2025-02-01T12:00:00Z',
+          angle: 40,
+          tries: 2,
+          is_ascent: true,
+          status: 'send',
+          is_mirror: false,
+          quality: 4,
+          comment: 'saved',
+        },
+      ],
+    });
+
+    render(<LogbookView currentClimb={makeClimb()} />);
+
+    // Only the persisted tick gets a like + comment footer — the optimistic
+    // row must not try to vote on or comment against a tick the server
+    // doesn't know about yet.
+    const voteButtons = screen.getAllByTestId('vote-button');
+    expect(voteButtons).toHaveLength(1);
+    expect(voteButtons[0].getAttribute('data-entity-id')).toBe('persisted-456');
+
+    const commentButtons = screen.getAllByTestId('feed-comment-button');
+    expect(commentButtons).toHaveLength(1);
+    expect(commentButtons[0].getAttribute('data-entity-id')).toBe('persisted-456');
+
+    expect(mockVoteSummaryProvider).toHaveBeenCalledWith({
+      entityType: 'tick',
+      entityIds: ['persisted-456'],
+    });
   });
 
   it('renders normalized status icons, mirrored tags, and ratings for successful ascents', () => {

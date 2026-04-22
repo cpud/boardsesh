@@ -47,6 +47,9 @@ export const CrewLogbookView: React.FC<CrewLogbookViewProps> = ({ currentClimb, 
     staleTime: 60 * 1000,
   });
 
+  const items = useMemo(() => data?.items ?? [], [data]);
+  const tickUuids = useMemo(() => items.map((item) => item.uuid), [items]);
+
   if (authLoading || (enabled && isLoading)) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
@@ -62,9 +65,6 @@ export const CrewLogbookView: React.FC<CrewLogbookViewProps> = ({ currentClimb, 
   if (isError) {
     return <EmptyState description="Couldn't load your crew's logbook. Try again in a bit." />;
   }
-
-  const items = useMemo(() => data?.items ?? [], [data]);
-  const tickUuids = useMemo(() => items.map((item) => item.uuid), [items]);
 
   if (items.length === 0) {
     return <EmptyState description="None of your crew have logged this climb yet" />;

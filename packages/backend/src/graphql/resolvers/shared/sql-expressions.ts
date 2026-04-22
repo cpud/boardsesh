@@ -64,8 +64,18 @@ export const consensusDifficultyExpr = sql<number | null>`ROUND(${dbSchema.board
 
 /**
  * Number of non-deleted comments targeting each tick, as a correlated
- * subquery. Use inside a query whose FROM includes `boardseshTicks` so the
- * outer `boardseshTicks.uuid` reference resolves per-row.
+ * subquery.
+ *
+ * PRECONDITION: the outer query's FROM clause MUST include `boardseshTicks`.
+ * The subquery's WHERE references `boardseshTicks.uuid` from the outer row;
+ * using this expression from a query that does not join `boardseshTicks`
+ * produces a Postgres error at runtime (there is no compile-time guard —
+ * Drizzle's SQL template type cannot encode table-scope requirements).
+ *
+ * Correctness is also size-sensitive: this subquery runs once per returned
+ * row. Only use it in queries with a bounded LIMIT (e.g. followingClimbAscents
+ * caps at 100, and ticks is scoped by user + optional climbUuids). For larger
+ * result sets, prefer a single LEFT JOIN on a grouped COUNT(*) CTE instead.
  */
 export const tickCommentCountExpr = sql<number>`(
   SELECT COUNT(*)::int
