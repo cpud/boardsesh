@@ -868,32 +868,36 @@ describe('QuickTickBar', () => {
 
       expect(onAscentTypeChange).toHaveBeenCalledWith('send');
     });
+
+    it('reports send when the climb already has userAscents on mount', () => {
+      mockLogbookRef.current = [];
+      const onAscentTypeChange = vi.fn();
+      const climbWithHistory = makeClimb({ userAscents: 1, userAttempts: 0 });
+      render(
+        <QuickTickBar {...defaultProps} currentClimb={climbWithHistory} onAscentTypeChange={onAscentTypeChange} />,
+      );
+      expect(onAscentTypeChange).toHaveBeenLastCalledWith('send');
+    });
+
+    it('reports send when the climb already has userAttempts on mount', () => {
+      mockLogbookRef.current = [];
+      const onAscentTypeChange = vi.fn();
+      const climbWithAttempts = makeClimb({ userAscents: 0, userAttempts: 2 });
+      render(
+        <QuickTickBar {...defaultProps} currentClimb={climbWithAttempts} onAscentTypeChange={onAscentTypeChange} />,
+      );
+      expect(onAscentTypeChange).toHaveBeenLastCalledWith('send');
+    });
+
+    it('reports send when the logbook contains a prior entry for this climb', () => {
+      mockLogbookRef.current = [makeLogbookEntry({ uuid: 'p1', climb_uuid: 'climb-1', angle: 40 })];
+      const onAscentTypeChange = vi.fn();
+      render(<QuickTickBar {...defaultProps} onAscentTypeChange={onAscentTypeChange} />);
+      expect(onAscentTypeChange).toHaveBeenLastCalledWith('send');
+    });
   });
 
   describe('expanded mode', () => {
-    it('disables flash option when user has prior history', () => {
-      mockLogbookRef.current = [];
-      const climbWithHistory = makeClimb({ userAscents: 2, userAttempts: 0 });
-      const onExpandedChange = vi.fn();
-      render(
-        <QuickTickBar
-          {...defaultProps}
-          currentClimb={climbWithHistory}
-          expanded={true}
-          onExpandedChange={onExpandedChange}
-        />,
-      );
-
-      // The ascent type picker should be visible in expanded mode.
-      const ascentTypeListbox = screen.getByRole('listbox', { name: 'Ascent type' });
-      expect(ascentTypeListbox).toBeTruthy();
-
-      // The Flash option should be disabled because the climb has prior history.
-      const flashOption = screen.getByRole('option', { name: 'Flash' });
-      expect(flashOption.getAttribute('aria-disabled')).toBe('true');
-      expect(flashOption.hasAttribute('disabled')).toBe(true);
-    });
-
     it('does not render save button in expanded mode', () => {
       const onExpandedChange = vi.fn();
       render(<QuickTickBar {...defaultProps} expanded={true} onExpandedChange={onExpandedChange} />);
