@@ -5,7 +5,6 @@ import { track } from '@vercel/analytics';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import ButtonBase from '@mui/material/ButtonBase';
 import LoginOutlined from '@mui/icons-material/LoginOutlined';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import PlayCircleOutlineOutlined from '@mui/icons-material/PlayCircleOutlineOutlined';
@@ -280,7 +279,6 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
   };
 
   const hasSelection = selectedBoard || selectedCustomConfig;
-  const selectedName = selectedBoard?.name ?? selectedCustomConfig?.name;
 
   const boardSelector = (
     <Box>

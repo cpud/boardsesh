@@ -1,5 +1,4 @@
 import { createYoga } from 'graphql-yoga';
-import type { IncomingMessage } from 'http';
 import { v4 as uuidv4 } from 'uuid';
 import { schema } from './index';
 import { validateNextAuthToken } from '../middleware/auth';

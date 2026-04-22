@@ -163,9 +163,6 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
   const isAuthenticated = playlistsContext?.isAuthenticated ?? playlistsProviderProps.isAuthenticated;
   const canCreatePlaylistHere = !!playlistBoardName && playlistLayoutId > 0;
 
-  // Hide playlists for moonboard (not yet supported)
-  const isMoonboard = playlistBoardName === 'moonboard';
-
   // Determine active tab from pathname
   const activeTabFromPath = getActiveTab(pathname);
   const activeTab = isCreatePlaylistOpen ? 'create' : activeTabFromPath;
@@ -369,44 +366,6 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
     }
   };
 
-  const handleOpenCreatePlaylist = () => {
-    if (!isAuthenticated) {
-      openAuthModal({
-        title: 'Sign in to create playlists',
-        description: 'Sign in to create and manage your climb playlists.',
-        onSuccess: () => {
-          if (!canCreatePlaylistHere) {
-            if (boardConfigs) {
-              setPendingCreateAction('playlist');
-              setIsBoardSelectorRendered(true);
-              setIsBoardSelectorOpen(true);
-            } else {
-              showMessage('Select a board before creating a playlist', 'error');
-            }
-            return;
-          }
-          setIsCreatePlaylistRendered(true);
-          setIsCreatePlaylistOpen(true);
-        },
-      });
-      return;
-    }
-
-    if (!canCreatePlaylistHere) {
-      if (boardConfigs) {
-        setPendingCreateAction('playlist');
-        setIsBoardSelectorRendered(true);
-        setIsBoardSelectorOpen(true);
-      } else {
-        showMessage('Select a board before creating a playlist', 'error');
-      }
-      return;
-    }
-
-    setIsCreatePlaylistRendered(true);
-    setIsCreatePlaylistOpen(true);
-  };
-
   const handleBoardSelected = useCallback(
     (url: string, config?: StoredBoardConfig) => {
       const selectedContext = getBoardContextFromSelector(config);
@@ -554,7 +513,7 @@ function BottomTabBar({ boardDetails, angle, boardConfigs }: BottomTabBarProps) 
 
       // Navigate to the new playlist
       router.push(getPlaylistUrl(newPlaylist.uuid));
-    } catch (error) {
+    } catch {
       showMessage('Failed to create playlist', 'error');
     } finally {
       setIsCreatingPlaylist(false);

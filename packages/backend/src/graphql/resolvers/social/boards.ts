@@ -848,7 +848,7 @@ export const socialBoardQueries = {
   /**
    * Get leaderboard for a board
    */
-  boardLeaderboard: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
+  boardLeaderboard: async (_: unknown, { input }: { input: unknown }, _ctx: ConnectionContext) => {
     const validatedInput = validateInput(BoardLeaderboardInputSchema, input, 'input');
     const { boardUuid, period } = validatedInput;
     const limit = validatedInput.limit ?? 20;

@@ -6,13 +6,12 @@
  * Usage: bunx tsx scripts/seed-board-locations.ts
  */
 
-import { eq, and, sql, isNull } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 
 import { users } from '../src/schema/auth/users.js';
-import { userBoards } from '../src/schema/app/boards.js';
 import { gyms } from '../src/schema/app/gyms.js';
 import { createScriptDb, getScriptDatabaseUrl } from './db-connection.js';
 

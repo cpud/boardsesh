@@ -217,7 +217,7 @@ export function useClimbActions({
         }
       }
     }
-  }, [climb, viewDetailsUrl, boardDetails.board_name, onActionComplete]);
+  }, [climb, viewDetailsUrl, boardDetails.board_name, onActionComplete, showMessage]);
 
   return {
     // Action handlers

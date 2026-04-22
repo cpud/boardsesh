@@ -113,7 +113,7 @@ export async function handleOcrTestDataUpload(req: IncomingMessage, res: ServerR
         headers: req.headers as { 'content-type': string },
         limits: { fileSize: MAX_FILE_SIZE, files: 1 },
       });
-    } catch (err) {
+    } catch {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Invalid request format' }));
       resolve();

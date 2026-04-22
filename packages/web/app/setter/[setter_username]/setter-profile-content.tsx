@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
@@ -112,7 +113,7 @@ export default function SetterProfileContent({ username }: SetterProfileContentP
               style={{ backgroundColor: themeTokens.colors.primary, overflow: 'hidden' }}
             >
               {avatarUrl ? (
-                <img src={avatarUrl} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <Image src={avatarUrl} alt={displayName} fill style={{ objectFit: 'cover' }} />
               ) : (
                 <PersonOutlined className={styles.heroSquareIcon} />
               )}

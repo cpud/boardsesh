@@ -95,7 +95,6 @@ export const GraphQLQueueProvider = ({
     isPersistentSessionActive,
     persistentSession,
     backendUrl,
-    searchParams,
     pathname,
     startSession,
     joinSession,

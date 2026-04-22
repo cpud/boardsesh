@@ -102,46 +102,49 @@ const PlaylistGeneratorDrawer: React.FC<PlaylistGeneratorDrawerProps> = ({
   }, [selectedType, defaultTargetGrade]);
 
   // Search for climbs at a specific grade
-  const searchClimbsForGrade = async (grade: number, excludeUuids: Set<string>): Promise<Climb[]> => {
-    const input: ClimbSearchInputVariables['input'] = {
-      boardName: boardDetails.board_name,
-      layoutId: boardDetails.layout_id,
-      sizeId: boardDetails.size_id,
-      setIds: boardDetails.set_ids.join(','),
-      angle,
-      minGrade: grade,
-      maxGrade: grade,
-      minAscents: options?.minAscents || 5,
-      sortBy: 'quality',
-      sortOrder: 'desc',
-      page: 1,
-      pageSize: 50, // Get a pool of climbs to choose from
-      onlyTallClimbs: options?.onlyTallClimbs || false,
-    };
+  const searchClimbsForGrade = useCallback(
+    async (grade: number, excludeUuids: Set<string>): Promise<Climb[]> => {
+      const input: ClimbSearchInputVariables['input'] = {
+        boardName: boardDetails.board_name,
+        layoutId: boardDetails.layout_id,
+        sizeId: boardDetails.size_id,
+        setIds: boardDetails.set_ids.join(','),
+        angle,
+        minGrade: grade,
+        maxGrade: grade,
+        minAscents: options?.minAscents || 5,
+        sortBy: 'quality',
+        sortOrder: 'desc',
+        page: 1,
+        pageSize: 50, // Get a pool of climbs to choose from
+        onlyTallClimbs: options?.onlyTallClimbs || false,
+      };
 
-    // Apply climb bias filters if user is authenticated
-    if (options && isAuthenticated) {
-      switch (options.climbBias) {
-        case 'unfamiliar':
-          input.hideAttempted = true;
-          input.hideCompleted = true;
-          break;
-        case 'attempted':
-          input.showOnlyAttempted = true;
-          break;
-        // 'any' - no additional filters
+      // Apply climb bias filters if user is authenticated
+      if (options && isAuthenticated) {
+        switch (options.climbBias) {
+          case 'unfamiliar':
+            input.hideAttempted = true;
+            input.hideCompleted = true;
+            break;
+          case 'attempted':
+            input.showOnlyAttempted = true;
+            break;
+          // 'any' - no additional filters
+        }
       }
-    }
 
-    const response = await executeGraphQL<ClimbSearchResponse, ClimbSearchInputVariables>(
-      SEARCH_CLIMBS,
-      { input },
-      token,
-    );
+      const response = await executeGraphQL<ClimbSearchResponse, ClimbSearchInputVariables>(
+        SEARCH_CLIMBS,
+        { input },
+        token,
+      );
 
-    // Filter out already selected climbs
-    return response.searchClimbs.climbs.filter((c) => !excludeUuids.has(c.uuid));
-  };
+      // Filter out already selected climbs
+      return response.searchClimbs.climbs.filter((c) => !excludeUuids.has(c.uuid));
+    },
+    [boardDetails, angle, options, isAuthenticated, token],
+  );
 
   // Generate the playlist
   const handleGenerate = useCallback(async () => {
@@ -238,7 +241,7 @@ const PlaylistGeneratorDrawer: React.FC<PlaylistGeneratorDrawerProps> = ({
 
     onSuccess?.();
     onClose();
-  }, [options, plannedSlots, playlistUuid, angle, token, isAuthenticated, boardDetails, onSuccess, onClose]);
+  }, [options, plannedSlots, playlistUuid, angle, token, onSuccess, onClose, showMessage, searchClimbsForGrade]);
 
   // Get workout type info
   const workoutTypeInfo = selectedType ? WORKOUT_TYPES.find((t) => t.type === selectedType) : null;

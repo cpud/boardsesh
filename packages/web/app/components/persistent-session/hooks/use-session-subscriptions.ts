@@ -36,7 +36,7 @@ export function useSessionSubscriptions({
   queue,
   currentClimbQueueItem,
   lastReceivedStateHash,
-  liveSessionStats,
+  liveSessionStats: _liveSessionStats,
   setQueueState,
   setLiveSessionStats,
   refs,

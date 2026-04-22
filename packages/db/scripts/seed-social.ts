@@ -1004,7 +1004,6 @@ async function seedSocialData() {
     console.log('\n--- Step 9: Creating threaded comments on ticks ---');
 
     // Build a fast tick UUID lookup for notification generation
-    const tickByUuid = new Map(tickRecords.map((t) => [t.uuid!, t]));
     const allUsers = [...fakeUserIds, ...devUsers.map((u) => u.id)];
 
     // ── Step 9a: Build parent comment records ────────────────────────────────

@@ -217,7 +217,7 @@ export default function LikedClimbsList({ boardDetails, angle }: LikedClimbsList
     staleTime: 5 * 60 * 1000,
   });
 
-  const allClimbs: Climb[] = data?.pages.flatMap((page) => page.climbs as Climb[]) ?? [];
+  const allClimbs: Climb[] = useMemo(() => data?.pages.flatMap((page) => page.climbs as Climb[]) ?? [], [data?.pages]);
   const totalCount = data?.pages[0]?.totalCount ?? 0;
 
   useEffect(() => {

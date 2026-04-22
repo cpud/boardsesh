@@ -1,4 +1,4 @@
-import { DocumentNode, Kind, type DefinitionNode, type SelectionSetNode } from 'graphql';
+import { DocumentNode, Kind, type SelectionSetNode } from 'graphql';
 
 const MAX_QUERY_DEPTH = 10;
 

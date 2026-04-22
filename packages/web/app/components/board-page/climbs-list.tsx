@@ -532,7 +532,7 @@ const ClimbsList = ({
     if (lastVirtualItem.index >= visibleClimbs.length - 5 && hasMore && !isFetching) {
       handleLoadMore();
     }
-  }, [viewMode, lastVirtualItem?.index, visibleClimbs.length, hasMore, isFetching, handleLoadMore]);
+  }, [viewMode, lastVirtualItem, visibleClimbs.length, hasMore, isFetching, handleLoadMore]);
 
   return (
     <SelectionStoreContext.Provider value={selectionStore}>

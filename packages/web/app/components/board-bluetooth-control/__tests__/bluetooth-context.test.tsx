@@ -69,7 +69,7 @@ function createTestBoardDetails(overrides?: Partial<BoardDetails>): BoardDetails
 function createWrapper(boardDetails?: BoardDetails) {
   const details = boardDetails ?? createTestBoardDetails();
   return function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(BluetoothProvider, { boardDetails: details, children });
+    return React.createElement(BluetoothProvider, { boardDetails: details }, children);
   };
 }
 

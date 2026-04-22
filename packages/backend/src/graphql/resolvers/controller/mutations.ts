@@ -277,13 +277,13 @@ export const controllerMutations = {
    */
   controllerHeartbeat: async (
     _: unknown,
-    { sessionId }: { sessionId: string },
+    { sessionId: _sessionId }: { sessionId: string },
     ctx: ConnectionContext,
   ): Promise<boolean> => {
     await applyRateLimit(ctx, 120); // Allow frequent heartbeats
 
     // Validate API key authentication via context
-    const { controllerId, controllerApiKey } = requireControllerAuth(ctx);
+    const { controllerApiKey } = requireControllerAuth(ctx);
 
     // Update lastSeenAt
     await db
@@ -355,7 +355,7 @@ export const controllerMutations = {
     await applyRateLimit(ctx, 30);
 
     // Verify controller is authenticated and authorized for this session
-    const { controllerId } = await requireControllerAuthorizedForSession(ctx, sessionId);
+    await requireControllerAuthorizedForSession(ctx, sessionId);
 
     // Get current queue state
     const currentState = await roomManager.getQueueState(sessionId);

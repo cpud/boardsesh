@@ -1,3 +1,4 @@
+/* eslint-disable */
 /* @ts-self-types="./board_renderer_wasm.d.ts" */
 
 /**

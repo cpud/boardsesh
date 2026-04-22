@@ -1,4 +1,4 @@
-import { HOST_BASES, AuroraBoardName, LoginResponse, Session, ClientOptions } from './types';
+import { HOST_BASES, LoginResponse, Session, ClientOptions } from './types';
 
 /**
  * Aurora Climbing API Client

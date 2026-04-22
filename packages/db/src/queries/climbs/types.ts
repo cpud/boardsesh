@@ -1,4 +1,4 @@
-import type { BoardName, HoldState } from '@boardsesh/shared-schema';
+import type { BoardName } from '@boardsesh/shared-schema';
 
 /**
  * Route parameters identifying a specific board configuration.

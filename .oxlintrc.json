@@ -6,7 +6,9 @@
     "typeCheck": true
   },
   "rules": {
-    "@typescript-eslint/no-explicit-any": "deny"
+    "@typescript-eslint/no-explicit-any": "deny",
+    "no-unused-vars": "error",
+    "import/no-cycle": "error"
   },
   "ignorePatterns": [
     "dist/**",

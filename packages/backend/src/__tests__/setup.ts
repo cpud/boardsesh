@@ -291,14 +291,14 @@ beforeAll(async () => {
     console.log('Test database check:', error);
     try {
       await adminClient.end();
-    } catch (_) {
+    } catch {
       // ignore cleanup errors
     }
     return;
   } finally {
     try {
       await adminClient.end();
-    } catch (_) {
+    } catch {
       // ignore cleanup errors
     }
   }

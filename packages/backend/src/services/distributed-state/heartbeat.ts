@@ -1,7 +1,7 @@
 import type Redis from 'ioredis';
 import { KEYS, TTL } from './constants';
 import { cleanupStaleSessionMembers } from './session-ops';
-import { removeConnection, getConnection } from './connection-ops';
+import { removeConnection } from './connection-ops';
 
 /**
  * Update instance heartbeat in Redis.

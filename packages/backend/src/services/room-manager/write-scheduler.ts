@@ -2,7 +2,6 @@ import type { ClimbQueueItem } from '@boardsesh/shared-schema';
 import { db } from '../../db/client';
 import { sessions, sessionQueues } from '../../db/schema';
 import { eq } from 'drizzle-orm';
-import type { RedisSessionStore } from '../redis-session-store';
 import type { DistributedStateManager } from '../distributed-state';
 import { isForeignKeyViolation, type PendingWrite } from './types';
 

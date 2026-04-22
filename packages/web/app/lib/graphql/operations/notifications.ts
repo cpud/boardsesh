@@ -3,7 +3,6 @@ import type {
   Notification,
   NotificationConnection,
   GroupedNotificationConnection,
-  NotificationType,
   SocialEntityType,
 } from '@boardsesh/shared-schema';
 

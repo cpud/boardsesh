@@ -11,8 +11,6 @@ import { convertQuality } from './convert-quality';
 
 import { buildInferredSessionsForUser } from './inferred-session-builder';
 
-type AuroraRowData = Record<string, string>;
-
 /**
  * Get NextAuth user ID from Aurora user ID
  */

@@ -18,7 +18,7 @@ import type { ClimbQueueItem } from '@boardsesh/shared-schema';
 import type { CreateSessionInput } from '../shared/types';
 import { db } from '../../../db/client';
 import { esp32Controllers, userBoards } from '@boardsesh/db/schema/app';
-import { sessionBoards, sessions } from '../../../db/schema';
+import { sessionBoards } from '../../../db/schema';
 import { eq, inArray } from 'drizzle-orm';
 import { generateSessionSummary } from './session-summary';
 import { adoptRecentTicksForSession, extractBoardType } from '../../../jobs/inferred-session-builder';
@@ -30,7 +30,7 @@ import { adoptRecentTicksForSession, extractBoardType } from '../../../jobs/infe
 async function authorizeUserControllersForSession(userId: string, sessionId: string): Promise<void> {
   try {
     // Update all controllers owned by this user to be authorized for this session
-    const result = await db
+    await db
       .update(esp32Controllers)
       .set({ authorizedSessionId: sessionId })
       .where(eq(esp32Controllers.userId, userId));

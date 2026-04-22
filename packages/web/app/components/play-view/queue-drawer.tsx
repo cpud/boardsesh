@@ -133,6 +133,7 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({ open, onClose, onTransitionEn
       // Always propagate to parent for lifecycle management
       onTransitionEnd?.(transitionOpen);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- queuePaperRef is a stable ref
     [onTransitionEnd],
   );
 

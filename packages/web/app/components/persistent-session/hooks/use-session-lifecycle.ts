@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
+import { useState, useCallback, useEffect, type Dispatch, type SetStateAction } from 'react';
 import { createGraphQLClient, execute, subscribe, Client } from '../../graphql-queue/graphql-client';
 import {
   INITIAL_RETRY_DELAY_MS,
@@ -154,9 +154,11 @@ export function useSessionLifecycle({
   // Keep refs in sync
   useEffect(() => {
     sessionRef.current = session;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sessionRef is a stable ref
   }, [session]);
   useEffect(() => {
     activeSessionRef.current = activeSession;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- activeSessionRef is a stable ref
   }, [activeSession]);
 
   // Session lifecycle functions
@@ -228,6 +230,7 @@ export function useSessionLifecycle({
           console.error('[PersistentSession] Failed to get session summary:', err);
         });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refs are stable, only .current changes
   }, [deactivateSession]);
 
   // Connect to session when activeSession changes
@@ -603,6 +606,7 @@ export function useSessionLifecycle({
         clearTimeout(retryConnectTimeout);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refs are stable, only .current changes; intentional dep list
   }, [activeSession, isAuthLoading, handleQueueEvent, handleSessionEvent, setSession, pendingInitialQueue]);
 
   return {

@@ -214,7 +214,7 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
         setSaving(false);
       }
     },
-    [boardDetails],
+    [boardDetails, showMessage],
   );
 
   // Debounced save - waits 500ms after last change before saving

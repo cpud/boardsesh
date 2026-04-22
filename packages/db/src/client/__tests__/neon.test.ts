@@ -1,9 +1,5 @@
-import { describe, it, beforeEach, afterEach, mock } from 'node:test';
+import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-
-// Mock dependencies before importing the module under test
-const mockPoolEnd = mock.fn(async () => {});
-const mockPostgresEnd = mock.fn(async () => {});
 
 // We test closePool by directly importing and manipulating the module.
 // Since the module uses singleton state, we need to test the exported functions.

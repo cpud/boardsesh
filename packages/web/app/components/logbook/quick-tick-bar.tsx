@@ -12,7 +12,6 @@ import { TENSION_KILTER_GRADES } from '@/app/lib/board-data';
 import { loadTickDraft } from '@/app/lib/tick-draft-db';
 import { useTickSave, buildTickTarget, type TickTarget } from '@/app/hooks/use-tick-save';
 import type { TickStatus } from '@/app/hooks/use-logbook';
-import { themeTokens } from '@/app/theme/theme-config';
 import {
   TickControls,
   TickGradeButton,

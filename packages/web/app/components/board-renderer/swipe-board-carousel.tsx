@@ -150,6 +150,7 @@ const SwipeBoardCarousel = React.memo<SwipeBoardCarouselProps>(
           (swipeHandlers.ref as React.RefCallback<HTMLElement>)(node);
         }
       },
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-create when ref callback changes
       [doubleTapRef, swipeHandlers.ref],
     );
 

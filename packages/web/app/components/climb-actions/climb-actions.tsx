@@ -346,7 +346,8 @@ function DropdownActionRenderer({
       hasReportedRef.current = true;
       onMenuItemRef.current(result.menuItem);
     }
-  }, [result.available]); // Only depend on availability, not menuItem object
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Only depend on availability, not menuItem object
+  }, [result.available]);
 
   // Render any elements needed in DOM (modals, drawers, etc.)
   if (!result.available || !result.element) return null;

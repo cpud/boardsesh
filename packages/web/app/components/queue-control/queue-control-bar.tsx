@@ -188,7 +188,6 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
   const handleCloseDrawer = useCallback(() => setActiveDrawer('none'), []);
 
   const isViewPage = pathname.includes('/view/');
-  const isListPage = pathname.includes('/list');
   const isPlayPage = pathname.includes('/play/');
   const { currentClimb } = useCurrentClimb();
   const { queue } = useQueueList();
@@ -278,8 +277,8 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
     !isDisconnected &&
     (connectionState === 'reconnecting' || connectionState === 'stale' || connectionState === 'error');
 
-  const nextClimb = useMemo(() => getNextClimbQueueItem(), [getNextClimbQueueItem, queue, currentClimb]);
-  const previousClimb = useMemo(() => getPreviousClimbQueueItem(), [getPreviousClimbQueueItem, queue, currentClimb]);
+  const nextClimb = useMemo(() => getNextClimbQueueItem(), [getNextClimbQueueItem]);
+  const previousClimb = useMemo(() => getPreviousClimbQueueItem(), [getPreviousClimbQueueItem]);
   const shouldNavigate = isViewPage || isPlayPage;
 
   // Build URL for a climb item (for navigation on view/play pages)

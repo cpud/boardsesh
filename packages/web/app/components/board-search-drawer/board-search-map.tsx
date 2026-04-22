@@ -77,6 +77,8 @@ export default function BoardSearchMap({
     let cancelled = false;
     let resizeObserver: ResizeObserver | null = null;
 
+    const markersByUuid = markersByUuidRef.current;
+
     // The `leaflet/dist/leaflet.css` import loads the Leaflet stylesheet via
     // Next.js's CSS import handling. It isn't a real ES module so TypeScript
     // can't type-check it — hence the @ts-expect-error. Do NOT remove the
@@ -148,7 +150,7 @@ export default function BoardSearchMap({
         mapRef.current.remove();
         mapRef.current = null;
         markersLayerRef.current = null;
-        markersByUuidRef.current.clear();
+        markersByUuid.clear();
         leafletRef.current = null;
         setMapReady(false);
       }

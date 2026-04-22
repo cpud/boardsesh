@@ -39,8 +39,8 @@ export function useEventProcessor({ refs }: UseEventProcessorArgs): EventProcess
   const {
     lastReceivedSequenceRef,
     triggerResyncRef,
-    lastCorruptionResyncRef,
-    isFilteringCorruptedItemsRef,
+    lastCorruptionResyncRef: _lastCorruptionResyncRef,
+    isFilteringCorruptedItemsRef: _isFilteringCorruptedItemsRef,
     queueEventSubscribersRef,
     sessionEventSubscribersRef,
     offlineBufferRef,

@@ -17,9 +17,9 @@ const BoardPageClimbsList = ({
   boardDetails,
   initialClimbs,
   board_name,
-  layout_id,
-  size_id,
-  set_ids,
+  layout_id: _layout_id,
+  size_id: _size_id,
+  set_ids: _set_ids,
   angle,
 }: BoardPageClimbsListProps) => {
   const { currentClimb } = useCurrentClimb();

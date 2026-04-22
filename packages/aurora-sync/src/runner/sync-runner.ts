@@ -1,6 +1,5 @@
 import { neon, neonConfig, Pool } from '@neondatabase/serverless';
 import { drizzle as drizzleHttp } from 'drizzle-orm/neon-http';
-import { drizzle } from 'drizzle-orm/neon-serverless';
 import { eq, ne, and, or, isNotNull, sql } from 'drizzle-orm';
 import ws from 'ws';
 

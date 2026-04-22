@@ -68,8 +68,6 @@ export function useProfileData(userId: string, initialData?: InitialData) {
   } | null>(null);
 
   const isOwnProfile = session?.user?.id ? session.user.id === userId : (initialData?.initialIsOwnProfile ?? false);
-  const hasCredentials = (profile?.credentials?.length ?? 0) > 0;
-  const authToken = (session as { authToken?: string } | null)?.authToken ?? null;
 
   const fetchProfile = useCallback(async () => {
     try {

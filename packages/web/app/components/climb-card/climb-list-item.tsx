@@ -27,7 +27,6 @@ import { useIsClimbSelected } from '../board-page/selected-climb-store';
 import { InlineListTickBar } from '../logbook/inline-list-tick-bar';
 import { useOptionalBoardProvider } from '../board-provider/board-provider-context';
 import { useSnackbar } from '../providers/snackbar-provider';
-import styles from './climb-list-item.module.css';
 import ascentStyles from './ascent-status.module.css';
 import drawerCss from '../swipeable-drawer/swipeable-drawer.module.css';
 

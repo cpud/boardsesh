@@ -62,6 +62,7 @@ export function useLiveActivity({
   const boardKey = boardDetails
     ? `${boardDetails.board_name}:${boardDetails.layout_id}:${boardDetails.size_id}:${Array.isArray(boardDetails.set_ids) ? boardDetails.set_ids.join(',') : boardDetails.set_ids}`
     : null;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally keyed by boardKey for value-based stability
   const stableBoardDetails = useMemo(() => boardDetails, [boardKey]);
 
   // Check availability once

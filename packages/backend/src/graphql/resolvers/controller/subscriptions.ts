@@ -4,7 +4,6 @@ import type {
   LedUpdate,
   LedCommand,
   BoardName,
-  QueueNavigationContext,
   ControllerQueueItem,
   ControllerQueueSync,
   ClimbQueueItem,

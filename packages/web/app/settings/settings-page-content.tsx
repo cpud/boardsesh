@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import MuiDivider from '@mui/material/Divider';
@@ -156,7 +156,7 @@ export default function SettingsPageContent() {
     if (status === 'authenticated') {
       fetchProfile();
     }
-  }, [status]);
+  }, [status, fetchProfile]);
 
   // Clean up preview URL when component unmounts
   useEffect(() => {
@@ -167,7 +167,7 @@ export default function SettingsPageContent() {
     };
   }, [previewUrl]);
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       const response = await fetch('/api/internal/profile');
       if (!response.ok) {
@@ -186,7 +186,7 @@ export default function SettingsPageContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showMessage]);
 
   const handleFileSelect = async (file: File): Promise<void> => {
     if (!ALLOWED_TYPES.includes(file.type)) {
