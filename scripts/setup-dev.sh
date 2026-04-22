@@ -186,6 +186,10 @@ get_aurora_token() {
 
     echo "Fetching token from Aurora API..." >&2
 
+    local payload
+    payload=$(jq -n --arg u "$username" --arg p "$password" \
+        '{"username":$u,"password":$p,"tou":"accepted","pp":"accepted","ua":"app"}')
+
     local token_response=$(curl -s -X POST "$board_url/sessions" \
         -H "Content-Type: application/json" \
         -H "Accept: application/json" \
@@ -193,7 +197,7 @@ get_aurora_token() {
         -H "Accept-Language: en-AU,en;q=0.9" \
         -H "Accept-Encoding: gzip, deflate, br" \
         -H "Connection: keep-alive" \
-        -d "{\"username\":\"$username\",\"password\":\"$password\",\"tou\":\"accepted\",\"pp\":\"accepted\",\"ua\":\"app\"}")
+        -d "$payload")
 
     if [ $? -eq 0 ]; then
         local token=$(echo "$token_response" | jq -r '.session.token // empty')
