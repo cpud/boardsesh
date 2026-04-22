@@ -201,6 +201,7 @@ We are using next.js app router, it's important we try to use server side compon
 - Run `vp test run --reporter=agent` for CI-friendly output
 - Run `vp test --project web` to run only web tests
 - Run `vp test --project backend` to run only backend tests
+- Backend tests auto-start a postgres+redis docker stack via `packages/backend/docker-compose.test.yml` (idempotent, left running between runs). Set `SKIP_TEST_INFRA=1` to skip orchestration; set `CI=1` to rely on caller-provided services.
 - `packages/db` uses Node.js native test runner (`tsx --test`), not Vitest
 
 ## Development Guidelines
