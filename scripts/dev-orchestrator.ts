@@ -102,7 +102,7 @@ async function findAvailablePort(basePort: number, maxAttempts = 10): Promise<nu
 function startBackend(port: number): ReturnType<typeof spawn> {
   console.log(`[dev] Starting backend on port ${port}...`);
 
-  const backendProcess = spawn('bun', ['run', 'backend:dev'], {
+  const backendProcess = spawn('bun', ['run', '--filter=boardsesh-backend', 'dev'], {
     cwd: ROOT_DIR,
     stdio: ['inherit', 'inherit', 'inherit'],
     env: {
