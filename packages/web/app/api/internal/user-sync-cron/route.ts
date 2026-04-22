@@ -88,7 +88,6 @@ export async function GET(request: Request) {
         const boardType = cred.boardType as AuroraBoardName;
 
         // Decrypt credentials and get a fresh token
-        let token: string;
         let username: string;
         let password: string;
         try {
@@ -178,7 +177,7 @@ export async function GET(request: Request) {
           continue;
         }
 
-        token = loginResponse.token;
+        const token = loginResponse.token;
 
         // Update the stored token
         const encryptedToken = encrypt(token);

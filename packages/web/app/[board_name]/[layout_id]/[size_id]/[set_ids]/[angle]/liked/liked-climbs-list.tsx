@@ -190,7 +190,7 @@ export default function LikedClimbsList({ boardDetails, angle }: LikedClimbsList
 
   const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage, isLoading, error } = useInfiniteQuery({
     queryKey: ['likedClimbs', boardDetails.board_name, boardDetails.layout_id, boardDetails.size_id, angle],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam }) => {
       const response = await executeGraphQL<GetUserFavoriteClimbsQueryResponse, GetUserFavoriteClimbsQueryVariables>(
         GET_USER_FAVORITE_CLIMBS,
         {

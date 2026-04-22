@@ -8,7 +8,11 @@
   "rules": {
     "@typescript-eslint/no-explicit-any": "deny",
     "no-unused-vars": "error",
-    "import/no-cycle": "error"
+    "import/no-cycle": "error",
+    "prefer-const": "error",
+    "no-template-curly-in-string": "error",
+    "eqeqeq": ["error", "smart"],
+    "@typescript-eslint/return-await": "error"
   },
   "ignorePatterns": [
     "dist/**",
@@ -16,7 +20,7 @@
     ".next/**",
     "out/**",
     "build/**",
-    "board-controller/**",
+    "**/board-controller/**",
     "embedded/**",
     "packages/board-renderer-wasm/pkg/**"
   ]

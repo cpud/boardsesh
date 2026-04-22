@@ -77,7 +77,7 @@ const CreateClimbHeatmapOverlay: React.FC<CreateClimbHeatmapOverlayProps> = ({
   );
 
   // Fetch heatmap data with holds filter
-  const { data: heatmapData = [], loading } = useHeatmapData({
+  const { data: heatmapData, loading } = useHeatmapData({
     boardName: boardDetails.board_name,
     layoutId: boardDetails.layout_id,
     sizeId: boardDetails.size_id,

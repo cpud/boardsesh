@@ -267,7 +267,7 @@ async function upsertSharedTableData(
       await upsertBetaLinks(db, boardName, data as BetaLink[]);
       return [];
     case 'climbs':
-      return await upsertClimbs(db, boardName, data as Climb[]);
+      return upsertClimbs(db, boardName, data as Climb[]);
     case 'shared_syncs':
       await updateSharedSyncs(db, boardName, data as SharedSync[]);
       return [];

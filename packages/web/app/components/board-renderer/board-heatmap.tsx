@@ -72,7 +72,7 @@ const BoardHeatmap: React.FC<BoardHeatmapProps> = ({ boardDetails, litUpHoldsMap
   const angle = useMemo(() => getAngleFromPath(pathname), [pathname]);
 
   // Only fetch heatmap data when heatmap is enabled
-  const { data: heatmapData = [], loading: heatmapLoading } = useHeatmapData({
+  const { data: heatmapData, loading: heatmapLoading } = useHeatmapData({
     boardName: boardDetails.board_name,
     layoutId: boardDetails.layout_id,
     sizeId: boardDetails.size_id,

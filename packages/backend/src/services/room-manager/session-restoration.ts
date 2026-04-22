@@ -43,7 +43,7 @@ export async function restoreSessionWithLock(
     }
   } else {
     // Lock not acquired - wait with exponential backoff for restoration to complete
-    return await waitForRestoration(sessionId, sessionsMap, redisStore, getSessionById);
+    return waitForRestoration(sessionId, sessionsMap, redisStore, getSessionById);
   }
 }
 

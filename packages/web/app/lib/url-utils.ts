@@ -67,11 +67,11 @@ export function parseBoardRouteParams<T extends BoardRouteParameters>(
 }
 
 export const searchParamsToUrlParams = ({
-  gradeAccuracy = DEFAULT_SEARCH_PARAMS.gradeAccuracy,
-  maxGrade = DEFAULT_SEARCH_PARAMS.maxGrade,
-  minGrade = DEFAULT_SEARCH_PARAMS.minGrade,
-  minAscents = DEFAULT_SEARCH_PARAMS.minAscents,
-  minRating = DEFAULT_SEARCH_PARAMS.minRating,
+  gradeAccuracy,
+  maxGrade,
+  minGrade,
+  minAscents,
+  minRating,
   sortBy,
   sortOrder,
   name,

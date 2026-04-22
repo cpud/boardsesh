@@ -113,7 +113,7 @@ export const setterFollowQueries = {
     _ctx: ConnectionContext,
   ) => {
     const validatedInput = validateInput(SetterClimbsInputSchema, input, 'input');
-    const { username, boardType, layoutId, sortBy = 'popular', limit = 20, offset = 0 } = validatedInput;
+    const { username, boardType, layoutId, sortBy, limit, offset } = validatedInput;
 
     // Build conditions
     const conditions = [eq(dbSchema.boardClimbs.setterUsername, username)];
@@ -213,7 +213,7 @@ export const setterFollowQueries = {
     _ctx: ConnectionContext,
   ): Promise<{ climbs: Climb[]; totalCount: number; hasMore: boolean }> => {
     const validatedInput = validateInput(SetterClimbsFullInputSchema, input, 'input');
-    const { username, boardType, sortBy = 'popular', limit = 20, offset = 0 } = validatedInput;
+    const { username, boardType, sortBy, limit, offset } = validatedInput;
 
     if (boardType) {
       // === Specific board mode ===
@@ -419,7 +419,7 @@ export const setterFollowQueries = {
     _ctx: ConnectionContext,
   ): Promise<{ climbs: Climb[]; totalCount: number; hasMore: boolean }> => {
     const validatedInput = validateInput(UserClimbsInputSchema, input, 'input');
-    const { userId, sortBy = 'popular', limit = 20, offset = 0 } = validatedInput;
+    const { userId, sortBy, limit, offset } = validatedInput;
 
     // 1. Look up linked Aurora usernames
     const mappings = await db

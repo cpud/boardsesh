@@ -22,7 +22,7 @@ const NextButton = (props: IconButtonProps) => (
   </IconButton>
 );
 
-export default function NextClimbButton({ navigate = false, boardDetails }: NextClimbButtonProps) {
+export default function NextClimbButton({ navigate, boardDetails }: NextClimbButtonProps) {
   const { setCurrentClimbQueueItem, getNextClimbQueueItem } = useQueueActions();
   const { viewOnlyMode } = useSessionData();
   const { rawParams, angle, pathname, searchParams, isPlayPage, resolvedDetails } =

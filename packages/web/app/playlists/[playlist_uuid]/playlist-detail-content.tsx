@@ -191,7 +191,7 @@ export default function PlaylistDetailContent({
     isLoading: isClimbsLoading,
   } = useInfiniteQuery({
     queryKey: ['playlistClimbs', playlistUuid, selectedBoard?.uuid ?? 'all', listRefreshKey],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam }) => {
       const client = createGraphQLHttpClient(token);
 
       const input: GetPlaylistClimbsInput = {

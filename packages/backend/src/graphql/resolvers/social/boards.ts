@@ -916,7 +916,7 @@ export const socialBoardQueries = {
 
     // Batch fetch user profiles
     const userIds = entries.map((e) => e.userId);
-    let userMap = new Map<string, { displayName?: string; avatarUrl?: string }>();
+    const userMap = new Map<string, { displayName?: string; avatarUrl?: string }>();
 
     if (userIds.length > 0) {
       const users = await db
@@ -1147,7 +1147,7 @@ export const socialBoardMutations = {
             return newBoard;
           });
 
-          return enrichBoard(board, userId);
+          return await enrichBoard(board, userId);
         } catch (error) {
           // Auto-gym creation failed; continue to create the board without a gym
           console.error('Auto-gym creation failed, creating board without gym:', error);
