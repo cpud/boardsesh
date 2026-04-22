@@ -21,7 +21,17 @@ concurrency:
   group: e2e-${{ github.ref }}
   cancel-in-progress: true
 
+# `runner.os` isn't available in workflow-level `env`, so the node_modules
+# cache key is duplicated across jobs. Keep the shape identical — any drift
+# between jobs creates separate cache buckets and defeats the whole point.
+env:
+  BUILT_PACKAGES_ARTIFACT: built-packages-${{ github.run_id }}-${{ github.run_attempt }}
+
 jobs:
+  # ---------------------------------------------------------------------------
+  # Typecheck — runs in parallel with `build`. Depends only on build:aurora
+  # and build:constants so it fails fast without paying for the full web build.
+  # ---------------------------------------------------------------------------
   typecheck:
     name: Typecheck (fail-fast)
     runs-on: ubuntu-latest
@@ -36,7 +46,19 @@ jobs:
           node-version: 'lts'
           cache: true
 
+      - name: Restore node_modules cache
+        id: node-modules-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-bun-node-modules-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-node-modules-
+
       - name: Install dependencies
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
         run: bun install --frozen-lockfile
 
       - name: Build shared packages
@@ -48,9 +70,87 @@ jobs:
       - name: Typecheck backend
         run: bun run --filter=boardsesh-backend typecheck
 
+  # ---------------------------------------------------------------------------
+  # Build — runs in parallel with typecheck. Produces a single artifact that
+  # every downstream job downloads instead of rebuilding locally. This is the
+  # main CI speedup: 1 build job × 3 min replaces 9 × 3 min of rebuilds across
+  # the 8 e2e shards + screenshots.
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build packages (shared by e2e + screenshots)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: oven-sh/setup-bun@v2
+
+      - uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: 'lts'
+          cache: true
+
+      - name: Restore node_modules cache
+        id: node-modules-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-bun-node-modules-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-node-modules-
+
+      - name: Install dependencies
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        run: bun install --frozen-lockfile
+
+      - name: Cache Next.js incremental build
+        uses: actions/cache@v4
+        with:
+          path: packages/web/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('bun.lock') }}-${{ hashFiles('packages/web/**/*.ts', 'packages/web/**/*.tsx', 'packages/web/**/*.js', 'packages/web/**/*.jsx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('bun.lock') }}-
+            ${{ runner.os }}-nextjs-
+
+      - name: Build all packages
+        # board-renderer-wasm ships pre-built pkg/ in git, so vp run build skips
+        # its wasm-pack step. vp handles the build:shared → build:db → build:web
+        # dependency graph internally.
+        run: vp run build
+        env:
+          NEXTAUTH_SECRET: test-secret-for-ci
+          NEXTAUTH_URL: http://localhost:3000
+          DATABASE_URL: postgresql://postgres:password@db.localtest.me:5432/main
+          NEXT_PUBLIC_WS_URL: ws://localhost:8080/graphql
+
+      - name: Upload built packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BUILT_PACKAGES_ARTIFACT }}
+          # `.next/cache/` is build-time incremental compilation state that
+          # `next start` never reads. Excluding it typically drops the
+          # artifact size by 100-200MB, saving per-shard download time.
+          path: |
+            packages/web/.next/
+            !packages/web/.next/cache/
+            packages/backend/dist/
+            packages/shared-schema/dist/
+            packages/db/dist/
+            packages/crypto/dist/
+            packages/board-constants/dist/
+            packages/aurora-sync/dist/
+          if-no-files-found: error
+          # One workflow run at a time; no need for long retention.
+          retention-days: 1
+
+  # ---------------------------------------------------------------------------
+  # E2E shards — download the prebuilt artifact, skip the build step entirely.
+  # ---------------------------------------------------------------------------
   e2e:
     name: E2E (shard ${{ matrix.shard }})
-    needs: typecheck
+    needs: [typecheck, build]
     timeout-minutes: 25
     runs-on: ubuntu-latest
     strategy:
@@ -101,28 +201,29 @@ jobs:
           node-version: 'lts'
           cache: true
 
-      - name: Cache Next.js build
+      - name: Restore node_modules cache
+        id: node-modules-cache
         uses: actions/cache@v4
         with:
-          path: packages/web/.next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('bun.lock') }}-${{ hashFiles('packages/web/**/*.ts', 'packages/web/**/*.tsx', 'packages/web/**/*.js', 'packages/web/**/*.jsx') }}
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-bun-node-modules-${{ hashFiles('bun.lock') }}
           restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('bun.lock') }}-
-            ${{ runner.os }}-nextjs-
+            ${{ runner.os }}-bun-node-modules-
 
       - name: Install dependencies
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
         run: bun install --frozen-lockfile
 
-      - name: Build packages needed for e2e
-        # board-renderer-wasm ships pre-built pkg/ in git, so skip its bash build.sh
-        # (needs wasm-pack). vp run build handles the full dependency graph for
-        # backend + web without running every workspace's build script.
-        run: vp run build
-        env:
-          NEXTAUTH_SECRET: test-secret-for-ci
-          NEXTAUTH_URL: http://localhost:3000
-          DATABASE_URL: postgresql://postgres:password@db.localtest.me:5432/main
-          NEXT_PUBLIC_WS_URL: ws://localhost:8080/graphql
+      - name: Download built packages
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.BUILT_PACKAGES_ARTIFACT }}
+          # The artifact preserves the source-tree layout (packages/web/.next
+          # etc.) so extract into the repo root to put files back where the
+          # `start` scripts expect them.
+          path: .
 
       - name: Run database migrations
         run: bunx drizzle-kit migrate
@@ -182,9 +283,14 @@ jobs:
       # Functional e2e shards don't generate screenshot assets.
       # Screenshot capture runs in the dedicated `screenshots` job below.
 
+  # ---------------------------------------------------------------------------
+  # Screenshots — like an e2e shard but runs the three screenshot Playwright
+  # projects. Depends on `build` for the artifact and on `e2e` so we don't
+  # publish screenshots of an app that didn't pass its functional tests.
+  # ---------------------------------------------------------------------------
   screenshots:
     name: Capture PR screenshots
-    needs: e2e
+    needs: [typecheck, build, e2e]
     if: github.event_name == 'pull_request'
     # Soft-fail: a broken screenshot scene should leave the PR's required
     # checks green and let report-screenshots still update the comment.
@@ -232,16 +338,26 @@ jobs:
           node-version: 'lts'
           cache: true
 
+      - name: Restore node_modules cache
+        id: node-modules-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-bun-node-modules-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-node-modules-
+
       - name: Install dependencies
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
         run: bun install --frozen-lockfile
 
-      - name: Build packages needed for e2e
-        run: vp run build
-        env:
-          NEXTAUTH_SECRET: test-secret-for-ci
-          NEXTAUTH_URL: http://localhost:3000
-          DATABASE_URL: postgresql://postgres:password@db.localtest.me:5432/main
-          NEXT_PUBLIC_WS_URL: ws://localhost:8080/graphql
+      - name: Download built packages
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.BUILT_PACKAGES_ARTIFACT }}
+          path: .
 
       - name: Run database migrations
         run: bunx drizzle-kit migrate
