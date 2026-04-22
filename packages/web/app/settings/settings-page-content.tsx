@@ -151,22 +151,6 @@ export default function SettingsPageContent() {
     }
   }, [status, router]);
 
-  // Fetch profile on mount
-  useEffect(() => {
-    if (status === 'authenticated') {
-      void fetchProfile();
-    }
-  }, [status, fetchProfile]);
-
-  // Clean up preview URL when component unmounts
-  useEffect(() => {
-    return () => {
-      if (previewUrl && previewUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [previewUrl]);
-
   const fetchProfile = useCallback(async () => {
     try {
       const response = await fetch('/api/internal/profile');
@@ -187,6 +171,22 @@ export default function SettingsPageContent() {
       setLoading(false);
     }
   }, [showMessage]);
+
+  // Fetch profile on mount
+  useEffect(() => {
+    if (status === 'authenticated') {
+      void fetchProfile();
+    }
+  }, [status, fetchProfile]);
+
+  // Clean up preview URL when component unmounts
+  useEffect(() => {
+    return () => {
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const handleFileSelect = async (file: File): Promise<void> => {
     if (!ALLOWED_TYPES.includes(file.type)) {

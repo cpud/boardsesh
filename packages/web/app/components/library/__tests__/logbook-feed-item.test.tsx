@@ -335,12 +335,12 @@ describe('LogbookFeedItem', () => {
   it('reflects updateTick.isPending via the getter mock without remount', () => {
     updateTickState.isPending = true;
     const { rerender } = render(<LogbookFeedItem item={makeItem()} isEditing />);
-    const saveBtn = screen.getByLabelText('Save');
+    const saveBtn = screen.getByLabelText('Save') as HTMLButtonElement;
     expect(saveBtn.disabled).toBe(true);
 
     updateTickState.isPending = false;
     rerender(<LogbookFeedItem item={makeItem()} isEditing />);
-    const saveBtn2 = screen.getByLabelText('Save');
+    const saveBtn2 = screen.getByLabelText('Save') as HTMLButtonElement;
     expect(saveBtn2.disabled).toBe(false);
   });
 
