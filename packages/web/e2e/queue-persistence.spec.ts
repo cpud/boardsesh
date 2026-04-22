@@ -103,9 +103,10 @@ test.describe('Queue Persistence - Local Mode', () => {
     await expect(page).toHaveURL(/\/playlists/, { timeout: 15000 });
     await verifyQueueShowsClimb(page, climbName);
 
-    // 4. Navigate to Notifications via bottom tab bar
-    await bottomTabButton(page, 'Notifications').click();
-    await expect(page).toHaveURL(/\/notifications/, { timeout: 15000 });
+    // 4. Navigate to Feed via bottom tab bar (Notifications tab was removed;
+    //    Feed is a second public route that exercises the persistence path).
+    await bottomTabButton(page, 'Feed').click();
+    await expect(page).toHaveURL(/\/feed/, { timeout: 15000 });
     await verifyQueueShowsClimb(page, climbName);
 
     // 5. Navigate back to climb list via bottom tab bar
