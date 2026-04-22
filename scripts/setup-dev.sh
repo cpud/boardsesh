@@ -96,7 +96,27 @@ print_success "All prerequisites are installed"
 print_success "Node.js version: $(node --version)"
 print_success "Docker version: $(docker --version | cut -d' ' -f3 | cut -d',' -f1)"
 
-print_step "Step 2: Installing Dependencies"
+print_step "Step 2: Installing Vite+"
+
+if command_exists vp; then
+    print_success "Vite+ already installed: $(vp --version 2>/dev/null || echo 'version unknown')"
+else
+    echo "Installing Vite+ (unified toolchain for testing, linting, formatting)..."
+    echo "Windows users: run 'irm https://vite.plus/ps1 | iex' in PowerShell instead."
+    if ! curl -fsSL https://vite.plus | bash; then
+        print_warning "Failed to install Vite+ automatically."
+        echo "Please install it manually:"
+        echo "  macOS/Linux: curl -fsSL https://vite.plus | bash"
+        echo "  Windows:     irm https://vite.plus/ps1 | iex"
+        echo "Then re-run this script."
+        exit 1
+    fi
+    # Reload PATH so vp is available for the rest of this script
+    export PATH="$HOME/.viteplus/bin:$PATH"
+    print_success "Vite+ installed successfully"
+fi
+
+print_step "Step 3: Installing Dependencies"
 
 echo "Installing packages with Bun..."
 if ! bun install; then
@@ -104,7 +124,7 @@ if ! bun install; then
 fi
 print_success "Dependencies installed successfully"
 
-print_step "Step 3: Setting Up Environment"
+print_step "Step 4: Setting Up Environment"
 
 # Create .env.local if it doesn't exist (generic config)
 if [ ! -f ".env.local" ]; then
@@ -146,7 +166,7 @@ else
     print_success "Secrets environment file already exists"
 fi
 
-print_step "Step 4: Setting Up Aurora API Tokens (Optional)"
+print_step "Step 5: Setting Up Aurora API Tokens (Optional)"
 
 echo "For shared sync to work, you'll need Aurora API tokens."
 echo "These tokens are optional - you can skip this step and add them later."
@@ -156,16 +176,16 @@ echo ""
 get_aurora_token() {
     local board_name="$1"
     local board_url="$2"
-    
+
     echo -e "${BLUE}Getting $board_name token...${NC}" >&2
     echo "Please enter your $board_name credentials:" >&2
-    
+
     read -p "Username: " username
     read -s -p "Password: " password
     echo "" >&2
-    
+
     echo "Fetching token from Aurora API..." >&2
-    
+
     local token_response=$(curl -s -X POST "$board_url/sessions" \
         -H "Content-Type: application/json" \
         -H "Accept: application/json" \
@@ -174,7 +194,7 @@ get_aurora_token() {
         -H "Accept-Encoding: gzip, deflate, br" \
         -H "Connection: keep-alive" \
         -d "{\"username\":\"$username\",\"password\":\"$password\",\"tou\":\"accepted\",\"pp\":\"accepted\",\"ua\":\"app\"}")
-    
+
     if [ $? -eq 0 ]; then
         local token=$(echo "$token_response" | jq -r '.session.token // empty')
         if [ -n "$token" ] && [ "$token" != "null" ]; then
@@ -202,13 +222,13 @@ fi
 if [[ "$setup_tokens" =~ ^[Yy]$ ]] && command_exists jq; then
     echo ""
     echo "Setting up Aurora API tokens..."
-    
+
     # Kilter token
     echo ""
     echo -e "${BLUE}Setting up Kilter Board token...${NC}"
     echo "Visit https://kilterboardapp.com if you need to create an account."
     kilter_token=$(get_aurora_token "Kilter" "https://kilterboardapp.com")
-    
+
     if [ $? -eq 0 ]; then
         print_success "Kilter token obtained successfully"
         # Remove commented line and add actual token
@@ -218,13 +238,13 @@ if [[ "$setup_tokens" =~ ^[Yy]$ ]] && command_exists jq; then
     else
         print_warning "Failed to get Kilter token - you can add it manually later"
     fi
-    
+
     # Tension token
     echo ""
     echo -e "${BLUE}Setting up Tension Board token...${NC}"
     echo "Visit https://tensionboardapp2.com if you need to create an account."
     tension_token=$(get_aurora_token "Tension" "https://tensionboardapp2.com")
-    
+
     if [ $? -eq 0 ]; then
         print_success "Tension token obtained successfully"
         # Remove commented line and add actual token
@@ -234,7 +254,7 @@ if [[ "$setup_tokens" =~ ^[Yy]$ ]] && command_exists jq; then
     else
         print_warning "Failed to get Tension token - you can add it manually later"
     fi
-    
+
     echo ""
     print_success "Aurora API tokens setup complete"
     echo "Tokens have been added to your .env.development.local file"
@@ -246,7 +266,7 @@ else
     echo "  TENSION_SYNC_TOKEN=your_tension_token"
 fi
 
-print_step "Step 5: Setting Up Database"
+print_step "Step 6: Setting Up Database"
 
 # Check if database is already set up
 if docker exec db-postgres-1 psql postgresql://postgres:password@localhost:5432/verceldb -c "SELECT 1 FROM board_climbs LIMIT 1;" >/dev/null 2>&1; then
@@ -280,13 +300,13 @@ echo ""
 echo "You can now start developing:"
 echo ""
 echo -e "${BLUE}Start the development server:${NC}"
-echo "  bun run dev"
+echo "  vp run dev"
 echo ""
 echo -e "${BLUE}View your database:${NC}"
 echo "  bunx drizzle-kit studio"
 echo ""
 echo -e "${BLUE}Format code:${NC}"
-echo "  bun run format"
+echo "  vp fmt"
 echo ""
 echo -e "${BLUE}Need help?${NC}"
 echo "  Check CLAUDE.md for development guidelines"
