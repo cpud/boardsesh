@@ -47,13 +47,24 @@ public class DevUrlPlugin: CAPPlugin, CAPBridgedPlugin {
             return
         }
         let url = (call.getString("url") ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-        if url.isEmpty {
-            UserDefaults.standard.removeObject(forKey: DevUrlPlugin.defaultsKey)
-        } else {
-            UserDefaults.standard.set(url, forKey: DevUrlPlugin.defaultsKey)
+        guard DevUrlPlugin.isValidHttpUrl(url) else {
+            call.reject("Invalid URL: must be an http:// or https:// URL")
+            return
         }
+        UserDefaults.standard.set(url, forKey: DevUrlPlugin.defaultsKey)
         call.resolve()
         scheduleRestart()
+    }
+
+    /// Only accept absolute http(s) URLs — guards against garbage blocking the app.
+    static func isValidHttpUrl(_ url: String) -> Bool {
+        guard !url.isEmpty, let parsed = URL(string: url), let scheme = parsed.scheme else {
+            return false
+        }
+        let normalized = scheme.lowercased()
+        guard normalized == "http" || normalized == "https" else { return false }
+        guard let host = parsed.host, !host.isEmpty else { return false }
+        return true
     }
 
     @objc func clearUrl(_ call: CAPPluginCall) {
@@ -67,9 +78,10 @@ public class DevUrlPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     private func scheduleRestart() {
-        // Wrap the exit(0) symbol itself in #if DEBUG so it's never emitted into the
-        // release binary — App Store static analysis flags `exit` symbols even when
-        // they are unreachable at runtime.
+        // Defense in depth: the compile-time #if DEBUG keeps `exit(0)` out of the
+        // release binary, and the runtime isDebugBuild guard protects against a
+        // future caller accidentally invoking this method in a release context.
+        guard DevUrlPlugin.isDebugBuild else { return }
         #if DEBUG
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
             exit(0)

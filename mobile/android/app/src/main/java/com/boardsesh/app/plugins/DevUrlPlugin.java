@@ -1,8 +1,10 @@
 package com.boardsesh.app.plugins;
 
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
+import android.text.TextUtils;
 
 import com.boardsesh.app.BuildConfig;
 import com.boardsesh.app.DevUrlPrefs;
@@ -23,7 +25,7 @@ import org.json.JSONObject;
  */
 @CapacitorPlugin(name = "DevUrl")
 public class DevUrlPlugin extends Plugin {
-    private static final String DEFAULT_URL = "https://www.boardsesh.com";
+    public static final String DEFAULT_URL = "https://www.boardsesh.com";
 
     @PluginMethod
     public void getState(PluginCall call) {
@@ -44,9 +46,24 @@ public class DevUrlPlugin extends Plugin {
             return;
         }
         String url = call.getString("url");
+        if (!isValidHttpUrl(url)) {
+            call.reject("Invalid URL: must be an http:// or https:// URL");
+            return;
+        }
         DevUrlPrefs.setOverrideUrl(getContext(), url);
         call.resolve();
         scheduleRestart();
+    }
+
+    /** Only accept absolute http(s) URLs — guards against garbage blocking the app. */
+    static boolean isValidHttpUrl(String url) {
+        if (TextUtils.isEmpty(url)) return false;
+        Uri parsed = Uri.parse(url.trim());
+        String scheme = parsed.getScheme();
+        if (scheme == null) return false;
+        String normalized = scheme.toLowerCase();
+        if (!"http".equals(normalized) && !"https".equals(normalized)) return false;
+        return !TextUtils.isEmpty(parsed.getHost());
     }
 
     @PluginMethod

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -42,6 +42,7 @@ export default function DevUrlDialog({ open, onClose }: DevUrlDialogProps) {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const restartTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -59,17 +60,33 @@ export default function DevUrlDialog({ open, onClose }: DevUrlDialogProps) {
     };
   }, [open]);
 
+  useEffect(
+    () => () => {
+      if (restartTimerRef.current !== null) {
+        window.clearTimeout(restartTimerRef.current);
+      }
+    },
+    [],
+  );
+
   const runWithRestartFallback = async (action: () => Promise<void>) => {
     setBusy(true);
     setError(null);
+    let succeeded = false;
     try {
       await action();
-      // If the process isn't killed within the timeout, something went wrong —
-      // unlock the dialog so the user can try again.
-      window.setTimeout(() => setBusy(false), RESTART_TIMEOUT_MS);
+      succeeded = true;
     } catch (e) {
-      setBusy(false);
       setError(e instanceof Error ? e.message : 'Something went wrong');
+    } finally {
+      if (succeeded) {
+        // Plugin resolved — native side should now kill the process. If it
+        // doesn't within the timeout (release no-op, web-browser preview),
+        // unlock the dialog so the user can try again.
+        restartTimerRef.current = window.setTimeout(() => setBusy(false), RESTART_TIMEOUT_MS);
+      } else {
+        setBusy(false);
+      }
     }
   };
 

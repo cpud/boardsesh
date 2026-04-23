@@ -26,7 +26,6 @@ import com.getcapacitor.BridgeWebViewClient;
 import com.getcapacitor.CapConfig;
 
 public class MainActivity extends BridgeActivity {
-    private static final String PRODUCTION_URL = "https://www.boardsesh.com";
     private static final String DEV_RESET_SCHEME = "boardsesh-dev";
     private final OfflineFallbackStateMachine fallbackState = new OfflineFallbackStateMachine();
 
@@ -71,7 +70,7 @@ public class MainActivity extends BridgeActivity {
                 return devUrl;
             }
         }
-        return PRODUCTION_URL;
+        return DevUrlPlugin.DEFAULT_URL;
     }
 
     private boolean isOffline() {
