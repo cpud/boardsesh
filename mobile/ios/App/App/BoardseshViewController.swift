@@ -8,6 +8,18 @@ class BoardseshViewController: CAPBridgeViewController {
         super.capacitorDidLoad()
         bridge?.registerPluginInstance(LiveActivityPlugin())
         bridge?.registerPluginInstance(HealthKitPlugin())
+        bridge?.registerPluginInstance(DevUrlPlugin())
+    }
+
+    override open func instanceDescriptor() -> InstanceDescriptor {
+        let descriptor = super.instanceDescriptor()
+        #if DEBUG
+        if let devUrl = DevUrlPlugin.currentOverride() {
+            descriptor.serverURL = devUrl
+            descriptor.allowNavigation = ["*"]
+        }
+        #endif
+        return descriptor
     }
 
     override open func webViewConfiguration(for instanceConfiguration: InstanceConfiguration) -> WKWebViewConfiguration {

@@ -6,6 +6,9 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Process;
 import android.text.TextUtils;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -16,16 +19,22 @@ import android.webkit.WebView;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 
+import com.boardsesh.app.plugins.DevUrlPlugin;
 import com.getcapacitor.Bridge;
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.BridgeWebViewClient;
+import com.getcapacitor.CapConfig;
 
 public class MainActivity extends BridgeActivity {
-    private static final String DEFAULT_RETRY_URL = "https://www.boardsesh.com";
+    private static final String PRODUCTION_URL = "https://www.boardsesh.com";
+    private static final String DEV_RESET_SCHEME = "boardsesh-dev";
     private final OfflineFallbackStateMachine fallbackState = new OfflineFallbackStateMachine();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(DevUrlPlugin.class);
+        applyDevUrlOverride();
+
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
 
@@ -37,6 +46,30 @@ public class MainActivity extends BridgeActivity {
         WebSettings settings = webView.getSettings();
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
         webView.setWebViewClient(new OfflineAwareBridgeWebViewClient(bridge));
+    }
+
+    private void applyDevUrlOverride() {
+        if (!BuildConfig.DEBUG) {
+            return;
+        }
+        String devUrl = DevUrlPrefs.getOverrideUrl(this);
+        if (devUrl == null) {
+            return;
+        }
+        this.config = new CapConfig.Builder(this)
+            .setServerUrl(devUrl)
+            .setAllowNavigation(new String[]{"*"})
+            .create();
+    }
+
+    private String currentRetryUrl() {
+        if (BuildConfig.DEBUG) {
+            String devUrl = DevUrlPrefs.getOverrideUrl(this);
+            if (devUrl != null) {
+                return devUrl;
+            }
+        }
+        return PRODUCTION_URL;
     }
 
     private boolean isOffline() {
@@ -71,6 +104,8 @@ public class MainActivity extends BridgeActivity {
             return;
         }
 
+        String devResetLink = buildDevResetLink();
+
         String errorHtml = "<!DOCTYPE html><html><head><meta charset='utf-8' />"
             + "<meta name='viewport' content='width=device-width, initial-scale=1' />"
             + "<title>You're offline</title>"
@@ -84,25 +119,38 @@ public class MainActivity extends BridgeActivity {
             + "<p><a href='" + safeHref + "'"
             + " style='display:inline-block;margin-top:8px;padding:10px 14px;border-radius:10px;"
             + "background:#fff;color:#0A0A0A;text-decoration:none;font-weight:600;'>Try again</a></p>"
+            + devResetLink
             + "</main></body></html>";
 
         view.loadDataWithBaseURL(null, errorHtml, "text/html", "UTF-8", null);
     }
 
+    private String buildDevResetLink() {
+        if (!BuildConfig.DEBUG || DevUrlPrefs.getOverrideUrl(this) == null) {
+            return "";
+        }
+        return "<p style='margin-top:16px;color:#888;font-size:13px'>Dev override active</p>"
+            + "<p><a href='" + DEV_RESET_SCHEME + "://reset'"
+            + " style='display:inline-block;padding:8px 12px;border-radius:8px;"
+            + "border:1px solid #444;color:#ccc;text-decoration:none;font-size:13px;'>"
+            + "Reset dev URL to production</a></p>";
+    }
+
     private String sanitizeRetryUrl(String candidateUrl) {
+        String fallback = currentRetryUrl();
         if (candidateUrl == null || candidateUrl.isEmpty()) {
-            return DEFAULT_RETRY_URL;
+            return fallback;
         }
 
         Uri parsed = Uri.parse(candidateUrl);
         String scheme = parsed.getScheme();
         if (scheme == null) {
-            return DEFAULT_RETRY_URL;
+            return fallback;
         }
 
         String normalizedScheme = scheme.toLowerCase();
         if (!"http".equals(normalizedScheme) && !"https".equals(normalizedScheme)) {
-            return DEFAULT_RETRY_URL;
+            return fallback;
         }
 
         return candidateUrl;
@@ -111,6 +159,22 @@ public class MainActivity extends BridgeActivity {
     private final class OfflineAwareBridgeWebViewClient extends BridgeWebViewClient {
         OfflineAwareBridgeWebViewClient(Bridge bridge) {
             super(bridge);
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            Uri url = request.getUrl();
+            if (url != null && DEV_RESET_SCHEME.equalsIgnoreCase(url.getScheme())) {
+                if (BuildConfig.DEBUG) {
+                    DevUrlPrefs.setOverrideUrl(MainActivity.this, null);
+                    new Handler(Looper.getMainLooper()).postDelayed(
+                        () -> Process.killProcess(Process.myPid()),
+                        100
+                    );
+                }
+                return true;
+            }
+            return super.shouldOverrideUrlLoading(view, request);
         }
 
         @Override
