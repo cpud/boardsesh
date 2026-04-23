@@ -371,7 +371,7 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
         fullHeight
         styles={{
           wrapper: { height: '100dvh' },
-          header: { paddingTop: 'max(16px, env(safe-area-inset-top))' },
+          header: { paddingTop: `max(16px, ${themeTokens.layout.safeAreaTop})` },
         }}
       >
         <div className={styles.loadingContainer}>
@@ -395,7 +395,7 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
         fullHeight
         styles={{
           wrapper: { height: '100dvh' },
-          header: { paddingTop: 'max(16px, env(safe-area-inset-top))' },
+          header: { paddingTop: `max(16px, ${themeTokens.layout.safeAreaTop})` },
         }}
       >
         <div className={styles.emptyState}>
@@ -421,7 +421,7 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
         fullHeight
         styles={{
           wrapper: { height: '100dvh' },
-          header: { paddingTop: 'max(16px, env(safe-area-inset-top))' },
+          header: { paddingTop: `max(16px, ${themeTokens.layout.safeAreaTop})` },
         }}
       >
         <div className={styles.completeContainer}>
@@ -454,7 +454,7 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
         wrapper: { height: '100dvh' },
         header: {
           borderBottom: '1px solid var(--neutral-200)',
-          paddingTop: 'max(16px, env(safe-area-inset-top))',
+          paddingTop: `max(16px, ${themeTokens.layout.safeAreaTop})`,
         },
         body: {
           padding: 16,

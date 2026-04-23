@@ -302,7 +302,7 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
         minHeight: '100dvh',
         display: 'flex',
         flexDirection: 'column',
-        pb: 'calc(120px + env(safe-area-inset-bottom, 0px))',
+        pb: `calc(120px + ${themeTokens.layout.safeAreaBottom})`,
       }}
     >
       <Box

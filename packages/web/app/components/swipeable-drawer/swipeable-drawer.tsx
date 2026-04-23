@@ -255,7 +255,7 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
     // safe-area-inset-top padding to avoid rendering behind the device notch/pill.
     // (Top/left/right anchors get this from the MUI theme overrides.)
     if (isFullHeightDrawer && placement === 'bottom' && !sx.paddingTop) {
-      sx.paddingTop = 'env(safe-area-inset-top, 0px)';
+      sx.paddingTop = themeTokens.layout.safeAreaTop;
     }
 
     return sx;

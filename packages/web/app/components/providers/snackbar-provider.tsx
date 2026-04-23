@@ -5,6 +5,7 @@ import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import type { AlertColor } from '@mui/material/Alert';
+import { themeTokens } from '@/app/theme/theme-config';
 
 type SnackbarAction = {
   label: string;
@@ -50,7 +51,7 @@ export function SnackbarProvider({ children }: { children: React.ReactNode }) {
           autoHideDuration={msg.duration ?? 3000}
           onClose={() => handleClose(msg.key)}
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-          sx={{ top: 'calc(8px + env(safe-area-inset-top, 0px)) !important' }}
+          sx={{ top: `calc(8px + ${themeTokens.layout.safeAreaTop}) !important` }}
         >
           <Alert
             onClose={() => handleClose(msg.key)}
