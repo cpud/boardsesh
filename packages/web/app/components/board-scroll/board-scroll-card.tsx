@@ -111,7 +111,7 @@ export default function BoardScrollCard({
         )}
         {distanceMeters != null && <div className={styles.distanceBadge}>{formatDistance(distanceMeters)}</div>}
         {bluetoothNearby && (
-          <div className={styles.distanceBadge} style={{ left: 4, right: 'auto' }}>
+          <div className={`${styles.distanceBadge} ${styles.bluetoothBadge}`}>
             <BluetoothOutlined sx={{ fontSize: 14, verticalAlign: 'middle' }} />
           </div>
         )}

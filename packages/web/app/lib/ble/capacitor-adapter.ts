@@ -1,8 +1,16 @@
 import type { BoardName } from '@/app/lib/types';
-import type { BleConnection, BluetoothAdapter, DevicePickerFn, DiscoveredDevice } from './types';
+import type {
+  BleConnection,
+  BluetoothAdapter,
+  CapacitorScanResult,
+  DevicePickerFn,
+  DiscoveredDevice,
+  PluginListenerHandle,
+} from './types';
 import {
   AURORA_OPTIONAL_SERVICE_UUIDS,
   AURORA_SCAN_SERVICE_UUIDS,
+  parseSerialNumber,
 } from '@/app/components/board-bluetooth-control/bluetooth-aurora';
 import {
   isMoonboardDeviceName,
@@ -25,21 +33,10 @@ const INTER_CHUNK_DELAY_MS = 5;
 // if the user walks away from the picker dialog.
 const SCAN_TIMEOUT_MS = 30_000;
 
-/** Scan result from the Capacitor BLE plugin's requestLEScan callback. */
-interface CapacitorScanResult {
-  device: { deviceId: string; name?: string };
-  localName?: string;
-  rssi: number;
-}
-
 // Raw Capacitor plugin interface as exposed via window.Capacitor.Plugins.BluetoothLe.
 // The plugin JS is injected by the native shell. We type only the methods we use.
 // IMPORTANT: The raw plugin's write() expects `value` as a continuous hex string (no spaces), not DataView.
 // The BleClient npm wrapper normally handles this conversion, but we bypass it.
-
-type PluginListenerHandle = {
-  remove(): Promise<void>;
-};
 
 type CapacitorBlePlugin = {
   initialize(): Promise<void>;
@@ -127,7 +124,7 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
     }
   }
 
-  async requestAndConnect(): Promise<BleConnection> {
+  async requestAndConnect(targetSerial?: string): Promise<BleConnection> {
     await ensureInitialized();
     const ble = getBlePlugin();
 
@@ -145,11 +142,22 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
       let updateListener: ((devices: DiscoveredDevice[]) => void) | null = null;
       const pushDevices = () => updateListener?.([...devices.values()]);
 
+      // When targetSerial is set, auto-resolve instead of waiting for picker
+      let autoSelectResolve: ((deviceId: string) => void) | null = null;
+
       // Start the picker promise (resolves when user selects a device)
-      const selectionPromise = this.devicePicker((onUpdate) => {
-        updateListener = onUpdate;
-        pushDevices();
-      });
+      let selectionPromise: Promise<string>;
+      if (targetSerial) {
+        // Skip the picker UI — resolve automatically when matching device is found
+        selectionPromise = new Promise<string>((resolve) => {
+          autoSelectResolve = resolve;
+        });
+      } else {
+        selectionPromise = this.devicePicker((onUpdate) => {
+          updateListener = onUpdate;
+          pushDevices();
+        });
+      }
 
       // Register scan result listener BEFORE starting the scan.
       // The raw Capacitor plugin delivers results via events, not callbacks.
@@ -171,6 +179,15 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
         const dedupeKey = device.name || device.deviceId;
         devices.set(dedupeKey, device);
         pushDevices();
+
+        // Auto-select if this device matches the target serial
+        if (autoSelectResolve && targetSerial) {
+          const serial = parseSerialNumber(device.name);
+          if (serial === targetSerial) {
+            autoSelectResolve(device.deviceId);
+            autoSelectResolve = null;
+          }
+        }
       });
 
       // Start scanning
@@ -189,7 +206,13 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
         await stopScanQuietly(ble);
       }
 
-      selectedDeviceName = devices.get(selectedDeviceId)?.name;
+      // Find the device name — map is keyed by name (dedupeKey), so search by deviceId
+      for (const device of devices.values()) {
+        if (device.deviceId === selectedDeviceId) {
+          selectedDeviceName = device.name;
+          break;
+        }
+      }
     } else {
       // Fallback: use the plugin's built-in device picker
       const device = await ble.requestDevice({

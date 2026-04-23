@@ -3,13 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  GET_BOARDS_BY_SERIAL_NUMBERS,
-  type GetBoardsBySerialNumbersQueryResponse,
-} from '@/app/lib/graphql/operations';
+import { GET_BOARDS_BY_SERIAL_NUMBERS, type GetBoardsBySerialNumbersQueryResponse } from '@/app/lib/graphql/operations';
 import { parseSerialNumber } from '@/app/components/board-bluetooth-control/bluetooth-aurora';
 import { supportsCapacitorBleManualScan } from '@/app/lib/ble/capacitor-utils';
-import type { DiscoveredDevice } from '@/app/lib/ble/types';
+import type { DiscoveredDevice, PluginListenerHandle, CapacitorScanResult } from '@/app/lib/ble/types';
 import type { UserBoard } from '@boardsesh/shared-schema';
 
 // Auto-stop scan after this duration
@@ -17,25 +14,12 @@ const SCAN_TIMEOUT_MS = 15_000;
 
 export type BluetoothScanStatus = 'idle' | 'scanning' | 'done' | 'unavailable';
 
-interface PluginListenerHandle {
-  remove(): Promise<void>;
-}
-
-interface CapacitorScanResult {
-  device: { deviceId: string; name?: string };
-  localName?: string;
-  rssi: number;
-}
-
 interface RawBlePlugin {
   initialize(): Promise<void>;
   isEnabled(): Promise<{ value: boolean }>;
   requestLEScan?(options: { services?: string[] }): Promise<void>;
   stopLEScan?(): Promise<void>;
-  addListener(
-    eventName: string,
-    callback: (data: Record<string, unknown>) => void,
-  ): Promise<PluginListenerHandle>;
+  addListener(eventName: string, callback: (data: Record<string, unknown>) => void): Promise<PluginListenerHandle>;
 }
 
 function getBlePlugin(): RawBlePlugin | null {
@@ -62,6 +46,28 @@ export function useBluetoothScan() {
   const devicesMapRef = useRef<Map<string, DiscoveredDevice>>(new Map());
   const resolveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Synchronous cleanup safe for useEffect teardown — fires BLE teardown
+  // best-effort without awaiting, so React can complete cleanup synchronously.
+  const cleanupSync = useCallback(() => {
+    if (scanTimeoutRef.current) {
+      clearTimeout(scanTimeoutRef.current);
+      scanTimeoutRef.current = null;
+    }
+    if (resolveTimeoutRef.current) {
+      clearTimeout(resolveTimeoutRef.current);
+      resolveTimeoutRef.current = null;
+    }
+    if (scanListenerRef.current) {
+      scanListenerRef.current.remove().catch(() => {});
+      scanListenerRef.current = null;
+    }
+    const ble = getBlePlugin();
+    if (ble?.stopLEScan) {
+      ble.stopLEScan().catch(() => {});
+    }
+  }, []);
+
+  // Async version for imperative callers (startScan, timeout callback)
   const stopScan = useCallback(async () => {
     if (scanTimeoutRef.current) {
       clearTimeout(scanTimeoutRef.current);
@@ -82,35 +88,37 @@ export function useBluetoothScan() {
   }, []);
 
   // Resolve serial numbers to boards via GraphQL
-  const resolveSerials = useCallback(async (deviceMap: Map<string, DiscoveredDevice>) => {
-    if (!token) return;
+  const resolveSerials = useCallback(
+    async (deviceMap: Map<string, DiscoveredDevice>) => {
+      if (!token) return;
 
-    const serials: string[] = [];
-    for (const device of deviceMap.values()) {
-      const serial = parseSerialNumber(device.name);
-      if (serial) serials.push(serial);
-    }
-
-    if (serials.length === 0) return;
-
-    try {
-      const client = createGraphQLHttpClient(token);
-      const data = await client.request<GetBoardsBySerialNumbersQueryResponse>(
-        GET_BOARDS_BY_SERIAL_NUMBERS,
-        { serialNumbers: [...new Set(serials)] },
-      );
-
-      const boardMap = new Map<string, UserBoard>();
-      for (const board of data.boardsBySerialNumbers) {
-        if (board.serialNumber) {
-          boardMap.set(board.serialNumber, board);
-        }
+      const serials: string[] = [];
+      for (const device of deviceMap.values()) {
+        const serial = parseSerialNumber(device.name);
+        if (serial) serials.push(serial);
       }
-      setResolvedBoards(boardMap);
-    } catch (err) {
-      console.error('[BLE Scan] Failed to resolve serial numbers:', err);
-    }
-  }, [token]);
+
+      if (serials.length === 0) return;
+
+      try {
+        const client = createGraphQLHttpClient(token);
+        const data = await client.request<GetBoardsBySerialNumbersQueryResponse>(GET_BOARDS_BY_SERIAL_NUMBERS, {
+          serialNumbers: [...new Set(serials)],
+        });
+
+        const boardMap = new Map<string, UserBoard>();
+        for (const board of data.boardsBySerialNumbers) {
+          if (board.serialNumber) {
+            boardMap.set(board.serialNumber, board);
+          }
+        }
+        setResolvedBoards(boardMap);
+      } catch (err) {
+        console.error('[BLE Scan] Failed to resolve serial numbers:', err);
+      }
+    },
+    [token],
+  );
 
   const startScan = useCallback(async () => {
     if (!supportsCapacitorBleManualScan()) {
@@ -180,12 +188,10 @@ export function useBluetoothScan() {
     }
   }, [stopScan, resolveSerials]);
 
-  // Cleanup on unmount
+  // Cleanup on unmount — must be synchronous (React requirement)
   useEffect(() => {
-    return () => {
-      stopScan();
-    };
-  }, [stopScan]);
+    return cleanupSync;
+  }, [cleanupSync]);
 
   return { devices, resolvedBoards, status, startScan, stopScan };
 }

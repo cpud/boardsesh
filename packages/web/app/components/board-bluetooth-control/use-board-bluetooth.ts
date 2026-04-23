@@ -218,7 +218,7 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
 
   // Handle connection initiation
   const connect = useCallback(
-    async (initialFrames?: string, mirrored?: boolean) => {
+    async (initialFrames?: string, mirrored?: boolean, targetSerial?: string) => {
       if (!boardDetails) {
         console.error('Cannot connect to Bluetooth without board details');
         return false;
@@ -248,7 +248,7 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
         }
 
         // Connect via the adapter and parse API level from device name
-        const connection = await adapter.requestAndConnect();
+        const connection = await adapter.requestAndConnect(targetSerial);
         apiLevelRef.current = parseApiLevel(connection.deviceName);
 
         // Set up disconnection listener

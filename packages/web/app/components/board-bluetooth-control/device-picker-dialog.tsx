@@ -19,6 +19,7 @@ import BoardRenderer from '../board-renderer/board-renderer';
 import { getBoardDetails } from '@/app/lib/board-constants';
 import type { BoardName } from '@boardsesh/shared-schema';
 import BoardThumbnail from '../board-scroll/board-thumbnail';
+import styles from './device-picker-dialog.module.css';
 
 type DevicePickerDialogProps = {
   devices: DiscoveredDevice[];
@@ -58,24 +59,10 @@ function UnknownBoardPreview({ boardType }: { boardType?: BoardName }) {
 
   return (
     <>
-      <div style={{ filter: 'grayscale(100%)', opacity: 0.35, width: '100%', height: '100%' }}>
-        {boardDetails && (
-          <BoardRenderer
-            mirrored={false}
-            boardDetails={boardDetails}
-            thumbnail
-            fillHeight
-          />
-        )}
+      <div className={styles.unknownPreview}>
+        {boardDetails && <BoardRenderer mirrored={false} boardDetails={boardDetails} thumbnail fillHeight />}
       </div>
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1,
-      }}>
+      <div className={styles.unknownPreviewOverlay}>
         <HelpOutline sx={{ fontSize: 36, color: 'var(--neutral-400)' }} />
       </div>
     </>
@@ -84,23 +71,7 @@ function UnknownBoardPreview({ boardType }: { boardType?: BoardName }) {
 
 function SignalBadge({ rssi }: { rssi: number }) {
   return (
-    <div style={{
-      position: 'absolute',
-      bottom: 4,
-      right: 4,
-      background: 'rgba(0, 0, 0, 0.7)',
-      color: '#fff',
-      fontSize: 11,
-      fontWeight: 600,
-      padding: '2px 6px',
-      borderRadius: 4,
-      lineHeight: 1.2,
-      pointerEvents: 'none',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 2,
-      zIndex: 2,
-    }}>
+    <div className={styles.signalBadge}>
       <SignalCellularAlt sx={{ fontSize: 12 }} />
       {signalLabel(rssi)}
     </div>
@@ -127,14 +98,7 @@ export function DevicePickerDialog({ devices, onSelect, onCancel, resolvedBoards
             </Typography>
           </Stack>
         ) : (
-          <div style={{
-            display: 'flex',
-            overflowX: 'auto',
-            gap: 12,
-            padding: '8px 4px',
-            WebkitOverflowScrolling: 'touch',
-            scrollSnapType: 'x proximity',
-          }}>
+          <div className={styles.deviceScroll}>
             {sorted.map((device) => {
               const serial = parseSerialNumber(device.name);
               const matchedBoard = serial ? resolvedBoards?.get(serial) : undefined;
@@ -152,22 +116,9 @@ export function DevicePickerDialog({ devices, onSelect, onCancel, resolvedBoards
                       onSelect(device.deviceId);
                     }
                   }}
-                  style={{
-                    width: 140,
-                    flexShrink: 0,
-                    cursor: 'pointer',
-                    scrollSnapAlign: 'start',
-                  }}
+                  className={styles.deviceCard}
                 >
-                  <div style={{
-                    aspectRatio: '1',
-                    borderRadius: 8,
-                    overflow: 'hidden',
-                    marginBottom: 4,
-                    boxShadow: 'var(--shadow-xs)',
-                    background: 'var(--neutral-100)',
-                    position: 'relative',
-                  }}>
+                  <div className={styles.deviceCardSquare}>
                     {matchedBoard ? (
                       <BoardThumbnail userBoard={matchedBoard} />
                     ) : (
@@ -175,31 +126,8 @@ export function DevicePickerDialog({ devices, onSelect, onCancel, resolvedBoards
                     )}
                     <SignalBadge rssi={device.rssi} />
                   </div>
-                  <div style={{
-                    fontSize: 13,
-                    fontWeight: 500,
-                    color: 'var(--neutral-900)',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    textAlign: 'center',
-                    lineHeight: 1.15,
-                  }}>
-                    {matchedBoard?.name || device.name || 'Unknown device'}
-                  </div>
-                  {matchedBoard && device.name && (
-                    <div style={{
-                      fontSize: 11,
-                      color: 'var(--neutral-500)',
-                      textAlign: 'center',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      lineHeight: 1.15,
-                    }}>
-                      {device.name}
-                    </div>
-                  )}
+                  <div className={styles.deviceCardName}>{matchedBoard?.name || device.name || 'Unknown device'}</div>
+                  {matchedBoard && device.name && <div className={styles.deviceCardMeta}>{device.name}</div>}
                 </div>
               );
             })}

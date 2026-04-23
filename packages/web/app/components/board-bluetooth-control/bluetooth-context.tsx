@@ -13,19 +13,17 @@ import {
 } from '@/app/lib/ble/capacitor-utils';
 import { registerBluetoothConnection } from './bluetooth-status-store';
 import { DevicePickerDialog } from './device-picker-dialog';
+import { AutoConnectHandler } from './auto-connect-handler';
 import { parseSerialNumber } from './bluetooth-aurora';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  GET_BOARDS_BY_SERIAL_NUMBERS,
-  type GetBoardsBySerialNumbersQueryResponse,
-} from '@/app/lib/graphql/operations';
+import { GET_BOARDS_BY_SERIAL_NUMBERS, type GetBoardsBySerialNumbersQueryResponse } from '@/app/lib/graphql/operations';
 import type { UserBoard } from '@boardsesh/shared-schema';
 
 type BluetoothContextValue = {
   isConnected: boolean;
   loading: boolean;
-  connect: (initialFrames?: string, mirrored?: boolean) => Promise<boolean>;
+  connect: (initialFrames?: string, mirrored?: boolean, targetSerial?: string) => Promise<boolean>;
   disconnect: () => void;
   sendFramesToBoard: (
     frames: string,
@@ -235,6 +233,7 @@ export function BluetoothProvider({
           resolvedBoards={resolvedBoards}
         />
       )}
+      <AutoConnectHandler />
       {children}
     </BluetoothContext.Provider>
   );
