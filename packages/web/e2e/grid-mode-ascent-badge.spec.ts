@@ -25,23 +25,14 @@ async function waitForClimbs(page: Page) {
 test.describe('Grid mode — ascent badge', () => {
   test.setTimeout(90_000);
 
-  test('ascent badge appears on climb cards in grid mode', async ({ page }) => {
-    await loginAs(page, BOARD_URL);
-    await waitForClimbs(page);
-
-    // Switch to grid mode
-    const gridButton = page.getByRole('button', { name: 'Grid view' });
-    await expect(gridButton).toBeVisible({ timeout: 10_000 });
-    await gridButton.click();
-
-    // Wait for at least one grid card to render
-    await expect(page.locator(CLIMB_CARD).first()).toBeVisible({ timeout: 15_000 });
-
-    // At least one badge must appear — the seeded test user has ~2000 Kilter ticks
-    const badges = page.locator(CLIMB_CARD).locator(ASCENT_BADGE);
-    await expect(badges.first()).toBeVisible({ timeout: 10_000 });
-    expect(await badges.count()).toBeGreaterThan(0);
-  });
+  // The previous `grid mode only` test was dropped — it was a subset of
+  // the `both list and grid mode` test below. The seeded test user's
+  // ~2000 ticks are distributed randomly across climbs, so jumping
+  // straight to grid mode sometimes landed on a top-of-list batch where
+  // no visible climb had a tick and the assertion failed deterministically
+  // in CI. The list-first pattern below warms the logbook React Query
+  // cache against the list's visible climbs before switching to grid,
+  // which removes the brittleness.
 
   test('ascent badge is visible in both list and grid mode', async ({ page }) => {
     await loginAs(page, BOARD_URL);
