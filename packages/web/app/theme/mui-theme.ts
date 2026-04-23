@@ -79,21 +79,21 @@ const sharedComponents: Components<Theme> = {
       },
       paperAnchorBottom: {
         borderRadius: `${themeTokens.borderRadius.lg}px ${themeTokens.borderRadius.lg}px 0 0`,
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        paddingBottom: themeTokens.layout.safeAreaBottom,
       },
       paperAnchorLeft: {
         borderRadius: `0 ${themeTokens.borderRadius.lg}px ${themeTokens.borderRadius.lg}px 0`,
-        paddingTop: 'env(safe-area-inset-top, 0px)',
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        paddingTop: themeTokens.layout.safeAreaTop,
+        paddingBottom: themeTokens.layout.safeAreaBottom,
       },
       paperAnchorRight: {
         borderRadius: `${themeTokens.borderRadius.lg}px 0 0 ${themeTokens.borderRadius.lg}px`,
-        paddingTop: 'env(safe-area-inset-top, 0px)',
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        paddingTop: themeTokens.layout.safeAreaTop,
+        paddingBottom: themeTokens.layout.safeAreaBottom,
       },
       paperAnchorTop: {
         borderRadius: `0 0 ${themeTokens.borderRadius.lg}px ${themeTokens.borderRadius.lg}px`,
-        paddingTop: 'env(safe-area-inset-top, 0px)',
+        paddingTop: themeTokens.layout.safeAreaTop,
       },
     },
   },

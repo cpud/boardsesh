@@ -120,7 +120,7 @@ export default async function BoardLayout(props: PropsWithChildren<BoardLayoutPr
                         paddingLeft: `${themeTokens.spacing[2]}px`,
                         paddingRight: `${themeTokens.spacing[2]}px`,
                         paddingTop: 'var(--global-header-height)',
-                        paddingBottom: 'calc(120px + env(safe-area-inset-bottom, 0px))',
+                        paddingBottom: `calc(120px + ${themeTokens.layout.safeAreaBottom})`,
                       }}
                     >
                       <BoardSeshHeader boardDetails={boardDetails} angle={angle} />

@@ -20,6 +20,7 @@ import ChevronRightOutlined from '@mui/icons-material/ChevronRightOutlined';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Logo from '@/app/components/brand/logo';
+import { themeTokens } from '@/app/theme/theme-config';
 import AuroraCredentialsSection from '@/app/components/settings/aurora-credentials-section';
 import ControllersSection from '@/app/components/settings/controllers-section';
 import DeleteAccountSection from '@/app/components/settings/delete-account-section';
@@ -382,7 +383,7 @@ export default function SettingsPageContent() {
         component="main"
         sx={{
           padding: '24px',
-          paddingBottom: 'calc(120px + env(safe-area-inset-bottom, 0px))',
+          paddingBottom: `calc(120px + ${themeTokens.layout.safeAreaBottom})`,
           maxWidth: 600,
           margin: '0 auto',
           width: '100%',

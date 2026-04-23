@@ -1,7 +1,7 @@
 .bottomBarWrapper {
   --tab-bar-top-radius: 16px;
   --tab-bar-bottom-radius: 16px;
-  --tab-bar-safe-area-padding: env(safe-area-inset-bottom, 0px);
+  --tab-bar-safe-area-padding: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
   --tab-bar-bottom-extension: 0px;
   position: fixed;
   bottom: 0;
@@ -15,10 +15,20 @@
 .nativeApp {
   --tab-bar-top-radius: 0px;
   --tab-bar-bottom-radius: 0px;
-  --tab-bar-safe-area-padding: env(safe-area-inset-bottom, 0px);
+  --tab-bar-safe-area-padding: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
   left: 0;
   right: 0;
   border-radius: 0;
+}
+
+/* Android Capacitor 8 draws the WebView under the gesture/nav bar, but
+   Chromium < 140 does not populate env(safe-area-inset-bottom) even with
+   viewport-fit=cover. The @capacitor-community/safe-area plugin sets
+   --safe-area-inset-bottom on :root once its WindowInsets listener fires;
+   floor at 24px so the tab bar never renders under the gesture pill during
+   the first-paint window before that happens. */
+.androidNative {
+  --tab-bar-safe-area-padding: max(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)), 24px);
 }
 
 @media (min-width: 768px) {
@@ -41,8 +51,8 @@
     .bottomBarWrapper:not(.nativeApp) {
       --tab-bar-top-radius: 0px;
       --tab-bar-bottom-radius: 0px;
-      --tab-bar-safe-area-padding: max(2dvh, env(safe-area-inset-bottom, 0px));
-      --tab-bar-bottom-extension: calc(-1 * max(2dvh, env(safe-area-inset-bottom, 0px)));
+      --tab-bar-safe-area-padding: max(2dvh, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+      --tab-bar-bottom-extension: calc(-1 * max(2dvh, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px))));
       bottom: 2dvh;
       left: 0;
       right: 0;
