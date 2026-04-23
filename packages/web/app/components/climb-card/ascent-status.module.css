@@ -32,5 +32,5 @@
 
 :global(html[data-theme='dark']) .badge,
 :global(html[data-theme='dark']) .badgeMirrored {
-  background-color: rgba(0, 0, 0, 0.45);
+  background-color: var(--overlay-light);
 }
