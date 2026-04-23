@@ -86,9 +86,16 @@ test.describe('Queue Persistence - Local Mode', () => {
     test.slow(); // This test navigates through 5 pages with queue verification on each
     const climbName = await addClimbToQueue(page);
 
+    // Next.js app-router `router.push` uses a React transition: URL stays
+    // at the current page until the target route's RSC payload arrives.
+    // /playlists and /feed both do SSR fetches against the backend, so under
+    // shard contention a single slow query can push those waits well past
+    // the default 15 s. 30 s gives us slack for one round-trip retry.
+    const NAV_TIMEOUT = 30_000;
+
     // 1. Navigate to Home via bottom tab bar
     await bottomTabButton(page, 'Home').click();
-    await expect(page).toHaveURL('/', { timeout: 15000 });
+    await expect(page).toHaveURL('/', { timeout: NAV_TIMEOUT });
     await verifyQueueShowsClimb(page, climbName);
 
     // 2. Navigate to Help via user drawer (client-side Link navigation).
@@ -99,24 +106,25 @@ test.describe('Queue Persistence - Local Mode', () => {
     await page.getByLabel('User menu').click();
     const helpLink = page.locator('a[href="/help"]');
     await expect(helpLink).toBeVisible({ timeout: 5000 });
-    await Promise.all([page.waitForURL(/\/help$/, { timeout: 15000 }), helpLink.click()]);
+    await Promise.all([page.waitForURL(/\/help$/, { timeout: NAV_TIMEOUT }), helpLink.click()]);
     await verifyQueueShowsClimb(page, climbName);
 
     // 3. Navigate to Discover via bottom tab bar
     await bottomTabButton(page, 'Discover').click();
-    await expect(page).toHaveURL(/\/playlists/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/playlists/, { timeout: NAV_TIMEOUT });
     await verifyQueueShowsClimb(page, climbName);
 
     // 4. Navigate to Feed via bottom tab bar (Notifications tab was removed;
     //    Feed is a second public route that exercises the persistence path).
     await bottomTabButton(page, 'Feed').click();
-    await expect(page).toHaveURL(/\/feed/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/feed/, { timeout: NAV_TIMEOUT });
     await verifyQueueShowsClimb(page, climbName);
 
-    // 5. Navigate back to climb list via bottom tab bar
-    // Longer timeout: board route re-mounts its own queue bar and restores from in-memory bridge state
+    // 5. Navigate back to climb list via bottom tab bar.
+    // Board route re-mounts its own queue bar and restores from the
+    // in-memory bridge state; keep the longer timeout it already had.
     await bottomTabButton(page, 'Climb', true).click();
-    await expect(page).toHaveURL(/\/kilter\//, { timeout: 20000 });
+    await expect(page).toHaveURL(/\/kilter\//, { timeout: Math.max(NAV_TIMEOUT, 20_000) });
     await verifyQueueShowsClimb(page, climbName, 15000);
   });
 
