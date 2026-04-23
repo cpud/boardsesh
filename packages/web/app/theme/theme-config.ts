@@ -153,8 +153,10 @@ export const themeTokens = {
     /** CSS height value for a spacer that prevents the bottom nav bar from covering content on mobile Safari.
      *  Accounts for nav height (~72px), iOS Safari 2dvh offset, and safe area inset. */
     bottomNavSpacer: 'calc(80px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)))',
-    /** Safe-area bottom inset. Prefers the @capacitor-community/safe-area plugin's CSS var
-     *  (needed on Android Capacitor where env() is not populated), falls back to native env(). */
+    /** Safe-area bottom inset. Reads the --safe-area-inset-bottom CSS var
+     *  defined in index.css (which resolves to env(safe-area-inset-bottom, 0px)),
+     *  with env() inlined as a belt-and-braces fallback if the var is missing
+     *  (e.g. during SSR before global styles mount). */
     safeAreaBottom: 'var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px))',
     /** Safe-area top inset. Same rationale as safeAreaBottom. */
     safeAreaTop: 'var(--safe-area-inset-top, env(safe-area-inset-top, 0px))',
