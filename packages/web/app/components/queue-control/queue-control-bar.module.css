@@ -137,7 +137,7 @@
 
 :global(html[data-theme='dark']) .offlineBanner {
   background-color: rgba(40, 40, 40, 0.85);
-  color: var(--neutral-400);
+  color: var(--neutral-600);
 }
 
 /* Session header strip — sits above the swipe container inside the card */

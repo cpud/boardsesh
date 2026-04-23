@@ -270,8 +270,6 @@ Historically the global header, bottom tab bar, and offline banner used `rgba(0,
 
 ### White Input Fields (Intentional)
 
-### White Input Fields (Intentional)
-
 Dark mode uses **white input fields** (`darkTokens.semantic.inputSurface`) on dark backgrounds. This is a deliberate design decision for high contrast and clarity — inputs must stand out from the surrounding dark UI.
 
 All input variants (TextField, OutlinedInput, FilledInput, Select, Autocomplete) use white backgrounds with dark text (`themeTokens.neutral[800]`) in dark mode. These overrides are defined in `darkComponents` in `packages/web/app/theme/mui-theme.ts`.
