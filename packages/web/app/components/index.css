@@ -78,6 +78,9 @@
 
   /* Layout */
   --global-header-height: calc(max(8dvh, 48px) + env(safe-area-inset-top, 0px));
+
+  /* Tap highlight (Android/mobile browsers) */
+  --tap-highlight: transparent;
 }
 
 /* Dark mode overrides */
@@ -85,24 +88,24 @@ html[data-theme='dark'] {
   color-scheme: dark;
 
   /* Neutral palette (inverted) */
-  --neutral-50: #000000;
-  --neutral-100: #121212;
-  --neutral-200: #1e1e1e;
-  --neutral-300: #2c2c2c;
+  --neutral-50: #121212;
+  --neutral-100: #222222;
+  --neutral-200: #333333;
+  --neutral-300: #3a3a3a;
   --neutral-400: #6b7280;
-  --neutral-500: #9ca3af;
+  --neutral-500: #b3b3b3;
   --neutral-600: #d1d5db;
   --neutral-700: #e5e7eb;
   --neutral-800: #f3f4f6;
   --neutral-900: #f9fafb;
 
   /* Semantic colors */
-  --semantic-background: #000000;
-  --semantic-surface: #0a0a0a;
-  --semantic-surface-overlay: rgba(10, 10, 10, 0.95);
-  --semantic-selected: rgba(175, 45, 60, 0.14);
-  --semantic-selected-hover: rgba(175, 45, 60, 0.2);
-  --semantic-selected-light: rgba(175, 45, 60, 0.08);
+  --semantic-background: #0e0e0e;
+  --semantic-surface: #1a1a1a;
+  --semantic-surface-overlay: rgba(26, 26, 26, 0.95);
+  --semantic-selected: rgba(175, 45, 60, 0.22);
+  --semantic-selected-hover: rgba(175, 45, 60, 0.3);
+  --semantic-selected-light: rgba(175, 45, 60, 0.12);
 
   /* Status background tints (semi-transparent for dark) */
   --color-success-bg: rgba(107, 144, 128, 0.12);
@@ -122,7 +125,7 @@ html[data-theme='dark'] {
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
 
   /* Borders */
-  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-subtle: rgba(255, 255, 255, 0.1);
 
   /* Overlays */
   --overlay-light: rgba(0, 0, 0, 0.4);
@@ -132,19 +135,20 @@ html[data-theme='dark'] {
 
 /* Base styles */
 html {
-  background-color: var(--semantic-surface) !important;
+  background-color: var(--semantic-background) !important;
   scrollbar-width: thin;
   scrollbar-color: var(--neutral-300) var(--neutral-100);
   min-height: 100dvh !important;
   min-height: -webkit-fill-available !important;
   overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: var(--tap-highlight);
 }
 
 body {
   margin: 0;
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background-color: var(--semantic-surface) !important;
+  background-color: var(--semantic-background) !important;
   color: var(--neutral-800);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

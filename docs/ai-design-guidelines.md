@@ -231,16 +231,42 @@ Climbing difficulty is represented by a spectrum from yellow through red to purp
 
 ## Dark Mode
 
-Dark mode tokens live in `darkTokens` in `packages/web/app/theme/theme-config.ts`. The neutral palette is fully inverted (50 = black, 900 = near-white), and surfaces use near-black values.
+Dark mode uses a Spotify-inspired **layered grey palette**, not pure black. The body sits at `#0E0E0E` and each elevation level steps _lighter_ (surface `#1A1A1A`, elevated `#282828`) so drawers and dialogs read as floating above the page instead of blending into a flat black.
 
-### Dark Mode Surfaces
+Tokens live in `darkTokens` in `packages/web/app/theme/theme-config.ts` and are mirrored as CSS custom properties in `packages/web/app/components/index.css`.
 
-| Token                                 | Value     | Usage                       |
-| ------------------------------------- | --------- | --------------------------- |
-| `darkTokens.semantic.background`      | `#000000` | Page background             |
-| `darkTokens.semantic.surface`         | `#0A0A0A` | Card surfaces               |
-| `darkTokens.semantic.surfaceElevated` | `#121212` | Elevated surfaces (paper)   |
-| `darkTokens.semantic.inputSurface`    | `#FFFFFF` | All input field backgrounds |
+### Dark Mode Surfaces (layered)
+
+| Layer    | Token                                 | Value     | Usage                                                              |
+| -------- | ------------------------------------- | --------- | ------------------------------------------------------------------ |
+| Body     | `darkTokens.semantic.background`      | `#0E0E0E` | `html` / `body`, scrollable chrome, climb list background          |
+| Surface  | `darkTokens.semantic.surface`         | `#1A1A1A` | Drawers, queue control bar, accordion search form, search dropdown |
+| Elevated | `darkTokens.semantic.surfaceElevated` | `#282828` | MUI `background.paper` → dialogs, menus, popovers                  |
+| Input    | `darkTokens.semantic.inputSurface`    | `#FFFFFF` | All input field backgrounds (see below)                            |
+
+`html` / `body` bind to `var(--semantic-background)` — the body is the lowest layer, drawers sit above it, dialogs above drawers. Do not use `--semantic-surface` for the page background.
+
+### Dark Mode Neutrals
+
+Unlike light mode, the dark neutral ladder is _not_ cleanly inverted — the lower steps are tuned so "slightly above surface", "divider", and "text.secondary" have perceptible contrast against the layered greys.
+
+| Token                         | Value     | Common use in dark                                                       |
+| ----------------------------- | --------- | ------------------------------------------------------------------------ |
+| `neutral[50]`                 | `#121212` | Subtle recessed fills sitting just above body (e.g. accordion summaries) |
+| `neutral[100]`                | `#222222` | Queue history row, scrollbar track, faint elevation above surface        |
+| `neutral[200]`                | `#333333` | Dividers in MUI Accordion / Menu contexts                                |
+| `neutral[300]`                | `#3A3A3A` | Scrollbar thumb, strong borders                                          |
+| `neutral[400]`                | `#6B7280` | (unchanged from light)                                                   |
+| `neutral[500]`                | `#B3B3B3` | **`text.secondary`** — Spotify-style subtitle grey                       |
+| `neutral[600]`–`neutral[900]` | unchanged | Text greys; `900 = #F9FAFB` (near-white) for primary text                |
+
+### Row hairlines
+
+Use `var(--border-subtle)` (surface-relative, resolves to `rgba(255, 255, 255, 0.10)` in dark) for row separators in climb lists and card lists. Do **not** use `--neutral-200` for hairlines — it's tuned for stronger dividers and will read too heavy.
+
+### Translucent overlays on the layered palette
+
+Historically the global header, bottom tab bar, and offline banner used `rgba(0, 0, 0, X)` overlays — those render _darker_ than the new grey body and break the "floating above" feel. In dark mode they now use grey-tinted translucents (`rgba(26, 26, 26, 0.7)` / `rgba(40, 40, 40, 0.85)`) that sit lighter than the body and read as lifted.
 
 ### White Input Fields (Intentional)
 
