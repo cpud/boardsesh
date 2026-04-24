@@ -79,6 +79,12 @@ export default function BoardSearchMap({
     const container = containerRef.current;
     if (!container) return;
 
+    // Per-invocation cancellation for the async Leaflet import. Must stay a
+    // local `let` (not a ref): under React Strict Mode the effect runs twice,
+    // and the first run's Promise.all callback must see its own `cancelled`
+    // — a shared ref would be reset to false by the second mount and the
+    // stale callback would create a second map on the same container.
+    let cancelled = false;
     cancelledRef.current = false;
     let resizeObserver: ResizeObserver | null = null;
 
@@ -91,7 +97,7 @@ export default function BoardSearchMap({
     // and attribution render unstyled.
     // @ts-expect-error — CSS dynamic import handled by Next.js bundler
     void Promise.all([import('leaflet'), import('leaflet/dist/leaflet.css')]).then(([L]) => {
-      if (cancelledRef.current || !containerRef.current) return;
+      if (cancelled || !containerRef.current) return;
 
       const map = L.map(containerRef.current, {
         zoomControl: true,
@@ -150,6 +156,7 @@ export default function BoardSearchMap({
     });
 
     return () => {
+      cancelled = true;
       cancelledRef.current = true;
       if (viewportTimerRef.current) clearTimeout(viewportTimerRef.current);
       if (resizeObserver) {
