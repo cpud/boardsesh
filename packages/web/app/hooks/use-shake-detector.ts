@@ -12,9 +12,15 @@ type IosRequestPermission = () => Promise<'granted' | 'denied'>;
 
 /**
  * Subscribe to device accelerometer events and invoke `onShake` on shake.
- * - Native (Capacitor): `@capacitor/motion` Motion plugin.
- * - Android web / older iOS: `devicemotion` listener directly.
- * - iOS 13+ mobile web: listener is gated behind a first-tap permission prompt.
+ *
+ * Platform routing:
+ * - Inside the Capacitor WebView (`isNativeApp()`): use the Motion plugin or
+ *   nothing. We never fall through to `devicemotion` in the native shell —
+ *   the native side owns motion so the web layer must not double-subscribe.
+ * - Mobile browser / PWA on Android (or older iOS): `devicemotion` listener
+ *   attached directly.
+ * - Mobile Safari iOS 13+: `devicemotion` gated on a first-tap permission
+ *   request (iOS requires requestPermission() from a user gesture).
  * - Desktop or missing APIs: no-op.
  */
 export function useShakeDetector(onShake: () => void, { enabled = true }: UseShakeDetectorOptions = {}): void {
@@ -37,9 +43,14 @@ export function useShakeDetector(onShake: () => void, { enabled = true }: UseSha
     };
 
     const attach = async () => {
-      // Native: Capacitor Motion plugin, no permission flow needed.
-      if (isNativeApp() && window.Capacitor?.Plugins?.Motion) {
-        const handle = await window.Capacitor.Plugins.Motion.addListener('accel', (event) => {
+      // Inside the native Capacitor shell: use the Motion plugin, or bail.
+      // Crucially, we do NOT fall through to the browser `devicemotion` path
+      // here — the native side owns motion, so the web layer must not wire up
+      // a second listener (double detection, stale state, wrong thresholds).
+      if (isNativeApp()) {
+        const motion = window.Capacitor?.Plugins?.Motion;
+        if (!motion) return;
+        const handle = await motion.addListener('accel', (event) => {
           const { x, y, z } = event.acceleration;
           processMagnitude(Math.sqrt(x * x + y * y + z * z));
         });
@@ -51,7 +62,7 @@ export function useShakeDetector(onShake: () => void, { enabled = true }: UseSha
         return;
       }
 
-      // Browser path.
+      // Mobile browser / PWA path.
       if (typeof DeviceMotionEvent === 'undefined') return;
 
       const handler = (event: DeviceMotionEvent) => {

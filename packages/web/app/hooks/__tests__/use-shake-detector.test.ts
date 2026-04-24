@@ -100,6 +100,27 @@ describe('useShakeDetector — native path', () => {
     expect(onShake).toHaveBeenCalledTimes(1);
   });
 
+  it('does NOT fall through to devicemotion when running inside the native shell without the Motion plugin', async () => {
+    // Simulate a Capacitor WebView where `window.Capacitor` is injected and
+    // isNativePlatform() is true, but the Motion plugin isn't registered.
+    // The hook must bail rather than wire up a devicemotion listener — the
+    // native app has its own shake handling and we mustn't double-fire.
+    (window as unknown as { Capacitor: unknown }).Capacitor = {
+      isNativePlatform: () => true,
+      getPlatform: () => 'android',
+      Plugins: {}, // no Motion
+    };
+    (globalThis as unknown as { DeviceMotionEvent: object }).DeviceMotionEvent = function DeviceMotionEvent() {};
+    const addSpy = vi.spyOn(window, 'addEventListener');
+
+    renderHook(() => useShakeDetector(vi.fn()));
+    await flushMicrotasks();
+
+    expect(addSpy).not.toHaveBeenCalledWith('devicemotion', expect.any(Function));
+
+    delete (globalThis as unknown as { DeviceMotionEvent?: unknown }).DeviceMotionEvent;
+  });
+
   it('re-subscribes when enabled toggles from false to true', async () => {
     const { rerender } = renderHook(({ enabled }) => useShakeDetector(vi.fn(), { enabled }), {
       initialProps: { enabled: false },
