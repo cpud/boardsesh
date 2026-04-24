@@ -219,7 +219,12 @@ public class MainActivity extends BridgeActivity {
             // Dev-override rescue: even when the device is online, if a bad dev
             // URL wedges the main frame we must surface the reset link — the
             // web UI never loads so the in-app dialog is unreachable.
-            if (shouldShowDevOverrideRescue(request, error.getErrorCode())) {
+            if (DevOverrideRescuePolicy.shouldShowForNetworkError(
+                request.isForMainFrame(),
+                BuildConfig.DEBUG,
+                hasDevOverride(),
+                error.getErrorCode()
+            )) {
                 renderDevOverrideRescue(view);
             }
         }
@@ -240,19 +245,18 @@ public class MainActivity extends BridgeActivity {
                 return;
             }
 
-            // HTTP 5xx / auth-wall on the dev origin — same rescue logic.
-            if (request.isForMainFrame()
-                && BuildConfig.DEBUG
-                && DevUrlPrefs.getOverrideUrl(MainActivity.this) != null) {
+            if (DevOverrideRescuePolicy.shouldShowForHttpError(
+                request.isForMainFrame(),
+                BuildConfig.DEBUG,
+                hasDevOverride(),
+                errorResponse.getStatusCode()
+            )) {
                 renderDevOverrideRescue(view);
             }
         }
 
-        private boolean shouldShowDevOverrideRescue(WebResourceRequest request, int errorCode) {
-            return request.isForMainFrame()
-                && BuildConfig.DEBUG
-                && DevUrlPrefs.getOverrideUrl(MainActivity.this) != null
-                && OfflineFallbackPolicy.isNetworkErrorCode(errorCode);
+        private boolean hasDevOverride() {
+            return DevUrlPrefs.getOverrideUrl(MainActivity.this) != null;
         }
     }
 

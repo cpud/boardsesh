@@ -83,24 +83,33 @@ class BoardseshViewController: CAPBridgeViewController {
 
     #if DEBUG
     private static let devUrlRescueDelay: TimeInterval = 8
+    private var pendingDevUrlRescueWork: DispatchWorkItem?
 
     /// If a dev URL override is active and the WebView hasn't loaded anything
     /// meaningful after `devUrlRescueDelay` seconds, present a native alert that
     /// lets the developer clear the override. Without this, a dead preview URL
     /// leaves the app unable to reach the in-app Dev URL dialog to reset it.
+    ///
+    /// Any previously scheduled check is cancelled before a new one is queued,
+    /// so repeated "Keep trying" taps or backgrounding/foregrounding cycles
+    /// never cause multiple alerts to stack.
     private func scheduleDevUrlRescueCheck() {
         guard DevUrlPlugin.currentOverride() != nil else { return }
-        DispatchQueue.main.asyncAfter(deadline: .now() + Self.devUrlRescueDelay) { [weak self] in
+        pendingDevUrlRescueWork?.cancel()
+        let work = DispatchWorkItem { [weak self] in
             self?.presentDevUrlRescueIfStillStuck()
         }
+        pendingDevUrlRescueWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.devUrlRescueDelay, execute: work)
     }
 
     private func presentDevUrlRescueIfStillStuck() {
         guard let override = DevUrlPlugin.currentOverride() else { return }
         // Don't stack alerts.
         guard presentedViewController == nil else { return }
-        // If the WebView has a non-empty document title, the page almost certainly
-        // loaded successfully. Boardsesh always sets a title.
+        // Heuristic: a non-empty document title means the page loaded. Boardsesh
+        // always sets a title; if we ever ship a page without one, revisit this.
+        // See the "title-check fragility" follow-up note in the PR review.
         if let title = webView?.title, !title.isEmpty { return }
 
         let alert = UIAlertController(
@@ -108,9 +117,14 @@ class BoardseshViewController: CAPBridgeViewController {
             message: "\(override) is unreachable. Reset to production?",
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: "Reset", style: .destructive) { _ in
+        alert.addAction(UIAlertAction(title: "Reset", style: .destructive) { [weak self] _ in
             UserDefaults.standard.removeObject(forKey: DevUrlPlugin.defaultsKey)
-            exit(0)
+            // Load production directly rather than exit(0) — calling `exit`
+            // surfaces as an unexpected termination signal in dev/TestFlight
+            // runs and is discouraged by Apple even in debug builds.
+            if let productionURL = URL(string: DevUrlPlugin.defaultUrl) {
+                self?.webView?.load(URLRequest(url: productionURL))
+            }
         })
         alert.addAction(UIAlertAction(title: "Keep trying", style: .cancel) { [weak self] _ in
             // In case the tunnel came back up, re-arm the check.
