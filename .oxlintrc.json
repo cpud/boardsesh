@@ -55,7 +55,8 @@
     "import/default": "error",
     "import/export": "error",
     "import/first": "error",
-    "import/named": "error"
+    "import/named": "error",
+    "import/namespace": "error"
   },
   "ignorePatterns": [
     "dist/**",
