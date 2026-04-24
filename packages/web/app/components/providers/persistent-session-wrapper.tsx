@@ -33,6 +33,7 @@ const SeshSettingsDrawer = dynamic(() => import('../sesh-settings/sesh-settings-
   ssr: false,
 });
 import { BoardSwitchConfirmProvider } from '../board-lock/board-switch-confirm-provider';
+import { FeedbackPromptBanner } from '../feedback/feedback-prompt-banner';
 
 interface PersistentSessionWrapperProps {
   children: React.ReactNode;
@@ -137,6 +138,7 @@ export function RootBottomBar({ boardConfigs }: { boardConfigs: BoardConfigData 
       className={`${bottomBarStyles.bottomBarWrapper} ${isNative ? bottomBarStyles.nativeApp : ''}`}
       data-testid="bottom-bar-wrapper"
     >
+      <FeedbackPromptBanner />
       {hasActiveQueue && boardDetails && (
         <ErrorBoundary>
           <BoardProvider boardName={boardDetails.board_name}>

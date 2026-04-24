@@ -5,6 +5,7 @@ import { useDebouncedCallback } from 'use-debounce';
 import { track } from '@vercel/analytics';
 import { useQueueActions, useSearchData } from '../graphql-queue';
 import { DEFAULT_SEARCH_PARAMS } from '@/app/lib/url-utils';
+import { incrementSearches, maybeFireFeedbackPromptEvent } from '@/app/lib/feedback-prompt-db';
 
 interface UISearchParamsContextType {
   uiSearchParams: SearchRequestPagination;
@@ -47,6 +48,7 @@ export const UISearchParamsProvider: React.FC<{ children: React.ReactNode }> = (
     if (uiSearchParams.projectsOnly) activeFilters.push('projectsOnly');
 
     if (activeFilters.length > 0) {
+      void incrementSearches().then(maybeFireFeedbackPromptEvent);
       track('Climb Search Performed', {
         searchType: 'filters',
         activeFiltersCount: activeFilters.length,

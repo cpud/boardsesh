@@ -1,0 +1,23 @@
+.banner {
+  position: relative;
+  margin: 0 var(--spacing-3, 12px) var(--spacing-2, 8px);
+  padding: 16px 16px 12px;
+  border-radius: 12px;
+  background-color: var(--semantic-surface);
+  border: 1px solid var(--neutral-200);
+  max-width: 480px;
+  width: auto;
+}
+
+@media (min-width: 768px) {
+  .banner {
+    margin: 0 auto var(--spacing-2, 8px);
+  }
+}
+
+.closeButton {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 1;
+}

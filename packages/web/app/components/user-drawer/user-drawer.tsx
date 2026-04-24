@@ -11,6 +11,8 @@ import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
 import LoginOutlined from '@mui/icons-material/LoginOutlined';
 import HelpOutlineOutlined from '@mui/icons-material/HelpOutlineOutlined';
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
+import StarBorderOutlined from '@mui/icons-material/StarBorderOutlined';
+import FeedbackOutlined from '@mui/icons-material/FeedbackOutlined';
 import GpsFixedOutlined from '@mui/icons-material/GpsFixedOutlined';
 import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
 import SwapHorizOutlined from '@mui/icons-material/SwapHorizOutlined';
@@ -38,6 +40,10 @@ import DevUrlDialog from '../dev-url-dialog/dev-url-dialog';
 import { useDevUrl } from '@/app/lib/dev-url';
 import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 import { HoldClassificationWizard } from '../hold-classification';
+import { FeedbackDialog } from '../feedback/feedback-dialog';
+import { requestInAppReview } from '@/app/lib/in-app-review';
+import { submitAppFeedback } from '@/app/hooks/use-submit-app-feedback';
+import { setFeedbackStatus } from '@/app/lib/feedback-prompt-db';
 import BoardDiscoveryScroll from '../board-scroll/board-discovery-scroll';
 import BoardSelectorDrawer from '../board-selector-drawer/board-selector-drawer';
 import MyBoardsDrawer from '../my-boards-drawer/my-boards-drawer';
@@ -82,6 +88,7 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
   const [recentSessions, setRecentSessions] = useState<StoredSession[]>([]);
   const [showDevUrl, setShowDevUrl] = useState(false);
   const { isAvailable: devUrlAvailable } = useDevUrl();
+  const [showFeedback, setShowFeedback] = useState(false);
 
   const { mode, toggleMode } = useColorMode();
   const isMoonboard = boardDetails?.board_name === 'moonboard';
@@ -404,6 +411,41 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
               <span className={styles.menuItemLabel}>About</span>
             </Link>
 
+            <button
+              type="button"
+              className={styles.menuItem}
+              onClick={() => {
+                handleClose();
+                void requestInAppReview();
+                void setFeedbackStatus('submitted');
+                // Record the intent in our DB too, so we can distinguish a
+                // user-initiated rate ("drawer-rate") from the automatic prompt
+                // ("prompt") and from a free-text "drawer-feedback" submission.
+                void submitAppFeedback({ rating: 5, comment: null, source: 'drawer-rate' }).catch(() => {
+                  // Best-effort: the native review sheet has already fired.
+                });
+              }}
+            >
+              <span className={styles.menuItemIcon}>
+                <StarBorderOutlined />
+              </span>
+              <span className={styles.menuItemLabel}>Rate Boardsesh</span>
+            </button>
+
+            <button
+              type="button"
+              className={styles.menuItem}
+              onClick={() => {
+                handleClose();
+                setShowFeedback(true);
+              }}
+            >
+              <span className={styles.menuItemIcon}>
+                <FeedbackOutlined />
+              </span>
+              <span className={styles.menuItemLabel}>Send feedback</span>
+            </button>
+
             {/* Logout */}
             {session?.user && (
               <>
@@ -500,6 +542,8 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
       )}
 
       {devUrlAvailable && <DevUrlDialog open={showDevUrl} onClose={() => setShowDevUrl(false)} />}
+
+      <FeedbackDialog open={showFeedback} onClose={() => setShowFeedback(false)} source="drawer-feedback" />
     </>
   );
 }
