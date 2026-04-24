@@ -6,11 +6,17 @@ import { getGraphQLHttpUrl } from './client';
 import { executeAuthenticatedGraphQL } from './server-graphql';
 import type { SessionFeedResult } from '@boardsesh/shared-schema';
 import type { DiscoverablePlaylist, DiscoverPlaylistsQueryResponse } from '@/app/lib/graphql/operations/playlists';
-import type { GetUserProfileStatsQueryResponse, GetUserTicksQueryResponse } from '@/app/lib/graphql/operations/ticks';
+import type {
+  GetUserClimbPercentileQueryResponse,
+  GetUserProfileStatsQueryResponse,
+  GetUserTicksQueryResponse,
+} from '@/app/lib/graphql/operations/ticks';
 
 // Re-export uncached authenticated server functions so existing imports
 // from this file continue to work without changes.
 export { serverMyBoards, serverUserPlaylists, serverGroupedNotifications } from './server-graphql';
+
+export const USER_CLIMB_PERCENTILE_CACHE_TAG = 'user-climb-percentile';
 
 /**
  * Execute a GraphQL query via HTTP (non-cached version for internal use)
@@ -165,6 +171,28 @@ export async function cachedUserProfileStats(
     const query = createCachedGraphQLQuery<Response>(GET_USER_PROFILE_STATS, tag, 300);
     const result = await query({ userId });
     return result.userProfileStats;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Cached server-side fetch of user climb percentile (public, no auth needed).
+ */
+export async function cachedUserClimbPercentile(
+  userId: string,
+): Promise<GetUserClimbPercentileQueryResponse['userClimbPercentile'] | null> {
+  const { GET_USER_CLIMB_PERCENTILE } = await import('@/app/lib/graphql/operations/ticks');
+  type Response = GetUserClimbPercentileQueryResponse;
+
+  try {
+    const query = createCachedGraphQLQuery<Response>(
+      GET_USER_CLIMB_PERCENTILE,
+      USER_CLIMB_PERCENTILE_CACHE_TAG,
+      604800,
+    );
+    const result = await query({ userId });
+    return result.userClimbPercentile;
   } catch {
     return null;
   }

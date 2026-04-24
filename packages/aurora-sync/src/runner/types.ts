@@ -3,6 +3,15 @@ export type SyncRunnerConfig = {
   onError?: (error: Error, context: { userId?: string; board?: string }) => void;
 };
 
+export type DaemonOptions = {
+  timeZone?: string;
+  quietHoursStart?: number;
+  quietHoursEnd?: number;
+  quietPollMs?: number;
+  minDelayMinutes?: number;
+  maxDelayMinutes?: number;
+};
+
 export type SyncSummary = {
   total: number;
   successful: number;

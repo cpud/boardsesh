@@ -1,5 +1,12 @@
 import type { SyncData } from './sync-api-types';
 import { type SyncOptions, type AuroraBoardName, WEB_HOSTS, SHARED_SYNC_TABLES } from './types';
+import {
+  assertAuroraResponseOk,
+  createAuroraInvalidResponseError,
+  createAuroraNetworkError,
+  createAuroraTimeoutError,
+  isAuroraRequestError,
+} from './errors';
 
 export async function sharedSync(
   board: AuroraBoardName,
@@ -39,13 +46,29 @@ export async function sharedSync(
     Cookie: `token=${token}`,
   };
 
-  const response = await fetch(webUrl, {
-    method: 'POST',
-    headers,
-    body: requestBody,
-  });
+  try {
+    const response = await fetch(webUrl, {
+      method: 'POST',
+      headers,
+      body: requestBody,
+      signal: AbortSignal.timeout(30000),
+    });
 
-  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    await assertAuroraResponseOk(response, webUrl);
+    return await response.json();
+  } catch (error) {
+    if (isAuroraRequestError(error)) {
+      throw error;
+    }
 
-  return response.json();
+    if (error instanceof Error && (error.name === 'AbortError' || error.name === 'TimeoutError')) {
+      throw createAuroraTimeoutError(webUrl, error);
+    }
+
+    if (error instanceof TypeError) {
+      throw createAuroraNetworkError(webUrl, error);
+    }
+
+    throw createAuroraInvalidResponseError(webUrl, error);
+  }
 }
