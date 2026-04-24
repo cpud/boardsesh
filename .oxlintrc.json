@@ -35,7 +35,8 @@
     "typescript/no-deprecated": "error",
     "typescript/no-duplicate-enum-values": "error",
     "typescript/no-extra-non-null-assertion": "error",
-    "typescript/no-for-in-array": "error"
+    "typescript/no-for-in-array": "error",
+    "typescript/no-implied-eval": "error"
   },
   "ignorePatterns": [
     "dist/**",
