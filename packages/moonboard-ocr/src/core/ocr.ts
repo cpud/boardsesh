@@ -1,5 +1,14 @@
 import Tesseract from 'tesseract.js';
 
+type TesseractScheduler = {
+  addJob: (action: 'recognize', image: Buffer | Blob) => Promise<{ data: { text: string } }>;
+};
+
+export type OcrOptions = {
+  /** Reuse a pre-warmed Tesseract scheduler instead of spawning a fresh worker per call. */
+  scheduler?: TesseractScheduler;
+};
+
 export type OcrResult = {
   name: string;
   setter: string;
@@ -47,7 +56,7 @@ async function imageDataToBlob(imageData: ImageData): Promise<Blob> {
  * Run OCR on image data and parse the result.
  * Accepts Buffer (Node) or ImageData (Browser).
  */
-export async function runOCR(imageData: Buffer | ImageData): Promise<OcrResult> {
+export async function runOCR(imageData: Buffer | ImageData, options: OcrOptions = {}): Promise<OcrResult> {
   // Convert ImageData to Blob for browser compatibility
   let ocrInput: Buffer | Blob = imageData as Buffer;
   // Guard against ImageData not being defined in Node.js environment
@@ -55,7 +64,9 @@ export async function runOCR(imageData: Buffer | ImageData): Promise<OcrResult> 
     ocrInput = await imageDataToBlob(imageData);
   }
 
-  const result = await Tesseract.recognize(ocrInput, 'eng');
+  const result = options.scheduler
+    ? await options.scheduler.addJob('recognize', ocrInput)
+    : await Tesseract.recognize(ocrInput, 'eng');
   const text = result.data.text;
   const lines = text
     .split('\n')
