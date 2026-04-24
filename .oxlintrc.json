@@ -25,7 +25,8 @@
     "@typescript-eslint/no-unnecessary-type-assertion": "error",
     "no-console": ["error", { "allow": ["warn", "error", "info"] }],
     "nextjs/inline-script-id": "error",
-    "nextjs/no-assign-module-variable": "error"
+    "nextjs/no-assign-module-variable": "error",
+    "nextjs/no-async-client-component": "error"
   },
   "ignorePatterns": [
     "dist/**",
