@@ -1,8 +1,15 @@
 import { describe, it, expect } from 'vite-plus/test';
-import { detectShake, initialShakeState, DEFAULT_SHAKE_OPTIONS } from '../detect-shake';
+import { detectShake, initialShakeState, DEFAULT_SHAKE_OPTIONS, type ShakeOptions } from '../detect-shake';
 
 describe('detectShake', () => {
-  const OPTS = DEFAULT_SHAKE_OPTIONS;
+  // Pin the options so test expectations don't silently drift when defaults change.
+  const OPTS: ShakeOptions = {
+    ...DEFAULT_SHAKE_OPTIONS,
+    threshold: 15,
+    windowMs: 1000,
+    cooldownMs: 5000,
+    requiredJolts: 3,
+  };
 
   it('does not fire on a magnitude below the threshold', () => {
     const step = detectShake(5, 0, initialShakeState(), OPTS);

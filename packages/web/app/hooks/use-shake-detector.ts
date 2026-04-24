@@ -10,6 +10,11 @@ interface UseShakeDetectorOptions {
 
 type IosRequestPermission = () => Promise<'granted' | 'denied'>;
 
+const DEBUG = process.env.NODE_ENV !== 'production';
+const log = (...args: unknown[]) => {
+  if (DEBUG) console.info('[shake]', ...args);
+};
+
 /**
  * Subscribe to device accelerometer events and invoke `onShake` on shake.
  *
@@ -36,10 +41,23 @@ export function useShakeDetector(onShake: () => void, { enabled = true }: UseSha
     let cleanup: (() => void | Promise<void>) | null = null;
     let cancelled = false;
 
+    let sampleCount = 0;
+    let peakMagnitude = 0;
     const processMagnitude = (magnitude: number) => {
       const step = detectShake(magnitude, Date.now(), state, DEFAULT_SHAKE_OPTIONS);
       state = step.state;
-      if (step.fired) onShakeRef.current();
+      sampleCount += 1;
+      if (magnitude > peakMagnitude) peakMagnitude = magnitude;
+      // Log once per second so devtools don't flood; include the peak so the
+      // user can see whether their shake is even crossing threshold.
+      if (DEBUG && sampleCount % 50 === 0) {
+        log(`samples=${sampleCount} peak=${peakMagnitude.toFixed(1)} jolts=${state.joltTimestamps.length}`);
+      }
+      if (step.fired) {
+        log(`SHAKE fired (peak=${peakMagnitude.toFixed(1)} m/s²)`);
+        peakMagnitude = 0;
+        onShakeRef.current();
+      }
     };
 
     const attach = async () => {
@@ -49,7 +67,11 @@ export function useShakeDetector(onShake: () => void, { enabled = true }: UseSha
       // a second listener (double detection, stale state, wrong thresholds).
       if (isNativeApp()) {
         const motion = window.Capacitor?.Plugins?.Motion;
-        if (!motion) return;
+        if (!motion) {
+          log('native shell without Motion plugin — not attaching');
+          return;
+        }
+        log('attaching via Capacitor Motion plugin');
         const handle = await motion.addListener('accel', (event) => {
           const { x, y, z } = event.acceleration;
           processMagnitude(Math.sqrt(x * x + y * y + z * z));
@@ -63,7 +85,21 @@ export function useShakeDetector(onShake: () => void, { enabled = true }: UseSha
       }
 
       // Mobile browser / PWA path.
-      if (typeof DeviceMotionEvent === 'undefined') return;
+      if (typeof DeviceMotionEvent === 'undefined') {
+        log('DeviceMotionEvent unavailable (desktop or old browser) — not attaching');
+        return;
+      }
+
+      // DeviceMotion requires a secure context (HTTPS or localhost). Over
+      // plain HTTP (e.g. LAN IP / Tailscale IP on the dev server), mobile
+      // browsers silently drop all events — so the hook looks like it's
+      // doing nothing. Warn up front so the cause is obvious in the console.
+      if (typeof window !== 'undefined' && window.isSecureContext === false) {
+        console.warn(
+          '[shake] Page is not a secure context — mobile browsers will NOT fire devicemotion events. ' +
+            'Use HTTPS or localhost to test shake-to-report.',
+        );
+      }
 
       const handler = (event: DeviceMotionEvent) => {
         const accel = event.acceleration;
@@ -90,16 +126,18 @@ export function useShakeDetector(onShake: () => void, { enabled = true }: UseSha
 
       if (typeof requestPermission === 'function') {
         // iOS 13+ Safari: permission must be requested from a user gesture.
+        log('iOS 13+ detected — waiting for first pointerdown to request DeviceMotion permission');
         const onGesture = async () => {
           document.removeEventListener('pointerdown', onGesture);
           try {
             const result = await requestPermission.call(DeviceMotionEvent);
+            log(`DeviceMotion permission result: ${result}`);
             if (result === 'granted' && !cancelled) {
               window.addEventListener('devicemotion', handler);
               cleanup = () => window.removeEventListener('devicemotion', handler);
             }
-          } catch {
-            // Denied or not allowed — bail silently.
+          } catch (err) {
+            log('DeviceMotion permission threw:', err);
           }
         };
         document.addEventListener('pointerdown', onGesture, { once: true });
@@ -107,6 +145,7 @@ export function useShakeDetector(onShake: () => void, { enabled = true }: UseSha
         return;
       }
 
+      log('attaching devicemotion listener');
       window.addEventListener('devicemotion', handler);
       cleanup = () => window.removeEventListener('devicemotion', handler);
     };

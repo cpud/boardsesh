@@ -23,10 +23,20 @@ export interface ShakeOptions {
 }
 
 export const DEFAULT_SHAKE_OPTIONS: ShakeOptions = {
-  threshold: 15,
+  /**
+   * User-acceleration magnitude (m/s², excluding gravity) that counts as a
+   * "jolt". 12 comfortably catches a purposeful shake on most phones and
+   * ignores normal handling, walking, and pocketing. Tune upward if we see
+   * false positives in the wild; the old 15 was too strict — real shakes
+   * often peak around 12–25 depending on grip and device.
+   */
+  threshold: 12,
+  /** Jolts older than this (ms) are pruned from the rolling window. */
   windowMs: 1000,
-  cooldownMs: 5000,
-  requiredJolts: 3,
+  /** After firing, suppress further fires for this duration (ms). */
+  cooldownMs: 3000,
+  /** Two direction reversals inside the window is enough to mean "shake". */
+  requiredJolts: 2,
 };
 
 export const initialShakeState = (): ShakeState => ({ joltTimestamps: [], lastFireAt: null });
