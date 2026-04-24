@@ -52,6 +52,10 @@ public class DevUrlPlugin: CAPPlugin, CAPBridgedPlugin {
             return
         }
         UserDefaults.standard.set(url, forKey: DevUrlPlugin.defaultsKey)
+        // Force synchronous persistence before we terminate. Deprecated but not
+        // removed, and documented as the way to flush before `exit(0)` — which
+        // bypasses the normal UIKit termination path that would flush for us.
+        UserDefaults.standard.synchronize()
         call.resolve()
         scheduleRestart()
     }
@@ -73,6 +77,7 @@ public class DevUrlPlugin: CAPPlugin, CAPBridgedPlugin {
             return
         }
         UserDefaults.standard.removeObject(forKey: DevUrlPlugin.defaultsKey)
+        UserDefaults.standard.synchronize()
         call.resolve()
         scheduleRestart()
     }
