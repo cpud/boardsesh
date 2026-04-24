@@ -112,7 +112,7 @@ const FeedbackDialogBody: React.FC<Omit<FeedbackDialogProps, 'open'>> = ({
       </DialogContent>
       {secondaryAction && (
         <div className={styles.secondaryAction}>
-          <Button variant="text" size="small" color="inherit" onClick={secondaryAction.onClick}>
+          <Button variant="text" size="small" color="inherit" onClick={() => secondaryAction.onClick()}>
             {secondaryAction.label}
           </Button>
         </div>

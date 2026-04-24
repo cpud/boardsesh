@@ -3,6 +3,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { render, act, waitFor } from '@testing-library/react';
 import React from 'react';
 import { openDB } from 'idb';
+import { ShakeToReportProvider } from '../shake-to-report-provider';
+import { setPreference } from '@/app/lib/user-preferences-db';
 
 // Capture the most recent callback and options passed to useShakeDetector
 // so tests can deterministically "simulate" a shake and read the enabled flag.
@@ -35,9 +37,6 @@ vi.mock('../bug-report-dialog', () => ({
     return props.open ? <div data-testid="bug-report-dialog">open</div> : null;
   },
 }));
-
-import { ShakeToReportProvider } from '../shake-to-report-provider';
-import { setPreference } from '@/app/lib/user-preferences-db';
 
 const DB_NAME = 'boardsesh-user-preferences';
 const STORE_NAME = 'preferences';
