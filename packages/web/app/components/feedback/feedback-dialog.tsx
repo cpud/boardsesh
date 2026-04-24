@@ -14,12 +14,24 @@ import styles from './feedback-dialog.module.css';
 
 export type FeedbackDialogMode = 'rating' | 'bug';
 
+export interface FeedbackSubmission {
+  rating: number | null;
+  comment: string | null;
+}
+
 interface FeedbackDialogProps {
   open: boolean;
   onClose: () => void;
   source: AppFeedbackSource;
   title?: string;
   mode?: FeedbackDialogMode;
+  /**
+   * Fires after the user's submission is accepted by the form and the mutation
+   * has been kicked off (fire-and-forget). Used by callers that want to chain
+   * a follow-up step — e.g. the drawer asking about an App Store review after
+   * a rating submission. Not invoked when the form is cancelled/closed.
+   */
+  onSubmitted?: (submission: FeedbackSubmission) => void;
 }
 
 const FeedbackDialogBody: React.FC<Omit<FeedbackDialogProps, 'open'>> = ({
@@ -27,13 +39,14 @@ const FeedbackDialogBody: React.FC<Omit<FeedbackDialogProps, 'open'>> = ({
   source,
   title,
   mode = 'rating',
+  onSubmitted,
 }) => {
   const { mutate } = useSubmitAppFeedback();
   const { showMessage } = useSnackbar();
   const isBug = mode === 'bug';
-  const resolvedTitle = title ?? (isBug ? 'Report a bug' : 'Send feedback');
+  const resolvedTitle = title ?? (isBug ? 'Report a bug' : 'Rate Boardsesh');
 
-  const handleSubmit = (values: { rating: number | null; comment: string | null }) => {
+  const handleSubmit = (values: FeedbackSubmission) => {
     if (isBug) {
       // Bug-mode form guarantees comment length via canSubmit.
       if (!values.comment) {
@@ -62,6 +75,7 @@ const FeedbackDialogBody: React.FC<Omit<FeedbackDialogProps, 'open'>> = ({
       },
     );
     onClose();
+    onSubmitted?.(values);
   };
 
   return (
@@ -82,10 +96,12 @@ const FeedbackDialogBody: React.FC<Omit<FeedbackDialogProps, 'open'>> = ({
   );
 };
 
-export const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ open, onClose, source, title, mode }) => {
+export const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ open, onClose, source, title, mode, onSubmitted }) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      {open && <FeedbackDialogBody onClose={onClose} source={source} title={title} mode={mode} />}
+      {open && (
+        <FeedbackDialogBody onClose={onClose} source={source} title={title} mode={mode} onSubmitted={onSubmitted} />
+      )}
     </Dialog>
   );
 };
