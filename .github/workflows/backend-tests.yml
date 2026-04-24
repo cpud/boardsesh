@@ -61,6 +61,22 @@ jobs:
         with:
           fetch-depth: 50
 
+      # Flag (don't block) when shared Drizzle schema changes land without a
+      # parallel edit to the hand-maintained test DDL in schema-sql.ts. Keeps
+      # the two from silently drifting apart.
+      - name: Check for test schema drift
+        if: github.event_name == 'pull_request'
+        run: |
+          BASE=${{ github.event.pull_request.base.sha }}
+          HEAD=${{ github.event.pull_request.head.sha }}
+          git fetch --no-tags --depth=50 origin "$BASE" || true
+          changed=$(git diff --name-only "$BASE" "$HEAD" || true)
+          if echo "$changed" | grep -qE '^packages/db/src/schema/'; then
+            if ! echo "$changed" | grep -qE '^packages/backend/src/__tests__/schema-sql\.ts$'; then
+              echo "::warning title=Test schema may be stale::packages/db/src/schema/ changed but packages/backend/src/__tests__/schema-sql.ts was not. If your change added/removed columns the backend tests care about, mirror it there too."
+            fi
+          fi
+
       - uses: oven-sh/setup-bun@v2
 
       - uses: voidzero-dev/setup-vp@v1

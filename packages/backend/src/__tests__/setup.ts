@@ -9,7 +9,10 @@ import * as schema from '../db/schema';
 import { roomManager } from '../services/room-manager';
 import { resetAllRateLimits } from '../utils/rate-limiter';
 
-let migrationClient: ReturnType<typeof postgres>;
+// migrationClient is assigned as soon as we open a connection, so afterAll can
+// always close it even if the subsequent TRUNCATE/seed throws (which would
+// leave dbAvailable=false but still leak the socket).
+let migrationClient: ReturnType<typeof postgres> | undefined;
 let db: ReturnType<typeof drizzle>;
 let dbAvailable = false;
 
@@ -80,7 +83,7 @@ beforeEach(async () => {
 });
 
 afterAll(async () => {
-  if (dbAvailable && migrationClient) {
+  if (migrationClient) {
     await migrationClient.end();
   }
 });
