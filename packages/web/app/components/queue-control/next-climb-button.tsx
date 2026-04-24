@@ -8,8 +8,7 @@ import type { BoardDetails } from '@/app/lib/types';
 import { useResolvedBoardDetails } from '@/app/hooks/use-resolved-board-details';
 import FastForwardOutlined from '@mui/icons-material/FastForwardOutlined';
 import { track } from '@vercel/analytics';
-import IconButton from '@mui/material/IconButton';
-import type { IconButtonProps } from '@mui/material/IconButton';
+import IconButton, { type IconButtonProps } from '@mui/material/IconButton';
 
 type NextClimbButtonProps = {
   navigate: boolean;

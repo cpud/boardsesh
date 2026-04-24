@@ -16,8 +16,7 @@ import {
   parseBoardRouteParams,
   getMoonBoardLayoutBySlug,
 } from './url-utils';
-import type { MoonBoardLayoutKey } from './moonboard-config';
-import { MOONBOARD_LAYOUTS, MOONBOARD_SETS, MOONBOARD_SIZE } from './moonboard-config';
+import { type MoonBoardLayoutKey, MOONBOARD_LAYOUTS, MOONBOARD_SETS, MOONBOARD_SIZE } from './moonboard-config';
 
 // Helper to parse MoonBoard size slug (always returns the single size)
 function getMoonBoardSizeBySlug(): { id: number; name: string } {

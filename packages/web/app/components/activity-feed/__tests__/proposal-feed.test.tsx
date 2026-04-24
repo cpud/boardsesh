@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import React from 'react';
-import type { QueryClient } from '@tanstack/react-query';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { type QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createTestQueryClient } from '@/app/test-utils/test-providers';
 import type { Proposal } from '@boardsesh/shared-schema';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';

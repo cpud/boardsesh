@@ -7,11 +7,9 @@ import {
   QueueActionsContext,
   QueueDataContext,
   CurrentClimbUuidContext,
-} from '../../graphql-queue/QueueContext';
-import type {
-  GraphQLQueueContextType,
-  GraphQLQueueActionsType,
-  GraphQLQueueDataType,
+  type GraphQLQueueContextType,
+  type GraphQLQueueActionsType,
+  type GraphQLQueueDataType,
 } from '../../graphql-queue/QueueContext';
 import type { BoardDetails, Climb, Angle } from '@/app/lib/types';
 import type { ClimbQueueItem } from '../types';

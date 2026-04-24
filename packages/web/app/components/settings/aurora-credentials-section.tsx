@@ -43,8 +43,7 @@ import {
   type AuroraExportPreview,
   type StrippedExportData,
 } from '@/app/lib/data-sync/aurora/parse-aurora-export';
-import { AURORA_BOARDS } from '@boardsesh/shared-schema';
-import type { AuroraBoardName } from '@boardsesh/shared-schema';
+import { AURORA_BOARDS, type AuroraBoardName } from '@boardsesh/shared-schema';
 import styles from './aurora-credentials-section.module.css';
 
 type BoardUnsyncedCounts = {

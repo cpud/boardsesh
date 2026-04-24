@@ -1,6 +1,5 @@
 import { useCallback, useRef } from 'react';
-import type { Client } from '../../graphql-queue/graphql-client';
-import { execute } from '../../graphql-queue/graphql-client';
+import { type Client, execute } from '../../graphql-queue/graphql-client';
 import {
   ADD_QUEUE_ITEM,
   REMOVE_QUEUE_ITEM,
@@ -10,8 +9,7 @@ import {
   REPLACE_QUEUE_ITEM,
 } from '@boardsesh/shared-schema';
 import type { ClimbQueueItem as LocalClimbQueueItem } from '../../queue-control/types';
-import type { Session } from '../types';
-import { toClimbQueueItemInput } from '../types';
+import { type Session, toClimbQueueItemInput } from '../types';
 
 type UseQueueMutationsArgs = {
   client: Client | null;

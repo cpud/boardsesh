@@ -9,8 +9,7 @@ import type { BoardDetails } from '@/app/lib/types';
 import { useResolvedBoardDetails } from '@/app/hooks/use-resolved-board-details';
 import { track } from '@vercel/analytics';
 import FastRewindOutlined from '@mui/icons-material/FastRewindOutlined';
-import IconButton from '@mui/material/IconButton';
-import type { IconButtonProps } from '@mui/material/IconButton';
+import IconButton, { type IconButtonProps } from '@mui/material/IconButton';
 
 type PreviousClimbButtonProps = {
   navigate: boolean;

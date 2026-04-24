@@ -1,7 +1,6 @@
 import { fetch } from 'undici';
 import type { SyncData } from '../sync-api-types';
-import type { SyncOptions, AuroraBoardName } from './types';
-import { WEB_HOSTS } from './types';
+import { type SyncOptions, type AuroraBoardName, WEB_HOSTS } from './types';
 import { handleAuroraApiResponse } from './util';
 
 //TODO: Can probably be consolidated with sharedSync

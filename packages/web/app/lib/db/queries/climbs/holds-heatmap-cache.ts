@@ -1,8 +1,7 @@
 import { unstable_cache } from 'next/cache';
 import { sortObjectKeys } from '@/app/lib/cache-utils';
 import type { ParsedBoardRouteParameters, SearchRequestPagination } from '@/app/lib/types';
-import type { HoldHeatmapData } from './holds-heatmap';
-import { getHoldHeatmapData } from './holds-heatmap';
+import { type HoldHeatmapData, getHoldHeatmapData } from './holds-heatmap';
 
 /**
  * Cache duration for heatmap queries (in seconds).

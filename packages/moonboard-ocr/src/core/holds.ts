@@ -1,5 +1,4 @@
-import type { HoldType, GridCoordinate, DetectedHold } from '../types';
-import { GRID_POSITIONS } from '../types';
+import { type HoldType, type GridCoordinate, type DetectedHold, GRID_POSITIONS } from '../types';
 import type { RawPixelData, ImageRegion } from '../image-processor/types';
 
 type CircleCenter = {

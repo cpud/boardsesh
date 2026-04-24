@@ -1,9 +1,7 @@
 import { userSync } from '../api/user-sync-api';
-import type { SyncOptions, UserSyncData, AuroraBoardName } from '../api/types';
-import { USER_TABLES } from '../api/types';
+import { type SyncOptions, type UserSyncData, type AuroraBoardName, USER_TABLES } from '../api/types';
 import { eq, and, inArray, sql } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import type { NeonDatabase } from 'drizzle-orm/neon-serverless';
+import { drizzle, type NeonDatabase } from 'drizzle-orm/neon-serverless';
 import type { Pool } from '@neondatabase/serverless';
 import { UNIFIED_TABLES } from '../db/table-select';
 import { boardseshTicks, playlists, playlistClimbs, playlistOwnership } from '@boardsesh/db/schema/app';

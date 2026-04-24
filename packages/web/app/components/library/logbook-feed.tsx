@@ -18,11 +18,10 @@ import { readFiltersFromQuery, readSortFromQuery, filtersToQueryParams } from '@
 import { getPreference, setPreference } from '@/app/lib/user-preferences-db';
 import { useSession } from 'next-auth/react';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
-import { useQueryClient } from '@tanstack/react-query';
 import {
   GET_USER_ASCENTS_FEED,
   DELETE_TICK,

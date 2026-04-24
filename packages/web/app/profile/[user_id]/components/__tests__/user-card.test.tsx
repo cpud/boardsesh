@@ -2,8 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import type { UserProfile } from '../../utils/profile-constants';
-import UserCard from '../user-card';
-import type { UserCardProps } from '../user-card';
+import UserCard, { type UserCardProps } from '../user-card';
 
 // Mock dependencies before component import
 vi.mock('@/app/components/ui/follow-button', () => ({

@@ -1,5 +1,4 @@
-import type { Dispatch } from 'react';
-import { useEffect, useRef } from 'react';
+import { type Dispatch, useEffect, useRef } from 'react';
 import type { QueueAction } from '../../queue-control/types';
 
 type UsePendingUpdateCleanupParams = {

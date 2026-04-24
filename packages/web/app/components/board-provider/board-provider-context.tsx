@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import type { BoardName, ClimbUuid } from '@/app/lib/types';
 import type { SaveClimbOptions } from '@/app/lib/api-wrappers/aurora/types';
 import { useSession } from 'next-auth/react';
-import { useLogbook as useLogbookQuery } from '@/app/hooks/use-logbook';
+import { useLogbook as useLogbookQuery, type LogbookEntry } from '@/app/hooks/use-logbook';
 import { useSaveTick as useSaveTickMutation, type SaveTickOptions } from '@/app/hooks/use-save-tick';
 import {
   useSaveClimb as useSaveClimbMutation,
@@ -14,7 +14,6 @@ import {
 } from '@/app/hooks/use-save-climb';
 import { usePersistentSessionState } from '@/app/components/persistent-session/persistent-session-context';
 import type { UpdateClimbInput } from '@boardsesh/shared-schema';
-import type { LogbookEntry } from '@/app/hooks/use-logbook';
 
 // Re-export types for backward compatibility
 export type { SaveTickOptions } from '@/app/hooks/use-save-tick';

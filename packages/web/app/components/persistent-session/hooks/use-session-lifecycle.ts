@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect, type Dispatch, type SetStateAction } from 'react';
-import type { Client } from '../../graphql-queue/graphql-client';
-import { createGraphQLClient, execute, subscribe } from '../../graphql-queue/graphql-client';
+import { type Client, createGraphQLClient, execute, subscribe } from '../../graphql-queue/graphql-client';
 import {
   INITIAL_RETRY_DELAY_MS,
   MAX_RETRY_DELAY_MS,
@@ -17,17 +16,25 @@ import {
   type SessionEvent,
   type QueueEvent,
   type EventsReplayResponse,
+  type SessionSummary,
 } from '@boardsesh/shared-schema';
 import type { ClimbQueueItem as LocalClimbQueueItem } from '../../queue-control/types';
 import { computeQueueStateHash } from '@/app/utils/hash';
 import { setPreference, removePreference } from '@/app/lib/user-preferences-db';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import { END_SESSION as END_SESSION_GQL, type EndSessionResponse } from '@/app/lib/graphql/operations/sessions';
-import type { SessionSummary } from '@boardsesh/shared-schema';
 import { upsertSessionUser } from '../event-utils';
 import { TransientJoinError } from '../errors';
-import type { Session, ActiveSessionInfo, PendingInitialQueue, SharedRefs } from '../types';
-import { toClimbQueueItemInput, ACTIVE_SESSION_KEY, DEFAULT_BACKEND_URL, DEBUG } from '../types';
+import {
+  type Session,
+  type ActiveSessionInfo,
+  type PendingInitialQueue,
+  type SharedRefs,
+  toClimbQueueItemInput,
+  ACTIVE_SESSION_KEY,
+  DEFAULT_BACKEND_URL,
+  DEBUG,
+} from '../types';
 
 /**
  * Transform QueueEvent (from eventsReplay) to SubscriptionQueueEvent format.

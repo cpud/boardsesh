@@ -4,8 +4,7 @@ import React from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import { EmptyState } from '@/app/components/ui/empty-state';
 import BoardImportPrompt from '@/app/components/settings/board-import-prompt';
-import { AURORA_BOARDS } from '@boardsesh/shared-schema';
-import type { AuroraBoardName } from '@boardsesh/shared-schema';
+import { AURORA_BOARDS, type AuroraBoardName } from '@boardsesh/shared-schema';
 import type { LogbookEntry } from '../utils/profile-constants';
 import styles from '../profile-page.module.css';
 

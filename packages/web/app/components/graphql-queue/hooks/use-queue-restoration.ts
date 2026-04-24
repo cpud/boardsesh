@@ -1,5 +1,4 @@
-import type { Dispatch } from 'react';
-import { useState, useEffect } from 'react';
+import { type Dispatch, useState, useEffect } from 'react';
 import type { QueueAction, ClimbQueue, ClimbQueueItem } from '../../queue-control/types';
 
 type UseQueueRestorationParams = {

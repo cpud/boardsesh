@@ -26,8 +26,7 @@ import {
 } from '../graphql-queue/QueueContext';
 import type { CurrentClimbDataType, QueueListDataType, SearchDataType, SessionDataType } from '../graphql-queue/types';
 import { usePersistentSession } from '../persistent-session';
-import { getBaseBoardPath } from '@/app/lib/url-utils';
-import { DEFAULT_SEARCH_PARAMS } from '@/app/lib/url-utils';
+import { getBaseBoardPath, DEFAULT_SEARCH_PARAMS } from '@/app/lib/url-utils';
 import type { BoardDetails, Angle, Climb, SearchRequestPagination } from '@/app/lib/types';
 import type { ClimbQueueItem } from './types';
 import { usePathname } from 'next/navigation';

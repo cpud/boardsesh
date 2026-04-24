@@ -2,8 +2,7 @@ import { useCallback, useEffect, type Dispatch, type SetStateAction } from 'reac
 import type { SubscriptionQueueEvent, SessionEvent, SessionLiveStats } from '@boardsesh/shared-schema';
 import { computeQueueStateHash } from '@/app/utils/hash';
 import type { ClimbQueueItem as LocalClimbQueueItem } from '../../queue-control/types';
-import type { Session, ActiveSessionInfo, SharedRefs } from '../types';
-import { CORRUPTION_RESYNC_COOLDOWN_MS, DEBUG } from '../types';
+import { type Session, type ActiveSessionInfo, type SharedRefs, CORRUPTION_RESYNC_COOLDOWN_MS, DEBUG } from '../types';
 
 type UseSessionSubscriptionsArgs = {
   session: Session | null;

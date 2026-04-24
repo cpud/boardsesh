@@ -59,7 +59,8 @@
     "import/namespace": "error",
     "import/no-absolute-path": "error",
     "import/no-amd": "error",
-    "import/no-commonjs": "error"
+    "import/no-commonjs": "error",
+    "import/no-duplicates": ["error", { "preferInline": true }]
   },
   "ignorePatterns": [
     "dist/**",

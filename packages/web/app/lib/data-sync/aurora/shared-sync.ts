@@ -2,8 +2,7 @@ import { getPool } from '@/app/lib/db/db';
 import type { SyncOptions, AuroraBoardName } from '../../api-wrappers/aurora/types';
 import { sharedSync } from '../../api-wrappers/aurora/sharedSync';
 import { sql, eq, inArray } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import type { NeonDatabase } from 'drizzle-orm/neon-serverless';
+import { drizzle, type NeonDatabase } from 'drizzle-orm/neon-serverless';
 import type {
   Attempt,
   BetaLink,

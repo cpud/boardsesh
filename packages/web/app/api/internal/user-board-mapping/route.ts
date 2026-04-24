@@ -1,6 +1,5 @@
 import { getServerSession } from 'next-auth/next';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { createUserBoardMapping, getUserBoardMappings } from '@/app/lib/auth/user-board-mappings';
 import { authOptions } from '@/app/lib/auth/auth-options';
 import { z } from 'zod';

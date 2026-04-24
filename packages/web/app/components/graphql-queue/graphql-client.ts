@@ -1,5 +1,4 @@
-import type { Client, Sink } from 'graphql-ws';
-import { createClient } from 'graphql-ws';
+import { type Client, type Sink, createClient } from 'graphql-ws';
 import { connectionManager, KEEP_ALIVE_MS } from '../connection-manager/websocket-connection-manager';
 import { INITIAL_RETRY_DELAY_MS, MAX_RETRY_DELAY_MS, BACKOFF_MULTIPLIER } from './retry-constants';
 

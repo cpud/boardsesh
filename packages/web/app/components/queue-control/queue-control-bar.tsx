@@ -27,8 +27,7 @@ import {
 } from '@/app/lib/url-utils';
 import type { BoardRouteParameters, BoardDetails, Angle, Climb } from '@/app/lib/types';
 import PreviousClimbButton from './previous-climb-button';
-import type { QueueListHandle } from './queue-list';
-import QueueList from './queue-list';
+import QueueList, { type QueueListHandle } from './queue-list';
 import { useSwipeable } from 'react-swipeable';
 import { TickButton } from '../logbook/tick-button';
 import { TickButtonWithLabel } from '../logbook/tick-icon';

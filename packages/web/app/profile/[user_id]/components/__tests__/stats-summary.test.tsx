@@ -5,8 +5,7 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 import type { CssBarChartBar, GroupedBar } from '@/app/components/charts/css-bar-chart';
 import type { LayoutLegendEntry, VPointsTimelineData } from '../../utils/chart-data-builders';
-import StatsSummary from '../stats-summary';
-import type { StatsSummaryProps } from '../stats-summary';
+import StatsSummary, { type StatsSummaryProps } from '../stats-summary';
 
 // Mock dependencies before component import
 vi.mock('@/app/components/charts/css-bar-chart', () => ({

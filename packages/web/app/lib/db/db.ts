@@ -1,7 +1,6 @@
 import 'server-only';
 import { neon } from '@neondatabase/serverless';
-import { configureNeonForEnvironment, getConnectionConfig } from '@boardsesh/db/client';
-import { createNeonHttp } from '@boardsesh/db/client';
+import { configureNeonForEnvironment, getConnectionConfig, createNeonHttp } from '@boardsesh/db/client';
 
 // Re-export from @boardsesh/db with server-only protection
 export { createDb as getDb, createPool as getPool, createNeonHttp } from '@boardsesh/db/client';

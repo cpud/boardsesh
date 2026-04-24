@@ -11,8 +11,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import BoardFilterStrip from '@/app/components/board-scroll/board-filter-strip';
-import type { SessionFeedResult } from '@boardsesh/shared-schema';
-import type { UserBoard } from '@boardsesh/shared-schema';
+import type { SessionFeedResult, UserBoard } from '@boardsesh/shared-schema';
 import { useMyBoards } from '@/app/hooks/use-my-boards';
 import UnifiedSearchDrawer from '@/app/components/search-drawer/unified-search-drawer';
 import { themeTokens } from '@/app/theme/theme-config';

@@ -14,12 +14,12 @@ import Popover from '@mui/material/Popover';
 import CircularProgress from '@mui/material/CircularProgress';
 import { PublicOutlined, LockOutlined, CloseOutlined } from '@mui/icons-material';
 import { executeGraphQL } from '@/app/lib/graphql/client';
-import type {
-  UpdatePlaylistMutationResponse,
-  UpdatePlaylistMutationVariables,
-  Playlist,
+import {
+  type UpdatePlaylistMutationResponse,
+  type UpdatePlaylistMutationVariables,
+  type Playlist,
+  UPDATE_PLAYLIST,
 } from '@/app/lib/graphql/operations/playlists';
-import { UPDATE_PLAYLIST } from '@/app/lib/graphql/operations/playlists';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { themeTokens } from '@/app/theme/theme-config';
 

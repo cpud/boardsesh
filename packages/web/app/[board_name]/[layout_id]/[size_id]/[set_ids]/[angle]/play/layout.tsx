@@ -1,5 +1,4 @@
-import React from 'react';
-import type { PropsWithChildren } from 'react';
+import React, { type PropsWithChildren } from 'react';
 
 import type { BoardRouteParameters } from '@/app/lib/types';
 import { parseRouteParams } from '@/app/lib/url-utils.server';

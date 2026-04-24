@@ -1,5 +1,4 @@
-import { AURORA_BOARDS } from '@boardsesh/shared-schema';
-import type { BoardName } from '@boardsesh/shared-schema';
+import { AURORA_BOARDS, type BoardName } from '@boardsesh/shared-schema';
 import { AURORA_PRODUCT_SIZES, HOLE_PLACEMENTS, IMAGE_FILENAMES, LAYOUTS, SETS } from './generated/product-sizes-data';
 import type { HoldTuple, LayoutData, ProductSizeData, SetData, SizeEdges } from './types';
 

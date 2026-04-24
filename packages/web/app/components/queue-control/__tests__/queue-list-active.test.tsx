@@ -1,11 +1,10 @@
 // @vitest-environment jsdom
 
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import type { Climb, BoardDetails } from '@/app/lib/types';
 import type { ClimbQueueItem } from '../types';
-import { fireEvent } from '@testing-library/react';
 import QueueList from '../queue-list';
 
 const mockSetCurrentClimb = vi.fn();

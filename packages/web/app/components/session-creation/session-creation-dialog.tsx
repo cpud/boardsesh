@@ -4,8 +4,7 @@ import React from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import SessionCreationForm from './session-creation-form';
-import type { SessionCreationFormData } from './session-creation-form';
+import SessionCreationForm, { type SessionCreationFormData } from './session-creation-form';
 
 export type { SessionCreationFormData };
 

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
-import React from 'react';
-import { act } from 'react';
+import React, { act } from 'react';
 import type { ClimbQueueItem } from '@/app/components/queue-control/types';
 import type { BoardDetails } from '../../types';
 

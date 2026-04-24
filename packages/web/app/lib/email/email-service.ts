@@ -1,5 +1,4 @@
-import type { Transporter } from 'nodemailer';
-import nodemailer from 'nodemailer';
+import nodemailer, { type Transporter } from 'nodemailer';
 import { z } from 'zod';
 import { themeTokens } from '@/app/theme/theme-config';
 

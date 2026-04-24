@@ -21,8 +21,13 @@ import type { BoardDetails } from '@/app/lib/types';
 import type { HoldRenderData } from '../board-renderer/types';
 import { getImageUrl } from '../board-renderer/util';
 import { themeTokens } from '@/app/theme/theme-config';
-import type { HoldClassificationWizardProps, HoldType, HoldClassification, StoredHoldClassification } from './types';
-import { HOLD_TYPE_OPTIONS } from './types';
+import {
+  type HoldClassificationWizardProps,
+  type HoldType,
+  type HoldClassification,
+  type StoredHoldClassification,
+  HOLD_TYPE_OPTIONS,
+} from './types';
 import DirectionPicker from './direction-picker';
 import styles from './hold-classification-wizard.module.css';
 

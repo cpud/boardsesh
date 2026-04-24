@@ -1,5 +1,4 @@
-import type { Page } from '@playwright/test';
-import { test, expect } from '@playwright/test';
+import { type Page, test, expect } from '@playwright/test';
 
 /**
  * E2E tests for queue persistence across navigation.

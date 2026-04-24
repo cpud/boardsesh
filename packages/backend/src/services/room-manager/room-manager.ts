@@ -2,8 +2,12 @@ import type Redis from 'ioredis';
 import type { ClimbQueueItem, SessionUser } from '@boardsesh/shared-schema';
 import { RedisSessionStore } from '../redis-session-store';
 import type { Session } from '../../db/schema';
-import type { DistributedStateManager } from '../distributed-state';
-import { initializeDistributedState, shutdownDistributedState, forceResetDistributedState } from '../distributed-state';
+import {
+  type DistributedStateManager,
+  initializeDistributedState,
+  shutdownDistributedState,
+  forceResetDistributedState,
+} from '../distributed-state';
 import type { ConnectedClient, DiscoverableSession, QueueState } from './types';
 import { WriteScheduler } from './write-scheduler';
 import {

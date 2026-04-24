@@ -1,7 +1,6 @@
 'use client';
 
-import React from 'react';
-import type { PropsWithChildren } from 'react';
+import React, { type PropsWithChildren } from 'react';
 import Badge from '@mui/material/Badge';
 import MuiButton from '@mui/material/Button';
 import Box from '@mui/material/Box';

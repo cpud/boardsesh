@@ -1,7 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
-import { createContext, useContext } from 'react';
+import { type ReactNode, createContext, useContext } from 'react';
 import { EMPTY_FEATURE_FLAGS, type FeatureFlags } from '@/app/flags';
 
 const FeatureFlagsContext = createContext<FeatureFlags>(EMPTY_FEATURE_FLAGS);

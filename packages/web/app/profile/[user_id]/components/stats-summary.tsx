@@ -7,8 +7,12 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
-import { CssBarChart, GroupedBarChart } from '@/app/components/charts/css-bar-chart';
-import type { CssBarChartBar, GroupedBar } from '@/app/components/charts/css-bar-chart';
+import {
+  CssBarChart,
+  GroupedBarChart,
+  type CssBarChartBar,
+  type GroupedBar,
+} from '@/app/components/charts/css-bar-chart';
 import { EmptyState } from '@/app/components/ui/empty-state';
 import { themeTokens } from '@/app/theme/theme-config';
 import { AscentStatusIcon } from '@/app/components/ascent-status/ascent-status-icon';

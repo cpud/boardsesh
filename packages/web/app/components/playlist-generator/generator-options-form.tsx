@@ -12,15 +12,13 @@ import MuiButton from '@mui/material/Button';
 import { RemoveOutlined, AddOutlined, RefreshOutlined } from '@mui/icons-material';
 import { TENSION_KILTER_GRADES } from '@/app/lib/board-data';
 import type { BoardDetails } from '@/app/lib/types';
-import type {
-  WorkoutType,
-  GeneratorOptions,
-  VolumeOptions,
-  PyramidOptions,
-  LadderOptions,
-  GradeFocusOptions,
-} from './types';
 import {
+  type WorkoutType,
+  type GeneratorOptions,
+  type VolumeOptions,
+  type PyramidOptions,
+  type LadderOptions,
+  type GradeFocusOptions,
   WARM_UP_OPTIONS,
   CLIMB_BIAS_OPTIONS,
   DEFAULT_VOLUME_OPTIONS,

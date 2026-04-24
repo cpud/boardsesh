@@ -35,9 +35,12 @@ import { themeTokens } from '@/app/theme/theme-config';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import { GET_COMMUNITY_ROLES, GRANT_ROLE, REVOKE_ROLE } from '@/app/lib/graphql/operations/proposals';
-import { SEARCH_USERS } from '@/app/lib/graphql/operations/social';
+import {
+  SEARCH_USERS,
+  type SearchUsersQueryResponse,
+  type SearchUsersQueryVariables,
+} from '@/app/lib/graphql/operations/social';
 import type { CommunityRoleAssignment, CommunityRoleType } from '@boardsesh/shared-schema';
-import type { SearchUsersQueryResponse, SearchUsersQueryVariables } from '@/app/lib/graphql/operations/social';
 
 type UserResult = SearchUsersQueryResponse['searchUsers']['results'][number]['user'];
 

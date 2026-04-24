@@ -34,8 +34,7 @@ import { dispatchOpenPlayDrawer } from '@/app/components/queue-control/play-draw
 import { AscentStatusIcon } from '@/app/components/ascent-status/ascent-status-icon';
 import { ClimbActions } from '@/app/components/climb-actions';
 import DrawerClimbHeader from '@/app/components/climb-card/drawer-climb-header';
-import { useSwipeActions } from '@/app/hooks/use-swipe-actions';
-import type { SwipeZone } from '@/app/hooks/use-swipe-actions';
+import { useSwipeActions, type SwipeZone } from '@/app/hooks/use-swipe-actions';
 import { useDrawerDragResize } from '@/app/hooks/use-drawer-drag-resize';
 import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
 import { useGradeFormat } from '@/app/hooks/use-grade-format';

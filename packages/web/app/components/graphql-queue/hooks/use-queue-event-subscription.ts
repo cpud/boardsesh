@@ -1,5 +1,4 @@
-import type { Dispatch } from 'react';
-import { useEffect } from 'react';
+import { type Dispatch, useEffect } from 'react';
 import type { SubscriptionQueueEvent } from '@boardsesh/shared-schema';
 import type { ClimbQueueItem, QueueAction } from '../../queue-control/types';
 

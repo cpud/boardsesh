@@ -9,8 +9,13 @@ import ListItemText from '@mui/material/ListItemText';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import MoreVertOutlined from '@mui/icons-material/MoreVertOutlined';
-import type { ClimbActionsProps, ClimbActionType, ClimbActionResult, ClimbActionProps } from './types';
-import { DEFAULT_ACTION_ORDER } from './types';
+import {
+  type ClimbActionsProps,
+  type ClimbActionType,
+  type ClimbActionResult,
+  type ClimbActionProps,
+  DEFAULT_ACTION_ORDER,
+} from './types';
 import {
   ViewDetailsAction,
   ForkAction,

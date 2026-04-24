@@ -1,5 +1,4 @@
-import type { LoginResponse, Session, ClientOptions } from './types';
-import { HOST_BASES } from './types';
+import { type LoginResponse, type Session, type ClientOptions, HOST_BASES } from './types';
 
 /**
  * Aurora Climbing API Client

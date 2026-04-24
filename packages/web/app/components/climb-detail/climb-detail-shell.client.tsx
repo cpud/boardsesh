@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, startTransition } from 'react';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
-import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
+import CollapsibleSection, {
+  type CollapsibleSectionConfig,
+} from '@/app/components/collapsible-section/collapsible-section';
 import styles from './climb-detail-shell.module.css';
 
 type ClimbDetailShellClientProps = {

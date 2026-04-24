@@ -1,7 +1,11 @@
 import crypto from 'crypto';
 import { and, eq, sql } from 'drizzle-orm';
-import type { ConnectionContext, SaveClimbResult, UpdateClimbResult } from '@boardsesh/shared-schema';
-import { SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
+import {
+  type ConnectionContext,
+  type SaveClimbResult,
+  type UpdateClimbResult,
+  SUPPORTED_BOARDS,
+} from '@boardsesh/shared-schema';
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { UNIFIED_TABLES, isValidBoardName } from '../../../db/queries/util/table-select';

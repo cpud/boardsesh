@@ -1,6 +1,5 @@
 import type { SyncData } from './sync-api-types';
-import type { SyncOptions, AuroraBoardName } from './types';
-import { WEB_HOSTS, SHARED_SYNC_TABLES } from './types';
+import { type SyncOptions, type AuroraBoardName, WEB_HOSTS, SHARED_SYNC_TABLES } from './types';
 
 export async function sharedSync(
   board: AuroraBoardName,

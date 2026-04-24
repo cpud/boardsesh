@@ -1,12 +1,11 @@
 import { eq, and, isNull, count, sql, inArray } from 'drizzle-orm';
-import type { ConnectionContext } from '@boardsesh/shared-schema';
+import type { ConnectionContext, NotificationEvent } from '@boardsesh/shared-schema';
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { requireAuthenticated, applyRateLimit, validateInput } from '../shared/helpers';
 import { GroupedNotificationsInputSchema } from '../../../validation/schemas';
 import { pubsub } from '../../../pubsub/index';
 import { createAsyncIterator } from '../shared/async-iterators';
-import type { NotificationEvent } from '@boardsesh/shared-schema';
 
 type NotificationRow = {
   uuid: string;

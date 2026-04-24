@@ -1,5 +1,4 @@
-import type { ConnectionContext, NewClimbCreatedEvent } from '@boardsesh/shared-schema';
-import { SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
+import { type ConnectionContext, type NewClimbCreatedEvent, SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
 import { pubsub } from '../../../pubsub/index';
 import { createAsyncIterator } from '../shared/async-iterators';
 

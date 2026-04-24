@@ -3,8 +3,7 @@
  * This uses the `canvas` npm package to provide Canvas API in Node.js environment.
  */
 
-import type { Canvas, CanvasRenderingContext2D } from 'canvas';
-import { createCanvas, loadImage } from 'canvas';
+import { type Canvas, type CanvasRenderingContext2D, createCanvas, loadImage } from 'canvas';
 import fs from 'fs/promises';
 import path from 'path';
 import type { ImageProcessor, RawPixelData, ImageMetadata, ImageRegion } from '../../image-processor/types';

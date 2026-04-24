@@ -1,5 +1,4 @@
-import type { RequestDocument, Variables } from 'graphql-request';
-import { GraphQLClient } from 'graphql-request';
+import { type RequestDocument, type Variables, GraphQLClient } from 'graphql-request';
 import { getGraphQLHttpUrl as _getGraphQLHttpUrl } from '@/app/lib/backend-url';
 
 const DEBUG = process.env.NODE_ENV === 'development';

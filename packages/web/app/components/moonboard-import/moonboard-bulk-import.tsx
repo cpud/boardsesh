@@ -18,8 +18,7 @@ import { InboxOutlined, SaveOutlined, ClearOutlined, ArrowBackOutlined, LoginOut
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { parseMultipleScreenshots, deduplicateClimbs } from '@boardsesh/moonboard-ocr/browser';
-import type { MoonBoardClimb } from '@boardsesh/moonboard-ocr/browser';
+import { parseMultipleScreenshots, deduplicateClimbs, type MoonBoardClimb } from '@boardsesh/moonboard-ocr/browser';
 import type { MoonBoardClimbDuplicateMatch } from '@boardsesh/shared-schema';
 import MoonBoardImportCard from './moonboard-import-card';
 import MoonBoardEditModal from './moonboard-edit-modal';

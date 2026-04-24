@@ -1,5 +1,4 @@
-import type { Page } from '@playwright/test';
-import { test, expect } from '@playwright/test';
+import { type Page, test, expect } from '@playwright/test';
 import { loginAs } from './helpers/auth';
 
 /**

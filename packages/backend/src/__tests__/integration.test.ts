@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vite-plus/test';
-import type { Client } from 'graphql-ws';
-import { createClient } from 'graphql-ws';
+import { type Client, createClient } from 'graphql-ws';
 import WebSocket from 'ws';
 import { v4 as uuidv4 } from 'uuid';
 import { startServer } from '../server';

@@ -1,5 +1,4 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { dbz } from '@/app/lib/db/db';
 import { eq, and } from 'drizzle-orm';
 import type { BoardName } from '@/app/lib/types';

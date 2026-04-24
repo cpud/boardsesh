@@ -1,8 +1,7 @@
 'use client';
 
 import React from 'react';
-import MuiTooltip from '@mui/material/Tooltip';
-import type { TooltipProps as MuiTooltipProps } from '@mui/material/Tooltip';
+import MuiTooltip, { type TooltipProps as MuiTooltipProps } from '@mui/material/Tooltip';
 
 type ActionTooltipProps = Pick<MuiTooltipProps, 'title' | 'placement' | 'children'>;
 

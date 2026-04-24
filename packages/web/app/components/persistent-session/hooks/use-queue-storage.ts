@@ -2,8 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import type { ClimbQueueItem as LocalClimbQueueItem } from '../../queue-control/types';
 import type { BoardDetails } from '@/app/lib/types';
 import { getPreference } from '@/app/lib/user-preferences-db';
-import type { ActiveSessionInfo } from '../types';
-import { ACTIVE_SESSION_KEY, DEBUG } from '../types';
+import { type ActiveSessionInfo, ACTIVE_SESSION_KEY, DEBUG } from '../types';
 
 type UseQueueStorageArgs = {
   activeSession: ActiveSessionInfo | null;

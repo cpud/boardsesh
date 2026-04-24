@@ -2,8 +2,7 @@ import { useCallback, useState, type Dispatch, type SetStateAction } from 'react
 import type { SubscriptionQueueEvent, SessionEvent, SessionLiveStats } from '@boardsesh/shared-schema';
 import type { ClimbQueueItem as LocalClimbQueueItem } from '../../queue-control/types';
 import { evaluateQueueEventSequence, insertQueueItemIdempotent } from '../event-utils';
-import type { SharedRefs } from '../types';
-import { DEBUG } from '../types';
+import { type SharedRefs, DEBUG } from '../types';
 
 type UseEventProcessorArgs = {
   refs: Pick<

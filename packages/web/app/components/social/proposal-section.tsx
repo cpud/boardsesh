@@ -16,8 +16,9 @@ import type {
   ProposalConnection,
   CommunityRoleAssignment,
 } from '@boardsesh/shared-schema';
-import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
-import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
+import CollapsibleSection, {
+  type CollapsibleSectionConfig,
+} from '@/app/components/collapsible-section/collapsible-section';
 import ProposalCard from './proposal-card';
 import CreateProposalForm from './create-proposal-form';
 import FreezeIndicator from './freeze-indicator';

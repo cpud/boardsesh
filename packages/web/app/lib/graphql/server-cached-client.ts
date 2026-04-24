@@ -1,7 +1,6 @@
 import 'server-only';
 import { unstable_cache } from 'next/cache';
-import type { RequestDocument, Variables } from 'graphql-request';
-import { GraphQLClient } from 'graphql-request';
+import { type RequestDocument, type Variables, GraphQLClient } from 'graphql-request';
 import { sortObjectKeys } from '@/app/lib/cache-utils';
 import { getGraphQLHttpUrl } from './client';
 import { executeAuthenticatedGraphQL } from './server-graphql';

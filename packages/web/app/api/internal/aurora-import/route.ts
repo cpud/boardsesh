@@ -1,10 +1,13 @@
 import { getServerSession } from 'next-auth/next';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { authOptions } from '@/app/lib/auth/auth-options';
-import { auroraExportSchema, importJsonExportData } from '@/app/lib/data-sync/aurora/json-import';
-import type { ImportResult, ImportProgressEvent } from '@/app/lib/data-sync/aurora/json-import';
+import {
+  auroraExportSchema,
+  importJsonExportData,
+  type ImportResult,
+  type ImportProgressEvent,
+} from '@/app/lib/data-sync/aurora/json-import';
 import { AURORA_BOARDS } from '@boardsesh/shared-schema';
 
 export const maxDuration = 300;

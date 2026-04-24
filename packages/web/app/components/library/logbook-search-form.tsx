@@ -17,11 +17,19 @@ import ArrowUpwardOutlined from '@mui/icons-material/ArrowUpwardOutlined';
 import FilterListOutlined from '@mui/icons-material/FilterListOutlined';
 import ClearOutlined from '@mui/icons-material/ClearOutlined';
 import { BOULDER_GRADES } from '@/app/lib/board-data';
-import { DEFAULT_ANGLE_RANGE, DEFAULT_FILTERS, DEFAULT_SORT } from '@/app/lib/logbook-preferences';
-import type { LogbookFilterState, LogbookSortState, SortField, SortDirection } from '@/app/lib/logbook-preferences';
+import {
+  DEFAULT_ANGLE_RANGE,
+  DEFAULT_FILTERS,
+  DEFAULT_SORT,
+  type LogbookFilterState,
+  type LogbookSortState,
+  type SortField,
+  type SortDirection,
+} from '@/app/lib/logbook-preferences';
 import type { UserBoard } from '@boardsesh/shared-schema';
-import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
-import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
+import CollapsibleSection, {
+  type CollapsibleSectionConfig,
+} from '@/app/components/collapsible-section/collapsible-section';
 import SwipeableDrawer from '@/app/components/swipeable-drawer/swipeable-drawer';
 import { themeTokens } from '@/app/theme/theme-config';
 import BoardFilterStrip from '../board-scroll/board-filter-strip';

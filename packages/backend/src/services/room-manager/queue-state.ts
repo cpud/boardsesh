@@ -6,8 +6,7 @@ import type { RedisSessionStore } from '../redis-session-store';
 import type { DistributedStateManager } from '../distributed-state';
 import { computeQueueStateHash } from '../../utils/hash';
 import { VersionConflictError, type QueueState } from './types';
-import type { WriteScheduler } from './write-scheduler';
-import { writeQueueStateToPostgres } from './write-scheduler';
+import { type WriteScheduler, writeQueueStateToPostgres } from './write-scheduler';
 
 /**
  * Update queue state with Redis as source of truth and debounced Postgres writes.

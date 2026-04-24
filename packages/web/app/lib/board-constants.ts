@@ -1,5 +1,4 @@
-import { AURORA_BOARDS, SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
-import type { AuroraBoardName } from '@boardsesh/shared-schema';
+import { AURORA_BOARDS, SUPPORTED_BOARDS, type AuroraBoardName } from '@boardsesh/shared-schema';
 import type { HoldRenderData } from '@/app/components/board-renderer/types';
 import type { BoardDetails, ImageFileName } from '@/app/lib/types';
 import type { SetIdList } from '@/app/lib/board-data';

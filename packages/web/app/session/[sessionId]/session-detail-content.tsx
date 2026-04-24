@@ -23,7 +23,12 @@ import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import type { SessionDetail, SessionDetailTick, SessionFeedParticipant } from '@boardsesh/shared-schema';
+import type {
+  SessionDetail,
+  SessionDetailTick,
+  SessionFeedParticipant,
+  SessionSummary,
+} from '@boardsesh/shared-schema';
 import VoteButton from '@/app/components/social/vote-button';
 import CommentSection from '@/app/components/social/comment-section';
 import { VoteSummaryProvider } from '@/app/components/social/vote-summary-context';
@@ -42,8 +47,9 @@ import UserSearchDialog from './user-search-dialog';
 import SessionOverviewPanel, {
   buildSessionSummaryParts,
 } from '@/app/components/session-details/session-overview-panel';
-import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
-import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
+import CollapsibleSection, {
+  type CollapsibleSectionConfig,
+} from '@/app/components/collapsible-section/collapsible-section';
 import { CssBarChart } from '@/app/components/charts/css-bar-chart';
 import { buildSessionGradeBars, SESSION_GRADE_LEGEND } from '@/app/components/charts/session-grade-bars';
 import { useGradeFormat } from '@/app/hooks/use-grade-format';
@@ -51,7 +57,6 @@ import { generateSessionName } from '@/app/lib/session-utils';
 import { ConfirmPopover } from '@/app/components/ui/confirm-popover';
 import { useDeleteTick } from '@/app/hooks/use-delete-tick';
 import SaveToHealthKitButton from '@/app/components/healthkit/save-to-healthkit-button';
-import type { SessionSummary } from '@boardsesh/shared-schema';
 
 type SessionDetailContentProps = {
   session: SessionDetail | null;
