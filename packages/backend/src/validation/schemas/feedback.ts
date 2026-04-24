@@ -5,7 +5,7 @@ export const SubmitAppFeedbackInputSchema = z.object({
   comment: z.string().trim().max(2000).optional().nullable(),
   platform: z.enum(['ios', 'android', 'web']),
   appVersion: z.string().max(64).optional().nullable(),
-  source: z.enum(['prompt', 'drawer-rate', 'drawer-feedback']),
+  source: z.enum(['prompt', 'drawer-feedback']),
 });
 
 export type SubmitAppFeedbackInput = z.infer<typeof SubmitAppFeedbackInputSchema>;

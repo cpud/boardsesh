@@ -1,5 +1,5 @@
 export type AppFeedbackPlatform = 'ios' | 'android' | 'web';
-export type AppFeedbackSource = 'prompt' | 'drawer-rate' | 'drawer-feedback';
+export type AppFeedbackSource = 'prompt' | 'drawer-feedback';
 
 export interface SubmitAppFeedbackInput {
   rating: number;

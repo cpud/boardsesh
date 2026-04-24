@@ -71,6 +71,13 @@
   --spacing-12: 48px;
   --spacing-16: 64px;
 
+  /* Border radius scale (matches themeTokens.borderRadius in theme-config.ts) */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+  --border-radius-full: 9999px;
+
   /* Input field backgrounds */
   --input-bg: #f9fafb;
   --input-bg-hover: #f3f4f6;

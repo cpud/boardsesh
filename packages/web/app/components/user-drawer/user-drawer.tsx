@@ -42,7 +42,6 @@ import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 import { HoldClassificationWizard } from '../hold-classification';
 import { FeedbackDialog } from '../feedback/feedback-dialog';
 import { requestInAppReview } from '@/app/lib/in-app-review';
-import { submitAppFeedback } from '@/app/hooks/use-submit-app-feedback';
 import { setFeedbackStatus } from '@/app/lib/feedback-prompt-db';
 import BoardDiscoveryScroll from '../board-scroll/board-discovery-scroll';
 import BoardSelectorDrawer from '../board-selector-drawer/board-selector-drawer';
@@ -416,14 +415,14 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
               className={styles.menuItem}
               onClick={() => {
                 handleClose();
+                // Trigger the native review sheet (native) or open the store
+                // URL (web). We don't write an app_feedback row here: the OS
+                // review sheet is quota-limited and doesn't report whether the
+                // user actually rated, so recording anything would be guessing.
+                // Still mark the local prompt as submitted so the automatic
+                // banner doesn't re-surface for someone who proactively rated.
                 void requestInAppReview();
                 void setFeedbackStatus('submitted');
-                // Record the intent in our DB too, so we can distinguish a
-                // user-initiated rate ("drawer-rate") from the automatic prompt
-                // ("prompt") and from a free-text "drawer-feedback" submission.
-                void submitAppFeedback({ rating: 5, comment: null, source: 'drawer-rate' }).catch(() => {
-                  // Best-effort: the native review sheet has already fired.
-                });
               }}
             >
               <span className={styles.menuItemIcon}>

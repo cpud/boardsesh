@@ -3,7 +3,10 @@
 import React, { useId, useState } from 'react';
 import MuiButton from '@mui/material/Button';
 import MuiTypography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
+import SaveOutlined from '@mui/icons-material/SaveOutlined';
+import ArrowForwardOutlined from '@mui/icons-material/ArrowForwardOutlined';
 import { InlineStarPicker } from '@/app/components/logbook/tick-controls';
 import styles from './feedback-form.module.css';
 
@@ -11,19 +14,14 @@ type View = 'rating' | 'comment';
 
 interface FeedbackFormProps {
   /**
-   * 'prompt' — automatic nudge; requires a star rating; low ratings ask for a comment.
+   * 'prompt' — compact, inline rating + save icon; low ratings reveal a comment.
    * 'drawer-feedback' — manual from user drawer; rating optional, comment is the focus.
    */
   mode: 'prompt' | 'drawer-feedback';
-  /**
-   * Called with the captured rating and optional comment. Return false or throw
-   * to stay open; resolve (void/true) to indicate the caller has closed the form.
-   */
   onSubmit: (values: { rating: number | null; comment: string | null }) => void | Promise<void>;
   onCancel?: () => void;
   title: string;
   submitLabel?: string;
-  /** If provided, used as the id on the heading so the wrapper can aria-labelledby it. */
   titleId?: string;
 }
 
@@ -42,8 +40,11 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  const isPromptRating = mode === 'prompt' && view === 'rating';
+  const isPromptComment = mode === 'prompt' && view === 'comment';
+
   const handlePrimary = async () => {
-    if (mode === 'prompt' && view === 'rating') {
+    if (isPromptRating) {
       if (rating === null) return;
       if (rating < 3) {
         setView('comment');
@@ -58,11 +59,10 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
     }
   };
 
-  // In prompt mode, "Skip" on the low-rating comment view still submits the
-  // rating (without a comment) so we never silently drop a star. In all other
-  // cases secondary is a plain cancel.
+  // Skip on low-rating comment view still submits the rating so we never
+  // silently drop a star.
   const handleSecondary = async () => {
-    if (mode === 'prompt' && view === 'comment' && rating !== null) {
+    if (isPromptComment && rating !== null) {
       setSubmitting(true);
       try {
         await onSubmit({ rating, comment: null });
@@ -76,15 +76,74 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
 
   const canSubmit = (() => {
     if (submitting) return false;
-    if (mode === 'prompt' && view === 'rating') return rating !== null;
-    if (mode === 'drawer-feedback') return rating !== null || comment.trim().length > 0;
+    if (isPromptRating) return rating !== null;
+    // Drawer Send-feedback always requires a rating. Backend schema enforces
+    // min=1, so sending rating=null or 0 would hard-fail.
+    if (mode === 'drawer-feedback') return rating !== null;
     return true;
   })();
 
-  const showRating = view === 'rating' || mode === 'drawer-feedback';
-  const showComment = view === 'comment' || mode === 'drawer-feedback';
+  const heading = isPromptComment ? "What's missing?" : title;
 
-  const heading = view === 'comment' && mode === 'prompt' ? "Sorry — what's missing?" : title;
+  if (mode === 'prompt') {
+    return (
+      <div className={styles.compactForm}>
+        <MuiTypography component="h2" className={styles.compactTitle} id={resolvedTitleId}>
+          {heading}
+        </MuiTypography>
+
+        {view === 'rating' && (
+          <div className={styles.compactRow}>
+            <InlineStarPicker quality={rating} onSelect={setRating} />
+            <IconButton
+              aria-label={rating !== null && rating < 3 ? 'Next' : submitLabel}
+              onClick={handlePrimary}
+              disabled={!canSubmit}
+              size="small"
+              className={styles.saveIconButton}
+            >
+              {rating !== null && rating < 3 ? (
+                <ArrowForwardOutlined fontSize="small" />
+              ) : (
+                <SaveOutlined fontSize="small" />
+              )}
+            </IconButton>
+          </div>
+        )}
+
+        {view === 'comment' && (
+          <>
+            <TextField
+              value={comment}
+              onChange={(event) => setComment(event.target.value)}
+              placeholder="Tell us what would help"
+              multiline
+              minRows={2}
+              maxRows={4}
+              fullWidth
+              size="small"
+              slotProps={{ htmlInput: { maxLength: 2000 } }}
+              className={styles.compactComment}
+            />
+            <div className={styles.compactActions}>
+              <MuiButton onClick={handleSecondary} disabled={submitting} size="small">
+                Skip
+              </MuiButton>
+              <IconButton
+                aria-label="Send"
+                onClick={handlePrimary}
+                disabled={!canSubmit}
+                size="small"
+                className={styles.saveIconButton}
+              >
+                <SaveOutlined fontSize="small" />
+              </IconButton>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={styles.form}>
@@ -92,35 +151,31 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
         {heading}
       </MuiTypography>
 
-      {showRating && (
-        <div className={styles.rating}>
-          <InlineStarPicker quality={rating} onSelect={setRating} />
-        </div>
-      )}
+      <div className={styles.rating}>
+        <InlineStarPicker quality={rating} onSelect={setRating} />
+      </div>
 
-      {showComment && (
-        <TextField
-          value={comment}
-          onChange={(event) => setComment(event.target.value)}
-          placeholder={mode === 'prompt' ? 'Tell us what would help' : "What's on your mind?"}
-          multiline
-          minRows={3}
-          maxRows={6}
-          fullWidth
-          size="small"
-          slotProps={{ htmlInput: { maxLength: 2000 } }}
-          className={styles.comment}
-        />
-      )}
+      <TextField
+        value={comment}
+        onChange={(event) => setComment(event.target.value)}
+        placeholder="What's on your mind?"
+        multiline
+        minRows={3}
+        maxRows={6}
+        fullWidth
+        size="small"
+        slotProps={{ htmlInput: { maxLength: 2000 } }}
+        className={styles.comment}
+      />
 
       <div className={styles.actions}>
         {onCancel && (
           <MuiButton onClick={handleSecondary} disabled={submitting} size="small">
-            {view === 'comment' && mode === 'prompt' ? 'Skip' : 'Cancel'}
+            Cancel
           </MuiButton>
         )}
         <MuiButton variant="contained" onClick={handlePrimary} disabled={!canSubmit} size="small">
-          {view === 'rating' && mode === 'prompt' && rating !== null && rating < 3 ? 'Next' : submitLabel}
+          {submitLabel}
         </MuiButton>
       </div>
     </div>

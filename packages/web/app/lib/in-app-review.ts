@@ -1,11 +1,10 @@
 import { isNativeApp, getPlatform } from '@/app/lib/ble/capacitor-utils';
 import { openExternalUrl } from '@/app/lib/open-external-url';
-import { storeSchemeUrlForPlatform } from '@/app/lib/store-urls';
+import { storeHttpsUrlForPlatform, storeSchemeUrlForPlatform } from '@/app/lib/store-urls';
 
 /**
  * Ask the OS to display its native in-app review sheet. Falls back to the
- * platform store scheme URL (itms-apps:// / market://) so the user lands in
- * the real store app rather than an in-WebView listing page.
+ * platform store URL so the user still lands on a way to rate the app.
  *
  * Note: iOS SKStoreReviewController silently no-ops if the quota is exceeded
  * (3+ calls per 365 days) or the user opted out. The Android In-App Review
@@ -13,6 +12,7 @@ import { storeSchemeUrlForPlatform } from '@/app/lib/store-urls';
  * behavior — callers should treat this call as fire-and-forget.
  */
 export async function requestInAppReview(): Promise<void> {
+  const platform = getPlatform();
   if (isNativeApp()) {
     const plugin = window.Capacitor?.Plugins?.InAppReview;
     if (plugin) {
@@ -20,9 +20,14 @@ export async function requestInAppReview(): Promise<void> {
         await plugin.requestReview();
         return;
       } catch {
-        // Fall through to store URL
+        // Fall through to store scheme URL — opens the real App Store /
+        // Play Store app rather than an in-WebView listing page.
       }
     }
+    openExternalUrl(storeSchemeUrlForPlatform(platform));
+    return;
   }
-  openExternalUrl(storeSchemeUrlForPlatform(getPlatform()));
+  // Web: scheme URLs (itms-apps://, market://) don't resolve in a browser.
+  // Use the https store URL instead.
+  openExternalUrl(storeHttpsUrlForPlatform(platform));
 }

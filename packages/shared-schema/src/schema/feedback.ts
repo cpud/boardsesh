@@ -24,7 +24,7 @@ export const feedbackTypeDefs = /* GraphQL */ `
     appVersion: String
 
     """
-    Where the feedback originated: 'prompt' | 'drawer-rate' | 'drawer-feedback'.
+    Where the feedback originated: 'prompt' | 'drawer-feedback'.
     """
     source: String!
   }

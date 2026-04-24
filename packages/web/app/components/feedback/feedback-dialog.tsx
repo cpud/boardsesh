@@ -28,7 +28,10 @@ const FeedbackDialogBody: React.FC<Omit<FeedbackDialogProps, 'open'>> = ({
   const { showMessage } = useSnackbar();
 
   const handleSubmit = (values: { rating: number | null; comment: string | null }) => {
-    if (values.rating === null && !values.comment) {
+    // FeedbackForm in drawer-feedback mode disables Send until a rating is
+    // picked, so rating is guaranteed non-null here. Guard anyway — the
+    // backend rejects rating < 1.
+    if (values.rating === null) {
       onClose();
       return;
     }
@@ -36,7 +39,7 @@ const FeedbackDialogBody: React.FC<Omit<FeedbackDialogProps, 'open'>> = ({
     void setFeedbackStatus('submitted');
     mutate(
       {
-        rating: values.rating ?? 0,
+        rating: values.rating,
         comment: values.comment,
         source,
       },

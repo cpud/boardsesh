@@ -43,7 +43,7 @@ const FeedbackPromptBannerBody: React.FC<BannerBodyProps> = ({ onDismiss, onSubm
   };
 
   return (
-    <Paper elevation={4} className={styles.banner} role="region" aria-labelledby={titleId}>
+    <Paper elevation={1} className={styles.banner} role="region" aria-labelledby={titleId}>
       <IconButton aria-label="Dismiss" onClick={onDismiss} className={styles.closeButton} size="small">
         <CloseOutlined fontSize="small" />
       </IconButton>
