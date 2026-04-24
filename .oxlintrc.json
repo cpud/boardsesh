@@ -27,7 +27,8 @@
     "nextjs/inline-script-id": "error",
     "nextjs/no-assign-module-variable": "error",
     "nextjs/no-async-client-component": "error",
-    "nextjs/no-before-interactive-script-outside-document": "error"
+    "nextjs/no-before-interactive-script-outside-document": "error",
+    "nextjs/no-css-tags": "error"
   },
   "ignorePatterns": [
     "dist/**",
