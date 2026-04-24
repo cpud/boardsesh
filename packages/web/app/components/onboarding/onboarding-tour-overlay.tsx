@@ -10,7 +10,10 @@ import { useOnboardingTour } from './onboarding-tour-provider';
 import { getStepById, type TourStepDef } from './onboarding-tour-steps';
 import styles from './onboarding-tour-overlay.module.css';
 
-const ANCHOR_POLL_MS = 2000;
+/** How long to keep polling for an anchor element before giving up. */
+const ANCHOR_POLL_DURATION_MS = 2000;
+/** How often to poll for the anchor while it's not yet in the DOM. */
+const ANCHOR_POLL_INTERVAL_MS = 100;
 
 function findAnchor(selectors: string[] | null): HTMLElement | null {
   if (!selectors || selectors.length === 0) return null;
@@ -22,26 +25,26 @@ function findAnchor(selectors: string[] | null): HTMLElement | null {
 }
 
 /**
- * Tracks an anchor element across DOM mutations and scroll/resize changes.
- * Returns null until the element exists; re-resolves when mutations happen.
- * `selectors` is expected to be a stable reference (the caller uses the array
- * attached to a step definition, which never changes identity for a given
- * step).
+ * Tracks an anchor element. When the anchor isn't in the DOM on mount, polls
+ * for up to `ANCHOR_POLL_DURATION_MS` to let async renders settle. After
+ * resolution, scroll/resize listeners keep the returned reference current;
+ * no broad DOM-mutation observer runs during the tour.
+ *
+ * `selectors` is expected to be a stable reference per step — the caller
+ * uses the array attached to a module-level step definition, so identity
+ * only changes when the step changes.
  */
 function useAnchorElement(selectors: string[] | null, active: boolean): HTMLElement | null {
   const [el, setEl] = useState<HTMLElement | null>(null);
-
-  // Keep the resolver in a ref so the effect below doesn't need to depend on
-  // the selectors array identity (which is a prop, so React-stable but still
-  // included in the dep list via this ref indirection without a lint disable).
-  const selectorsRef = useRef(selectors);
-  selectorsRef.current = selectors;
 
   useEffect(() => {
     if (!active) {
       setEl(null);
       return;
     }
+    // Reset immediately when the step (selectors) changes so the previous
+    // step's element doesn't linger while we poll for the new one.
+    setEl(null);
 
     let cancelled = false;
     let pollId: number | null = null;
@@ -55,49 +58,37 @@ function useAnchorElement(selectors: string[] | null, active: boolean): HTMLElem
 
     const resolve = () => {
       if (cancelled) return;
-      const current = selectorsRef.current;
-      const found = current && current.length > 0 ? findAnchor(current) : null;
+      const found = selectors && selectors.length > 0 ? findAnchor(selectors) : null;
       setEl((prev) => (prev === found ? prev : found));
-      // Once we've located the anchor, the fallback poll has done its job —
-      // layout/mutation observers cover everything after that.
       if (found) stopPolling();
     };
 
     resolve();
 
-    const observer = new MutationObserver(resolve);
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    // Also re-check on scroll/resize for position refresh
+    // Narrow scroll/resize listeners instead of a document-wide
+    // MutationObserver so routine app renders don't trigger overlay work.
     const onLayoutChange = () => resolve();
     window.addEventListener('scroll', onLayoutChange, true);
     window.addEventListener('resize', onLayoutChange);
 
-    // Fallback poll for the first 2 seconds in case MutationObserver misses.
-    // Cleared by resolve() as soon as the anchor is found.
+    // Poll while the anchor is missing. Stops as soon as `resolve()` finds
+    // the element or after the duration elapses — whichever comes first.
     const start = Date.now();
     pollId = window.setInterval(() => {
-      if (Date.now() - start > ANCHOR_POLL_MS) {
+      if (Date.now() - start > ANCHOR_POLL_DURATION_MS) {
         stopPolling();
         return;
       }
       resolve();
-    }, 100);
+    }, ANCHOR_POLL_INTERVAL_MS);
 
     return () => {
       cancelled = true;
-      observer.disconnect();
       window.removeEventListener('scroll', onLayoutChange, true);
       window.removeEventListener('resize', onLayoutChange);
       stopPolling();
     };
-  }, [active]);
-
-  // When the step (and therefore the selectors) change, reset the resolved
-  // element so stale matches don't bleed into the new step's lookup.
-  useEffect(() => {
-    setEl(null);
-  }, [selectors]);
+  }, [active, selectors]);
 
   return el;
 }

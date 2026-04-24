@@ -178,6 +178,12 @@ export function OnboardingTourProvider({ children }: { children: React.ReactNode
     // walkthrough every time they tap the CTA.
     const wasInProgress = currentStepId !== null;
 
+    // If the user taps Start before the initial IndexedDB hydration has
+    // completed, flip the hydrated flag now so the persist-on-change effect
+    // doesn't skip saving the very first step. We're taking over state
+    // authoritatively here — whatever IndexedDB held is being cleared below.
+    hydratedRef.current = true;
+
     track('Onboarding Tour Started', {
       resumed: false,
       restartedFrom: wasInProgress ? (currentStepId ?? '') : '',
