@@ -43,7 +43,8 @@
     "typescript/no-non-null-asserted-optional-chain": "error",
     "typescript/no-this-alias": "error",
     "typescript/no-unnecessary-boolean-literal-compare": "error",
-    "typescript/no-unnecessary-condition": "error"
+    "typescript/no-unnecessary-condition": "error",
+    "typescript/no-unnecessary-qualifier": "error"
   },
   "ignorePatterns": [
     "dist/**",
