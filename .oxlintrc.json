@@ -39,7 +39,8 @@
     "typescript/no-implied-eval": "error",
     "typescript/no-invalid-void-type": "error",
     "typescript/no-meaningless-void-operator": "error",
-    "typescript/no-misused-new": "error"
+    "typescript/no-misused-new": "error",
+    "typescript/no-non-null-asserted-optional-chain": "error"
   },
   "ignorePatterns": [
     "dist/**",
