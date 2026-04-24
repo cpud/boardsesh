@@ -2,31 +2,34 @@
  * Per-worker database helper.
  *
  * When vitest runs test files in parallel, each file lands in a worker process
- * identified by VITEST_POOL_ID. Each worker gets its own database cloned from
- * the template `boardsesh_backend_test` built in globalSetup. That way TRUNCATE
- * in one file can't stomp on data another file is mid-way through inserting.
+ * identified by VITEST_POOL_ID. Each worker gets its own throwaway database
+ * (`boardsesh_backend_test_w<POOL_ID>`) that it creates blank and populates by
+ * running schemaSQL itself — we don't use Postgres's `CREATE DATABASE ...
+ * TEMPLATE` because the template can't have open connections while being copied.
+ * That way a TRUNCATE in one file can't stomp on data another file is mid-way
+ * through inserting.
  */
 
 import postgres from 'postgres';
 import { schemaSQL } from './schema-sql';
 
 const PG_PORT = 5433;
-const TEMPLATE_DB = 'boardsesh_backend_test';
+const WORKER_DB_PREFIX = 'boardsesh_backend_test';
 
 function getBaseConnection(): string {
-  const raw = process.env.DATABASE_URL || `postgresql://postgres:postgres@localhost:${PG_PORT}/${TEMPLATE_DB}`;
+  const raw = process.env.DATABASE_URL || `postgresql://postgres:postgres@localhost:${PG_PORT}/${WORKER_DB_PREFIX}`;
   return raw.replace(/\/[^/]+$/, '/postgres');
 }
 
 export function getWorkerDatabaseName(): string {
   const id = process.env.VITEST_POOL_ID || '0';
   // fileParallelism=false still spawns one worker with id=0; we still get our own DB copy.
-  return `${TEMPLATE_DB}_w${id}`;
+  return `${WORKER_DB_PREFIX}_w${id}`;
 }
 
 function buildWorkerDatabaseUrl(): string {
   const name = getWorkerDatabaseName();
-  const raw = process.env.DATABASE_URL || `postgresql://postgres:postgres@localhost:${PG_PORT}/${TEMPLATE_DB}`;
+  const raw = process.env.DATABASE_URL || `postgresql://postgres:postgres@localhost:${PG_PORT}/${WORKER_DB_PREFIX}`;
   return raw.replace(/\/[^/]+$/, `/${name}`);
 }
 
@@ -57,15 +60,13 @@ async function doSetup(): Promise<void> {
   try {
     const [row] = await admin`SELECT 1 FROM pg_database WHERE datname = ${dbName}`;
     if (!row) {
-      // Fresh DB: create + apply schema. We don't use CREATE DATABASE ... TEMPLATE
-      // because the template can't have any open connections, and running tests
-      // may hold one. Applying the DDL directly is cheap (~100–300ms).
       await admin.unsafe(`CREATE DATABASE "${dbName}"`);
     }
   } finally {
     await admin.end().catch(() => {});
   }
 
+  // Apply schema into this worker's DB. Cheap (~100–300ms) and only runs once per worker.
   const workerClient = postgres(getWorkerDatabaseUrl(), { max: 1, onnotice: () => {} });
   try {
     await workerClient.unsafe(schemaSQL);

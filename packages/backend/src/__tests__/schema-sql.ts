@@ -9,7 +9,6 @@ export const schemaSQL = `
   DROP TABLE IF EXISTS "board_session_participants" CASCADE;
   DROP TABLE IF EXISTS "board_sessions" CASCADE;
   DROP TABLE IF EXISTS "user_climb_percentiles" CASCADE;
-  DROP TABLE IF EXISTS "user_board_mappings" CASCADE;
   DROP TABLE IF EXISTS "users" CASCADE;
 
   CREATE TABLE IF NOT EXISTS "users" (
@@ -21,17 +20,6 @@ export const schemaSQL = `
     "created_at" timestamp DEFAULT now() NOT NULL,
     "updated_at" timestamp DEFAULT now() NOT NULL
   );
-
-  CREATE TABLE IF NOT EXISTS "user_board_mappings" (
-    "id" bigserial PRIMARY KEY NOT NULL,
-    "user_id" text NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
-    "board_type" text NOT NULL,
-    "board_user_id" integer NOT NULL,
-    "board_username" text,
-    "linked_at" timestamp DEFAULT now() NOT NULL
-  );
-
-  CREATE UNIQUE INDEX IF NOT EXISTS "unique_user_board_mapping" ON "user_board_mappings" ("user_id", "board_type");
 
   CREATE TABLE IF NOT EXISTS "user_climb_percentiles" (
     "user_id" text PRIMARY KEY NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
