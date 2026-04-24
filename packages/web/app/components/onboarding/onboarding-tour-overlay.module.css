@@ -16,7 +16,7 @@
   max-width: 420px;
   min-width: 280px;
   border-radius: 16px;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 16px 48px var(--overlay-dark);
 }
 
 .introPaper {
@@ -30,7 +30,7 @@
   max-width: 420px;
   min-width: 280px;
   border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 20px 60px var(--overlay-dark);
 }
 
 .title {
@@ -84,11 +84,11 @@
 
 .cutout {
   position: fixed;
-  border: 2px solid var(--color-primary, #1e40af);
+  border: 2px solid var(--color-primary);
   border-radius: 12px;
   z-index: 1300;
   pointer-events: none;
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 0 0 9999px var(--overlay-dark);
   transition: all 160ms ease;
 }
 
@@ -96,6 +96,6 @@
   position: fixed;
   inset: 0;
   z-index: 1999;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--overlay-dark);
   pointer-events: none;
 }

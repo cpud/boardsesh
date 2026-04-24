@@ -3,13 +3,13 @@ import type { SessionDetail, SessionDetailTick } from '@boardsesh/shared-schema'
 const MOCK_SESSION_ID = 'tour-mock-session';
 const MOCK_BOARD_TYPE = 'kilter';
 
-interface MockParticipant {
+type MockParticipant = {
   userId: string;
   displayName: string;
   sends: number;
   flashes: number;
   attempts: number;
-}
+};
 
 const PARTICIPANTS: MockParticipant[] = [
   { userId: 'tour-u1', displayName: 'Alex', sends: 7, flashes: 2, attempts: 14 },
@@ -18,7 +18,7 @@ const PARTICIPANTS: MockParticipant[] = [
   { userId: 'tour-u4', displayName: 'Sam', sends: 2, flashes: 0, attempts: 8 },
 ];
 
-interface MockTickSeed {
+type MockTickSeed = {
   climbName: string;
   climbUuid: string;
   grade: string;
@@ -27,7 +27,7 @@ interface MockTickSeed {
   userId: string;
   attemptCount: number;
   minutesAgo: number;
-}
+};
 
 const TICK_SEEDS: MockTickSeed[] = [
   {

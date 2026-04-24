@@ -15,21 +15,21 @@ const REPEAT_COUNT = 2;
 /** Window event that asks the orchestrator to replay the hint animation on demand. */
 export const CLIMB_LIST_SWIPE_HINT_REPLAY_EVENT = 'swipe-hint:climb-list-replay';
 
-export interface ClimbListSwipeHintReplayDetail {
+export type ClimbListSwipeHintReplayDetail = {
   /** CSS selector for the climb card to animate. Defaults to #onboarding-climb-card. */
   targetSelector?: string;
-}
+};
 
 export const dispatchClimbListSwipeHintReplay = (detail: ClimbListSwipeHintReplayDetail = {}): void => {
   if (typeof window === 'undefined') return;
   window.dispatchEvent(new CustomEvent(CLIMB_LIST_SWIPE_HINT_REPLAY_EVENT, { detail }));
 };
 
-interface PlayOptions {
+type PlayOptions = {
   respectSeen: boolean;
   mobileOnly: boolean;
   targetSelector?: string;
-}
+};
 
 const DEFAULT_TARGET = '#onboarding-climb-card';
 

@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+/* eslint-disable import/first -- vi.hoisted mocks must appear before the imports they mock so the test harness can intercept the module load. */
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { act, renderHook } from '@testing-library/react';
 import React from 'react';
@@ -35,6 +36,7 @@ vi.mock('@/app/lib/onboarding-db', () => mockOnboardingDb);
 import { OnboardingTourProvider, useOnboardingTour } from '../onboarding-tour-provider';
 import { PLAY_DRAWER_EVENT } from '@/app/components/queue-control/play-drawer-event';
 import { TOUR_OPEN_START_SESH_EVENT, TOUR_OPEN_DUMMY_SESH_EVENT } from '../onboarding-tour-events';
+/* eslint-enable import/first */
 
 // --- Helpers ---------------------------------------------------------------
 
@@ -397,6 +399,95 @@ describe('OnboardingTourProvider', () => {
       } finally {
         cap.cleanup();
       }
+    });
+  });
+
+  describe('grace-period timer lifecycle', () => {
+    it('skip() while a grace-period timer is in flight does not resurrect the tour', async () => {
+      vi.useFakeTimers();
+      const { result } = renderHook(useOnboardingTour, { wrapper });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      // Seed an entry climb, reach climb-list.
+      act(() => result.current.notifyCurrentClimb('climb-entry'));
+      act(() => result.current.start());
+      for (let i = 0; i < 2; i++) act(() => result.current.next());
+      expect(result.current.currentStepId).toBe('climb-list');
+
+      // Schedule a grace timer but don't let it elapse.
+      act(() => result.current.notifyCurrentClimb('climb-new'));
+      expect(result.current.currentStepId).toBe('climb-list');
+
+      // User hits Skip.
+      act(() => result.current.skip());
+      expect(result.current.active).toBe(false);
+
+      // Let the scheduled timer fire. It must not re-activate the tour.
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+      expect(result.current.active).toBe(false);
+      expect(result.current.currentStepId).toBeNull();
+      vi.useRealTimers();
+    });
+
+    it('complete() also cancels any in-flight grace timer', async () => {
+      vi.useFakeTimers();
+      const { result } = renderHook(useOnboardingTour, { wrapper });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      // Reach queue-bar; setting a current climb schedules the grace timer.
+      act(() => result.current.start());
+      for (let i = 0; i < 4; i++) act(() => result.current.next());
+      expect(result.current.currentStepId).toBe('queue-bar');
+      act(() => result.current.notifyCurrentClimb('climb-x'));
+
+      // Complete before the grace elapses.
+      act(() => result.current.complete());
+      expect(result.current.active).toBe(false);
+
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+      expect(result.current.active).toBe(false);
+      expect(result.current.currentStepId).toBeNull();
+      vi.useRealTimers();
+    });
+
+    it('rapid notifyCurrentClimb calls advance only once per step transition', async () => {
+      vi.useFakeTimers();
+      const { result } = renderHook(useOnboardingTour, { wrapper });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      act(() => result.current.notifyCurrentClimb('climb-entry'));
+      act(() => result.current.start());
+      for (let i = 0; i < 2; i++) act(() => result.current.next());
+      expect(result.current.currentStepId).toBe('climb-list');
+
+      // Pile up notifications before grace elapses.
+      act(() => result.current.notifyCurrentClimb('climb-a'));
+      act(() => result.current.notifyCurrentClimb('climb-b'));
+      act(() => result.current.notifyCurrentClimb('climb-c'));
+
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      expect(result.current.currentStepId).toBe('queue-add');
+
+      // Further current-climb notifications while on queue-add are a no-op —
+      // notifyCurrentClimb only reacts to queue-bar / climb-list.
+      act(() => result.current.notifyCurrentClimb('climb-d'));
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      expect(result.current.currentStepId).toBe('queue-add');
+      vi.useRealTimers();
     });
   });
 });

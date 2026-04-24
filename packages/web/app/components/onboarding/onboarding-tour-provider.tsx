@@ -32,7 +32,7 @@ const TOTAL_STEPS = TOUR_STEPS.length;
 const FIRST_STEP_ID: TourStepId = TOUR_STEPS[0].id;
 const LAST_STEP_ID: TourStepId = TOUR_STEPS[TOUR_STEPS.length - 1].id;
 
-interface OnboardingTourContextValue {
+type OnboardingTourContextValue = {
   active: boolean;
   currentStepId: TourStepId | null;
   stepIndex: number;
@@ -45,7 +45,7 @@ interface OnboardingTourContextValue {
   notifyQueueLength: (length: number) => void;
   /** Called by a bridge component inside the graphql-queue tree when the current climb changes. */
   notifyCurrentClimb: (climbUuid: string | null) => void;
-}
+};
 
 const OnboardingTourContext = createContext<OnboardingTourContextValue | null>(null);
 
@@ -88,6 +88,27 @@ export function OnboardingTourProvider({ children }: { children: React.ReactNode
   const stepEntryClimbUuidRef = useRef<string | null>(null);
   const stepEnteredAtRef = useRef<number>(0);
   const hydratedRef = useRef(false);
+  /**
+   * Live mirror of `currentStepId` so async callbacks (grace-period timers)
+   * can compare against the *current* step, not whichever step was active
+   * when their closure was created.
+   */
+  const currentStepIdRef = useRef<TourStepId | null>(null);
+  useEffect(() => {
+    currentStepIdRef.current = currentStepId;
+  }, [currentStepId]);
+  /**
+   * Outstanding grace-period timer scheduled by `notifyCurrentClimb`. Cleared
+   * whenever the step changes or the tour ends so a stale tick from a
+   * previous step can't resurrect a skipped/completed tour.
+   */
+  const currentClimbTimerRef = useRef<number | null>(null);
+  const clearCurrentClimbTimer = useCallback(() => {
+    if (currentClimbTimerRef.current !== null) {
+      window.clearTimeout(currentClimbTimerRef.current);
+      currentClimbTimerRef.current = null;
+    }
+  }, []);
 
   // Hydrate from IndexedDB on mount (per user). Do NOT auto-show the tour —
   // this only restores `currentStepId` so start() can resume.
@@ -205,12 +226,14 @@ export function OnboardingTourProvider({ children }: { children: React.ReactNode
 
     track('Onboarding Tour Completed', { durationSeconds });
 
+    clearCurrentClimbTimer();
     setCurrentStepId(null);
+    currentStepIdRef.current = null;
     startedAtRef.current = null;
     lastQueueLengthRef.current = null;
     void clearTourProgress(userId);
     void saveOnboardingStatus(userId);
-  }, [currentStepId, userId]);
+  }, [currentStepId, userId, clearCurrentClimbTimer]);
 
   const next = useCallback(() => {
     if (!currentStepId) return;
@@ -233,12 +256,14 @@ export function OnboardingTourProvider({ children }: { children: React.ReactNode
       stepIndex: getStepIndex(atStepId),
     });
 
+    clearCurrentClimbTimer();
     setCurrentStepId(null);
+    currentStepIdRef.current = null;
     startedAtRef.current = null;
     lastQueueLengthRef.current = null;
     void clearTourProgress(userId);
     void saveOnboardingStatus(userId);
-  }, [currentStepId, userId]);
+  }, [currentStepId, userId, clearCurrentClimbTimer]);
 
   // Listen for PLAY_DRAWER_EVENT to advance step queue-thumbnail → play-view.
   useEffect(() => {
@@ -293,25 +318,41 @@ export function OnboardingTourProvider({ children }: { children: React.ReactNode
         step === 'climb-list' ? climbUuid !== null && climbUuid !== stepEntryClimbUuidRef.current : climbUuid !== null;
       if (!hasAdvanceCondition) return;
 
-      // Grace period so the user actually sees the step's copy before we
-      // advance. If the grace has already elapsed, advance now.
-      const elapsed = Date.now() - stepEnteredAtRef.current;
+      // Cancel any prior grace-period timer so rapid climb selections don't
+      // accumulate multiple advance() calls for the same transition.
+      clearCurrentClimbTimer();
+
       const fire = () => {
-        if (currentStepId !== step) return;
+        currentClimbTimerRef.current = null;
+        // Compare against the *live* step from the ref — if the user skipped
+        // or completed in the meantime, `currentStepIdRef.current` is no
+        // longer `step` and we must not resurrect the tour.
+        if (currentStepIdRef.current !== step) return;
         const still =
           step === 'climb-list'
             ? currentClimbUuidRef.current !== null && currentClimbUuidRef.current !== stepEntryClimbUuidRef.current
             : currentClimbUuidRef.current !== null;
         if (still) advanceFrom(step, 'event');
       };
+
+      // Grace period so the user actually sees the step's copy before we
+      // advance. If the grace has already elapsed, advance now.
+      const elapsed = Date.now() - stepEnteredAtRef.current;
       if (elapsed >= CURRENT_CLIMB_GRACE_MS) {
         fire();
       } else {
-        window.setTimeout(fire, CURRENT_CLIMB_GRACE_MS - elapsed);
+        currentClimbTimerRef.current = window.setTimeout(fire, CURRENT_CLIMB_GRACE_MS - elapsed);
       }
     },
-    [currentStepId, advanceFrom],
+    [currentStepId, advanceFrom, clearCurrentClimbTimer],
   );
+
+  // Cancel any outstanding grace-period timer whenever the step changes so a
+  // stale timer can't fire `advanceFrom` against a step the user has already
+  // skipped past.
+  useEffect(() => {
+    return () => clearCurrentClimbTimer();
+  }, [currentStepId, clearCurrentClimbTimer]);
 
   // If we entered queue-bar and a climb is already set, honour the grace
   // period then advance. For climb-list we do NOT auto-advance on entry —
@@ -320,11 +361,14 @@ export function OnboardingTourProvider({ children }: { children: React.ReactNode
     if (currentStepId !== 'queue-bar') return;
     if (!currentClimbUuidRef.current) return;
     const step = currentStepId;
-    const timer = window.setTimeout(() => {
+    clearCurrentClimbTimer();
+    currentClimbTimerRef.current = window.setTimeout(() => {
+      currentClimbTimerRef.current = null;
+      if (currentStepIdRef.current !== step) return;
       if (currentClimbUuidRef.current) advanceFrom(step, 'event');
     }, CURRENT_CLIMB_GRACE_MS);
-    return () => window.clearTimeout(timer);
-  }, [currentStepId, advanceFrom]);
+    return () => clearCurrentClimbTimer();
+  }, [currentStepId, advanceFrom, clearCurrentClimbTimer]);
 
   const value = useMemo<OnboardingTourContextValue>(
     () => ({

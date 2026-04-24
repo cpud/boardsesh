@@ -1197,10 +1197,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
                 <Box sx={{ flex: 1 }} className={styles.climbInfoCol}>
                   <div className={styles.climbInfoInner} style={{ gap: themeTokens.spacing[2] }}>
                     {/* Board preview — STATIC, with crossfade on enter */}
-                    <div
-                      data-tour-anchor="queue-bar-thumbnail"
-                      className={`${styles.boardPreviewContainer} ${enterDirection ? styles.thumbnailEnter : ''}`}
-                    >
+                    <div className={`${styles.boardPreviewContainer} ${enterDirection ? styles.thumbnailEnter : ''}`}>
                       <ClimbThumbnail
                         boardDetails={boardDetails}
                         currentClimb={displayedClimb}

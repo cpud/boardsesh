@@ -7,8 +7,7 @@ import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import { useOnboardingTour } from './onboarding-tour-provider';
-import { getStepById } from './onboarding-tour-steps';
-import type { TourStepDef } from './onboarding-tour-steps';
+import { getStepById, type TourStepDef } from './onboarding-tour-steps';
 import styles from './onboarding-tour-overlay.module.css';
 
 const ANCHOR_POLL_MS = 2000;
@@ -126,13 +125,13 @@ function useAnchorRect(anchor: HTMLElement | null): DOMRect | null {
   return rect;
 }
 
-interface OverlayContentProps {
+type OverlayContentProps = {
   step: TourStepDef;
   stepIndex: number;
   totalSteps: number;
   onNext: () => void;
   onSkip: () => void;
-}
+};
 
 function OverlayContent({ step, stepIndex, totalSteps, onNext, onSkip }: OverlayContentProps) {
   const isLast = stepIndex === totalSteps - 1;

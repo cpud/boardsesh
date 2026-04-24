@@ -29,7 +29,7 @@ export type StepEnterEffect =
   | 'replay-climb-list-swipe-hint';
 export type StepExitEffect = 'close-dummy-sesh' | 'close-play-queue' | 'close-play-view';
 
-export interface TourStepDef {
+export type TourStepDef = {
   id: TourStepId;
   routeMatches: (pathname: string) => boolean;
   /**
@@ -47,7 +47,7 @@ export interface TourStepDef {
   onEnter?: StepEnterEffect;
   /** Fire when the step exits (toward the next step or on skip). */
   onExit?: StepExitEffect;
-}
+};
 
 const isHomePath = (p: string) => p === '/' || p === '';
 const isBoardListPath = (p: string) => /\/list\/?$/.test(p);

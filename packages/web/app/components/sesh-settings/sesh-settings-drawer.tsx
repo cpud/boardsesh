@@ -371,7 +371,7 @@ export default function SeshSettingsDrawer({
         body: { padding: `${themeTokens.spacing[2]}px 0` },
       }}
     >
-      <Box data-tour-anchor="sesh-settings-drawer" sx={{ display: 'flex', flexDirection: 'column', gap: 2, pb: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pb: 2 }}>
         {isLoading && !displaySession && (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
             <CircularProgress size={28} />

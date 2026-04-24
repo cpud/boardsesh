@@ -11,11 +11,11 @@ export type OnboardingStatus = {
   completedAt: string;
 };
 
-export interface TourProgress {
+export type TourProgress = {
   currentStepId: string;
   startedAt: string;
   version: number;
-}
+};
 
 const getDB = createIndexedDBStore('boardsesh-onboarding', STORE_NAME);
 
