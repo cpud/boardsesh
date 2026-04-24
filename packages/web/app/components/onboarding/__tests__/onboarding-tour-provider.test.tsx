@@ -1,0 +1,402 @@
+// @vitest-environment jsdom
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import { act, renderHook } from '@testing-library/react';
+import React from 'react';
+
+// --- Module mocks ----------------------------------------------------------
+
+const { mockUsePathname, mockUseSession, mockTrack, mockOnboardingDb } = vi.hoisted(() => ({
+  mockUsePathname: vi.fn<() => string>(() => '/'),
+  mockUseSession: vi.fn<() => { data: { user: { id: string } | null } | null }>(() => ({ data: null })),
+  mockTrack: vi.fn(),
+  mockOnboardingDb: {
+    getTourProgress: vi.fn<() => Promise<unknown | null>>(async () => null),
+    saveTourProgress: vi.fn<() => Promise<void>>(async () => undefined),
+    clearTourProgress: vi.fn<() => Promise<void>>(async () => undefined),
+    saveOnboardingStatus: vi.fn<() => Promise<void>>(async () => undefined),
+  },
+}));
+
+vi.mock('next/navigation', () => ({
+  usePathname: mockUsePathname,
+}));
+
+vi.mock('next-auth/react', () => ({
+  useSession: mockUseSession,
+}));
+
+vi.mock('@vercel/analytics', () => ({
+  track: mockTrack,
+}));
+
+vi.mock('@/app/lib/onboarding-db', () => mockOnboardingDb);
+
+// Imported AFTER mocks so they hit the mocked modules
+import { OnboardingTourProvider, useOnboardingTour } from '../onboarding-tour-provider';
+import { PLAY_DRAWER_EVENT } from '@/app/components/queue-control/play-drawer-event';
+import { TOUR_OPEN_START_SESH_EVENT, TOUR_OPEN_DUMMY_SESH_EVENT } from '../onboarding-tour-events';
+
+// --- Helpers ---------------------------------------------------------------
+
+function wrapper({ children }: { children: React.ReactNode }) {
+  return <OnboardingTourProvider>{children}</OnboardingTourProvider>;
+}
+
+async function flushAsync() {
+  await act(async () => {
+    await Promise.resolve();
+  });
+}
+
+/** Event capture helper: returns a spy that records dispatched event types. */
+function captureWindowEvents(types: string[]) {
+  const seen: string[] = [];
+  const handlers = types.map((t) => {
+    const h = () => seen.push(t);
+    window.addEventListener(t, h);
+    return { t, h };
+  });
+  return {
+    seen,
+    cleanup: () => handlers.forEach(({ t, h }) => window.removeEventListener(t, h)),
+  };
+}
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.useRealTimers();
+  mockUsePathname.mockReturnValue('/');
+  mockUseSession.mockReturnValue({ data: null });
+  mockOnboardingDb.getTourProgress.mockResolvedValue(null);
+  mockOnboardingDb.saveTourProgress.mockResolvedValue(undefined);
+  mockOnboardingDb.clearTourProgress.mockResolvedValue(undefined);
+  mockOnboardingDb.saveOnboardingStatus.mockResolvedValue(undefined);
+});
+
+// --- Tests -----------------------------------------------------------------
+
+describe('OnboardingTourProvider', () => {
+  describe('state machine', () => {
+    it('starts inactive', async () => {
+      const { result } = renderHook(useOnboardingTour, { wrapper });
+      await flushAsync();
+      expect(result.current.active).toBe(false);
+      expect(result.current.currentStepId).toBeNull();
+    });
+
+    it('start() enters the first step and fires Started + Step Viewed analytics', async () => {
+      const { result } = renderHook(useOnboardingTour, { wrapper });
+      await flushAsync();
+
+      act(() => {
+        result.current.start();
+      });
+
+      expect(result.current.active).toBe(true);
+      expect(result.current.currentStepId).toBe('home-intro');
+      expect(result.current.stepIndex).toBe(0);
+
+      expect(mockTrack).toHaveBeenCalledWith(
+        'Onboarding Tour Started',
+        expect.objectContaining({ resumed: false, source: 'home-cta' }),
+      );
+      expect(mockTrack).toHaveBeenCalledWith(
+        'Onboarding Tour Step Viewed',
+        expect.objectContaining({ stepId: 'home-intro', stepIndex: 0 }),
+      );
+    });
+
+    it('next() advances to the following step and fires Step Advanced', async () => {
+      const { result } = renderHook(useOnboardingTour, { wrapper });
+      await flushAsync();
+
+      act(() => result.current.start());
+      mockTrack.mockClear();
+
+      act(() => result.current.next());
+
+      expect(result.current.currentStepId).toBe('home-pick-board');
+      expect(mockTrack).toHaveBeenCalledWith(
+        'Onboarding Tour Step Advanced',
+        expect.objectContaining({ fromStepId: 'home-intro', toStepId: 'home-pick-board', trigger: 'next' }),
+      );
+    });
+
+    it('skip() clears state, persists completion, and fires Skipped analytics', async () => {
+      const { result } = renderHook(useOnboardingTour, { wrapper });
+      await flushAsync();
+      act(() => result.current.start());
+
+      mockTrack.mockClear();
+      act(() => result.current.skip());
+
+      expect(result.current.active).toBe(false);
+      expect(result.current.currentStepId).toBeNull();
+      expect(mockOnboardingDb.clearTourProgress).toHaveBeenCalled();
+      expect(mockOnboardingDb.saveOnboardingStatus).toHaveBeenCalled();
+      expect(mockTrack).toHaveBeenCalledWith(
+        'Onboarding Tour Skipped',
+        expect.objectContaining({ atStepId: 'home-intro' }),
+      );
+    });
+
+    it('saveTourProgress is called on each step advance', async () => {
+      const { result } = renderHook(useOnboardingTour, { wrapper });
+      await flushAsync();
+
+      act(() => result.current.start());
+      await flushAsync();
+      expect(mockOnboardingDb.saveTourProgress).toHaveBeenCalledWith('home-intro', expect.any(String), null);
+
+      act(() => result.current.next());
+      await flushAsync();
+      expect(mockOnboardingDb.saveTourProgress).toHaveBeenCalledWith('home-pick-board', expect.any(String), null);
+    });
+  });
+
+  describe('restart behaviour', () => {
+    it('start() with an in-flight tour resets to step 1 and clears progress', async () => {
+      const { result } = renderHook(useOnboardingTour, { wrapper });
+      await flushAsync();
+
+      act(() => result.current.start());
+      act(() => result.current.next());
+      act(() => result.current.next()); // now on 'climb-list'
+      expect(result.current.currentStepId).toBe('climb-list');
+
+      mockTrack.mockClear();
+      mockOnboardingDb.clearTourProgress.mockClear();
+
+      act(() => result.current.start());
+
+      expect(result.current.currentStepId).toBe('home-intro');
+      expect(mockTrack).toHaveBeenCalledWith(
+        'Onboarding Tour Started',
+        expect.objectContaining({ resumed: false, restartedFrom: 'climb-list' }),
+      );
+      expect(mockOnboardingDb.clearTourProgress).toHaveBeenCalled();
+    });
+  });
+
+  describe('hydration from IndexedDB', () => {
+    it('restores currentStepId from tourProgress on mount', async () => {
+      mockOnboardingDb.getTourProgress.mockResolvedValueOnce({
+        currentStepId: 'queue-bar',
+        startedAt: new Date().toISOString(),
+        version: 1,
+      });
+
+      const { result } = renderHook(useOnboardingTour, { wrapper });
+      await flushAsync();
+
+      expect(result.current.currentStepId).toBe('queue-bar');
+      expect(result.current.active).toBe(true);
+    });
+
+    it('ignores tourProgress with a different version', async () => {
+      // onboarding-db.getTourProgress itself filters by version; mock returns null here.
+      mockOnboardingDb.getTourProgress.mockResolvedValueOnce(null);
+
+      const { result } = renderHook(useOnboardingTour, { wrapper });
+      await flushAsync();
+
+      expect(result.current.currentStepId).toBeNull();
+    });
+  });
+
+  describe('side effects on step entry', () => {
+    it('home-pick-board dispatches TOUR_OPEN_START_SESH_EVENT on enter', async () => {
+      const cap = captureWindowEvents([TOUR_OPEN_START_SESH_EVENT]);
+      try {
+        const { result } = renderHook(useOnboardingTour, { wrapper });
+        await flushAsync();
+        act(() => result.current.start());
+        act(() => result.current.next()); // → home-pick-board
+        expect(cap.seen).toContain(TOUR_OPEN_START_SESH_EVENT);
+      } finally {
+        cap.cleanup();
+      }
+    });
+  });
+
+  describe('notifyQueueLength', () => {
+    it('advances queue-add when queue grows from 0 to 1', async () => {
+      const { result } = renderHook(useOnboardingTour, { wrapper });
+      await flushAsync();
+
+      // Jump straight to 'queue-add' via sequential next() calls.
+      act(() => result.current.start());
+      for (let i = 0; i < 3; i++) act(() => result.current.next());
+      expect(result.current.currentStepId).toBe('queue-add');
+
+      // Initial report of length 0 — no advance
+      act(() => result.current.notifyQueueLength(0));
+      expect(result.current.currentStepId).toBe('queue-add');
+
+      // Length 1 — advance
+      act(() => result.current.notifyQueueLength(1));
+      expect(result.current.currentStepId).toBe('queue-bar');
+    });
+
+    it('does nothing when queue length changes on an unrelated step', async () => {
+      const { result } = renderHook(useOnboardingTour, { wrapper });
+      await flushAsync();
+      act(() => result.current.start()); // home-intro
+
+      act(() => result.current.notifyQueueLength(5));
+      expect(result.current.currentStepId).toBe('home-intro');
+    });
+  });
+
+  describe('notifyCurrentClimb (climb-list)', () => {
+    it('advances climb-list only after the climb uuid changes from the entry value', async () => {
+      vi.useFakeTimers();
+      const { result } = renderHook(useOnboardingTour, { wrapper });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      // Seed an "entry" current climb before navigating to climb-list.
+      act(() => result.current.notifyCurrentClimb('climb-a'));
+
+      // Reach climb-list (step 3).
+      act(() => result.current.start());
+      for (let i = 0; i < 2; i++) act(() => result.current.next());
+      expect(result.current.currentStepId).toBe('climb-list');
+
+      // Same uuid as entry — no advance even after grace period elapses.
+      act(() => result.current.notifyCurrentClimb('climb-a'));
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+      expect(result.current.currentStepId).toBe('climb-list');
+
+      // New uuid — advance after grace.
+      act(() => result.current.notifyCurrentClimb('climb-b'));
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      expect(result.current.currentStepId).toBe('queue-add');
+      vi.useRealTimers();
+    });
+  });
+
+  describe('notifyCurrentClimb (queue-bar)', () => {
+    it('advances after grace period when a climb is set', async () => {
+      vi.useFakeTimers();
+      const { result } = renderHook(useOnboardingTour, { wrapper });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      // Reach queue-bar (step 5) — fast-forward past earlier auto-advance gates.
+      act(() => result.current.start());
+      for (let i = 0; i < 4; i++) act(() => result.current.next());
+      expect(result.current.currentStepId).toBe('queue-bar');
+
+      act(() => result.current.notifyCurrentClimb('climb-x'));
+      expect(result.current.currentStepId).toBe('queue-bar');
+
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      expect(result.current.currentStepId).toBe('queue-thumbnail');
+      vi.useRealTimers();
+    });
+  });
+
+  describe('pathname change advance', () => {
+    it('home-pick-board auto-advances to climb-list when the path matches a board list route', async () => {
+      const { result, rerender } = renderHook(useOnboardingTour, { wrapper });
+      await flushAsync();
+      act(() => result.current.start()); // home-intro
+      act(() => result.current.next()); // home-pick-board
+      expect(result.current.currentStepId).toBe('home-pick-board');
+
+      // Simulate router navigation into a board-list route.
+      mockUsePathname.mockReturnValue('/kilter/10/5/1,2/40/list');
+      rerender();
+      await flushAsync();
+
+      expect(result.current.currentStepId).toBe('climb-list');
+    });
+  });
+
+  describe('PLAY_DRAWER_EVENT advance', () => {
+    it('queue-thumbnail advances to play-view when the play drawer opens', async () => {
+      const { result } = renderHook(useOnboardingTour, { wrapper });
+      await flushAsync();
+      act(() => result.current.start());
+      for (let i = 0; i < 5; i++) act(() => result.current.next());
+      expect(result.current.currentStepId).toBe('queue-thumbnail');
+
+      act(() => {
+        window.dispatchEvent(new CustomEvent(PLAY_DRAWER_EVENT));
+      });
+
+      expect(result.current.currentStepId).toBe('play-view');
+    });
+  });
+
+  describe('complete() from final step', () => {
+    it('next() on the final step fires Completed and clears progress', async () => {
+      const { result } = renderHook(useOnboardingTour, { wrapper });
+      await flushAsync();
+      act(() => result.current.start());
+      // Advance until we're on sesh-analytics
+      // 0=home-intro, 1=home-pick-board, ..., last=sesh-analytics
+      while (result.current.currentStepId !== 'sesh-analytics') {
+        act(() => result.current.next());
+      }
+
+      mockTrack.mockClear();
+      mockOnboardingDb.clearTourProgress.mockClear();
+      mockOnboardingDb.saveOnboardingStatus.mockClear();
+
+      act(() => result.current.next());
+
+      expect(result.current.active).toBe(false);
+      expect(result.current.currentStepId).toBeNull();
+      expect(mockTrack).toHaveBeenCalledWith(
+        'Onboarding Tour Completed',
+        expect.objectContaining({ durationSeconds: expect.any(Number) }),
+      );
+      expect(mockOnboardingDb.clearTourProgress).toHaveBeenCalled();
+      expect(mockOnboardingDb.saveOnboardingStatus).toHaveBeenCalled();
+    });
+
+    it('sesh-analytics onExit fires close-dummy-sesh when completing', async () => {
+      const cap = captureWindowEvents(['onboarding:close-dummy-sesh']);
+      try {
+        const { result } = renderHook(useOnboardingTour, { wrapper });
+        await flushAsync();
+        act(() => result.current.start());
+        while (result.current.currentStepId !== 'sesh-analytics') {
+          act(() => result.current.next());
+        }
+        cap.seen.length = 0;
+        act(() => result.current.next()); // complete
+        expect(cap.seen).toContain('onboarding:close-dummy-sesh');
+      } finally {
+        cap.cleanup();
+      }
+    });
+  });
+
+  describe('sesh-invite opens the dummy drawer on enter', () => {
+    it('dispatches TOUR_OPEN_DUMMY_SESH_EVENT', async () => {
+      const cap = captureWindowEvents([TOUR_OPEN_DUMMY_SESH_EVENT]);
+      try {
+        const { result } = renderHook(useOnboardingTour, { wrapper });
+        await flushAsync();
+        act(() => result.current.start());
+        while (result.current.currentStepId !== 'sesh-invite') {
+          act(() => result.current.next());
+        }
+        expect(cap.seen).toContain(TOUR_OPEN_DUMMY_SESH_EVENT);
+      } finally {
+        cap.cleanup();
+      }
+    });
+  });
+});

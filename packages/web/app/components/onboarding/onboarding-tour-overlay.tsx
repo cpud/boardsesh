@@ -25,12 +25,21 @@ function findAnchor(selectors: string[] | null): HTMLElement | null {
 /**
  * Tracks an anchor element across DOM mutations and scroll/resize changes.
  * Returns null until the element exists; re-resolves when mutations happen.
+ * `selectors` is expected to be a stable reference (the caller uses the array
+ * attached to a step definition, which never changes identity for a given
+ * step).
  */
 function useAnchorElement(selectors: string[] | null, active: boolean): HTMLElement | null {
   const [el, setEl] = useState<HTMLElement | null>(null);
 
+  // Keep the resolver in a ref so the effect below doesn't need to depend on
+  // the selectors array identity (which is a prop, so React-stable but still
+  // included in the dep list via this ref indirection without a lint disable).
+  const selectorsRef = useRef(selectors);
+  selectorsRef.current = selectors;
+
   useEffect(() => {
-    if (!active || !selectors || selectors.length === 0) {
+    if (!active) {
       setEl(null);
       return;
     }
@@ -39,8 +48,9 @@ function useAnchorElement(selectors: string[] | null, active: boolean): HTMLElem
 
     const resolve = () => {
       if (cancelled) return;
-      const found = findAnchor(selectors);
-      if (found !== el) setEl(found);
+      const current = selectorsRef.current;
+      const found = current && current.length > 0 ? findAnchor(current) : null;
+      setEl((prev) => (prev === found ? prev : found));
     };
 
     resolve();
@@ -70,8 +80,13 @@ function useAnchorElement(selectors: string[] | null, active: boolean): HTMLElem
       window.removeEventListener('resize', onLayoutChange);
       window.clearInterval(pollId);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, JSON.stringify(selectors)]);
+  }, [active]);
+
+  // When the step (and therefore the selectors) change, reset the resolved
+  // element so stale matches don't bleed into the new step's lookup.
+  useEffect(() => {
+    setEl(null);
+  }, [selectors]);
 
   return el;
 }

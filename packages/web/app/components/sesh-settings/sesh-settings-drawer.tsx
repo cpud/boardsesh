@@ -242,7 +242,9 @@ export default function SeshSettingsDrawer({
     ? displaySession.sessionName || generateSessionName(displaySession.firstTickAt, displaySession.boardTypes)
     : 'Session';
 
-  const tourShareUrl = 'https://boardsesh.com/join/crew-night-preview';
+  // Non-URL payload so that if a curious user scans the QR mid-tour their
+  // reader just shows this text — nothing navigates or gets indexed.
+  const tourShareQrPayload = 'boardsesh:onboarding-tour-preview';
   const inviteContent = tourMockSession ? (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -257,7 +259,7 @@ export default function SeshSettingsDrawer({
         </IconButton>
       </Box>
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
-        <QRCodeSVG value={tourShareUrl} size={140} />
+        <QRCodeSVG value={tourShareQrPayload} size={140} aria-hidden />
       </Box>
     </Box>
   ) : !isStopped && shareUrl ? (
