@@ -6,10 +6,12 @@
  */
 
 import type { ImageProcessor } from './image-processor/types';
-import { runOCR } from './core/ocr';
+import { runOCR, type OcrOptions } from './core/ocr';
 import { detectHoldsFromPixelData, detectBoardRegion, detectBenchmarkCircle } from './core/holds';
 import { calculateRegions, calculateRegionsFromDetectedBoard } from './core/regions';
 import type { MoonBoardClimb, ParseResult, GridCoordinate } from './types';
+
+export type ParseOptions = OcrOptions;
 
 /**
  * Parse a MoonBoard screenshot using the provided ImageProcessor.
@@ -19,7 +21,7 @@ import type { MoonBoardClimb, ParseResult, GridCoordinate } from './types';
  * to different iPhone screen sizes. Falls back to proportional calculation if
  * auto-detection fails.
  */
-export async function parseWithProcessor(processor: ImageProcessor): Promise<ParseResult> {
+export async function parseWithProcessor(processor: ImageProcessor, options: ParseOptions = {}): Promise<ParseResult> {
   const warnings: string[] = [];
 
   try {
@@ -41,7 +43,7 @@ export async function parseWithProcessor(processor: ImageProcessor): Promise<Par
     const isBenchmark = detectBenchmarkCircle(headerPixels);
 
     const ocrImageData = await processor.extractForOCR(regions.header);
-    const ocrResult = await runOCR(ocrImageData);
+    const ocrResult = await runOCR(ocrImageData, options);
     warnings.push(...ocrResult.warnings);
 
     // Extract board region for hold detection

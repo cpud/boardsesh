@@ -1,10 +1,16 @@
 import { execSync, spawnSync } from 'node:child_process';
 import { createConnection } from 'node:net';
 import { fileURLToPath } from 'node:url';
+import postgres from 'postgres';
 
 const PG_PORT = 5433;
 const REDIS_PORT = 6380;
 const COMPOSE_FILE = fileURLToPath(new URL('../../docker-compose.test.yml', import.meta.url));
+
+const WORKER_DB_PREFIX = 'boardsesh_backend_test';
+const baseConnectionString = (
+  process.env.DATABASE_URL || `postgresql://postgres:postgres@localhost:${PG_PORT}/${WORKER_DB_PREFIX}`
+).replace(/\/[^/]+$/, '/postgres');
 
 async function isPortOpen(host: string, port: number, timeoutMs = 500): Promise<boolean> {
   return new Promise((resolve) => {
@@ -20,7 +26,7 @@ async function isPortOpen(host: string, port: number, timeoutMs = 500): Promise<
   });
 }
 
-export default async function globalSetup() {
+async function ensureInfra(): Promise<void> {
   if (process.env.CI) return;
   if (process.env.SKIP_TEST_INFRA === '1') {
     console.info('[test-infra] SKIP_TEST_INFRA=1 — skipping docker orchestration');
@@ -53,4 +59,31 @@ export default async function globalSetup() {
         `Original error: ${error instanceof Error ? error.message : String(error)}`,
     );
   }
+}
+
+// Drop per-worker DB clones left over from a previous run so workers rebuild
+// them against the current schema. Running tests always materialise their own
+// DB via worker-db, so there is nothing else to prepare here.
+async function dropStaleWorkerDatabases(): Promise<void> {
+  const adminClient = postgres(baseConnectionString, { max: 1, onnotice: () => {} });
+  try {
+    const stale = await adminClient`
+      SELECT datname FROM pg_database WHERE datname LIKE ${WORKER_DB_PREFIX + '_w%'}
+    `;
+    for (const { datname } of stale) {
+      try {
+        await adminClient.unsafe(`DROP DATABASE "${datname}"`);
+      } catch {
+        // ignore — if a leftover connection is holding it, worker-db will CREATE IF NOT EXISTS against it
+      }
+    }
+  } finally {
+    await adminClient.end().catch(() => {});
+  }
+}
+
+export default async function globalSetup() {
+  await ensureInfra();
+  if (process.env.SKIP_TEST_INFRA === '1') return;
+  await dropStaleWorkerDatabases();
 }
