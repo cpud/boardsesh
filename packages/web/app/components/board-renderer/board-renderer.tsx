@@ -22,6 +22,14 @@ const BoardRenderer = React.memo(
   ({ boardDetails, thumbnail, maxHeight, fillHeight, litUpHoldsMap, mirrored, onHoldClick }: BoardProps) => {
     const isMoonBoard = boardDetails.board_name === 'moonboard' && !!boardDetails.layoutFolder;
 
+    // Only compute maxHeight when not using fillHeight - memoized to prevent recreation.
+    // Hoisted above the MoonBoard early return so hook call order is stable regardless
+    // of the branch taken.
+    const svgStyle = useMemo(
+      () => (fillHeight ? undefined : { maxHeight: maxHeight ?? (thumbnail ? '10vh' : '55vh') }),
+      [fillHeight, maxHeight, thumbnail],
+    );
+
     // Delegate to MoonBoardRenderer for Moonboard (uses grid-based rendering)
     if (isMoonBoard) {
       return (
@@ -41,12 +49,6 @@ const BoardRenderer = React.memo(
     // When fillHeight is true, SVG fills container and uses preserveAspectRatio to fit
     // Otherwise, use auto height with maxHeight constraint
     const svgClassName = fillHeight ? `${styles.svg} ${styles.svgFillHeight}` : `${styles.svg} ${styles.svgAutoHeight}`;
-
-    // Only compute maxHeight when not using fillHeight - memoized to prevent recreation
-    const svgStyle = useMemo(
-      () => (fillHeight ? undefined : { maxHeight: maxHeight ?? (thumbnail ? '10vh' : '55vh') }),
-      [fillHeight, maxHeight, thumbnail],
-    );
 
     return (
       <svg

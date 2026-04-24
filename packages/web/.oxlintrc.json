@@ -30,7 +30,8 @@
     "react/no-children-prop": "error",
     "react/no-namespace": "error",
     "react/no-unescaped-entities": "error",
-    "react/no-unknown-property": "error"
+    "react/no-unknown-property": "error",
+    "react/rules-of-hooks": "error"
   },
   "ignorePatterns": [".next/**", "out/**", "build/**", "next-env.d.ts", "node_modules/**", "**/board-controller/**"]
 }
