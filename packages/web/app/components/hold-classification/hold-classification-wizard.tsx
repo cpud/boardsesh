@@ -430,8 +430,8 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
             Classification Complete!
           </Typography>
           <Typography variant="body2" component="span" className={styles.completeSubtitle}>
-            You've classified {classifiedCount} of {holds.length} holds. You can run through this wizard again anytime
-            to update your ratings.
+            You&apos;ve classified {classifiedCount} of {holds.length} holds. You can run through this wizard again
+            anytime to update your ratings.
           </Typography>
           <MuiButton variant="contained" size="large" onClick={onClose}>
             Done

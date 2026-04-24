@@ -150,7 +150,7 @@ function ApiKeySuccessModal({ isOpen, apiKey, controllerName, onClose }: ApiKeyS
       <DialogContent>
         <MuiAlert severity="warning" icon={<WarningOutlined />} sx={{ marginBottom: 2 }}>
           <AlertTitle>Save this API key now!</AlertTitle>
-          This is the only time you'll see this key. If you lose it, you'll need to delete and re-register the
+          This is the only time you&apos;ll see this key. If you lose it, you&apos;ll need to delete and re-register the
           controller.
         </MuiAlert>
         <Typography variant="body1" component="p">
@@ -414,7 +414,7 @@ export default function ControllersSection() {
         <DialogTitle>Register ESP32 Controller</DialogTitle>
         <DialogContent>
           <Typography variant="body2" component="span" color="text.secondary" className={styles.modalDescription}>
-            Register a new ESP32 controller to receive LED commands from BoardSesh. You'll receive an API key to
+            Register a new ESP32 controller to receive LED commands from BoardSesh. You&apos;ll receive an API key to
             configure on the device.
           </Typography>
           <Box

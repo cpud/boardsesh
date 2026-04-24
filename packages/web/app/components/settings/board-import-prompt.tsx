@@ -388,8 +388,8 @@ export default function BoardImportPrompt({ boardType, onImportComplete }: Board
                 </ListItem>
               </List>
               <Typography variant="body2" color="text.secondary">
-                Climbs will be matched by name. Any that can't be matched will be reported after import. Re-importing
-                the same file will not create duplicates.
+                Climbs will be matched by name. Any that can&apos;t be matched will be reported after import.
+                Re-importing the same file will not create duplicates.
               </Typography>
             </>
           )}

@@ -485,7 +485,7 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
                 {row.type === 'end-message' && (
                   <div className={styles.noMoreSuggestions}>
                     <Typography variant="body2" color="text.disabled">
-                      That's all for now
+                      That&apos;s all for now
                     </Typography>
                   </div>
                 )}
