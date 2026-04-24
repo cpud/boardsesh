@@ -49,7 +49,8 @@
     "typescript/no-unnecessary-type-constraint": "error",
     "typescript/no-unsafe-declaration-merging": "error",
     "typescript/no-useless-empty-export": "error",
-    "typescript/no-wrapper-object-types": "error"
+    "typescript/no-wrapper-object-types": "error",
+    "typescript/prefer-as-const": "error"
   },
   "ignorePatterns": [
     "dist/**",
