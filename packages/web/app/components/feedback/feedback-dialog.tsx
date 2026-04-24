@@ -12,39 +12,72 @@ import { setFeedbackStatus } from '@/app/lib/feedback-prompt-db';
 import type { AppFeedbackSource } from '@boardsesh/shared-schema';
 import styles from './feedback-dialog.module.css';
 
+export type FeedbackDialogMode = 'rating' | 'bug';
+
+export type FeedbackSubmission = {
+  rating: number | null;
+  comment: string | null;
+};
+
 type FeedbackDialogProps = {
   open: boolean;
   onClose: () => void;
   source: AppFeedbackSource;
   title?: string;
+  mode?: FeedbackDialogMode;
+  /**
+   * Fires after the user's submission is accepted by the form and the mutation
+   * has been kicked off (fire-and-forget). Used by callers that want to chain
+   * a follow-up step — e.g. the drawer asking about an App Store review after
+   * a rating submission. Not invoked when the form is cancelled/closed.
+   */
+  onSubmitted?: (submission: FeedbackSubmission) => void;
 };
 
 const FeedbackDialogBody: React.FC<Omit<FeedbackDialogProps, 'open'>> = ({
   onClose,
   source,
-  title = 'Send feedback',
+  title,
+  mode = 'rating',
+  onSubmitted,
 }) => {
   const { mutate } = useSubmitAppFeedback();
   const { showMessage } = useSnackbar();
+  const isBug = mode === 'bug';
+  const resolvedTitle = title ?? (isBug ? 'Report a bug' : 'Rate Boardsesh');
 
-  const handleSubmit = (values: { rating: number | null; comment: string | null }) => {
-    // FeedbackForm in drawer-feedback mode disables Send until a rating is
-    // picked, so rating is guaranteed non-null here. Guard anyway — the
-    // backend rejects rating < 1.
-    if (values.rating === null) {
-      onClose();
-      return;
+  const handleSubmit = (values: FeedbackSubmission) => {
+    if (isBug) {
+      // Bug-mode form guarantees comment length via canSubmit.
+      if (!values.comment) {
+        onClose();
+        return;
+      }
+    } else {
+      // Rating-mode form disables Send until a rating is picked.
+      if (values.rating === null) {
+        onClose();
+        return;
+      }
+      // Suppress the automatic banner for users who manually engaged.
+      void setFeedbackStatus('submitted');
     }
-    // Suppress the automatic banner for users who manually engaged.
-    void setFeedbackStatus('submitted');
+
     mutate(
       {
-        rating: values.rating,
+        rating: isBug ? null : values.rating,
         comment: values.comment,
         source,
       },
       {
-        onSuccess: () => showMessage('Thanks — logged.', 'success'),
+        onSuccess: () => {
+          showMessage(isBug ? 'Bug logged — thanks.' : 'Thanks — logged.', 'success');
+          // Fire chained follow-ups (e.g. "also leave a store review?") only
+          // on successful submission. Otherwise we'd be prompting the user to
+          // publicly review the app right after telling them their feedback
+          // didn't save.
+          onSubmitted?.(values);
+        },
         onError: () => showMessage("Couldn't send — we'll keep your feedback.", 'warning'),
       },
     );
@@ -52,27 +85,29 @@ const FeedbackDialogBody: React.FC<Omit<FeedbackDialogProps, 'open'>> = ({
   };
 
   return (
-    <>
+    <div className={styles.dialogBody}>
       <IconButton aria-label="Close" onClick={onClose} className={styles.closeButton} size="small">
         <CloseOutlined fontSize="small" />
       </IconButton>
       <DialogContent>
         <FeedbackForm
-          mode="drawer-feedback"
-          title={title}
-          submitLabel="Send"
+          mode={isBug ? 'bug' : 'drawer-feedback'}
+          title={resolvedTitle}
+          submitLabel={isBug ? 'Send bug report' : 'Send'}
           onSubmit={handleSubmit}
           onCancel={onClose}
         />
       </DialogContent>
-    </>
+    </div>
   );
 };
 
-export const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ open, onClose, source, title }) => {
+export const FeedbackDialog: React.FC<FeedbackDialogProps> = ({ open, onClose, source, title, mode, onSubmitted }) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      {open && <FeedbackDialogBody onClose={onClose} source={source} title={title} />}
+      {open && (
+        <FeedbackDialogBody onClose={onClose} source={source} title={title} mode={mode} onSubmitted={onSubmitted} />
+      )}
     </Dialog>
   );
 };

@@ -12,7 +12,7 @@ import LoginOutlined from '@mui/icons-material/LoginOutlined';
 import HelpOutlineOutlined from '@mui/icons-material/HelpOutlineOutlined';
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import StarBorderOutlined from '@mui/icons-material/StarBorderOutlined';
-import FeedbackOutlined from '@mui/icons-material/FeedbackOutlined';
+import BugReportOutlined from '@mui/icons-material/BugReportOutlined';
 import GpsFixedOutlined from '@mui/icons-material/GpsFixedOutlined';
 import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
 import SwapHorizOutlined from '@mui/icons-material/SwapHorizOutlined';
@@ -41,8 +41,8 @@ import { useDevUrl } from '@/app/lib/dev-url';
 import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 import { HoldClassificationWizard } from '../hold-classification';
 import { FeedbackDialog } from '../feedback/feedback-dialog';
-import { requestInAppReview } from '@/app/lib/in-app-review';
-import { setFeedbackStatus } from '@/app/lib/feedback-prompt-db';
+import { BugReportDialog } from '../feedback/bug-report-dialog';
+import { StoreReviewPromptDialog } from '../feedback/store-review-prompt-dialog';
 import BoardDiscoveryScroll from '../board-scroll/board-discovery-scroll';
 import BoardSelectorDrawer from '../board-selector-drawer/board-selector-drawer';
 import MyBoardsDrawer from '../my-boards-drawer/my-boards-drawer';
@@ -86,7 +86,9 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
   const [recentSessions, setRecentSessions] = useState<StoredSession[]>([]);
   const [showDevUrl, setShowDevUrl] = useState(false);
   const { isAvailable: devUrlAvailable } = useDevUrl();
-  const [showFeedback, setShowFeedback] = useState(false);
+  const [showRating, setShowRating] = useState(false);
+  const [showBugReport, setShowBugReport] = useState(false);
+  const [showStoreReviewPrompt, setShowStoreReviewPrompt] = useState(false);
 
   const { mode, toggleMode } = useColorMode();
   const isMoonboard = boardDetails?.board_name === 'moonboard';
@@ -414,14 +416,7 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
               className={styles.menuItem}
               onClick={() => {
                 handleClose();
-                // Trigger the native review sheet (native) or open the store
-                // URL (web). We don't write an app_feedback row here: the OS
-                // review sheet is quota-limited and doesn't report whether the
-                // user actually rated, so recording anything would be guessing.
-                // Still mark the local prompt as submitted so the automatic
-                // banner doesn't re-surface for someone who proactively rated.
-                void requestInAppReview();
-                void setFeedbackStatus('submitted');
+                setShowRating(true);
               }}
             >
               <span className={styles.menuItemIcon}>
@@ -435,13 +430,13 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
               className={styles.menuItem}
               onClick={() => {
                 handleClose();
-                setShowFeedback(true);
+                setShowBugReport(true);
               }}
             >
               <span className={styles.menuItemIcon}>
-                <FeedbackOutlined />
+                <BugReportOutlined />
               </span>
-              <span className={styles.menuItemLabel}>Send feedback</span>
+              <span className={styles.menuItemLabel}>Report a bug</span>
             </button>
 
             {/* Logout */}
@@ -541,7 +536,26 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
 
       {devUrlAvailable && <DevUrlDialog open={showDevUrl} onClose={() => setShowDevUrl(false)} />}
 
-      <FeedbackDialog open={showFeedback} onClose={() => setShowFeedback(false)} source="drawer-feedback" />
+      <FeedbackDialog
+        open={showRating}
+        onClose={() => setShowRating(false)}
+        source="drawer-feedback"
+        onSubmitted={({ rating }) => {
+          // Defensive: the dialog body always calls onClose in its submit
+          // path, but closing explicitly here too guarantees no stacking if
+          // that ever changes. Idempotent — React coalesces the setState.
+          setShowRating(false);
+          // Only chain into the App Store prompt on a clearly positive rating —
+          // asking a user who just gave us 2 stars to publicly review us is
+          // how you end up with 2-star public reviews. The in-app prompt banner
+          // already applies the same gating (≥3) for native in-app review.
+          if (rating !== null && rating >= 4) {
+            setShowStoreReviewPrompt(true);
+          }
+        }}
+      />
+      <BugReportDialog open={showBugReport} onClose={() => setShowBugReport(false)} source="drawer-bug" />
+      <StoreReviewPromptDialog open={showStoreReviewPrompt} onClose={() => setShowStoreReviewPrompt(false)} />
     </>
   );
 }
