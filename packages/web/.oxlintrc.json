@@ -22,7 +22,8 @@
     "react/jsx-handler-names": "error",
     "react/jsx-key": "error",
     "react/jsx-no-duplicate-props": "error",
-    "react/jsx-no-script-url": "error"
+    "react/jsx-no-script-url": "error",
+    "react/jsx-no-undef": "error"
   },
   "ignorePatterns": [".next/**", "out/**", "build/**", "next-env.d.ts", "node_modules/**", "**/board-controller/**"]
 }
