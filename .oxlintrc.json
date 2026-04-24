@@ -58,7 +58,8 @@
     "import/named": "error",
     "import/namespace": "error",
     "import/no-absolute-path": "error",
-    "import/no-amd": "error"
+    "import/no-amd": "error",
+    "import/no-commonjs": "error"
   },
   "ignorePatterns": [
     "dist/**",
