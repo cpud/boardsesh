@@ -3,20 +3,39 @@ import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { applyRateLimit, validateInput } from '../shared/helpers';
 import { SubmitAppFeedbackInputSchema } from '../../../validation/schemas';
+import { postFeedbackToDiscord } from '../../../services/discord';
 
 export const feedbackMutations = {
   submitAppFeedback: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext): Promise<boolean> => {
     await applyRateLimit(ctx, 10, 'submitAppFeedback');
 
     const validated = validateInput(SubmitAppFeedbackInputSchema, input, 'input');
+    const comment = validated.comment?.trim() ? validated.comment.trim() : null;
+    const appVersion = validated.appVersion ?? null;
+    const rating = validated.rating ?? null;
 
-    await db.insert(dbSchema.appFeedback).values({
-      userId: ctx.userId ?? null,
-      rating: validated.rating,
-      comment: validated.comment?.trim() ? validated.comment.trim() : null,
+    const [row] = await db
+      .insert(dbSchema.appFeedback)
+      .values({
+        userId: ctx.userId ?? null,
+        rating,
+        comment,
+        platform: validated.platform,
+        appVersion,
+        source: validated.source,
+      })
+      .returning();
+
+    // Fire-and-forget; postFeedbackToDiscord never throws but catch defensively.
+    void postFeedbackToDiscord({
+      feedbackId: row.id,
+      rating,
+      comment,
       platform: validated.platform,
-      appVersion: validated.appVersion ?? null,
+      appVersion,
       source: validated.source,
+    }).catch((error) => {
+      console.error('[submitAppFeedback] Discord forward failed:', error);
     });
 
     return true;
