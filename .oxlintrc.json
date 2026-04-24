@@ -50,7 +50,8 @@
     "typescript/no-unsafe-declaration-merging": "error",
     "typescript/no-useless-empty-export": "error",
     "typescript/no-wrapper-object-types": "error",
-    "typescript/prefer-as-const": "error"
+    "typescript/prefer-as-const": "error",
+    "typescript/prefer-function-type": "error"
   },
   "ignorePatterns": [
     "dist/**",
