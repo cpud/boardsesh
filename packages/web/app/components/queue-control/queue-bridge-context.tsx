@@ -645,6 +645,11 @@ export function QueueBridgeProvider({ children }: { children: React.ReactNode })
     ],
   );
 
+  // Renamed locals so jsx-handler-names sees on*-prefixed identifiers being
+  // passed to the on*-prefixed props on LiveActivityBridge below.
+  const onSetCurrentClimb = adapter.context.setCurrentClimbQueueItem;
+  const onWidgetNavigate = effectiveActions.dispatchWidgetNavigation;
+
   return (
     <QueueBridgeSetterContext.Provider value={setters}>
       <QueueBridgeBoardInfoContext.Provider value={boardInfo}>
@@ -663,8 +668,8 @@ export function QueueBridgeProvider({ children }: { children: React.ReactNode })
                           boardDetails={adapter.boardDetails}
                           sessionId={adapter.context.sessionId}
                           isSessionActive={adapter.context.isSessionActive}
-                          onSetCurrentClimb={adapter.context.setCurrentClimbQueueItem}
-                          onWidgetNavigate={effectiveActions.dispatchWidgetNavigation}
+                          onSetCurrentClimb={onSetCurrentClimb}
+                          onWidgetNavigate={onWidgetNavigate}
                         />
                         {children}
                       </SessionContext.Provider>
