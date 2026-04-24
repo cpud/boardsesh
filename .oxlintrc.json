@@ -23,7 +23,8 @@
     "@typescript-eslint/no-misused-promises": ["error", { "checksVoidReturn": false }],
     "@typescript-eslint/consistent-type-imports": "error",
     "@typescript-eslint/no-unnecessary-type-assertion": "error",
-    "no-console": ["error", { "allow": ["warn", "error", "info"] }]
+    "no-console": ["error", { "allow": ["warn", "error", "info"] }],
+    "nextjs/inline-script-id": "error"
   },
   "ignorePatterns": [
     "dist/**",
