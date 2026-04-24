@@ -250,36 +250,47 @@ describe('OnboardingTourProvider', () => {
     });
   });
 
-  describe('notifyCurrentClimb (climb-list)', () => {
-    it('advances climb-list only after the climb uuid changes from the entry value', async () => {
+  describe('climb-list advance (TOUR_CLIMB_LIST_PICK_EVENT)', () => {
+    it('advances on the explicit user-pick event, not on currentClimb changes', async () => {
       vi.useFakeTimers();
       const { result } = renderHook(useOnboardingTour, { wrapper });
       await act(async () => {
         await Promise.resolve();
       });
 
-      // Seed an "entry" current climb before navigating to climb-list.
-      act(() => result.current.notifyCurrentClimb('climb-a'));
-
       // Reach climb-list (step 3).
       act(() => result.current.start());
       for (let i = 0; i < 2; i++) act(() => result.current.next());
       expect(result.current.currentStepId).toBe('climb-list');
 
-      // Same uuid as entry — no advance even after grace period elapses.
-      act(() => result.current.notifyCurrentClimb('climb-a'));
+      // A currentClimb change alone (e.g. async queue hydration) must NOT
+      // advance climb-list.
+      act(() => result.current.notifyCurrentClimb('climb-hydrated'));
       act(() => {
         vi.advanceTimersByTime(3000);
       });
       expect(result.current.currentStepId).toBe('climb-list');
 
-      // New uuid — advance after grace.
-      act(() => result.current.notifyCurrentClimb('climb-b'));
+      // Explicit user-pick signal advances after the grace period.
+      act(() => {
+        window.dispatchEvent(new CustomEvent('onboarding:climb-list-pick'));
+      });
       act(() => {
         vi.advanceTimersByTime(2000);
       });
       expect(result.current.currentStepId).toBe('queue-add');
       vi.useRealTimers();
+    });
+
+    it('ignores pick events when not on climb-list', async () => {
+      const { result } = renderHook(useOnboardingTour, { wrapper });
+      await flushAsync();
+      act(() => result.current.start()); // home-intro
+
+      act(() => {
+        window.dispatchEvent(new CustomEvent('onboarding:climb-list-pick'));
+      });
+      expect(result.current.currentStepId).toBe('home-intro');
     });
   });
 
@@ -410,14 +421,15 @@ describe('OnboardingTourProvider', () => {
         await Promise.resolve();
       });
 
-      // Seed an entry climb, reach climb-list.
-      act(() => result.current.notifyCurrentClimb('climb-entry'));
+      // Reach climb-list.
       act(() => result.current.start());
       for (let i = 0; i < 2; i++) act(() => result.current.next());
       expect(result.current.currentStepId).toBe('climb-list');
 
-      // Schedule a grace timer but don't let it elapse.
-      act(() => result.current.notifyCurrentClimb('climb-new'));
+      // Fire a user-pick event — schedules a grace timer but don't let it elapse.
+      act(() => {
+        window.dispatchEvent(new CustomEvent('onboarding:climb-list-pick'));
+      });
       expect(result.current.currentStepId).toBe('climb-list');
 
       // User hits Skip.
@@ -458,31 +470,35 @@ describe('OnboardingTourProvider', () => {
       vi.useRealTimers();
     });
 
-    it('rapid notifyCurrentClimb calls advance only once per step transition', async () => {
+    it('rapid climb-list pick events advance only once per step transition', async () => {
       vi.useFakeTimers();
       const { result } = renderHook(useOnboardingTour, { wrapper });
       await act(async () => {
         await Promise.resolve();
       });
 
-      act(() => result.current.notifyCurrentClimb('climb-entry'));
       act(() => result.current.start());
       for (let i = 0; i < 2; i++) act(() => result.current.next());
       expect(result.current.currentStepId).toBe('climb-list');
 
-      // Pile up notifications before grace elapses.
-      act(() => result.current.notifyCurrentClimb('climb-a'));
-      act(() => result.current.notifyCurrentClimb('climb-b'));
-      act(() => result.current.notifyCurrentClimb('climb-c'));
+      // Pile up pick events before grace elapses. Provider should debounce
+      // them onto a single advance.
+      act(() => {
+        window.dispatchEvent(new CustomEvent('onboarding:climb-list-pick'));
+        window.dispatchEvent(new CustomEvent('onboarding:climb-list-pick'));
+        window.dispatchEvent(new CustomEvent('onboarding:climb-list-pick'));
+      });
 
       act(() => {
         vi.advanceTimersByTime(2000);
       });
       expect(result.current.currentStepId).toBe('queue-add');
 
-      // Further current-climb notifications while on queue-add are a no-op —
-      // notifyCurrentClimb only reacts to queue-bar / climb-list.
-      act(() => result.current.notifyCurrentClimb('climb-d'));
+      // Further picks after leaving climb-list are a no-op — the listener
+      // guards on the live step.
+      act(() => {
+        window.dispatchEvent(new CustomEvent('onboarding:climb-list-pick'));
+      });
       act(() => {
         vi.advanceTimersByTime(2000);
       });

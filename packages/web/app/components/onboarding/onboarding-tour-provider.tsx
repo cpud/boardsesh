@@ -18,6 +18,7 @@ import {
   type StepExitEffect,
 } from './onboarding-tour-steps';
 import {
+  TOUR_CLIMB_LIST_PICK_EVENT,
   dispatchTourCloseDummySesh,
   dispatchTourClosePlayQueue,
   dispatchTourClosePlayView,
@@ -84,8 +85,6 @@ export function OnboardingTourProvider({ children }: { children: React.ReactNode
   const startedAtRef = useRef<string | null>(null);
   const lastQueueLengthRef = useRef<number | null>(null);
   const currentClimbUuidRef = useRef<string | null>(null);
-  /** The current climb uuid captured at the moment the active step was entered. */
-  const stepEntryClimbUuidRef = useRef<string | null>(null);
   const stepEnteredAtRef = useRef<number>(0);
   const hydratedRef = useRef(false);
   /**
@@ -159,7 +158,6 @@ export function OnboardingTourProvider({ children }: { children: React.ReactNode
       if (nextStep?.onEnter) runSideEffect(nextStep.onEnter);
 
       stepEnteredAtRef.current = Date.now();
-      stepEntryClimbUuidRef.current = currentClimbUuidRef.current;
       setCurrentStepId(stepId);
 
       // Fire "step viewed" analytics.
@@ -205,7 +203,6 @@ export function OnboardingTourProvider({ children }: { children: React.ReactNode
 
     startedAtRef.current = new Date().toISOString();
     lastQueueLengthRef.current = null;
-    stepEntryClimbUuidRef.current = null;
     void clearTourProgress(userId);
     enterStep(FIRST_STEP_ID, null, 'next');
   }, [currentStepId, userId, enterStep]);
@@ -314,31 +311,22 @@ export function OnboardingTourProvider({ children }: { children: React.ReactNode
   const notifyCurrentClimb = useCallback(
     (climbUuid: string | null) => {
       currentClimbUuidRef.current = climbUuid;
-      const step = currentStepId;
-      if (step !== 'queue-bar' && step !== 'climb-list') return;
+      // Only `queue-bar` advances on currentClimb-change-notification. The
+      // `climb-list` step advances on an explicit user-tap signal instead
+      // (`TOUR_CLIMB_LIST_PICK_EVENT`) because async queue hydration can
+      // change currentClimb without any user interaction, which used to
+      // falsely skip the "pick a climb" step.
+      if (currentStepId !== 'queue-bar') return;
+      if (!climbUuid) return;
 
-      // 'climb-list' requires the user to actively set a *different* climb
-      // than the one already active on entry (so the interaction is real).
-      // 'queue-bar' only requires that any climb is set.
-      const hasAdvanceCondition =
-        step === 'climb-list' ? climbUuid !== null && climbUuid !== stepEntryClimbUuidRef.current : climbUuid !== null;
-      if (!hasAdvanceCondition) return;
-
-      // Cancel any prior grace-period timer so rapid climb selections don't
+      // Cancel any prior grace-period timer so rapid changes don't
       // accumulate multiple advance() calls for the same transition.
       clearCurrentClimbTimer();
 
       const fire = () => {
         currentClimbTimerRef.current = null;
-        // Compare against the *live* step from the ref — if the user skipped
-        // or completed in the meantime, `currentStepIdRef.current` is no
-        // longer `step` and we must not resurrect the tour.
-        if (currentStepIdRef.current !== step) return;
-        const still =
-          step === 'climb-list'
-            ? currentClimbUuidRef.current !== null && currentClimbUuidRef.current !== stepEntryClimbUuidRef.current
-            : currentClimbUuidRef.current !== null;
-        if (still) advanceFrom(step, 'event');
+        if (currentStepIdRef.current !== 'queue-bar') return;
+        if (currentClimbUuidRef.current) advanceFrom('queue-bar', 'event');
       };
 
       // Grace period so the user actually sees the step's copy before we
@@ -352,6 +340,27 @@ export function OnboardingTourProvider({ children }: { children: React.ReactNode
     },
     [currentStepId, advanceFrom, clearCurrentClimbTimer],
   );
+
+  // Listen for the explicit "user picked a climb in the list" signal
+  // dispatched by `ClimbsList` while the tour is on `climb-list`.
+  useEffect(() => {
+    const handler = () => {
+      if (currentStepIdRef.current !== 'climb-list') return;
+      const elapsed = Date.now() - stepEnteredAtRef.current;
+      clearCurrentClimbTimer();
+      const fire = () => {
+        currentClimbTimerRef.current = null;
+        if (currentStepIdRef.current === 'climb-list') advanceFrom('climb-list', 'event');
+      };
+      if (elapsed >= CURRENT_CLIMB_GRACE_MS) {
+        fire();
+      } else {
+        currentClimbTimerRef.current = window.setTimeout(fire, CURRENT_CLIMB_GRACE_MS - elapsed);
+      }
+    };
+    window.addEventListener(TOUR_CLIMB_LIST_PICK_EVENT, handler);
+    return () => window.removeEventListener(TOUR_CLIMB_LIST_PICK_EVENT, handler);
+  }, [advanceFrom, clearCurrentClimbTimer]);
 
   // Cancel any outstanding grace-period timer whenever the step changes so a
   // stale timer can't fire `advanceFrom` against a step the user has already
