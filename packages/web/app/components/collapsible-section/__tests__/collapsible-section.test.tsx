@@ -103,5 +103,35 @@ describe('CollapsibleSection', () => {
       rerender(<CollapsibleSection sections={sections} forcedActiveKey={null} />);
       expect(screen.queryByText('Invite others')).toBeNull();
     });
+
+    it('transitioning back to uncontrolled mode restores the initial default', () => {
+      const sections = makeSections();
+      sections[0].defaultActive = true; // initial default = 'invite'
+
+      // Start uncontrolled with the default active.
+      const { rerender } = render(<CollapsibleSection sections={sections} />);
+      expect(screen.getByText('Invite others')).toBeDefined();
+
+      // Controlled: force 'analytics'.
+      rerender(<CollapsibleSection sections={sections} forcedActiveKey="analytics" />);
+      expect(screen.getByText('Grade breakdown')).toBeDefined();
+
+      // Drop back to uncontrolled. The forced value must not leak — the
+      // component resets to the original default ('invite').
+      rerender(<CollapsibleSection sections={sections} />);
+      expect(screen.getByText('Invite others')).toBeDefined();
+      expect(screen.queryByText('Grade breakdown')).toBeNull();
+    });
+
+    it('transitioning back to uncontrolled with no default collapses to null', () => {
+      const sections = makeSections(); // no defaultActive
+      const { rerender } = render(<CollapsibleSection sections={sections} forcedActiveKey="invite" />);
+      expect(screen.getByText('Invite others')).toBeDefined();
+
+      rerender(<CollapsibleSection sections={sections} />);
+      expect(screen.queryByText('Invite others')).toBeNull();
+      expect(screen.queryByText('Recent activity')).toBeNull();
+      expect(screen.queryByText('Grade breakdown')).toBeNull();
+    });
   });
 });

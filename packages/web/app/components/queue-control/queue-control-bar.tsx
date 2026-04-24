@@ -38,7 +38,7 @@ import { useBoardProvider } from '../board-provider/board-provider-context';
 import ClimbThumbnail from '../climb-card/climb-thumbnail';
 import ClimbTitle from '../climb-card/climb-title';
 import { themeTokens } from '@/app/theme/theme-config';
-import { TOUR_CLOSE_PLAY_VIEW_EVENT, TOUR_OPEN_QUEUE_DRAWER_EVENT } from '../onboarding/onboarding-tour-events';
+import { TOUR_CLOSE_PLAY_VIEW_EVENT } from '../onboarding/onboarding-tour-events';
 import { ShareBoardButton } from '../board-page/share-button';
 import {
   useCardSwipeNavigation,
@@ -156,16 +156,6 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
         clearTimeout(enterFallbackRef.current);
       }
     };
-  }, []);
-
-  // Listen for tour events to open/close the queue drawer
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const { open } = (e as CustomEvent<{ open: boolean }>).detail;
-      setActiveDrawer(open ? 'queue' : 'none');
-    };
-    window.addEventListener(TOUR_OPEN_QUEUE_DRAWER_EVENT, handler);
-    return () => window.removeEventListener(TOUR_OPEN_QUEUE_DRAWER_EVENT, handler);
   }, []);
 
   // Tour hook: close the play view drawer on demand (e.g. before showing the
@@ -862,7 +852,7 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
           <div
             className={`${styles.sessionHeaderWrapper} ${!tickBarActive && !tickRowVisible ? styles.sessionHeaderExpanded : ''}`}
           >
-            <div className={styles.sessionHeaderInner}>
+            <div className={styles.sessionHeaderInner} data-tour-anchor="session-mini-bar">
               {/* Offline overlay on session header */}
               {isDisconnected && !dismissedDisconnect && (
                 <div
@@ -892,7 +882,6 @@ const QueueControlBar: React.FC<QueueControlBarProps> = ({ boardDetails, angle }
               {activeSession ? (
                 <div
                   className={styles.sessionHeader}
-                  data-tour-anchor="session-mini-bar"
                   onClick={dispatchOpenSeshSettingsDrawer}
                   role="button"
                   tabIndex={0}

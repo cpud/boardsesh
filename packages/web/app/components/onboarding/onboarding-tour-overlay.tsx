@@ -44,12 +44,23 @@ function useAnchorElement(selectors: string[] | null, active: boolean): HTMLElem
     }
 
     let cancelled = false;
+    let pollId: number | null = null;
+
+    const stopPolling = () => {
+      if (pollId !== null) {
+        window.clearInterval(pollId);
+        pollId = null;
+      }
+    };
 
     const resolve = () => {
       if (cancelled) return;
       const current = selectorsRef.current;
       const found = current && current.length > 0 ? findAnchor(current) : null;
       setEl((prev) => (prev === found ? prev : found));
+      // Once we've located the anchor, the fallback poll has done its job —
+      // layout/mutation observers cover everything after that.
+      if (found) stopPolling();
     };
 
     resolve();
@@ -62,11 +73,12 @@ function useAnchorElement(selectors: string[] | null, active: boolean): HTMLElem
     window.addEventListener('scroll', onLayoutChange, true);
     window.addEventListener('resize', onLayoutChange);
 
-    // Fallback poll for the first 2 seconds in case MutationObserver misses
+    // Fallback poll for the first 2 seconds in case MutationObserver misses.
+    // Cleared by resolve() as soon as the anchor is found.
     const start = Date.now();
-    const pollId = window.setInterval(() => {
+    pollId = window.setInterval(() => {
       if (Date.now() - start > ANCHOR_POLL_MS) {
-        window.clearInterval(pollId);
+        stopPolling();
         return;
       }
       resolve();
@@ -77,7 +89,7 @@ function useAnchorElement(selectors: string[] | null, active: boolean): HTMLElem
       observer.disconnect();
       window.removeEventListener('scroll', onLayoutChange, true);
       window.removeEventListener('resize', onLayoutChange);
-      window.clearInterval(pollId);
+      stopPolling();
     };
   }, [active]);
 

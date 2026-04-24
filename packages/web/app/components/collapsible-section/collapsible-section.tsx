@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styles from './collapsible-section.module.css';
 
 export type CollapsibleSectionConfig = {
@@ -28,11 +28,20 @@ type CollapsibleSectionProps = {
 
 const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({ sections, defaultActiveKey, forcedActiveKey }) => {
   const sectionDefaultActive = sections.find((s) => s.defaultActive);
-  const [activeKey, setActiveKey] = useState<string | null>(sectionDefaultActive?.key ?? defaultActiveKey ?? null);
+  const initialActiveKey = sectionDefaultActive?.key ?? defaultActiveKey ?? null;
+  const [activeKey, setActiveKey] = useState<string | null>(initialActiveKey);
+  // Preserve the initial default so we can restore it if we transition back
+  // from controlled (forcedActiveKey set) to uncontrolled mode.
+  const initialActiveKeyRef = useRef(initialActiveKey);
 
   useEffect(() => {
-    if (forcedActiveKey === undefined) return;
-    setActiveKey(forcedActiveKey);
+    if (forcedActiveKey !== undefined) {
+      setActiveKey(forcedActiveKey);
+    } else {
+      // Transitioned back to uncontrolled — snap back to the original default
+      // so the last forced value doesn't leak into user-driven mode.
+      setActiveKey(initialActiveKeyRef.current);
+    }
   }, [forcedActiveKey]);
 
   const effectiveActiveKey = forcedActiveKey !== undefined ? forcedActiveKey : activeKey;

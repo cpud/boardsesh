@@ -128,7 +128,6 @@ vi.mock('@/app/components/session-creation/start-sesh-drawer', () => ({
 }));
 
 vi.mock('@/app/components/onboarding/onboarding-tour-events', () => ({
-  TOUR_OPEN_QUEUE_DRAWER_EVENT: 'onboarding:open-queue-drawer',
   TOUR_CLOSE_PLAY_VIEW_EVENT: 'onboarding:close-play-view',
 }));
 
