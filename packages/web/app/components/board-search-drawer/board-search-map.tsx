@@ -61,6 +61,10 @@ export default function BoardSearchMap({
   const centerRef = useRef(center);
   const zoomRef = useRef(zoom);
   const selectedBoardUuidRef = useRef(selectedBoardUuid);
+  // Tracks whether the init effect has torn down. Guards deferred Leaflet
+  // access (debounced setTimeout, one-shot moveend) from firing after
+  // map.remove() — reading a destroyed map's _mapPane throws.
+  const cancelledRef = useRef(false);
   const [mapReady, setMapReady] = useState(false);
   const [pendingMyLocation, setPendingMyLocation] = useState(false);
 
@@ -75,7 +79,13 @@ export default function BoardSearchMap({
     const container = containerRef.current;
     if (!container) return;
 
+    // Per-invocation cancellation for the async Leaflet import. Must stay a
+    // local `let` (not a ref): under React Strict Mode the effect runs twice,
+    // and the first run's Promise.all callback must see its own `cancelled`
+    // — a shared ref would be reset to false by the second mount and the
+    // stale callback would create a second map on the same container.
     let cancelled = false;
+    cancelledRef.current = false;
     let resizeObserver: ResizeObserver | null = null;
 
     const markersByUuid = markersByUuidRef.current;
@@ -113,6 +123,11 @@ export default function BoardSearchMap({
         }
         if (viewportTimerRef.current) clearTimeout(viewportTimerRef.current);
         viewportTimerRef.current = setTimeout(() => {
+          // A moveend can re-arm this timer mid-cleanup (e.g. from flyTo's
+          // tail animation or from invalidateSize during teardown). Bail out
+          // if the map has been removed — getCenter() would throw on a
+          // destroyed _mapPane.
+          if (cancelledRef.current || mapRef.current !== map) return;
           const c = map.getCenter();
           onViewportChangeRef.current({
             lat: Math.round(c.lat * 1000000) / 1000000,
@@ -142,12 +157,16 @@ export default function BoardSearchMap({
 
     return () => {
       cancelled = true;
+      cancelledRef.current = true;
       if (viewportTimerRef.current) clearTimeout(viewportTimerRef.current);
       if (resizeObserver) {
         resizeObserver.disconnect();
         resizeObserver = null;
       }
       if (mapRef.current) {
+        // Detach moveend before remove() so teardown-time events can't
+        // re-arm fireViewport's setTimeout.
+        mapRef.current.off('moveend');
         mapRef.current.remove();
         mapRef.current = null;
         markersLayerRef.current = null;
@@ -267,6 +286,7 @@ export default function BoardSearchMap({
     // FIFO ordering — if that ever changes, fireViewport must not clear the flag
     // before the once() handler has read it.
     map.once('moveend', () => {
+      if (cancelledRef.current || mapRef.current !== map) return;
       const c = map.getCenter();
       onViewportChangeRef.current({
         lat: Math.round(c.lat * 1000000) / 1000000,
