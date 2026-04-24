@@ -1,7 +1,7 @@
 .bottomBarWrapper {
   --tab-bar-top-radius: 16px;
   --tab-bar-bottom-radius: 16px;
-  --tab-bar-safe-area-padding: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --tab-bar-safe-area-padding: var(--safe-area-inset-bottom);
   --tab-bar-bottom-extension: 0px;
   position: fixed;
   bottom: 0;
@@ -16,8 +16,10 @@
    is already handled: on Android the @capacitor-community/safe-area plugin
    pads the WebView decorView (Chromium < 140) or passes real insets through
    to env() (Chromium 140+); on iOS WKWebView env() reports home-indicator
-   inset natively. The wrapper's inner --safe-area-inset-bottom picks up
-   whatever env() reports — no extra Android floor is needed. */
+   inset natively. --tab-bar-safe-area-padding (inherited from the base
+   .bottomBarWrapper rule above, which reads --safe-area-inset-bottom from
+   :root) therefore picks up the correct inset automatically — no extra
+   Android floor or native-specific override is needed here. */
 .nativeApp {
   --tab-bar-top-radius: 0px;
   --tab-bar-bottom-radius: 0px;

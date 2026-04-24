@@ -94,14 +94,22 @@
        correctly reports 0 (no inset remaining to account for). Single
        source of truth in both Android branches.
      - Desktop and mobile web browsers: env() reports 0 unless the browser
-       itself has a UI chrome inset (Mobile Safari bottom chrome). */
+       itself has a UI chrome inset (Mobile Safari bottom chrome).
+
+     Consumers use `var(--safe-area-inset-*)` directly, no `env()` fallback
+     — these vars are always defined here, so the fallback is dead code.
+     The one exception is the iOS Safari `@supports (-webkit-touch-callout:
+     none)` block in bottom-bar-wrapper.module.css, which uses raw `env()`
+     directly inside its nested calc/max expression. iOS Safari has a
+     long-standing bug where var-of-env collapses to 0 inside such
+     expressions, so raw env() is the only reliable option there. */
   --safe-area-inset-top: env(safe-area-inset-top, 0px);
   --safe-area-inset-right: env(safe-area-inset-right, 0px);
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-inset-left: env(safe-area-inset-left, 0px);
 
   /* Layout */
-  --global-header-height: calc(max(8dvh, 48px) + var(--safe-area-inset-top, env(safe-area-inset-top, 0px)));
+  --global-header-height: calc(max(8dvh, 48px) + var(--safe-area-inset-top));
 
   /* Tap highlight (Android/mobile browsers) */
   --tap-highlight: transparent;
