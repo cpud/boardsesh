@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import type { Climb } from '@/app/lib/types';
 import { canAddClimbToBoard } from '@/app/lib/board-compatibility';
 import { useActiveBoardLock } from './use-active-board-lock';
-import { useQueueBridgeBoardInfo } from '../queue-control/queue-bridge-context';
+import { useQueueBridgeBoardInfo } from '../queue-control/queue-bridge-board-info-context';
 import { useSnackbar } from '../providers/snackbar-provider';
 import { queueAddErrorMessage } from './queue-add-error-messages';
 

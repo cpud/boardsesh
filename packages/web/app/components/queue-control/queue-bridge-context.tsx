@@ -64,31 +64,13 @@ function deriveSeedStateFromClimb(climb: Climb): { boardDetails: BoardDetails; b
 
 // -------------------------------------------------------------------
 // Board info context (for the root-level bottom bar to know what board is active)
+// Extracted to ./queue-bridge-board-info-context so consumers (e.g. board-lock
+// hooks) can import it without forming an import cycle through this file.
 // -------------------------------------------------------------------
 
-interface QueueBridgeBoardInfo {
-  boardDetails: BoardDetails | null;
-  angle: Angle;
-  hasActiveQueue: boolean;
-  /**
-   * True once the persistent session has finished restoring from IndexedDB
-   * (or immediately when a board-route injector is active). Consumers that
-   * want to read `hasActiveQueue`/`boardDetails` on mount must wait for this
-   * flag — otherwise they race the async restore and see stale defaults.
-   */
-  isHydrated: boolean;
-}
+import { QueueBridgeBoardInfoContext, type QueueBridgeBoardInfo } from './queue-bridge-board-info-context';
 
-const QueueBridgeBoardInfoContext = createContext<QueueBridgeBoardInfo>({
-  boardDetails: null,
-  angle: 0,
-  hasActiveQueue: false,
-  isHydrated: false,
-});
-
-export function useQueueBridgeBoardInfo() {
-  return useContext(QueueBridgeBoardInfoContext);
-}
+export { useQueueBridgeBoardInfo } from './queue-bridge-board-info-context';
 
 // -------------------------------------------------------------------
 // Setter context (for the injector to push board-route context into the bridge)

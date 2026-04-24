@@ -2,7 +2,7 @@
 
 import { usePersistentSessionState } from '../persistent-session';
 import { useBluetoothConnectedStatus } from '../board-bluetooth-control/bluetooth-status-store';
-import { useQueueBridgeBoardInfo } from '../queue-control/queue-bridge-context';
+import { useQueueBridgeBoardInfo } from '../queue-control/queue-bridge-board-info-context';
 import type { BoardDetails } from '@/app/lib/types';
 
 export type BoardLockReason = 'session' | 'bluetooth';

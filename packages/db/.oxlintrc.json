@@ -1,8 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
-  "plugins": ["typescript"],
-  "rules": {
-    "@typescript-eslint/no-explicit-any": "deny"
-  },
+  "extends": ["../../.oxlintrc.json"],
+  "plugins": ["typescript", "import"],
   "ignorePatterns": ["dist/**", "node_modules/**", "drizzle/**"]
 }
