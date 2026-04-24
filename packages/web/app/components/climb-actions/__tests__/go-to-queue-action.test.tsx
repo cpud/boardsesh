@@ -126,7 +126,7 @@ const defaultProps: ClimbActionProps = {
  */
 function TestGoToQueueAction(props: ClimbActionProps) {
   const result = GoToQueueAction(props);
-  return <>{result.element}</>;
+  return result.element;
 }
 
 /**

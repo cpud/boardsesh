@@ -841,142 +841,140 @@ const PlayViewDrawer: React.FC<PlayViewDrawerProps> = ({ activeDrawer, setActive
   ]);
 
   return (
-    <>
-      <SwipeableDrawer
-        placement="bottom"
-        height="100%"
-        fullHeight
-        open={drawerOpen}
-        onClose={handleClose}
-        onTransitionEnd={handleTransitionEnd}
-        keepMounted
-        paperRef={playPaperRef}
-        swipeEnabled={!isActionsOpen && !isQueueOpen && !isPlaylistSelectorOpen}
-        showDragHandle
-        styles={{
-          body: { padding: 0 },
-          wrapper: { height: '100%', backgroundColor: 'var(--semantic-background)' },
-        }}
-      >
-        {contentReady || isOpen ? (
-          <>
-            <IconButton
-              size="small"
-              onClick={handleClose}
-              aria-label="Close"
-              sx={{
-                position: 'absolute',
-                top: 8,
-                right: 8,
-                zIndex: 2,
-                color: 'text.primary',
-                backgroundColor: 'action.selected',
-                '&:hover': { backgroundColor: 'action.focus' },
+    <SwipeableDrawer
+      placement="bottom"
+      height="100%"
+      fullHeight
+      open={drawerOpen}
+      onClose={handleClose}
+      onTransitionEnd={handleTransitionEnd}
+      keepMounted
+      paperRef={playPaperRef}
+      swipeEnabled={!isActionsOpen && !isQueueOpen && !isPlaylistSelectorOpen}
+      showDragHandle
+      styles={{
+        body: { padding: 0 },
+        wrapper: { height: '100%', backgroundColor: 'var(--semantic-background)' },
+      }}
+    >
+      {contentReady || isOpen ? (
+        <>
+          <IconButton
+            size="small"
+            onClick={handleClose}
+            aria-label="Close"
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              zIndex: 2,
+              color: 'text.primary',
+              backgroundColor: 'action.selected',
+              '&:hover': { backgroundColor: 'action.focus' },
+            }}
+          >
+            <CloseOutlined />
+          </IconButton>
+          <div
+            className={styles.drawerContent}
+            onTouchStart={handleBoardTouchStart}
+            onTouchMove={handleBoardTouchMove}
+            onTouchEnd={handleBoardTouchEnd}
+          >
+            {currentClimb ? (
+              <PlayDrawerContent
+                climb={currentClimb}
+                boardType={boardDetails.board_name}
+                angle={currentAngle}
+                sectionsEnabled={sectionsEverEnabled && isOpen}
+                aboveFold={aboveFold}
+              />
+            ) : (
+              <ClimbDetailShellClient mode="play" sections={[]} aboveFold={null} />
+            )}
+          </div>
+
+          {/* Climb actions drawer */}
+          {isOpen && currentClimb && isActionsOpen && (
+            <SwipeableDrawer
+              placement="bottom"
+              title={
+                currentClimb ? (
+                  <div data-swipe-blocked="" {...actionsDragHandlers} className={drawerCss.dragHeaderWrapper}>
+                    <DrawerClimbHeader climb={currentClimb} boardDetails={boardDetails} />
+                  </div>
+                ) : undefined
+              }
+              height="60%"
+              paperRef={actionsPaperRef}
+              open={isActionsOpen}
+              onClose={handleCloseActions}
+              swipeEnabled={false}
+              disablePortal
+              styles={{
+                wrapper: {
+                  touchAction: 'pan-y' as const,
+                  transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                },
+                body: { padding: `${themeTokens.spacing[2]}px 0` },
               }}
             >
-              <CloseOutlined />
-            </IconButton>
-            <div
-              className={styles.drawerContent}
-              onTouchStart={handleBoardTouchStart}
-              onTouchMove={handleBoardTouchMove}
-              onTouchEnd={handleBoardTouchEnd}
+              <ClimbActions
+                climb={currentClimb}
+                boardDetails={boardDetails}
+                angle={currentAngle}
+                currentPathname={pathname}
+                viewMode="list"
+                onOpenPlaylistSelector={() => {
+                  setIsActionsOpen(false);
+                  setIsPlaylistSelectorOpen(true);
+                }}
+                onActionComplete={handleCloseActions}
+                onGoToQueue={handleGoToQueueFromActions}
+              />
+            </SwipeableDrawer>
+          )}
+
+          {/* Playlist selector drawer */}
+          {isOpen && currentClimb && isPlaylistSelectorOpen && (
+            <SwipeableDrawer
+              title={<DrawerClimbHeader climb={currentClimb} boardDetails={boardDetails} />}
+              placement="bottom"
+              open={isPlaylistSelectorOpen}
+              onClose={handleClosePlaylist}
+              paperRef={playlistSwipe.paperRef}
+              swipeEnabled={false}
+              disablePortal
+              styles={{
+                wrapper: { height: 'auto', maxHeight: '70vh' },
+                body: { padding: 0 },
+                header: {
+                  paddingLeft: `${themeTokens.spacing[3]}px`,
+                  paddingRight: `${themeTokens.spacing[3]}px`,
+                },
+              }}
             >
-              {currentClimb ? (
-                <PlayDrawerContent
-                  climb={currentClimb}
-                  boardType={boardDetails.board_name}
-                  angle={currentAngle}
-                  sectionsEnabled={sectionsEverEnabled && isOpen}
-                  aboveFold={aboveFold}
-                />
-              ) : (
-                <ClimbDetailShellClient mode="play" sections={[]} aboveFold={null} />
-              )}
-            </div>
+              <PlaylistSelectionContent
+                climbUuid={currentClimb.uuid}
+                boardDetails={boardDetails}
+                angle={currentAngle}
+                onDone={handleClosePlaylist}
+              />
+            </SwipeableDrawer>
+          )}
+        </>
+      ) : null}
 
-            {/* Climb actions drawer */}
-            {isOpen && currentClimb && isActionsOpen && (
-              <SwipeableDrawer
-                placement="bottom"
-                title={
-                  currentClimb ? (
-                    <div data-swipe-blocked="" {...actionsDragHandlers} className={drawerCss.dragHeaderWrapper}>
-                      <DrawerClimbHeader climb={currentClimb} boardDetails={boardDetails} />
-                    </div>
-                  ) : undefined
-                }
-                height="60%"
-                paperRef={actionsPaperRef}
-                open={isActionsOpen}
-                onClose={handleCloseActions}
-                swipeEnabled={false}
-                disablePortal
-                styles={{
-                  wrapper: {
-                    touchAction: 'pan-y' as const,
-                    transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  },
-                  body: { padding: `${themeTokens.spacing[2]}px 0` },
-                }}
-              >
-                <ClimbActions
-                  climb={currentClimb}
-                  boardDetails={boardDetails}
-                  angle={currentAngle}
-                  currentPathname={pathname}
-                  viewMode="list"
-                  onOpenPlaylistSelector={() => {
-                    setIsActionsOpen(false);
-                    setIsPlaylistSelectorOpen(true);
-                  }}
-                  onActionComplete={handleCloseActions}
-                  onGoToQueue={handleGoToQueueFromActions}
-                />
-              </SwipeableDrawer>
-            )}
-
-            {/* Playlist selector drawer */}
-            {isOpen && currentClimb && isPlaylistSelectorOpen && (
-              <SwipeableDrawer
-                title={<DrawerClimbHeader climb={currentClimb} boardDetails={boardDetails} />}
-                placement="bottom"
-                open={isPlaylistSelectorOpen}
-                onClose={handleClosePlaylist}
-                paperRef={playlistSwipe.paperRef}
-                swipeEnabled={false}
-                disablePortal
-                styles={{
-                  wrapper: { height: 'auto', maxHeight: '70vh' },
-                  body: { padding: 0 },
-                  header: {
-                    paddingLeft: `${themeTokens.spacing[3]}px`,
-                    paddingRight: `${themeTokens.spacing[3]}px`,
-                  },
-                }}
-              >
-                <PlaylistSelectionContent
-                  climbUuid={currentClimb.uuid}
-                  boardDetails={boardDetails}
-                  angle={currentAngle}
-                  onDone={handleClosePlaylist}
-                />
-              </SwipeableDrawer>
-            )}
-          </>
-        ) : null}
-
-        {/* Queue list drawer */}
-        {queueMounted && (
-          <QueueDrawer
-            open={isQueueOpen}
-            onClose={handleCloseQueueDrawer}
-            onTransitionEnd={handleQueueTransitionEnd}
-            boardDetails={boardDetails}
-          />
-        )}
-      </SwipeableDrawer>
-    </>
+      {/* Queue list drawer */}
+      {queueMounted && (
+        <QueueDrawer
+          open={isQueueOpen}
+          onClose={handleCloseQueueDrawer}
+          onTransitionEnd={handleQueueTransitionEnd}
+          boardDetails={boardDetails}
+        />
+      )}
+    </SwipeableDrawer>
   );
 };
 

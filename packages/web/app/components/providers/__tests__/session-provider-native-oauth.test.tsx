@@ -5,7 +5,7 @@ import React from 'react';
 // Mock next-auth/react
 const mockSignIn = vi.fn();
 vi.mock('next-auth/react', () => ({
-  SessionProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  SessionProvider: ({ children }: { children: React.ReactNode }) => children,
   signIn: (...args: unknown[]) => mockSignIn(...args),
 }));
 

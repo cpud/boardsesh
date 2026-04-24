@@ -352,7 +352,7 @@ function DropdownActionRenderer({
 
   // Render any elements needed in DOM (modals, drawers, etc.)
   if (!result.available || !result.element) return null;
-  return <>{result.element}</>;
+  return result.element;
 }
 
 export default ClimbActions;

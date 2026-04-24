@@ -1466,23 +1466,21 @@ export default function CreateClimbForm({
       {/* Bottom icon row — all actions, Save pinned right */}
       <div className={styles.bottomControls}>
         {boardType === 'aurora' && (
-          <>
-            <MuiTooltip title={showHeatmap ? 'Hide heatmap' : 'Show which holds get used most'}>
-              <IconButton
-                color={showHeatmap ? 'error' : 'default'}
-                size="small"
-                onClick={handleToggleHeatmap}
-                className={styles.heatmapButton}
-                aria-label={showHeatmap ? 'Hide heatmap' : 'Show heatmap'}
-              >
-                {showHeatmap && isHeatmapLoading ? (
-                  <CircularProgress size={16} />
-                ) : (
-                  <LocalFireDepartmentOutlined fontSize="small" />
-                )}
-              </IconButton>
-            </MuiTooltip>
-          </>
+          <MuiTooltip title={showHeatmap ? 'Hide heatmap' : 'Show which holds get used most'}>
+            <IconButton
+              color={showHeatmap ? 'error' : 'default'}
+              size="small"
+              onClick={handleToggleHeatmap}
+              className={styles.heatmapButton}
+              aria-label={showHeatmap ? 'Hide heatmap' : 'Show heatmap'}
+            >
+              {showHeatmap && isHeatmapLoading ? (
+                <CircularProgress size={16} />
+              ) : (
+                <LocalFireDepartmentOutlined fontSize="small" />
+              )}
+            </IconButton>
+          </MuiTooltip>
         )}
         <ConfirmPopover
           title="Clear climb"

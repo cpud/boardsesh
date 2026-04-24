@@ -252,20 +252,18 @@ export default function LibraryPageContent({
   // Error state (only for authenticated users with fetch errors)
   if (isAuthenticated && error) {
     return (
-      <>
-        <div className={styles.errorContainer}>
-          <SentimentDissatisfiedOutlined className={styles.errorIcon} />
-          <Typography variant="h6" component="h4" sx={{ mb: 1 }}>
-            Unable to Load Library
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            There was an error loading your library. Please try again.
-          </Typography>
-          <MuiButton variant="outlined" onClick={fetchUserData}>
-            Try Again
-          </MuiButton>
-        </div>
-      </>
+      <div className={styles.errorContainer}>
+        <SentimentDissatisfiedOutlined className={styles.errorIcon} />
+        <Typography variant="h6" component="h4" sx={{ mb: 1 }}>
+          Unable to Load Library
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          There was an error loading your library. Please try again.
+        </Typography>
+        <MuiButton variant="outlined" onClick={fetchUserData}>
+          Try Again
+        </MuiButton>
+      </div>
     );
   }
 

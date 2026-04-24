@@ -68,7 +68,7 @@ vi.mock('@/app/lib/open-external-url', () => ({
 const mockUseOptionalBoardProvider = vi.fn();
 vi.mock('../../board-provider/board-provider-context', () => ({
   useOptionalBoardProvider: () => mockUseOptionalBoardProvider(),
-  BoardProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  BoardProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('@/app/hooks/use-my-boards', () => ({
@@ -100,7 +100,7 @@ vi.mock('../../swipeable-drawer/swipeable-drawer', () => ({
 }));
 
 vi.mock('../action-tooltip', () => ({
-  ActionTooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  ActionTooltip: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('../../logbook/log-ascent-drawer', () => ({
@@ -166,7 +166,7 @@ function captureActionResult(
 function renderAction(actionFn: (props: ClimbActionProps) => ClimbActionResult, props: ClimbActionProps) {
   function TestAction() {
     const result = actionFn(props);
-    return <>{result.element}</>;
+    return result.element;
   }
 
   return render(<TestAction />);
@@ -219,7 +219,7 @@ describe('Action label text', () => {
 
       // The menuItem label is a Link element wrapping the text for fork action
       // when a URL is available, so we render the element to check the text
-      const { container } = render(<>{result.menuItem.label}</>);
+      const { container } = render(result.menuItem.label);
       expect(container.textContent).toBe('Remix this climb');
     });
 
@@ -241,7 +241,7 @@ describe('Action label text', () => {
         viewMode: 'dropdown',
       });
 
-      const { container } = render(<>{result.menuItem.label}</>);
+      const { container } = render(result.menuItem.label);
       expect(container.textContent).toBe('Edit');
     });
 

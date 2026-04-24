@@ -94,7 +94,7 @@ describe('PlaylistAction (list mode)', () => {
     const onComplete = vi.fn();
     const { result } = renderHook(() => PlaylistAction(createProps({ onOpenPlaylistSelector, onComplete })));
 
-    render(<>{result.current.element}</>);
+    render(result.current.element);
     fireEvent.click(screen.getByRole('button', { name: /add to playlist/i }));
 
     expect(onOpenPlaylistSelector).toHaveBeenCalledTimes(1);
@@ -117,7 +117,7 @@ describe('PlaylistAction (list mode)', () => {
     const onComplete = vi.fn();
     const { result } = renderHook(() => PlaylistAction(createProps({ onOpenPlaylistSelector, onComplete })));
 
-    render(<>{result.current.element}</>);
+    render(result.current.element);
     fireEvent.click(screen.getByRole('button', { name: /add to playlist/i }));
 
     expect(onOpenPlaylistSelector).not.toHaveBeenCalled();

@@ -31,7 +31,7 @@ export function ActionTooltip({ children, ...props }: ActionTooltipProps) {
   // On touch devices, render children without tooltip wrapper
   // This ensures taps immediately trigger the action
   if (isTouchDevice) {
-    return <>{children}</>;
+    return children;
   }
 
   return <MuiTooltip {...props}>{children}</MuiTooltip>;

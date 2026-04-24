@@ -61,7 +61,7 @@ vi.mock('../../climb-actions/playlist-selection-content', () => ({
 }));
 
 vi.mock('../../error-boundary', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  default: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('../board-page-skeleton', () => ({

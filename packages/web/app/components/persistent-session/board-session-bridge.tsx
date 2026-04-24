@@ -72,7 +72,7 @@ const BoardSessionBridge: React.FC<BoardSessionBridgeProps> = ({ boardDetails, p
     activateSession,
   ]);
 
-  return <>{children}</>;
+  return children;
 };
 
 export default BoardSessionBridge;

@@ -128,7 +128,7 @@ vi.mock('../../swipeable-drawer/swipeable-drawer', () => ({
 }));
 
 vi.mock('../action-tooltip', () => ({
-  ActionTooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  ActionTooltip: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('@/app/components/providers/auth-modal-provider', () => ({
@@ -224,7 +224,7 @@ const mockTensionBoard = createMockUserBoard({
  */
 function TestTickAction(props: ClimbActionProps) {
   const result = TickAction(props);
-  return <>{result.element}</>;
+  return result.element;
 }
 
 // --- Helper to set up mock states ---

@@ -172,7 +172,7 @@ vi.mock('@/app/components/social/vote-button', () => ({
 }));
 
 vi.mock('@/app/components/social/vote-summary-context', () => ({
-  VoteSummaryProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  VoteSummaryProvider: ({ children }: { children: React.ReactNode }) => children,
   useVoteSummaryContext: () => null,
 }));
 
@@ -215,11 +215,11 @@ vi.mock('@/app/components/board-page/climbs-list', () => ({
 }));
 
 vi.mock('@/app/components/climb-actions/favorites-batch-context', () => ({
-  FavoritesProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  FavoritesProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('@/app/components/climb-actions/playlists-batch-context', () => ({
-  PlaylistsProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  PlaylistsProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('@/app/hooks/use-climb-actions-data', () => ({

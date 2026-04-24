@@ -96,15 +96,15 @@ vi.mock('../../persistent-session', () => ({
   usePersistentSession: () => mockPersistentSession,
   usePersistentSessionState: () => mockPersistentSession,
   usePersistentSessionActions: () => mockPersistentSession,
-  PersistentSessionProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  PersistentSessionProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('../../climb-actions/favorites-batch-context', () => ({
-  FavoritesProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  FavoritesProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('../../climb-actions/playlists-batch-context', () => ({
-  PlaylistsProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  PlaylistsProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('@/app/hooks/use-climb-actions-data', () => ({
