@@ -34,6 +34,12 @@ interface CapacitorAppPlugin {
   ): Promise<{ remove: () => Promise<void> }>;
 }
 
+interface CapacitorDevUrlPlugin {
+  getState(): Promise<{ isDebug: boolean; currentUrl: string | null; defaultUrl: string }>;
+  setUrl(options: { url: string }): Promise<void>;
+  clearUrl(): Promise<void>;
+}
+
 interface CapacitorGlobal {
   isNativePlatform(): boolean;
   getPlatform(): string;
@@ -43,6 +49,7 @@ interface CapacitorGlobal {
     KeepAwake?: CapacitorKeepAwakePlugin;
     Browser?: CapacitorBrowserPlugin;
     App?: CapacitorAppPlugin;
+    DevUrl?: CapacitorDevUrlPlugin;
     LiveActivity?: {
       isAvailable(): Promise<{ available: boolean }>;
       startSession(options: Record<string, unknown>): Promise<void>;

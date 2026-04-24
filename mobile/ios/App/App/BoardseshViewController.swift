@@ -8,6 +8,18 @@ class BoardseshViewController: CAPBridgeViewController {
         super.capacitorDidLoad()
         bridge?.registerPluginInstance(LiveActivityPlugin())
         bridge?.registerPluginInstance(HealthKitPlugin())
+        // DevUrlPlugin is auto-registered via the CAP_PLUGIN macro in DevUrlPlugin.m
+    }
+
+    override open func instanceDescriptor() -> InstanceDescriptor {
+        let descriptor = super.instanceDescriptor()
+        #if DEBUG
+        if let devUrl = DevUrlPlugin.currentOverride(), URL(string: devUrl) != nil {
+            descriptor.serverURL = devUrl
+            descriptor.allowedNavigationHostnames = ["*"]
+        }
+        #endif
+        return descriptor
     }
 
     override open func webViewConfiguration(for instanceConfiguration: InstanceConfiguration) -> WKWebViewConfiguration {

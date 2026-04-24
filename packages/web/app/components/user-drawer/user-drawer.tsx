@@ -32,7 +32,10 @@ import {
 } from '@/app/lib/url-utils';
 import { getDefaultAngleForBoard } from '@/app/lib/board-config-for-playlist';
 import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
+import BuildOutlined from '@mui/icons-material/BuildOutlined';
 import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
+import DevUrlDialog from '../dev-url-dialog/dev-url-dialog';
+import { useDevUrl } from '@/app/lib/dev-url';
 import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 import { HoldClassificationWizard } from '../hold-classification';
 import BoardDiscoveryScroll from '../board-scroll/board-discovery-scroll';
@@ -77,6 +80,8 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
   const [showMyBoards, setShowMyBoards] = useState(false);
   const [myBoardsRendered, setMyBoardsRendered] = useState(false);
   const [recentSessions, setRecentSessions] = useState<StoredSession[]>([]);
+  const [showDevUrl, setShowDevUrl] = useState(false);
+  const { isAvailable: devUrlAvailable } = useDevUrl();
 
   const { mode, toggleMode } = useColorMode();
   const isMoonboard = boardDetails?.board_name === 'moonboard';
@@ -306,6 +311,22 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
                 <span className={styles.menuItemLabel}>Settings</span>
               </Link>
 
+              {devUrlAvailable && (
+                <button
+                  type="button"
+                  className={styles.menuItem}
+                  onClick={() => {
+                    handleClose();
+                    setShowDevUrl(true);
+                  }}
+                >
+                  <span className={styles.menuItemIcon}>
+                    <BuildOutlined />
+                  </span>
+                  <span className={styles.menuItemLabel}>Dev URL</span>
+                </button>
+              )}
+
               {boardDetails && !isMoonboard && (
                 <button
                   type="button"
@@ -477,6 +498,8 @@ export default function UserDrawer({ boardDetails, boardConfigs }: UserDrawerPro
           }}
         />
       )}
+
+      {devUrlAvailable && <DevUrlDialog open={showDevUrl} onClose={() => setShowDevUrl(false)} />}
     </>
   );
 }

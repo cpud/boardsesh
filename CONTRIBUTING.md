@@ -50,6 +50,18 @@ You can also run pieces independently:
 - `vp run dev:backend` - Database + backend only
 - `vp run dev:web` - Database + web only
 
+## Testing web changes on Android
+
+You don't have to rebuild the Android app every time you change the web UI. The **debug APK** shipped with each main build includes a Dev URL switcher that points the in-app WebView at any origin you choose — a Tailscale tunnel to your laptop, a Vercel preview, etc.
+
+1. Grab `app-debug.apk` from the most recent [Android Build release](https://github.com/boardsesh/boardsesh/releases?q=android-build). Uninstall the release build first if you have it — both variants use the same package id.
+2. Install the APK (enable "Install unknown apps" for your source if Android prompts you).
+3. Open the app, tap the avatar in the top left, and choose **Dev URL** from the drawer.
+4. Paste your dev origin (e.g. `https://your-host.ts.net`) and tap **Save & restart**. The app relaunches against that URL.
+5. If the dev server dies and the WebView can't load, the offline fallback page shows a **Reset dev URL to production** link to get you back to `www.boardsesh.com`.
+
+The menu item is only visible in debug builds; release builds don't expose it.
+
 ## Keeping local data up to date
 
 ### Shared Data Sync (Public Climbs)
