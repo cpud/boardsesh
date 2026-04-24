@@ -2,7 +2,7 @@ import { v5 as uuidv5 } from 'uuid';
 import { db } from '../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { sql, eq, and, isNull, desc, inArray, gte } from 'drizzle-orm';
-import { recalculateSessionStats } from '../graphql/resolvers/social/session-mutations';
+import { recalculateSessionStats } from '../graphql/resolvers/social/session-stats';
 
 // Namespace UUID for generating deterministic inferred session IDs
 const INFERRED_SESSION_NAMESPACE = '6ba7b812-9dad-11d1-80b4-00c04fd430c8';
