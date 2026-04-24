@@ -19,7 +19,7 @@ const { mockState, resetMockState } = vi.hoisted(() => {
     invalidateSize: ReturnType<typeof vi.fn>;
     flyTo: ReturnType<typeof vi.fn>;
   };
-  const state: { handlers: Handlers; map: MockMap | null; LMap: ReturnType<typeof vi.fn> | null } = {
+  const state: { handlers: Handlers; map: MockMap | null; LMap: ((...args: unknown[]) => MockMap | null) | null } = {
     handlers: { moveend: [], once: [] },
     map: null,
     LMap: null,
