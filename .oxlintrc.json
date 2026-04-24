@@ -51,7 +51,8 @@
     "typescript/no-useless-empty-export": "error",
     "typescript/no-wrapper-object-types": "error",
     "typescript/prefer-as-const": "error",
-    "typescript/prefer-function-type": "error"
+    "typescript/prefer-function-type": "error",
+    "import/default": "error"
   },
   "ignorePatterns": [
     "dist/**",
