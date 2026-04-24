@@ -7,7 +7,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { getDb } from '@/app/lib/db/db';
 import * as schema from '@/app/lib/db/schema';
 import { and, eq, isNull } from 'drizzle-orm';
-import bcrypt from 'bcryptjs';
+import { compare } from 'bcryptjs';
 import { verifyNativeOAuthTransferToken } from '@/app/lib/auth/native-oauth-transfer';
 
 // Build providers array conditionally based on available env vars
@@ -120,7 +120,7 @@ providers.push(
       }
 
       // Verify password
-      const isValidPassword = await bcrypt.compare(credentials.password, userCredentials[0].passwordHash);
+      const isValidPassword = await compare(credentials.password, userCredentials[0].passwordHash);
 
       if (!isValidPassword) {
         return null;

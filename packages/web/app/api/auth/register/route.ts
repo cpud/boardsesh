@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/app/lib/db/db';
 import * as schema from '@/app/lib/db/schema';
-import bcrypt from 'bcryptjs';
+import { hash } from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { sendVerificationEmail } from '@/app/lib/email/email-service';
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     // Create new user
     const userId = crypto.randomUUID();
-    const passwordHash = await bcrypt.hash(password, 12);
+    const passwordHash = await hash(password, 12);
     const verificationToken = emailVerificationEnabled ? crypto.randomUUID() : null;
     const tokenExpires = emailVerificationEnabled ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null; // 24 hours
 
