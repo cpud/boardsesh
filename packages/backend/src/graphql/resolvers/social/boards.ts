@@ -669,15 +669,34 @@ export const socialBoardQueries = {
       userId,
     );
 
-    // Strip sensitive fields for unauthenticated callers
+    // Allowlist fields for unauthenticated callers — strip all sensitive/UGC data.
+    // Public boards keep name/description/locationName; non-public boards get config only.
     if (!ctx.isAuthenticated) {
-      return enriched.map((board) => ({
-        ...board,
-        latitude: null,
-        longitude: null,
-        ownerDisplayName: null,
-        ownerAvatarUrl: null,
-      }));
+      return enriched.map((board) => {
+        const base = {
+          uuid: board.uuid,
+          slug: board.slug,
+          serialNumber: board.serialNumber,
+          boardType: board.boardType,
+          layoutId: board.layoutId,
+          sizeId: board.sizeId,
+          setIds: board.setIds,
+          angle: board.angle,
+          isPublic: board.isPublic,
+          isUnlisted: board.isUnlisted,
+        };
+
+        if (board.isPublic) {
+          return {
+            ...base,
+            name: board.name,
+            description: board.description,
+            locationName: board.locationName,
+          };
+        }
+
+        return base;
+      });
     }
 
     return enriched;
