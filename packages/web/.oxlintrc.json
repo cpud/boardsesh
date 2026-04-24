@@ -17,7 +17,8 @@
     "nextjs/no-unwanted-polyfillio": "error",
     "react/jsx-boolean-value": ["error", "never"],
     "react/jsx-curly-brace-presence": "error",
-    "react/jsx-filename-extension": ["error", { "allow": "always", "extensions": ["jsx", "tsx"] }]
+    "react/jsx-filename-extension": ["error", { "allow": "always", "extensions": ["jsx", "tsx"] }],
+    "react/jsx-fragments": ["error", "syntax"]
   },
   "ignorePatterns": [".next/**", "out/**", "build/**", "next-env.d.ts", "node_modules/**", "**/board-controller/**"]
 }
