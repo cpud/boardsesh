@@ -44,7 +44,8 @@
     "typescript/no-this-alias": "error",
     "typescript/no-unnecessary-boolean-literal-compare": "error",
     "typescript/no-unnecessary-condition": "error",
-    "typescript/no-unnecessary-qualifier": "error"
+    "typescript/no-unnecessary-qualifier": "error",
+    "typescript/no-unnecessary-type-arguments": "error"
   },
   "ignorePatterns": [
     "dist/**",
