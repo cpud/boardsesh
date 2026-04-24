@@ -26,7 +26,8 @@
     "react/jsx-no-undef": "error",
     "react/jsx-no-useless-fragment": "error",
     "react/jsx-pascal-case": ["error", { "allowNamespace": true }],
-    "react/jsx-props-no-spread-multi": "error"
+    "react/jsx-props-no-spread-multi": "error",
+    "react/no-children-prop": "error"
   },
   "ignorePatterns": [".next/**", "out/**", "build/**", "next-env.d.ts", "node_modules/**", "**/board-controller/**"]
 }
