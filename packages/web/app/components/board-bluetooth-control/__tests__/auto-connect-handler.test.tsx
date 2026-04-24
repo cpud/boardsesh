@@ -27,12 +27,14 @@ vi.mock('../../graphql-queue', () => ({
   useQueueActions: () => ({ setCurrentClimb: mockSetCurrentClimb }),
 }));
 
+type ConnectFn = (initialFrames?: string, mirrored?: boolean, targetSerial?: string) => Promise<boolean>;
+
 describe('AutoConnectHandler', () => {
-  let mockConnect: ReturnType<typeof vi.fn>;
+  let mockConnect: ReturnType<typeof vi.fn<ConnectFn>>;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockConnect = vi.fn().mockResolvedValue(true);
+    mockConnect = vi.fn<ConnectFn>().mockResolvedValue(true);
     mockSearchParams = new URLSearchParams();
     mockSearchData = {
       climbSearchResults: [
