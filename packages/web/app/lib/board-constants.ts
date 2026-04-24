@@ -15,13 +15,6 @@ import { BOARD_IMAGE_DIMENSIONS } from './board-data';
 import type { BoardName, HoldTuple } from './types';
 
 export * from '@boardsesh/board-constants/product-sizes';
-export type {
-  HoldTuple,
-  LayoutData,
-  ProductSizeData,
-  SetData,
-  SizeEdges,
-} from '@boardsesh/board-constants/product-sizes';
 
 export const AURORA_BOARD_NAMES = [...AURORA_BOARDS];
 export const KILTER_HOMEWALL_LAYOUT_ID = 8;
