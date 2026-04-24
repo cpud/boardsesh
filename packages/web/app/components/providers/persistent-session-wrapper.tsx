@@ -29,6 +29,7 @@ import { isNativeApp } from '@/app/lib/ble/capacitor-utils';
 import dynamic from 'next/dynamic';
 import { SESH_SETTINGS_DRAWER_EVENT } from '../sesh-settings/sesh-settings-drawer-event';
 import { BoardSwitchConfirmProvider } from '../board-lock/board-switch-confirm-provider';
+import { FeedbackPromptBanner } from '../feedback/feedback-prompt-banner';
 
 const SeshSettingsDrawer = dynamic(() => import('../sesh-settings/sesh-settings-drawer'), {
   ssr: false,
@@ -137,6 +138,7 @@ export function RootBottomBar({ boardConfigs }: { boardConfigs: BoardConfigData 
       className={`${bottomBarStyles.bottomBarWrapper} ${isNative ? bottomBarStyles.nativeApp : ''}`}
       data-testid="bottom-bar-wrapper"
     >
+      <FeedbackPromptBanner />
       {hasActiveQueue && boardDetails && (
         <ErrorBoundary>
           <BoardProvider boardName={boardDetails.board_name}>

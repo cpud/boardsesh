@@ -11,6 +11,7 @@ import type { HoldRenderData } from '../board-renderer/types';
 import { useWakeLock } from './use-wake-lock';
 import type { BluetoothAdapter } from '@/app/lib/ble/types';
 import { createBluetoothAdapter } from '@/app/lib/ble/adapter-factory';
+import { incrementBluetoothSends, maybeFireFeedbackPromptEvent } from '@/app/lib/feedback-prompt-db';
 
 // Module-level cache for Aurora LED placements loader to avoid repeated dynamic import overhead
 type GetLedPlacementsFn = (boardName: string, layoutId: number, sizeId: number) => Record<number, number>;
@@ -75,6 +76,7 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
         if (boardDetails.board_name === 'moonboard') {
           const bluetoothPacket = getMoonboardBluetoothPacket(frames);
           await adapterRef.current.write(bluetoothPacket, signal);
+          void incrementBluetoothSends().then(maybeFireFeedbackPromptEvent);
           return true;
         }
 
@@ -132,6 +134,7 @@ export function useBoardBluetooth({ boardDetails, onConnectionChange }: UseBoard
         }
 
         await adapterRef.current.write(bluetoothPacket, signal);
+        void incrementBluetoothSends().then(maybeFireFeedbackPromptEvent);
         return true;
       } catch (error) {
         // Abort errors are expected during rapid swiping — don't log or show them

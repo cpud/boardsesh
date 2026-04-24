@@ -47,6 +47,7 @@ import { socialRoleQueries, socialRoleMutations } from './social/roles';
 import { socialCommunitySettingsQueries, socialCommunitySettingsMutations } from './social/community-settings';
 import { newClimbSubscriptionResolvers } from './social/new-climb-subscriptions';
 import { newClimbFeedSubscription } from './social/new-climb-feed-subscription';
+import { feedbackMutations } from './feedback/mutations';
 import { isNoMatchClimb } from './shared/helpers';
 
 export const resolvers = {
@@ -102,6 +103,7 @@ export const resolvers = {
     ...socialCommunitySettingsMutations,
     ...newClimbSubscriptionResolvers.Mutation,
     ...sessionEditMutations,
+    ...feedbackMutations,
   },
 
   Subscription: {

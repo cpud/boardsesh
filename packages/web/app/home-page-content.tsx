@@ -18,6 +18,7 @@ import AndroidOutlined from '@mui/icons-material/AndroidOutlined';
 import Skeleton from '@mui/material/Skeleton';
 import SvgIcon from '@mui/material/SvgIcon';
 import { isNativeApp, isCapacitorWebView, waitForCapacitor } from '@/app/lib/ble/capacitor-utils';
+import { IOS_APP_STORE_URL, ANDROID_PLAY_STORE_URL, ANDROID_SIDELOAD_URL } from '@/app/lib/store-urls';
 import { useCountdown } from '@/app/lib/hooks/use-countdown';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -113,9 +114,6 @@ function OnboardingCard({ icon, title, description, onClick }: OnboardingCardPro
   );
 }
 
-const IOS_APP_STORE_URL = 'https://apps.apple.com/app/boardsesh/id6761350784';
-const ANDROID_PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.boardsesh.app';
-const ANDROID_SIDELOAD_URL = 'https://github.com/boardsesh/boardsesh/releases/latest';
 const ANDROID_LAUNCH_DATE = new Date('2026-05-03T00:00:00Z');
 
 type InstallPlatform = 'unknown' | 'native' | 'android-web' | 'other-web';

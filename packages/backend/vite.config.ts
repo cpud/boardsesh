@@ -7,9 +7,10 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/*.test.ts'],
     exclude: ['**/node_modules/**', '**/dist/**', '**/*parity*.test.ts'],
+    globalSetup: ['./src/__tests__/global-setup.ts'],
     setupFiles: ['./src/__tests__/setup.ts'],
     testTimeout: 10000,
-    hookTimeout: 30000,
+    hookTimeout: 60000,
     fileParallelism: false,
     coverage: {
       provider: 'v8',

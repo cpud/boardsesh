@@ -287,14 +287,20 @@ beforeAll(async () => {
       console.info(`Created test database: ${TEST_DB_NAME}`);
     }
   } catch (error) {
-    // Database might not be available — mock-based tests can still run
-    console.info('Test database check:', error);
     try {
       await adminClient.end();
     } catch {
       // ignore cleanup errors
     }
-    return;
+    if (process.env.SKIP_TEST_INFRA === '1') {
+      console.warn('[setup] Test database unreachable (SKIP_TEST_INFRA=1) — DB-dependent tests will fail.');
+      return;
+    }
+    throw new Error(
+      `[setup] Cannot reach postgres at ${baseConnectionString}. ` +
+        'globalSetup should have started it — check `docker compose -f packages/backend/docker-compose.test.yml ps`.\n' +
+        `Original error: ${error instanceof Error ? error.message : String(error)}`,
+    );
   } finally {
     try {
       await adminClient.end();
