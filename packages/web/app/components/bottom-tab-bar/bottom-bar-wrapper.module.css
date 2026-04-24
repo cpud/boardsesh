@@ -1,7 +1,7 @@
 .bottomBarWrapper {
   --tab-bar-top-radius: 16px;
   --tab-bar-bottom-radius: 16px;
-  --tab-bar-safe-area-padding: var(--safe-area-inset-bottom);
+  --tab-bar-safe-area-padding: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
   --tab-bar-bottom-extension: 0px;
   position: fixed;
   bottom: 0;
@@ -46,8 +46,8 @@
     .bottomBarWrapper:not(.nativeApp) {
       --tab-bar-top-radius: 0px;
       --tab-bar-bottom-radius: 0px;
-      --tab-bar-safe-area-padding: max(2dvh, var(--safe-area-inset-bottom));
-      --tab-bar-bottom-extension: calc(-1 * max(2dvh, var(--safe-area-inset-bottom)));
+      --tab-bar-safe-area-padding: max(2dvh, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+      --tab-bar-bottom-extension: calc(-1 * max(2dvh, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px))));
       bottom: 2dvh;
       left: 0;
       right: 0;

@@ -101,7 +101,7 @@
   --safe-area-inset-left: env(safe-area-inset-left, 0px);
 
   /* Layout */
-  --global-header-height: calc(max(8dvh, 48px) + var(--safe-area-inset-top));
+  --global-header-height: calc(max(8dvh, 48px) + var(--safe-area-inset-top, env(safe-area-inset-top, 0px)));
 
   /* Tap highlight (Android/mobile browsers) */
   --tap-highlight: transparent;
