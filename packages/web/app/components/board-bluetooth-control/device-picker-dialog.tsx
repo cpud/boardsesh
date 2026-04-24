@@ -13,11 +13,10 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { DiscoveredDevice } from '@/app/lib/ble/types';
-import type { UserBoard } from '@boardsesh/shared-schema';
+import type { BoardName, UserBoard } from '@boardsesh/shared-schema';
 import { parseSerialNumber, parseBoardTypeFromDeviceName } from './bluetooth-aurora';
 import BoardRenderer from '../board-renderer/board-renderer';
-import { getBoardDetails } from '@/app/lib/board-constants';
-import type { BoardName } from '@boardsesh/shared-schema';
+import { getBoardDetails, FALLBACK_BOARD_PREVIEW_CONFIGS } from '@/app/lib/board-constants';
 import BoardThumbnail from '../board-scroll/board-thumbnail';
 import styles from './device-picker-dialog.module.css';
 
@@ -35,16 +34,10 @@ function signalLabel(rssi: number): string {
   return 'Very weak';
 }
 
-// Default board configs for shaded preview when serial is unknown
-const FALLBACK_BOARD_CONFIGS: Record<string, { layout_id: number; size_id: number; set_ids: number[] }> = {
-  kilter: { layout_id: 1, size_id: 10, set_ids: [1, 20] },
-  tension: { layout_id: 1, size_id: 10, set_ids: [1] },
-};
-
 function UnknownBoardPreview({ boardType }: { boardType?: BoardName }) {
   const boardDetails = useMemo(() => {
     const type = boardType || 'kilter';
-    const config = FALLBACK_BOARD_CONFIGS[type] || FALLBACK_BOARD_CONFIGS.kilter;
+    const config = FALLBACK_BOARD_PREVIEW_CONFIGS[type] || FALLBACK_BOARD_PREVIEW_CONFIGS.kilter;
     try {
       return getBoardDetails({
         board_name: type,

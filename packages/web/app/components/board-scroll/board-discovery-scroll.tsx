@@ -103,8 +103,12 @@ export default function BoardDiscoveryScroll({
   }, [myBoards]);
 
   // BLE-resolved boards that are NOT already in myBoards — show as separate cards
-  const bleOnlyBoards = Array.from(bleResolvedBoards.values()).filter(
-    (board) => !board.serialNumber || !myBoardSerialSet.has(board.serialNumber),
+  const bleOnlyBoards = useMemo(
+    () =>
+      Array.from(bleResolvedBoards.values()).filter(
+        (board) => !board.serialNumber || !myBoardSerialSet.has(board.serialNumber),
+      ),
+    [bleResolvedBoards, myBoardSerialSet],
   );
 
   const [bleBoardsVisible, setBleBoardsVisible] = useState(false);

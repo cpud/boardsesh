@@ -29,6 +29,15 @@ export type DiscoveredDevice = {
  */
 export type DevicePickerFn = (subscribe: (onUpdate: (devices: DiscoveredDevice[]) => void) => void) => Promise<string>;
 
+/** Minimal BLE plugin interface for scan-only consumers (e.g. discovery scroll). */
+export type BleScanPlugin = {
+  initialize(): Promise<void>;
+  isEnabled(): Promise<{ value: boolean }>;
+  requestLEScan?(options: { services?: string[] }): Promise<void>;
+  stopLEScan?(): Promise<void>;
+  addListener(eventName: string, callback: (data: Record<string, unknown>) => void): Promise<PluginListenerHandle>;
+};
+
 export type BluetoothAdapter = {
   /** Check if BLE is available and enabled */
   isAvailable(): Promise<boolean>;

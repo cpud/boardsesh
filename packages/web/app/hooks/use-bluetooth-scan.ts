@@ -2,11 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
-import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import { GET_BOARDS_BY_SERIAL_NUMBERS, type GetBoardsBySerialNumbersQueryResponse } from '@/app/lib/graphql/operations';
-import { parseSerialNumber } from '@/app/components/board-bluetooth-control/bluetooth-aurora';
+import { resolveSerialNumbers } from '@/app/lib/ble/resolve-serials';
+import {
+  parseSerialNumber,
+  AURORA_SCAN_SERVICE_UUIDS,
+} from '@/app/components/board-bluetooth-control/bluetooth-aurora';
+import { MOONBOARD_SCAN_SERVICE_UUIDS } from '@/app/components/board-bluetooth-control/bluetooth-moonboard';
 import { supportsCapacitorBleManualScan } from '@/app/lib/ble/capacitor-utils';
-import type { DiscoveredDevice, PluginListenerHandle, CapacitorScanResult } from '@/app/lib/ble/types';
+import type { BleScanPlugin, DiscoveredDevice, CapacitorScanResult, PluginListenerHandle } from '@/app/lib/ble/types';
 import type { UserBoard } from '@boardsesh/shared-schema';
 
 // Auto-stop scan after this duration
@@ -14,17 +17,9 @@ const SCAN_TIMEOUT_MS = 15_000;
 
 export type BluetoothScanStatus = 'idle' | 'scanning' | 'done' | 'unavailable';
 
-interface RawBlePlugin {
-  initialize(): Promise<void>;
-  isEnabled(): Promise<{ value: boolean }>;
-  requestLEScan?(options: { services?: string[] }): Promise<void>;
-  stopLEScan?(): Promise<void>;
-  addListener(eventName: string, callback: (data: Record<string, unknown>) => void): Promise<PluginListenerHandle>;
-}
-
-function getBlePlugin(): RawBlePlugin | null {
+function getBlePlugin(): BleScanPlugin | null {
   const plugin = window.Capacitor?.Plugins?.BluetoothLe;
-  return plugin ? (plugin as RawBlePlugin) : null;
+  return plugin ? (plugin as BleScanPlugin) : null;
 }
 
 export function useBluetoothScan() {
@@ -101,17 +96,7 @@ export function useBluetoothScan() {
       if (serials.length === 0) return;
 
       try {
-        const client = createGraphQLHttpClient(token);
-        const data = await client.request<GetBoardsBySerialNumbersQueryResponse>(GET_BOARDS_BY_SERIAL_NUMBERS, {
-          serialNumbers: [...new Set(serials)],
-        });
-
-        const boardMap = new Map<string, UserBoard>();
-        for (const board of data.boardsBySerialNumbers) {
-          if (board.serialNumber) {
-            boardMap.set(board.serialNumber, board);
-          }
-        }
+        const boardMap = await resolveSerialNumbers(token, serials);
         setResolvedBoards(boardMap);
       } catch (err) {
         console.error('[BLE Scan] Failed to resolve serial numbers:', err);
@@ -171,8 +156,8 @@ export function useBluetoothScan() {
         }, 500);
       });
 
-      // Start scanning (no service filter to find all board types)
-      await ble.requestLEScan({});
+      // Start scanning with board service UUIDs to filter out non-board devices
+      await ble.requestLEScan({ services: [...AURORA_SCAN_SERVICE_UUIDS, ...MOONBOARD_SCAN_SERVICE_UUIDS] });
 
       // Auto-stop after timeout
       scanTimeoutRef.current = setTimeout(async () => {

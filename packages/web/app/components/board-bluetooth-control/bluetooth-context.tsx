@@ -16,8 +16,7 @@ import { DevicePickerDialog } from './device-picker-dialog';
 import { AutoConnectHandler } from './auto-connect-handler';
 import { parseSerialNumber } from './bluetooth-aurora';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
-import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import { GET_BOARDS_BY_SERIAL_NUMBERS, type GetBoardsBySerialNumbersQueryResponse } from '@/app/lib/graphql/operations';
+import { resolveSerialNumbers } from '@/app/lib/ble/resolve-serials';
 import type { UserBoard } from '@boardsesh/shared-schema';
 
 type BluetoothContextValue = {
@@ -146,20 +145,8 @@ export function BluetoothProvider({
     if (serialsKey === resolvedSerialsRef.current) return;
     resolvedSerialsRef.current = serialsKey;
 
-    const client = createGraphQLHttpClient(token);
-    client
-      .request<GetBoardsBySerialNumbersQueryResponse>(GET_BOARDS_BY_SERIAL_NUMBERS, {
-        serialNumbers: uniqueSerials,
-      })
-      .then((data) => {
-        const boardMap = new Map<string, UserBoard>();
-        for (const board of data.boardsBySerialNumbers) {
-          if (board.serialNumber) {
-            boardMap.set(board.serialNumber, board);
-          }
-        }
-        setResolvedBoards(boardMap);
-      })
+    resolveSerialNumbers(token, uniqueSerials)
+      .then(setResolvedBoards)
       .catch((err) => {
         console.error('[BLE] Failed to resolve serial numbers:', err);
       });
@@ -228,12 +215,12 @@ export function BluetoothProvider({
       {pickerState && (
         <DevicePickerDialog
           devices={pickerState.devices}
-          onSelect={pickerState.onSelect}
-          onCancel={pickerState.onCancel}
+          onSelect={pickerState.handleSelect}
+          onCancel={pickerState.handleCancel}
           resolvedBoards={resolvedBoards}
         />
       )}
-      <AutoConnectHandler />
+      <AutoConnectHandler connect={connect} isBluetoothSupported={isBluetoothSupported} />
       {children}
     </BluetoothContext.Provider>
   );

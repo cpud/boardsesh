@@ -1,4 +1,4 @@
-import type { LedPlacements } from '@/app/lib/types';
+import type { BoardName, LedPlacements } from '@/app/lib/types';
 import { HOLD_STATE_MAP } from '../board-renderer/types';
 import { AURORA_ADVERTISED_SERVICE_UUID, MESSAGE_BODY_MAX_LENGTH, UART_SERVICE_UUID } from './bluetooth-shared';
 import type { AuroraBoardName } from '@/app/lib/api-wrappers/aurora/types';

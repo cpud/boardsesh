@@ -144,13 +144,15 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
 
       // When targetSerial is set, auto-resolve instead of waiting for picker
       let autoSelectResolve: ((deviceId: string) => void) | null = null;
+      let autoSelectReject: ((error: Error) => void) | null = null;
 
       // Start the picker promise (resolves when user selects a device)
       let selectionPromise: Promise<string>;
       if (targetSerial) {
         // Skip the picker UI — resolve automatically when matching device is found
-        selectionPromise = new Promise<string>((resolve) => {
+        selectionPromise = new Promise<string>((resolve, reject) => {
           autoSelectResolve = resolve;
+          autoSelectReject = reject;
         });
       } else {
         selectionPromise = this.devicePicker((onUpdate) => {
@@ -193,9 +195,14 @@ export class CapacitorBleAdapter implements BluetoothAdapter {
       // Start scanning
       await ble.requestLEScan({ services });
 
-      // Auto-stop scan after timeout to prevent indefinite battery drain
+      // Auto-stop scan after timeout to prevent indefinite battery drain.
+      // If auto-selecting by serial, reject the promise so the caller isn't stuck forever.
       const scanTimeoutId = setTimeout(() => {
         stopScanQuietly(ble);
+        if (autoSelectReject) {
+          autoSelectReject(new Error('Target board not found during scan'));
+          autoSelectReject = null;
+        }
       }, SCAN_TIMEOUT_MS);
 
       try {

@@ -6,7 +6,7 @@ import BluetoothSearching from '@mui/icons-material/BluetoothSearching';
 import BluetoothDisabled from '@mui/icons-material/BluetoothDisabled';
 import SearchOffOutlined from '@mui/icons-material/SearchOffOutlined';
 import CircularProgress from '@mui/material/CircularProgress';
-import { getBoardDetails } from '@/app/lib/board-constants';
+import { getBoardDetails, FALLBACK_BOARD_PREVIEW_CONFIGS } from '@/app/lib/board-constants';
 import BoardRenderer from '../board-renderer/board-renderer';
 import styles from './board-scroll.module.css';
 
@@ -32,9 +32,7 @@ export default function BluetoothQuickStartCard({
     () =>
       getBoardDetails({
         board_name: 'kilter',
-        layout_id: 1,
-        size_id: 10,
-        set_ids: [1, 20],
+        ...FALLBACK_BOARD_PREVIEW_CONFIGS.kilter,
       }),
     [],
   );
@@ -95,18 +93,15 @@ export default function BluetoothQuickStartCard({
     >
       <div className={`${styles.cardSquare} ${isDisabled || isError ? styles.cardSquareDisabled : ''}`}>
         <div className={styles.findNearbyBoard}>
-          <BoardRenderer
-            mirrored={false}
-            boardDetails={boardDetails}
-            thumbnail
-            fillHeight
-          />
+          <BoardRenderer mirrored={false} boardDetails={boardDetails} thumbnail fillHeight />
         </div>
-        <div className={styles.findNearbyOverlay}>
-          {icon}
-        </div>
+        <div className={styles.findNearbyOverlay}>{icon}</div>
       </div>
-      <div className={`${styles.cardName} ${isDisabled ? styles.cardNameDisabled : ''} ${isError ? styles.cardNameDisabled : ''}`}>{label}</div>
+      <div
+        className={`${styles.cardName} ${isDisabled ? styles.cardNameDisabled : ''} ${isError ? styles.cardNameDisabled : ''}`}
+      >
+        {label}
+      </div>
     </div>
   );
 }

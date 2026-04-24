@@ -3,27 +3,33 @@
 import { useEffect, useRef } from 'react';
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import { useSearchData, useQueueActions } from '../graphql-queue';
-import { useBluetoothContext } from './bluetooth-context';
+
+type AutoConnectHandlerProps = {
+  connect: (initialFrames?: string, mirrored?: boolean, targetSerial?: string) => Promise<boolean>;
+  isBluetoothSupported: boolean;
+};
 
 /**
  * Renderless component that handles the ?autoConnect={serialNumber} URL param.
  * When present, it auto-selects the first available climb and initiates
  * BLE connection to the board matching the given serial number.
  * The param is consumed (removed from URL) after use so refresh won't re-trigger.
+ *
+ * Accepts connect/isBluetoothSupported as props to avoid a circular import
+ * with bluetooth-context (which renders this component).
  */
-export function AutoConnectHandler() {
+export function AutoConnectHandler({ connect, isBluetoothSupported }: AutoConnectHandlerProps) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
   const { climbSearchResults, hasDoneFirstFetch } = useSearchData();
   const { setCurrentClimb } = useQueueActions();
-  const { connect, isBluetoothSupported } = useBluetoothContext();
   const triggeredRef = useRef(false);
 
   const autoConnectSerial = searchParams.get('autoConnect');
 
   useEffect(() => {
-    if (!autoConnectSerial || triggeredRef.current) return;
+    if (!autoConnectSerial || autoConnectSerial.length > 20 || triggeredRef.current) return;
     if (!hasDoneFirstFetch || !climbSearchResults || climbSearchResults.length === 0) return;
     if (!isBluetoothSupported) return;
 
