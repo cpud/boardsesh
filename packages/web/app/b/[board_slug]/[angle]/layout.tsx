@@ -1,5 +1,4 @@
-import React from 'react';
-import type { PropsWithChildren } from 'react';
+import React, { type PropsWithChildren } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { resolveBoardBySlug, boardToRouteParams } from '@/app/lib/board-slug-utils';
@@ -19,10 +18,10 @@ import LastUsedBoardTracker from '@/app/components/board-page/last-used-board-tr
 import { constructBoardSlugListUrl } from '@/app/lib/url-utils';
 import { themeTokens } from '@/app/theme/theme-config';
 
-interface BoardSlugRouteParams {
+type BoardSlugRouteParams = {
   board_slug: string;
   angle: string;
-}
+};
 
 export async function generateMetadata(props: { params: Promise<BoardSlugRouteParams> }): Promise<Metadata> {
   const params = await props.params;

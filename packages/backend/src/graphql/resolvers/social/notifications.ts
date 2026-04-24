@@ -1,14 +1,13 @@
 import { eq, and, isNull, count, sql, inArray } from 'drizzle-orm';
-import type { ConnectionContext } from '@boardsesh/shared-schema';
+import type { ConnectionContext, NotificationEvent } from '@boardsesh/shared-schema';
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { requireAuthenticated, applyRateLimit, validateInput } from '../shared/helpers';
 import { GroupedNotificationsInputSchema } from '../../../validation/schemas';
 import { pubsub } from '../../../pubsub/index';
 import { createAsyncIterator } from '../shared/async-iterators';
-import type { NotificationEvent } from '@boardsesh/shared-schema';
 
-interface NotificationRow {
+type NotificationRow = {
   uuid: string;
   type: string;
   actorId: string | null;
@@ -22,7 +21,7 @@ interface NotificationRow {
   actorName: string | null;
   actorImage: string | null;
   commentBody: string | null;
-}
+};
 
 function mapNotificationRow(row: NotificationRow) {
   return {
@@ -118,7 +117,7 @@ export const socialNotificationQueries = {
     // Group notifications by (type, entity_type, entity_id) and return aggregated results.
     // Uses COUNT(*) OVER() window function to get total group count in a single query
     // instead of a separate N+1 count subquery.
-    interface GroupedRow {
+    type GroupedRow = {
       type: string;
       entityType: string | null;
       entityId: string | null;
@@ -131,7 +130,7 @@ export const socialNotificationQueries = {
       actorDisplayNames: (string | null)[];
       actorAvatarUrls: (string | null)[];
       totalGroupCount: string;
-    }
+    };
 
     const rawResult = await db.execute(sql`
       WITH all_groups AS (

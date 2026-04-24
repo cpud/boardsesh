@@ -4,9 +4,9 @@ import { useEffect, useRef } from 'react';
 import { isNativeApp } from '@/app/lib/ble/capacitor-utils';
 import { detectShake, DEFAULT_SHAKE_OPTIONS, initialShakeState, type ShakeState } from './detect-shake';
 
-interface UseShakeDetectorOptions {
+type UseShakeDetectorOptions = {
   enabled?: boolean;
-}
+};
 
 type IosRequestPermission = () => Promise<'granted' | 'denied'>;
 

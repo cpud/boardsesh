@@ -3,6 +3,8 @@ import React from 'react';
 import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import type { Angle, BoardDetails, BoardName, Climb } from '@/app/lib/types';
 import type { LogbookEntry } from '@/app/hooks/use-logbook';
+import { type QuickTickBarHandle, QuickTickBar } from '../quick-tick-bar';
+import { hasPriorHistoryForClimb } from '@/app/hooks/use-tick-save';
 
 // --- Mocks (must be hoisted before imports of the component under test) ---
 
@@ -28,9 +30,6 @@ vi.mock('@vercel/analytics', () => ({
 }));
 
 // Import after mocks.
-import type { QuickTickBarHandle } from '../quick-tick-bar';
-import { QuickTickBar } from '../quick-tick-bar';
-import { hasPriorHistoryForClimb } from '@/app/hooks/use-tick-save';
 
 // --- Fixtures ---
 
@@ -904,7 +903,7 @@ describe('QuickTickBar', () => {
   describe('expanded mode', () => {
     it('does not render save button in expanded mode', () => {
       const onExpandedChange = vi.fn();
-      render(<QuickTickBar {...defaultProps} expanded={true} onExpandedChange={onExpandedChange} />);
+      render(<QuickTickBar {...defaultProps} expanded onExpandedChange={onExpandedChange} />);
 
       // There should be no "Save tick" button in expanded mode.
       expect(screen.queryByRole('button', { name: /save tick/i })).toBeNull();

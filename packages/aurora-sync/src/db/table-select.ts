@@ -16,8 +16,7 @@ import {
   boardWalls,
   boardTags,
 } from '@boardsesh/db/schema/boards';
-import type { AuroraBoardName } from '../api/types';
-import { AURORA_BOARDS } from '../api/types';
+import { type AuroraBoardName, AURORA_BOARDS } from '../api/types';
 
 // Re-export AuroraBoardName as BoardName for backward compatibility within this module
 export type BoardName = AuroraBoardName;

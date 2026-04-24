@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vite-plus/test';
-import { searchClimbs, countClimbs, getClimbByUuid } from '../db/queries/climbs/index';
-import type { ParsedBoardRouteParameters, ClimbSearchParams } from '../db/queries/climbs/index';
+import {
+  searchClimbs,
+  countClimbs,
+  getClimbByUuid,
+  type ParsedBoardRouteParameters,
+  type ClimbSearchParams,
+} from '../db/queries/climbs/index';
 import { db } from '../db/client';
 import { sql } from 'drizzle-orm';
 

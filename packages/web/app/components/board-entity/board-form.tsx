@@ -12,14 +12,13 @@ import MenuItem from '@mui/material/MenuItem';
 import Alert from '@mui/material/Alert';
 import ListItemText from '@mui/material/ListItemText';
 import Check from '@mui/icons-material/Check';
-import MuiSelect from '@mui/material/Select';
-import type { SelectChangeEvent } from '@mui/material/Select';
+import MuiSelect, { type SelectChangeEvent } from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
 import MapLocationPicker from './map-location-picker';
 
-interface BoardFormFieldValues {
+type BoardFormFieldValues = {
   name: string;
   slug?: string;
   description: string;
@@ -36,9 +35,9 @@ interface BoardFormFieldValues {
   sizeId?: number;
   setIds?: string;
   serialNumber?: string;
-}
+};
 
-interface BoardFormProps {
+type BoardFormProps = {
   /** Form title displayed at the top */
   title: string;
   /** Submit button label */
@@ -68,7 +67,7 @@ interface BoardFormProps {
   onSubmit: (values: BoardFormFieldValues) => Promise<void>;
   /** Optional cancel handler */
   onCancel?: () => void;
-}
+};
 
 /**
  * Shared form component for creating and editing boards.

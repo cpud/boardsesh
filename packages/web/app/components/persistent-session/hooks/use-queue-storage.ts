@@ -2,23 +2,22 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import type { ClimbQueueItem as LocalClimbQueueItem } from '../../queue-control/types';
 import type { BoardDetails } from '@/app/lib/types';
 import { getPreference } from '@/app/lib/user-preferences-db';
-import type { ActiveSessionInfo } from '../types';
-import { ACTIVE_SESSION_KEY, DEBUG } from '../types';
+import { type ActiveSessionInfo, ACTIVE_SESSION_KEY, DEBUG } from '../types';
 
-interface UseQueueStorageArgs {
+type UseQueueStorageArgs = {
   activeSession: ActiveSessionInfo | null;
   setActiveSession: (val: ActiveSessionInfo | null) => void;
-}
+};
 
-export interface QueueStorageState {
+export type QueueStorageState = {
   localQueue: LocalClimbQueueItem[];
   localCurrentClimbQueueItem: LocalClimbQueueItem | null;
   localBoardPath: string | null;
   localBoardDetails: BoardDetails | null;
   isLocalQueueLoaded: boolean;
-}
+};
 
-export interface QueueStorageActions {
+export type QueueStorageActions = {
   setLocalQueueState: (
     queue: LocalClimbQueueItem[],
     currentItem: LocalClimbQueueItem | null,
@@ -26,7 +25,7 @@ export interface QueueStorageActions {
     boardDetails: BoardDetails,
   ) => void;
   clearLocalQueue: () => void;
-}
+};
 
 export function useQueueStorage({
   activeSession,

@@ -21,8 +21,13 @@ import type { BoardDetails } from '@/app/lib/types';
 import type { HoldRenderData } from '../board-renderer/types';
 import { getImageUrl } from '../board-renderer/util';
 import { themeTokens } from '@/app/theme/theme-config';
-import type { HoldClassificationWizardProps, HoldType, HoldClassification, StoredHoldClassification } from './types';
-import { HOLD_TYPE_OPTIONS } from './types';
+import {
+  type HoldClassificationWizardProps,
+  type HoldType,
+  type HoldClassification,
+  type StoredHoldClassification,
+  HOLD_TYPE_OPTIONS,
+} from './types';
 import DirectionPicker from './direction-picker';
 import styles from './hold-classification-wizard.module.css';
 
@@ -34,11 +39,11 @@ const COMPACT_ZOOM_FACTOR = 10;
 // Minimum viewport size around the hold (ensures we see enough context)
 const MIN_VIEWPORT_SIZE = 200;
 
-interface HoldViewProps {
+type HoldViewProps = {
   hold: HoldRenderData;
   boardDetails: BoardDetails;
   expanded?: boolean;
-}
+};
 
 /**
  * Component that renders a view of a hold on the board
@@ -430,8 +435,8 @@ const HoldClassificationWizard: React.FC<HoldClassificationWizardProps> = ({
             Classification Complete!
           </Typography>
           <Typography variant="body2" component="span" className={styles.completeSubtitle}>
-            You've classified {classifiedCount} of {holds.length} holds. You can run through this wizard again anytime
-            to update your ratings.
+            You&apos;ve classified {classifiedCount} of {holds.length} holds. You can run through this wizard again
+            anytime to update your ratings.
           </Typography>
           <MuiButton variant="contained" size="large" onClick={onClose}>
             Done

@@ -11,8 +11,7 @@ import EditOutlined from '@mui/icons-material/EditOutlined';
 import CloseOutlined from '@mui/icons-material/CloseOutlined';
 import HistoryOutlined from '@mui/icons-material/HistoryOutlined';
 import { useQueueActions, useQueueList, useSessionData } from '../graphql-queue';
-import type { QueueListHandle } from '../queue-control/queue-list';
-import QueueList from '../queue-control/queue-list';
+import QueueList, { type QueueListHandle } from '../queue-control/queue-list';
 import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
 import { usePullToClose } from '@/app/lib/hooks/pull-to-close';
 import { useDrawerDragResize } from '@/app/hooks/use-drawer-drag-resize';
@@ -29,12 +28,12 @@ const QUEUE_DRAWER_STYLES = {
   body: { padding: 0, overflow: 'hidden' as const, touchAction: 'pan-y' as const },
 } as const;
 
-export interface QueueDrawerProps {
+export type QueueDrawerProps = {
   open: boolean;
   onClose: () => void;
   onTransitionEnd?: (open: boolean) => void;
   boardDetails: BoardDetails;
-}
+};
 
 const QueueDrawer: React.FC<QueueDrawerProps> = ({ open, onClose, onTransitionEnd, boardDetails }) => {
   // Internal state

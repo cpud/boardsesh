@@ -1,5 +1,4 @@
-import type { Sharp } from 'sharp';
-import sharp from 'sharp';
+import sharp, { type Sharp } from 'sharp';
 import path from 'path';
 import type { ImageProcessor, RawPixelData, ImageMetadata, ImageRegion, NodeImageSource } from './types';
 

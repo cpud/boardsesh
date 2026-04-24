@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuroraRequestError } from '../api/errors';
+import { SyncRunner } from './sync-runner';
 
 type SyncRunnerPrivates = {
   updateCredentialStatus: (userId: string, boardType: string, status: string, error?: string | null) => Promise<void>;
@@ -26,8 +27,6 @@ vi.mock('../api/aurora-client', () => ({
     signIn = mockSignIn;
   },
 }));
-
-import { SyncRunner } from './sync-runner';
 
 describe('SyncRunner login failure handling', () => {
   beforeEach(() => {

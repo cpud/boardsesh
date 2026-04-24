@@ -4,7 +4,7 @@ import { getLayout, ORPHANED_KILTER_LAYOUT_DEFAULTS } from '@boardsesh/board-con
 import { MOONBOARD_LAYOUTS } from '@/app/lib/moonboard-config';
 import type { BoardName } from '@/app/lib/types';
 
-export interface UserProfile {
+export type UserProfile = {
   id: string;
   email: string | undefined;
   name: string | null;
@@ -21,9 +21,9 @@ export interface UserProfile {
   followerCount: number;
   followingCount: number;
   isFollowedByMe: boolean;
-}
+};
 
-export interface LogbookEntry {
+export type LogbookEntry = {
   climbed_at: string;
   difficulty: number | null;
   tries: number;
@@ -32,7 +32,7 @@ export interface LogbookEntry {
   layoutId?: number | null;
   boardType?: string;
   climbUuid?: string;
-}
+};
 
 export type UnifiedTimeframeType = 'all' | 'lastYear' | 'lastMonth' | 'lastWeek' | 'today' | 'custom';
 

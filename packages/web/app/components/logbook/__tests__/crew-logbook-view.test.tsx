@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
+
 import { describe, expect, it, vi, beforeEach } from 'vite-plus/test';
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { Climb } from '@/app/lib/types';
+import { CrewLogbookView } from '../crew-logbook-view';
 
 const mockRequest = vi.fn();
 const mockUseWsAuthToken = vi.fn();
@@ -72,8 +74,6 @@ vi.mock('@/app/components/social/vote-summary-context', () => ({
     return <div data-testid="vote-summary-provider">{children}</div>;
   },
 }));
-
-import { CrewLogbookView } from '../crew-logbook-view';
 
 function makeClimb(overrides: Partial<Climb> = {}): Climb {
   return {

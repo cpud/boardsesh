@@ -18,13 +18,13 @@ import { normalizeAscentStatus, type AscentStatusValue } from '@/app/components/
 import VoteButton from '@/app/components/social/vote-button';
 import FeedCommentButton from '@/app/components/social/feed-comment-button';
 
-export interface LogbookEntryUser {
+export type LogbookEntryUser = {
   userId: string;
   displayName?: string | null;
   avatarUrl?: string | null;
-}
+};
 
-export interface LogbookEntryCardData {
+export type LogbookEntryCardData = {
   climbedAt: string;
   angle: number;
   isMirror: boolean;
@@ -46,14 +46,14 @@ export interface LogbookEntryCardData {
   upvotes?: number | null;
   downvotes?: number | null;
   commentCount?: number | null;
-}
+};
 
-export interface LogbookEntryCardProps {
+export type LogbookEntryCardProps = {
   entry: LogbookEntryCardData;
   currentClimbAngle: number;
   showMirrorTag: boolean;
   user?: LogbookEntryUser;
-}
+};
 
 export const LogbookEntryCard: React.FC<LogbookEntryCardProps> = ({
   entry,

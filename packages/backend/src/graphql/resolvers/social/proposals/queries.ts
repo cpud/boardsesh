@@ -1,4 +1,4 @@
-import { eq, and, count, desc, inArray } from 'drizzle-orm';
+import { eq, and, count, desc, inArray, sql } from 'drizzle-orm';
 import type { ConnectionContext } from '@boardsesh/shared-schema';
 import { db } from '../../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
@@ -7,7 +7,6 @@ import { GetClimbProposalsInputSchema, BrowseProposalsInputSchema } from '../../
 import { resolveCommunitySetting } from '../community-settings';
 import { batchEnrichProposals } from './enrichment';
 import { analyzeGradeOutlier } from './grade-analysis';
-import { sql } from 'drizzle-orm';
 
 export const socialProposalQueries = {
   climbProposals: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {

@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
+import { BluetoothProvider, useBluetoothContext } from '../bluetooth-context';
+import type { BoardDetails } from '@/app/lib/types';
 
 // Mock dependencies before importing the module
 const mockTrack = vi.fn();
@@ -41,9 +43,6 @@ vi.mock('../../graphql-queue', () => ({
   }),
 }));
 
-import { BluetoothProvider, useBluetoothContext } from '../bluetooth-context';
-import type { BoardDetails } from '@/app/lib/types';
-
 function createTestBoardDetails(overrides?: Partial<BoardDetails>): BoardDetails {
   return {
     board_name: 'kilter',
@@ -69,7 +68,7 @@ function createTestBoardDetails(overrides?: Partial<BoardDetails>): BoardDetails
 function createWrapper(boardDetails?: BoardDetails) {
   const details = boardDetails ?? createTestBoardDetails();
   return function Wrapper({ children }: { children: React.ReactNode }) {
-    return React.createElement(BluetoothProvider, { boardDetails: details, children });
+    return <BluetoothProvider boardDetails={details}>{children}</BluetoothProvider>;
   };
 }
 

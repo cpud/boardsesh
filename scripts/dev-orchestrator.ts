@@ -25,16 +25,16 @@ const TAILSCALE_CERT_TIMEOUT_MS = 60_000;
  */
 const CERT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
-interface TlsBundle {
+type TlsBundle = {
   hostname: string;
   certFile: string;
   keyFile: string;
-}
+};
 
-interface ProcessRef {
+type ProcessRef = {
   process: ReturnType<typeof spawn> | null;
   isManaged: boolean; // Did we start it?
-}
+};
 
 const processes: { backend: ProcessRef; web: ProcessRef } = {
   backend: { process: null, isManaged: false },
@@ -99,10 +99,10 @@ function resolveTailscaleHostname(): string | null {
   }
 }
 
-interface ProvisionResult {
+type ProvisionResult = {
   ok: boolean;
   stderr: string;
-}
+};
 
 function provisionTailscaleCert(hostname: string, certFile: string, keyFile: string): ProvisionResult {
   const result = spawnSync('tailscale', ['cert', `--cert-file=${certFile}`, `--key-file=${keyFile}`, hostname], {

@@ -51,4 +51,5 @@ Sentry.init({
   },
 });
 
+// eslint-disable-next-line import/namespace -- oxlint can't see captureRouterTransitionStart in @sentry/nextjs's exports, but it's a real export.
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

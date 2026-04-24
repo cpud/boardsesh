@@ -14,8 +14,7 @@
  *    CurrentClimbChanged.item is nullable).
  */
 
-import type { ClimbQueueItem } from './queue';
-import type { QueueState } from './queue';
+import type { ClimbQueueItem, QueueState } from './queue';
 import type { SessionUser } from './session';
 import type { SessionFeedParticipant, SessionGradeDistributionItem, SessionDetailTick } from './activity-feed';
 

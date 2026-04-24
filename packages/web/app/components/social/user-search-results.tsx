@@ -14,21 +14,24 @@ import Link from 'next/link';
 import { PersonOutlined } from '@mui/icons-material';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import FollowButton from '@/app/components/ui/follow-button';
-import { FOLLOW_USER, UNFOLLOW_USER, FOLLOW_SETTER, UNFOLLOW_SETTER } from '@/app/lib/graphql/operations';
-import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
+  FOLLOW_USER,
+  UNFOLLOW_USER,
+  FOLLOW_SETTER,
+  UNFOLLOW_SETTER,
   SEARCH_USERS_AND_SETTERS,
   type SearchUsersAndSettersQueryVariables,
   type SearchUsersAndSettersQueryResponse,
 } from '@/app/lib/graphql/operations';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import type { UnifiedSearchResult, UnifiedSearchConnection } from '@boardsesh/shared-schema';
 import { useDebouncedValue } from '@/app/hooks/use-debounced-value';
 import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
 
-interface UserSearchResultsProps {
+type UserSearchResultsProps = {
   query: string;
   authToken: string | null;
-}
+};
 
 export default function UserSearchResults({ query, authToken }: UserSearchResultsProps) {
   const debouncedQuery = useDebouncedValue(query, 300);

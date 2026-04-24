@@ -34,8 +34,7 @@ import { dispatchOpenPlayDrawer } from '@/app/components/queue-control/play-draw
 import { AscentStatusIcon } from '@/app/components/ascent-status/ascent-status-icon';
 import { ClimbActions } from '@/app/components/climb-actions';
 import DrawerClimbHeader from '@/app/components/climb-card/drawer-climb-header';
-import { useSwipeActions } from '@/app/hooks/use-swipe-actions';
-import type { SwipeZone } from '@/app/hooks/use-swipe-actions';
+import { useSwipeActions, type SwipeZone } from '@/app/hooks/use-swipe-actions';
 import { useDrawerDragResize } from '@/app/hooks/use-drawer-drag-resize';
 import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
 import { useGradeFormat } from '@/app/hooks/use-grade-format';
@@ -57,13 +56,9 @@ const SwipeableDrawer = dynamic(() => import('../swipeable-drawer/swipeable-draw
   ssr: false,
 });
 const PostToInstagramDialog = dynamic(() => import('./post-to-instagram-dialog'), { ssr: false });
-const AttachBetaLinkDialog = dynamic(
-  () =>
-    import('@/app/components/beta-videos/attach-beta-link-dialog').then((m) => ({
-      default: m.AttachBetaLinkDialog,
-    })),
-  { ssr: false },
-);
+const AttachBetaLinkDialog = dynamic(() => import('@/app/components/beta-videos/attach-beta-link-dialog'), {
+  ssr: false,
+});
 
 dayjs.extend(relativeTime);
 
@@ -287,7 +282,7 @@ function LogbookGradeRow({
 
 // --- Main component ---
 
-interface LogbookFeedItemProps {
+type LogbookFeedItemProps = {
   item: AscentFeedItem;
   showBoardType?: boolean;
   isEditing?: boolean;
@@ -300,7 +295,7 @@ interface LogbookFeedItemProps {
   allowInstagramLinking?: boolean;
   /** When true, tag this item so the first-visit swipe-hint animation can target it. */
   isSwipeHintTarget?: boolean;
-}
+};
 
 const LogbookFeedItem: React.FC<LogbookFeedItemProps> = React.memo(
   ({

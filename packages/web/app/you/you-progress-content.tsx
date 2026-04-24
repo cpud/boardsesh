@@ -15,14 +15,14 @@ import type { UserProfile, LogbookEntry } from '@/app/profile/[user_id]/utils/pr
 import { StatsFilterBridgeInjector } from '@/app/components/stats-filter-bridge/stats-filter-bridge-context';
 import StatsFilterDrawer from '@/app/components/stats-filter-drawer/stats-filter-drawer';
 
-export interface YouProgressContentProps {
+export type YouProgressContentProps = {
   userId: string;
   initialProfile?: UserProfile | null;
   initialProfileStats?: GetUserProfileStatsQueryResponse['userProfileStats'] | null;
   initialPercentile?: GetUserClimbPercentileQueryResponse['userClimbPercentile'] | null;
   initialAllBoardsTicks?: Record<string, LogbookEntry[]>;
   initialLogbook?: LogbookEntry[];
-}
+};
 
 export default function YouProgressContent({
   userId,
@@ -95,7 +95,7 @@ export default function YouProgressContent({
         pageTitle="Progress"
         backUrl={null}
         hasActiveFilters={hasActiveFilters}
-        isActive={true}
+        isActive
       />
       <StatsSummary
         statisticsSummary={statisticsSummary}
@@ -113,7 +113,7 @@ export default function YouProgressContent({
         selectedBoard={selectedBoard}
         loading={loadingAggregated}
         filteredLogbook={filteredLogbook}
-        isOwnProfile={true}
+        isOwnProfile
       />
       {drawerRendered && (
         <StatsFilterDrawer

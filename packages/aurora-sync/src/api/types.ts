@@ -2,7 +2,7 @@ import { AURORA_BOARDS, type AuroraBoardName } from '@boardsesh/shared-schema/ty
 
 export { AURORA_BOARDS, type AuroraBoardName };
 
-export interface BoardUser {
+export type BoardUser = {
   id: number;
   username: string;
   email_address: string;
@@ -17,9 +17,9 @@ export interface BoardUser {
   height: number | null;
   weight: number | null;
   wingspan: number | null;
-}
+};
 
-export interface LoginResponse {
+export type LoginResponse = {
   error?: string;
   login?: {
     created_at: string;
@@ -34,14 +34,14 @@ export interface LoginResponse {
     token: string;
     user_id: number;
   };
-}
+};
 
-export interface Session {
+export type Session = {
   user_id: number;
   token: string;
-}
+};
 
-export interface SyncOptions {
+export type SyncOptions = {
   tables?: string[];
   walls?: Array<{
     uuid: string;
@@ -66,12 +66,12 @@ export interface SyncOptions {
   }>;
   sharedSyncs?: Array<LastSyncData>;
   userSyncs?: Array<UserSyncData>;
-}
+};
 
-export interface LastSyncData {
+export type LastSyncData = {
   table_name: string;
   last_synchronized_at: string;
-}
+};
 
 export type UserSyncData = LastSyncData & {
   user_id: number;
@@ -122,8 +122,8 @@ export const SHARED_SYNC_TABLES = [
   'kits',
 ];
 
-export interface ClientOptions {
+export type ClientOptions = {
   boardName: AuroraBoardName;
   token?: string | null;
   apiVersion?: string;
-}
+};

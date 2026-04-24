@@ -1,16 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+import type { SessionSummary } from '@boardsesh/shared-schema';
+import SessionSummaryView from '../session-summary-view';
 
 // --- Mocks ---
 
-interface GradeFormatMock {
+type GradeFormatMock = {
   gradeFormat: 'v-grade' | 'font';
   formatGrade: (d: string | null | undefined) => string | null;
   getGradeColor: (d?: string | null, dk?: boolean) => string | undefined;
   loaded: boolean;
   setGradeFormat: ReturnType<typeof vi.fn>;
-}
+};
 const defaultGradeFormat: GradeFormatMock = {
   gradeFormat: 'v-grade',
   formatGrade: (d: string | null | undefined) => {
@@ -30,9 +32,6 @@ vi.mock('@/app/hooks/use-grade-format', () => ({
 vi.mock('@/app/lib/grade-colors', () => ({
   getGradeColor: (d: string | null | undefined) => (d ? '#vivid' : undefined),
 }));
-
-import type { SessionSummary } from '@boardsesh/shared-schema';
-import SessionSummaryView from '../session-summary-view';
 
 // --- Helpers ---
 

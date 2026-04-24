@@ -28,18 +28,18 @@ import { ProfileHeaderShareProvider } from '../profile-header-bridge/profile-hea
 import { isNativeApp } from '@/app/lib/ble/capacitor-utils';
 import dynamic from 'next/dynamic';
 import { SESH_SETTINGS_DRAWER_EVENT } from '../sesh-settings/sesh-settings-drawer-event';
-
-const SeshSettingsDrawer = dynamic(() => import('../sesh-settings/sesh-settings-drawer'), {
-  ssr: false,
-});
 import { BoardSwitchConfirmProvider } from '../board-lock/board-switch-confirm-provider';
 import { FeedbackPromptBanner } from '../feedback/feedback-prompt-banner';
 import { ShakeToReportProvider } from '../feedback/shake-to-report-provider';
 
-interface PersistentSessionWrapperProps {
+const SeshSettingsDrawer = dynamic(() => import('../sesh-settings/sesh-settings-drawer'), {
+  ssr: false,
+});
+
+type PersistentSessionWrapperProps = {
   children: React.ReactNode;
   boardConfigs: BoardConfigData;
-}
+};
 
 /**
  * Root-level wrapper that provides:

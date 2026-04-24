@@ -1,15 +1,15 @@
 // Playlist Generation Utilities
 
 import { TENSION_KILTER_GRADES } from '@/app/lib/board-data';
-import type {
-  GeneratorOptions,
-  PlannedClimbSlot,
-  VolumeOptions,
-  PyramidOptions,
-  LadderOptions,
-  GradeFocusOptions,
+import {
+  type GeneratorOptions,
+  type PlannedClimbSlot,
+  type VolumeOptions,
+  type PyramidOptions,
+  type LadderOptions,
+  type GradeFocusOptions,
+  WARM_UP_CONFIG,
 } from './types';
-import { WARM_UP_CONFIG } from './types';
 
 const MIN_GRADE = TENSION_KILTER_GRADES[0].difficulty_id; // 10
 const MAX_GRADE = TENSION_KILTER_GRADES[TENSION_KILTER_GRADES.length - 1].difficulty_id; // 33
@@ -213,11 +213,11 @@ export const getGradeName = (difficultyId: number): string => {
 };
 
 // Group slots by section for display
-export interface GroupedSlots {
+export type GroupedSlots = {
   section: PlannedClimbSlot['section'];
   label: string;
   slots: PlannedClimbSlot[];
-}
+};
 
 export const groupSlotsBySection = (slots: PlannedClimbSlot[]): GroupedSlots[] => {
   const groups: GroupedSlots[] = [];

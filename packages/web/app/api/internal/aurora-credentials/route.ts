@@ -1,6 +1,5 @@
 import { getServerSession } from 'next-auth/next';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/app/lib/db/db';
 import * as schema from '@/app/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -8,8 +7,7 @@ import { z } from 'zod';
 import { authOptions } from '@/app/lib/auth/auth-options';
 import { encrypt, decrypt } from '@boardsesh/crypto';
 import AuroraClimbingClient from '@/app/lib/api-wrappers/aurora-rest-client/aurora-rest-client';
-import type { AuroraBoardName } from '@boardsesh/shared-schema';
-import { AURORA_BOARDS } from '@boardsesh/shared-schema';
+import { type AuroraBoardName, AURORA_BOARDS } from '@boardsesh/shared-schema';
 
 const saveCredentialsSchema = z.object({
   boardType: z.enum(AURORA_BOARDS),
@@ -21,7 +19,7 @@ const deleteCredentialsSchema = z.object({
   boardType: z.enum(AURORA_BOARDS),
 });
 
-export interface AuroraCredentialStatus {
+export type AuroraCredentialStatus = {
   boardType: string;
   auroraUsername: string;
   auroraUserId: number | null;
@@ -29,7 +27,7 @@ export interface AuroraCredentialStatus {
   syncStatus: string;
   syncError: string | null;
   createdAt: string;
-}
+};
 
 /**
  * GET - Get all Aurora credentials status for the logged-in user

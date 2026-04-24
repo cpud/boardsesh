@@ -265,65 +265,63 @@ export async function GET(request: NextRequest) {
             </div>
 
             {gradeBars.length > 0 ? (
-              <>
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: '6px',
-                    width: '100%',
-                    height: '190px',
-                  }}
-                >
-                  {gradeBars.map((bar) => (
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '6px',
+                  width: '100%',
+                  height: '190px',
+                }}
+              >
+                {gradeBars.map((bar) => (
+                  <div
+                    key={bar.grade}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      flex: 1,
+                      height: '100%',
+                      justifyContent: 'flex-end',
+                      alignItems: 'stretch',
+                    }}
+                  >
                     <div
-                      key={bar.grade}
                       style={{
                         display: 'flex',
-                        flexDirection: 'column',
-                        flex: 1,
-                        height: '100%',
-                        justifyContent: 'flex-end',
-                        alignItems: 'stretch',
+                        alignItems: 'flex-end',
+                        width: '100%',
+                        height: '156px',
+                        borderBottom: `1px solid ${darkTokens.neutral[300]}`,
+                        paddingBottom: '10px',
                       }}
                     >
                       <div
                         style={{
-                          display: 'flex',
-                          alignItems: 'flex-end',
                           width: '100%',
-                          height: '156px',
-                          borderBottom: `1px solid ${darkTokens.neutral[300]}`,
-                          paddingBottom: '10px',
+                          height: `${Math.max((bar.count / maxCount) * 100, 7)}%`,
+                          backgroundColor: bar.color,
+                          borderRadius: '10px 10px 0 0',
                         }}
-                      >
-                        <div
-                          style={{
-                            width: '100%',
-                            height: `${Math.max((bar.count / maxCount) * 100, 7)}%`,
-                            backgroundColor: bar.color,
-                            borderRadius: '10px 10px 0 0',
-                          }}
-                        />
-                      </div>
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          width: '100%',
-                          paddingTop: '10px',
-                          fontSize: '17px',
-                          fontWeight: 700,
-                          textAlign: 'center',
-                          color: darkTokens.neutral[700],
-                        }}
-                      >
-                        {bar.grade}
-                      </div>
+                      />
                     </div>
-                  ))}
-                </div>
-              </>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '100%',
+                        paddingTop: '10px',
+                        fontSize: '17px',
+                        fontWeight: 700,
+                        textAlign: 'center',
+                        color: darkTokens.neutral[700],
+                      }}
+                    >
+                      {bar.grade}
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
               <div
                 style={{

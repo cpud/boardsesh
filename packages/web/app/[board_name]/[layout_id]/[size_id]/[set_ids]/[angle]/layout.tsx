@@ -1,5 +1,4 @@
-import React from 'react';
-import type { PropsWithChildren } from 'react';
+import React, { type PropsWithChildren } from 'react';
 import type { BoardRouteParameters } from '@/app/lib/types';
 import { constructClimbListWithSlugs } from '@/app/lib/url-utils';
 import { parseRouteParams } from '@/app/lib/url-utils.server';
@@ -38,9 +37,9 @@ export async function generateMetadata(props: { params: Promise<BoardRouteParame
   }
 }
 
-interface BoardLayoutProps {
+type BoardLayoutProps = {
   params: Promise<BoardRouteParameters>;
-}
+};
 
 export default async function BoardLayout(props: PropsWithChildren<BoardLayoutProps>) {
   const params = await props.params;

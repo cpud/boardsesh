@@ -11,11 +11,11 @@ import { FavoriteOutlined, SentimentDissatisfiedOutlined, MoreVertOutlined, AddO
 import { track } from '@vercel/analytics';
 import type { BoardDetails, Climb } from '@/app/lib/types';
 import { executeGraphQL } from '@/app/lib/graphql/client';
-import type {
-  GetUserFavoriteClimbsQueryResponse,
-  GetUserFavoriteClimbsQueryVariables,
+import {
+  type GetUserFavoriteClimbsQueryResponse,
+  type GetUserFavoriteClimbsQueryVariables,
+  GET_USER_FAVORITE_CLIMBS,
 } from '@/app/lib/graphql/operations/favorites';
-import { GET_USER_FAVORITE_CLIMBS } from '@/app/lib/graphql/operations/favorites';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { LoadingSpinner } from '@/app/components/ui/loading-spinner';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';

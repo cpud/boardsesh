@@ -7,10 +7,10 @@ export const SUBMIT_APP_FEEDBACK = gql`
   }
 `;
 
-export interface SubmitAppFeedbackMutationVariables {
+export type SubmitAppFeedbackMutationVariables = {
   input: SubmitAppFeedbackInput;
-}
+};
 
-export interface SubmitAppFeedbackMutationResponse {
+export type SubmitAppFeedbackMutationResponse = {
   submitAppFeedback: boolean;
-}
+};

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, fireEvent } from '@testing-library/react';
 import React from 'react';
 import type { UserBoard } from '@boardsesh/shared-schema';
+import BoardFilterStrip from '../board-filter-strip';
 
 // Mock BoardRenderer (transitive dep via BoardScrollCard)
 vi.mock('../../board-renderer/board-renderer', () => ({
@@ -41,8 +42,6 @@ vi.mock('../board-scroll.module.css', () => ({
     },
   ),
 }));
-
-import BoardFilterStrip from '../board-filter-strip';
 
 function makeBoard(overrides?: Partial<UserBoard>): UserBoard {
   return {
@@ -112,7 +111,7 @@ describe('BoardFilterStrip', () => {
 
   it('renders loading state when loading is true', () => {
     const { container, queryByText } = render(
-      <BoardFilterStrip boards={[]} loading={true} selectedBoard={null} onBoardSelect={onBoardSelect} />,
+      <BoardFilterStrip boards={[]} loading selectedBoard={null} onBoardSelect={onBoardSelect} />,
     );
 
     // Should render (not null) even with empty boards when loading

@@ -1,5 +1,4 @@
-import { AURORA_BOARDS, SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
-import type { AuroraBoardName } from '@boardsesh/shared-schema';
+import { AURORA_BOARDS, SUPPORTED_BOARDS, type AuroraBoardName } from '@boardsesh/shared-schema';
 import type { HoldRenderData } from '@/app/components/board-renderer/types';
 import type { BoardDetails, ImageFileName } from '@/app/lib/types';
 import type { SetIdList } from '@/app/lib/board-data';
@@ -15,13 +14,6 @@ import { BOARD_IMAGE_DIMENSIONS } from './board-data';
 import type { BoardName, HoldTuple } from './types';
 
 export * from '@boardsesh/board-constants/product-sizes';
-export type {
-  HoldTuple,
-  LayoutData,
-  ProductSizeData,
-  SetData,
-  SizeEdges,
-} from '@boardsesh/board-constants/product-sizes';
 
 export const AURORA_BOARD_NAMES = [...AURORA_BOARDS];
 export const KILTER_HOMEWALL_LAYOUT_ID = 8;

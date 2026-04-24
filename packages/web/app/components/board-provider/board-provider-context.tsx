@@ -1,9 +1,10 @@
 'use client';
+
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { BoardName, ClimbUuid } from '@/app/lib/types';
 import type { SaveClimbOptions } from '@/app/lib/api-wrappers/aurora/types';
 import { useSession } from 'next-auth/react';
-import { useLogbook as useLogbookQuery } from '@/app/hooks/use-logbook';
+import { useLogbook as useLogbookQuery, type LogbookEntry } from '@/app/hooks/use-logbook';
 import { useSaveTick as useSaveTickMutation, type SaveTickOptions } from '@/app/hooks/use-save-tick';
 import {
   useSaveClimb as useSaveClimbMutation,
@@ -19,9 +20,7 @@ export type { SaveTickOptions } from '@/app/hooks/use-save-tick';
 export type { SaveClimbResponse, UpdateClimbResponse } from '@/app/hooks/use-save-climb';
 export type { TickStatus, LogbookEntry } from '@/app/hooks/use-logbook';
 
-import type { LogbookEntry } from '@/app/hooks/use-logbook';
-
-interface BoardContextType {
+type BoardContextType = {
   boardName: BoardName;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -32,7 +31,7 @@ interface BoardContextType {
   saveTick: (options: SaveTickOptions) => Promise<void>;
   saveClimb: (options: Omit<SaveClimbOptions, 'setter_id' | 'user_id'>) => Promise<SaveClimbResponse>;
   updateClimb: (input: UpdateClimbInput) => Promise<UpdateClimbResponse>;
-}
+};
 
 const BoardContext = createContext<BoardContextType | undefined>(undefined);
 

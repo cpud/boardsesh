@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+import ProfileNavCard from '../profile-nav-card';
 
 // Mock dependencies before component import
 vi.mock('next/link', () => ({
@@ -18,14 +19,12 @@ vi.mock('@/app/theme/theme-config', () => ({
   },
 }));
 
-import ProfileNavCard from '../profile-nav-card';
-
-interface ProfileNavCardProps {
+type ProfileNavCardProps = {
   title: string;
   subtitle?: string;
   href: string;
   icon: React.ReactNode;
-}
+};
 
 function createDefaultProps(overrides: Partial<ProfileNavCardProps> = {}): ProfileNavCardProps {
   return {

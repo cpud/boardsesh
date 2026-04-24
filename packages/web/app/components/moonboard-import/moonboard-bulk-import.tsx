@@ -18,8 +18,7 @@ import { InboxOutlined, SaveOutlined, ClearOutlined, ArrowBackOutlined, LoginOut
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { parseMultipleScreenshots, deduplicateClimbs } from '@boardsesh/moonboard-ocr/browser';
-import type { MoonBoardClimb } from '@boardsesh/moonboard-ocr/browser';
+import { parseMultipleScreenshots, deduplicateClimbs, type MoonBoardClimb } from '@boardsesh/moonboard-ocr/browser';
 import type { MoonBoardClimbDuplicateMatch } from '@boardsesh/shared-schema';
 import MoonBoardImportCard from './moonboard-import-card';
 import MoonBoardEditModal from './moonboard-edit-modal';
@@ -40,25 +39,25 @@ import { refreshClimbSearchAfterSave } from '@/app/lib/climb-search-cache';
 import { themeTokens } from '@/app/theme/theme-config';
 import styles from './moonboard-bulk-import.module.css';
 
-interface MoonBoardBulkImportProps {
+type MoonBoardBulkImportProps = {
   layoutFolder: string;
   layoutName: string;
   layoutId: number;
   holdSetImages: string[];
   angle: number;
-}
+};
 
 type ImportWarning = { name: string; error: string };
 type DuplicateMatchMap = Record<string, MoonBoardClimbDuplicateMatch>;
 
 // State and action types for the reducer
-interface ImportState {
+type ImportState = {
   status: 'idle' | 'processing' | 'complete';
   progress: { current: number; total: number; name: string };
   climbs: MoonBoardClimb[];
   errors: ImportWarning[];
   editingClimb: MoonBoardClimb | null;
-}
+};
 
 type ImportAction =
   | { type: 'START_PROCESSING'; total: number }

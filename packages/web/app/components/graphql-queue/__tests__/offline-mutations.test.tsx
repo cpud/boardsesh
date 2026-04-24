@@ -1,6 +1,9 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { GraphQLQueueProvider, useQueueContext } from '../QueueContext';
+import type { Climb } from '@/app/lib/types';
 
 // --- Mocks must be before imports ---
 
@@ -96,15 +99,15 @@ vi.mock('../../persistent-session', () => ({
   usePersistentSession: () => mockPersistentSession,
   usePersistentSessionState: () => mockPersistentSession,
   usePersistentSessionActions: () => mockPersistentSession,
-  PersistentSessionProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  PersistentSessionProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('../../climb-actions/favorites-batch-context', () => ({
-  FavoritesProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  FavoritesProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('../../climb-actions/playlists-batch-context', () => ({
-  PlaylistsProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  PlaylistsProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('@/app/hooks/use-climb-actions-data', () => ({
@@ -138,9 +141,6 @@ vi.mock('../session-summary/session-summary-dialog', () => ({
 }));
 
 // Import after all mocks
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { GraphQLQueueProvider, useQueueContext } from '../QueueContext';
-import type { Climb } from '@/app/lib/types';
 
 const mockClimb: Climb = {
   uuid: 'climb-1',

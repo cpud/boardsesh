@@ -1,13 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
+import { StoreReviewPromptDialog } from '../store-review-prompt-dialog';
+import { requestInAppReview } from '@/app/lib/in-app-review';
 
 vi.mock('@/app/lib/in-app-review', () => ({
   requestInAppReview: vi.fn().mockResolvedValue(undefined),
 }));
-
-import { StoreReviewPromptDialog } from '../store-review-prompt-dialog';
-import { requestInAppReview } from '@/app/lib/in-app-review';
 
 const mockedRequestInAppReview = vi.mocked(requestInAppReview);
 

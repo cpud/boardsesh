@@ -9,10 +9,10 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import { requestInAppReview } from '@/app/lib/in-app-review';
 
-interface StoreReviewPromptDialogProps {
+type StoreReviewPromptDialogProps = {
   open: boolean;
   onClose: () => void;
-}
+};
 
 /**
  * Chained follow-up after an in-app star rating. Asks the user if they'd also

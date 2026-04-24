@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vite-plus/test';
-import type { ClimbActionType } from '../types';
-import { DEFAULT_ACTION_ORDER, AUTH_REQUIRED_ACTIONS, AURORA_CREDENTIALS_REQUIRED_ACTIONS } from '../types';
+import {
+  type ClimbActionType,
+  DEFAULT_ACTION_ORDER,
+  AUTH_REQUIRED_ACTIONS,
+  AURORA_CREDENTIALS_REQUIRED_ACTIONS,
+} from '../types';
 
 describe('Climb Action Types & Constants', () => {
   describe('DEFAULT_ACTION_ORDER', () => {

@@ -10,11 +10,11 @@ import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
 import { track } from '@vercel/analytics';
 import type { Climb, BoardDetails } from '@/app/lib/types';
 import { executeGraphQL } from '@/app/lib/graphql/client';
-import type {
-  GetUserFavoriteClimbsQueryResponse,
-  GetUserFavoriteClimbsQueryVariables,
+import {
+  type GetUserFavoriteClimbsQueryResponse,
+  type GetUserFavoriteClimbsQueryVariables,
+  GET_USER_FAVORITE_CLIMBS,
 } from '@/app/lib/graphql/operations/favorites';
-import { GET_USER_FAVORITE_CLIMBS } from '@/app/lib/graphql/operations/favorites';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { useQueueActions } from '@/app/components/graphql-queue';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';

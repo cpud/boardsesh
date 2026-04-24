@@ -4,8 +4,7 @@ import { getBoardDetails } from '@/app/lib/board-constants';
 import { getClimb } from '@/app/lib/data/queries';
 import { parseRouteParams } from '@/app/lib/url-utils.server';
 import CreateClimbForm from '@/app/components/create-climb/create-climb-form';
-import type { MoonBoardLayoutKey } from '@/app/lib/moonboard-config';
-import { MOONBOARD_LAYOUTS, MOONBOARD_SETS } from '@/app/lib/moonboard-config';
+import { type MoonBoardLayoutKey, MOONBOARD_LAYOUTS, MOONBOARD_SETS } from '@/app/lib/moonboard-config';
 import type { Metadata } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/lib/auth/auth-options';
@@ -15,7 +14,7 @@ export const metadata: Metadata = {
   description: 'Create a new climb on your climbing board',
 };
 
-interface CreateClimbPageProps {
+type CreateClimbPageProps = {
   params: Promise<BoardRouteParameters>;
   searchParams: Promise<{
     forkFrames?: string;
@@ -23,7 +22,7 @@ interface CreateClimbPageProps {
     forkDescription?: string;
     editClimbUuid?: string;
   }>;
-}
+};
 
 // Helper to get MoonBoard layout info from layout ID
 function getMoonBoardLayoutInfo(layoutId: number) {

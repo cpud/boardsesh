@@ -17,14 +17,14 @@ const COLOR_GREEN = 0x57f287;
 const COLOR_YELLOW = 0xfee75c;
 const COLOR_RED = 0xed4245;
 
-export interface FeedbackDiscordPayload {
+export type FeedbackDiscordPayload = {
   feedbackId: string | number | bigint;
   rating: number | null;
   comment: string | null;
   platform: AppFeedbackPlatform;
   appVersion: string | null;
   source: AppFeedbackSource;
-}
+};
 
 /** @internal exported for testing only; do not call from resolver code. */
 export function buildWebhookBody(payload: FeedbackDiscordPayload): Record<string, unknown> {

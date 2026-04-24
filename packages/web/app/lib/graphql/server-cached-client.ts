@@ -1,13 +1,16 @@
 import 'server-only';
 import { unstable_cache } from 'next/cache';
-import type { RequestDocument, Variables } from 'graphql-request';
-import { GraphQLClient } from 'graphql-request';
+import { type RequestDocument, type Variables, GraphQLClient } from 'graphql-request';
 import { sortObjectKeys } from '@/app/lib/cache-utils';
 import { getGraphQLHttpUrl } from './client';
 import { executeAuthenticatedGraphQL } from './server-graphql';
 import type { SessionFeedResult } from '@boardsesh/shared-schema';
 import type { DiscoverablePlaylist, DiscoverPlaylistsQueryResponse } from '@/app/lib/graphql/operations/playlists';
-import type { GetUserProfileStatsQueryResponse, GetUserTicksQueryResponse } from '@/app/lib/graphql/operations/ticks';
+import type {
+  GetUserClimbPercentileQueryResponse,
+  GetUserProfileStatsQueryResponse,
+  GetUserTicksQueryResponse,
+} from '@/app/lib/graphql/operations/ticks';
 
 // Re-export uncached authenticated server functions so existing imports
 // from this file continue to work without changes.
@@ -178,11 +181,9 @@ export async function cachedUserProfileStats(
  */
 export async function cachedUserClimbPercentile(
   userId: string,
-): Promise<
-  import('@/app/lib/graphql/operations/ticks').GetUserClimbPercentileQueryResponse['userClimbPercentile'] | null
-> {
+): Promise<GetUserClimbPercentileQueryResponse['userClimbPercentile'] | null> {
   const { GET_USER_CLIMB_PERCENTILE } = await import('@/app/lib/graphql/operations/ticks');
-  type Response = import('@/app/lib/graphql/operations/ticks').GetUserClimbPercentileQueryResponse;
+  type Response = GetUserClimbPercentileQueryResponse;
 
   try {
     const query = createCachedGraphQLQuery<Response>(

@@ -18,8 +18,7 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import { track } from '@vercel/analytics';
 import type { Climb, BoardDetails } from '@/app/lib/types';
-import type { TickStatus } from '../board-provider/board-provider-context';
-import { useBoardProvider } from '../board-provider/board-provider-context';
+import { type TickStatus, useBoardProvider } from '../board-provider/board-provider-context';
 import { TENSION_KILTER_GRADES, ANGLES } from '@/app/lib/board-data';
 import { isInstagramUrl } from '@/app/lib/instagram-url';
 
@@ -27,7 +26,7 @@ import dayjs from 'dayjs';
 
 type LogType = 'ascent' | 'attempt';
 
-interface LogAscentFormValues {
+type LogAscentFormValues = {
   date: dayjs.Dayjs;
   angle: number;
   attempts: number;
@@ -35,7 +34,7 @@ interface LogAscentFormValues {
   difficulty: number;
   notes?: string;
   videoUrl?: string;
-}
+};
 
 // Helper to determine tick status from attempt count (for ascents)
 const getAscentStatus = (attempts: number): TickStatus => {
@@ -50,11 +49,11 @@ const getTickStatus = (logType: LogType, attempts: number): TickStatus => {
   return getAscentStatus(attempts);
 };
 
-interface LogAscentFormProps {
+type LogAscentFormProps = {
   currentClimb: Climb;
   boardDetails: BoardDetails;
   onClose: () => void;
-}
+};
 
 export const LogAscentForm: React.FC<LogAscentFormProps> = ({ currentClimb, boardDetails, onClose }) => {
   const { saveTick, isAuthenticated } = useBoardProvider();

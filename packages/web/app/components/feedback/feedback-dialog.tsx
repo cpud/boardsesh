@@ -14,12 +14,12 @@ import styles from './feedback-dialog.module.css';
 
 export type FeedbackDialogMode = 'rating' | 'bug';
 
-export interface FeedbackSubmission {
+export type FeedbackSubmission = {
   rating: number | null;
   comment: string | null;
-}
+};
 
-interface FeedbackDialogProps {
+type FeedbackDialogProps = {
   open: boolean;
   onClose: () => void;
   source: AppFeedbackSource;
@@ -32,7 +32,7 @@ interface FeedbackDialogProps {
    * a rating submission. Not invoked when the form is cancelled/closed.
    */
   onSubmitted?: (submission: FeedbackSubmission) => void;
-}
+};
 
 const FeedbackDialogBody: React.FC<Omit<FeedbackDialogProps, 'open'>> = ({
   onClose,

@@ -1,6 +1,5 @@
 import { useCallback, useRef } from 'react';
-import type { Client } from '../../graphql-queue/graphql-client';
-import { execute } from '../../graphql-queue/graphql-client';
+import { type Client, execute } from '../../graphql-queue/graphql-client';
 import {
   ADD_QUEUE_ITEM,
   REMOVE_QUEUE_ITEM,
@@ -10,15 +9,14 @@ import {
   REPLACE_QUEUE_ITEM,
 } from '@boardsesh/shared-schema';
 import type { ClimbQueueItem as LocalClimbQueueItem } from '../../queue-control/types';
-import type { Session } from '../types';
-import { toClimbQueueItemInput } from '../types';
+import { type Session, toClimbQueueItemInput } from '../types';
 
-interface UseQueueMutationsArgs {
+type UseQueueMutationsArgs = {
   client: Client | null;
   session: Session | null;
-}
+};
 
-export interface QueueMutationsActions {
+export type QueueMutationsActions = {
   addQueueItem: (item: LocalClimbQueueItem, position?: number) => Promise<void>;
   removeQueueItem: (uuid: string) => Promise<void>;
   setCurrentClimb: (
@@ -29,7 +27,7 @@ export interface QueueMutationsActions {
   mirrorCurrentClimb: (mirrored: boolean) => Promise<void>;
   setQueue: (queue: LocalClimbQueueItem[], currentClimbQueueItem?: LocalClimbQueueItem | null) => Promise<void>;
   replaceQueueItem: (uuid: string, item: LocalClimbQueueItem) => Promise<void>;
-}
+};
 
 /**
  * Serialize-and-supersede pattern: at most one mutation in-flight at a time.
@@ -38,10 +36,10 @@ export interface QueueMutationsActions {
  * The returned promise resolves/rejects when the actual server call finishes
  * (or immediately if superseded by a later call).
  */
-interface LatestWinsRefs<TArgs> {
+type LatestWinsRefs<TArgs> = {
   inFlight: boolean;
   pending: TArgs | null;
-}
+};
 
 async function executeWithLatestWins<TArgs>(
   refs: LatestWinsRefs<TArgs>,

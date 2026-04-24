@@ -383,7 +383,7 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
                     item={row.item}
                     index={row.queueIndex}
                     isCurrent={false}
-                    isHistory={true}
+                    isHistory
                     boardDetails={boardDetails}
                     pathname={pathname}
                     isDark={isDark}
@@ -403,7 +403,7 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
                   <QueueClimbListItem
                     item={row.item}
                     index={row.queueIndex}
-                    isCurrent={true}
+                    isCurrent
                     isHistory={false}
                     boardDetails={boardDetails}
                     pathname={pathname}
@@ -485,7 +485,7 @@ const QueueList = forwardRef<QueueListHandle, QueueListProps>(
                 {row.type === 'end-message' && (
                   <div className={styles.noMoreSuggestions}>
                     <Typography variant="body2" color="text.disabled">
-                      That's all for now
+                      That&apos;s all for now
                     </Typography>
                   </div>
                 )}

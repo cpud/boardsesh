@@ -2,8 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getImageUrl } from './util';
 import type { BoardDetails } from '@/app/lib/types';
-import type { HeatmapData } from './types';
-import type { LitUpHoldsMap } from './types';
+import type { HeatmapData, LitUpHoldsMap } from './types';
 import { scaleLog } from 'd3-scale';
 import useHeatmapData from '../search-drawer/use-heatmap';
 import { usePathname } from 'next/navigation';
@@ -41,11 +40,11 @@ const getAngleFromPath = (pathname: string): number => {
   return isNaN(angle) ? 40 : angle; // Default to 40 if not valid
 };
 
-interface BoardHeatmapProps {
+type BoardHeatmapProps = {
   boardDetails: BoardDetails;
   litUpHoldsMap?: LitUpHoldsMap;
   onHoldClick?: (holdId: number) => void;
-}
+};
 
 // Define the color mode type including user-specific modes
 type ColorMode =
@@ -315,12 +314,7 @@ const BoardHeatmap: React.FC<BoardHeatmapProps> = ({ boardDetails, litUpHoldsMap
             }}
           >
             <div style={{ width: '120px', height: '120px' }}>
-              <BoardRenderer
-                litUpHoldsMap={animatedHoldsMap}
-                mirrored={false}
-                boardDetails={boardDetails}
-                thumbnail={true}
-              />
+              <BoardRenderer litUpHoldsMap={animatedHoldsMap} mirrored={false} boardDetails={boardDetails} thumbnail />
             </div>
             <span style={{ fontSize: '14px', color: 'var(--semantic-surface)', fontWeight: 500 }}>
               Loading heatmap...
@@ -388,7 +382,7 @@ const BoardHeatmap: React.FC<BoardHeatmapProps> = ({ boardDetails, litUpHoldsMap
                         dominantBaseline="middle"
                         fontSize={Math.max(8, hold.r * 0.6)}
                         fontWeight="bold"
-                        fill={'#000'}
+                        fill="#000"
                         style={{ userSelect: 'none' }}
                       >
                         {value}

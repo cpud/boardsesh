@@ -26,8 +26,7 @@ import {
 } from '../graphql-queue/QueueContext';
 import type { CurrentClimbDataType, QueueListDataType, SearchDataType, SessionDataType } from '../graphql-queue/types';
 import { usePersistentSession } from '../persistent-session';
-import { getBaseBoardPath } from '@/app/lib/url-utils';
-import { DEFAULT_SEARCH_PARAMS } from '@/app/lib/url-utils';
+import { getBaseBoardPath, DEFAULT_SEARCH_PARAMS } from '@/app/lib/url-utils';
 import type { BoardDetails, Angle, Climb, SearchRequestPagination } from '@/app/lib/types';
 import type { ClimbQueueItem } from './types';
 import { usePathname } from 'next/navigation';
@@ -36,6 +35,7 @@ import { canAddClimbToBoard } from '@/app/lib/board-compatibility';
 import { getBoardDetailsForPlaylist } from '@/app/lib/board-config-for-playlist';
 import { useSnackbar } from '../providers/snackbar-provider';
 import { queueAddErrorMessage } from '../board-lock/queue-add-error-messages';
+import { QueueBridgeBoardInfoContext, type QueueBridgeBoardInfo } from './queue-bridge-board-info-context';
 
 const LiveActivityBridge = dynamic(() => import('@/app/lib/live-activity/live-activity-bridge'), {
   ssr: false,
@@ -64,37 +64,17 @@ function deriveSeedStateFromClimb(climb: Climb): { boardDetails: BoardDetails; b
 
 // -------------------------------------------------------------------
 // Board info context (for the root-level bottom bar to know what board is active)
+// Extracted to ./queue-bridge-board-info-context so consumers (e.g. board-lock
+// hooks) can import it without forming an import cycle through this file.
 // -------------------------------------------------------------------
 
-interface QueueBridgeBoardInfo {
-  boardDetails: BoardDetails | null;
-  angle: Angle;
-  hasActiveQueue: boolean;
-  /**
-   * True once the persistent session has finished restoring from IndexedDB
-   * (or immediately when a board-route injector is active). Consumers that
-   * want to read `hasActiveQueue`/`boardDetails` on mount must wait for this
-   * flag — otherwise they race the async restore and see stale defaults.
-   */
-  isHydrated: boolean;
-}
-
-const QueueBridgeBoardInfoContext = createContext<QueueBridgeBoardInfo>({
-  boardDetails: null,
-  angle: 0,
-  hasActiveQueue: false,
-  isHydrated: false,
-});
-
-export function useQueueBridgeBoardInfo() {
-  return useContext(QueueBridgeBoardInfoContext);
-}
+export { useQueueBridgeBoardInfo } from './queue-bridge-board-info-context';
 
 // -------------------------------------------------------------------
 // Setter context (for the injector to push board-route context into the bridge)
 // -------------------------------------------------------------------
 
-interface QueueBridgeSetters {
+type QueueBridgeSetters = {
   inject: (
     ctx: GraphQLQueueContextType,
     actions: GraphQLQueueActionsType,
@@ -105,7 +85,7 @@ interface QueueBridgeSetters {
   ) => void;
   updateContext: (ctx: GraphQLQueueContextType, actions: GraphQLQueueActionsType, data: GraphQLQueueDataType) => void;
   clear: () => void;
-}
+};
 
 const QueueBridgeSetterContext = createContext<QueueBridgeSetters>({
   inject: () => {},
@@ -663,6 +643,11 @@ export function QueueBridgeProvider({ children }: { children: React.ReactNode })
     ],
   );
 
+  // Renamed locals so jsx-handler-names sees on*-prefixed identifiers being
+  // passed to the on*-prefixed props on LiveActivityBridge below.
+  const onSetCurrentClimb = adapter.context.setCurrentClimbQueueItem;
+  const onWidgetNavigate = effectiveActions.dispatchWidgetNavigation;
+
   return (
     <QueueBridgeSetterContext.Provider value={setters}>
       <QueueBridgeBoardInfoContext.Provider value={boardInfo}>
@@ -681,8 +666,8 @@ export function QueueBridgeProvider({ children }: { children: React.ReactNode })
                           boardDetails={adapter.boardDetails}
                           sessionId={adapter.context.sessionId}
                           isSessionActive={adapter.context.isSessionActive}
-                          onSetCurrentClimb={adapter.context.setCurrentClimbQueueItem}
-                          onWidgetNavigate={effectiveActions.dispatchWidgetNavigation}
+                          onSetCurrentClimb={onSetCurrentClimb}
+                          onWidgetNavigate={onWidgetNavigate}
                         />
                         {children}
                       </SessionContext.Provider>
@@ -702,10 +687,10 @@ export function QueueBridgeProvider({ children }: { children: React.ReactNode })
 // QueueBridgeInjector — placed inside board route layouts
 // -------------------------------------------------------------------
 
-interface QueueBridgeInjectorProps {
+type QueueBridgeInjectorProps = {
   boardDetails: BoardDetails;
   angle: Angle;
-}
+};
 
 export function QueueBridgeInjector({ boardDetails, angle }: QueueBridgeInjectorProps) {
   const { inject, updateContext, clear } = useContext(QueueBridgeSetterContext);

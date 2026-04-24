@@ -1,22 +1,22 @@
 import type { DaemonOptions } from './types';
 
-export interface ResolvedDaemonOptions {
+export type ResolvedDaemonOptions = {
   timeZone: string;
   quietHoursStart: number;
   quietHoursEnd: number;
   quietPollMs: number;
   minDelayMinutes: number;
   maxDelayMinutes: number;
-}
+};
 
-export interface DaemonLoopRuntime {
+export type DaemonLoopRuntime = {
   now?: () => Date;
   random?: () => number;
   sleep?: (ms: number, signal?: AbortSignal) => Promise<void>;
   signal?: AbortSignal;
   onLog?: (message: string) => void;
   onCycleError?: (error: unknown) => void;
-}
+};
 
 export const DEFAULT_DAEMON_OPTIONS: ResolvedDaemonOptions = {
   timeZone: 'Australia/Sydney',

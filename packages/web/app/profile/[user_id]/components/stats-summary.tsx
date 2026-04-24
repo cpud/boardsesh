@@ -7,8 +7,12 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
-import { CssBarChart, GroupedBarChart } from '@/app/components/charts/css-bar-chart';
-import type { CssBarChartBar, GroupedBar } from '@/app/components/charts/css-bar-chart';
+import {
+  CssBarChart,
+  GroupedBarChart,
+  type CssBarChartBar,
+  type GroupedBar,
+} from '@/app/components/charts/css-bar-chart';
 import { EmptyState } from '@/app/components/ui/empty-state';
 import { themeTokens } from '@/app/theme/theme-config';
 import { AscentStatusIcon } from '@/app/components/ascent-status/ascent-status-icon';
@@ -16,14 +20,14 @@ import type { LayoutPercentage, LayoutLegendEntry, VPointsTimelineData } from '.
 import VPointsChart from './v-points-chart';
 import styles from '../profile-page.module.css';
 
-interface GradeHighlight {
+type GradeHighlight = {
   label: string;
   color: string;
   textColor: string;
   status: 'send' | 'flash';
-}
+};
 
-export interface StatsSummaryProps {
+export type StatsSummaryProps = {
   statisticsSummary: {
     totalAscents: number;
     layoutPercentages: LayoutPercentage[];
@@ -37,7 +41,7 @@ export interface StatsSummaryProps {
   aggregatedFlashRedpointBars: GroupedBar[] | null;
   vPointsTimeline: VPointsTimelineData | null;
   percentile?: { totalDistinctClimbs: number; percentile: number; totalActiveUsers: number } | null;
-}
+};
 
 export default function StatsSummary({
   statisticsSummary,

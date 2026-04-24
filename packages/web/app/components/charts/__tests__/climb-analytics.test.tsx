@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
+
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
+import ClimbAnalytics from '../climb-analytics';
 
 const mockRequest = vi.fn();
 const mockLineChart = vi.fn();
@@ -17,12 +19,10 @@ vi.mock('@mui/x-charts/LineChart', () => ({
   },
 }));
 
-import ClimbAnalytics from '../climb-analytics';
-
-interface MockLineChartProps {
+type MockLineChartProps = {
   series: Array<Record<string, unknown>>;
   xAxis: Array<{ tickInterval?: (value: string, index: number) => boolean }>;
-}
+};
 
 const MOCK_RESPONSE = {
   climbStatsHistory: [

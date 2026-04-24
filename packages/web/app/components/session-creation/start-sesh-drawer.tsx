@@ -13,8 +13,7 @@ import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
 import drawerCss from '../swipeable-drawer/swipeable-drawer.module.css';
 import { useDrawerDragResize } from '@/app/hooks/use-drawer-drag-resize';
 import { themeTokens } from '@/app/theme/theme-config';
-import SessionCreationForm from './session-creation-form';
-import type { SessionCreationFormData } from './session-creation-form';
+import SessionCreationForm, { type SessionCreationFormData } from './session-creation-form';
 import BoardSelectorDrawer from '@/app/components/board-selector-drawer/board-selector-drawer';
 import BoardDiscoveryScroll from '@/app/components/board-scroll/board-discovery-scroll';
 import BoardScrollCard from '@/app/components/board-scroll/board-scroll-card';
@@ -41,12 +40,12 @@ import type { StoredBoardConfig } from '@/app/lib/saved-boards-db';
 import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
 import type { BoardName } from '@/app/lib/types';
 
-interface StartSeshDrawerProps {
+type StartSeshDrawerProps = {
   open: boolean;
   onClose: () => void;
   onTransitionEnd?: (open: boolean) => void;
   boardConfigs?: BoardConfigData;
-}
+};
 
 export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardConfigs }: StartSeshDrawerProps) {
   const { status } = useSession();

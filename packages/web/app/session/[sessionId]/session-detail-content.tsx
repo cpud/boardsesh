@@ -23,7 +23,12 @@ import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import type { SessionDetail, SessionDetailTick, SessionFeedParticipant } from '@boardsesh/shared-schema';
+import type {
+  SessionDetail,
+  SessionDetailTick,
+  SessionFeedParticipant,
+  SessionSummary,
+} from '@boardsesh/shared-schema';
 import VoteButton from '@/app/components/social/vote-button';
 import CommentSection from '@/app/components/social/comment-section';
 import { VoteSummaryProvider } from '@/app/components/social/vote-summary-context';
@@ -42,8 +47,9 @@ import UserSearchDialog from './user-search-dialog';
 import SessionOverviewPanel, {
   buildSessionSummaryParts,
 } from '@/app/components/session-details/session-overview-panel';
-import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
-import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
+import CollapsibleSection, {
+  type CollapsibleSectionConfig,
+} from '@/app/components/collapsible-section/collapsible-section';
 import { CssBarChart } from '@/app/components/charts/css-bar-chart';
 import { buildSessionGradeBars, SESSION_GRADE_LEGEND } from '@/app/components/charts/session-grade-bars';
 import { useGradeFormat } from '@/app/hooks/use-grade-format';
@@ -51,9 +57,8 @@ import { generateSessionName } from '@/app/lib/session-utils';
 import { ConfirmPopover } from '@/app/components/ui/confirm-popover';
 import { useDeleteTick } from '@/app/hooks/use-delete-tick';
 import SaveToHealthKitButton from '@/app/components/healthkit/save-to-healthkit-button';
-import type { SessionSummary } from '@boardsesh/shared-schema';
 
-interface SessionDetailContentProps {
+type SessionDetailContentProps = {
   session: SessionDetail | null;
   sessionId?: string;
   embedded?: boolean;
@@ -67,7 +72,7 @@ interface SessionDetailContentProps {
   onAngleChange?: (angle: number) => void;
   /** User-facing name of the named board (e.g., "My Home Wall") */
   namedBoardName?: string;
-}
+};
 
 function formatDate(isoString: string): string {
   return new Date(isoString).toLocaleDateString(undefined, {
@@ -302,40 +307,26 @@ export default function SessionDetailContent({
 
   const { boards: myBoards } = useMyBoards(true);
 
-  if (!session) {
-    return (
-      <Box sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-          <IconButton component={Link} href="/">
-            <ArrowBackOutlined />
-          </IconButton>
-          <Typography variant="h6">Session Not Found</Typography>
-        </Box>
-        <Typography color="text.secondary">This session could not be found. It may have been removed.</Typography>
-      </Box>
-    );
-  }
-
-  const {
-    sessionId,
-    sessionType,
-    sessionName,
-    participants,
-    totalSends,
-    totalFlashes,
-    totalAttempts,
-    tickCount,
-    gradeDistribution,
-    boardTypes,
-    hardestGrade,
-    firstTickAt,
-    durationMinutes,
-    goal,
-    ticks,
-    upvotes,
-    downvotes,
-    commentCount,
-  } = session;
+  // Derive values from session with null-safe defaults so hooks below can run unconditionally.
+  // The actual null check / early return happens after all hooks are called.
+  const sessionId = session?.sessionId ?? '';
+  const sessionType = session?.sessionType;
+  const sessionName = session?.sessionName;
+  const participants = session?.participants ?? [];
+  const totalSends = session?.totalSends ?? 0;
+  const totalFlashes = session?.totalFlashes ?? 0;
+  const totalAttempts = session?.totalAttempts ?? 0;
+  const tickCount = session?.tickCount ?? 0;
+  const gradeDistribution = session?.gradeDistribution ?? [];
+  const boardTypes = session?.boardTypes ?? [];
+  const hardestGrade = session?.hardestGrade;
+  const firstTickAt = session?.firstTickAt ?? '';
+  const durationMinutes = session?.durationMinutes;
+  const goal = session?.goal;
+  const ticks = session?.ticks ?? [];
+  const upvotes = session?.upvotes ?? 0;
+  const downvotes = session?.downvotes ?? 0;
+  const commentCount = session?.commentCount ?? 0;
 
   const currentUserId = authSession?.user?.id;
   const isInferred = sessionType === 'inferred';
@@ -345,24 +336,25 @@ export default function SessionDetailContent({
   const isMultiUser = participants.length > 1;
   const displayName = sessionName || generateSessionName(firstTickAt, boardTypes);
 
-  const lastTickAt = session.lastTickAt;
-  const healthKitSummary: SessionSummary | null = isParticipant
-    ? {
-        sessionId,
-        totalSends,
-        totalAttempts,
-        gradeDistribution: gradeDistribution.map((g) => ({
-          grade: g.grade,
-          count: (g.flash ?? 0) + (g.send ?? 0),
-        })),
-        hardestClimb: null,
-        participants: [],
-        startedAt: firstTickAt,
-        endedAt: lastTickAt,
-        durationMinutes: durationMinutes ?? null,
-        goal: goal ?? null,
-      }
-    : null;
+  const lastTickAt = session?.lastTickAt ?? '';
+  const healthKitSummary: SessionSummary | null =
+    session && isParticipant
+      ? {
+          sessionId,
+          totalSends,
+          totalAttempts,
+          gradeDistribution: gradeDistribution.map((g) => ({
+            grade: g.grade,
+            count: (g.flash ?? 0) + (g.send ?? 0),
+          })),
+          hardestClimb: null,
+          participants: [],
+          startedAt: firstTickAt,
+          endedAt: lastTickAt,
+          durationMinutes: durationMinutes ?? null,
+          goal: goal ?? null,
+        }
+      : null;
   const healthKitBoardType = boardTypes[0] ?? '';
 
   // Build a lookup from userId to participant info (memoized to avoid recreating on every render)
@@ -655,6 +647,20 @@ export default function SessionDetailContent({
     effectiveGradeDistribution,
     gradeBars,
   ]);
+
+  if (!session) {
+    return (
+      <Box sx={{ p: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <IconButton component={Link} href="/">
+            <ArrowBackOutlined />
+          </IconButton>
+          <Typography variant="h6">Session Not Found</Typography>
+        </Box>
+        <Typography color="text.secondary">This session could not be found. It may have been removed.</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box

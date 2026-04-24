@@ -117,12 +117,12 @@ export const encodePositionAndColorV2 = (position: number, ledColor: string, sca
 
 // --- Packet generation ---
 
-interface CommandBytes {
+type CommandBytes = {
   middle: number;
   first: number;
   last: number;
   only: number;
-}
+};
 
 const V3_COMMANDS: CommandBytes = {
   middle: V3_PACKET_MIDDLE,
@@ -138,7 +138,7 @@ const V2_COMMANDS: CommandBytes = {
   only: V2_PACKET_ONLY,
 };
 
-export interface BluetoothPacketResult {
+export type BluetoothPacketResult = {
   packet: Uint8Array;
   /** Placements in frames with no LED position for this board size */
   skippedPositionCount: number;
@@ -146,7 +146,7 @@ export interface BluetoothPacketResult {
   skippedRoleCount: number;
   /** Total placement entries parsed from the frames string */
   totalPlacements: number;
-}
+};
 
 /**
  * Build the BLE packet for a set of Aurora LED placements.

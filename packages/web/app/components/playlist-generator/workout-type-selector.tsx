@@ -5,15 +5,14 @@ import MuiList from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import Typography from '@mui/material/Typography';
 import { ChevronRightOutlined } from '@mui/icons-material';
-import type { WorkoutType } from './types';
-import { WORKOUT_TYPES } from './types';
+import { type WorkoutType, WORKOUT_TYPES } from './types';
 import { getWorkoutIcon } from './workout-icons';
 import { themeTokens } from '@/app/theme/theme-config';
 import styles from './workout-type-selector.module.css';
 
-interface WorkoutTypeSelectorProps {
+type WorkoutTypeSelectorProps = {
   onSelect: (type: WorkoutType) => void;
-}
+};
 
 const WorkoutTypeSelector: React.FC<WorkoutTypeSelectorProps> = ({ onSelect }) => {
   return (

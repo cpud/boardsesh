@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import type { SizeRow } from '@/app/lib/slug-utils';
-import { getSizeBySlug } from '@/app/lib/slug-utils';
+import { type SizeRow, getSizeBySlug } from '@/app/lib/slug-utils';
 import type { BoardName } from '@/app/lib/types';
 
 export async function GET(

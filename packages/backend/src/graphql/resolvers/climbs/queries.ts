@@ -1,8 +1,16 @@
 import { eq, and, gte, desc } from 'drizzle-orm';
-import type { CheckMoonBoardClimbDuplicatesInput, ClimbSearchInput, ConnectionContext } from '@boardsesh/shared-schema';
-import { SUPPORTED_BOARDS, USER_SPECIFIC_SEARCH_PARAMS } from '@boardsesh/shared-schema';
-import type { ClimbSearchParams, ParsedBoardRouteParameters } from '../../../db/queries/climbs/index';
-import { getClimbByUuid } from '../../../db/queries/climbs/index';
+import {
+  type CheckMoonBoardClimbDuplicatesInput,
+  type ClimbSearchInput,
+  type ConnectionContext,
+  SUPPORTED_BOARDS,
+  USER_SPECIFIC_SEARCH_PARAMS,
+} from '@boardsesh/shared-schema';
+import {
+  type ClimbSearchParams,
+  type ParsedBoardRouteParameters,
+  getClimbByUuid,
+} from '../../../db/queries/climbs/index';
 import { isValidBoardName } from '../../../db/queries/util/table-select';
 import { applyRateLimit, validateInput } from '../shared/helpers';
 import { findMoonBoardDuplicateMatches } from './moonboard-duplicates';

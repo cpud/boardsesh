@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
+import SetPasswordSection from '../set-password-section';
 
 // Mock server-only
 vi.mock('server-only', () => ({}));
@@ -10,8 +11,6 @@ const mockShowMessage = vi.fn();
 vi.mock('@/app/components/providers/snackbar-provider', () => ({
   useSnackbar: () => ({ showMessage: mockShowMessage }),
 }));
-
-import SetPasswordSection from '../set-password-section';
 
 let mockFetch: ReturnType<typeof vi.fn>;
 
@@ -26,7 +25,7 @@ describe('SetPasswordSection', () => {
     it('shows password enabled status', () => {
       render(
         <SetPasswordSection
-          hasPassword={true}
+          hasPassword
           userEmail="user@example.com"
           linkedProviders={['google']}
           onPasswordSet={vi.fn()}
@@ -39,7 +38,7 @@ describe('SetPasswordSection', () => {
     it('does not show the set password form', () => {
       render(
         <SetPasswordSection
-          hasPassword={true}
+          hasPassword
           userEmail="user@example.com"
           linkedProviders={['google']}
           onPasswordSet={vi.fn()}

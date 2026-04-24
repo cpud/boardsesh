@@ -244,60 +244,51 @@ export function TickAction({
     </Stack>
   );
 
-  const drawers = (
-    <>
-      {boardProvider ? (
-        // Inside a board route - existing flow unchanged
-        isAuthenticated ? (
-          <LogAscentDrawer
-            open={drawerVisible}
-            onClose={closeDrawer}
-            currentClimb={climb}
-            boardDetails={boardDetails}
-          />
-        ) : (
-          <SwipeableDrawer
-            title="Sign In Required"
-            placement="bottom"
-            onClose={closeDrawer}
-            open={drawerVisible}
-            styles={{ wrapper: { height: '60%' } }}
-          >
-            {renderSignInPrompt()}
-          </SwipeableDrawer>
-        )
-      ) : isAuthenticated ? (
-        // Outside board route, authenticated - board selector + log form
-        <SwipeableDrawer
-          title={showBoardSelector ? 'Select Board' : 'Log Ascent'}
-          placement="bottom"
-          onClose={closeDrawer}
-          open={drawerVisible}
-          fullHeight={!showBoardSelector}
-          styles={{ wrapper: { height: showBoardSelector ? '60%' : '100%' } }}
-        >
-          {showBoardSelector ? (
-            renderBoardSelector()
-          ) : (
-            <BoardProvider boardName={resolvedBoardName}>
-              {noMatchingBoards && renderNoMatchingBoardsMessage()}
-              {renderLogAscentForm()}
-            </BoardProvider>
-          )}
-        </SwipeableDrawer>
+  const drawers = boardProvider ? (
+    // Inside a board route - existing flow unchanged
+    isAuthenticated ? (
+      <LogAscentDrawer open={drawerVisible} onClose={closeDrawer} currentClimb={climb} boardDetails={boardDetails} />
+    ) : (
+      <SwipeableDrawer
+        title="Sign In Required"
+        placement="bottom"
+        onClose={closeDrawer}
+        open={drawerVisible}
+        styles={{ wrapper: { height: '60%' } }}
+      >
+        {renderSignInPrompt()}
+      </SwipeableDrawer>
+    )
+  ) : isAuthenticated ? (
+    // Outside board route, authenticated - board selector + log form
+    <SwipeableDrawer
+      title={showBoardSelector ? 'Select Board' : 'Log Ascent'}
+      placement="bottom"
+      onClose={closeDrawer}
+      open={drawerVisible}
+      fullHeight={!showBoardSelector}
+      styles={{ wrapper: { height: showBoardSelector ? '60%' : '100%' } }}
+    >
+      {showBoardSelector ? (
+        renderBoardSelector()
       ) : (
-        // Outside board route, not authenticated - sign-in prompt
-        <SwipeableDrawer
-          title="Sign In Required"
-          placement="bottom"
-          onClose={closeDrawer}
-          open={drawerVisible}
-          styles={{ wrapper: { height: '60%' } }}
-        >
-          {renderSignInPrompt()}
-        </SwipeableDrawer>
+        <BoardProvider boardName={resolvedBoardName}>
+          {noMatchingBoards && renderNoMatchingBoardsMessage()}
+          {renderLogAscentForm()}
+        </BoardProvider>
       )}
-    </>
+    </SwipeableDrawer>
+  ) : (
+    // Outside board route, not authenticated - sign-in prompt
+    <SwipeableDrawer
+      title="Sign In Required"
+      placement="bottom"
+      onClose={closeDrawer}
+      open={drawerVisible}
+      styles={{ wrapper: { height: '60%' } }}
+    >
+      {renderSignInPrompt()}
+    </SwipeableDrawer>
   );
 
   // Icon mode - for Card actions

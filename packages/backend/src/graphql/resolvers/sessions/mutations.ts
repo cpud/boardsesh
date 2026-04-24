@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { ConnectionContext, SessionEvent } from '@boardsesh/shared-schema';
+import type { ConnectionContext, SessionEvent, ClimbQueueItem } from '@boardsesh/shared-schema';
 import { roomManager } from '../../../services/room-manager';
 import { pubsub } from '../../../pubsub/index';
 import { updateContext } from '../../context';
@@ -14,7 +14,6 @@ import {
   ClimbQueueItemSchema,
   QueueArraySchema,
 } from '../../../validation/schemas';
-import type { ClimbQueueItem } from '@boardsesh/shared-schema';
 import type { CreateSessionInput } from '../shared/types';
 import { db } from '../../../db/client';
 import { esp32Controllers, userBoards } from '@boardsesh/db/schema/app';

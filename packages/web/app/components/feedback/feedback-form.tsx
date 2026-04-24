@@ -14,7 +14,7 @@ type View = 'rating' | 'comment';
 
 const BUG_COMMENT_MIN = 10;
 
-interface FeedbackFormProps {
+type FeedbackFormProps = {
   /**
    * 'prompt' — compact, inline rating + save icon; low ratings reveal a comment.
    * 'drawer-feedback' — manual from user drawer; rating required, comment optional.
@@ -26,7 +26,7 @@ interface FeedbackFormProps {
   title: string;
   submitLabel?: string;
   titleId?: string;
-}
+};
 
 export const FeedbackForm: React.FC<FeedbackFormProps> = ({
   mode,

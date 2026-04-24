@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import type { PropsWithChildren } from 'react';
+import React, { useState, useEffect, type PropsWithChildren } from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Badge from '@mui/material/Badge';
@@ -31,9 +30,9 @@ const OnboardingTour = dynamic(() => import('@/app/components/onboarding/onboard
   ssr: false,
 });
 
-interface ListLayoutClientProps {
+type ListLayoutClientProps = {
   boardDetails: BoardDetails;
-}
+};
 
 // Isolated component for the queue tab label - subscribes to context independently
 const QueueTabLabel: React.FC = () => {

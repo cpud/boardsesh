@@ -2,7 +2,7 @@ import { v5 as uuidv5 } from 'uuid';
 import { db } from '../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { sql, eq, and, isNull, desc, inArray, gte } from 'drizzle-orm';
-import { recalculateSessionStats } from '../graphql/resolvers/social/session-mutations';
+import { recalculateSessionStats } from '../graphql/resolvers/social/session-stats';
 
 // Namespace UUID for generating deterministic inferred session IDs
 const INFERRED_SESSION_NAMESPACE = '6ba7b812-9dad-11d1-80b4-00c04fd430c8';
@@ -13,7 +13,7 @@ const SESSION_GAP_MS = 4 * 60 * 60 * 1000;
 /**
  * Tick data needed for session grouping
  */
-export interface TickForGrouping {
+export type TickForGrouping = {
   id: bigint | number;
   uuid: string;
   userId: string;
@@ -21,12 +21,12 @@ export interface TickForGrouping {
   status: string;
   sessionId: string | null;
   inferredSessionId: string | null;
-}
+};
 
 /**
  * Result of grouping ticks into inferred sessions
  */
-export interface InferredSessionGroup {
+export type InferredSessionGroup = {
   sessionId: string;
   userId: string;
   firstTickAt: string;
@@ -36,7 +36,7 @@ export interface InferredSessionGroup {
   totalFlashes: number;
   totalAttempts: number;
   tickCount: number;
-}
+};
 
 /**
  * Generate a deterministic UUID v5 for an inferred session.

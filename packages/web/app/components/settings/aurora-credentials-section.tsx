@@ -43,25 +43,24 @@ import {
   type AuroraExportPreview,
   type StrippedExportData,
 } from '@/app/lib/data-sync/aurora/parse-aurora-export';
-import { AURORA_BOARDS } from '@boardsesh/shared-schema';
-import type { AuroraBoardName } from '@boardsesh/shared-schema';
+import { AURORA_BOARDS, type AuroraBoardName } from '@boardsesh/shared-schema';
 import styles from './aurora-credentials-section.module.css';
 
-interface BoardUnsyncedCounts {
+type BoardUnsyncedCounts = {
   ascents: number;
   climbs: number;
-}
+};
 
 export type ImportPhase = 'preview' | 'importing' | 'complete' | 'error';
 
 export type ImportStep = 'climbs' | 'resolving' | 'dedup' | 'ascents' | 'attempts' | 'circuits' | 'sessions';
 
-export interface ImportProgress {
+export type ImportProgress = {
   step: ImportStep;
   message?: string;
   current?: number;
   total?: number;
-}
+};
 
 export const STEP_ORDER: ImportStep[] = ['climbs', 'resolving', 'dedup', 'ascents', 'attempts', 'circuits', 'sessions'];
 
@@ -92,7 +91,7 @@ ${name}`;
   return `mailto:peter@auroraclimbing.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
-export interface BoardCredentialCardProps {
+export type BoardCredentialCardProps = {
   boardType: AuroraBoardName;
   credential: AuroraCredentialStatus | null;
   unsyncedCounts: BoardUnsyncedCounts;
@@ -103,7 +102,7 @@ export interface BoardCredentialCardProps {
   isImporting: boolean;
   userName?: string | null;
   userEmail?: string | null;
-}
+};
 
 export function BoardCredentialCard({
   boardType,
@@ -591,9 +590,9 @@ export default function AuroraCredentialsSection() {
         <CardContent>
           <Typography variant="h5">Board Accounts</Typography>
           <Typography variant="body2" component="span" color="text.secondary" className={styles.sectionDescription}>
-            Link your board accounts to import your Aurora data to Boardsesh, or import from a JSON export file. We'll
-            automatically sync your logbook, ascents, and climbs FROM Aurora every 12 hours. Data created in Boardsesh
-            stays local and does not sync back to Aurora.
+            Link your board accounts to import your Aurora data to Boardsesh, or import from a JSON export file.
+            We&apos;ll automatically sync your logbook, ascents, and climbs FROM Aurora every 12 hours. Data created in
+            Boardsesh stays local and does not sync back to Aurora.
           </Typography>
 
           <Stack spacing={2} className={styles.cardsContainer}>
@@ -718,8 +717,8 @@ export default function AuroraCredentialsSection() {
                 </ListItem>
               </List>
               <Typography variant="body2" color="text.secondary">
-                Climbs will be matched by name. Any that can't be matched will be reported after import. Re-importing
-                the same file will not create duplicates.
+                Climbs will be matched by name. Any that can&apos;t be matched will be reported after import.
+                Re-importing the same file will not create duplicates.
               </Typography>
             </>
           )}

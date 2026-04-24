@@ -1,12 +1,11 @@
 import type { ClimbQueueItem, SessionUser } from '@boardsesh/shared-schema';
 import { db } from '../../db/client';
-import { sessions } from '../../db/schema';
+import { sessions, type Session } from '../../db/schema';
 import type { RedisSessionStore } from '../redis-session-store';
 import type { DistributedStateManager } from '../distributed-state';
 import type { ConnectedClient } from './types';
 import { restoreSessionWithLock } from './session-restoration';
 import type { WriteScheduler } from './write-scheduler';
-import type { Session } from '../../db/schema';
 
 /**
  * Register a new client connection.

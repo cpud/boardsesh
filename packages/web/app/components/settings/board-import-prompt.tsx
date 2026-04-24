@@ -33,10 +33,10 @@ import {
 import type { AuroraBoardName } from '@boardsesh/shared-schema';
 import styles from './aurora-credentials-section.module.css';
 
-interface BoardImportPromptProps {
+type BoardImportPromptProps = {
   boardType: AuroraBoardName;
   onImportComplete?: () => void;
-}
+};
 
 export default function BoardImportPrompt({ boardType, onImportComplete }: BoardImportPromptProps) {
   const { showMessage } = useSnackbar();
@@ -388,8 +388,8 @@ export default function BoardImportPrompt({ boardType, onImportComplete }: Board
                 </ListItem>
               </List>
               <Typography variant="body2" color="text.secondary">
-                Climbs will be matched by name. Any that can't be matched will be reported after import. Re-importing
-                the same file will not create duplicates.
+                Climbs will be matched by name. Any that can&apos;t be matched will be reported after import.
+                Re-importing the same file will not create duplicates.
               </Typography>
             </>
           )}

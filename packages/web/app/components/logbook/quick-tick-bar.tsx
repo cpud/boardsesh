@@ -21,7 +21,7 @@ import {
 } from './tick-controls';
 import styles from './quick-tick-bar.module.css';
 
-export interface QuickTickBarProps {
+export type QuickTickBarProps = {
   currentClimb: Climb | null;
   angle: Angle;
   boardDetails: BoardDetails;
@@ -45,14 +45,14 @@ export interface QuickTickBarProps {
   onExpandedChange?: (expanded: boolean) => void;
   /** Expanded-mode comment slot — taller, for the expanded layout. */
   expandedCommentSlot?: React.ReactNode;
-}
+};
 
-export interface QuickTickBarHandle {
+export type QuickTickBarHandle = {
   /** Trigger a save using the selected ascent type. Pass the origin element for confetti positioning. */
   save: (originElement?: HTMLElement | null) => void;
   /** Trigger a save as attempt. Pass the origin element for confetti positioning. */
   saveAttempt: (originElement?: HTMLElement | null) => void;
-}
+};
 
 /**
  * Stateful tick entry wrapper. Manages the tick target snapshot, form state

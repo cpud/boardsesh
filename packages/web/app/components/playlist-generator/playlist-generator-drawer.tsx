@@ -9,30 +9,32 @@ import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
 import { ArrowBackOutlined, ElectricBoltOutlined } from '@mui/icons-material';
 import type { BoardDetails, Climb } from '@/app/lib/types';
 import { executeGraphQL } from '@/app/lib/graphql/client';
-import type { ClimbSearchInputVariables, ClimbSearchResponse } from '@/app/lib/graphql/operations/climb-search';
-import { SEARCH_CLIMBS } from '@/app/lib/graphql/operations/climb-search';
-import type {
-  AddClimbToPlaylistMutationVariables,
-  AddClimbToPlaylistMutationResponse,
+import {
+  type ClimbSearchInputVariables,
+  type ClimbSearchResponse,
+  SEARCH_CLIMBS,
+} from '@/app/lib/graphql/operations/climb-search';
+import {
+  type AddClimbToPlaylistMutationVariables,
+  type AddClimbToPlaylistMutationResponse,
+  ADD_CLIMB_TO_PLAYLIST,
 } from '@/app/lib/graphql/operations/playlists';
-import { ADD_CLIMB_TO_PLAYLIST } from '@/app/lib/graphql/operations/playlists';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
-import type { WorkoutType, GeneratorOptions, PlannedClimbSlot } from './types';
-import { WORKOUT_TYPES } from './types';
+import { type WorkoutType, type GeneratorOptions, type PlannedClimbSlot, WORKOUT_TYPES } from './types';
 import WorkoutTypeSelector from './workout-type-selector';
 import GeneratorOptionsForm, { getDefaultOptions } from './generator-options-form';
 import GradeProgressionChart from './grade-progression-chart';
 import { generateWorkoutPlan, groupSlotsBySection, getGradeName } from './generation-utils';
 import styles from './playlist-generator-drawer.module.css';
 
-interface PlaylistGeneratorDrawerProps {
+type PlaylistGeneratorDrawerProps = {
   open: boolean;
   onClose: () => void;
   playlistUuid: string;
   boardDetails: BoardDetails;
   angle: number;
   onSuccess?: () => void;
-}
+};
 
 type DrawerState = 'select' | 'configure' | 'generating';
 

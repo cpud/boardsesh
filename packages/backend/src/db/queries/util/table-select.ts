@@ -16,8 +16,7 @@ import {
   boardWalls,
   boardTags,
 } from '@boardsesh/db';
-import type { BoardName } from '@boardsesh/shared-schema';
-import { SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
+import { type BoardName, SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
 
 export type { BoardName };
 

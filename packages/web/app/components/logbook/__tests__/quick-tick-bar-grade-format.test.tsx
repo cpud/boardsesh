@@ -1,18 +1,19 @@
 import { describe, it, expect, vi, afterEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+import { QuickTickBar } from '../quick-tick-bar';
 
 // --- Mocks (must be hoisted before imports of the component under test) ---
 
 vi.mock('@/app/hooks/use-is-dark-mode', () => ({ useIsDarkMode: () => false }));
 
-interface GradeFormatMock {
+type GradeFormatMock = {
   gradeFormat: 'v-grade' | 'font';
   formatGrade: (d: string | null | undefined) => string | null;
   getGradeColor: (d?: string | null, dk?: boolean) => string | undefined;
   loaded: boolean;
   setGradeFormat: ReturnType<typeof vi.fn>;
-}
+};
 const defaultGradeFormat: GradeFormatMock = {
   gradeFormat: 'v-grade',
   formatGrade: (d: string | null | undefined) => {
@@ -76,7 +77,6 @@ vi.mock('../quick-tick-bar.module.css', () => ({
 }));
 
 // Import after mocks.
-import { QuickTickBar } from '../quick-tick-bar';
 
 // --- Fixtures ---
 

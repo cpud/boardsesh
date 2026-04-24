@@ -13,11 +13,11 @@ import { requestInAppReview } from '@/app/lib/in-app-review';
 import { FEEDBACK_PROMPT_EVENT, setFeedbackStatus, shouldShowPrompt } from '@/app/lib/feedback-prompt-db';
 import styles from './feedback-prompt-banner.module.css';
 
-interface BannerBodyProps {
+type BannerBodyProps = {
   onDismiss: () => void;
   onSubmitted: () => void;
   titleId: string;
-}
+};
 
 const FeedbackPromptBannerBody: React.FC<BannerBodyProps> = ({ onDismiss, onSubmitted, titleId }) => {
   const { mutate } = useSubmitAppFeedback();

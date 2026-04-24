@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import type { QueryClient } from '@tanstack/react-query';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { type QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createTestQueryClient } from '@/app/test-utils/test-providers';
 import type { SessionFeedItem } from '@boardsesh/shared-schema';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import ActivityFeed from '../activity-feed';
 
 // --- Mocks ---
 
@@ -33,9 +34,6 @@ vi.mock('../session-feed-card', () => ({
 vi.mock('../feed-item-skeleton', () => ({
   default: () => <div data-testid="feed-item-skeleton" />,
 }));
-
-import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
-import ActivityFeed from '../activity-feed';
 
 const mockUseWsAuthToken = vi.mocked(useWsAuthToken);
 
@@ -189,7 +187,7 @@ describe('ActivityFeed', () => {
         sessionGroupedFeed: { sessions, cursor: 'cursor-1', hasMore: true },
       });
 
-      render(<ActivityFeed isAuthenticated={true} />, { wrapper: createWrapper() });
+      render(<ActivityFeed isAuthenticated />, { wrapper: createWrapper() });
 
       await waitFor(() => {
         expect(screen.getAllByTestId('activity-feed-item')).toHaveLength(2);
@@ -204,7 +202,7 @@ describe('ActivityFeed', () => {
         sessionGroupedFeed: { sessions: [], cursor: null, hasMore: false },
       });
 
-      render(<ActivityFeed isAuthenticated={true} onFindClimbers={onFindClimbers} />, {
+      render(<ActivityFeed isAuthenticated onFindClimbers={onFindClimbers} />, {
         wrapper: createWrapper(),
       });
 

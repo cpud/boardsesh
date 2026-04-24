@@ -8,9 +8,9 @@ import { constructClimbInfoUrl } from '@/app/lib/url-utils';
 import { buildActionResult, buildUnavailableResult, computeActionDisplay } from '../action-view-renderer';
 import { openExternalUrl } from '@/app/lib/open-external-url';
 
-interface OpenInAppActionProps extends ClimbActionProps {
+type OpenInAppActionProps = {
   auroraAppUrl?: string;
-}
+} & ClimbActionProps;
 
 export function OpenInAppAction({
   climb,
@@ -25,15 +25,11 @@ export function OpenInAppAction({
 }: OpenInAppActionProps): ClimbActionResult {
   const url = auroraAppUrl || constructClimbInfoUrl(boardDetails, climb.uuid);
 
-  // Open in App is not available for Kilter (kilterboardapp.com is no longer accessible)
-  if (!url) {
-    return buildUnavailableResult('openInApp');
-  }
-  const { iconSize } = computeActionDisplay(viewMode, size, showLabel);
-
   const handleClick = useCallback(
     (e?: React.MouseEvent) => {
       e?.stopPropagation();
+
+      if (!url) return;
 
       track('Open in Aurora App', {
         boardName: boardDetails.board_name,
@@ -45,6 +41,12 @@ export function OpenInAppAction({
     },
     [boardDetails.board_name, climb.uuid, url, onComplete],
   );
+
+  // Open in App is not available for Kilter (kilterboardapp.com is no longer accessible)
+  if (!url) {
+    return buildUnavailableResult('openInApp');
+  }
+  const { iconSize } = computeActionDisplay(viewMode, size, showLabel);
 
   const icon = <AppsOutlined sx={{ fontSize: iconSize }} />;
 

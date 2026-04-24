@@ -5,10 +5,8 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import type { InfiniteData } from '@tanstack/react-query';
-import type { Client } from '../graphql-queue/graphql-client';
-import { createGraphQLClient, subscribe } from '../graphql-queue/graphql-client';
+import { useInfiniteQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
+import { type Client, createGraphQLClient, subscribe } from '../graphql-queue/graphql-client';
 import { getBackendWsUrl } from '@/app/lib/backend-url';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
@@ -24,12 +22,12 @@ import SubscribeButton from './subscribe-button';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
 
-interface NewClimbFeedProps {
+type NewClimbFeedProps = {
   boardType: string;
   layoutId: number;
   isAuthenticated: boolean;
   isSubscribed?: boolean;
-}
+};
 
 const PAGE_SIZE = 20;
 

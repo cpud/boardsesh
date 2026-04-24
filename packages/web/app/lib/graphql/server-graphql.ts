@@ -1,6 +1,5 @@
 import 'server-only';
-import type { RequestDocument, Variables } from 'graphql-request';
-import { GraphQLClient } from 'graphql-request';
+import { type RequestDocument, type Variables, GraphQLClient } from 'graphql-request';
 import { getGraphQLHttpUrl } from './client';
 import type { GroupedNotificationConnection, UserBoard } from '@boardsesh/shared-schema';
 import type { GetMyBoardsQueryResponse } from '@/app/lib/graphql/operations/boards';

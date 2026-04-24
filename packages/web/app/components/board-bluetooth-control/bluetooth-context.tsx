@@ -13,7 +13,7 @@ import {
 } from '@/app/lib/ble/capacitor-utils';
 import { registerBluetoothConnection } from './bluetooth-status-store';
 
-interface BluetoothContextValue {
+type BluetoothContextValue = {
   isConnected: boolean;
   loading: boolean;
   connect: (initialFrames?: string, mirrored?: boolean) => Promise<boolean>;
@@ -26,7 +26,7 @@ interface BluetoothContextValue {
   ) => Promise<boolean | undefined>;
   isBluetoothSupported: boolean;
   isIOS: boolean;
-}
+};
 
 const BluetoothContext = createContext<BluetoothContextValue | null>(null);
 

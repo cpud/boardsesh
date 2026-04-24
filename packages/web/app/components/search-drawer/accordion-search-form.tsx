@@ -5,8 +5,7 @@ import MuiAlert from '@mui/material/Alert';
 import MuiTooltip from '@mui/material/Tooltip';
 import MuiTypography from '@mui/material/Typography';
 import MuiButton from '@mui/material/Button';
-import type { SelectChangeEvent } from '@mui/material/Select';
-import MuiSelect from '@mui/material/Select';
+import MuiSelect, { type SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import MuiSwitch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
@@ -30,16 +29,17 @@ import {
   getUserPanelSummary,
   getHoldsPanelSummary,
 } from './search-summary-utils';
-import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
-import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
+import CollapsibleSection, {
+  type CollapsibleSectionConfig,
+} from '@/app/components/collapsible-section/collapsible-section';
 import styles from './accordion-search-form.module.css';
 
 import { KILTER_HOMEWALL_LAYOUT_ID } from '@/app/lib/board-constants';
 
-interface AccordionSearchFormProps {
+type AccordionSearchFormProps = {
   boardDetails: BoardDetails;
   defaultActiveKey?: string[];
-}
+};
 
 const AccordionSearchForm: React.FC<AccordionSearchFormProps> = ({ boardDetails, defaultActiveKey }) => {
   const { uiSearchParams, updateFilters } = useUISearchParams();

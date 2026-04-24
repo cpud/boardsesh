@@ -2,8 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import HistoryOutlined from '@mui/icons-material/HistoryOutlined';
-import type { RecentSearch } from './recent-searches-storage';
-import { getRecentSearches, getFilterKey, RECENT_SEARCHES_CHANGED_EVENT } from './recent-searches-storage';
+import {
+  type RecentSearch,
+  getRecentSearches,
+  getFilterKey,
+  RECENT_SEARCHES_CHANGED_EVENT,
+} from './recent-searches-storage';
 import { useUISearchParams } from '@/app/components/queue-control/ui-searchparams-provider';
 import type { SearchRequestPagination } from '@/app/lib/types';
 import { DEFAULT_SEARCH_PARAMS } from '@/app/lib/url-utils';

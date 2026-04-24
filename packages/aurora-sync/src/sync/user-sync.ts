@@ -1,9 +1,7 @@
 import { userSync } from '../api/user-sync-api';
-import type { SyncOptions, UserSyncData, AuroraBoardName } from '../api/types';
-import { USER_TABLES } from '../api/types';
+import { type SyncOptions, type UserSyncData, type AuroraBoardName, USER_TABLES } from '../api/types';
 import { eq, and, inArray, sql } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import type { NeonDatabase } from 'drizzle-orm/neon-serverless';
+import { drizzle, type NeonDatabase } from 'drizzle-orm/neon-serverless';
 import type { Pool } from '@neondatabase/serverless';
 import { UNIFIED_TABLES } from '../db/table-select';
 import { boardseshTicks, playlists, playlistClimbs, playlistOwnership } from '@boardsesh/db/schema/app';
@@ -27,11 +25,11 @@ async function processBatches<T>(
   }
 }
 
-interface UpsertResult {
+type UpsertResult = {
   synced: number;
   skipped: number;
   skippedReason?: string;
-}
+};
 
 type AuroraApiRow = Record<string, string>;
 
@@ -483,15 +481,13 @@ export async function getLastSharedSyncTimes(pool: Pool, boardName: AuroraBoardN
   }
 }
 
-export interface SyncTableResult {
+export type SyncTableResult = {
   synced: number;
   skipped?: number;
   skippedReason?: string;
-}
+};
 
-export interface SyncUserDataResult {
-  [tableName: string]: SyncTableResult;
-}
+export type SyncUserDataResult = Record<string, SyncTableResult>;
 
 export async function syncUserData(
   pool: Pool,

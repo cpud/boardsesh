@@ -1,55 +1,55 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vite-plus/test';
-import type { Client } from 'graphql-ws';
-import { createClient } from 'graphql-ws';
+import { type Client, createClient } from 'graphql-ws';
+// eslint-disable-next-line import/no-named-as-default -- `ws` exports both default and named `WebSocket`; default is the correct one for graphql-ws.
 import WebSocket from 'ws';
 import { v4 as uuidv4 } from 'uuid';
 import { startServer } from '../server';
 import type { ClimbQueueItem } from '@boardsesh/shared-schema';
 
-interface JoinSessionResult {
+type JoinSessionResult = {
   id: string;
   boardPath: string;
   isLeader: boolean;
   clientId: string;
   users: Array<{ id: string; username: string; isLeader: boolean }>;
   queueState: { queue: Array<{ uuid: string }>; currentClimbQueueItem: { uuid: string } | null };
-}
+};
 
-interface AddQueueItemResult {
+type AddQueueItemResult = {
   uuid: string;
   climb: { name: string };
-}
+};
 
-interface SetCurrentClimbResult {
+type SetCurrentClimbResult = {
   uuid: string;
   climb: { name: string; mirrored: boolean };
-}
+};
 
-interface MirrorCurrentClimbResult {
+type MirrorCurrentClimbResult = {
   uuid: string;
   climb: { mirrored: boolean };
-}
+};
 
-interface SessionQueryResult {
+type SessionQueryResult = {
   queueState: { queue: Array<{ uuid: string }>; currentClimbQueueItem: { uuid: string } | null };
   users: Array<{ id: string }>;
-}
+};
 
-interface QueueEvent {
+type QueueEvent = {
   __typename: string;
   state?: { queue: Array<{ uuid: string }>; currentClimbQueueItem?: { uuid: string } | null };
   item?: { uuid: string; climb?: { name: string } };
   uuid?: string;
   oldIndex?: number;
   newIndex?: number;
-}
+};
 
-interface SessionEvent {
+type SessionEvent = {
   __typename: string;
   user?: { id: string; username: string };
   userId?: string;
   leaderId?: string;
-}
+};
 
 // Test fixtures
 const TEST_BOARD_PATH = '/kilter/1/2/3/40';

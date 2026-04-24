@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
 import { db } from '../db/client';
 import { esp32Controllers } from '@boardsesh/db/schema/app';
-import { eq } from 'drizzle-orm';
-import { sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { controllerMutations } from '../graphql/resolvers/controller/mutations';
 import { controllerQueries } from '../graphql/resolvers/controller/queries';
 import type { ConnectionContext } from '@boardsesh/shared-schema';

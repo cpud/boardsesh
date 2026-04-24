@@ -1,8 +1,7 @@
 import { z } from 'zod';
 import { eq, and, or, inArray, sql } from 'drizzle-orm';
 import { getPool } from '@/app/lib/db/db';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import type { NeonDatabase } from 'drizzle-orm/neon-serverless';
+import { drizzle, type NeonDatabase } from 'drizzle-orm/neon-serverless';
 import {
   boardseshTicks,
   boardClimbs,
@@ -11,8 +10,7 @@ import {
   playlistClimbs,
   playlistOwnership,
 } from '@/app/lib/db/schema';
-import { randomUUID } from 'crypto';
-import { createHash } from 'crypto';
+import { randomUUID, createHash } from 'crypto';
 import { fontGradeToDifficultyId } from '@/app/lib/board-data';
 import { LAYOUTS, HOLE_PLACEMENTS } from '@/app/lib/board-constants';
 import type { AuroraBoardName } from '@boardsesh/shared-schema';
@@ -88,19 +86,19 @@ type BoardType = AuroraBoardName;
 // Import result types
 // ---------------------------------------------------------------------------
 
-export interface ImportCounts {
+export type ImportCounts = {
   imported: number;
   skipped: number;
   failed: number;
-}
+};
 
-export interface ImportResult {
+export type ImportResult = {
   ascents: ImportCounts;
   attempts: ImportCounts;
   circuits: ImportCounts;
   climbs: ImportCounts;
   unresolvedClimbs: string[];
-}
+};
 
 // ---------------------------------------------------------------------------
 // Progress event types for streaming progress reporting

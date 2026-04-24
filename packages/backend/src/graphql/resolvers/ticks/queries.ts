@@ -1,6 +1,5 @@
 import { eq, and, or, desc, inArray, isNull, sql, count, ilike, gte, lte } from 'drizzle-orm';
-import type { ConnectionContext, BoardName } from '@boardsesh/shared-schema';
-import { SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
+import { type ConnectionContext, type BoardName, SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { requireAuthenticated, applyRateLimit, validateInput, isNoMatchClimb } from '../shared/helpers';

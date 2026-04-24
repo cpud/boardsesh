@@ -14,10 +14,9 @@ import { PersonOutlined } from '@mui/icons-material';
 import Link from 'next/link';
 import SwipeableDrawer from '@/app/components/swipeable-drawer/swipeable-drawer';
 import FollowButton from '@/app/components/ui/follow-button';
-import { FOLLOW_USER, UNFOLLOW_USER } from '@/app/lib/graphql/operations';
-import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
-import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
+  FOLLOW_USER,
+  UNFOLLOW_USER,
   GET_FOLLOWERS,
   GET_FOLLOWING,
   type GetFollowersQueryVariables,
@@ -25,13 +24,15 @@ import {
   type GetFollowingQueryVariables,
   type GetFollowingQueryResponse,
 } from '@/app/lib/graphql/operations';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import type { PublicUserProfile } from '@boardsesh/shared-schema';
 
-interface FollowerCountProps {
+type FollowerCountProps = {
   userId: string;
   followerCount: number;
   followingCount: number;
-}
+};
 
 type DrawerMode = 'followers' | 'following' | null;
 

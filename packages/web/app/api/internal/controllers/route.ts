@@ -1,6 +1,5 @@
 import { getServerSession } from 'next-auth/next';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/app/lib/db/db';
 import { esp32Controllers } from '@boardsesh/db/schema/app';
 import { eq, and } from 'drizzle-orm';
@@ -20,7 +19,7 @@ const deleteControllerSchema = z.object({
   controllerId: z.string().uuid(),
 });
 
-export interface ControllerInfo {
+export type ControllerInfo = {
   id: string;
   name: string | null;
   boardName: string;
@@ -30,7 +29,7 @@ export interface ControllerInfo {
   isOnline: boolean;
   lastSeen: string | null;
   createdAt: string;
-}
+};
 
 // Consider controller online if seen within last 60 seconds
 const ONLINE_THRESHOLD_MS = 60 * 1000;

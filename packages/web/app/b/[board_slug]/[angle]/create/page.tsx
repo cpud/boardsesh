@@ -4,8 +4,7 @@ import { resolveBoardBySlug, boardToRouteParams } from '@/app/lib/board-slug-uti
 import { getBoardDetails } from '@/app/lib/board-constants';
 import { getClimb } from '@/app/lib/data/queries';
 import CreateClimbForm from '@/app/components/create-climb/create-climb-form';
-import type { MoonBoardLayoutKey } from '@/app/lib/moonboard-config';
-import { MOONBOARD_LAYOUTS, MOONBOARD_SETS } from '@/app/lib/moonboard-config';
+import { type MoonBoardLayoutKey, MOONBOARD_LAYOUTS, MOONBOARD_SETS } from '@/app/lib/moonboard-config';
 import type { Climb } from '@/app/lib/types';
 import type { Metadata } from 'next';
 import { getServerSession } from 'next-auth/next';
@@ -28,7 +27,7 @@ function getMoonBoardHoldSetImages(layoutKey: MoonBoardLayoutKey, setIds: number
   return sets.filter((s) => setIds.includes(s.id)).map((s) => s.imageFile);
 }
 
-interface CreatePageProps {
+type CreatePageProps = {
   params: Promise<{ board_slug: string; angle: string }>;
   searchParams: Promise<{
     forkFrames?: string;
@@ -36,7 +35,7 @@ interface CreatePageProps {
     forkDescription?: string;
     editClimbUuid?: string;
   }>;
-}
+};
 
 export default async function BoardSlugCreatePage(props: CreatePageProps) {
   const [params, searchParams] = await Promise.all([props.params, props.searchParams]);

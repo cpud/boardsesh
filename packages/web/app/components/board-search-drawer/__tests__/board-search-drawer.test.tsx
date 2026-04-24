@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import type { UserBoard } from '@boardsesh/shared-schema';
+import BoardSearchDrawer from '../board-search-drawer';
 
 // --- Mocks (declared before the import that pulls them in) ---
 
@@ -19,13 +20,13 @@ vi.mock('@/app/hooks/use-geolocation', () => ({
   }),
 }));
 
-interface SearchBoardsMapInputCapture {
+type SearchBoardsMapInputCapture = {
   query: string;
   latitude: number | null;
   longitude: number | null;
   zoom: number;
   enabled: boolean;
-}
+};
 let lastSearchInput: SearchBoardsMapInputCapture | null = null;
 let mockBoards: UserBoard[] = [];
 const mockFetchNextPage = vi.fn();
@@ -83,8 +84,6 @@ vi.mock('@/app/lib/graphql/operations', () => ({
 }));
 
 // --- Import under test ---
-
-import BoardSearchDrawer from '../board-search-drawer';
 
 function makeBoard(uuid: string, overrides: Partial<UserBoard> = {}): UserBoard {
   return {

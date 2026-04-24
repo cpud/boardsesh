@@ -23,17 +23,15 @@ import {
 import { useInfiniteQuery } from '@tanstack/react-query';
 import type { Climb } from '@/app/lib/types';
 import { executeGraphQL, createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import type {
-  GetPlaylistQueryResponse,
-  GetPlaylistQueryVariables,
-  GetPlaylistClimbsQueryResponse,
-  Playlist,
-  UpdatePlaylistLastAccessedMutationVariables,
-  UpdatePlaylistLastAccessedMutationResponse,
-  DeletePlaylistMutationVariables,
-  DeletePlaylistMutationResponse,
-} from '@/app/lib/graphql/operations/playlists';
 import {
+  type GetPlaylistQueryResponse,
+  type GetPlaylistQueryVariables,
+  type GetPlaylistClimbsQueryResponse,
+  type Playlist,
+  type UpdatePlaylistLastAccessedMutationVariables,
+  type UpdatePlaylistLastAccessedMutationResponse,
+  type DeletePlaylistMutationVariables,
+  type DeletePlaylistMutationResponse,
   GET_PLAYLIST,
   GET_PLAYLIST_CLIMBS,
   DELETE_PLAYLIST,

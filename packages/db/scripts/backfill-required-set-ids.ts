@@ -42,18 +42,18 @@ async function main() {
     const boardTypes = rows<{ board_type: string; null_count: string }>(boardTypesResult);
 
     if (boardTypes.length === 0) {
-      console.log('No climbs with NULL denormalized columns found. Nothing to do.');
+      console.info('No climbs with NULL denormalized columns found. Nothing to do.');
       return;
     }
 
-    console.log('Climbs with NULL denormalized columns:');
+    console.info('Climbs with NULL denormalized columns:');
     for (const bt of boardTypes) {
-      console.log(`  ${bt.board_type}: ${Number(bt.null_count).toLocaleString()}`);
+      console.info(`  ${bt.board_type}: ${Number(bt.null_count).toLocaleString()}`);
     }
-    console.log('');
+    console.info('');
 
     if (dryRun) {
-      console.log('Dry run — no changes will be made.');
+      console.info('Dry run — no changes will be made.');
       return;
     }
 
@@ -63,7 +63,7 @@ async function main() {
       const totalNull = Number(bt.null_count);
       let processed = 0;
 
-      console.log(`\nBackfilling ${bt.board_type} (${totalNull.toLocaleString()} climbs)...`);
+      console.info(`\nBackfilling ${bt.board_type} (${totalNull.toLocaleString()} climbs)...`);
 
       while (true) {
         // Fetch a batch of UUIDs with NULL denormalized columns
@@ -84,14 +84,14 @@ async function main() {
         processed += uuids.length;
 
         const pct = totalNull > 0 ? ((processed / totalNull) * 100).toFixed(1) : '100';
-        console.log(`  ${processed.toLocaleString()} / ${totalNull.toLocaleString()} (${pct}%)`);
+        console.info(`  ${processed.toLocaleString()} / ${totalNull.toLocaleString()} (${pct}%)`);
       }
 
-      console.log(`  Done — ${processed.toLocaleString()} climbs updated.`);
+      console.info(`  Done — ${processed.toLocaleString()} climbs updated.`);
     }
 
     // Verify
-    console.log('\nVerification:');
+    console.info('\nVerification:');
     const remainingResult = await db.execute(sql`
       SELECT board_type, COUNT(*) as remaining
       FROM board_climbs
@@ -105,10 +105,10 @@ async function main() {
 
     const remaining = rows<{ board_type: string; remaining: string }>(remainingResult);
     if (remaining.length === 0) {
-      console.log('  All denormalized columns populated.');
+      console.info('  All denormalized columns populated.');
     } else {
       for (const r of remaining) {
-        console.log(`  ${r.board_type}: ${Number(r.remaining).toLocaleString()} still NULL`);
+        console.info(`  ${r.board_type}: ${Number(r.remaining).toLocaleString()} still NULL`);
       }
     }
   } finally {

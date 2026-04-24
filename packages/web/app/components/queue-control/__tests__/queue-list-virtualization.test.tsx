@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
+
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import type { Climb, BoardDetails } from '@/app/lib/types';
 import type { ClimbQueueItem } from '../types';
+import QueueList from '../queue-list';
 
 // --- Mock data ---
 
@@ -238,8 +240,6 @@ Object.defineProperty(globalThis, 'IntersectionObserver', {
   writable: true,
 });
 
-import QueueList from '../queue-list';
-
 // --- Helpers ---
 
 function makeBoardDetails(): BoardDetails {
@@ -266,7 +266,7 @@ describe('QueueList rendering', () => {
   });
 
   it('renders all suggested climbs when active', () => {
-    render(<QueueList boardDetails={makeBoardDetails()} active={true} />);
+    render(<QueueList boardDetails={makeBoardDetails()} active />);
 
     // All 20 suggested ClimbListItems should be in the DOM
     const suggestedItems = screen.getAllByTestId('climb-list-item');
@@ -293,7 +293,7 @@ describe('QueueList rendering', () => {
   });
 
   it('renders suggestions section header when active', () => {
-    render(<QueueList boardDetails={makeBoardDetails()} active={true} />);
+    render(<QueueList boardDetails={makeBoardDetails()} active />);
 
     expect(screen.getByText('Suggestions')).toBeTruthy();
   });
@@ -326,7 +326,7 @@ describe('QueueList rendering', () => {
   it('renders history items only when showHistory is true', () => {
     mockCurrentClimbUuid = 'queue-2';
 
-    render(<QueueList boardDetails={makeBoardDetails()} active={false} showHistory={true} />);
+    render(<QueueList boardDetails={makeBoardDetails()} active={false} showHistory />);
 
     const queueItems = screen.getAllByTestId('queue-climb-list-item');
     expect(queueItems).toHaveLength(2);

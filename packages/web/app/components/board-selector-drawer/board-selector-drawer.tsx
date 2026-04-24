@@ -5,29 +5,26 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import type { SelectChangeEvent } from '@mui/material/Select';
-import MuiSelect from '@mui/material/Select';
+import MuiSelect, { type SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
-import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
-import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
+import CollapsibleSection, {
+  type CollapsibleSectionConfig,
+} from '@/app/components/collapsible-section/collapsible-section';
 import { useRouter } from 'next/navigation';
 import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
 import type { BoardConfigData } from '@/app/lib/server-board-configs';
-import type { BoardName } from '@/app/lib/types';
-import { BOARD_NAME_PREFIX_REGEX } from '@/app/lib/board-constants';
+import type { BoardName, BoardRouteIdentity } from '@/app/lib/types';
+import { BOARD_NAME_PREFIX_REGEX, getDefaultSizeForLayout } from '@/app/lib/board-constants';
 import { SUPPORTED_BOARDS, ANGLES } from '@/app/lib/board-data';
-import { getDefaultSizeForLayout } from '@/app/lib/board-constants';
 import { constructClimbListWithSlugs, constructBoardSlugListUrl } from '@/app/lib/url-utils';
-import type { StoredBoardConfig } from '@/app/lib/saved-boards-db';
-import { saveBoardConfig } from '@/app/lib/saved-boards-db';
+import { type StoredBoardConfig, saveBoardConfig } from '@/app/lib/saved-boards-db';
 import type { UserBoard } from '@boardsesh/shared-schema';
 import { useBoardSwitchGuard } from '@/app/components/board-lock/use-board-switch-guard';
-import type { BoardRouteIdentity } from '@/app/lib/types';
 
 const CreateBoardForm = lazy(() => import('../board-entity/create-board-form'));
 
-interface BoardConfigSelectsProps {
+type BoardConfigSelectsProps = {
   selectedBoard: BoardName | undefined;
   selectedLayout: number | undefined;
   selectedSize: number | undefined;
@@ -41,7 +38,7 @@ interface BoardConfigSelectsProps {
   onSizeChange: (sizeId: number) => void;
   onSetsChange: (setIds: number[]) => void;
   onAngleChange: (angle: number) => void;
-}
+};
 
 function BoardConfigSelects({
   selectedBoard,
@@ -144,14 +141,14 @@ function BoardConfigSelects({
   );
 }
 
-interface BoardSelectorDrawerProps {
+type BoardSelectorDrawerProps = {
   open: boolean;
   onClose: () => void;
   onTransitionEnd?: (open: boolean) => void;
   boardConfigs: BoardConfigData;
   placement?: 'top' | 'bottom';
   onBoardSelected?: (url: string, config?: StoredBoardConfig) => void;
-}
+};
 
 export default function BoardSelectorDrawer({
   open,

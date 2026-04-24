@@ -167,9 +167,7 @@ export type SearchClimbsResult = {
 };
 
 // Led Colors Type
-export type LedColor = {
-  [role_id: number]: string;
-};
+export type LedColor = Record<number, string>;
 
 // Grade Type
 export type Grade = {
@@ -249,6 +247,6 @@ export type BoardOnlyRouteParameters = {
 
 export type FetchCurrentProblemResponse = Climb;
 
-export interface ErrorResponse {
+export type ErrorResponse = {
   error: string;
-}
+};

@@ -17,7 +17,7 @@ import DynamicFeedOutlined from '@mui/icons-material/DynamicFeedOutlined';
 import PersonOutlined from '@mui/icons-material/PersonOutlined';
 import { usePathname, useRouter } from 'next/navigation';
 import { track } from '@vercel/analytics';
-import type { BoardDetails, BoardName } from '@/app/lib/types';
+import type { BoardDetails, BoardName, BoardRouteIdentity } from '@/app/lib/types';
 import {
   constructClimbListWithSlugs,
   constructBoardSlugListUrl,
@@ -46,22 +46,21 @@ import { useClimbActionsData } from '@/app/hooks/use-climb-actions-data';
 import type { StoredBoardConfig } from '@/app/lib/saved-boards-db';
 import { isValidHexColor } from '@/app/lib/color-utils';
 import { useBoardSwitchGuard } from '@/app/components/board-lock/use-board-switch-guard';
-import type { BoardRouteIdentity } from '@/app/lib/types';
 
 type Tab = 'home' | 'climbs' | 'library' | 'feed' | 'create' | 'you';
 type PendingCreateAction = 'climb' | 'playlist' | null;
 
-interface BottomTabBarProps {
+type BottomTabBarProps = {
   boardDetails?: BoardDetails | null;
   angle?: number;
   boardConfigs?: BoardConfigData;
-}
+};
 
-interface SelectedBoardContext {
+type SelectedBoardContext = {
   boardName: string;
   layoutId: number;
   angle: number;
-}
+};
 
 const getActiveTab = (pathname: string): Tab => {
   if (pathname === '/') return 'home';

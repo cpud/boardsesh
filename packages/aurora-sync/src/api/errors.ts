@@ -6,7 +6,7 @@ export type AuroraErrorCode =
   | 'rate_limited'
   | 'invalid_response';
 
-interface AuroraRequestErrorOptions {
+type AuroraRequestErrorOptions = {
   code: AuroraErrorCode;
   message: string;
   status?: number;
@@ -14,12 +14,12 @@ interface AuroraRequestErrorOptions {
   url?: string;
   details?: unknown;
   cause?: unknown;
-}
+};
 
-interface AuroraResponseErrorMessages {
+type AuroraResponseErrorMessages = {
   invalidCredentialsMessage?: string;
   rateLimitedMessage?: string;
-}
+};
 
 const TRANSIENT_AURORA_ERROR_CODES = new Set<AuroraErrorCode>([
   'http',

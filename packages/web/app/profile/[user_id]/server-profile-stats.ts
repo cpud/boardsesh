@@ -10,12 +10,12 @@ import type {
   GetUserProfileStatsQueryResponse,
 } from '@/app/lib/graphql/operations/ticks';
 
-export interface ProfileStatsData {
+export type ProfileStatsData = {
   initialProfileStats: GetUserProfileStatsQueryResponse['userProfileStats'] | null;
   initialPercentile: GetUserClimbPercentileQueryResponse['userClimbPercentile'] | null;
   initialAllBoardsTicks: Record<string, LogbookEntry[]>;
   initialLogbook: LogbookEntry[];
-}
+};
 
 /**
  * Fetches profile stats and tick data for a user across all boards.

@@ -1,9 +1,8 @@
 import { getServerSession } from 'next-auth/next';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/app/lib/db/db';
 import * as schema from '@/app/lib/db/schema';
-import bcrypt from 'bcryptjs';
+import { hash } from 'bcryptjs';
 import { eq, and, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 import { authOptions } from '@/app/lib/auth/auth-options';
@@ -83,7 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash password and insert
-    const passwordHash = await bcrypt.hash(password, 12);
+    const passwordHash = await hash(password, 12);
 
     try {
       await db.transaction(async (tx) => {

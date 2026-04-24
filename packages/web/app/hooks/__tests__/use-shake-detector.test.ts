@@ -4,12 +4,12 @@ import { useShakeDetector } from '../use-shake-detector';
 
 type MotionHandler = (event: { acceleration: { x: number; y: number; z: number } }) => void;
 
-interface MockMotionPlugin {
+type MockMotionPlugin = {
   addListener: ReturnType<typeof vi.fn>;
   removeAllListeners: ReturnType<typeof vi.fn>;
   __lastHandler: MotionHandler | null;
   __removeSpy: ReturnType<typeof vi.fn>;
-}
+};
 
 function installCapacitorMock(): MockMotionPlugin {
   const removeSpy = vi.fn().mockResolvedValue(undefined);

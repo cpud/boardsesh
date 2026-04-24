@@ -6,12 +6,12 @@
  * new state plus a `fired` flag the caller uses to invoke its shake handler.
  */
 
-export interface ShakeState {
+export type ShakeState = {
   readonly joltTimestamps: readonly number[];
   readonly lastFireAt: number | null;
-}
+};
 
-export interface ShakeOptions {
+export type ShakeOptions = {
   /** A single sample above this (m/s²) counts as one "jolt". */
   readonly threshold: number;
   /** Jolts older than this (ms) are pruned from the rolling window. */
@@ -20,7 +20,7 @@ export interface ShakeOptions {
   readonly cooldownMs: number;
   /** Number of jolts within windowMs required to trigger a fire. */
   readonly requiredJolts: number;
-}
+};
 
 export const DEFAULT_SHAKE_OPTIONS: ShakeOptions = {
   /**
@@ -41,10 +41,10 @@ export const DEFAULT_SHAKE_OPTIONS: ShakeOptions = {
 
 export const initialShakeState = (): ShakeState => ({ joltTimestamps: [], lastFireAt: null });
 
-export interface ShakeStep {
+export type ShakeStep = {
   readonly state: ShakeState;
   readonly fired: boolean;
-}
+};
 
 export function detectShake(
   magnitude: number,

@@ -3,8 +3,7 @@ import { unstable_cache } from 'next/cache';
 import { getDb } from '@/app/lib/db/db';
 import { searchClimbs as sharedSearchClimbs } from '@boardsesh/db/queries';
 import { getBoardClimbSearchTag } from '@/app/lib/climb-search-cache';
-import type { ParsedBoardRouteParameters, SearchRequestPagination, BoardName } from '@/app/lib/types';
-import type { Climb } from '@/app/lib/types';
+import type { ParsedBoardRouteParameters, SearchRequestPagination, BoardName, Climb } from '@/app/lib/types';
 import { sortObjectKeys } from '@/app/lib/cache-utils';
 
 /**

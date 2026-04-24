@@ -11,7 +11,7 @@ import styles from './swipeable-drawer.module.css';
 
 type Placement = 'left' | 'right' | 'top' | 'bottom';
 
-export interface SwipeableDrawerProps {
+export type SwipeableDrawerProps = {
   swipeEnabled?: boolean;
   showDragHandle?: boolean;
   // Drawer props
@@ -43,7 +43,7 @@ export interface SwipeableDrawerProps {
   /** Ref forwarded to the MUI Paper element inside the drawer. */
   paperRef?: React.Ref<HTMLDivElement>;
   children?: React.ReactNode;
-}
+};
 
 const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
   swipeEnabled,
@@ -96,7 +96,7 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
   const verticalDragHandle = useMemo(
     () =>
       effectiveSwipeEnabled && showDragHandle ? (
-        <div className={placement === 'left' ? styles.dragHandleZoneRight : styles.dragHandleZoneLeft}></div>
+        <div className={placement === 'left' ? styles.dragHandleZoneRight : styles.dragHandleZoneLeft} />
       ) : null,
     [effectiveSwipeEnabled, showDragHandle, placement],
   );
@@ -492,5 +492,4 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
 };
 
 const MemoSwipeableDrawer = React.memo(SwipeableDrawer);
-export { MemoSwipeableDrawer as SwipeableDrawer };
 export default MemoSwipeableDrawer;

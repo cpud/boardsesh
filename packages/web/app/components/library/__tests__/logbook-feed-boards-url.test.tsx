@@ -4,6 +4,7 @@ import React from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { createTestQueryClient } from '@/app/test-utils/test-providers';
 import type { LayoutStats } from '@/app/lib/graphql/operations/ticks';
+import LogbookFeed from '../logbook-feed';
 
 // --- Capture hook arguments ---
 // vi.fn() holds its own call history and is reset in beforeEach, so tests stay
@@ -133,8 +134,6 @@ vi.mock('@mui/material/useMediaQuery', () => ({
 
 // --- Import after mocks ---
 
-import LogbookFeed from '../logbook-feed';
-
 // --- Helpers ---
 
 function makeLayoutStats(boardType: string, layoutId: number): LayoutStats {
@@ -183,7 +182,7 @@ describe('LogbookFeed — boards URL round-trip', () => {
     const client = createTestQueryClient();
     const { rerender } = render(
       <QueryClientProvider client={client}>
-        <LogbookFeed layoutStats={[]} loadingLayoutStats={true} />
+        <LogbookFeed layoutStats={[]} loadingLayoutStats />
       </QueryClientProvider>,
     );
 

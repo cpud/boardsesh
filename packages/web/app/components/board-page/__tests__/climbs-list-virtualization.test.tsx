@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
+
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import type { Climb, BoardDetails } from '@/app/lib/types';
+import ClimbsList from '../climbs-list';
 
 // --- Mocks ---
 
@@ -61,7 +63,7 @@ vi.mock('../../climb-actions/playlist-selection-content', () => ({
 }));
 
 vi.mock('../../error-boundary', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  default: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('../board-page-skeleton', () => ({
@@ -148,8 +150,6 @@ vi.mock('@tanstack/react-virtual', () => ({
     };
   },
 }));
-
-import ClimbsList from '../climbs-list';
 
 // --- Helpers ---
 
@@ -245,15 +245,7 @@ describe('ClimbsList virtualization', () => {
   });
 
   it('renders skeleton when fetching with no climbs', () => {
-    render(
-      <ClimbsList
-        boardDetails={makeBoardDetails()}
-        climbs={[]}
-        isFetching={true}
-        hasMore={true}
-        onLoadMore={vi.fn()}
-      />,
-    );
+    render(<ClimbsList boardDetails={makeBoardDetails()} climbs={[]} isFetching hasMore onLoadMore={vi.fn()} />);
 
     const skeletons = screen.getAllByTestId('climb-list-item-skeleton');
     expect(skeletons.length).toBeGreaterThan(0);
@@ -347,7 +339,7 @@ describe('ClimbsList infinite scroll', () => {
         boardDetails={makeBoardDetails()}
         climbs={allClimbs.slice(0, 20)}
         isFetching={false}
-        hasMore={true}
+        hasMore
         onLoadMore={onLoadMore}
       />,
     );
@@ -361,8 +353,8 @@ describe('ClimbsList infinite scroll', () => {
       <ClimbsList
         boardDetails={makeBoardDetails()}
         climbs={allClimbs.slice(0, 20)}
-        isFetching={true}
-        hasMore={true}
+        isFetching
+        hasMore
         onLoadMore={onLoadMore}
       />,
     );
@@ -388,13 +380,7 @@ describe('ClimbsList infinite scroll', () => {
   it('does NOT call onLoadMore with empty climb list', () => {
     const onLoadMore = vi.fn();
     render(
-      <ClimbsList
-        boardDetails={makeBoardDetails()}
-        climbs={[]}
-        isFetching={false}
-        hasMore={true}
-        onLoadMore={onLoadMore}
-      />,
+      <ClimbsList boardDetails={makeBoardDetails()} climbs={[]} isFetching={false} hasMore onLoadMore={onLoadMore} />,
     );
 
     expect(onLoadMore).not.toHaveBeenCalled();

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vite-plus/test';
 import { render, screen, act } from '@testing-library/react';
 import React from 'react';
+import HeartAnimationOverlay from '../heart-animation-overlay';
 
 let capturedOnAnimationEnd: (() => void) | undefined;
 
@@ -19,8 +20,6 @@ vi.mock('@mui/icons-material/Favorite', () => ({
   },
 }));
 
-import HeartAnimationOverlay from '../heart-animation-overlay';
-
 describe('HeartAnimationOverlay', () => {
   it('renders nothing when visible is false', () => {
     const { container } = render(<HeartAnimationOverlay visible={false} onAnimationEnd={vi.fn()} />);
@@ -28,13 +27,13 @@ describe('HeartAnimationOverlay', () => {
   });
 
   it('renders the overlay when visible is true', () => {
-    render(<HeartAnimationOverlay visible={true} onAnimationEnd={vi.fn()} />);
+    render(<HeartAnimationOverlay visible onAnimationEnd={vi.fn()} />);
     expect(screen.getByTestId('heart-animation-overlay')).toBeDefined();
     expect(screen.getByTestId('favorite-icon')).toBeDefined();
   });
 
   it('has pointer-events: none on the overlay', () => {
-    render(<HeartAnimationOverlay visible={true} onAnimationEnd={vi.fn()} />);
+    render(<HeartAnimationOverlay visible onAnimationEnd={vi.fn()} />);
     const overlay = screen.getByTestId('heart-animation-overlay');
     // CSS modules may not apply in test, so check class is applied
     expect(overlay.className).toContain('overlay');
@@ -43,7 +42,7 @@ describe('HeartAnimationOverlay', () => {
   it('passes onAnimationEnd callback to the heart icon', () => {
     const onAnimationEnd = vi.fn();
     capturedOnAnimationEnd = undefined;
-    render(<HeartAnimationOverlay visible={true} onAnimationEnd={onAnimationEnd} />);
+    render(<HeartAnimationOverlay visible onAnimationEnd={onAnimationEnd} />);
 
     // The component passes onAnimationEnd to the Favorite icon
     expect(capturedOnAnimationEnd).toBeDefined();

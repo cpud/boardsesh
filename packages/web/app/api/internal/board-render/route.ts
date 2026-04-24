@@ -1,5 +1,4 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
@@ -108,12 +107,12 @@ function toWebpPath(dir: string, filename: string, isThumbnail: boolean): string
   return `${dir}/${webpName}`;
 }
 
-interface BoardDetailsForBg {
+type BoardDetailsForBg = {
   board_name: string;
   images_to_holds: Record<string, unknown>;
   layoutFolder?: string;
   holdSetImages?: string[];
-}
+};
 
 /**
  * Build the ordered list of public/-relative paths for background images.

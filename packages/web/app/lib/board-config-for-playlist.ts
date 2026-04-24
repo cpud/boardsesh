@@ -1,8 +1,7 @@
 import type { UserBoard } from '@boardsesh/shared-schema';
 import type { BoardName, BoardDetails, Climb } from './types';
 import { getSizesForLayoutId, getSetsForLayoutAndSize, getBoardDetails, LAYOUTS } from './board-constants';
-import type { MoonBoardLayoutKey } from './moonboard-config';
-import { getMoonBoardDetails, MOONBOARD_LAYOUTS, MOONBOARD_SETS } from './moonboard-config';
+import { type MoonBoardLayoutKey, getMoonBoardDetails, MOONBOARD_LAYOUTS, MOONBOARD_SETS } from './moonboard-config';
 import { canAddClimbToBoard } from './board-compatibility';
 
 /**

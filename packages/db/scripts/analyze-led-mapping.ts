@@ -22,7 +22,7 @@ function rows<T>(result: unknown): T[] {
   return Array.isArray(r) ? r : (r.rows ?? []);
 }
 
-interface ClimbRow {
+type ClimbRow = {
   uuid: string;
   board_type: string;
   layout_id: number;
@@ -36,18 +36,18 @@ interface ClimbRow {
   edge_right: number | null;
   edge_bottom: number | null;
   edge_top: number | null;
-}
+};
 
-interface StatsRow {
+type StatsRow = {
   climb_uuid: string;
   total_ascents: string;
-}
+};
 
-interface SetRow {
+type SetRow = {
   layout_id: number;
   product_size_id: number;
   set_id: number;
-}
+};
 
 function parseFramePlacements(frames: string): number[] {
   const placements: number[] = [];
@@ -111,10 +111,10 @@ async function main() {
       const layoutSizeKeys = Object.keys(boardLedData);
       if (layoutSizeKeys.length === 0) continue;
 
-      console.log(`\n${'='.repeat(70)}`);
-      console.log(`  Board: ${boardName}`);
-      console.log(`  LED layout/size combos: ${layoutSizeKeys.join(', ')}`);
-      console.log(`${'='.repeat(70)}`);
+      console.info(`\n${'='.repeat(70)}`);
+      console.info(`  Board: ${boardName}`);
+      console.info(`  LED layout/size combos: ${layoutSizeKeys.join(', ')}`);
+      console.info(`${'='.repeat(70)}`);
 
       const layouts = [...new Set(layoutSizeKeys.map((k) => Number(k.split('-')[0])))];
 
@@ -152,18 +152,18 @@ async function main() {
           const ledPlacementIds = new Set(Object.keys(ledMap).map(Number));
           const availableSets = setsForConfig.get(`${layoutId}-${sizeId}`) || [];
 
-          console.log(`\n--- ${boardName} layout=${layoutId} size=${sizeId} (${sizeNames.get(sizeId) || '?'}) ---`);
-          console.log(`    LED placements: ${ledPlacementIds.size}`);
-          console.log(`    Available sets: [${availableSets.join(', ')}]`);
-          console.log(`    Total climbs for layout: ${climbs.length.toLocaleString()}`);
+          console.info(`\n--- ${boardName} layout=${layoutId} size=${sizeId} (${sizeNames.get(sizeId) || '?'}) ---`);
+          console.info(`    LED placements: ${ledPlacementIds.size}`);
+          console.info(`    Available sets: [${availableSets.join(', ')}]`);
+          console.info(`    Total climbs for layout: ${climbs.length.toLocaleString()}`);
 
-          interface AffectedClimb {
+          type AffectedClimb = {
             climb: ClimbRow;
             missingPlacementIds: number[];
             totalPlacements: number;
             ascents: number;
             category: 'filter_bypass' | 'null_denorm' | 'correctly_excluded';
-          }
+          };
 
           const filterBypass: AffectedClimb[] = [];
           const nullDenorm: AffectedClimb[] = [];
@@ -218,34 +218,36 @@ async function main() {
           grandTotalNullDenorm += nullDenorm.length;
           grandTotalMismatch += correctlyExcluded;
 
-          console.log(
+          console.info(
             `\n    FILTER BYPASS (passes search filters, breaks BLE): ${filterBypass.length.toLocaleString()}`,
           );
-          console.log(`    NULL denormalized columns: ${nullDenorm.length.toLocaleString()}`);
-          console.log(`    Correctly excluded by search filters: ${correctlyExcluded.toLocaleString()}`);
+          console.info(`    NULL denormalized columns: ${nullDenorm.length.toLocaleString()}`);
+          console.info(`    Correctly excluded by search filters: ${correctlyExcluded.toLocaleString()}`);
 
           // Show filter bypass climbs — these are the critical bugs
           if (filterBypass.length > 0) {
             filterBypass.sort((a, b) => b.ascents - a.ascents);
             const topN = filterBypass.slice(0, limit);
-            console.log(`\n    ** CRITICAL: ${filterBypass.length} climbs pass filters but break BLE **\n`);
+            console.info(`\n    ** CRITICAL: ${filterBypass.length} climbs pass filters but break BLE **\n`);
 
             for (const entry of topN) {
               const { climb, missingPlacementIds, totalPlacements, ascents } = entry;
               const listedTag = climb.is_listed === false ? ' [unlisted]' : '';
-              console.log(
+              console.info(
                 `      "${climb.name || '(unnamed)'}" by ${climb.setter_username || '?'}` +
                   ` — ${ascents.toLocaleString()} ascents${listedTag}`,
               );
-              console.log(`        ${missingPlacementIds.length} of ${totalPlacements} placements missing LED mapping`);
-              console.log(
+              console.info(
+                `        ${missingPlacementIds.length} of ${totalPlacements} placements missing LED mapping`,
+              );
+              console.info(
                 `        Missing IDs: [${missingPlacementIds.slice(0, 10).join(', ')}${missingPlacementIds.length > 10 ? `, ... (${missingPlacementIds.length} total)` : ''}]`,
               );
-              console.log(`        compatible_size_ids: [${climb.compatible_size_ids?.join(', ')}]`);
-              console.log(`        required_set_ids: [${climb.required_set_ids?.join(', ')}]`);
+              console.info(`        compatible_size_ids: [${climb.compatible_size_ids?.join(', ')}]`);
+              console.info(`        required_set_ids: [${climb.required_set_ids?.join(', ')}]`);
               if (verbose) {
-                console.log(`        uuid: ${climb.uuid}`);
-                console.log(
+                console.info(`        uuid: ${climb.uuid}`);
+                console.info(
                   `        frames: ${climb.frames?.slice(0, 80)}${(climb.frames?.length ?? 0) > 80 ? '...' : ''}`,
                 );
               }
@@ -256,8 +258,8 @@ async function main() {
             for (const { missingPlacementIds } of filterBypass) {
               for (const id of missingPlacementIds) allMissing.add(id);
             }
-            console.log(`\n    Missing placement IDs in filter-bypassing climbs: ${allMissing.size}`);
-            console.log(
+            console.info(`\n    Missing placement IDs in filter-bypassing climbs: ${allMissing.size}`);
+            console.info(
               `    IDs: [${[...allMissing]
                 .sort((a, b) => a - b)
                 .slice(0, 30)
@@ -269,10 +271,10 @@ async function main() {
           if (nullDenorm.length > 0) {
             nullDenorm.sort((a, b) => b.ascents - a.ascents);
             const topN = nullDenorm.slice(0, Math.min(5, limit));
-            console.log(`\n    NULL denorm climbs (excluded from search, but fragile):\n`);
+            console.info(`\n    NULL denorm climbs (excluded from search, but fragile):\n`);
             for (const entry of topN) {
               const { climb, missingPlacementIds, totalPlacements, ascents } = entry;
-              console.log(
+              console.info(
                 `      "${climb.name || '(unnamed)'}" — ${ascents.toLocaleString()} ascents` +
                   ` | compatible_size_ids: ${climb.compatible_size_ids ?? 'NULL'}` +
                   ` | required_set_ids: ${climb.required_set_ids ?? 'NULL'}` +
@@ -284,7 +286,7 @@ async function main() {
       }
 
       // Cross-layout: check for climbs with layout IDs that have no LED data
-      console.log(`\n--- ${boardName}: Layouts without LED data ---`);
+      console.info(`\n--- ${boardName}: Layouts without LED data ---`);
       const ledLayoutIds = [...new Set(Object.keys(boardLedData).map((k) => Number(k.split('-')[0])))];
 
       const unmappedLayoutResult = await db.execute(sql`
@@ -301,29 +303,29 @@ async function main() {
       let anyUnmapped = false;
       for (const row of rows<{ layout_id: number; climb_count: string; listed_count: string }>(unmappedLayoutResult)) {
         if (!ledLayoutIds.includes(row.layout_id)) {
-          console.log(
+          console.info(
             `    Layout ${row.layout_id}: ${Number(row.climb_count).toLocaleString()} climbs (${Number(row.listed_count).toLocaleString()} listed) — NO LED DATA`,
           );
           anyUnmapped = true;
         }
       }
-      if (!anyUnmapped) console.log(`    All layouts have LED data ✓`);
+      if (!anyUnmapped) console.info(`    All layouts have LED data ✓`);
     }
 
     // Grand summary
-    console.log(`\n${'='.repeat(70)}`);
-    console.log('  SUMMARY');
-    console.log(`${'='.repeat(70)}`);
-    console.log(`  CRITICAL — pass search filters, break BLE: ${grandTotalFilterBypass.toLocaleString()}`);
-    console.log(`  NULL denormalized columns: ${grandTotalNullDenorm.toLocaleString()}`);
-    console.log(`  Correctly excluded by filters: ${grandTotalMismatch.toLocaleString()}`);
+    console.info(`\n${'='.repeat(70)}`);
+    console.info('  SUMMARY');
+    console.info(`${'='.repeat(70)}`);
+    console.info(`  CRITICAL — pass search filters, break BLE: ${grandTotalFilterBypass.toLocaleString()}`);
+    console.info(`  NULL denormalized columns: ${grandTotalNullDenorm.toLocaleString()}`);
+    console.info(`  Correctly excluded by filters: ${grandTotalMismatch.toLocaleString()}`);
     if (grandTotalFilterBypass > 0) {
-      console.log(`\n  ⚠ ${grandTotalFilterBypass} climbs will appear in search results and cause BLE errors!`);
+      console.info(`\n  ⚠ ${grandTotalFilterBypass} climbs will appear in search results and cause BLE errors!`);
     }
     if (grandTotalFilterBypass === 0 && grandTotalNullDenorm === 0) {
-      console.log(`\n  Search filters correctly exclude all affected climbs.`);
-      console.log(`  If users still hit BLE errors, climbs are reaching BLE through non-search paths`);
-      console.log(`  (queue from different config, shared links, suggestions, etc.)`);
+      console.info(`\n  Search filters correctly exclude all affected climbs.`);
+      console.info(`  If users still hit BLE errors, climbs are reaching BLE through non-search paths`);
+      console.info(`  (queue from different config, shared links, suggestions, etc.)`);
     }
   } finally {
     await close();

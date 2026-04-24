@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import React from 'react';
+import { FeedbackDialog } from '../feedback-dialog';
+import { useSubmitAppFeedback } from '@/app/hooks/use-submit-app-feedback';
+import { setFeedbackStatus } from '@/app/lib/feedback-prompt-db';
 
 // The dialog pulls in a React Query hook, a snackbar provider, and an
 // IndexedDB-backed db module. Stub them out so these tests focus on the
@@ -14,10 +17,6 @@ vi.mock('@/app/components/providers/snackbar-provider', () => ({
 vi.mock('@/app/lib/feedback-prompt-db', () => ({
   setFeedbackStatus: vi.fn().mockResolvedValue(undefined),
 }));
-
-import { FeedbackDialog } from '../feedback-dialog';
-import { useSubmitAppFeedback } from '@/app/hooks/use-submit-app-feedback';
-import { setFeedbackStatus } from '@/app/lib/feedback-prompt-db';
 
 type MutationOptions = { onSuccess?: () => void; onError?: (err: Error) => void };
 type Mutate = (payload: unknown, options?: MutationOptions) => void;

@@ -16,22 +16,23 @@ import type {
   ProposalConnection,
   CommunityRoleAssignment,
 } from '@boardsesh/shared-schema';
-import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
-import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
+import CollapsibleSection, {
+  type CollapsibleSectionConfig,
+} from '@/app/components/collapsible-section/collapsible-section';
 import ProposalCard from './proposal-card';
 import CreateProposalForm from './create-proposal-form';
 import FreezeIndicator from './freeze-indicator';
 import FreezeClimbDialog from './freeze-climb-dialog';
 import CommunityStatusBadge from './community-status-badge';
 
-interface ProposalSectionProps {
+type ProposalSectionProps = {
   climbUuid: string;
   boardType: string;
   angle: number;
   currentClimbDifficulty?: string;
   boardName?: string;
   highlightProposalUuid?: string;
-}
+};
 
 export default function ProposalSection({
   climbUuid,

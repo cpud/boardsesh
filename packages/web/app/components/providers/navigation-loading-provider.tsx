@@ -11,5 +11,5 @@ import React from 'react';
  * renders children directly.
  */
 export function NavigationLoadingProvider({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return children;
 }

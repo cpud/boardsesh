@@ -26,12 +26,12 @@ type DrawerView =
   | { type: 'search' }
   | { type: 'board-detail'; boardUuid: string; from: 'list' | 'search'; isFollowedByMe?: boolean };
 
-interface MyBoardsDrawerProps {
+type MyBoardsDrawerProps = {
   open: boolean;
   onClose: () => void;
   onCreateBoard?: () => void;
   onTransitionEnd?: (open: boolean) => void;
-}
+};
 
 export default function MyBoardsDrawer({ open, onClose, onCreateBoard, onTransitionEnd }: MyBoardsDrawerProps) {
   const { boards, isLoading, error } = useMyBoards(open);
@@ -122,49 +122,46 @@ export default function MyBoardsDrawer({ open, onClose, onCreateBoard, onTransit
       extra={headerExtra}
       styles={{ body: { padding: 0 } }}
     >
-      {view.type === 'list' && (
-        <>
-          {error && boards.length === 0 ? (
-            <div className={styles.emptyState} data-testid="my-boards-error">
-              <Alert severity="error" sx={{ width: '100%' }}>
-                {error}
-              </Alert>
-            </div>
-          ) : isLoading && boards.length === 0 ? (
-            <div className={styles.loadingState} data-testid="my-boards-loading">
-              <CircularProgress size={32} />
-            </div>
-          ) : boards.length === 0 ? (
-            <div className={styles.emptyState} data-testid="my-boards-empty">
-              <DashboardOutlined sx={{ fontSize: 48, color: 'var(--neutral-300)' }} />
-              <Typography variant="body2" color="text.secondary">
-                No boards yet. Create one from the board selector to get started.
-              </Typography>
-            </div>
-          ) : (
-            <div className={styles.boardList} data-testid="my-boards-list">
-              {boards.map((board) => (
-                <button
-                  type="button"
-                  key={board.uuid}
-                  className={styles.boardItem}
-                  onClick={() => handleBoardClick(board)}
-                  data-testid={`board-item-${board.uuid}`}
-                >
-                  <div className={styles.boardItemIcon}>
-                    <DashboardOutlined />
-                  </div>
-                  <div className={styles.boardItemInfo}>
-                    <div className={styles.boardItemName}>{board.name}</div>
-                    <div className={styles.boardItemMeta}>{formatBoardMeta(board)}</div>
-                  </div>
-                  <ChevronRightOutlined className={styles.boardItemAction} />
-                </button>
-              ))}
-            </div>
-          )}
-        </>
-      )}
+      {view.type === 'list' &&
+        (error && boards.length === 0 ? (
+          <div className={styles.emptyState} data-testid="my-boards-error">
+            <Alert severity="error" sx={{ width: '100%' }}>
+              {error}
+            </Alert>
+          </div>
+        ) : isLoading && boards.length === 0 ? (
+          <div className={styles.loadingState} data-testid="my-boards-loading">
+            <CircularProgress size={32} />
+          </div>
+        ) : boards.length === 0 ? (
+          <div className={styles.emptyState} data-testid="my-boards-empty">
+            <DashboardOutlined sx={{ fontSize: 48, color: 'var(--neutral-300)' }} />
+            <Typography variant="body2" color="text.secondary">
+              No boards yet. Create one from the board selector to get started.
+            </Typography>
+          </div>
+        ) : (
+          <div className={styles.boardList} data-testid="my-boards-list">
+            {boards.map((board) => (
+              <button
+                type="button"
+                key={board.uuid}
+                className={styles.boardItem}
+                onClick={() => handleBoardClick(board)}
+                data-testid={`board-item-${board.uuid}`}
+              >
+                <div className={styles.boardItemIcon}>
+                  <DashboardOutlined />
+                </div>
+                <div className={styles.boardItemInfo}>
+                  <div className={styles.boardItemName}>{board.name}</div>
+                  <div className={styles.boardItemMeta}>{formatBoardMeta(board)}</div>
+                </div>
+                <ChevronRightOutlined className={styles.boardItemAction} />
+              </button>
+            ))}
+          </div>
+        ))}
 
       {view.type === 'search' && (
         <>

@@ -128,7 +128,7 @@ describe('LogbookEntryCard', () => {
     );
     expect(screen.queryByText('Mirrored')).toBeNull();
 
-    rerender(<LogbookEntryCard entry={{ ...baseEntry, isMirror: true }} currentClimbAngle={40} showMirrorTag={true} />);
+    rerender(<LogbookEntryCard entry={{ ...baseEntry, isMirror: true }} currentClimbAngle={40} showMirrorTag />);
     expect(screen.getByText('Mirrored')).toBeTruthy();
   });
 

@@ -1,11 +1,6 @@
 import 'fake-indexeddb/auto';
 import { openDB } from 'idb';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
-
-vi.mock('../ble/capacitor-utils', () => ({
-  isNativeApp: () => true,
-}));
-
 import {
   incrementBluetoothSends,
   incrementSearches,
@@ -13,6 +8,10 @@ import {
   setFeedbackStatus,
   shouldShowPrompt,
 } from '../feedback-prompt-db';
+
+vi.mock('../ble/capacitor-utils', () => ({
+  isNativeApp: () => true,
+}));
 
 const DB_NAME = 'boardsesh-feedback-prompt';
 const STORE_NAME = 'feedback-prompt';

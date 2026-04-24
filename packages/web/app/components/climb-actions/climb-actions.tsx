@@ -9,8 +9,13 @@ import ListItemText from '@mui/material/ListItemText';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import MoreVertOutlined from '@mui/icons-material/MoreVertOutlined';
-import type { ClimbActionsProps, ClimbActionType, ClimbActionResult, ClimbActionProps } from './types';
-import { DEFAULT_ACTION_ORDER } from './types';
+import {
+  type ClimbActionsProps,
+  type ClimbActionType,
+  type ClimbActionResult,
+  type ClimbActionProps,
+  DEFAULT_ACTION_ORDER,
+} from './types';
 import {
   ViewDetailsAction,
   ForkAction,
@@ -27,9 +32,9 @@ import {
 } from './actions';
 
 // Extended props for OpenInAppAction
-interface OpenInAppActionProps extends ClimbActionProps {
+type OpenInAppActionProps = {
   auroraAppUrl?: string;
-}
+} & ClimbActionProps;
 
 // Local type for menu items used in dropdown mode
 type ActionMenuItemType = {
@@ -352,7 +357,7 @@ function DropdownActionRenderer({
 
   // Render any elements needed in DOM (modals, drawers, etc.)
   if (!result.available || !result.element) return null;
-  return <>{result.element}</>;
+  return result.element;
 }
 
 export default ClimbActions;
