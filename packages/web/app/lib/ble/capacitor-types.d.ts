@@ -32,6 +32,11 @@ interface CapacitorAppPlugin {
     eventName: 'appUrlOpen',
     listenerFunc: (event: { url: string }) => void,
   ): Promise<{ remove: () => Promise<void> }>;
+  getInfo(): Promise<{ name: string; id: string; build: string; version: string }>;
+}
+
+interface CapacitorInAppReviewPlugin {
+  requestReview(): Promise<void>;
 }
 
 interface CapacitorDevUrlPlugin {
@@ -50,6 +55,7 @@ interface CapacitorGlobal {
     Browser?: CapacitorBrowserPlugin;
     App?: CapacitorAppPlugin;
     DevUrl?: CapacitorDevUrlPlugin;
+    InAppReview?: CapacitorInAppReviewPlugin;
     LiveActivity?: {
       isAvailable(): Promise<{ available: boolean }>;
       startSession(options: Record<string, unknown>): Promise<void>;

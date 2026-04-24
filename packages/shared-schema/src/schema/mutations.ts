@@ -463,5 +463,16 @@ export const mutationsTypeDefs = /* GraphQL */ `
     authorizeControllerForSession(controllerId: ID!, sessionId: ID!): Boolean!
     # Send device logs to backend for forwarding to Axiom (requires controller auth)
     sendDeviceLogs(input: SendDeviceLogsInput!): SendDeviceLogsResponse!
+
+    # ============================================
+    # App Feedback Mutations (public)
+    # ============================================
+
+    """
+    Submit in-app rating + optional comment. Public — unauthenticated testers
+    can still rate. If the request has a valid auth token, the feedback row is
+    associated with the user.
+    """
+    submitAppFeedback(input: SubmitAppFeedbackInput!): Boolean!
   }
 `;
