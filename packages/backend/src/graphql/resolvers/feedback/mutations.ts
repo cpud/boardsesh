@@ -14,7 +14,7 @@ export const feedbackMutations = {
     const appVersion = validated.appVersion ?? null;
     const rating = validated.rating ?? null;
 
-    const [row] = await db
+    const rows = await db
       .insert(dbSchema.appFeedback)
       .values({
         userId: ctx.userId ?? null,
@@ -25,16 +25,22 @@ export const feedbackMutations = {
         source: validated.source,
       })
       .returning();
+    const row = rows[0];
 
     // Fire-and-forget. postFeedbackToDiscord swallows all errors internally.
-    void postFeedbackToDiscord({
-      feedbackId: row.id,
-      rating,
-      comment,
-      platform: validated.platform,
-      appVersion,
-      source: validated.source,
-    });
+    // Guard on row existence — an insert that doesn't return a row means
+    // something's wrong at the DB layer (not our contract), so skip the
+    // side-effect rather than crash the mutation.
+    if (row) {
+      void postFeedbackToDiscord({
+        feedbackId: row.id,
+        rating,
+        comment,
+        platform: validated.platform,
+        appVersion,
+        source: validated.source,
+      });
+    }
 
     return true;
   },

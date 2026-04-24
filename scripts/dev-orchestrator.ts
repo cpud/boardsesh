@@ -1,6 +1,7 @@
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { mkdirSync, existsSync, statSync } from 'node:fs';
 import { createConnection } from 'node:net';
+import { homedir } from 'node:os';
 import { createInterface } from 'node:readline/promises';
 import { setTimeout as delay } from 'node:timers/promises';
 import { join, dirname, resolve } from 'node:path';
@@ -147,7 +148,11 @@ async function resolveTlsBundle(): Promise<TlsBundle | null> {
   const hostname = resolveTailscaleHostname();
   if (!hostname) return null;
 
-  const certDir = join(ROOT_DIR, 'node_modules', '.cache', 'boardsesh-dev-certs');
+  // Cache under $XDG_CACHE_HOME (fallback ~/.cache), not node_modules —
+  // otherwise a clean install or `rm -rf node_modules` wipes the cert and
+  // we spend another roundtrip with Tailscale on the next `vp run dev`.
+  const cacheRoot = process.env.XDG_CACHE_HOME || join(homedir(), '.cache');
+  const certDir = join(cacheRoot, 'boardsesh-dev-certs');
   const certFile = join(certDir, `${hostname}.crt`);
   const keyFile = join(certDir, `${hostname}.key`);
 

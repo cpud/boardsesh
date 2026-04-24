@@ -26,7 +26,8 @@ export interface FeedbackDiscordPayload {
   source: AppFeedbackSource;
 }
 
-function buildWebhookBody(payload: FeedbackDiscordPayload): Record<string, unknown> {
+/** @internal exported for testing only; do not call from resolver code. */
+export function buildWebhookBody(payload: FeedbackDiscordPayload): Record<string, unknown> {
   const isBug = BUG_SOURCES.has(payload.source);
   const title = isBug ? '🐞 Bug report' : `⭐ Rating: ${payload.rating ?? '?'}/5`;
   const color = isBug
@@ -79,6 +80,3 @@ export async function postFeedbackToDiscord(payload: FeedbackDiscordPayload): Pr
     console.error('[Discord] Webhook POST error:', error);
   }
 }
-
-/** Exposed for tests. */
-export const __internal = { buildWebhookBody, BUG_SOURCES };

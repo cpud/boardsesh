@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
-import { __internal, postFeedbackToDiscord } from '../services/discord';
+import { buildWebhookBody, postFeedbackToDiscord } from '../services/discord';
 
 const originalUrl = process.env.DISCORD_FEEDBACK_URL;
 
@@ -13,7 +13,7 @@ describe('Discord webhook payload privacy', () => {
   // What we guard against is the feedback row's user identifiers leaking:
   // userId, email, or a display name associated with a specific user.
   it('never includes user-identifying fields from the feedback row', () => {
-    const bugBody = __internal.buildWebhookBody({
+    const bugBody = buildWebhookBody({
       feedbackId: 42,
       rating: null,
       comment: 'Crashed on submit',
@@ -22,7 +22,7 @@ describe('Discord webhook payload privacy', () => {
       source: 'shake-bug',
     });
 
-    const ratingBody = __internal.buildWebhookBody({
+    const ratingBody = buildWebhookBody({
       feedbackId: 99,
       rating: 5,
       comment: null,
@@ -40,7 +40,7 @@ describe('Discord webhook payload privacy', () => {
   });
 
   it('labels bug-source feedback with a bug-report title', () => {
-    const body = __internal.buildWebhookBody({
+    const body = buildWebhookBody({
       feedbackId: 1,
       rating: null,
       comment: 'It broke',
@@ -53,7 +53,7 @@ describe('Discord webhook payload privacy', () => {
   });
 
   it('labels rating feedback with a star title including the rating', () => {
-    const body = __internal.buildWebhookBody({
+    const body = buildWebhookBody({
       feedbackId: 1,
       rating: 3,
       comment: null,
@@ -66,7 +66,7 @@ describe('Discord webhook payload privacy', () => {
   });
 
   it('includes the feedback id in the footer for correlation', () => {
-    const body = __internal.buildWebhookBody({
+    const body = buildWebhookBody({
       feedbackId: 1337,
       rating: 4,
       comment: null,

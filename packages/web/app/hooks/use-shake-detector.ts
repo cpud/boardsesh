@@ -92,13 +92,15 @@ export function useShakeDetector(onShake: () => void, { enabled = true }: UseSha
 
       // DeviceMotion requires a secure context (HTTPS or localhost). Over
       // plain HTTP (e.g. LAN IP / Tailscale IP on the dev server), mobile
-      // browsers silently drop all events — so the hook looks like it's
-      // doing nothing. Warn up front so the cause is obvious in the console.
-      if (typeof window !== 'undefined' && window.isSecureContext === false) {
+      // browsers silently drop all events — attaching a listener there is
+      // just dead weight. Warn loudly and bail so the cause is obvious and
+      // there's no stale handler hanging off `window`.
+      if (window.isSecureContext === false) {
         console.warn(
           '[shake] Page is not a secure context — mobile browsers will NOT fire devicemotion events. ' +
-            'Use HTTPS or localhost to test shake-to-report.',
+            'Use HTTPS or localhost to test shake-to-report. Skipping listener attachment.',
         );
+        return;
       }
 
       const handler = (event: DeviceMotionEvent) => {
@@ -121,10 +123,14 @@ export function useShakeDetector(onShake: () => void, { enabled = true }: UseSha
         processMagnitude(Math.sqrt(Math.max(0, totalSq - GRAVITY_SQ)));
       };
 
-      const requestPermission = (DeviceMotionEvent as unknown as { requestPermission?: IosRequestPermission })
+      const requestPermissionRaw = (DeviceMotionEvent as unknown as { requestPermission?: IosRequestPermission })
         .requestPermission;
 
-      if (typeof requestPermission === 'function') {
+      if (typeof requestPermissionRaw === 'function') {
+        // Capture the narrowed function in a const so the nested handler
+        // below retains its function type — TS doesn't carry a `typeof …
+        // === 'function'` narrow across a nested function declaration.
+        const requestPermission = requestPermissionRaw;
         // iOS 13+ Safari: permission must be requested from a user gesture.
         // Notes on the implementation:
         // - WebKit's gesture-activation list for DeviceMotion is narrow:

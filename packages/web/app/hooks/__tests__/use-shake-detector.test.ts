@@ -42,7 +42,8 @@ async function flushMicrotasks() {
   });
 }
 
-// Coordinates that produce a magnitude well above the default 15 m/s² threshold.
+// Coordinates that produce a magnitude well above the default threshold
+// (see DEFAULT_SHAKE_OPTIONS.threshold in detect-shake.ts).
 const STRONG = { x: 20, y: 0, z: 0 };
 
 describe('useShakeDetector — native path', () => {
@@ -79,7 +80,7 @@ describe('useShakeDetector — native path', () => {
     expect(mock.__removeSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('invokes onShake after three strong jolts inside the window', async () => {
+  it('invokes onShake once a sequence of strong jolts inside the window clears the default jolt bar', async () => {
     const onShake = vi.fn();
     renderHook(() => useShakeDetector(onShake));
     await flushMicrotasks();
@@ -92,6 +93,10 @@ describe('useShakeDetector — native path', () => {
     };
 
     vi.useFakeTimers();
+    // Three strong samples inside the default windowMs. With the current
+    // defaults (requiredJolts=2) the second sample fires and the third is
+    // swallowed by cooldown; with tighter defaults (requiredJolts=3) the
+    // third one is the trigger. Either way onShake fires exactly once.
     send(0);
     send(200);
     send(400);
