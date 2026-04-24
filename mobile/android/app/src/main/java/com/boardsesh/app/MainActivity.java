@@ -241,6 +241,10 @@ public class MainActivity extends BridgeActivity {
             }
 
             if (request.isForMainFrame() && isOffline()) {
+                // Offline path takes precedence: tryCacheThenFallback renders the
+                // offline HTML which also contains the boardsesh-dev://reset link
+                // when an override is active (see buildDevResetLink), so the
+                // escape hatch is still reachable here.
                 tryCacheThenFallback(view);
                 return;
             }

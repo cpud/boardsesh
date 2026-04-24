@@ -82,7 +82,10 @@ class BoardseshViewController: CAPBridgeViewController {
     }
 
     #if DEBUG
-    private static let devUrlRescueDelay: TimeInterval = 8
+    // DNS and connection-refused failures typically surface in under a second;
+    // waiting longer than this just delays recovery. Follow-up to move to a
+    // WKNavigationDelegate.didFailProvisionalNavigation hook tracked separately.
+    private static let devUrlRescueDelay: TimeInterval = 4
     private var pendingDevUrlRescueWork: DispatchWorkItem?
 
     /// If a dev URL override is active and the WebView hasn't loaded anything

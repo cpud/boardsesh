@@ -47,6 +47,18 @@ public class DevOverrideRescuePolicyTest {
             true, true, true, WebViewClient.ERROR_UNSUPPORTED_SCHEME));
     }
 
+    @Test
+    public void networkError_boundaryForIoAndFileNotFound() {
+        // ERROR_IO is classified as a network error by OfflineFallbackPolicy — a
+        // truncated response mid-flight should show the rescue page.
+        assertTrue(DevOverrideRescuePolicy.shouldShowForNetworkError(
+            true, true, true, WebViewClient.ERROR_IO));
+        // ERROR_FILE_NOT_FOUND is NOT a network error (it's a file:// failure,
+        // not relevant to a dev server) and should not trigger the rescue page.
+        assertFalse(DevOverrideRescuePolicy.shouldShowForNetworkError(
+            true, true, true, WebViewClient.ERROR_FILE_NOT_FOUND));
+    }
+
     // -- shouldShowForHttpError ---------------------------------------------
 
     @Test
