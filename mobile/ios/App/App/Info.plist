@@ -76,6 +76,8 @@
 		<string>www.boardsesh.com</string>
 		<string>tailedd9d5.ts.net</string>
 	</array>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Boardsesh reads your Apple Health data to avoid duplicate workout entries when saving climbing sessions.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Boardsesh saves your climbing sessions to Apple Health as workouts so they count toward your activity rings.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
