@@ -190,12 +190,13 @@ describe('useShakeDetector — iOS 13+ permission path', () => {
     delete (globalThis as unknown as { DeviceMotionEvent?: unknown }).DeviceMotionEvent;
   });
 
-  it('defers listener attachment to a pointerdown gesture', async () => {
+  it('defers listener attachment to a click/touchend gesture', async () => {
     renderHook(() => useShakeDetector(vi.fn()));
     await flushMicrotasks();
     // No devicemotion listener yet — waiting for gesture.
     expect(addSpy).not.toHaveBeenCalledWith('devicemotion', expect.any(Function));
-    expect(docAddSpy).toHaveBeenCalledWith('pointerdown', expect.any(Function));
+    expect(docAddSpy).toHaveBeenCalledWith('click', expect.any(Function));
+    expect(docAddSpy).toHaveBeenCalledWith('touchend', expect.any(Function));
   });
 
   it('attaches devicemotion once the user grants permission', async () => {
@@ -203,7 +204,7 @@ describe('useShakeDetector — iOS 13+ permission path', () => {
     renderHook(() => useShakeDetector(vi.fn()));
     await flushMicrotasks();
 
-    const gestureCall = docAddSpy.mock.calls.find(([event]: [string, unknown]) => event === 'pointerdown');
+    const gestureCall = docAddSpy.mock.calls.find(([event]: [string, unknown]) => event === 'click');
     const gestureHandler = gestureCall?.[1] as () => Promise<void>;
     await act(async () => {
       await gestureHandler();
@@ -218,7 +219,7 @@ describe('useShakeDetector — iOS 13+ permission path', () => {
     renderHook(() => useShakeDetector(vi.fn()));
     await flushMicrotasks();
 
-    const gestureCall = docAddSpy.mock.calls.find(([event]: [string, unknown]) => event === 'pointerdown');
+    const gestureCall = docAddSpy.mock.calls.find(([event]: [string, unknown]) => event === 'click');
     const gestureHandler = gestureCall?.[1] as () => Promise<void>;
     await act(async () => {
       await gestureHandler();
@@ -227,13 +228,14 @@ describe('useShakeDetector — iOS 13+ permission path', () => {
     expect(addSpy).not.toHaveBeenCalledWith('devicemotion', expect.any(Function));
   });
 
-  it('cleans up the pending pointerdown listener if unmounted before gesture', async () => {
+  it('cleans up the pending gesture listeners if unmounted before a tap', async () => {
     requestPermission.mockResolvedValue('granted');
     const { unmount } = renderHook(() => useShakeDetector(vi.fn()));
     await flushMicrotasks();
     unmount();
     await flushMicrotasks();
-    expect(docRemoveSpy).toHaveBeenCalledWith('pointerdown', expect.any(Function));
+    expect(docRemoveSpy).toHaveBeenCalledWith('click', expect.any(Function));
+    expect(docRemoveSpy).toHaveBeenCalledWith('touchend', expect.any(Function));
   });
 });
 

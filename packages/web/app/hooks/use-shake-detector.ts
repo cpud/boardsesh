@@ -126,20 +126,26 @@ export function useShakeDetector(onShake: () => void, { enabled = true }: UseSha
 
       if (typeof requestPermission === 'function') {
         // iOS 13+ Safari: permission must be requested from a user gesture.
-        // Critical: the handler must NOT be an `async` function. WebKit ties
-        // the user-gesture token to the synchronous call stack of the event
-        // handler; wrapping the handler in `async` (even before the first
-        // `await`) is enough to make Safari reject the call with
-        // "Requesting device motion access requires a user gesture to prompt".
-        // We also don't pass { once: true } — we call removeEventListener
-        // manually BEFORE kicking off the permission request, so the same
-        // gesture can't accidentally fire this handler twice and so the
-        // cleanup on unmount has a listener to remove.
-        log('iOS 13+ detected — waiting for first pointerdown to request DeviceMotion permission');
-        const onGesture = () => {
-          document.removeEventListener('pointerdown', onGesture);
-          // Synchronously inside the gesture frame — promise chaining, not
-          // async/await, so WebKit still counts this as a user-initiated call.
+        // Notes on the implementation:
+        // - WebKit's gesture-activation list for DeviceMotion is narrow:
+        //   `click` and `touchend` qualify; `pointerdown` does NOT, even
+        //   though it fires from a user tap. Using pointerdown here gave
+        //   "NotAllowedError: requires a user gesture to prompt" on iOS.
+        // - The handler must NOT be an `async` function. WebKit ties the
+        //   gesture token to the synchronous call stack of the event
+        //   listener; merely declaring the handler `async` loses the token.
+        //   Promise-chain `.then()` is fine because requestPermission() is
+        //   called synchronously at the top of the handler frame.
+        // - We listen for both `click` and `touchend` so the permission
+        //   request fires on whichever event bubbles up first (some iOS
+        //   controls swallow one or the other).
+        log('iOS 13+ detected — waiting for first click/touchend to request DeviceMotion permission');
+        const cleanupGestureListeners = () => {
+          document.removeEventListener('click', onGesture);
+          document.removeEventListener('touchend', onGesture);
+        };
+        function onGesture() {
+          cleanupGestureListeners();
           requestPermission
             .call(DeviceMotionEvent)
             .then((result) => {
@@ -147,14 +153,24 @@ export function useShakeDetector(onShake: () => void, { enabled = true }: UseSha
               if (result === 'granted' && !cancelled) {
                 window.addEventListener('devicemotion', handler);
                 cleanup = () => window.removeEventListener('devicemotion', handler);
+              } else if (result === 'denied') {
+                console.warn(
+                  '[shake] iOS denied DeviceMotion. If this was by accident, re-enable via ' +
+                    'iPhone Settings → Safari → Motion & Orientation Access.',
+                );
               }
             })
             .catch((err) => {
               log('DeviceMotion permission threw:', err);
+              console.warn(
+                '[shake] iOS rejected the permission call. Usually means Motion & Orientation ' +
+                  'Access is disabled in iPhone Settings → Safari (toggle it on and reload).',
+              );
             });
-        };
-        document.addEventListener('pointerdown', onGesture);
-        cleanup = () => document.removeEventListener('pointerdown', onGesture);
+        }
+        document.addEventListener('click', onGesture);
+        document.addEventListener('touchend', onGesture);
+        cleanup = cleanupGestureListeners;
         return;
       }
 
