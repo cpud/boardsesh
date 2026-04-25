@@ -6,6 +6,15 @@ export default defineConfig({
     semi: true,
     trailingComma: 'all',
   },
+  lint: {
+    options: {
+      // typeCheck runs tsgolint (the TypeScript Go rewrite) so vp check —
+      // including the staged pre-commit hook — gets fast type checking.
+      // typeAware (extra type-aware oxlint rules) is intentionally off to
+      // keep precommit fast; run it manually or in CI if needed.
+      typeCheck: true,
+    },
+  },
   test: {
     projects: [
       './packages/web/vite.config.ts',
