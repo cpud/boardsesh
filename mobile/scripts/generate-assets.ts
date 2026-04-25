@@ -8,7 +8,7 @@ const SVG_ROOT = path.join(REPO_ROOT, 'svg');
 
 const CORAL = '#d65a4f';
 
-const APP_ICON_SVG = path.join(SVG_ROOT, 'app-icon/icon-coral-1024.svg');
+const APP_ICON_SVG = path.join(SVG_ROOT, 'app-icon/icon-dark-1024.svg');
 const SPLASH_LOGO_SVG = path.join(SVG_ROOT, 'mark/route-mark-on-coral.svg');
 const ADAPTIVE_FG_SVG = path.join(SVG_ROOT, 'mark/route-mark.svg');
 
