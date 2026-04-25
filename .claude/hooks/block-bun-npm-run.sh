@@ -45,9 +45,13 @@ EOF
 done
 
 # --- npm run ---
-if [[ "$command" =~ ${boundary}npm[[:space:]]+run([[:space:]]|$) ]]; then
+# Same loop shape as bun run for consistency (catches every chained occurrence).
+remaining="$command"
+while [[ "$remaining" =~ ${boundary}npm[[:space:]]+run([[:space:]]+([^[:space:]&|;()\`]+))?(.*) ]]; do
+  target="${BASH_REMATCH[3]}"
+  remaining="${BASH_REMATCH[4]}"
   cat >&2 <<EOF
-Blocked: \`npm run\` is forbidden in this repo.
+Blocked: \`npm run${target:+ $target}\` is forbidden in this repo.
 
 This monorepo uses Vite+ (\`vp\`) and Bun, not npm. Use:
   vp check        # lint + format + typecheck
@@ -57,6 +61,6 @@ This monorepo uses Vite+ (\`vp\`) and Bun, not npm. Use:
 Full command was: $command
 EOF
   exit 2
-fi
+done
 
 exit 0
