@@ -1,13 +1,16 @@
 import { eq, and, gte, desc } from 'drizzle-orm';
-import type {
-  BoardName,
-  CheckMoonBoardClimbDuplicatesInput,
-  ClimbSearchInput,
-  ConnectionContext,
+import {
+  type CheckMoonBoardClimbDuplicatesInput,
+  type ClimbSearchInput,
+  type ConnectionContext,
+  SUPPORTED_BOARDS,
+  USER_SPECIFIC_SEARCH_PARAMS,
 } from '@boardsesh/shared-schema';
-import { SUPPORTED_BOARDS, USER_SPECIFIC_SEARCH_PARAMS } from '@boardsesh/shared-schema';
-import type { ClimbSearchParams, ParsedBoardRouteParameters } from '../../../db/queries/climbs/index';
-import { getClimbByUuid } from '../../../db/queries/climbs/index';
+import {
+  type ClimbSearchParams,
+  type ParsedBoardRouteParameters,
+  getClimbByUuid,
+} from '../../../db/queries/climbs/index';
 import { isValidBoardName } from '../../../db/queries/util/table-select';
 import { applyRateLimit, validateInput } from '../shared/helpers';
 import { findMoonBoardDuplicateMatches } from './moonboard-duplicates';
@@ -39,7 +42,11 @@ export const climbQueries = {
    * Search for climbs with various filters
    * Returns a context object that field resolvers use to fetch data lazily
    */
-  searchClimbs: async (_: unknown, { input }: { input: ClimbSearchInput }, ctx: ConnectionContext): Promise<ClimbSearchContext> => {
+  searchClimbs: async (
+    _: unknown,
+    { input }: { input: ClimbSearchInput },
+    ctx: ConnectionContext,
+  ): Promise<ClimbSearchContext> => {
     validateInput(ClimbSearchInputSchema, input, 'input');
 
     // Validate board name
@@ -48,11 +55,14 @@ export const climbQueries = {
     }
 
     // Parse setIds from comma-separated string
-    const setIds = input.setIds.split(',').map(id => parseInt(id.trim(), 10)).filter(id => !isNaN(id));
+    const setIds = input.setIds
+      .split(',')
+      .map((id) => parseInt(id.trim(), 10))
+      .filter((id) => !isNaN(id));
 
     // Build route parameters
     const params: ParsedBoardRouteParameters = {
-      board_name: input.boardName as BoardName,
+      board_name: input.boardName,
       layout_id: input.layoutId,
       size_id: input.sizeId,
       set_ids: setIds,
@@ -78,10 +88,16 @@ export const climbQueries = {
       showOnlyAttempted: input.showOnlyAttempted,
       showOnlyCompleted: input.showOnlyCompleted,
       onlyDrafts: input.onlyDrafts,
+      projectsOnly: input.projectsOnly,
     };
 
     if (DEBUG) {
-      console.log('[searchClimbs] onlyDrafts:', input.onlyDrafts, 'userId:', ctx.isAuthenticated ? ctx.userId : 'not authenticated');
+      console.info(
+        '[searchClimbs] onlyDrafts:',
+        input.onlyDrafts,
+        'userId:',
+        ctx.isAuthenticated ? ctx.userId : 'not authenticated',
+      );
     }
 
     // Drafts require authentication — return empty results if not signed in
@@ -106,7 +122,7 @@ export const climbQueries = {
 
     // Only resolve userId when user-specific filters are active — otherwise the query
     // results are identical to anonymous and can be served from Redis cache.
-    const userId = (ctx.isAuthenticated && hasUserSpecificFilters) ? ctx.userId : undefined;
+    const userId = ctx.isAuthenticated && hasUserSpecificFilters ? ctx.userId : undefined;
 
     // Return context for field resolvers - queries are executed lazily per field
     // Personal progress filters now use boardsesh_ticks table with NextAuth user ID
@@ -123,14 +139,21 @@ export const climbQueries = {
    */
   climb: async (
     _: unknown,
-    { boardName, layoutId, sizeId, setIds, angle, climbUuid }: {
+    {
+      boardName,
+      layoutId,
+      sizeId,
+      setIds,
+      angle,
+      climbUuid,
+    }: {
       boardName: string;
       layoutId: number;
       sizeId: number;
       setIds: string;
       angle: number;
-      climbUuid: string
-    }
+      climbUuid: string;
+    },
   ) => {
     // Validate board name
     validateInput(BoardNameSchema, boardName, 'boardName');
@@ -145,10 +168,10 @@ export const climbQueries = {
     if (angle < 0 || angle > 90) throw new Error('Invalid angle: must be between 0 and 90');
     validateInput(ExternalUUIDSchema, climbUuid, 'climbUuid');
 
-    if (DEBUG) console.log('[climb] Fetching:', { boardName, layoutId, sizeId, setIds, angle, climbUuid });
+    if (DEBUG) console.info('[climb] Fetching:', { boardName, layoutId, sizeId, setIds, angle, climbUuid });
 
     const climb = await getClimbByUuid({
-      board_name: boardName as BoardName,
+      board_name: boardName,
       layout_id: layoutId,
       size_id: sizeId,
       angle,
@@ -161,10 +184,7 @@ export const climbQueries = {
   /**
    * Get climb stats history for the last 12 months
    */
-  climbStatsHistory: async (
-    _: unknown,
-    { boardName, climbUuid }: { boardName: string; climbUuid: string },
-  ) => {
+  climbStatsHistory: async (_: unknown, { boardName, climbUuid }: { boardName: string; climbUuid: string }) => {
     validateInput(BoardNameSchema, boardName, 'boardName');
     validateInput(ExternalUUIDSchema, climbUuid, 'climbUuid');
 

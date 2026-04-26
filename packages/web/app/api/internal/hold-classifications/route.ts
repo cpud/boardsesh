@@ -1,5 +1,5 @@
 import { getServerSession } from 'next-auth/next';
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/app/lib/db/db';
 import * as schema from '@/app/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -32,27 +32,18 @@ export async function GET(request: NextRequest) {
     const sizeIdParam = searchParams.get('sizeId');
 
     if (!boardType || !layoutIdParam || !sizeIdParam) {
-      return NextResponse.json(
-        { error: 'Missing required parameters: boardType, layoutId, sizeId' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing required parameters: boardType, layoutId, sizeId' }, { status: 400 });
     }
 
     if (!isValidBoardType(boardType)) {
-      return NextResponse.json(
-        { error: `boardType must be one of: ${VALID_BOARD_TYPES.join(', ')}` },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: `boardType must be one of: ${VALID_BOARD_TYPES.join(', ')}` }, { status: 400 });
     }
 
     const layoutId = parseIntSafe(layoutIdParam);
     const sizeId = parseIntSafe(sizeIdParam);
 
     if (layoutId === null || sizeId === null) {
-      return NextResponse.json(
-        { error: 'layoutId and sizeId must be valid integers' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'layoutId and sizeId must be valid integers' }, { status: 400 });
     }
 
     const db = getDb();
@@ -65,8 +56,8 @@ export async function GET(request: NextRequest) {
           eq(schema.userHoldClassifications.userId, session.user.id),
           eq(schema.userHoldClassifications.boardType, boardType),
           eq(schema.userHoldClassifications.layoutId, layoutId),
-          eq(schema.userHoldClassifications.sizeId, sizeId)
-        )
+          eq(schema.userHoldClassifications.sizeId, sizeId),
+        ),
       );
 
     return NextResponse.json({
@@ -87,10 +78,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Failed to get hold classifications:', error);
-    return NextResponse.json(
-      { error: 'Failed to get hold classifications' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to get hold classifications' }, { status: 500 });
   }
 }
 
@@ -111,60 +99,36 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!isValidBoardType(boardType)) {
-      return NextResponse.json(
-        { error: `boardType must be one of: ${VALID_BOARD_TYPES.join(', ')}` },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: `boardType must be one of: ${VALID_BOARD_TYPES.join(', ')}` }, { status: 400 });
     }
 
     if (typeof layoutId !== 'number' || !Number.isInteger(layoutId)) {
-      return NextResponse.json(
-        { error: 'layoutId must be an integer' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'layoutId must be an integer' }, { status: 400 });
     }
 
     if (typeof sizeId !== 'number' || !Number.isInteger(sizeId)) {
-      return NextResponse.json(
-        { error: 'sizeId must be an integer' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'sizeId must be an integer' }, { status: 400 });
     }
 
     if (typeof holdId !== 'number' || !Number.isInteger(holdId)) {
-      return NextResponse.json(
-        { error: 'holdId must be an integer' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'holdId must be an integer' }, { status: 400 });
     }
 
     // Validate optional fields
     if (holdType !== null && holdType !== undefined && !isValidHoldType(holdType)) {
-      return NextResponse.json(
-        { error: `holdType must be one of: ${VALID_HOLD_TYPES.join(', ')}` },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: `holdType must be one of: ${VALID_HOLD_TYPES.join(', ')}` }, { status: 400 });
     }
 
     if (handRating !== null && handRating !== undefined && !isValidRating(handRating)) {
-      return NextResponse.json(
-        { error: 'handRating must be an integer between 1 and 5' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'handRating must be an integer between 1 and 5' }, { status: 400 });
     }
 
     if (footRating !== null && footRating !== undefined && !isValidRating(footRating)) {
-      return NextResponse.json(
-        { error: 'footRating must be an integer between 1 and 5' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'footRating must be an integer between 1 and 5' }, { status: 400 });
     }
 
     if (pullDirection !== null && pullDirection !== undefined && !isValidPullDirection(pullDirection)) {
-      return NextResponse.json(
-        { error: 'pullDirection must be an integer between 0 and 360' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'pullDirection must be an integer between 0 and 360' }, { status: 400 });
     }
 
     const db = getDb();
@@ -179,8 +143,8 @@ export async function POST(request: NextRequest) {
           eq(schema.userHoldClassifications.boardType, boardType),
           eq(schema.userHoldClassifications.layoutId, layoutId),
           eq(schema.userHoldClassifications.sizeId, sizeId),
-          eq(schema.userHoldClassifications.holdId, holdId)
-        )
+          eq(schema.userHoldClassifications.holdId, holdId),
+        ),
       )
       .limit(1);
 
@@ -259,9 +223,6 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error('Failed to save hold classification:', error);
-    return NextResponse.json(
-      { error: 'Failed to save hold classification' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to save hold classification' }, { status: 500 });
   }
 }

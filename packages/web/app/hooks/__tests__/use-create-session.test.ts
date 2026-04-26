@@ -1,5 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { useCreateSession } from '../use-create-session';
+import type { SessionCreationFormData } from '@/app/components/session-creation/session-creation-form';
 
 vi.mock('@/app/hooks/use-ws-auth-token', () => ({
   useWsAuthToken: vi.fn(),
@@ -13,10 +16,6 @@ vi.mock('@/app/lib/graphql/client', () => ({
 vi.mock('@/app/lib/graphql/operations/create-session', () => ({
   CREATE_SESSION: 'CREATE_SESSION_MUTATION',
 }));
-
-import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
-import { useCreateSession } from '../use-create-session';
-import type { SessionCreationFormData } from '@/app/components/session-creation/session-creation-form';
 
 const mockUseWsAuthToken = vi.mocked(useWsAuthToken);
 
@@ -127,21 +126,18 @@ describe('useCreateSession', () => {
     });
 
     expect(sessionId).toBe('session-123');
-    expect(mockRequest).toHaveBeenCalledWith(
-      'CREATE_SESSION_MUTATION',
-      {
-        input: {
-          boardPath: '/kilter/1/2/3/40',
-          latitude: 37.7749,
-          longitude: -122.4194,
-          discoverable: true,
-          name: 'Test Session',
-          goal: 'Climb hard',
-          color: '#ff0000',
-          isPermanent: false,
-        },
+    expect(mockRequest).toHaveBeenCalledWith('CREATE_SESSION_MUTATION', {
+      input: {
+        boardPath: '/kilter/1/2/3/40',
+        latitude: 37.7749,
+        longitude: -122.4194,
+        discoverable: true,
+        name: 'Test Session',
+        goal: 'Climb hard',
+        color: '#ff0000',
+        isPermanent: false,
       },
-    );
+    });
   });
 
   it('creates session without geolocation when not discoverable', async () => {
@@ -178,11 +174,9 @@ describe('useCreateSession', () => {
   });
 
   it('falls back to 0,0 when geolocation fails', async () => {
-    mockGeolocation.getCurrentPosition.mockImplementation(
-      (_success: unknown, error: (err: unknown) => void) => {
-        error(new Error('Permission denied'));
-      },
-    );
+    mockGeolocation.getCurrentPosition.mockImplementation((_success: unknown, error: (err: unknown) => void) => {
+      error(new Error('Permission denied'));
+    });
 
     mockRequest.mockResolvedValue({
       createSession: {
@@ -249,7 +243,9 @@ describe('useCreateSession', () => {
   it('sets isCreating during operation', async () => {
     let resolveRequest: (value: unknown) => void;
     mockRequest.mockReturnValue(
-      new Promise((resolve) => { resolveRequest = resolve; }),
+      new Promise((resolve) => {
+        resolveRequest = resolve;
+      }),
     );
 
     const { result } = renderHook(() => useCreateSession());

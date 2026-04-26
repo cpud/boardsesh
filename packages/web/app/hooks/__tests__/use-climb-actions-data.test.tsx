@@ -1,5 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, waitFor, act } from '@testing-library/react';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { useSnackbar } from '@/app/components/providers/snackbar-provider';
+import { useClimbActionsData } from '../use-climb-actions-data';
+import { createQueryWrapper } from '@/app/test-utils/test-providers';
+import type { Playlist } from '@/app/lib/graphql/operations/playlists';
 
 vi.mock('@/app/hooks/use-ws-auth-token', () => ({
   useWsAuthToken: vi.fn(),
@@ -26,12 +31,6 @@ vi.mock('@/app/lib/graphql/operations/playlists', () => ({
   REMOVE_CLIMB_FROM_PLAYLIST: 'REMOVE_CLIMB_FROM_PLAYLIST',
   CREATE_PLAYLIST: 'CREATE_PLAYLIST',
 }));
-
-import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
-import { useSnackbar } from '@/app/components/providers/snackbar-provider';
-import { useClimbActionsData } from '../use-climb-actions-data';
-import { createQueryWrapper } from '@/app/test-utils/test-providers';
-import type { Playlist } from '@/app/lib/graphql/operations/playlists';
 
 const mockUseWsAuthToken = vi.mocked(useWsAuthToken);
 const mockUseSnackbar = vi.mocked(useSnackbar);
@@ -90,10 +89,7 @@ describe('useClimbActionsData', () => {
 
   it('disabled when climbUuids empty', () => {
     const wrapper = createQueryWrapper();
-    renderHook(
-      () => useClimbActionsData({ ...defaultOptions, climbUuids: [] }),
-      { wrapper },
-    );
+    renderHook(() => useClimbActionsData({ ...defaultOptions, climbUuids: [] }), { wrapper });
 
     // With empty climbUuids, favorites query should not be enabled
     // Only the playlists query (which doesn't depend on climbUuids) might fire
@@ -234,10 +230,7 @@ describe('useClimbActionsData', () => {
     });
 
     await waitFor(() => {
-      expect(mockShowMessage).toHaveBeenCalledWith(
-        'Failed to update favorite. Please try again.',
-        'error',
-      );
+      expect(mockShowMessage).toHaveBeenCalledWith('Failed to update favorite. Please try again.', 'error');
     });
 
     vi.restoreAllMocks();
@@ -262,7 +255,9 @@ describe('useClimbActionsData', () => {
 
   it('addToPlaylist sends mutation and updates accumulated cache', async () => {
     mockRequest.mockResolvedValueOnce({ favorites: [] });
-    mockRequest.mockResolvedValueOnce({ allUserPlaylists: [{ uuid: 'pl-1', name: 'Test', climbCount: 2 }] });
+    mockRequest.mockResolvedValueOnce({
+      allUserPlaylists: [{ uuid: 'pl-1', name: 'Test', climbCount: 2 }],
+    });
     mockRequest.mockResolvedValueOnce({ playlistsForClimbs: [] });
 
     const wrapper = createQueryWrapper();
@@ -287,8 +282,12 @@ describe('useClimbActionsData', () => {
 
   it('removeFromPlaylist sends mutation and updates accumulated cache', async () => {
     mockRequest.mockResolvedValueOnce({ favorites: [] });
-    mockRequest.mockResolvedValueOnce({ allUserPlaylists: [{ uuid: 'pl-1', name: 'Test', climbCount: 5 }] });
-    mockRequest.mockResolvedValueOnce({ playlistsForClimbs: [{ climbUuid: 'climb-1', playlistUuids: ['pl-1'] }] });
+    mockRequest.mockResolvedValueOnce({
+      allUserPlaylists: [{ uuid: 'pl-1', name: 'Test', climbCount: 5 }],
+    });
+    mockRequest.mockResolvedValueOnce({
+      playlistsForClimbs: [{ climbUuid: 'climb-1', playlistUuids: ['pl-1'] }],
+    });
 
     const wrapper = createQueryWrapper();
     const { result } = renderHook(() => useClimbActionsData(defaultOptions), { wrapper });
@@ -351,7 +350,9 @@ describe('useClimbActionsData', () => {
     });
 
     // Mock the re-fetch after invalidation
-    mockRequest.mockResolvedValueOnce({ allUserPlaylists: [{ uuid: 'pl-refreshed', name: 'Refreshed', climbCount: 0 }] });
+    mockRequest.mockResolvedValueOnce({
+      allUserPlaylists: [{ uuid: 'pl-refreshed', name: 'Refreshed', climbCount: 0 }],
+    });
 
     await act(async () => {
       await result.current.playlistsProviderProps.refreshPlaylists();
@@ -360,9 +361,7 @@ describe('useClimbActionsData', () => {
     // The query should have been refetched
     await waitFor(() => {
       const lastCallArgs = mockRequest.mock.calls;
-      const hasRefetchCall = lastCallArgs.some(
-        (call: unknown[]) => call[0] === 'GET_ALL_USER_PLAYLISTS',
-      );
+      const hasRefetchCall = lastCallArgs.some((call: unknown[]) => call[0] === 'GET_ALL_USER_PLAYLISTS');
       expect(hasRefetchCall).toBe(true);
     });
   });
@@ -374,19 +373,14 @@ describe('useClimbActionsData', () => {
     mockRequest.mockResolvedValueOnce({ playlistsForClimbs: [] });
 
     const wrapper = createQueryWrapper();
-    const { result, rerender } = renderHook(
-      (props) => useClimbActionsData(props),
-      {
-        wrapper,
-        initialProps: defaultOptions,
-      },
-    );
+    const { result, rerender } = renderHook((props) => useClimbActionsData(props), {
+      wrapper,
+      initialProps: defaultOptions,
+    });
 
     await waitFor(() => {
       expect(result.current.favoritesProviderProps.favorites.has('climb-1')).toBe(true);
     });
-
-    const callCountAfterInit = mockRequest.mock.calls.length;
 
     // Add climb-3 — only climb-3 should be fetched, not climb-1 and climb-2 again
     mockRequest.mockResolvedValueOnce({ favorites: ['climb-3'] });
@@ -399,9 +393,7 @@ describe('useClimbActionsData', () => {
     });
 
     // The favorites fetch should only include climb-3 (not climb-1, climb-2)
-    const favCalls = mockRequest.mock.calls.filter(
-      (call: unknown[]) => call[0] === 'GET_FAVORITES',
-    );
+    const favCalls = mockRequest.mock.calls.filter((call: unknown[]) => call[0] === 'GET_FAVORITES');
     // Second favorites call should only contain the new UUID
     const lastFavCall = favCalls[favCalls.length - 1];
     expect(lastFavCall[1].climbUuids).toEqual(['climb-3']);
@@ -418,13 +410,10 @@ describe('useClimbActionsData', () => {
     const wrapper = createQueryWrapper();
 
     // Render with unsorted UUIDs
-    const { result, rerender } = renderHook(
-      (props) => useClimbActionsData(props),
-      {
-        wrapper,
-        initialProps: { ...defaultOptions, climbUuids: ['climb-2', 'climb-1'] },
-      },
-    );
+    const { result, rerender } = renderHook((props) => useClimbActionsData(props), {
+      wrapper,
+      initialProps: { ...defaultOptions, climbUuids: ['climb-2', 'climb-1'] },
+    });
 
     await waitFor(() => {
       expect(result.current.favoritesProviderProps.isLoading).toBe(false);

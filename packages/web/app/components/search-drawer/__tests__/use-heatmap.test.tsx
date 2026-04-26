@@ -1,12 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, waitFor, act } from '@testing-library/react';
+import useHeatmapData from '../use-heatmap';
+import { searchParamsToUrlParams } from '@/app/lib/url-utils';
 
 vi.mock('@/app/lib/url-utils', () => ({
   searchParamsToUrlParams: vi.fn(() => new URLSearchParams('minGrade=1')),
 }));
-
-import useHeatmapData from '../use-heatmap';
-import { searchParamsToUrlParams } from '@/app/lib/url-utils';
 
 const defaultProps = {
   boardName: 'kilter' as const,
@@ -90,9 +89,7 @@ describe('useHeatmapData', () => {
   });
 
   it('does not fetch when enabled=false', () => {
-    const { result } = renderHook(() =>
-      useHeatmapData({ ...defaultProps, enabled: false }),
-    );
+    const { result } = renderHook(() => useHeatmapData({ ...defaultProps, enabled: false }));
 
     expect(mockFetch).not.toHaveBeenCalled();
     expect(result.current.loading).toBe(false);
@@ -131,9 +128,7 @@ describe('useHeatmapData', () => {
     renderHook(() => useHeatmapData(defaultProps));
 
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith(
-        '/api/v1/kilter/1/10/1,2/40/heatmap?minGrade=1',
-      );
+      expect(mockFetch).toHaveBeenCalledWith('/api/v1/kilter/1/10/1,2/40/heatmap?minGrade=1');
     });
 
     expect(searchParamsToUrlParams).toHaveBeenCalledWith(defaultProps.filters);
@@ -162,10 +157,9 @@ describe('useHeatmapData', () => {
       json: () => Promise.resolve({ holdStats: [] }),
     });
 
-    const { rerender } = renderHook(
-      (props: typeof defaultProps) => useHeatmapData(props),
-      { initialProps: defaultProps },
-    );
+    const { rerender } = renderHook((props: typeof defaultProps) => useHeatmapData(props), {
+      initialProps: defaultProps,
+    });
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledTimes(1);

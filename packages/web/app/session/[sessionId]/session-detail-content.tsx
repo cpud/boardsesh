@@ -23,7 +23,12 @@ import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import type { SessionDetail, SessionDetailTick, SessionFeedParticipant } from '@boardsesh/shared-schema';
+import type {
+  SessionDetail,
+  SessionDetailTick,
+  SessionFeedParticipant,
+  SessionSummary,
+} from '@boardsesh/shared-schema';
 import VoteButton from '@/app/components/social/vote-button';
 import CommentSection from '@/app/components/social/comment-section';
 import { VoteSummaryProvider } from '@/app/components/social/vote-summary-context';
@@ -39,9 +44,12 @@ import { useSessionDetail } from '@/app/hooks/use-session-detail';
 import { themeTokens } from '@/app/theme/theme-config';
 import type { Climb, BoardDetails } from '@/app/lib/types';
 import UserSearchDialog from './user-search-dialog';
-import SessionOverviewPanel, { buildSessionSummaryParts } from '@/app/components/session-details/session-overview-panel';
-import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
-import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
+import SessionOverviewPanel, {
+  buildSessionSummaryParts,
+} from '@/app/components/session-details/session-overview-panel';
+import CollapsibleSection, {
+  type CollapsibleSectionConfig,
+} from '@/app/components/collapsible-section/collapsible-section';
 import { CssBarChart } from '@/app/components/charts/css-bar-chart';
 import { buildSessionGradeBars, SESSION_GRADE_LEGEND } from '@/app/components/charts/session-grade-bars';
 import { useGradeFormat } from '@/app/hooks/use-grade-format';
@@ -49,9 +57,8 @@ import { generateSessionName } from '@/app/lib/session-utils';
 import { ConfirmPopover } from '@/app/components/ui/confirm-popover';
 import { useDeleteTick } from '@/app/hooks/use-delete-tick';
 import SaveToHealthKitButton from '@/app/components/healthkit/save-to-healthkit-button';
-import type { SessionSummary } from '@boardsesh/shared-schema';
 
-interface SessionDetailContentProps {
+type SessionDetailContentProps = {
   session: SessionDetail | null;
   sessionId?: string;
   embedded?: boolean;
@@ -65,7 +72,13 @@ interface SessionDetailContentProps {
   onAngleChange?: (angle: number) => void;
   /** User-facing name of the named board (e.g., "My Home Wall") */
   namedBoardName?: string;
-}
+  /**
+   * When set, forces the CollapsibleSection to render with this key active
+   * and disables user interaction with the section headers. Used by the
+   * onboarding tour to guide the user through each section.
+   */
+  tourActiveSection?: 'invite' | 'activity' | 'analytics' | null;
+};
 
 function formatDate(isoString: string): string {
   return new Date(isoString).toLocaleDateString(undefined, {
@@ -86,10 +99,14 @@ function ordinalSuffix(n: number): string {
   const mod100 = n % 100;
   if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
   switch (n % 10) {
-    case 1: return `${n}st`;
-    case 2: return `${n}nd`;
-    case 3: return `${n}rd`;
-    default: return `${n}th`;
+    case 1:
+      return `${n}st`;
+    case 2:
+      return `${n}nd`;
+    case 3:
+      return `${n}rd`;
+    default:
+      return `${n}th`;
   }
 }
 
@@ -197,10 +214,7 @@ function SessionTickItem({
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
         {isMultiUser && (
           <>
-            <Avatar
-              src={participant?.avatarUrl ?? undefined}
-              sx={{ width: 18, height: 18 }}
-            >
+            <Avatar src={participant?.avatarUrl ?? undefined} sx={{ width: 18, height: 18 }}>
               {!participant?.avatarUrl && <PersonOutlined sx={{ fontSize: 10 }} />}
             </Avatar>
             <Typography variant="caption" sx={{ minWidth: 0 }} noWrap>
@@ -213,7 +227,10 @@ function SessionTickItem({
           size="small"
           color={getStatusColor(tick.status)}
           variant={tick.status === 'attempt' ? 'outlined' : 'filled'}
-          sx={{ height: 20, '& .MuiChip-label': { px: 0.75, fontSize: themeTokens.typography.fontSize.xs - 1 } }}
+          sx={{
+            height: 20,
+            '& .MuiChip-label': { px: 0.75, fontSize: themeTokens.typography.fontSize.xs - 1 },
+          }}
         />
         {attemptText && (
           <Typography variant="caption" color="text.secondary">
@@ -221,12 +238,7 @@ function SessionTickItem({
           </Typography>
         )}
         <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 0.25 }}>
-          <VoteButton
-            entityType="tick"
-            entityId={tick.uuid}
-            initialUpvotes={tick.upvotes}
-            likeOnly
-          />
+          <VoteButton entityType="tick" entityId={tick.uuid} initialUpvotes={tick.upvotes} likeOnly />
           <IconButton
             size="small"
             onClick={() => setCommentsOpen((prev) => !prev)}
@@ -270,9 +282,10 @@ export default function SessionDetailContent({
   fallbackBoardDetails = null,
   afterParticipants,
   inviteContent,
-  currentAngle,
-  onAngleChange,
-  namedBoardName,
+  currentAngle: _currentAngle,
+  onAngleChange: _onAngleChange,
+  namedBoardName: _namedBoardName,
+  tourActiveSection,
 }: SessionDetailContentProps) {
   const { data: authSession } = useSession();
   const router = useRouter();
@@ -283,7 +296,6 @@ export default function SessionDetailContent({
     session: hookSession,
     updateSession: updateSessionMutation,
     addUser: addUserMutation,
-    removeUser: removeUserMutation,
   } = useSessionDetail({
     sessionId: sessionIdProp ?? initialSession?.sessionId,
     initialData: initialSession,
@@ -296,78 +308,60 @@ export default function SessionDetailContent({
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [addUserDialogOpen, setAddUserDialogOpen] = useState(false);
-  const [removingUserId, setRemovingUserId] = useState<string | null>(null);
   const [sessionCommentsOpen, setSessionCommentsOpen] = useState(false);
 
   const saving = updateSessionMutation.isPending || addUserMutation.isPending;
 
   const { boards: myBoards } = useMyBoards(true);
 
-  if (!session) {
-    return (
-      <Box sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-          <IconButton component={Link} href="/">
-            <ArrowBackOutlined />
-          </IconButton>
-          <Typography variant="h6">Session Not Found</Typography>
-        </Box>
-        <Typography color="text.secondary">
-          This session could not be found. It may have been removed.
-        </Typography>
-      </Box>
-    );
-  }
-
-  const {
-    sessionId,
-    sessionType,
-    sessionName,
-    participants,
-    totalSends,
-    totalFlashes,
-    totalAttempts,
-    tickCount,
-    gradeDistribution,
-    boardTypes,
-    hardestGrade,
-    firstTickAt,
-    durationMinutes,
-    goal,
-    ticks,
-    upvotes,
-    downvotes,
-    commentCount,
-  } = session;
+  // Derive values from session with null-safe defaults so hooks below can run unconditionally.
+  // The actual null check / early return happens after all hooks are called.
+  const sessionId = session?.sessionId ?? '';
+  const sessionType = session?.sessionType;
+  const sessionName = session?.sessionName;
+  const participants = session?.participants ?? [];
+  const totalSends = session?.totalSends ?? 0;
+  const totalFlashes = session?.totalFlashes ?? 0;
+  const totalAttempts = session?.totalAttempts ?? 0;
+  const tickCount = session?.tickCount ?? 0;
+  const gradeDistribution = session?.gradeDistribution ?? [];
+  const boardTypes = session?.boardTypes ?? [];
+  const hardestGrade = session?.hardestGrade;
+  const firstTickAt = session?.firstTickAt ?? '';
+  const durationMinutes = session?.durationMinutes;
+  const goal = session?.goal;
+  const ticks = session?.ticks ?? [];
+  const upvotes = session?.upvotes ?? 0;
+  const downvotes = session?.downvotes ?? 0;
+  const commentCount = session?.commentCount ?? 0;
 
   const currentUserId = authSession?.user?.id;
   const isInferred = sessionType === 'inferred';
-  const isParticipant = currentUserId
-    ? participants.some((p) => p.userId === currentUserId)
-    : false;
+  const isParticipant = currentUserId ? participants.some((p) => p.userId === currentUserId) : false;
   const canEdit = isInferred && isParticipant;
 
   const isMultiUser = participants.length > 1;
   const displayName = sessionName || generateSessionName(firstTickAt, boardTypes);
 
-  const lastTickAt = session.lastTickAt;
-  const healthKitSummary: SessionSummary | null = isParticipant
-    ? {
-        sessionId,
-        totalSends,
-        totalAttempts,
-        gradeDistribution: gradeDistribution.map((g) => ({
-          grade: g.grade,
-          count: (g.flash ?? 0) + (g.send ?? 0),
-        })),
-        hardestClimb: null,
-        participants: [],
-        startedAt: firstTickAt,
-        endedAt: lastTickAt,
-        durationMinutes: durationMinutes ?? null,
-        goal: goal ?? null,
-      }
-    : null;
+  const lastTickAt = session?.lastTickAt ?? '';
+  const healthKitSummary: SessionSummary | null =
+    session && isParticipant
+      ? {
+          sessionId,
+          totalSends,
+          totalAttempts,
+          gradeDistribution: gradeDistribution.map((g) => ({
+            grade: g.grade,
+            count: (g.flash ?? 0) + (g.send ?? 0),
+          })),
+          hardestClimb: null,
+          participants: [],
+          startedAt: firstTickAt,
+          endedAt: lastTickAt,
+          durationMinutes: durationMinutes ?? null,
+          goal: goal ?? null,
+        }
+      : null;
   const healthKitBoardType = boardTypes[0] ?? '';
 
   // Build a lookup from userId to participant info (memoized to avoid recreating on every render)
@@ -378,9 +372,6 @@ export default function SessionDetailContent({
     }
     return map;
   }, [participants]);
-
-  // Use the actual owner from the backend
-  const ownerUserId = session.ownerUserId ?? null;
 
   // Convert ticks to Climb objects for ClimbsList
   const sessionClimbs = useMemo(() => convertSessionTicksToClimbs(ticks), [ticks]);
@@ -416,19 +407,22 @@ export default function SessionDetailContent({
   });
 
   // Navigate to climb detail page using client-side routing
-  const navigateToClimb = useCallback(async (climb: Climb) => {
-    try {
-      const bt = climb.boardType;
-      if (!bt) return;
-      const params = new URLSearchParams({ boardType: bt, climbUuid: climb.uuid });
-      const res = await fetch(`/api/internal/climb-redirect?${params}`);
-      if (!res.ok) return;
-      const { url } = await res.json();
-      if (url) router.push(url);
-    } catch (error) {
-      console.error('Failed to navigate to climb:', error);
-    }
-  }, [router]);
+  const navigateToClimb = useCallback(
+    async (climb: Climb) => {
+      try {
+        const bt = climb.boardType;
+        if (!bt) return;
+        const params = new URLSearchParams({ boardType: bt, climbUuid: climb.uuid });
+        const res = await fetch(`/api/internal/climb-redirect?${params}`);
+        if (!res.ok) return;
+        const { url } = await res.json();
+        if (url) router.push(url);
+      } catch (error) {
+        console.error('Failed to navigate to climb:', error);
+      }
+    },
+    [router],
+  );
 
   const handleShare = useCallback(async () => {
     const shareUrl = `${window.location.origin}/session/${sessionId}`;
@@ -444,34 +438,40 @@ export default function SessionDetailContent({
     });
   }, [sessionId, sessionName, showMessage]);
 
-  const handleDeleteTick = useCallback((uuid: string) => {
-    deleteTick.mutate(uuid);
-  }, [deleteTick]);
+  const handleDeleteTick = useCallback(
+    (uuid: string) => {
+      deleteTick.mutate(uuid);
+    },
+    [deleteTick],
+  );
 
   // Render tick details below each climb item (per-user rows for multi-user, status/attempts for single-user)
-  const renderTickDetails = useCallback((climb: Climb) => {
-    const climbTicks = ticksByClimb.get(climb.uuid);
-    if (!climbTicks || climbTicks.length === 0) return null;
+  const renderTickDetails = useCallback(
+    (climb: Climb) => {
+      const climbTicks = ticksByClimb.get(climb.uuid);
+      if (!climbTicks || climbTicks.length === 0) return null;
 
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, px: 2, pb: 1 }}>
-        {climbTicks.map((tick) => {
-          const participant = isMultiUser ? participantMap.get(tick.userId) : null;
-          return (
-            <SessionTickItem
-              key={tick.uuid}
-              tick={tick}
-              isMultiUser={isMultiUser}
-              participant={participant ?? null}
-              currentUserId={currentUserId}
-              onDelete={handleDeleteTick}
-              isDeleting={deleteTick.isPending}
-            />
-          );
-        })}
-      </Box>
-    );
-  }, [ticksByClimb, participantMap, isMultiUser, currentUserId, handleDeleteTick, deleteTick.isPending]);
+      return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, px: 2, pb: 1 }}>
+          {climbTicks.map((tick) => {
+            const participant = isMultiUser ? participantMap.get(tick.userId) : null;
+            return (
+              <SessionTickItem
+                key={tick.uuid}
+                tick={tick}
+                isMultiUser={isMultiUser}
+                participant={participant ?? null}
+                currentUserId={currentUserId}
+                onDelete={handleDeleteTick}
+                isDeleting={deleteTick.isPending}
+              />
+            );
+          })}
+        </Box>
+      );
+    },
+    [ticksByClimb, participantMap, isMultiUser, currentUserId, handleDeleteTick, deleteTick.isPending],
+  );
 
   const handleStartEdit = useCallback(() => {
     setEditName(sessionName || '');
@@ -491,19 +491,13 @@ export default function SessionDetailContent({
     setIsEditing(false);
   }, [updateSessionMutation, editName, editDescription]);
 
-  const handleAddUser = useCallback(async (userId: string) => {
-    setAddUserDialogOpen(false);
-    await addUserMutation.mutateAsync(userId);
-  }, [addUserMutation]);
-
-  const handleRemoveUser = useCallback(async (userId: string) => {
-    setRemovingUserId(userId);
-    try {
-      await removeUserMutation.mutateAsync(userId);
-    } finally {
-      setRemovingUserId(null);
-    }
-  }, [removeUserMutation]);
+  const handleAddUser = useCallback(
+    async (userId: string) => {
+      setAddUserDialogOpen(false);
+      await addUserMutation.mutateAsync(userId);
+    },
+    [addUserMutation],
+  );
 
   const noopLoadMore = useCallback(() => {}, []);
 
@@ -558,34 +552,42 @@ export default function SessionDetailContent({
       label: 'Activity',
       title: `${sessionClimbs.length} climb${sessionClimbs.length !== 1 ? 's' : ''} logged`,
       defaultSummary: 'No climbs yet',
-      getSummary: () => buildSessionSummaryParts({
-        totalFlashes, totalSends, totalAttempts, tickCount, hardestGrade,
-        formatGrade: gradeFormatLoaded ? formatGrade : undefined,
-      }),
+      getSummary: () =>
+        buildSessionSummaryParts({
+          totalFlashes,
+          totalSends,
+          totalAttempts,
+          tickCount,
+          hardestGrade,
+          formatGrade: gradeFormatLoaded ? formatGrade : undefined,
+        }),
       flush: true,
-      content: effectiveBoardDetails && sessionClimbs.length > 0 ? (
-        <VoteSummaryProvider entityType="tick" entityIds={tickUuids}>
-          <FavoritesProvider {...favoritesProviderProps}>
-            <PlaylistsProvider {...playlistsProviderProps}>
-              <ClimbsList
-                boardDetails={effectiveBoardDetails}
-                boardDetailsByClimb={boardDetailsByClimb}
-                unsupportedClimbs={unsupportedClimbs}
-                upsizedClimbs={upsizedClimbs}
-                climbs={sessionClimbs}
-                isFetching={false}
-                hasMore={false}
-                onClimbSelect={navigateToClimb}
-                onLoadMore={noopLoadMore}
-                hideEndMessage
-                renderItemExtra={renderTickDetails}
-              />
-            </PlaylistsProvider>
-          </FavoritesProvider>
-        </VoteSummaryProvider>
-      ) : (
-        <Typography variant="body2" color="text.secondary">No climbs yet</Typography>
-      ),
+      content:
+        effectiveBoardDetails && sessionClimbs.length > 0 ? (
+          <VoteSummaryProvider entityType="tick" entityIds={tickUuids}>
+            <FavoritesProvider {...favoritesProviderProps}>
+              <PlaylistsProvider {...playlistsProviderProps}>
+                <ClimbsList
+                  boardDetails={effectiveBoardDetails}
+                  boardDetailsByClimb={boardDetailsByClimb}
+                  unsupportedClimbs={unsupportedClimbs}
+                  upsizedClimbs={upsizedClimbs}
+                  climbs={sessionClimbs}
+                  isFetching={false}
+                  hasMore={false}
+                  onClimbSelect={navigateToClimb}
+                  onLoadMore={noopLoadMore}
+                  hideEndMessage
+                  renderItemExtra={renderTickDetails}
+                />
+              </PlaylistsProvider>
+            </FavoritesProvider>
+          </VoteSummaryProvider>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            No climbs yet
+          </Typography>
+        ),
     });
 
     sections.push({
@@ -599,42 +601,93 @@ export default function SessionDetailContent({
         return [`${count} grade${count !== 1 ? 's' : ''}`];
       },
       lazy: true,
-      content: effectiveGradeDistribution.length > 0 ? (
-        <Box>
-          <CssBarChart
-            bars={gradeBars}
-            height={160}
-            mobileHeight={120}
-            gap={3}
-            ariaLabel="Session grade distribution"
+      content:
+        effectiveGradeDistribution.length > 0 ? (
+          <Box>
+            <CssBarChart
+              bars={gradeBars}
+              height={160}
+              mobileHeight={120}
+              gap={3}
+              ariaLabel="Session grade distribution"
             />
             <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center', mt: 1 }}>
               {SESSION_GRADE_LEGEND.map((entry) => (
                 <Box key={entry.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Box sx={{ width: 10, height: 10, borderRadius: '2px', bgcolor: entry.color }} />
-                  <Typography variant="caption" color="text.secondary">{entry.label}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {entry.label}
+                  </Typography>
                 </Box>
               ))}
             </Box>
           </Box>
         ) : (
-          <Typography variant="body2" color="text.secondary">Log some climbs to see your grade breakdown</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Log some climbs to see your grade breakdown
+          </Typography>
         ),
-      });
+    });
 
     return sections;
   }, [
-    embedded, inviteContent, sessionClimbs, totalFlashes, totalSends, totalAttempts,
-    tickCount, hardestGrade, gradeFormatLoaded, formatGrade, effectiveBoardDetails,
-    tickUuids, favoritesProviderProps, playlistsProviderProps, boardDetailsByClimb,
-    unsupportedClimbs, upsizedClimbs, navigateToClimb, noopLoadMore, renderTickDetails,
-    effectiveGradeDistribution, gradeBars,
+    embedded,
+    inviteContent,
+    sessionClimbs,
+    totalFlashes,
+    totalSends,
+    totalAttempts,
+    tickCount,
+    hardestGrade,
+    gradeFormatLoaded,
+    formatGrade,
+    effectiveBoardDetails,
+    tickUuids,
+    favoritesProviderProps,
+    playlistsProviderProps,
+    boardDetailsByClimb,
+    unsupportedClimbs,
+    upsizedClimbs,
+    navigateToClimb,
+    noopLoadMore,
+    renderTickDetails,
+    effectiveGradeDistribution,
+    gradeBars,
   ]);
 
+  if (!session) {
+    return (
+      <Box sx={{ p: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <IconButton component={Link} href="/">
+            <ArrowBackOutlined />
+          </IconButton>
+          <Typography variant="h6">Session Not Found</Typography>
+        </Box>
+        <Typography color="text.secondary">This session could not be found. It may have been removed.</Typography>
+      </Box>
+    );
+  }
+
   return (
-    <Box sx={{ minHeight: embedded ? 'auto' : '100dvh', pb: embedded ? 0 : '60px', pt: embedded ? 0 : 'var(--global-header-height)' }}>
+    <Box
+      sx={{
+        minHeight: embedded ? 'auto' : '100dvh',
+        pb: embedded ? 0 : '60px',
+        pt: embedded ? 0 : 'var(--global-header-height)',
+      }}
+    >
       {!embedded && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1.5, borderBottom: `1px solid ${themeTokens.neutral[200]}` }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            px: 2,
+            py: 1.5,
+            borderBottom: `1px solid ${themeTokens.neutral[200]}`,
+          }}
+        >
           <IconButton component={Link} href="/" size="small">
             <ArrowBackOutlined />
           </IconButton>
@@ -680,7 +733,15 @@ export default function SessionDetailContent({
         </Box>
       )}
 
-      <Box sx={{ px: embedded ? { xs: 1, sm: 2 } : 2, py: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box
+        sx={{
+          px: embedded ? { xs: 1, sm: 2 } : 2,
+          py: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+        }}
+      >
         {isEditing ? (
           <TextField
             value={editDescription}
@@ -709,7 +770,7 @@ export default function SessionDetailContent({
 
         {/* Collapsible pills for embedded (drawer) mode */}
         {embedded && embeddedSections.length > 0 && (
-          <CollapsibleSection sections={embeddedSections} />
+          <CollapsibleSection sections={embeddedSections} forcedActiveKey={tourActiveSection ?? undefined} />
         )}
 
         {/* Full layout for standalone page */}
@@ -751,6 +812,7 @@ export default function SessionDetailContent({
                   <SaveToHealthKitButton
                     summary={healthKitSummary}
                     boardType={healthKitBoardType}
+                    existingWorkoutId={session.healthKitWorkoutId}
                   />
                 </Box>
               )}

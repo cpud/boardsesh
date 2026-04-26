@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+import { describe, it, expect, vi } from 'vite-plus/test';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { PlayViewActionBar } from '../play-view-drawer';
 
 // ---------------------------------------------------------------------------
 // Mock heavy deps that PlayViewActionBar imports transitively.
@@ -38,13 +40,14 @@ vi.mock('@mui/icons-material/FormatListBulletedOutlined', () => ({
 }));
 
 // Import after mocks
-import { PlayViewActionBar } from '../play-view-drawer';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function buildProps(overrides: Partial<React.ComponentProps<typeof PlayViewActionBar>> = {}): React.ComponentProps<typeof PlayViewActionBar> {
+function buildProps(
+  overrides: Partial<React.ComponentProps<typeof PlayViewActionBar>> = {},
+): React.ComponentProps<typeof PlayViewActionBar> {
   return {
     canSwipePrevious: true,
     canSwipeNext: true,

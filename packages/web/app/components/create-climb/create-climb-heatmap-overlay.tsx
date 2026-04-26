@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { BoardDetails, SearchRequestPagination } from '@/app/lib/types';
-import { HeatmapData, LitUpHoldsMap, HoldState } from '../board-renderer/types';
+import type { BoardDetails, SearchRequestPagination } from '@/app/lib/types';
+import type { HeatmapData, LitUpHoldsMap, HoldState } from '../board-renderer/types';
 import { scaleLog } from 'd3-scale';
 import useHeatmapData from '../search-drawer/use-heatmap';
 import { DEFAULT_SEARCH_PARAMS } from '@/app/lib/url-utils';
@@ -25,14 +25,14 @@ const HEATMAP_COLORS = [
   '#d32f2f', // Deep Red
 ];
 
-interface CreateClimbHeatmapOverlayProps {
+type CreateClimbHeatmapOverlayProps = {
   boardDetails: BoardDetails;
   angle: number;
   litUpHoldsMap: LitUpHoldsMap;
   opacity: number;
   enabled: boolean;
   onLoadingChange?: (loading: boolean) => void;
-}
+};
 
 const CreateClimbHeatmapOverlay: React.FC<CreateClimbHeatmapOverlayProps> = ({
   boardDetails,
@@ -68,13 +68,16 @@ const CreateClimbHeatmapOverlay: React.FC<CreateClimbHeatmapOverlayProps> = ({
   }, [debouncedHoldsMap]);
 
   // Create filters that include the selected holds - uses debounced value to limit API calls
-  const filters: SearchRequestPagination = useMemo(() => ({
-    ...DEFAULT_SEARCH_PARAMS,
-    holdsFilter: debouncedHoldsMap,
-  }), [debouncedHoldsMap]);
+  const filters: SearchRequestPagination = useMemo(
+    () => ({
+      ...DEFAULT_SEARCH_PARAMS,
+      holdsFilter: debouncedHoldsMap,
+    }),
+    [debouncedHoldsMap],
+  );
 
   // Fetch heatmap data with holds filter
-  const { data: heatmapData = [], loading } = useHeatmapData({
+  const { data: heatmapData, loading } = useHeatmapData({
     boardName: boardDetails.board_name,
     layoutId: boardDetails.layout_id,
     sizeId: boardDetails.size_id,
@@ -88,10 +91,7 @@ const CreateClimbHeatmapOverlay: React.FC<CreateClimbHeatmapOverlayProps> = ({
     onLoadingChange?.(loading);
   }, [loading, onLoadingChange]);
 
-  const heatmapMap = useMemo(
-    () => new Map(heatmapData?.map((data) => [data.holdId, data]) || []),
-    [heatmapData],
-  );
+  const heatmapMap = useMemo(() => new Map(heatmapData?.map((data) => [data.holdId, data]) || []), [heatmapData]);
 
   // Get value based on the selected hold types - memoized to avoid stale closures
   const getValue = useMemo(() => {

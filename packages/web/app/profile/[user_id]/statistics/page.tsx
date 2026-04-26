@@ -1,5 +1,5 @@
 import React from 'react';
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/lib/auth/auth-options';
 import { fetchProfileStatsData } from '../server-profile-stats';
@@ -23,6 +23,7 @@ export default async function ProfileStatisticsPage({ params }: PageProps) {
     <AnalyticsContent
       userId={user_id}
       initialProfileStats={statsData.initialProfileStats}
+      initialPercentile={statsData.initialPercentile}
       initialAllBoardsTicks={statsData.initialAllBoardsTicks}
       initialLogbook={statsData.initialLogbook}
       initialIsOwnProfile={viewerUserId === user_id}

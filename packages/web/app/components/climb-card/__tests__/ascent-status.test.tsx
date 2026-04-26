@@ -1,9 +1,15 @@
 // @vitest-environment jsdom
+
 import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { createTestQueryClient } from '@/app/test-utils/test-providers';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { useSession } from 'next-auth/react';
+import { useLogbook, accumulatedLogbookQueryKey, type LogbookEntry } from '@/app/hooks/use-logbook';
+import { AscentStatus } from '../ascent-status';
+import { BoardContext, type BoardContextType } from '../../board-provider/board-provider-context';
 
 vi.mock('@/app/hooks/use-ws-auth-token', () => ({
   useWsAuthToken: vi.fn(),
@@ -21,16 +27,6 @@ vi.mock('@/app/lib/graphql/client', () => ({
 vi.mock('@/app/lib/graphql/operations', () => ({
   GET_TICKS: 'GET_TICKS_QUERY',
 }));
-
-import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
-import { useSession } from 'next-auth/react';
-import {
-  useLogbook,
-  accumulatedLogbookQueryKey,
-  type LogbookEntry,
-} from '@/app/hooks/use-logbook';
-import { AscentStatus } from '../ascent-status';
-import { BoardContext, type BoardContextType } from '../../board-provider/board-provider-context';
 
 const mockUseWsAuthToken = vi.mocked(useWsAuthToken);
 const mockUseSession = vi.mocked(useSession);
@@ -117,6 +113,9 @@ describe('AscentStatus', () => {
             climbed_at: '2025-01-01T00:00:00.000Z',
             is_ascent: true,
             status: 'send',
+            upvotes: 0,
+            downvotes: 0,
+            commentCount: 0,
           },
           {
             uuid: '2',
@@ -130,6 +129,9 @@ describe('AscentStatus', () => {
             climbed_at: '2025-01-02T00:00:00.000Z',
             is_ascent: true,
             status: 'flash',
+            upvotes: 0,
+            downvotes: 0,
+            commentCount: 0,
           },
           {
             uuid: '3',
@@ -143,6 +145,9 @@ describe('AscentStatus', () => {
             climbed_at: '2025-01-03T00:00:00.000Z',
             is_ascent: false,
             status: 'attempt',
+            upvotes: 0,
+            downvotes: 0,
+            commentCount: 0,
           },
         ],
       }),
@@ -168,6 +173,9 @@ describe('AscentStatus', () => {
             climbed_at: '2025-01-01T00:00:00.000Z',
             is_ascent: true,
             status: 'send',
+            upvotes: 0,
+            downvotes: 0,
+            commentCount: 0,
           },
           {
             uuid: '2',
@@ -181,6 +189,9 @@ describe('AscentStatus', () => {
             climbed_at: '2025-01-02T00:00:00.000Z',
             is_ascent: true,
             status: 'flash',
+            upvotes: 0,
+            downvotes: 0,
+            commentCount: 0,
           },
         ],
       }),
@@ -217,6 +228,9 @@ describe('AscentStatus', () => {
       climbed_at: '2024-02-01',
       is_ascent: true,
       status: 'flash',
+      upvotes: 0,
+      downvotes: 0,
+      commentCount: 0,
     };
 
     act(() => {

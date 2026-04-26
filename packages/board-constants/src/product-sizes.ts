@@ -1,19 +1,6 @@
-import { AURORA_BOARDS } from '@boardsesh/shared-schema';
-import type { BoardName } from '@boardsesh/shared-schema';
-import {
-  AURORA_PRODUCT_SIZES,
-  HOLE_PLACEMENTS,
-  IMAGE_FILENAMES,
-  LAYOUTS,
-  SETS,
-} from './generated/product-sizes-data';
-import type {
-  HoldTuple,
-  LayoutData,
-  ProductSizeData,
-  SetData,
-  SizeEdges,
-} from './types';
+import { AURORA_BOARDS, type BoardName } from '@boardsesh/shared-schema';
+import { AURORA_PRODUCT_SIZES, HOLE_PLACEMENTS, IMAGE_FILENAMES, LAYOUTS, SETS } from './generated/product-sizes-data';
+import type { HoldTuple, LayoutData, ProductSizeData, SetData, SizeEdges } from './types';
 
 export type { HoldTuple, LayoutData, ProductSizeData, SetData, SizeEdges } from './types';
 
@@ -102,6 +89,26 @@ export const getDefaultSizeForLayout = (boardName: BoardName, layoutId: number):
   return sizes.length > 0 ? sizes[0].id : null;
 };
 
+/**
+ * Fallback size/set data for orphaned Kilter layouts that are not in the main
+ * LAYOUTS config but still have valid product-size associations. These layouts
+ * appear in historical user data (logbook ticks, stats) even though they are
+ * no longer sold or listed in the Aurora API product-sizes endpoint.
+ *
+ * Layouts 6 and 7 both correspond to "Orbit" in Aurora's data with identical
+ * product-size and set associations. The real distinction between them has
+ * not been confirmed (possibly mirror vs spray, or a legacy duplicate); the
+ * suffixes exist only to avoid a duplicate label in the UI.
+ */
+export const ORPHANED_KILTER_LAYOUT_DEFAULTS: Record<number, { name: string; sizeId: number; setIds: string }> = {
+  2: { name: 'Kilter JUUL', sizeId: 11, setIds: '21' },
+  3: { name: 'Kilter Demo', sizeId: 12, setIds: '22' },
+  4: { name: 'Kilter BKB', sizeId: 13, setIds: '23' },
+  5: { name: 'Kilter Spire', sizeId: 15, setIds: '24' },
+  6: { name: 'Kilter Orbit (v1)', sizeId: 16, setIds: '25' },
+  7: { name: 'Kilter Orbit (v2)', sizeId: 16, setIds: '25' },
+};
+
 export const getBoardSelectorOptions = () => {
   const layouts: Record<BoardName, { id: number; name: string }[]> = {
     kilter: [],
@@ -115,7 +122,10 @@ export const getBoardSelectorOptions = () => {
   const sets: Record<string, { id: number; name: string }[]> = {};
 
   for (const boardName of AURORA_BOARDS) {
-    layouts[boardName] = getAllLayouts(boardName).map((layout) => ({ id: layout.id, name: layout.name }));
+    layouts[boardName] = getAllLayouts(boardName).map((layout) => ({
+      id: layout.id,
+      name: layout.name,
+    }));
 
     for (const layout of layouts[boardName]) {
       const layoutSizes = getSizesForLayoutId(boardName, layout.id);
@@ -146,11 +156,7 @@ export const getImageFilename = (
   return IMAGE_FILENAMES[boardName]?.[key] ?? null;
 };
 
-export const getHolePlacements = (
-  boardName: BoardName,
-  layoutId: number,
-  setId: number,
-): HoldTuple[] => {
+export const getHolePlacements = (boardName: BoardName, layoutId: number, setId: number): HoldTuple[] => {
   const key = `${layoutId}-${setId}`;
   return HOLE_PLACEMENTS[boardName]?.[key] ?? [];
 };

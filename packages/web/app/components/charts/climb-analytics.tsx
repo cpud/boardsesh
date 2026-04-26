@@ -30,16 +30,16 @@ function getAngleColor(index: number): string {
   return ANGLE_COLORS[index % ANGLE_COLORS.length];
 }
 
-interface GroupedData {
+type GroupedData = {
   byAngle: Map<number, { date: string; value: number }[]>;
   labels: string[];
-}
+};
 
-interface LineSeriesOptions {
+type LineSeriesOptions = {
   area?: boolean;
   showMark?: boolean;
   stack?: string;
-}
+};
 
 function groupByAngleAndMonth(
   rows: ClimbStatsHistoryEntry[],
@@ -98,11 +98,11 @@ function buildTickInterval(labelCount: number) {
   return (_value: string, index: number) => index % labelInterval === 0;
 }
 
-interface AngleFilterProps {
+type AngleFilterProps = {
   angles: number[];
   selected: Set<number>;
   onToggle: (angle: number) => void;
-}
+};
 
 function AngleFilter({ angles, selected, onToggle }: AngleFilterProps) {
   if (angles.length <= 1) return null;
@@ -131,10 +131,10 @@ function AngleFilter({ angles, selected, onToggle }: AngleFilterProps) {
   );
 }
 
-interface ClimbAnalyticsProps {
+type ClimbAnalyticsProps = {
   climbUuid: string;
   boardType: string;
-}
+};
 
 export default function ClimbAnalytics({ climbUuid, boardType }: ClimbAnalyticsProps) {
   const [rows, setRows] = useState<ClimbStatsHistoryEntry[] | null>(null);
@@ -148,10 +148,10 @@ export default function ClimbAnalytics({ climbUuid, boardType }: ClimbAnalyticsP
     async function fetchHistory() {
       try {
         const client = createGraphQLHttpClient();
-        const data = await client.request<ClimbStatsHistoryResponse>(
-          CLIMB_STATS_HISTORY,
-          { boardName: boardType, climbUuid },
-        );
+        const data = await client.request<ClimbStatsHistoryResponse>(CLIMB_STATS_HISTORY, {
+          boardName: boardType,
+          climbUuid,
+        });
         if (!cancelled) {
           setRows(data.climbStatsHistory);
           const angles = new Set(data.climbStatsHistory.map((r: ClimbStatsHistoryEntry) => r.angle));
@@ -165,7 +165,9 @@ export default function ClimbAnalytics({ climbUuid, boardType }: ClimbAnalyticsP
     }
 
     void fetchHistory();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [climbUuid, boardType]);
 
   const allAngles = useMemo(() => {
@@ -246,23 +248,29 @@ export default function ClimbAnalytics({ climbUuid, boardType }: ClimbAnalyticsP
 
       {ascentsData && ascentsData.labels.length > 0 && (
         <Box>
-          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Ascents Over Time</Typography>
+          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+            Ascents Over Time
+          </Typography>
           <LineChart
             series={buildLineSeries(ascentsData, {
               area: true,
               showMark: false,
               stack: 'ascents',
             })}
-            xAxis={[{
-              data: ascentsData.labels.map(formatMonthLabel),
-              scaleType: 'band' as const,
-              tickLabelStyle: { fontSize: 10 },
-              tickInterval: buildTickInterval(ascentsData.labels.length),
-            }]}
-            yAxis={[{
-              label: 'Ascents',
-              tickLabelStyle: { fontSize: 10 },
-            }]}
+            xAxis={[
+              {
+                data: ascentsData.labels.map(formatMonthLabel),
+                scaleType: 'band' as const,
+                tickLabelStyle: { fontSize: 10 },
+                tickInterval: buildTickInterval(ascentsData.labels.length),
+              },
+            ]}
+            yAxis={[
+              {
+                label: 'Ascents',
+                tickLabelStyle: { fontSize: 10 },
+              },
+            ]}
             height={220}
             margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
             hideLegend={filteredAngles.length <= 1}
@@ -277,19 +285,25 @@ export default function ClimbAnalytics({ climbUuid, boardType }: ClimbAnalyticsP
 
       {qualityData && qualityData.labels.length > 0 && (
         <Box>
-          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Quality Over Time</Typography>
+          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+            Quality Over Time
+          </Typography>
           <LineChart
             series={buildLineSeries(qualityData)}
-            xAxis={[{
-              data: qualityData.labels.map(formatMonthLabel),
-              scaleType: 'band' as const,
-              tickLabelStyle: { fontSize: 10 },
-              tickInterval: buildTickInterval(qualityData.labels.length),
-            }]}
-            yAxis={[{
-              label: 'Rating',
-              tickLabelStyle: { fontSize: 10 },
-            }]}
+            xAxis={[
+              {
+                data: qualityData.labels.map(formatMonthLabel),
+                scaleType: 'band' as const,
+                tickLabelStyle: { fontSize: 10 },
+                tickInterval: buildTickInterval(qualityData.labels.length),
+              },
+            ]}
+            yAxis={[
+              {
+                label: 'Rating',
+                tickLabelStyle: { fontSize: 10 },
+              },
+            ]}
             height={220}
             margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
             hideLegend={filteredAngles.length <= 1}
@@ -301,7 +315,6 @@ export default function ClimbAnalytics({ climbUuid, boardType }: ClimbAnalyticsP
           />
         </Box>
       )}
-
     </Box>
   );
 }

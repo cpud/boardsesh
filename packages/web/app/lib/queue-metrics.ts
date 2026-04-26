@@ -19,11 +19,7 @@ const operationEventCounts = new Map<QueueOperation, number>();
 const MAX_ERROR_EVENTS = 10;
 let errorEventCount = 0;
 
-export function trackQueueOperation(
-  operation: QueueOperation,
-  durationMs: number,
-  mode: QueueOperationMode,
-) {
+export function trackQueueOperation(operation: QueueOperation, durationMs: number, mode: QueueOperationMode) {
   const count = operationEventCounts.get(operation) ?? 0;
   if (count >= MAX_EVENTS_PER_OPERATION) return;
   operationEventCounts.set(operation, count + 1);
@@ -35,10 +31,7 @@ export function trackQueueOperation(
   });
 }
 
-export function trackQueueOperationError(
-  operation: QueueOperation,
-  mode: QueueOperationMode,
-) {
+export function trackQueueOperationError(operation: QueueOperation, mode: QueueOperationMode) {
   if (errorEventCount >= MAX_ERROR_EVENTS) return;
   errorEventCount++;
 

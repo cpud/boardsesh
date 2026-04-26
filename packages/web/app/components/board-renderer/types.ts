@@ -2,7 +2,11 @@ import { MOONBOARD_ENABLED } from '@/app/lib/moonboard-config';
 import type { BoardName } from '@/app/lib/types';
 
 // Re-export hold state types and constants from the canonical source
-export { HOLD_STATE_MAP, convertLitUpHoldsStringToMap, STATE_TO_PRIMARY_CODE } from '@boardsesh/board-constants/hold-states';
+export {
+  HOLD_STATE_MAP,
+  convertLitUpHoldsStringToMap,
+  STATE_TO_PRIMARY_CODE,
+} from '@boardsesh/board-constants/hold-states';
 export type { HoldCode, HoldColor, HoldRenderStyle, HoldStateInfo } from '@boardsesh/board-constants/hold-states';
 export type { HoldState, LitupHold, LitUpHoldsMap } from '@boardsesh/shared-schema';
 
@@ -18,7 +22,7 @@ export type HoldRenderData = {
   r: number;
 };
 
-export interface HeatmapData {
+export type HeatmapData = {
   holdId: number;
   totalUses: number;
   startingUses: number;
@@ -29,7 +33,7 @@ export interface HeatmapData {
   averageDifficulty: number | null;
   userAscents?: number;
   userAttempts?: number;
-}
+};
 
 /** Thumbnail render width in pixels. Covers 3x retina at ~64px CSS display. */
 export const THUMBNAIL_WIDTH = 200;

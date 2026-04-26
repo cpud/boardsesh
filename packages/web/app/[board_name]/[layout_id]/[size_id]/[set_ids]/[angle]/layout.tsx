@@ -1,6 +1,5 @@
-import React from 'react';
-import { PropsWithChildren } from 'react';
-import { BoardRouteParameters } from '@/app/lib/types';
+import React, { type PropsWithChildren } from 'react';
+import type { BoardRouteParameters } from '@/app/lib/types';
 import { constructClimbListWithSlugs } from '@/app/lib/url-utils';
 import { parseRouteParams } from '@/app/lib/url-utils.server';
 import { permanentRedirect } from 'next/navigation';
@@ -11,7 +10,7 @@ import { ConnectionSettingsProvider } from '@/app/components/connection-manager/
 import { WebSocketConnectionProvider } from '@/app/components/connection-manager/websocket-connection-provider';
 import { PartyProvider } from '@/app/components/party-manager/party-context';
 import { BoardSessionBridge } from '@/app/components/persistent-session';
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { BluetoothProvider } from '@/app/components/board-bluetooth-control/bluetooth-context';
 import { UISearchParamsProvider } from '@/app/components/queue-control/ui-searchparams-provider';
 import { QueueBridgeInjector } from '@/app/components/queue-control/queue-bridge-context';
@@ -38,9 +37,9 @@ export async function generateMetadata(props: { params: Promise<BoardRouteParame
   }
 }
 
-interface BoardLayoutProps {
+type BoardLayoutProps = {
   params: Promise<BoardRouteParameters>;
-}
+};
 
 export default async function BoardLayout(props: PropsWithChildren<BoardLayoutProps>) {
   const params = await props.params;
@@ -53,18 +52,18 @@ export default async function BoardLayout(props: PropsWithChildren<BoardLayoutPr
   if (isNumericFormat) {
     const boardDetails = getBoardDetailsForBoard(parsedParams);
 
-      if (boardDetails.layout_name && boardDetails.size_name && boardDetails.set_names) {
-        const newUrl = constructClimbListWithSlugs(
-          boardDetails.board_name,
-          boardDetails.layout_name,
-          boardDetails.size_name,
-          boardDetails.size_description,
-          boardDetails.set_names,
-          parsedParams.angle,
-        );
+    if (boardDetails.layout_name && boardDetails.size_name && boardDetails.set_names) {
+      const newUrl = constructClimbListWithSlugs(
+        boardDetails.board_name,
+        boardDetails.layout_name,
+        boardDetails.size_name,
+        boardDetails.size_description,
+        boardDetails.set_names,
+        parsedParams.angle,
+      );
 
-        permanentRedirect(newUrl);
-      }
+      permanentRedirect(newUrl);
+    }
   }
 
   const { angle } = parsedParams;
@@ -73,19 +72,28 @@ export default async function BoardLayout(props: PropsWithChildren<BoardLayoutPr
   const boardDetails = getBoardDetailsForBoard(parsedParams);
 
   // Compute the list URL for last-used-board tracking
-  const listUrl = boardDetails.layout_name && boardDetails.size_name && boardDetails.set_names
-    ? constructClimbListWithSlugs(
-        boardDetails.board_name,
-        boardDetails.layout_name,
-        boardDetails.size_name,
-        boardDetails.size_description,
-        boardDetails.set_names,
-        angle,
-      )
-    : `/${boardDetails.board_name}`;
+  const listUrl =
+    boardDetails.layout_name && boardDetails.size_name && boardDetails.set_names
+      ? constructClimbListWithSlugs(
+          boardDetails.board_name,
+          boardDetails.layout_name,
+          boardDetails.size_name,
+          boardDetails.size_description,
+          boardDetails.set_names,
+          angle,
+        )
+      : `/${boardDetails.board_name}`;
 
   return (
-    <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', padding: 0, background: 'var(--semantic-surface)' }}>
+    <div
+      style={{
+        minHeight: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: 0,
+        background: 'var(--semantic-surface)',
+      }}
+    >
       <LastUsedBoardTracker
         url={listUrl}
         boardName={boardDetails.board_name}
@@ -111,7 +119,7 @@ export default async function BoardLayout(props: PropsWithChildren<BoardLayoutPr
                         paddingLeft: `${themeTokens.spacing[2]}px`,
                         paddingRight: `${themeTokens.spacing[2]}px`,
                         paddingTop: 'var(--global-header-height)',
-                        paddingBottom: 'calc(120px + env(safe-area-inset-bottom, 0px))',
+                        paddingBottom: `calc(120px + ${themeTokens.layout.safeAreaBottom})`,
                       }}
                     >
                       <BoardSeshHeader boardDetails={boardDetails} angle={angle} />

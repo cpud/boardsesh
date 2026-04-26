@@ -24,9 +24,12 @@ export function useWakeLock(enabled: boolean) {
     if (isNativeApp()) {
       const plugin = window.Capacitor?.Plugins?.KeepAwake;
       if (plugin) {
-        plugin.isSupported().then(({ isSupported: supported }) => {
-          setIsSupported(supported);
-        }).catch(() => setIsSupported(false));
+        plugin
+          .isSupported()
+          .then(({ isSupported: supported }) => {
+            setIsSupported(supported);
+          })
+          .catch(() => setIsSupported(false));
         return;
       }
     }
@@ -100,13 +103,13 @@ export function useWakeLock(enabled: boolean) {
   // Manage wake lock based on enabled state
   useEffect(() => {
     if (enabled && isSupported) {
-      requestWakeLock();
+      void requestWakeLock();
     } else {
-      releaseWakeLock();
+      void releaseWakeLock();
     }
 
     return () => {
-      releaseWakeLock();
+      void releaseWakeLock();
     };
   }, [enabled, isSupported, requestWakeLock, releaseWakeLock]);
 
@@ -115,7 +118,7 @@ export function useWakeLock(enabled: boolean) {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && enabled && isSupported) {
-        requestWakeLock();
+        void requestWakeLock();
       }
     };
 

@@ -9,9 +9,8 @@
 import React from 'react';
 import type { RenderRequest, RenderResponse, PreloadImagesMessage } from './board-render.worker';
 import type { BoardDetails } from '@/app/lib/types';
-import type { HoldRenderData } from '@/app/components/board-renderer/types';
+import { type HoldRenderData, HOLD_STATE_MAP, THUMBNAIL_WIDTH } from '@/app/components/board-renderer/types';
 import { getImageUrl } from '@/app/components/board-renderer/util';
-import { HOLD_STATE_MAP, THUMBNAIL_WIDTH } from '@/app/components/board-renderer/types';
 import { isCapacitor } from '@/app/lib/ble/capacitor-utils';
 import { trackWorkerRenderingDisabled } from '@/app/lib/rendering-metrics';
 
@@ -211,7 +210,7 @@ async function ensureImagesPreloaded(urls: string[]): Promise<void> {
   }
 }
 
-export interface RenderBoardOptions {
+export type RenderBoardOptions = {
   boardDetails: BoardDetails;
   frames: string;
   mirrored: boolean;
@@ -220,7 +219,7 @@ export interface RenderBoardOptions {
    *  Callers that already computed cropTop for canvas sizing should pass it here
    *  to guarantee the canvas element and worker render stay in sync. */
   cropTop?: number;
-}
+};
 
 /**
  * Check if the browser supports OffscreenCanvas (required for worker rendering).

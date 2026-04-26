@@ -1,6 +1,15 @@
 import Tesseract from 'tesseract.js';
 
-export interface OcrResult {
+type TesseractScheduler = {
+  addJob: (action: 'recognize', image: Buffer | Blob) => Promise<{ data: { text: string } }>;
+};
+
+export type OcrOptions = {
+  /** Reuse a pre-warmed Tesseract scheduler instead of spawning a fresh worker per call. */
+  scheduler?: TesseractScheduler;
+};
+
+export type OcrResult = {
   name: string;
   setter: string;
   angle: number;
@@ -8,7 +17,7 @@ export interface OcrResult {
   setterGrade: string;
   isBenchmark: boolean;
   warnings: string[];
-}
+};
 
 /**
  * Convert ImageData to a PNG Blob for better Tesseract.js compatibility in browsers.
@@ -47,9 +56,7 @@ async function imageDataToBlob(imageData: ImageData): Promise<Blob> {
  * Run OCR on image data and parse the result.
  * Accepts Buffer (Node) or ImageData (Browser).
  */
-export async function runOCR(
-  imageData: Buffer | ImageData
-): Promise<OcrResult> {
+export async function runOCR(imageData: Buffer | ImageData, options: OcrOptions = {}): Promise<OcrResult> {
   // Convert ImageData to Blob for browser compatibility
   let ocrInput: Buffer | Blob = imageData as Buffer;
   // Guard against ImageData not being defined in Node.js environment
@@ -57,7 +64,9 @@ export async function runOCR(
     ocrInput = await imageDataToBlob(imageData);
   }
 
-  const result = await Tesseract.recognize(ocrInput, 'eng');
+  const result = options.scheduler
+    ? await options.scheduler.addJob('recognize', ocrInput)
+    : await Tesseract.recognize(ocrInput, 'eng');
   const text = result.data.text;
   const lines = text
     .split('\n')
@@ -88,12 +97,7 @@ export function parseHeaderText(lines: string[]): OcrResult {
   for (const line of lines) {
     const trimmed = line.trim();
     // Look for standalone "B" or "8" (OCR might read orange B as 8)
-    if (
-      trimmed === 'B' ||
-      trimmed === '8' ||
-      trimmed === '[B]' ||
-      trimmed === '(B)'
-    ) {
+    if (trimmed === 'B' || trimmed === '8' || trimmed === '[B]' || trimmed === '(B)') {
       isBenchmark = true;
       break;
     }
@@ -120,7 +124,7 @@ export function parseHeaderText(lines: string[]): OcrResult {
     }
     // Remove heart emoji and OCR artifacts, trim
     const cleaned = line
-      .replace(/[♡❤️🤍©®]/g, '') // Remove heart, copyright symbols
+      .replace(/♡|❤️|🤍|©|®/gu, '') // Remove heart, copyright symbols
       .replace(/\s*[QO@()&]+\s*$/i, '') // Remove trailing Q/O/@/()/& (OCR error for heart/icons)
       .replace(/^\d+[)\]]\s*/, '') // Remove leading numbers like "0)"
       .replace(/^[yl]\s+/i, '') // Remove leading y/l (OCR artifacts)
@@ -152,7 +156,7 @@ export function parseHeaderText(lines: string[]): OcrResult {
     // Clean up trailing "8" or "B" which may come from heart icon or benchmark indicator
     // We can't reliably distinguish them via OCR, so just remove the trailing chars
     // Benchmark detection relies on standalone "B" or "8" lines (checked earlier)
-    name = name.replace(/\s+[\[(]?[8B]\]?$/i, '').trim();
+    name = name.replace(/\s+[[(]?[8B]\]?$/i, '').trim();
   }
 
   // Find setter and angle
@@ -173,9 +177,7 @@ export function parseHeaderText(lines: string[]): OcrResult {
   // Find grades
   for (const line of lines) {
     // Format: "Grade: User 8A/V11/ Setter 8A/V11"
-    const gradeMatch = line.match(
-      /grade[:\s]+user\s+([^\s/]+(?:\/[^\s/]+)?)\s*[/|]\s*setter\s+([^\s]+)/i
-    );
+    const gradeMatch = line.match(/grade[:\s]+user\s+([^\s/]+(?:\/[^\s/]+)?)\s*[/|]\s*setter\s+([^\s]+)/i);
     if (gradeMatch) {
       userGrade = gradeMatch[1].trim();
       setterGrade = gradeMatch[2].trim();

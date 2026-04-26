@@ -1,8 +1,12 @@
-import { WEB_HOSTS, SaveAttemptOptions, AuroraBoardName } from './types';
+import { type SaveAttemptOptions, type AuroraBoardName, WEB_HOSTS } from './types';
 import { generateUuid } from './util';
 import dayjs from 'dayjs';
 
-export async function saveAttempt(board: AuroraBoardName, token: string, options: SaveAttemptOptions): Promise<unknown> {
+export async function saveAttempt(
+  board: AuroraBoardName,
+  token: string,
+  options: SaveAttemptOptions,
+): Promise<unknown> {
   const uuid = generateUuid();
 
   // Convert the ISO date to the required format "YYYY-MM-DD HH:mm:ss"
@@ -28,7 +32,6 @@ export async function saveAttempt(board: AuroraBoardName, token: string, options
 
   // Use the web host endpoint with POST method
   const url = `${WEB_HOSTS[board]}/bids/save`;
-  console.log(`Saving attempt to: ${url}`);
 
   const response = await fetch(url, {
     method: 'POST',
@@ -39,9 +42,6 @@ export async function saveAttempt(board: AuroraBoardName, token: string, options
     },
     body: requestBody.toString(),
   });
-
-  console.log(`Save attempt response status: ${response.status}`);
-  console.log(`Save attempt response headers:`, Object.fromEntries(response.headers.entries()));
 
   if (!response.ok) {
     const responseClone = response.clone();
@@ -67,7 +67,6 @@ export async function saveAttempt(board: AuroraBoardName, token: string, options
   let responseData: unknown;
   try {
     const responseText = await response.text();
-    console.log(`Save attempt response body: ${responseText}`);
 
     if (!responseText || responseText.trim() === '') {
       throw new Error('Empty response from API');
@@ -75,7 +74,7 @@ export async function saveAttempt(board: AuroraBoardName, token: string, options
     responseData = JSON.parse(responseText);
   } catch (parseError) {
     console.error('Failed to parse response:', parseError);
-    throw new Error(`Failed to parse API response: ${parseError}`);
+    throw new Error(`Failed to parse API response: ${String(parseError)}`);
   }
 
   return responseData;

@@ -39,16 +39,18 @@ async function runMigrations() {
   // Validation: A database URL must be set
   if (!databaseUrl) {
     console.error('❌ DATABASE_URL or POSTGRES_URL is not set');
-    console.error('   Available env vars:', Object.keys(process.env).filter(k =>
-      k.includes('DATABASE') || k.includes('POSTGRES')
-    ).join(', ') || 'none');
+    console.error(
+      '   Available env vars:',
+      Object.keys(process.env)
+        .filter((k) => k.includes('DATABASE') || k.includes('POSTGRES'))
+        .join(', ') || 'none',
+    );
     process.exit(1);
   }
 
   // Safety: Block local dev URLs in production builds
-  const isLocalUrl = databaseUrl.includes('localhost') ||
-                     databaseUrl.includes('localtest.me') ||
-                     databaseUrl.includes('127.0.0.1');
+  const isLocalUrl =
+    databaseUrl.includes('localhost') || databaseUrl.includes('localtest.me') || databaseUrl.includes('127.0.0.1');
 
   if (process.env.VERCEL && isLocalUrl) {
     console.error('❌ Refusing to run migrations with local DATABASE_URL in Vercel build');
@@ -58,7 +60,7 @@ async function runMigrations() {
 
   // Log target database (masked for security)
   const dbHost = databaseUrl.split('@')[1]?.split('/')[0] || 'unknown';
-  console.log(`🔄 Running migrations on: ${dbHost}`);
+  console.info(`🔄 Running migrations on: ${dbHost}`);
 
   try {
     // Configure Neon for local proxy if using local database
@@ -73,7 +75,7 @@ async function runMigrations() {
           // Log first 200 chars of each query for progress visibility
           const preview = query.slice(0, 200).replace(/\s+/g, ' ').trim();
           const timestamp = new Date().toISOString().split('T')[1].slice(0, 8);
-          console.log(`[${timestamp}] ${preview}${query.length > 200 ? '...' : ''}`);
+          console.info(`[${timestamp}] ${preview}${query.length > 200 ? '...' : ''}`);
         },
       },
     });
@@ -82,11 +84,11 @@ async function runMigrations() {
     const migrationsFolder = path.resolve(__dirname, '../drizzle');
     const journalPath = path.join(migrationsFolder, 'meta', '_journal.json');
     const journal = JSON.parse(fs.readFileSync(journalPath, 'utf-8'));
-    console.log(`📋 Found ${journal.entries.length} migrations in journal`);
+    console.info(`📋 Found ${journal.entries.length} migrations in journal`);
 
     await migrate(db, { migrationsFolder });
 
-    console.log('✅ Migrations completed successfully');
+    console.info('✅ Migrations completed successfully');
     await pool.end();
     process.exit(0);
   } catch (error) {
@@ -95,4 +97,4 @@ async function runMigrations() {
   }
 }
 
-runMigrations();
+void runMigrations();

@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { NextRequest } from 'next/server';
+import { POST } from '../route';
 
 // Mock server-only
 vi.mock('server-only', () => ({}));
@@ -37,9 +38,7 @@ const mockFrom = vi.fn();
 const mockWhere = vi.fn();
 const mockLimit = vi.fn();
 const mockInsert = vi.fn();
-const mockValues = vi.fn();
 const mockUpdate = vi.fn();
-const mockSet = vi.fn();
 const mockTransaction = vi.fn();
 
 vi.mock('@/app/lib/db/db', () => ({
@@ -55,8 +54,6 @@ vi.mock('@/app/lib/db/schema', () => ({
   userCredentials: { userId: 'userCredentials.userId' },
   users: { id: 'users.id', emailVerified: 'users.emailVerified' },
 }));
-
-import { POST } from '../route';
 
 function createRequest(body: Record<string, unknown>): NextRequest {
   return new NextRequest('http://localhost/api/internal/set-password', {

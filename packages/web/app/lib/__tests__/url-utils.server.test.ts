@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 
 // Simple focused tests for the server utilities without complex mocking
 describe('url-utils.server concepts', () => {
@@ -6,7 +6,7 @@ describe('url-utils.server concepts', () => {
     it('should understand numeric vs slug detection logic', () => {
       // Test the core logic concepts without importing server-only modules
       const isNumericId = (value: string): boolean => /^\d+$/.test(value);
-      
+
       expect(isNumericId('123')).toBe(true);
       expect(isNumericId('0')).toBe(true);
       expect(isNumericId('slug-format')).toBe(false);
@@ -17,7 +17,7 @@ describe('url-utils.server concepts', () => {
     it('should handle URL decoding correctly', () => {
       const testDecoding = (encoded: string) => {
         const decoded = decodeURIComponent(encoded);
-        return decoded.split(',').map(id => Number(id));
+        return decoded.split(',').map((id) => Number(id));
       };
 
       expect(testDecoding('26%2C27%2C28')).toEqual([26, 27, 28]);
@@ -35,7 +35,7 @@ describe('url-utils.server concepts', () => {
       ];
 
       const isNumericId = (value: string): boolean => /^\d+$/.test(value);
-      
+
       mockParams.forEach(({ value, expected }) => {
         expect(isNumericId(value)).toBe(expected);
       });
@@ -49,13 +49,15 @@ describe('url-utils.server concepts', () => {
       };
 
       expect(extractUuidFromSlug('ABCDEF1234567890ABCDEF1234567890')).toBe('ABCDEF1234567890ABCDEF1234567890');
-      expect(extractUuidFromSlug('climb-name-ABCDEF1234567890ABCDEF1234567890')).toBe('ABCDEF1234567890ABCDEF1234567890');
+      expect(extractUuidFromSlug('climb-name-ABCDEF1234567890ABCDEF1234567890')).toBe(
+        'ABCDEF1234567890ABCDEF1234567890',
+      );
       expect(extractUuidFromSlug('no-uuid-here')).toBe('no-uuid-here');
     });
 
     it('should handle angle conversion', () => {
       const convertAngle = (angleStr: string): number => Number(angleStr);
-      
+
       expect(convertAngle('45')).toBe(45);
       expect(convertAngle('30')).toBe(30);
       expect(convertAngle('0')).toBe(0);
@@ -73,7 +75,7 @@ describe('url-utils.server concepts', () => {
     it('should handle error case patterns', () => {
       const validateRequired = (value: unknown, fieldName: string) => {
         if (!value) {
-          throw new Error(`${fieldName} not found for slug: ${value}`);
+          throw new Error(`${fieldName} not found for slug: ${String(value)}`);
         }
         return value;
       };
@@ -87,7 +89,13 @@ describe('url-utils.server concepts', () => {
 
   describe('route construction patterns', () => {
     it('should build route parameter objects correctly', () => {
-      const buildRouteParams = (board_name: string, layout_id: number, size_id: number, set_ids: number[], angle: number) => ({
+      const buildRouteParams = (
+        board_name: string,
+        layout_id: number,
+        size_id: number,
+        set_ids: number[],
+        angle: number,
+      ) => ({
         board_name,
         layout_id,
         size_id,
@@ -96,7 +104,7 @@ describe('url-utils.server concepts', () => {
       });
 
       const result = buildRouteParams('kilter', 8, 25, [26, 27], 45);
-      
+
       expect(result).toEqual({
         board_name: 'kilter',
         layout_id: 8,
@@ -115,11 +123,11 @@ describe('url-utils.server concepts', () => {
       };
 
       const baseParams = { board_name: 'kilter', layout_id: 8 };
-      
+
       expect(addClimbUuidIfPresent(baseParams)).toEqual(baseParams);
       expect(addClimbUuidIfPresent(baseParams, 'uuid123')).toEqual({
         ...baseParams,
-        climb_uuid: 'uuid123'
+        climb_uuid: 'uuid123',
       });
     });
   });

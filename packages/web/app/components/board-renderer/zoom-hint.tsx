@@ -8,9 +8,9 @@ import styles from './swipe-board-carousel.module.css';
 const PREF_KEY = 'playview:zoomHintSeen';
 const AUTO_DISMISS_MS = 4000;
 
-interface ZoomHintProps {
+type ZoomHintProps = {
   visible: boolean;
-}
+};
 
 export default function ZoomHint({ visible }: ZoomHintProps) {
   const [show, setShow] = useState(false);
@@ -19,25 +19,27 @@ export default function ZoomHint({ visible }: ZoomHintProps) {
     if (!visible) return;
 
     let cancelled = false;
-    getPreference<boolean>(PREF_KEY).then((seen) => {
+    void getPreference<boolean>(PREF_KEY).then((seen) => {
       if (cancelled || seen) return;
       setShow(true);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [visible]);
 
   useEffect(() => {
     if (!show) return;
     const timer = setTimeout(() => {
       setShow(false);
-      setPreference(PREF_KEY, true);
+      void setPreference(PREF_KEY, true);
     }, AUTO_DISMISS_MS);
     return () => clearTimeout(timer);
   }, [show]);
 
   const dismiss = useCallback(() => {
     setShow(false);
-    setPreference(PREF_KEY, true);
+    void setPreference(PREF_KEY, true);
   }, []);
 
   if (!show) return null;

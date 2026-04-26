@@ -11,16 +11,16 @@ import type { BoardDetails, BoardRouteIdentity } from '@/app/lib/types';
 import type { BoardLockReason } from './use-active-board-lock';
 import { capitalizeFirst } from '@/app/lib/string-utils';
 
-interface ConfirmArgs {
+type ConfirmArgs = {
   reason: BoardLockReason;
   lockedBoard: BoardDetails;
   target: BoardRouteIdentity | BoardDetails;
   onConfirmed: () => void;
-}
+};
 
-interface BoardSwitchConfirmContextValue {
+type BoardSwitchConfirmContextValue = {
   confirmBoardSwitch: (args: ConfirmArgs) => void;
-}
+};
 
 const BoardSwitchConfirmContext = createContext<BoardSwitchConfirmContextValue | null>(null);
 
@@ -42,12 +42,12 @@ function formatBoardLabel(board: BoardDetails | BoardRouteIdentity): string {
   return parts.join(' · ');
 }
 
-interface DialogState {
+type DialogState = {
   open: boolean;
   reason: BoardLockReason;
   lockedLabel: string;
   targetLabel: string;
-}
+};
 
 export function BoardSwitchConfirmProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<DialogState | null>(null);
@@ -81,13 +81,9 @@ export function BoardSwitchConfirmProvider({ children }: { children: React.React
     setState(null);
   }, []);
 
-  const value = useMemo<BoardSwitchConfirmContextValue>(
-    () => ({ confirmBoardSwitch }),
-    [confirmBoardSwitch],
-  );
+  const value = useMemo<BoardSwitchConfirmContextValue>(() => ({ confirmBoardSwitch }), [confirmBoardSwitch]);
 
-  const title =
-    state?.reason === 'session' ? 'Leave your session?' : 'Disconnect your board?';
+  const title = state?.reason === 'session' ? 'Leave your session?' : 'Disconnect your board?';
   const body =
     state?.reason === 'session'
       ? `You're in a session on ${state?.lockedLabel}. Switching to ${state?.targetLabel} disconnects your board but keeps the session running.`

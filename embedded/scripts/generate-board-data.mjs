@@ -63,7 +63,10 @@ function extractJsObject(content, varName) {
   for (; i < content.length; i++) {
     const ch = content[i];
     if (inString) {
-      if (ch === '\\') { i++; continue; }
+      if (ch === '\\') {
+        i++;
+        continue;
+      }
       if (ch === stringChar) inString = false;
       continue;
     }
@@ -75,7 +78,10 @@ function extractJsObject(content, varName) {
     if (ch === '{' || ch === '[') depth++;
     if (ch === '}' || ch === ']') {
       depth--;
-      if (depth === 0) { i++; break; }
+      if (depth === 0) {
+        i++;
+        break;
+      }
     }
   }
 
@@ -99,15 +105,9 @@ function loadBoardData() {
   console.log('Loading board data from TypeScript source files...');
 
   // Read raw file contents
-  const productSizesContent = fs.readFileSync(
-    path.join(BOARD_CONSTANTS_GENERATED, 'product-sizes-data.ts'), 'utf-8'
-  );
-  const ledPlacementsContent = fs.readFileSync(
-    path.join(BOARD_CONSTANTS_GENERATED, 'led-placements-data.ts'), 'utf-8'
-  );
-  const boardDataContent = fs.readFileSync(
-    path.join(WEB_LIB, 'board-data.ts'), 'utf-8'
-  );
+  const productSizesContent = fs.readFileSync(path.join(BOARD_CONSTANTS_GENERATED, 'product-sizes-data.ts'), 'utf-8');
+  const ledPlacementsContent = fs.readFileSync(path.join(BOARD_CONSTANTS_GENERATED, 'led-placements-data.ts'), 'utf-8');
+  const boardDataContent = fs.readFileSync(path.join(WEB_LIB, 'board-data.ts'), 'utf-8');
 
   // Extract data objects
   const PRODUCT_SIZES = extractJsObject(productSizesContent, 'PRODUCT_SIZES');
@@ -122,12 +122,28 @@ function loadBoardData() {
     throw new Error('Failed to load one or more required data objects');
   }
 
-  console.log(`  PRODUCT_SIZES: ${Object.keys(PRODUCT_SIZES.kilter || {}).length} kilter, ${Object.keys(PRODUCT_SIZES.tension || {}).length} tension`);
-  console.log(`  SETS: ${Object.keys(SETS.kilter || {}).length} kilter, ${Object.keys(SETS.tension || {}).length} tension`);
-  console.log(`  IMAGE_FILENAMES: ${Object.keys(IMAGE_FILENAMES.kilter || {}).length} kilter, ${Object.keys(IMAGE_FILENAMES.tension || {}).length} tension`);
-  console.log(`  LED_PLACEMENTS: ${Object.keys(LED_PLACEMENTS.kilter || {}).length} kilter, ${Object.keys(LED_PLACEMENTS.tension || {}).length} tension`);
+  console.log(
+    `  PRODUCT_SIZES: ${Object.keys(PRODUCT_SIZES.kilter || {}).length} kilter, ${Object.keys(PRODUCT_SIZES.tension || {}).length} tension`,
+  );
+  console.log(
+    `  SETS: ${Object.keys(SETS.kilter || {}).length} kilter, ${Object.keys(SETS.tension || {}).length} tension`,
+  );
+  console.log(
+    `  IMAGE_FILENAMES: ${Object.keys(IMAGE_FILENAMES.kilter || {}).length} kilter, ${Object.keys(IMAGE_FILENAMES.tension || {}).length} tension`,
+  );
+  console.log(
+    `  LED_PLACEMENTS: ${Object.keys(LED_PLACEMENTS.kilter || {}).length} kilter, ${Object.keys(LED_PLACEMENTS.tension || {}).length} tension`,
+  );
 
-  return { PRODUCT_SIZES, LAYOUTS, SETS, IMAGE_FILENAMES, HOLE_PLACEMENTS, LED_PLACEMENTS, BOARD_IMAGE_DIMENSIONS };
+  return {
+    PRODUCT_SIZES,
+    LAYOUTS,
+    SETS,
+    IMAGE_FILENAMES,
+    HOLE_PLACEMENTS,
+    LED_PLACEMENTS,
+    BOARD_IMAGE_DIMENSIONS,
+  };
 }
 
 /**
@@ -146,7 +162,7 @@ function enumerateConfigs(data) {
       const sizeId = parseInt(sizeIdStr);
 
       // Get all set IDs for this layout-size combo, sorted numerically
-      const setIds = setList.map(s => s.id).sort((a, b) => a - b);
+      const setIds = setList.map((s) => s.id).sort((a, b) => a - b);
 
       // Build config key (no angle): "kilter/1/7/1,20"
       const configKey = `${boardName}/${layoutId}/${sizeId}/${setIds.join(',')}`;
@@ -298,12 +314,10 @@ async function compositeAndResize(config) {
   }
 
   // Load and composite layers
-  const imagePaths = imageFiles.map(f =>
-    path.join(IMAGES_BASE, boardName, f)
-  );
+  const imagePaths = imageFiles.map((f) => path.join(IMAGES_BASE, boardName, f));
 
   // Check all images exist
-  const existingPaths = imagePaths.filter(p => fs.existsSync(p));
+  const existingPaths = imagePaths.filter((p) => fs.existsSync(p));
   if (existingPaths.length === 0) {
     console.warn(`  No image files found for ${config.configKey}`);
     return null;
@@ -347,7 +361,7 @@ function formatByteArray(buffer, indent = '    ') {
   const lines = [];
   for (let i = 0; i < bytes.length; i += 16) {
     const chunk = bytes.slice(i, i + 16);
-    lines.push(indent + chunk.map(b => '0x' + b.toString(16).padStart(2, '0')).join(', '));
+    lines.push(indent + chunk.map((b) => '0x' + b.toString(16).padStart(2, '0')).join(', '));
   }
   return lines.join(',\n');
 }
@@ -467,9 +481,7 @@ function generateDataCpp(configResults) {
     } else {
       content += `// ${result.configKey}: ${result.holdMap.length} holds\n`;
       content += `static const HoldMapEntry holds_${id}[] PROGMEM = {\n`;
-      const entries = result.holdMap.map(h =>
-        `    {${h.ledPosition}, ${h.cx}, ${h.cy}, ${h.r}}`
-      );
+      const entries = result.holdMap.map((h) => `    {${h.ledPosition}, ${h.cx}, ${h.cy}, ${h.r}}`);
       content += entries.join(',\n');
       content += '\n};\n\n';
     }
@@ -542,7 +554,9 @@ async function main() {
 
       totalImageBytes += imageResult.buffer.length;
       totalHolds += holdMap.length;
-      console.log(`${imageResult.width}x${imageResult.height}, ${imageResult.buffer.length} bytes, ${holdMap.length} holds`);
+      console.log(
+        `${imageResult.width}x${imageResult.height}, ${imageResult.buffer.length} bytes, ${holdMap.length} holds`,
+      );
     } catch (err) {
       console.log(`ERROR: ${err.message}`);
     }
@@ -581,7 +595,7 @@ async function main() {
   // Verify JPEG magic bytes
   let validJpegs = 0;
   for (const result of results) {
-    if (result.buffer[0] === 0xFF && result.buffer[1] === 0xD8) {
+    if (result.buffer[0] === 0xff && result.buffer[1] === 0xd8) {
       validJpegs++;
     }
   }
@@ -590,7 +604,7 @@ async function main() {
   console.log('\nDone!');
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Fatal error:', err);
   process.exit(1);
 });

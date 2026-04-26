@@ -3,31 +3,31 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Typography from '@mui/material/Typography';
 import BoardRenderer from '../board-renderer/board-renderer';
-import { BoardDetails } from '@/app/lib/types';
-import { LitUpHoldsMap } from '../board-renderer/types';
+import type { BoardDetails } from '@/app/lib/types';
+import type { LitUpHoldsMap } from '../board-renderer/types';
 import { themeTokens } from '@/app/theme/theme-config';
 
 const loadingMessages = [
-  "Setting up your board...",
-  "Configuring climb routes...",
-  "Preparing the wall...",
-  "Loading hold sets...",
-  "Almost ready to climb...",
-  "Warming up the LEDs...",
-  "Syncing board configuration...",
-  "Calibrating difficulty grades...",
-  "Getting your climbing groove on...",
-  "Checking route conditions...",
+  'Setting up your board...',
+  'Configuring climb routes...',
+  'Preparing the wall...',
+  'Loading hold sets...',
+  'Almost ready to climb...',
+  'Warming up the LEDs...',
+  'Syncing board configuration...',
+  'Calibrating difficulty grades...',
+  'Getting your climbing groove on...',
+  'Checking route conditions...',
 ];
 
-interface AnimatedBoardLoadingProps {
+type AnimatedBoardLoadingProps = {
   isVisible: boolean;
   boardDetails?: BoardDetails | null;
   /** Render inline without overlay or messages */
   inline?: boolean;
   /** Size for inline mode (default: 80) */
   size?: number;
-}
+};
 
 const AnimatedBoardLoading: React.FC<AnimatedBoardLoadingProps> = ({
   isVisible,
@@ -97,7 +97,7 @@ const AnimatedBoardLoading: React.FC<AnimatedBoardLoadingProps> = ({
     if (!isVisible || !boardDetails) return;
 
     const animationInterval = setInterval(() => {
-      setAnimationFrame(prev => (prev + 1) % 100);
+      setAnimationFrame((prev) => (prev + 1) % 100);
     }, 80); // Update every 80ms for faster rotation
 
     return () => clearInterval(animationInterval);

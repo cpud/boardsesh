@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { GroupedNotificationsInputSchema } from '../validation/schemas';
+import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { socialNotificationQueries, socialNotificationMutations } from '../graphql/resolvers/social/notifications';
 
 // All mock variables must be inside vi.hoisted() to avoid "Cannot access before initialization" errors
-const {
-  mockExecute, mockSelect, mockFrom, mockWhere, mockSet, mockReturning, mockUpdate,
-} = vi.hoisted(() => {
+const { mockExecute, mockSelect, mockFrom, mockWhere, mockSet, mockReturning, mockUpdate } = vi.hoisted(() => {
   const mockFrom = vi.fn();
   const mockWhere = vi.fn();
   const mockSet = vi.fn();
@@ -48,9 +48,6 @@ vi.mock('../utils/rate-limiter', () => ({
 vi.mock('../utils/redis-rate-limiter', () => ({
   checkRateLimitRedis: vi.fn(),
 }));
-
-import type { ConnectionContext } from '@boardsesh/shared-schema';
-import { socialNotificationQueries, socialNotificationMutations } from '../graphql/resolvers/social/notifications';
 
 function makeCtx(overrides: Partial<ConnectionContext> = {}): ConnectionContext {
   return {
@@ -131,16 +128,14 @@ describe('groupedNotifications resolver', () => {
 
   it('should throw for unauthenticated users', async () => {
     const ctx = makeCtx({ isAuthenticated: false });
-    await expect(
-      socialNotificationQueries.groupedNotifications(null, {}, ctx),
-    ).rejects.toThrow('Authentication required');
+    await expect(socialNotificationQueries.groupedNotifications(null, {}, ctx)).rejects.toThrow(
+      'Authentication required',
+    );
   });
 
   it('should reject invalid input (limit too high)', async () => {
     const ctx = makeCtx();
-    await expect(
-      socialNotificationQueries.groupedNotifications(null, { limit: 999 }, ctx),
-    ).rejects.toThrow();
+    await expect(socialNotificationQueries.groupedNotifications(null, { limit: 999 }, ctx)).rejects.toThrow();
   });
 
   it('should return empty groups when no notifications', async () => {
@@ -302,9 +297,9 @@ describe('markGroupNotificationsRead mutation', () => {
 
   it('should throw for unauthenticated users', async () => {
     const ctx = makeCtx({ isAuthenticated: false });
-    await expect(
-      socialNotificationMutations.markGroupNotificationsRead(null, { type: 'vote' }, ctx),
-    ).rejects.toThrow('Authentication required');
+    await expect(socialNotificationMutations.markGroupNotificationsRead(null, { type: 'vote' }, ctx)).rejects.toThrow(
+      'Authentication required',
+    );
   });
 
   it('should return count of marked notifications', async () => {
@@ -352,11 +347,7 @@ describe('markGroupNotificationsRead mutation', () => {
     const ctx = makeCtx();
     mockReturning.mockResolvedValueOnce([{ uuid: 'a' }, { uuid: 'b' }]);
 
-    const count = await socialNotificationMutations.markGroupNotificationsRead(
-      null,
-      { type: 'new_follower' },
-      ctx,
-    );
+    const count = await socialNotificationMutations.markGroupNotificationsRead(null, { type: 'new_follower' }, ctx);
 
     expect(count).toBe(2);
   });

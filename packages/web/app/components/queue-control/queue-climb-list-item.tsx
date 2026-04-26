@@ -9,14 +9,14 @@ import MuiStack from '@mui/material/Stack';
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import PersonOutlined from '@mui/icons-material/PersonOutlined';
-import { BoardDetails, Climb } from '@/app/lib/types';
+import type { BoardDetails, Climb } from '@/app/lib/types';
 import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { DropIndicator } from '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box';
 import { attachClosestEdge, extractClosestEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
 import type { Edge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import BluetoothIcon from './bluetooth-icon';
-import { ClimbQueueItem } from './types';
+import type { ClimbQueueItem } from './types';
 import ClimbListItem, { type SwipeActionOverride } from '../climb-card/climb-list-item';
 import { dispatchOpenPlayDrawer } from './play-drawer-event';
 import { themeTokens } from '@/app/theme/theme-config';
@@ -125,11 +125,7 @@ const QueueClimbListItem: React.FC<QueueClimbListItemProps> = ({
     return (
       <MuiStack direction="row" spacing={0.5} alignItems="center">
         <MuiTooltip title="Edit this climb">
-          <MuiIconButton
-            size="small"
-            onClick={handleEditClick}
-            sx={{ width: 24, height: 24 }}
-          >
+          <MuiIconButton size="small" onClick={handleEditClick} sx={{ width: 24, height: 24 }}>
             <EditOutlined sx={{ fontSize: 16 }} />
           </MuiIconButton>
         </MuiTooltip>
@@ -165,10 +161,7 @@ const QueueClimbListItem: React.FC<QueueClimbListItemProps> = ({
       dropTargetForElements({
         element,
         getData: ({ input }) =>
-          attachClosestEdge(
-            { index, id: item.uuid },
-            { element, input, allowedEdges: ['top', 'bottom'] },
-          ),
+          attachClosestEdge({ index, id: item.uuid }, { element, input, allowedEdges: ['top', 'bottom'] }),
         onDrag({ self }) {
           const edge = extractClosestEdge(self.data);
           setClosestEdge(edge);
@@ -221,18 +214,13 @@ const QueueClimbListItem: React.FC<QueueClimbListItemProps> = ({
   return (
     <div ref={itemRef} data-testid="queue-item" style={isEditMode ? undefined : { cursor: 'grab' }}>
       {isEditMode ? (
-        <div
-          style={editModeContainerStyle}
-          onClick={() => onToggleSelect?.(item.uuid)}
-        >
+        <div style={editModeContainerStyle} onClick={() => onToggleSelect?.(item.uuid)}>
           <MuiCheckbox
             checked={isSelected}
             onClick={(e) => e.stopPropagation()}
             onChange={() => onToggleSelect?.(item.uuid)}
           />
-          <div style={editModeContentStyle}>
-            {content}
-          </div>
+          <div style={editModeContentStyle}>{content}</div>
         </div>
       ) : (
         content

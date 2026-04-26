@@ -1,8 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { createTestQueryClient } from '@/app/test-utils/test-providers';
 import { QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
+import { useWsAuthToken } from '../use-ws-auth-token';
+import { useSession } from 'next-auth/react';
+import { useDeleteTick } from '../use-delete-tick';
 
 vi.mock('../use-ws-auth-token', () => ({
   useWsAuthToken: vi.fn(),
@@ -25,10 +28,6 @@ vi.mock('@/app/lib/graphql/client', () => ({
 vi.mock('@/app/lib/graphql/operations', () => ({
   DELETE_TICK: 'DELETE_TICK_MUTATION',
 }));
-
-import { useWsAuthToken } from '../use-ws-auth-token';
-import { useSession } from 'next-auth/react';
-import { useDeleteTick } from '../use-delete-tick';
 
 const mockUseWsAuthToken = vi.mocked(useWsAuthToken);
 const mockUseSession = vi.mocked(useSession);

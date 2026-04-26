@@ -15,6 +15,26 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
     private let logger = Logger(subsystem: "com.boardsesh.app", category: "HealthKitPlugin")
     private let healthStore = HKHealthStore()
 
+    // Static date formatters — allocated once, reused across calls.
+    private static let isoWithFrac: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
+
+    private static let isoPlain: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f
+    }()
+
+    private static let fallbackFormats = [
+        "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+        "yyyy-MM-dd'T'HH:mm:ssZ",
+        "yyyy-MM-dd HH:mm:ss.SSS",
+        "yyyy-MM-dd HH:mm:ss",
+    ]
+
     // MARK: - isAvailable
 
     @objc func isAvailable(_ call: CAPPluginCall) {
@@ -32,12 +52,14 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         healthStore.requestAuthorization(toShare: types, read: nil) { [weak self] success, error in
             if let error = error {
                 self?.logger.error("HealthKit auth error: \(error.localizedDescription, privacy: .public)")
+                call.resolve(["granted": false])
+                return
             }
-            // Apple's API returns `success = true` even when the user declines;
-            // true here means the prompt completed. For share types we can check
-            // authorizationStatus to confirm.
             let status = self?.healthStore.authorizationStatus(for: HKObjectType.workoutType())
             let granted = success && status == .sharingAuthorized
+            if !granted {
+                self?.logger.warning("HealthKit auth not granted. success=\(success), status=\(String(describing: status?.rawValue))")
+            }
             call.resolve(["granted": granted])
         }
     }
@@ -57,15 +79,16 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
             return
         }
 
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let start = formatter.date(from: startIso) ?? ISO8601DateFormatter().date(from: startIso)
-        let end = formatter.date(from: endIso) ?? ISO8601DateFormatter().date(from: endIso)
-
-        guard let startDate = start, let endDate = end, endDate > startDate else {
-            call.reject("Invalid startDate/endDate")
+        guard let startDate = parseISO8601(startIso), let endDate = parseISO8601(endIso), endDate > startDate else {
+            let parsedStart = parseISO8601(startIso)
+            let parsedEnd = parseISO8601(endIso)
+            logger.error("Invalid dates: startDate=\(startIso, privacy: .public) endDate=\(endIso, privacy: .public) parsedStart=\(String(describing: parsedStart), privacy: .public) parsedEnd=\(String(describing: parsedEnd), privacy: .public)")
+            call.reject("Invalid startDate/endDate: start=\(startIso), end=\(endIso)")
             return
         }
+
+        let durationSeconds = endDate.timeIntervalSince(startDate)
+        logger.info("Workout dates: start=\(startIso, privacy: .public) end=\(endIso, privacy: .public) duration=\(Int(durationSeconds))s")
 
         let totalSends = call.getInt("totalSends") ?? 0
         let totalAttempts = call.getInt("totalAttempts") ?? 0
@@ -83,28 +106,46 @@ public class HealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
             metadata["BoardseshHardestGrade"] = hardestGrade
         }
 
-        let workout = HKWorkout(
-            activityType: .climbing,
-            start: startDate,
-            end: endDate,
-            duration: endDate.timeIntervalSince(startDate),
-            totalEnergyBurned: nil,
-            totalDistance: nil,
-            metadata: metadata
-        )
+        // Use HKWorkoutBuilder (modern API, replaces deprecated HKWorkout initializer)
+        Task {
+            do {
+                let config = HKWorkoutConfiguration()
+                config.activityType = .climbing
 
-        healthStore.save(workout) { [weak self] success, error in
-            if let error = error {
-                self?.logger.error("Failed to save workout: \(error.localizedDescription, privacy: .public)")
+                let builder = HKWorkoutBuilder(healthStore: healthStore, configuration: config, device: nil)
+                try await builder.beginCollection(at: startDate)
+                try await builder.addMetadata(metadata)
+                try await builder.endCollection(at: endDate)
+
+                guard let workout = try await builder.finishWorkout() else {
+                    call.reject("Failed to finish workout")
+                    return
+                }
+
+                logger.info("Saved climbing workout for session \(sessionId, privacy: .public)")
+                call.resolve(["workoutId": workout.uuid.uuidString])
+            } catch {
+                logger.error("Failed to save workout: \(error.localizedDescription, privacy: .public)")
                 call.reject("Failed to save workout: \(error.localizedDescription)")
-                return
             }
-            if !success {
-                call.reject("Failed to save workout")
-                return
-            }
-            self?.logger.info("Saved climbing workout for session \(sessionId, privacy: .public)")
-            call.resolve(["workoutId": workout.uuid.uuidString])
         }
+    }
+
+    // MARK: - Helpers
+
+    private func parseISO8601(_ string: String) -> Date? {
+        if let date = Self.isoWithFrac.date(from: string) { return date }
+        if let date = Self.isoPlain.date(from: string) { return date }
+
+        // Fallback: try common non-ISO formats (e.g. SQL timestamp).
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "en_US_POSIX")
+        df.timeZone = TimeZone(secondsFromGMT: 0)
+        for fmt in Self.fallbackFormats {
+            df.dateFormat = fmt
+            if let date = df.date(from: string) { return date }
+        }
+
+        return nil
     }
 }

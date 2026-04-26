@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import type { ActivityFeedInput } from '@boardsesh/shared-schema';
+import type { ActivityFeedInput, SessionFeedResult, SessionDetail } from '@boardsesh/shared-schema';
 
 // ============================================
 // Session-Grouped Feed Queries
@@ -56,6 +56,7 @@ export const GET_SESSION_DETAIL = gql`
   query GetSessionDetail($sessionId: ID!) {
     sessionDetail(sessionId: $sessionId) {
       ${SESSION_FEED_ITEM_FIELDS}
+      healthKitWorkoutId
       ticks {
         uuid
         userId
@@ -71,6 +72,7 @@ export const GET_SESSION_DETAIL = gql`
         quality
         isMirror
         isBenchmark
+        isNoMatch
         comment
         frames
         setterUsername
@@ -105,6 +107,7 @@ export const UPDATE_INFERRED_SESSION = gql`
         quality
         isMirror
         isBenchmark
+        isNoMatch
         comment
         frames
         setterUsername
@@ -135,6 +138,7 @@ export const ADD_USER_TO_SESSION = gql`
         quality
         isMirror
         isBenchmark
+        isNoMatch
         comment
         frames
         setterUsername
@@ -165,6 +169,7 @@ export const REMOVE_USER_FROM_SESSION = gql`
         quality
         isMirror
         isBenchmark
+        isNoMatch
         comment
         frames
         setterUsername
@@ -186,18 +191,18 @@ export const SET_SESSION_HEALTHKIT_WORKOUT_ID = gql`
 // Query Variable Types
 // ============================================
 
-export interface GetSessionGroupedFeedQueryVariables {
+export type GetSessionGroupedFeedQueryVariables = {
   input?: ActivityFeedInput;
-}
+};
 
-export interface GetSessionGroupedFeedQueryResponse {
-  sessionGroupedFeed: import('@boardsesh/shared-schema').SessionFeedResult;
-}
+export type GetSessionGroupedFeedQueryResponse = {
+  sessionGroupedFeed: SessionFeedResult;
+};
 
-export interface GetSessionDetailQueryVariables {
+export type GetSessionDetailQueryVariables = {
   sessionId: string;
-}
+};
 
-export interface GetSessionDetailQueryResponse {
-  sessionDetail: import('@boardsesh/shared-schema').SessionDetail | null;
-}
+export type GetSessionDetailQueryResponse = {
+  sessionDetail: SessionDetail | null;
+};

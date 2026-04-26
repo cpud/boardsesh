@@ -37,16 +37,14 @@ export async function applyProposalEffect(proposal: typeof dbSchema.climbProposa
         .set(updates)
         .where(eq(dbSchema.climbCommunityStatus.id, existing.id));
     } else {
-      await db
-        .insert(dbSchema.climbCommunityStatus)
-        .values({
-          climbUuid: proposal.climbUuid,
-          boardType: proposal.boardType,
-          angle: proposal.angle!,
-          communityGrade: proposal.type === 'grade' ? proposal.proposedValue : null,
-          isBenchmark: proposal.type === 'benchmark' ? proposal.proposedValue === 'true' : false,
-          lastProposalId: proposal.id,
-        });
+      await db.insert(dbSchema.climbCommunityStatus).values({
+        climbUuid: proposal.climbUuid,
+        boardType: proposal.boardType,
+        angle: proposal.angle!,
+        communityGrade: proposal.type === 'grade' ? proposal.proposedValue : null,
+        isBenchmark: proposal.type === 'benchmark' ? proposal.proposedValue === 'true' : false,
+        lastProposalId: proposal.id,
+      });
     }
   } else if (proposal.type === 'classic') {
     // UPSERT climb_classic_status
@@ -71,14 +69,12 @@ export async function applyProposalEffect(proposal: typeof dbSchema.climbProposa
         })
         .where(eq(dbSchema.climbClassicStatus.id, existing.id));
     } else {
-      await db
-        .insert(dbSchema.climbClassicStatus)
-        .values({
-          climbUuid: proposal.climbUuid,
-          boardType: proposal.boardType,
-          isClassic: proposal.proposedValue === 'true',
-          lastProposalId: proposal.id,
-        });
+      await db.insert(dbSchema.climbClassicStatus).values({
+        climbUuid: proposal.climbUuid,
+        boardType: proposal.boardType,
+        isClassic: proposal.proposedValue === 'true',
+        lastProposalId: proposal.id,
+      });
     }
   }
 }

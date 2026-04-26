@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, waitFor } from '@testing-library/react';
 import type { UserBoard } from '@boardsesh/shared-schema';
+import { useDiscoverBoards } from '../use-discover-boards';
 
 // --- Mocks ---
 
@@ -19,8 +20,6 @@ vi.mock('@/app/lib/graphql/operations', () => ({
 }));
 
 // --- Import after mocks ---
-
-import { useDiscoverBoards } from '../use-discover-boards';
 
 // --- Helpers ---
 
@@ -75,42 +74,46 @@ function removeGeolocation() {
 }
 
 function geoSuccess(latitude: number, longitude: number) {
-  mockGetCurrentPosition.mockImplementation(
-    (success: PositionCallback) => {
-      success({
-        coords: {
-          latitude,
-          longitude,
-          accuracy: 10,
-          altitude: null,
-          altitudeAccuracy: null,
-          heading: null,
-          speed: null,
-          toJSON() {
-            return { latitude, longitude, accuracy: 10, altitude: null, altitudeAccuracy: null, heading: null, speed: null };
-          },
-        },
-        timestamp: Date.now(),
+  mockGetCurrentPosition.mockImplementation((success: PositionCallback) => {
+    success({
+      coords: {
+        latitude,
+        longitude,
+        accuracy: 10,
+        altitude: null,
+        altitudeAccuracy: null,
+        heading: null,
+        speed: null,
         toJSON() {
-          return { coords: this.coords, timestamp: this.timestamp };
+          return {
+            latitude,
+            longitude,
+            accuracy: 10,
+            altitude: null,
+            altitudeAccuracy: null,
+            heading: null,
+            speed: null,
+          };
         },
-      } as GeolocationPosition);
-    },
-  );
+      },
+      timestamp: Date.now(),
+      toJSON() {
+        return { coords: this.coords, timestamp: this.timestamp };
+      },
+    } as GeolocationPosition);
+  });
 }
 
 function geoDenied() {
-  mockGetCurrentPosition.mockImplementation(
-    (_success: PositionCallback, error: PositionErrorCallback) => {
-      error({
-        code: 1,
-        message: 'User denied',
-        PERMISSION_DENIED: 1,
-        POSITION_UNAVAILABLE: 2,
-        TIMEOUT: 3,
-      });
-    },
-  );
+  mockGetCurrentPosition.mockImplementation((_success: PositionCallback, error: PositionErrorCallback) => {
+    error({
+      code: 1,
+      message: 'User denied',
+      PERMISSION_DENIED: 1,
+      POSITION_UNAVAILABLE: 2,
+      TIMEOUT: 3,
+    });
+  });
 }
 
 // --- Tests ---
@@ -126,9 +129,7 @@ describe('useDiscoverBoards', () => {
   });
 
   it('does not fetch anything when enableLocation=false (default in home page)', async () => {
-    const { result } = renderHook(() =>
-      useDiscoverBoards({ enableLocation: false }),
-    );
+    const { result } = renderHook(() => useDiscoverBoards({ enableLocation: false }));
 
     // Should not be loading and should have no boards
     expect(result.current.isLoading).toBe(false);
@@ -251,8 +252,7 @@ describe('useDiscoverBoards', () => {
 
     // First render with enableLocation=false
     const { result, rerender } = renderHook(
-      ({ enableLocation }: { enableLocation: boolean }) =>
-        useDiscoverBoards({ enableLocation }),
+      ({ enableLocation }: { enableLocation: boolean }) => useDiscoverBoards({ enableLocation }),
       { initialProps: { enableLocation: false } },
     );
 
@@ -303,7 +303,11 @@ describe('useDiscoverBoards', () => {
 
     // Make the API call hang so we can observe loading during the request
     let resolveRequest: (value: unknown) => void;
-    mockRequest.mockReturnValueOnce(new Promise((resolve) => { resolveRequest = resolve; }));
+    mockRequest.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveRequest = resolve;
+      }),
+    );
 
     const { result } = renderHook(() => useDiscoverBoards({ enableLocation: true }));
 

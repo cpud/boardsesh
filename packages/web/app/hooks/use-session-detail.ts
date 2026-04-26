@@ -13,20 +13,15 @@ import {
 } from '@/app/lib/graphql/operations/activity-feed';
 import type { SessionDetail } from '@boardsesh/shared-schema';
 
-export const SESSION_DETAIL_QUERY_KEY = (sessionId: string) =>
-  ['sessionDetail', sessionId] as const;
+export const SESSION_DETAIL_QUERY_KEY = (sessionId: string) => ['sessionDetail', sessionId] as const;
 
-interface UseSessionDetailOptions {
+type UseSessionDetailOptions = {
   sessionId?: string;
   initialData?: SessionDetail | null;
   enabled?: boolean;
-}
+};
 
-export function useSessionDetail({
-  sessionId,
-  initialData,
-  enabled = true,
-}: UseSessionDetailOptions) {
+export function useSessionDetail({ sessionId, initialData, enabled = true }: UseSessionDetailOptions) {
   const { token, isAuthenticated } = useWsAuthToken();
   const { showMessage } = useSnackbar();
   const queryClient = useQueryClient();
@@ -37,10 +32,9 @@ export function useSessionDetail({
     queryKey,
     queryFn: async () => {
       const client = createGraphQLHttpClient(token);
-      const data = await client.request<GetSessionDetailQueryResponse>(
-        GET_SESSION_DETAIL,
-        { sessionId },
-      );
+      const data = await client.request<GetSessionDetailQueryResponse>(GET_SESSION_DETAIL, {
+        sessionId,
+      });
       return data.sessionDetail;
     },
     enabled: enabled && !!sessionId && isAuthenticated && !!token,
@@ -56,10 +50,9 @@ export function useSessionDetail({
   const updateSession = useMutation({
     mutationFn: async (input: { name: string | null; description: string | null }) => {
       const client = createGraphQLHttpClient(token);
-      const result = await client.request<{ updateInferredSession: SessionDetail }>(
-        UPDATE_INFERRED_SESSION,
-        { input: { sessionId, ...input } },
-      );
+      const result = await client.request<{ updateInferredSession: SessionDetail }>(UPDATE_INFERRED_SESSION, {
+        input: { sessionId, ...input },
+      });
       return result.updateInferredSession;
     },
     onSuccess: (data) => {
@@ -75,10 +68,9 @@ export function useSessionDetail({
   const addUser = useMutation({
     mutationFn: async (userId: string) => {
       const client = createGraphQLHttpClient(token);
-      const result = await client.request<{ addUserToSession: SessionDetail }>(
-        ADD_USER_TO_SESSION,
-        { input: { sessionId, userId } },
-      );
+      const result = await client.request<{ addUserToSession: SessionDetail }>(ADD_USER_TO_SESSION, {
+        input: { sessionId, userId },
+      });
       return result.addUserToSession;
     },
     onSuccess: (data) => {
@@ -94,10 +86,9 @@ export function useSessionDetail({
   const removeUser = useMutation({
     mutationFn: async (userId: string) => {
       const client = createGraphQLHttpClient(token);
-      const result = await client.request<{ removeUserFromSession: SessionDetail }>(
-        REMOVE_USER_FROM_SESSION,
-        { input: { sessionId, userId } },
-      );
+      const result = await client.request<{ removeUserFromSession: SessionDetail }>(REMOVE_USER_FROM_SESSION, {
+        input: { sessionId, userId },
+      });
       return result.removeUserFromSession;
     },
     onSuccess: (data) => {

@@ -1,10 +1,4 @@
-import {
-  ImageProcessor,
-  RawPixelData,
-  ImageMetadata,
-  ImageRegion,
-  BrowserImageSource,
-} from './types';
+import type { ImageProcessor, RawPixelData, ImageMetadata, ImageRegion, BrowserImageSource } from './types';
 
 /**
  * Canvas-based image processor for browser environment.
@@ -24,7 +18,7 @@ export class CanvasImageProcessor implements ImageProcessor {
       imageBitmap = await createImageBitmap(source);
     } else if ('close' in source && typeof source.close === 'function') {
       // ImageBitmap
-      imageBitmap = source as ImageBitmap;
+      imageBitmap = source;
     } else if (source instanceof HTMLImageElement) {
       imageBitmap = await createImageBitmap(source);
     } else {
@@ -55,12 +49,7 @@ export class CanvasImageProcessor implements ImageProcessor {
   async extractRegion(region: ImageRegion): Promise<RawPixelData> {
     if (!this.ctx) throw new Error('Image not loaded');
 
-    const imageData = this.ctx.getImageData(
-      region.x,
-      region.y,
-      region.width,
-      region.height
-    );
+    const imageData = this.ctx.getImageData(region.x, region.y, region.width, region.height);
 
     return {
       data: imageData.data, // Uint8ClampedArray (RGBA)
@@ -73,12 +62,7 @@ export class CanvasImageProcessor implements ImageProcessor {
   async extractFullImage(): Promise<RawPixelData> {
     if (!this.ctx || !this.canvas) throw new Error('Image not loaded');
 
-    const imageData = this.ctx.getImageData(
-      0,
-      0,
-      this.canvas.width,
-      this.canvas.height
-    );
+    const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
 
     return {
       data: imageData.data,
@@ -91,12 +75,7 @@ export class CanvasImageProcessor implements ImageProcessor {
   async extractForOCR(region: ImageRegion): Promise<ImageData> {
     if (!this.ctx) throw new Error('Image not loaded');
 
-    const imageData = this.ctx.getImageData(
-      region.x,
-      region.y,
-      region.width,
-      region.height
-    );
+    const imageData = this.ctx.getImageData(region.x, region.y, region.width, region.height);
 
     // Convert to grayscale and normalize for better OCR
     // (matches Sharp's .grayscale().normalize() preprocessing)
@@ -106,9 +85,7 @@ export class CanvasImageProcessor implements ImageProcessor {
     let min = 255;
     let max = 0;
     for (let i = 0; i < data.length; i += 4) {
-      const gray = Math.round(
-        0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]
-      );
+      const gray = Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
       data[i] = gray;
       data[i + 1] = gray;
       data[i + 2] = gray;

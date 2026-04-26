@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   searchParamsToUrlParams,
   parsedRouteSearchParamsToSearchParams,
@@ -44,7 +44,7 @@ describe('searchParamsToUrlParams', () => {
       ...DEFAULT_SEARCH_PARAMS,
       minGrade: 5,
     });
-    
+
     expect(result.toString()).toBe('minGrade=5');
   });
 
@@ -55,7 +55,7 @@ describe('searchParamsToUrlParams', () => {
       name: 'test climb',
       onlyClassics: true,
     });
-    
+
     const params = result.toString();
     expect(params).toContain('minGrade=5');
     expect(params).toContain('name=test+climb');
@@ -79,7 +79,7 @@ describe('searchParamsToUrlParams', () => {
       sortBy: 'difficulty',
       sortOrder: 'asc',
     });
-    
+
     const params = result.toString();
     expect(params).toContain('sortBy=difficulty');
     expect(params).toContain('sortOrder=asc');
@@ -89,11 +89,11 @@ describe('searchParamsToUrlParams', () => {
     const result = searchParamsToUrlParams({
       ...DEFAULT_SEARCH_PARAMS,
       holdsFilter: {
-        'red': { state: 'include' },
-        'blue': { state: 'exclude' },
+        red: { state: 'include' },
+        blue: { state: 'exclude' },
       } as unknown as SearchRequestPagination['holdsFilter'],
     });
-    
+
     const params = result.toString();
     expect(params).toContain('hold_red=include');
     expect(params).toContain('hold_blue=exclude');
@@ -105,7 +105,7 @@ describe('searchParamsToUrlParams', () => {
       holdsFilter: {},
       minGrade: 2,
     });
-    
+
     expect(result.toString()).toBe('minGrade=2');
   });
 
@@ -115,7 +115,7 @@ describe('searchParamsToUrlParams', () => {
       page: 2,
       pageSize: 50,
     });
-    
+
     const params = result.toString();
     expect(params).toContain('page=2');
     expect(params).toContain('pageSize=50');
@@ -126,7 +126,7 @@ describe('searchParamsToUrlParams', () => {
       ...DEFAULT_SEARCH_PARAMS,
       onlyClassics: true,
     });
-    
+
     expect(result.toString()).toBe('onlyClassics=true');
   });
 
@@ -137,8 +137,51 @@ describe('searchParamsToUrlParams', () => {
       minGrade: 0, // This is the default
       maxGrade: 5, // This is not the default
     });
-    
+
     expect(result.toString()).toBe('maxGrade=5');
+  });
+
+  it('should treat undefined numeric fields as defaults without throwing', () => {
+    // Regression: a recent-search pill tap on iOS Safari was crashing because
+    // IndexedDB-persisted filters contained `undefined` for minGrade/maxGrade/
+    // minAscents/minRating/gradeAccuracy, and the serializer called .toString()
+    // on them. The boundary must coalesce undefined to the default.
+    const corrupt = {
+      ...DEFAULT_SEARCH_PARAMS,
+      minGrade: undefined,
+      maxGrade: undefined,
+      minAscents: undefined,
+      minRating: undefined,
+      gradeAccuracy: undefined,
+    } as unknown as SearchRequestPagination;
+
+    const result = searchParamsToUrlParams(corrupt);
+    expect(result.toString()).toBe('');
+  });
+
+  it('should treat undefined non-numeric fields as defaults without throwing', () => {
+    const corrupt = {
+      ...DEFAULT_SEARCH_PARAMS,
+      sortBy: undefined,
+      sortOrder: undefined,
+      name: undefined,
+      onlyClassics: undefined,
+      onlyTallClimbs: undefined,
+      settername: undefined,
+      setternameSuggestion: undefined,
+      holdsFilter: undefined,
+      hideAttempted: undefined,
+      hideCompleted: undefined,
+      showOnlyAttempted: undefined,
+      showOnlyCompleted: undefined,
+      onlyDrafts: undefined,
+      projectsOnly: undefined,
+      page: undefined,
+      pageSize: undefined,
+    } as unknown as SearchRequestPagination;
+
+    const result = searchParamsToUrlParams(corrupt);
+    expect(result.toString()).toBe('');
   });
 });
 
@@ -292,7 +335,7 @@ describe('urlParamsToSearchParams', () => {
       onlyClassics: 'true',
       page: '2',
       hold_red: 'include',
-      hold_blue: 'exclude'
+      hold_blue: 'exclude',
     });
 
     const result = urlParamsToSearchParams(urlParams);
@@ -330,7 +373,7 @@ describe('parseBoardRouteParams', () => {
       layout_id: '5',
       size_id: '10',
       set_ids: '1%2C2%2C3', // encoded "1,2,3"
-      angle: '45'
+      angle: '45',
     };
 
     const result = parseBoardRouteParams(params);
@@ -349,7 +392,7 @@ describe('parseBoardRouteParams', () => {
       size_id: '2',
       set_ids: '4%2C5',
       angle: '30',
-      climb_uuid: 'abc123def456'
+      climb_uuid: 'abc123def456',
     };
 
     const result = parseBoardRouteParams(params);
@@ -365,7 +408,7 @@ describe('URL construction functions', () => {
     layout_id: 1,
     size_id: 2,
     set_ids: [3, 4],
-    angle: 45
+    angle: 45,
   };
 
   describe('constructClimbViewUrl', () => {
@@ -585,45 +628,25 @@ describe('Slug generation functions', () => {
       });
 
       it('should generate correct slug for 10x12 with kicker naming', () => {
-        const result = generateSetSlug([
-          'Aux Kicker',
-          'Main Kicker',
-          'Aux',
-          'Main'
-        ]);
+        const result = generateSetSlug(['Aux Kicker', 'Main Kicker', 'Aux', 'Main']);
         expect(result).toBe('main-kicker_main_aux-kicker_aux');
       });
     });
 
     describe('homewall full ride - all four sets combined', () => {
       it('should generate correct slug for all four homewall sets (full names)', () => {
-        const result = generateSetSlug([
-          'Auxiliary Kickboard',
-          'Mainline Kickboard',
-          'Auxiliary',
-          'Mainline'
-        ]);
+        const result = generateSetSlug(['Auxiliary Kickboard', 'Mainline Kickboard', 'Auxiliary', 'Mainline']);
         // Should be sorted alphabetically descending and joined with underscores
         expect(result).toBe('main-kicker_main_aux-kicker_aux');
       });
 
       it('should generate correct slug for all four homewall sets (abbreviated names)', () => {
-        const result = generateSetSlug([
-          'Aux Kickboard',
-          'Main Kickboard',
-          'Aux',
-          'Main'
-        ]);
+        const result = generateSetSlug(['Aux Kickboard', 'Main Kickboard', 'Aux', 'Main']);
         expect(result).toBe('main-kicker_main_aux-kicker_aux');
       });
 
       it('should generate correct slug for mixed full and abbreviated names', () => {
-        const result = generateSetSlug([
-          'Auxiliary Kickboard',
-          'Main Kickboard',
-          'Aux',
-          'Mainline'
-        ]);
+        const result = generateSetSlug(['Auxiliary Kickboard', 'Main Kickboard', 'Aux', 'Mainline']);
         expect(result).toBe('main-kicker_main_aux-kicker_aux');
       });
     });
@@ -725,7 +748,9 @@ describe('Slug generation functions', () => {
 describe('Utility functions', () => {
   describe('extractUuidFromSlug', () => {
     it('should extract UUID from slug with UUID at end', () => {
-      expect(extractUuidFromSlug('test-climb-ABCDEF1234567890ABCDEF1234567890')).toBe('ABCDEF1234567890ABCDEF1234567890');
+      expect(extractUuidFromSlug('test-climb-ABCDEF1234567890ABCDEF1234567890')).toBe(
+        'ABCDEF1234567890ABCDEF1234567890',
+      );
     });
 
     it('should return UUID if input is already just UUID', () => {
@@ -765,111 +790,107 @@ describe('Utility functions', () => {
 
   describe('hasOnlyNumericBoardRouteSegments', () => {
     it('should return true for legacy numeric board routes', () => {
-      expect(hasOnlyNumericBoardRouteSegments({
-        layout_id: '8',
-        size_id: '25',
-        set_ids: '26,27,28,29',
-      })).toBe(true);
+      expect(
+        hasOnlyNumericBoardRouteSegments({
+          layout_id: '8',
+          size_id: '25',
+          set_ids: '26,27,28,29',
+        }),
+      ).toBe(true);
     });
 
     it('should treat encoded numeric set ids as numeric', () => {
-      expect(hasOnlyNumericBoardRouteSegments({
-        layout_id: '8',
-        size_id: '25',
-        set_ids: '26%2C27%2C28%2C29',
-      })).toBe(true);
+      expect(
+        hasOnlyNumericBoardRouteSegments({
+          layout_id: '8',
+          size_id: '25',
+          set_ids: '26%2C27%2C28%2C29',
+        }),
+      ).toBe(true);
     });
 
     it('should return false for grasshopper slug routes with a numeric-looking layout slug', () => {
-      expect(hasOnlyNumericBoardRouteSegments({
-        layout_id: '2020',
-        size_id: 'grandmaster-12-x-12',
-        set_ids: 'power_flow_engage',
-      })).toBe(false);
+      expect(
+        hasOnlyNumericBoardRouteSegments({
+          layout_id: '2020',
+          size_id: 'grandmaster-12-x-12',
+          set_ids: 'power_flow_engage',
+        }),
+      ).toBe(false);
     });
   });
-
 });
 
 describe('getBaseBoardPath', () => {
   describe('stripping /play/[uuid] segments', () => {
     it('should strip /play/[uuid] from path with angle', () => {
-      expect(getBaseBoardPath('/kilter/original/12x12/default/45/play/abc-123'))
-        .toBe('/kilter/original/12x12/default');
+      expect(getBaseBoardPath('/kilter/original/12x12/default/45/play/abc-123')).toBe('/kilter/original/12x12/default');
     });
 
     it('should strip /play/[slug-uuid] from path', () => {
-      expect(getBaseBoardPath('/kilter/original/12x12/default/45/play/test-climb-name-abc123def456'))
-        .toBe('/kilter/original/12x12/default');
+      expect(getBaseBoardPath('/kilter/original/12x12/default/45/play/test-climb-name-abc123def456')).toBe(
+        '/kilter/original/12x12/default',
+      );
     });
 
     it('should handle different angles', () => {
-      expect(getBaseBoardPath('/kilter/original/12x12/default/50/play/abc-123'))
-        .toBe('/kilter/original/12x12/default');
-      expect(getBaseBoardPath('/tension/original/8x10/bolt/30/play/xyz-789'))
-        .toBe('/tension/original/8x10/bolt');
+      expect(getBaseBoardPath('/kilter/original/12x12/default/50/play/abc-123')).toBe('/kilter/original/12x12/default');
+      expect(getBaseBoardPath('/tension/original/8x10/bolt/30/play/xyz-789')).toBe('/tension/original/8x10/bolt');
     });
   });
 
   describe('stripping /view/[uuid] segments', () => {
     it('should strip /view/[uuid] from path', () => {
-      expect(getBaseBoardPath('/kilter/original/12x12/default/45/view/abc123'))
-        .toBe('/kilter/original/12x12/default');
+      expect(getBaseBoardPath('/kilter/original/12x12/default/45/view/abc123')).toBe('/kilter/original/12x12/default');
     });
 
     it('should strip /view/[slug-uuid] from path', () => {
-      expect(getBaseBoardPath('/kilter/original/12x12/default/45/view/test-climb-abc123def456'))
-        .toBe('/kilter/original/12x12/default');
+      expect(getBaseBoardPath('/kilter/original/12x12/default/45/view/test-climb-abc123def456')).toBe(
+        '/kilter/original/12x12/default',
+      );
     });
   });
 
   describe('stripping /list segment', () => {
     it('should strip /list from path with angle', () => {
-      expect(getBaseBoardPath('/kilter/original/12x12/default/45/list'))
-        .toBe('/kilter/original/12x12/default');
+      expect(getBaseBoardPath('/kilter/original/12x12/default/45/list')).toBe('/kilter/original/12x12/default');
     });
 
     it('should handle different board configurations', () => {
-      expect(getBaseBoardPath('/tension/two-zone/10x12/main_aux/40/list'))
-        .toBe('/tension/two-zone/10x12/main_aux');
+      expect(getBaseBoardPath('/tension/two-zone/10x12/main_aux/40/list')).toBe('/tension/two-zone/10x12/main_aux');
     });
   });
 
   describe('stripping /create segment', () => {
     it('should strip /create from path with angle', () => {
-      expect(getBaseBoardPath('/kilter/original/12x12/default/45/create'))
-        .toBe('/kilter/original/12x12/default');
+      expect(getBaseBoardPath('/kilter/original/12x12/default/45/create')).toBe('/kilter/original/12x12/default');
     });
   });
 
   describe('stripping angle from base path', () => {
     it('should strip angle from path without view segment', () => {
-      expect(getBaseBoardPath('/kilter/original/12x12/default/45'))
-        .toBe('/kilter/original/12x12/default');
+      expect(getBaseBoardPath('/kilter/original/12x12/default/45')).toBe('/kilter/original/12x12/default');
     });
 
     it('should strip different angle values', () => {
-      expect(getBaseBoardPath('/kilter/original/12x12/default/0'))
-        .toBe('/kilter/original/12x12/default');
-      expect(getBaseBoardPath('/kilter/original/12x12/default/70'))
-        .toBe('/kilter/original/12x12/default');
+      expect(getBaseBoardPath('/kilter/original/12x12/default/0')).toBe('/kilter/original/12x12/default');
+      expect(getBaseBoardPath('/kilter/original/12x12/default/70')).toBe('/kilter/original/12x12/default');
     });
   });
 
   describe('edge cases', () => {
     it('should return path as-is if no matching segments', () => {
-      expect(getBaseBoardPath('/kilter/original/12x12/default'))
-        .toBe('/kilter/original/12x12/default');
+      expect(getBaseBoardPath('/kilter/original/12x12/default')).toBe('/kilter/original/12x12/default');
     });
 
     it('should handle paths with complex set slugs', () => {
-      expect(getBaseBoardPath('/kilter/homewall/10x12-full-ride/main-kicker_main_aux-kicker_aux/45/play/abc-123'))
-        .toBe('/kilter/homewall/10x12-full-ride/main-kicker_main_aux-kicker_aux');
+      expect(getBaseBoardPath('/kilter/homewall/10x12-full-ride/main-kicker_main_aux-kicker_aux/45/play/abc-123')).toBe(
+        '/kilter/homewall/10x12-full-ride/main-kicker_main_aux-kicker_aux',
+      );
     });
 
     it('should handle tension board paths', () => {
-      expect(getBaseBoardPath('/tension/original/8x10/screw_bolt/35/list'))
-        .toBe('/tension/original/8x10/screw_bolt');
+      expect(getBaseBoardPath('/tension/original/8x10/screw_bolt/35/list')).toBe('/tension/original/8x10/screw_bolt');
     });
 
     it('should handle empty string', () => {
@@ -883,8 +904,7 @@ describe('getBaseBoardPath', () => {
     it('should not strip segments that look like angle but are part of set names', () => {
       // Sets like "main_aux" should not have digits stripped
       // This is handled correctly because we only strip the last segment if it's purely numeric
-      expect(getBaseBoardPath('/kilter/original/12x12/main_aux'))
-        .toBe('/kilter/original/12x12/main_aux');
+      expect(getBaseBoardPath('/kilter/original/12x12/main_aux')).toBe('/kilter/original/12x12/main_aux');
     });
   });
 
@@ -1034,14 +1054,17 @@ describe('Tension board URL slug symmetry', () => {
       };
 
       // Verify they produce the same output
-      expect(generateSizeSlug('Full Wall', 'Rows: KB1, KB2, 1-18 Columns: A-K'))
-        .toBe(generateMatchSlug('Full Wall', 'Rows: KB1, KB2, 1-18 Columns: A-K'));
+      expect(generateSizeSlug('Full Wall', 'Rows: KB1, KB2, 1-18 Columns: A-K')).toBe(
+        generateMatchSlug('Full Wall', 'Rows: KB1, KB2, 1-18 Columns: A-K'),
+      );
 
-      expect(generateSizeSlug('Half Kickboard', 'Rows: KB2, 1-18 Columns: A-K'))
-        .toBe(generateMatchSlug('Half Kickboard', 'Rows: KB2, 1-18 Columns: A-K'));
+      expect(generateSizeSlug('Half Kickboard', 'Rows: KB2, 1-18 Columns: A-K')).toBe(
+        generateMatchSlug('Half Kickboard', 'Rows: KB2, 1-18 Columns: A-K'),
+      );
 
-      expect(generateSizeSlug('Custom Size', 'Full Ride LED Kit'))
-        .toBe(generateMatchSlug('Custom Size', 'Full Ride LED Kit'));
+      expect(generateSizeSlug('Custom Size', 'Full Ride LED Kit')).toBe(
+        generateMatchSlug('Custom Size', 'Full Ride LED Kit'),
+      );
     });
   });
 });
@@ -1062,7 +1085,9 @@ describe('constructBoardSlugViewUrl', () => {
   });
 
   it('should construct board-slug view URL with climb slug and UUID when climb name is provided', () => {
-    expect(constructBoardSlugViewUrl('my-kilter', 40, 'ABC123', 'Moon Landing')).toBe('/b/my-kilter/40/view/moon-landing-ABC123');
+    expect(constructBoardSlugViewUrl('my-kilter', 40, 'ABC123', 'Moon Landing')).toBe(
+      '/b/my-kilter/40/view/moon-landing-ABC123',
+    );
   });
 });
 
@@ -1079,18 +1104,21 @@ describe('getContextAwareClimbViewUrl', () => {
   } as unknown as BoardDetails;
 
   it('should preserve /b/{slug}/{angle} context from list routes', () => {
-    expect(getContextAwareClimbViewUrl('/b/moonrise-gym/40/list', boardDetails, 40, 'ABC123', 'Moon Landing'))
-      .toBe('/b/moonrise-gym/40/view/moon-landing-ABC123');
+    expect(getContextAwareClimbViewUrl('/b/moonrise-gym/40/list', boardDetails, 40, 'ABC123', 'Moon Landing')).toBe(
+      '/b/moonrise-gym/40/view/moon-landing-ABC123',
+    );
   });
 
   it('should preserve /b/{slug}/{angle} context from play routes', () => {
-    expect(getContextAwareClimbViewUrl('/b/moonrise-gym/40/play/some-climb', boardDetails, 40, 'ABC123', 'Moon Landing'))
-      .toBe('/b/moonrise-gym/40/view/moon-landing-ABC123');
+    expect(
+      getContextAwareClimbViewUrl('/b/moonrise-gym/40/play/some-climb', boardDetails, 40, 'ABC123', 'Moon Landing'),
+    ).toBe('/b/moonrise-gym/40/view/moon-landing-ABC123');
   });
 
   it('should fall back to canonical URL outside /b routes', () => {
-    expect(getContextAwareClimbViewUrl('/kilter/homewall/8x12/main_aux/40/list', boardDetails, 40, 'ABC123', 'Moon Landing'))
-      .toBe('/kilter/homewall/8x12-main/main-kicker_aux-kicker/40/view/moon-landing-ABC123');
+    expect(
+      getContextAwareClimbViewUrl('/kilter/homewall/8x12/main_aux/40/list', boardDetails, 40, 'ABC123', 'Moon Landing'),
+    ).toBe('/kilter/homewall/8x12-main/main-kicker_aux-kicker/40/view/moon-landing-ABC123');
   });
 });
 
@@ -1119,28 +1147,33 @@ describe('getPlaylistsBasePath', () => {
 
   describe('old-style routes (/{board}/{layout}/{size}/{sets}/{angle}/...)', () => {
     it('should extract base path from old-style playlists URL', () => {
-      expect(getPlaylistsBasePath('/kilter/original/12x12/default/45/playlists'))
-        .toBe('/kilter/original/12x12/default/45/playlists');
+      expect(getPlaylistsBasePath('/kilter/original/12x12/default/45/playlists')).toBe(
+        '/kilter/original/12x12/default/45/playlists',
+      );
     });
 
     it('should extract base path from old-style playlist detail URL', () => {
-      expect(getPlaylistsBasePath('/kilter/original/12x12/default/45/playlists/ABC123'))
-        .toBe('/kilter/original/12x12/default/45/playlists');
+      expect(getPlaylistsBasePath('/kilter/original/12x12/default/45/playlists/ABC123')).toBe(
+        '/kilter/original/12x12/default/45/playlists',
+      );
     });
 
     it('should extract base path from old-style list URL', () => {
-      expect(getPlaylistsBasePath('/kilter/original/12x12/default/45/list'))
-        .toBe('/kilter/original/12x12/default/45/playlists');
+      expect(getPlaylistsBasePath('/kilter/original/12x12/default/45/list')).toBe(
+        '/kilter/original/12x12/default/45/playlists',
+      );
     });
 
     it('should work for tension board', () => {
-      expect(getPlaylistsBasePath('/tension/original/full-wall/screw_bolt/35/list'))
-        .toBe('/tension/original/full-wall/screw_bolt/35/playlists');
+      expect(getPlaylistsBasePath('/tension/original/full-wall/screw_bolt/35/list')).toBe(
+        '/tension/original/full-wall/screw_bolt/35/playlists',
+      );
     });
 
     it('should work for moonboard', () => {
-      expect(getPlaylistsBasePath('/moonboard/mini/default/holds/25/list'))
-        .toBe('/moonboard/mini/default/holds/25/playlists');
+      expect(getPlaylistsBasePath('/moonboard/mini/default/holds/25/list')).toBe(
+        '/moonboard/mini/default/holds/25/playlists',
+      );
     });
 
     it('should not match non-board first segments', () => {
@@ -1171,60 +1204,79 @@ describe('getPlaylistsBasePath', () => {
 
 describe('getContextAwarePlaylistUrl', () => {
   it('should build board-slug scoped URL when on a /b/ route', () => {
-    expect(getContextAwarePlaylistUrl('/b/my-kilter/40/playlists', 'ABC123'))
-      .toBe('/b/my-kilter/40/playlists/ABC123');
+    expect(getContextAwarePlaylistUrl('/b/my-kilter/40/playlists', 'ABC123')).toBe('/b/my-kilter/40/playlists/ABC123');
   });
 
   it('should build board-slug scoped URL when on /b/ list route', () => {
-    expect(getContextAwarePlaylistUrl('/b/my-kilter/40/list', 'ABC123'))
-      .toBe('/b/my-kilter/40/playlists/ABC123');
+    expect(getContextAwarePlaylistUrl('/b/my-kilter/40/list', 'ABC123')).toBe('/b/my-kilter/40/playlists/ABC123');
   });
 
   it('should build old-style scoped URL when on an old-style route', () => {
-    expect(getContextAwarePlaylistUrl('/kilter/original/12x12/default/45/list', 'ABC123'))
-      .toBe('/kilter/original/12x12/default/45/playlists/ABC123');
+    expect(getContextAwarePlaylistUrl('/kilter/original/12x12/default/45/list', 'ABC123')).toBe(
+      '/kilter/original/12x12/default/45/playlists/ABC123',
+    );
   });
 
   it('should build global URL when on a non-board route', () => {
-    expect(getContextAwarePlaylistUrl('/playlists', 'ABC123'))
-      .toBe('/playlists/ABC123');
+    expect(getContextAwarePlaylistUrl('/playlists', 'ABC123')).toBe('/playlists/ABC123');
   });
 
   it('should build global URL when on root', () => {
-    expect(getContextAwarePlaylistUrl('/', 'ABC123'))
-      .toBe('/playlists/ABC123');
+    expect(getContextAwarePlaylistUrl('/', 'ABC123')).toBe('/playlists/ABC123');
   });
 });
 
 describe('constructClimbViewUrlWithSlugs', () => {
   it('should construct slug-based view URL with climb name', () => {
     const result = constructClimbViewUrlWithSlugs(
-      'kilter', 'Kilter Board Original', '16 x 12', 'Super Wide',
-      ['Bolt Ons', 'Screw Ons'], 40, 'abc123def456', 'Breakfast Burrito',
+      'kilter',
+      'Kilter Board Original',
+      '16 x 12',
+      'Super Wide',
+      ['Bolt Ons', 'Screw Ons'],
+      40,
+      'abc123def456',
+      'Breakfast Burrito',
     );
     expect(result).toBe('/kilter/original/16x12-super-wide/screw_bolt/40/view/breakfast-burrito-abc123def456');
   });
 
   it('should construct slug-based view URL without climb name', () => {
     const result = constructClimbViewUrlWithSlugs(
-      'kilter', 'Kilter Board Original', '16 x 12', 'Super Wide',
-      ['Bolt Ons', 'Screw Ons'], 40, 'abc123def456',
+      'kilter',
+      'Kilter Board Original',
+      '16 x 12',
+      'Super Wide',
+      ['Bolt Ons', 'Screw Ons'],
+      40,
+      'abc123def456',
     );
     expect(result).toBe('/kilter/original/16x12-super-wide/screw_bolt/40/view/abc123def456');
   });
 
   it('should handle size without description', () => {
     const result = constructClimbViewUrlWithSlugs(
-      'kilter', 'Kilter Board Original', '12 x 12', undefined,
-      ['Bolt Ons'], 45, 'uuid123',
+      'kilter',
+      'Kilter Board Original',
+      '12 x 12',
+      undefined,
+      ['Bolt Ons'],
+      45,
+      'uuid123',
     );
     expect(result).toBe('/kilter/original/12x12/bolt/45/view/uuid123');
   });
 
   it('should handle empty climb name', () => {
     const result = constructClimbViewUrlWithSlugs(
-      'tension', 'Tension Board 2 Mirror', '12 x 12', undefined,
-      ['Wood', 'Plastic'], 30, 'uuid456', '',
+      'tension',
+      'Tension Board 2 Mirror',
+      '12 x 12',
+      undefined,
+      ['Wood', 'Plastic'],
+      30,
+      'uuid456',
+      '',
     );
     expect(result).toBe('/tension/two-mirror/12x12/wood_plastic/30/view/uuid456');
   });
@@ -1233,16 +1285,24 @@ describe('constructClimbViewUrlWithSlugs', () => {
 describe('constructClimbListWithSlugs', () => {
   it('should construct slug-based list URL', () => {
     const result = constructClimbListWithSlugs(
-      'kilter', 'Kilter Board Original', '16 x 12', 'Super Wide',
-      ['Bolt Ons', 'Screw Ons'], 40,
+      'kilter',
+      'Kilter Board Original',
+      '16 x 12',
+      'Super Wide',
+      ['Bolt Ons', 'Screw Ons'],
+      40,
     );
     expect(result).toBe('/kilter/original/16x12-super-wide/screw_bolt/40/list');
   });
 
   it('should handle size without description', () => {
     const result = constructClimbListWithSlugs(
-      'tension', 'Tension Board Original Layout', '8 x 12', undefined,
-      ['Screw Ons'], 25,
+      'tension',
+      'Tension Board Original Layout',
+      '8 x 12',
+      undefined,
+      ['Screw Ons'],
+      25,
     );
     expect(result).toBe('/tension/original/8x12/screw/25/list');
   });
@@ -1251,16 +1311,27 @@ describe('constructClimbListWithSlugs', () => {
 describe('constructPlayUrlWithSlugs', () => {
   it('should construct slug-based play URL with climb name', () => {
     const result = constructPlayUrlWithSlugs(
-      'kilter', 'Kilter Board Original', '12 x 14', 'Commerical',
-      ['Bolt Ons', 'Screw Ons'], 40, 'abc123', 'My Climb',
+      'kilter',
+      'Kilter Board Original',
+      '12 x 14',
+      'Commerical',
+      ['Bolt Ons', 'Screw Ons'],
+      40,
+      'abc123',
+      'My Climb',
     );
     expect(result).toBe('/kilter/original/12x14-commerical/screw_bolt/40/play/my-climb-abc123');
   });
 
   it('should construct slug-based play URL without climb name', () => {
     const result = constructPlayUrlWithSlugs(
-      'kilter', 'Kilter Board Original', '12 x 14', 'Commerical',
-      ['Bolt Ons'], 40, 'abc123',
+      'kilter',
+      'Kilter Board Original',
+      '12 x 14',
+      'Commerical',
+      ['Bolt Ons'],
+      40,
+      'abc123',
     );
     expect(result).toBe('/kilter/original/12x14-commerical/bolt/40/play/abc123');
   });
@@ -1277,7 +1348,11 @@ describe('getContextAwareClimbViewUrl - static data fallback', () => {
     } as unknown as BoardDetails;
 
     const result = getContextAwareClimbViewUrl(
-      '/kilter/1/7/1,20/40/list', detailsWithoutNames, 40, 'abc123', 'Test Climb',
+      '/kilter/1/7/1,20/40/list',
+      detailsWithoutNames,
+      40,
+      'abc123',
+      'Test Climb',
     );
     // Should resolve via getBoardDetailsForBoard and produce a slug URL
     expect(result).toContain('/kilter/original/');
@@ -1295,7 +1370,11 @@ describe('getContextAwareClimbViewUrl - static data fallback', () => {
     } as unknown as BoardDetails;
 
     const result = getContextAwareClimbViewUrl(
-      '/kilter/9999/9999/9999/40/list', detailsWithInvalidIds, 40, 'abc123', 'Test Climb',
+      '/kilter/9999/9999/9999/40/list',
+      detailsWithInvalidIds,
+      40,
+      'abc123',
+      'Test Climb',
     );
     // Should fall back to numeric constructClimbViewUrl
     expect(result).toBe('/kilter/9999/9999/9999/40/view/test-climb-abc123');

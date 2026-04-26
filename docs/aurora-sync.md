@@ -28,19 +28,23 @@ The `@boardsesh/aurora-sync` package provides a shared sync implementation that 
 ## How Sync Works
 
 ### 1. Credential Retrieval
+
 - Fetch all users with stored Aurora credentials from `aurora_credentials` table
 - Decrypt username/password using `AURORA_CREDENTIALS_SECRET`
 
 ### 2. Authentication
+
 - Login to Aurora API to get fresh session token
 - Store encrypted token for future use
 
 ### 3. Incremental Sync
+
 - Request data from Aurora `/sync` endpoint with last sync timestamps
 - Aurora returns only data changed since last sync
 - Uses `_complete` flag for pagination of large datasets
 
 ### 4. Database Writes
+
 - **Batched inserts** (100 rows per batch) for performance
 - **Fresh pool per sync** to avoid Neon WebSocket timeouts
 - **Dual-write** for certain tables:
@@ -50,15 +54,15 @@ The `@boardsesh/aurora-sync` package provides a shared sync implementation that 
 
 ### Tables Synced
 
-| Aurora Table | Local Table | Dual Write |
-|--------------|-------------|------------|
-| users | kilter_users / tension_users | - |
-| walls | kilter_walls / tension_walls | - |
-| ascents | kilter_ascents / tension_ascents | boardsesh_ticks |
-| bids | kilter_bids / tension_bids | boardsesh_ticks |
-| tags | kilter_tags / tension_tags | - |
-| circuits | kilter_circuits / tension_circuits | playlists, playlist_climbs |
-| draft_climbs | kilter_climbs / tension_climbs | - |
+| Aurora Table | Local Table                        | Dual Write                 |
+| ------------ | ---------------------------------- | -------------------------- |
+| users        | kilter_users / tension_users       | -                          |
+| walls        | kilter_walls / tension_walls       | -                          |
+| ascents      | kilter_ascents / tension_ascents   | boardsesh_ticks            |
+| bids         | kilter_bids / tension_bids         | boardsesh_ticks            |
+| tags         | kilter_tags / tension_tags         | -                          |
+| circuits     | kilter_circuits / tension_circuits | playlists, playlist_climbs |
+| draft_climbs | kilter_climbs / tension_climbs     | -                          |
 
 ## CLI Usage
 
@@ -81,6 +85,10 @@ bunx aurora-sync <command>
 aurora-sync all
 aurora-sync all -v  # Verbose output
 
+# Run the one-user daemon with Sydney quiet hours
+aurora-sync daemon
+aurora-sync daemon -v  # Verbose output
+
 # Sync specific user
 aurora-sync user <nextauth-user-id> -b kilter
 aurora-sync user <nextauth-user-id> -b tension -v
@@ -99,15 +107,26 @@ AURORA_CREDENTIALS_SECRET="<encryption key>"
 ### Using 1Password CLI
 
 Create `.env.1password`:
+
 ```
 DATABASE_URL="op://Boardsesh/Postgres PROD/connection_string"
 AURORA_CREDENTIALS_SECRET="op://Boardsesh/Encryption key/password"
 ```
 
 Run with:
+
 ```bash
 op run --env-file=packages/aurora-sync/.env.1password -- bunx aurora-sync all -v
+op run --env-file=packages/aurora-sync/.env.1password -- bunx aurora-sync daemon -v
 ```
+
+### Daemon Mode
+
+- `aurora-sync daemon` runs forever and syncs exactly one user per cycle.
+- The daemon picks the user with the oldest `lastSyncAt`, with `NULL` values first.
+- Between cycles it waits a random `1` to `15` minutes.
+- It does not sync between `10:00 PM` and `7:00 AM` in `Australia/Sydney`, but the process stays alive and checks again every minute.
+- Aurora HTTP, timeout, network, and rate-limit failures are treated as transient and retried later without marking the credential as errored.
 
 ## Railway Deployment
 
@@ -115,11 +134,11 @@ op run --env-file=packages/aurora-sync/.env.1password -- bunx aurora-sync all -v
 
 Add to Railway service:
 
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | Neon PostgreSQL connection string |
+| Variable                    | Description                                     |
+| --------------------------- | ----------------------------------------------- |
+| `DATABASE_URL`              | Neon PostgreSQL connection string               |
 | `AURORA_CREDENTIALS_SECRET` | Same key as Vercel (for decrypting credentials) |
-| `CRON_SECRET` | New secret for authenticating cron requests |
+| `CRON_SECRET`               | New secret for authenticating cron requests     |
 
 ### 2. Endpoint
 
@@ -131,6 +150,7 @@ Authorization: Bearer <CRON_SECRET>
 ```
 
 Response:
+
 ```json
 {
   "success": true,
@@ -156,6 +176,7 @@ Use [cron-job.org](https://cron-job.org) or similar:
 ### 4. Monitoring
 
 Check Railway logs for sync output:
+
 ```
 [Sync] Starting sync cron job...
 [SyncRunner] Found 3 users with Aurora credentials to sync
@@ -167,7 +188,9 @@ Check Railway logs for sync output:
 ## Performance Optimizations
 
 ### Batched Inserts
+
 Instead of inserting rows one-by-one, we batch 100 rows per INSERT:
+
 ```sql
 INSERT INTO kilter_ascents (uuid, climb_uuid, ...)
 VALUES (...), (...), (...)
@@ -175,7 +198,9 @@ ON CONFLICT (uuid) DO UPDATE SET ...
 ```
 
 ### Fresh Pool Per Sync
+
 Neon's serverless WebSocket connections can timeout on long operations. We create a fresh connection pool for each user sync and close it immediately after:
+
 ```typescript
 const pool = createFreshPool();
 try {
@@ -186,7 +211,9 @@ try {
 ```
 
 ### HTTP Driver for Simple Queries
+
 For simple SELECT/UPDATE queries that don't need transactions, we use Neon's HTTP driver which is more reliable:
+
 ```typescript
 const db = createHttpDb();
 await db.select().from(auroraCredentials)...
@@ -195,21 +222,26 @@ await db.select().from(auroraCredentials)...
 ## Troubleshooting
 
 ### Connection Timeout Errors
+
 ```
 Error: Connection terminated unexpectedly
 ```
+
 - Usually caused by stale WebSocket connections
 - The fresh pool pattern should prevent this
 - If persists, check Neon dashboard for connection limits
 
 ### Decryption Errors
+
 ```
 Failed to decrypt credentials
 ```
+
 - Verify `AURORA_CREDENTIALS_SECRET` matches the key used to encrypt
 - Check that the secret hasn't been rotated
 
 ### No Data Synced
+
 - Check `aurora-sync list` to verify credentials exist
 - Verify user has `syncStatus: active` or `error` (not `disabled`)
 - Check Aurora API is accessible from the environment
@@ -233,13 +265,13 @@ Since the Kilter backend has been shut down, API-based sync is no longer availab
 
 ### Key Differences from API Sync
 
-| | API Sync | JSON Import |
-|---|---|---|
-| Data identifiers | Aurora UUIDs | Climb names (resolved to UUIDs) |
-| Grade format | Numeric difficulty IDs | Font grade strings ("6c") |
-| Quality/stars | 0-3 scale (internal) | 1-5 scale (user-facing) |
-| Dedup key | Aurora UUID (`auroraId`) | Deterministic hash (`json-import-{hash}`) |
-| Trigger | Automatic (cron every 15min) | Manual (user uploads file) |
+|                  | API Sync                     | JSON Import                               |
+| ---------------- | ---------------------------- | ----------------------------------------- |
+| Data identifiers | Aurora UUIDs                 | Climb names (resolved to UUIDs)           |
+| Grade format     | Numeric difficulty IDs       | Font grade strings ("6c")                 |
+| Quality/stars    | 0-3 scale (internal)         | 1-5 scale (user-facing)                   |
+| Dedup key        | Aurora UUID (`auroraId`)     | Deterministic hash (`json-import-{hash}`) |
+| Trigger          | Automatic (cron every 15min) | Manual (user uploads file)                |
 
 ### Deduplication
 

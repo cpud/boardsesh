@@ -9,18 +9,14 @@ import AddOutlined from '@mui/icons-material/AddOutlined';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  GET_MY_GYMS,
-  type GetMyGymsQueryVariables,
-  type GetMyGymsQueryResponse,
-} from '@/app/lib/graphql/operations';
+import { GET_MY_GYMS, type GetMyGymsQueryVariables, type GetMyGymsQueryResponse } from '@/app/lib/graphql/operations';
 import type { Gym } from '@boardsesh/shared-schema';
 import CreateGymForm from './create-gym-form';
 
-interface GymSelectorProps {
+type GymSelectorProps = {
   selectedGymUuid: string | null;
   onSelect: (gymUuid: string | null) => void;
-}
+};
 
 export default function GymSelector({ selectedGymUuid, onSelect }: GymSelectorProps) {
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -30,11 +26,10 @@ export default function GymSelector({ selectedGymUuid, onSelect }: GymSelectorPr
   const { data, isLoading } = useQuery({
     queryKey: ['myGyms'],
     queryFn: async () => {
-      const client = createGraphQLHttpClient(token!);
-      const response = await client.request<GetMyGymsQueryResponse, GetMyGymsQueryVariables>(
-        GET_MY_GYMS,
-        { input: { limit: 50 } },
-      );
+      const client = createGraphQLHttpClient(token);
+      const response = await client.request<GetMyGymsQueryResponse, GetMyGymsQueryVariables>(GET_MY_GYMS, {
+        input: { limit: 50 },
+      });
       return response.myGyms.gyms;
     },
     enabled: !!token,
@@ -53,18 +48,15 @@ export default function GymSelector({ selectedGymUuid, onSelect }: GymSelectorPr
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 1 }}>
         <CircularProgress size={16} />
-        <MuiTypography variant="body2" color="text.secondary">Loading gyms...</MuiTypography>
+        <MuiTypography variant="body2" color="text.secondary">
+          Loading gyms...
+        </MuiTypography>
       </Box>
     );
   }
 
   if (showCreateForm) {
-    return (
-      <CreateGymForm
-        onSuccess={handleGymCreated}
-        onCancel={() => setShowCreateForm(false)}
-      />
-    );
+    return <CreateGymForm onSuccess={handleGymCreated} onCancel={() => setShowCreateForm(false)} />;
   }
 
   return (

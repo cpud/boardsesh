@@ -4,11 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useWsAuthToken } from './use-ws-auth-token';
 import { useSession } from 'next-auth/react';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  SAVE_TICK,
-  type SaveTickMutationVariables,
-  type SaveTickMutationResponse,
-} from '@/app/lib/graphql/operations';
+import { SAVE_TICK, type SaveTickMutationVariables, type SaveTickMutationResponse } from '@/app/lib/graphql/operations';
 import type { BoardName } from '@/app/lib/types';
 import {
   accumulatedLogbookQueryKey,
@@ -20,7 +16,7 @@ import {
 import { clearTickDraft } from '@/app/lib/tick-draft-db';
 
 // Options for saving a tick (local storage, no Aurora required)
-export interface SaveTickOptions {
+export type SaveTickOptions = {
   climbUuid: string;
   angle: number;
   isMirror: boolean;
@@ -35,7 +31,8 @@ export interface SaveTickOptions {
   layoutId?: number;
   sizeId?: number;
   setIds?: string;
-}
+  videoUrl?: string;
+};
 
 /**
  * Hook to save a tick (logbook entry) via GraphQL mutation.
@@ -74,6 +71,7 @@ export function useSaveTick(boardName: BoardName) {
           layoutId: options.layoutId,
           sizeId: options.sizeId,
           setIds: options.setIds,
+          videoUrl: options.videoUrl,
         },
       };
 
@@ -99,58 +97,58 @@ export function useSaveTick(boardName: BoardName) {
         climbed_at: options.climbedAt,
         is_ascent: options.status === 'flash' || options.status === 'send',
         status: options.status,
+        upvotes: 0,
+        downvotes: 0,
+        commentCount: 0,
       };
 
-      queryClient.setQueryData<LogbookEntry[]>(
-        accumulatedKey,
-        (existing = []) => [optimisticEntry, ...existing],
-      );
+      queryClient.setQueryData<LogbookEntry[]>(accumulatedKey, (existing = []) => [optimisticEntry, ...existing]);
 
       return { tempUuid };
     },
     onSuccess: (savedTick, options, context) => {
       const savedEntry = toLogbookEntry(savedTick);
-      queryClient.setQueriesData<LogbookEntry[]>(
-        { queryKey: accumulatedKey, exact: true },
-        (existing = []) => {
-          if (!context?.tempUuid) {
-            return existing.some((entry) => entry.uuid === savedEntry.uuid)
-              ? existing
-              : [savedEntry, ...existing];
-          }
+      queryClient.setQueriesData<LogbookEntry[]>({ queryKey: accumulatedKey, exact: true }, (existing = []) => {
+        if (!context?.tempUuid) {
+          return existing.some((entry) => entry.uuid === savedEntry.uuid) ? existing : [savedEntry, ...existing];
+        }
 
-          let replaced = false;
-          const next = existing.map((entry) => {
-            if (entry.uuid !== context.tempUuid) return entry;
-            replaced = true;
-            return savedEntry;
+        let replaced = false;
+        const next = existing.map((entry) => {
+          if (entry.uuid !== context.tempUuid) return entry;
+          replaced = true;
+          return savedEntry;
+        });
+
+        if (replaced) {
+          const seen = new Set<string>();
+          return next.filter((entry) => {
+            if (seen.has(entry.uuid)) return false;
+            seen.add(entry.uuid);
+            return true;
           });
-
-          if (replaced) {
-            const seen = new Set<string>();
-            return next.filter((entry) => {
-              if (seen.has(entry.uuid)) return false;
-              seen.add(entry.uuid);
-              return true;
-            });
-          }
-          return existing.some((entry) => entry.uuid === savedEntry.uuid)
-            ? existing
-            : [savedEntry, ...existing];
-        },
-      );
+        }
+        return existing.some((entry) => entry.uuid === savedEntry.uuid) ? existing : [savedEntry, ...existing];
+      });
 
       // Clear any IndexedDB draft for this climb (belt-and-suspenders with QuickTickBar's .then)
-      clearTickDraft(options.climbUuid, options.angle);
+      void clearTickDraft(options.climbUuid, options.angle);
+
+      // If the user attached an Instagram video, refresh the beta-videos section
+      // so the new embed shows up without a page reload.
+      if (options.videoUrl) {
+        void queryClient.invalidateQueries({
+          queryKey: ['betaLinks', boardName, options.climbUuid],
+        });
+      }
     },
     onError: (_err, _options, context) => {
       // Rollback optimistic update. User-facing error feedback is handled by
       // the caller (e.g. QuickTickBar's .catch → onError callback) to avoid
       // duplicate snackbars.
       if (context?.tempUuid) {
-        queryClient.setQueriesData<LogbookEntry[]>(
-          { queryKey: accumulatedKey, exact: true },
-          (existing = []) => existing.filter((entry) => entry.uuid !== context.tempUuid),
+        queryClient.setQueriesData<LogbookEntry[]>({ queryKey: accumulatedKey, exact: true }, (existing = []) =>
+          existing.filter((entry) => entry.uuid !== context.tempUuid),
         );
       }
     },

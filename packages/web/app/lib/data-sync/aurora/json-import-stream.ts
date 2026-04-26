@@ -1,9 +1,10 @@
 import type { ImportProgressEvent, ImportResult } from './json-import';
+import type { AuroraBoardName } from '@boardsesh/shared-schema';
 
 const CHUNK_SIZE = 500;
 
-interface ChunkPayload {
-  boardType: 'kilter' | 'tension';
+type ChunkPayload = {
+  boardType: AuroraBoardName;
   data: {
     user: { username: string; email_address?: string; created_at?: string };
     ascents: unknown[];
@@ -12,7 +13,7 @@ interface ChunkPayload {
     climbs: unknown[];
   };
   skipSessionBuild: boolean;
-}
+};
 
 /**
  * Splits an array into chunks of the given size.
@@ -58,10 +59,7 @@ function mergeResults(a: ImportResult, b: ImportResult): ImportResult {
  * Sends a single chunk to the import endpoint and reads the streaming response.
  * Returns the ImportResult from the 'complete' event, or throws on error.
  */
-async function sendChunk(
-  payload: ChunkPayload,
-  onEvent: (event: ImportProgressEvent) => void,
-): Promise<ImportResult> {
+async function sendChunk(payload: ChunkPayload, onEvent: (event: ImportProgressEvent) => void): Promise<ImportResult> {
   const response = await fetch('/api/internal/aurora-import', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -147,7 +145,7 @@ async function sendChunk(
  * and results are merged client-side.
  */
 export async function streamImport(
-  boardType: 'kilter' | 'tension',
+  boardType: AuroraBoardName,
   data: unknown,
   onEvent: (event: ImportProgressEvent) => void,
 ): Promise<void> {
@@ -170,7 +168,13 @@ export async function streamImport(
   const attemptChunks = chunk(attempts, CHUNK_SIZE);
 
   const allChunks: ChunkPayload[] = [];
-  const emptyData = { user, ascents: [] as unknown[], attempts: [] as unknown[], circuits: [] as unknown[], climbs: [] as unknown[] };
+  const emptyData = {
+    user,
+    ascents: [] as unknown[],
+    attempts: [] as unknown[],
+    circuits: [] as unknown[],
+    climbs: [] as unknown[],
+  };
 
   // Climbs go in the FIRST chunk so they're imported before name resolution
   if (climbs.length > 0) {

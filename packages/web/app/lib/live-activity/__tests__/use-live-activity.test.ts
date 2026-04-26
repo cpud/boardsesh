@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
-import { act } from 'react';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import React, { act } from 'react';
+import type { ClimbQueueItem } from '@/app/components/queue-control/types';
+import type { BoardDetails } from '../../types';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -40,9 +41,6 @@ const { useLiveActivity } = await import('../use-live-activity');
 // Helpers
 // ---------------------------------------------------------------------------
 
-import type { ClimbQueueItem } from '@/app/components/queue-control/types';
-import type { BoardDetails } from '../../types';
-
 function makeBoardDetails(overrides?: Partial<BoardDetails>): BoardDetails {
   return {
     images_to_holds: {},
@@ -80,13 +78,13 @@ function makeQueueItem(id: string): ClimbQueueItem {
   };
 }
 
-interface LiveActivityHookProps {
+type LiveActivityHookProps = {
   queue: ClimbQueueItem[];
   currentClimbQueueItem: ClimbQueueItem | null;
   boardDetails: BoardDetails | null;
   sessionId: string | null;
   isSessionActive: boolean;
-}
+};
 
 function defaultProps(): LiveActivityHookProps {
   return {
@@ -168,7 +166,9 @@ describe('useLiveActivity', () => {
     });
 
     // Wait for effects
-    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
 
     expect(mockStartLiveActivitySession).not.toHaveBeenCalled();
     expect(mockUpdateLiveActivity).not.toHaveBeenCalled();
@@ -190,7 +190,9 @@ describe('useLiveActivity', () => {
       sessionId: 'test-session',
     });
 
-    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
 
     expect(mockStartLiveActivitySession).not.toHaveBeenCalled();
     expect(mockUpdateLiveActivity).not.toHaveBeenCalled();
@@ -212,7 +214,9 @@ describe('useLiveActivity', () => {
       sessionId: 'test-session',
     });
 
-    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
 
     expect(mockStartLiveActivitySession).toHaveBeenCalledTimes(1);
     expect(mockStartLiveActivitySession).toHaveBeenCalledWith(
@@ -240,7 +244,9 @@ describe('useLiveActivity', () => {
       sessionId: 'test-session',
     });
 
-    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
     expect(mockStartLiveActivitySession).toHaveBeenCalledTimes(1);
 
     await hook.rerender({
@@ -248,7 +254,9 @@ describe('useLiveActivity', () => {
       currentClimbQueueItem: null,
     });
 
-    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
     expect(mockEndLiveActivitySession).toHaveBeenCalled();
 
     await hook.unmount();
@@ -271,7 +279,9 @@ describe('useLiveActivity', () => {
     });
 
     // Wait for availability check to resolve and session to start
-    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
     expect(mockStartLiveActivitySession).toHaveBeenCalled();
 
     mockUpdateLiveActivity.mockClear();
@@ -281,7 +291,9 @@ describe('useLiveActivity', () => {
     // (not the full updateActivity, since the queue didn't change)
     await hook.rerender({ currentClimbQueueItem: item2 });
 
-    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
     expect(mockUpdateLiveActivityClimb).toHaveBeenCalledWith(
       expect.objectContaining({
         climbName: 'Test Climb 2',
@@ -311,7 +323,9 @@ describe('useLiveActivity', () => {
       sessionId: 'party-123',
     });
 
-    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
 
     // JS side now always sends updates regardless of party mode.
     // The initial render with a queue triggers the queue-sync effect (full update).
@@ -333,7 +347,9 @@ describe('useLiveActivity', () => {
       isSessionActive: false,
     });
 
-    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
 
     expect(mockStartLiveActivitySession).not.toHaveBeenCalled();
 
@@ -354,12 +370,16 @@ describe('useLiveActivity', () => {
       sessionId: 'test-session',
     });
 
-    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
     expect(mockStartLiveActivitySession).toHaveBeenCalledTimes(1);
 
     await hook.rerender({ isSessionActive: false });
 
-    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
     expect(mockEndLiveActivitySession).toHaveBeenCalled();
 
     await hook.unmount();
@@ -378,12 +398,16 @@ describe('useLiveActivity', () => {
       isSessionActive: false,
     });
 
-    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
     expect(mockStartLiveActivitySession).not.toHaveBeenCalled();
 
     await hook.rerender({ isSessionActive: true, sessionId: 'test-session' });
 
-    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
     expect(mockStartLiveActivitySession).toHaveBeenCalledTimes(1);
 
     await hook.unmount();
@@ -413,7 +437,9 @@ describe('useLiveActivity', () => {
       sessionId: 'test-session',
     });
 
-    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
     expect(mockStartLiveActivitySession).toHaveBeenCalledTimes(1);
 
     mockUpdateLiveActivity.mockClear();
@@ -429,7 +455,9 @@ describe('useLiveActivity', () => {
       currentClimbQueueItem: item2,
     });
 
-    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
 
     // Effect 1 should have sent the full update.
     expect(mockUpdateLiveActivity).toHaveBeenCalledWith(
@@ -465,7 +493,9 @@ describe('useLiveActivity', () => {
       sessionId: 'test-session',
     });
 
-    await act(async () => { await new Promise((r) => setTimeout(r, 100)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 100));
+    });
 
     // When availability resolves to false, startSession should not be called
     expect(mockStartLiveActivitySession).not.toHaveBeenCalled();

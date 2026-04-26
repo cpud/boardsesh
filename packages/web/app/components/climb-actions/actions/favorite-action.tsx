@@ -4,7 +4,7 @@ import React, { useCallback } from 'react';
 import FavoriteBorderOutlined from '@mui/icons-material/FavoriteBorderOutlined';
 import Favorite from '@mui/icons-material/Favorite';
 import { track } from '@vercel/analytics';
-import { ClimbActionProps, ClimbActionResult } from '../types';
+import type { ClimbActionProps, ClimbActionResult } from '../types';
 import { useFavorite } from '../use-favorite';
 import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 import { themeTokens } from '@/app/theme/theme-config';
@@ -51,31 +51,43 @@ export function FavoriteAction({
     }
   }, [boardDetails.board_name, climb.uuid, angle]);
 
-  const handleClick = useCallback(async (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    e?.preventDefault();
+  const handleClick = useCallback(
+    async (e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      e?.preventDefault();
 
-    if (!isAuthenticated) {
-      openAuthModal({
-        title: "Sign in to save favorites",
-        description: `Sign in to save "${climb.name}" to your favorites.`,
-        onSuccess: handleAuthSuccess,
-      });
-      return;
-    }
+      if (!isAuthenticated) {
+        openAuthModal({
+          title: 'Sign in to save favorites',
+          description: `Sign in to save "${climb.name}" to your favorites.`,
+          onSuccess: handleAuthSuccess,
+        });
+        return;
+      }
 
-    try {
-      const newState = await toggleFavorite();
-      track('Favorite Toggle', {
-        boardName: boardDetails.board_name,
-        climbUuid: climb.uuid,
-        action: newState ? 'favorited' : 'unfavorited',
-      });
-      onComplete?.();
-    } catch {
-      // Silently fail
-    }
-  }, [isAuthenticated, toggleFavorite, boardDetails.board_name, climb.uuid, climb.name, onComplete, openAuthModal, handleAuthSuccess]);
+      try {
+        const newState = await toggleFavorite();
+        track('Favorite Toggle', {
+          boardName: boardDetails.board_name,
+          climbUuid: climb.uuid,
+          action: newState ? 'favorited' : 'unfavorited',
+        });
+        onComplete?.();
+      } catch {
+        // Silently fail
+      }
+    },
+    [
+      isAuthenticated,
+      toggleFavorite,
+      boardDetails.board_name,
+      climb.uuid,
+      climb.name,
+      onComplete,
+      openAuthModal,
+      handleAuthSuccess,
+    ],
+  );
 
   const label = isFavorited ? 'Favorited' : 'Favorite';
   const HeartIcon = isFavorited ? Favorite : FavoriteBorderOutlined;

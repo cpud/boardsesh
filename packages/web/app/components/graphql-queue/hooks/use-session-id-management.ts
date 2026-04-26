@@ -8,19 +8,16 @@ import { usePersistentSession } from '../../persistent-session';
 import { useConnectionSettings } from '../../connection-manager/connection-settings-context';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  END_SESSION as END_SESSION_GQL,
-  type EndSessionResponse,
-} from '@/app/lib/graphql/operations/sessions';
+import { END_SESSION as END_SESSION_GQL, type EndSessionResponse } from '@/app/lib/graphql/operations/sessions';
 import type { SessionSummary } from '@boardsesh/shared-schema';
 import type { ClimbQueueItem } from '../../queue-control/types';
 
-interface UseSessionIdManagementParams {
+type UseSessionIdManagementParams = {
   isOffBoardMode: boolean;
   propsBaseBoardPath?: string;
   currentQueue: ClimbQueueItem[];
   currentClimbQueueItem: ClimbQueueItem | null;
-}
+};
 
 export function useSessionIdManagement({
   isOffBoardMode,
@@ -82,16 +79,13 @@ export function useSessionIdManagement({
   const sessionId = activeSessionId;
 
   // Compute base board path
-  const baseBoardPath = useMemo(
-    () => propsBaseBoardPath ?? getBaseBoardPath(pathname),
-    [propsBaseBoardPath, pathname],
-  );
+  const baseBoardPath = useMemo(() => propsBaseBoardPath ?? getBaseBoardPath(pathname), [propsBaseBoardPath, pathname]);
 
   // Check if persistent session is active for this board
-  const isPersistentSessionActive = persistentSession.activeSession?.sessionId === sessionId &&
-    (persistentSession.activeSession?.boardPath
-      ? getBaseBoardPath(persistentSession.activeSession.boardPath)
-      : '') === baseBoardPath;
+  const isPersistentSessionActive =
+    persistentSession.activeSession?.sessionId === sessionId &&
+    (persistentSession.activeSession?.boardPath ? getBaseBoardPath(persistentSession.activeSession.boardPath) : '') ===
+      baseBoardPath;
 
   // Session summary state
   const [sessionSummary, setSessionSummary] = useState<SessionSummary | null>(null);
@@ -106,9 +100,7 @@ export function useSessionIdManagement({
       const newSessionId = options?.sessionId || uuidv4();
 
       if (currentQueue.length > 0 || currentClimbQueueItem) {
-        persistentSession.setInitialQueueForSession(
-          newSessionId, currentQueue, currentClimbQueueItem, options?.name,
-        );
+        persistentSession.setInitialQueueForSession(newSessionId, currentQueue, currentClimbQueueItem, options?.name);
       }
 
       setClimbSessionCookie(newSessionId);
@@ -154,13 +146,14 @@ export function useSessionIdManagement({
 
     if (endingSessionId && wsAuthToken) {
       const client = createGraphQLHttpClient(wsAuthToken);
-      client.request<EndSessionResponse>(END_SESSION_GQL, { sessionId: endingSessionId })
+      client
+        .request<EndSessionResponse>(END_SESSION_GQL, { sessionId: endingSessionId })
         .then((response: EndSessionResponse) => {
           if (response.endSession) setSessionSummary(response.endSession);
         })
         .catch((err: unknown) => console.error('[QueueContext] Failed to get session summary:', err));
     }
-  }, [persistentSession, isOffBoardMode, activeSessionId, wsAuthToken]);
+  }, [persistentSession, activeSessionId, wsAuthToken]);
 
   return {
     sessionId,

@@ -1,7 +1,7 @@
 /**
  * Connection data stored in Redis for cross-instance visibility.
  */
-export interface DistributedConnection {
+export type DistributedConnection = {
   connectionId: string;
   instanceId: string;
   sessionId: string | null;
@@ -10,7 +10,7 @@ export interface DistributedConnection {
   avatarUrl: string | null;
   isLeader: boolean;
   connectedAt: number; // Unix timestamp ms
-}
+};
 
 /**
  * Redis key prefixes for distributed state.
@@ -93,7 +93,7 @@ export function hashToConnection(hash: Record<string, string>): DistributedConne
   let connectedAt = parseInt(hash.connectedAt, 10);
   if (isNaN(connectedAt)) {
     console.warn(
-      `[DistributedState] Invalid connectedAt value "${hash.connectedAt}" for connection ${hash.connectionId?.slice(0, 8)}, using current time`
+      `[DistributedState] Invalid connectedAt value "${hash.connectedAt}" for connection ${hash.connectionId?.slice(0, 8)}, using current time`,
     );
     connectedAt = Date.now();
   }

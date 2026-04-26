@@ -4,27 +4,24 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
-import CopyrightOutlined from '@mui/icons-material/CopyrightOutlined';
+import ClimbIcons from '@/app/components/climb-card/climb-icons';
 import { themeTokens } from '@/app/theme/theme-config';
 import { useGradeFormat } from '@/app/hooks/use-grade-format';
 import { formatSends } from '@/app/lib/format-climb-stats';
 import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
 import type { Climb } from '@/app/lib/types';
 
-interface ClimbDetailHeaderProps {
+type ClimbDetailHeaderProps = {
   climb: Climb;
   /** Community-voted grade override, fetched separately from climb_community_status table */
   communityGrade?: string | null;
-}
+};
 
 /**
  * Header component for climb detail view.
  * Layout: Grade (left) | Name + details (center) | Spacer (right, balances grade)
  */
-export default function ClimbDetailHeader({
-  climb,
-  communityGrade,
-}: ClimbDetailHeaderProps) {
+export default function ClimbDetailHeader({ climb, communityGrade }: ClimbDetailHeaderProps) {
   const isDark = useIsDarkMode();
   const { formatGrade, getGradeColor, loaded: gradeFormatLoaded } = useGradeFormat();
 
@@ -32,10 +29,6 @@ export default function ClimbDetailHeader({
   const displayDifficulty = communityGrade || climb.difficulty;
   const formattedGrade = formatGrade(displayDifficulty);
   const gradeColor = formattedGrade ? getGradeColor(displayDifficulty, isDark) : undefined;
-
-  // Check if climb is a benchmark/classic
-  const benchmarkValue = climb.benchmark_difficulty != null ? Number(climb.benchmark_difficulty) : null;
-  const isBenchmark = benchmarkValue !== null && benchmarkValue > 0 && !Number.isNaN(benchmarkValue);
 
   const hasQuality = climb.quality_average && climb.quality_average !== '0';
 
@@ -80,11 +73,7 @@ export default function ClimbDetailHeader({
             {displayDifficulty}
           </Typography>
         ) : (
-          <Typography
-            variant="body2"
-            component="span"
-            sx={{ fontStyle: 'italic', color: 'text.secondary' }}
-          >
+          <Typography variant="body2" component="span" sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
             project
           </Typography>
         )}
@@ -115,16 +104,8 @@ export default function ClimbDetailHeader({
             }}
           >
             {climb.name}
+            <ClimbIcons benchmarkDifficulty={climb.benchmark_difficulty} isNoMatch={!!climb.is_no_match} />
           </Typography>
-          {isBenchmark && (
-            <CopyrightOutlined
-              sx={{
-                fontSize: themeTokens.typography.fontSize.xs,
-                color: themeTokens.colors.primary,
-                flexShrink: 0,
-              }}
-            />
-          )}
         </Box>
 
         {/* Details row: quality + setter */}

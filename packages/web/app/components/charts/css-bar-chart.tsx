@@ -5,19 +5,19 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { BarChart } from '@mui/x-charts/BarChart';
 
-export interface BarSegment {
+export type BarSegment = {
   value: number;
   color: string;
   label?: string;
-}
+};
 
-export interface CssBarChartBar {
+export type CssBarChartBar = {
   key: string;
   label: string;
   segments: BarSegment[];
-}
+};
 
-interface CssBarChartProps {
+type CssBarChartProps = {
   bars: CssBarChartBar[];
   height?: number;
   mobileHeight?: number;
@@ -28,7 +28,7 @@ interface CssBarChartProps {
   maxLabels?: number;
   /** Render x-axis labels at a -45° angle (useful for dense charts). */
   angledLabels?: boolean;
-}
+};
 
 export const CssBarChart = React.memo(function CssBarChart({
   bars,
@@ -60,7 +60,7 @@ export const CssBarChart = React.memo(function CssBarChart({
       if (!refSegment) continue;
 
       seriesArr.push({
-        data: bars.map((b) => (b.segments[i]?.value ?? null)),
+        data: bars.map((b) => b.segments[i]?.value ?? null),
         stack: 'total',
         color: refSegment.color,
         label: refSegment.label ?? `Series ${i + 1}`,
@@ -102,14 +102,14 @@ export const CssBarChart = React.memo(function CssBarChart({
     >
       <BarChart
         series={series}
-        xAxis={[{
-          data: categories,
-          scaleType: 'band' as const,
-          ...(tickInterval ? { tickInterval } : {}),
-          tickLabelStyle: angledLabels
-            ? { angle: -45, textAnchor: 'end', fontSize: 9 }
-            : { fontSize: 9 },
-        }]}
+        xAxis={[
+          {
+            data: categories,
+            scaleType: 'band' as const,
+            ...(tickInterval ? { tickInterval } : {}),
+            tickLabelStyle: angledLabels ? { angle: -45, textAnchor: 'end', fontSize: 9 } : { fontSize: 9 },
+          },
+        ]}
         height={height}
         margin={{ top: 4, bottom: bottomMargin, left: 0, right: 0 }}
         yAxis={[{ position: 'none' }]}
@@ -121,20 +121,20 @@ export const CssBarChart = React.memo(function CssBarChart({
 });
 
 /* Grouped (side-by-side) bar chart for flash vs redpoint */
-export interface GroupedBar {
+export type GroupedBar = {
   key: string;
   label: string;
   values: Array<{ value: number; color: string; label: string }>;
-}
+};
 
-interface GroupedBarChartProps {
+type GroupedBarChartProps = {
   bars: GroupedBar[];
   height?: number;
   mobileHeight?: number;
   showLegend?: boolean;
   gap?: number;
   ariaLabel?: string;
-}
+};
 
 export const GroupedBarChart = React.memo(function GroupedBarChart({
   bars,
@@ -188,11 +188,13 @@ export const GroupedBarChart = React.memo(function GroupedBarChart({
     >
       <BarChart
         series={series}
-        xAxis={[{
-          data: categories,
-          scaleType: 'band' as const,
-          tickLabelStyle: { fontSize: 9 },
-        }]}
+        xAxis={[
+          {
+            data: categories,
+            scaleType: 'band' as const,
+            tickLabelStyle: { fontSize: 9 },
+          },
+        ]}
         height={height}
         margin={{ top: 4, bottom: 24, left: 0, right: 0 }}
         yAxis={[{ position: 'none' }]}
@@ -203,7 +205,15 @@ export const GroupedBarChart = React.memo(function GroupedBarChart({
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
           {legendEntries.map((entry) => (
             <Box key={entry.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Box sx={{ width: 8, height: 8, borderRadius: '2px', bgcolor: entry.color, flexShrink: 0 }} />
+              <Box
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '2px',
+                  bgcolor: entry.color,
+                  flexShrink: 0,
+                }}
+              />
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: '11px' }}>
                 {entry.label}
               </Typography>

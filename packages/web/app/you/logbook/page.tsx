@@ -1,11 +1,10 @@
-import React from 'react';
-import { Metadata } from 'next';
+import React, { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/lib/auth/auth-options';
-import { getProfileData } from '@/app/profile/[user_id]/server-profile-data';
-import { fetchProfileStatsData } from '@/app/profile/[user_id]/server-profile-stats';
-import YouPageContent from '../you-page-content';
+import LogbookFeed from '@/app/components/library/logbook-feed';
+import LogbookLoading from './loading';
+import { cachedUserProfileStats } from '@/app/lib/graphql/server-cached-client';
+import { getYouSession } from '../you-auth';
 
 export const metadata: Metadata = {
   title: 'Logbook | Boardsesh',
@@ -13,25 +12,17 @@ export const metadata: Metadata = {
 };
 
 export default async function YouLogbookPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getYouSession();
   if (!session?.user?.id) {
     redirect('/');
   }
-
   const userId = session.user.id;
-
-  const [initialProfile, statsData] = await Promise.all([
-    getProfileData(userId, userId),
-    fetchProfileStatsData(userId),
-  ]);
+  const profileStats = await cachedUserProfileStats(userId);
+  const layoutStats = profileStats?.layoutStats ?? [];
 
   return (
-    <YouPageContent
-      userId={userId}
-      initialProfile={initialProfile}
-      initialProfileStats={statsData.initialProfileStats}
-      initialAllBoardsTicks={statsData.initialAllBoardsTicks}
-      initialLogbook={statsData.initialLogbook}
-    />
+    <Suspense fallback={<LogbookLoading />}>
+      <LogbookFeed layoutStats={layoutStats} loadingLayoutStats={false} />
+    </Suspense>
   );
 }

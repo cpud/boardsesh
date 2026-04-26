@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import StartSeshDrawer from '../start-sesh-drawer';
 
 // --- Mocks ---
 
@@ -71,8 +72,26 @@ vi.mock('@/app/lib/climb-session-cookie', () => ({
 vi.mock('@/app/hooks/use-my-boards', () => ({
   useMyBoards: () => ({
     boards: [
-      { uuid: 'board-1', slug: 'kilter-original-12x12', name: 'Kilter', angle: 40, boardType: 'kilter', layoutId: 1, sizeId: 10, setIds: '1,2' },
-      { uuid: 'board-2', slug: 'tension-board-8x10', name: 'Tension', angle: 30, boardType: 'tension', layoutId: 2, sizeId: 20, setIds: '3,4' },
+      {
+        uuid: 'board-1',
+        slug: 'kilter-original-12x12',
+        name: 'Kilter',
+        angle: 40,
+        boardType: 'kilter',
+        layoutId: 1,
+        sizeId: 10,
+        setIds: '1,2',
+      },
+      {
+        uuid: 'board-2',
+        slug: 'tension-board-8x10',
+        name: 'Tension',
+        angle: 30,
+        boardType: 'tension',
+        layoutId: 2,
+        sizeId: 20,
+        setIds: '3,4',
+      },
     ],
     isLoading: false,
     error: null,
@@ -87,7 +106,13 @@ vi.mock('@/app/hooks/use-drawer-drag-resize', () => ({
 }));
 
 vi.mock('@/app/components/swipeable-drawer/swipeable-drawer', () => ({
-  default: ({ children, open, footer, placement, paperRef }: {
+  default: ({
+    children,
+    open,
+    footer,
+    placement,
+    paperRef,
+  }: {
     children: React.ReactNode;
     open: boolean;
     footer?: React.ReactNode;
@@ -95,11 +120,7 @@ vi.mock('@/app/components/swipeable-drawer/swipeable-drawer', () => ({
     paperRef?: React.Ref<HTMLDivElement>;
   }) =>
     open ? (
-      <div
-        data-testid="drawer"
-        data-placement={placement}
-        ref={typeof paperRef === 'function' ? undefined : paperRef}
-      >
+      <div data-testid="drawer" data-placement={placement} ref={typeof paperRef === 'function' ? undefined : paperRef}>
         {children}
         {footer}
       </div>
@@ -107,9 +128,22 @@ vi.mock('@/app/components/swipeable-drawer/swipeable-drawer', () => ({
 }));
 
 vi.mock('@/app/components/board-scroll/board-discovery-scroll', () => ({
-  default: ({ onBoardClick, myBoards, selectedBoardUuid }: {
+  default: ({
+    onBoardClick,
+    myBoards,
+    selectedBoardUuid,
+  }: {
     onBoardClick: (board: { uuid: string; name: string }) => void;
-    myBoards?: Array<{ uuid: string; name: string; slug: string; angle: number; boardType: string; layoutId: number; sizeId: number; setIds: string }>;
+    myBoards?: Array<{
+      uuid: string;
+      name: string;
+      slug: string;
+      angle: number;
+      boardType: string;
+      layoutId: number;
+      sizeId: number;
+      setIds: string;
+    }>;
     selectedBoardUuid?: string;
   }) => (
     <div data-testid="board-discovery-scroll">
@@ -166,8 +200,6 @@ vi.mock('@/app/components/graphql-queue', () => ({
     currentClimb: null,
   }),
 }));
-
-import StartSeshDrawer from '../start-sesh-drawer';
 
 // --- Helpers ---
 
@@ -235,12 +267,7 @@ describe('StartSeshDrawer', () => {
       expect(mockCreateSession).toHaveBeenCalled();
     });
 
-    expect(mockSetInitialQueueForSession).toHaveBeenCalledWith(
-      'new-session-id',
-      [item1],
-      item1,
-      undefined,
-    );
+    expect(mockSetInitialQueueForSession).toHaveBeenCalledWith('new-session-id', [item1], item1, undefined);
     expect(mockRouterPush).toHaveBeenCalled();
   });
 
@@ -296,12 +323,7 @@ describe('StartSeshDrawer', () => {
     await submitSesh();
 
     await waitFor(() => {
-      expect(mockSetInitialQueueForSession).toHaveBeenCalledWith(
-        'new-session-id',
-        [item1, item2],
-        item1,
-        undefined,
-      );
+      expect(mockSetInitialQueueForSession).toHaveBeenCalledWith('new-session-id', [item1, item2], item1, undefined);
     });
 
     expect(mockRouterPush).toHaveBeenCalled();
@@ -372,12 +394,7 @@ describe('StartSeshDrawer', () => {
     await submitSesh();
 
     await waitFor(() => {
-      expect(mockSetInitialQueueForSession).toHaveBeenCalledWith(
-        'new-session-id',
-        [],
-        item1,
-        undefined,
-      );
+      expect(mockSetInitialQueueForSession).toHaveBeenCalledWith('new-session-id', [], item1, undefined);
     });
   });
 
@@ -421,10 +438,7 @@ describe('StartSeshDrawer', () => {
     await submitSesh();
 
     await waitFor(() => {
-      expect(mockCreateSession).toHaveBeenCalledWith(
-        expect.anything(),
-        '/b/kilter-original-12x12',
-      );
+      expect(mockCreateSession).toHaveBeenCalledWith(expect.anything(), '/b/kilter-original-12x12');
     });
   });
 
@@ -512,12 +526,7 @@ describe('StartSeshDrawer', () => {
     });
 
     // Queue should be transferred from bridge state
-    expect(mockSetInitialQueueForSession).toHaveBeenCalledWith(
-      'new-session-id',
-      [bridgeItem],
-      bridgeItem,
-      undefined,
-    );
+    expect(mockSetInitialQueueForSession).toHaveBeenCalledWith('new-session-id', [bridgeItem], bridgeItem, undefined);
 
     // activateSession should fire using bridge board details
     expect(mockActivateSession).toHaveBeenCalledWith({

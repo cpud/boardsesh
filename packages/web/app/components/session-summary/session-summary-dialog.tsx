@@ -11,13 +11,20 @@ import type { SessionSummary } from '@boardsesh/shared-schema';
 import SessionSummaryView from './session-summary-view';
 import { useHealthKitSync, useHealthKitAutoSync } from '@/app/hooks/use-healthkit-sync';
 
-interface SessionSummaryDialogProps {
+type SessionSummaryDialogProps = {
   summary: SessionSummary | null;
+  boardType?: string;
+  existingWorkoutId?: string | null;
   onDismiss: () => void;
-}
+};
 
-export default function SessionSummaryDialog({ summary, onDismiss }: SessionSummaryDialogProps) {
-  const { available, state, save } = useHealthKitSync({ summary, boardType: '' });
+export default function SessionSummaryDialog({
+  summary,
+  boardType = '',
+  existingWorkoutId,
+  onDismiss,
+}: SessionSummaryDialogProps) {
+  const { available, state, save } = useHealthKitSync({ summary, boardType, existingWorkoutId });
   const { enabled: autoSyncEnabled, loaded: autoSyncLoaded } = useHealthKitAutoSync();
   const autoSyncedFor = useRef<string | null>(null);
 
@@ -30,20 +37,19 @@ export default function SessionSummaryDialog({ summary, onDismiss }: SessionSumm
     void save();
   }, [summary, available, autoSyncEnabled, autoSyncLoaded, save]);
 
-  const buttonLabel = state === 'saving'
-    ? 'Saving to Apple Health…'
-    : state === 'saved'
-      ? 'Saved to Apple Health'
-      : state === 'error'
-        ? 'Save to Apple Health (retry)'
-        : 'Save to Apple Health';
+  const buttonLabel =
+    state === 'saving'
+      ? 'Saving to Apple Health…'
+      : state === 'saved'
+        ? 'Saved to Apple Health'
+        : state === 'error'
+          ? 'Save to Apple Health (retry)'
+          : 'Save to Apple Health';
 
   return (
     <Dialog open={summary !== null} onClose={onDismiss} maxWidth="sm" fullWidth>
       <DialogTitle>Session Summary</DialogTitle>
-      <DialogContent>
-        {summary && <SessionSummaryView summary={summary} />}
-      </DialogContent>
+      <DialogContent>{summary && <SessionSummaryView summary={summary} />}</DialogContent>
       <DialogActions>
         {available && (
           <Button

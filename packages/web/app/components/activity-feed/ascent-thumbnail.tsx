@@ -2,17 +2,16 @@
 
 import React, { useMemo } from 'react';
 import Link from 'next/link';
-import { BoardDetails, BoardName } from '@/app/lib/types';
+import type { BoardDetails, BoardName } from '@/app/lib/types';
 import BoardImageLayers from '@/app/components/board-renderer/board-image-layers';
 import BoardCanvasRenderer from '@/app/components/board-renderer/board-canvas-renderer';
 import { useCanvasRendererReady } from '@/app/lib/board-render-worker/worker-manager';
 import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import { getDefaultBoardConfig } from '@/app/lib/default-board-configs';
 import { constructClimbViewUrlWithSlugs, constructClimbViewUrl } from '@/app/lib/url-utils';
-import type { SetIdList } from '@/app/lib/board-data';
 import styles from './ascents-feed.module.css';
 
-interface AscentThumbnailProps {
+type AscentThumbnailProps = {
   boardType: string;
   layoutId: number | null;
   angle: number;
@@ -20,7 +19,9 @@ interface AscentThumbnailProps {
   climbName: string;
   frames: string | null;
   isMirror: boolean;
-}
+  /** When provided, renders as a <button> instead of the climb-view <Link>. */
+  onClick?: (e: React.MouseEvent) => void;
+};
 
 const AscentThumbnail: React.FC<AscentThumbnailProps> = ({
   boardType,
@@ -30,6 +31,7 @@ const AscentThumbnail: React.FC<AscentThumbnailProps> = ({
   climbName,
   frames,
   isMirror,
+  onClick,
 }) => {
   const canvasReady = useCanvasRendererReady();
   // Memoize board details to avoid recomputing on every render
@@ -76,7 +78,7 @@ const AscentThumbnail: React.FC<AscentThumbnailProps> = ({
         board_name: boardType as BoardName,
         layout_id: layoutId,
         size_id: config?.sizeId ?? 1,
-        set_ids: (config?.setIds ?? []) as SetIdList,
+        set_ids: config?.setIds ?? [],
         angle,
       },
       climbUuid,
@@ -85,7 +87,7 @@ const AscentThumbnail: React.FC<AscentThumbnailProps> = ({
   }, [boardDetails, boardType, layoutId, angle, climbUuid, climbName]);
 
   // If we can't render the thumbnail, don't show anything
-  if (!boardDetails || !climbViewPath) {
+  if (!boardDetails || (!onClick && !climbViewPath)) {
     return null;
   }
 
@@ -121,8 +123,22 @@ const AscentThumbnail: React.FC<AscentThumbnailProps> = ({
     );
   }
 
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={styles.thumbnailLink}
+        title={`Set ${climbName} as active climb`}
+        aria-label={`Set ${climbName} as active climb`}
+      >
+        <div className={styles.thumbnailContainer}>{thumbnailContent}</div>
+      </button>
+    );
+  }
+
   return (
-    <Link href={climbViewPath} className={styles.thumbnailLink} title={`View ${climbName}`}>
+    <Link href={climbViewPath!} className={styles.thumbnailLink} title={`View ${climbName}`}>
       <div className={styles.thumbnailContainer}>{thumbnailContent}</div>
     </Link>
   );

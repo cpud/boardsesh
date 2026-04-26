@@ -6,13 +6,12 @@
  * Usage: bunx tsx scripts/seed-board-locations.ts
  */
 
-import { eq, and, sql, isNull } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 
 import { users } from '../src/schema/auth/users.js';
-import { userBoards } from '../src/schema/app/boards.js';
 import { gyms } from '../src/schema/app/gyms.js';
 import { createScriptDb, getScriptDatabaseUrl } from './db-connection.js';
 
@@ -31,23 +30,23 @@ const GEOJSON_PACKAGE = '@hangtime/climbing-boards';
 // GeoJSON types
 // =============================================================================
 
-interface GeoJsonFeature<P> {
+type GeoJsonFeature<P> = {
   type: 'Feature';
   id?: string | number;
   properties: P;
   geometry: { type: 'Point'; coordinates: [number, number] };
-}
+};
 
-interface GeoJsonFeatureCollection<P> {
+type GeoJsonFeatureCollection<P> = {
   type: 'FeatureCollection';
   features: GeoJsonFeature<P>[];
-}
+};
 
 // =============================================================================
 // Types for hangtime GeoJSON feature properties
 // =============================================================================
 
-interface KilterWall {
+type KilterWall = {
   id: string;
   wall_uuid: string;
   gym_uuid: string;
@@ -59,9 +58,9 @@ interface KilterWall {
   serial_number: string | null;
   accumulated_hold_set_value: number | null;
   is_listed: number | null;
-}
+};
 
-interface KilterGym {
+type KilterGym = {
   id: string;
   gym_uuid: string;
   name: string | null;
@@ -72,33 +71,33 @@ interface KilterGym {
   latitude: number | null;
   longitude: number | null;
   walls: KilterWall[];
-}
+};
 
-interface TensionGym {
+type TensionGym = {
   id: number;
   username: string;
   name: string;
   latitude: number;
   longitude: number;
-}
+};
 
-interface MoonboardGym {
+type MoonboardGym = {
   Name: string;
   Description: string;
   Latitude: number;
   Longitude: number;
   IsCommercial: boolean;
   IsLed: boolean;
-}
+};
 
 // =============================================================================
 // Board configuration data (from product-sizes-data.ts)
 // =============================================================================
 
-interface SetMapping {
+type SetMapping = {
   id: number;
   name: string;
-}
+};
 
 /** Layout ID lookup by Kilter product name */
 const KILTER_PRODUCT_TO_LAYOUT: Record<string, number> = {
@@ -114,21 +113,63 @@ const KILTER_LAYOUT_SIZES: Record<number, number[]> = {
 
 /** Sets indexed by "layoutId-sizeId" */
 const KILTER_SETS: Record<string, SetMapping[]> = {
-  '1-7': [{ id: 1, name: 'Bolt Ons' }, { id: 20, name: 'Screw Ons' }],
-  '1-8': [{ id: 1, name: 'Bolt Ons' }, { id: 20, name: 'Screw Ons' }],
-  '1-10': [{ id: 1, name: 'Bolt Ons' }, { id: 20, name: 'Screw Ons' }],
-  '1-14': [{ id: 1, name: 'Bolt Ons' }, { id: 20, name: 'Screw Ons' }],
-  '1-27': [{ id: 1, name: 'Bolt Ons' }, { id: 20, name: 'Screw Ons' }],
-  '1-28': [{ id: 1, name: 'Bolt Ons' }, { id: 20, name: 'Screw Ons' }],
-  '8-17': [{ id: 26, name: 'Mainline' }, { id: 27, name: 'Auxiliary' }],
+  '1-7': [
+    { id: 1, name: 'Bolt Ons' },
+    { id: 20, name: 'Screw Ons' },
+  ],
+  '1-8': [
+    { id: 1, name: 'Bolt Ons' },
+    { id: 20, name: 'Screw Ons' },
+  ],
+  '1-10': [
+    { id: 1, name: 'Bolt Ons' },
+    { id: 20, name: 'Screw Ons' },
+  ],
+  '1-14': [
+    { id: 1, name: 'Bolt Ons' },
+    { id: 20, name: 'Screw Ons' },
+  ],
+  '1-27': [
+    { id: 1, name: 'Bolt Ons' },
+    { id: 20, name: 'Screw Ons' },
+  ],
+  '1-28': [
+    { id: 1, name: 'Bolt Ons' },
+    { id: 20, name: 'Screw Ons' },
+  ],
+  '8-17': [
+    { id: 26, name: 'Mainline' },
+    { id: 27, name: 'Auxiliary' },
+  ],
   '8-18': [{ id: 26, name: 'Mainline' }],
   '8-19': [{ id: 27, name: 'Auxiliary' }],
-  '8-21': [{ id: 26, name: 'Mainline' }, { id: 27, name: 'Auxiliary' }],
+  '8-21': [
+    { id: 26, name: 'Mainline' },
+    { id: 27, name: 'Auxiliary' },
+  ],
   '8-22': [{ id: 26, name: 'Mainline' }],
-  '8-23': [{ id: 26, name: 'Mainline' }, { id: 27, name: 'Auxiliary' }, { id: 28, name: 'Mainline Kickboard' }, { id: 29, name: 'Auxiliary Kickboard' }],
-  '8-24': [{ id: 26, name: 'Mainline' }, { id: 28, name: 'Mainline Kickboard' }, { id: 29, name: 'Auxiliary Kickboard' }],
-  '8-25': [{ id: 26, name: 'Mainline' }, { id: 27, name: 'Auxiliary' }, { id: 28, name: 'Mainline Kickboard' }, { id: 29, name: 'Auxiliary Kickboard' }],
-  '8-26': [{ id: 26, name: 'Mainline' }, { id: 28, name: 'Mainline Kickboard' }, { id: 29, name: 'Auxiliary Kickboard' }],
+  '8-23': [
+    { id: 26, name: 'Mainline' },
+    { id: 27, name: 'Auxiliary' },
+    { id: 28, name: 'Mainline Kickboard' },
+    { id: 29, name: 'Auxiliary Kickboard' },
+  ],
+  '8-24': [
+    { id: 26, name: 'Mainline' },
+    { id: 28, name: 'Mainline Kickboard' },
+    { id: 29, name: 'Auxiliary Kickboard' },
+  ],
+  '8-25': [
+    { id: 26, name: 'Mainline' },
+    { id: 27, name: 'Auxiliary' },
+    { id: 28, name: 'Mainline Kickboard' },
+    { id: 29, name: 'Auxiliary Kickboard' },
+  ],
+  '8-26': [
+    { id: 26, name: 'Mainline' },
+    { id: 28, name: 'Mainline Kickboard' },
+    { id: 29, name: 'Auxiliary Kickboard' },
+  ],
   '8-29': [{ id: 27, name: 'Auxiliary' }],
 };
 
@@ -218,7 +259,7 @@ function loadGeoJson<P>(filename: string): GeoJsonFeatureCollection<P> {
 // Board record builders
 // =============================================================================
 
-interface BoardRecord {
+type BoardRecord = {
   uuid: string;
   slug: string;
   boardType: string;
@@ -234,7 +275,7 @@ interface BoardRecord {
   gymSourceKey: string; // used to group boards under the same gym
   gymName: string;
   gymAddress: string | null;
-}
+};
 
 function buildKilterRecords(): BoardRecord[] {
   const fc = loadGeoJson<KilterGym>('kilterboardapp.geojson');
@@ -371,14 +412,10 @@ async function seedBoardLocations() {
   const { db, close } = createScriptDb(databaseUrl);
 
   try {
-    console.log('Starting board location seed...');
+    console.info('Starting board location seed...');
 
     // Step 1: Ensure system user exists
-    const [existingUser] = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(eq(users.id, SYSTEM_USER_ID))
-      .limit(1);
+    const [existingUser] = await db.select({ id: users.id }).from(users).where(eq(users.id, SYSTEM_USER_ID)).limit(1);
 
     if (!existingUser) {
       await db.insert(users).values({
@@ -386,24 +423,24 @@ async function seedBoardLocations() {
         email: SYSTEM_USER_EMAIL,
         name: 'Boardsesh',
       });
-      console.log('Created system user');
+      console.info('Created system user');
     }
 
     // Step 2: Build all board records
-    console.log('Loading Kilter data...');
+    console.info('Loading Kilter data...');
     const kilterRecords = buildKilterRecords();
-    console.log(`  ${kilterRecords.length} Kilter boards`);
+    console.info(`  ${kilterRecords.length} Kilter boards`);
 
-    console.log('Loading Tension data...');
+    console.info('Loading Tension data...');
     const tensionRecords = buildTensionRecords();
-    console.log(`  ${tensionRecords.length} Tension boards`);
+    console.info(`  ${tensionRecords.length} Tension boards`);
 
-    console.log('Loading MoonBoard data...');
+    console.info('Loading MoonBoard data...');
     const moonboardRecords = buildMoonboardRecords();
-    console.log(`  ${moonboardRecords.length} MoonBoard boards`);
+    console.info(`  ${moonboardRecords.length} MoonBoard boards`);
 
     const allRecords = [...kilterRecords, ...tensionRecords, ...moonboardRecords];
-    console.log(`Total: ${allRecords.length} boards to seed`);
+    console.info(`Total: ${allRecords.length} boards to seed`);
 
     // Step 3: Create gym entries (deduplicated by gymSourceKey)
     const gymsBySource = new Map<string, BoardRecord>();
@@ -413,7 +450,7 @@ async function seedBoardLocations() {
       }
     }
 
-    console.log(`Creating ${gymsBySource.size} gym entries...`);
+    console.info(`Creating ${gymsBySource.size} gym entries...`);
     const gymIdMap = new Map<string, number>();
     const gymEntries = [...gymsBySource.entries()];
 
@@ -453,13 +490,13 @@ async function seedBoardLocations() {
         }
       }
     }
-    console.log(`  Created/updated ${gymIdMap.size} gyms`);
+    console.info(`  Created/updated ${gymIdMap.size} gyms`);
 
     // Step 4: Upsert board entries using raw SQL to target the uuid unique
     // constraint specifically. The ORM's onConflictDoNothing would also trigger
     // on the (ownerId, boardType, layoutId, sizeId, setIds) partial unique index,
     // silently dropping boards with common configs across different gyms.
-    console.log('Upserting board entries...');
+    console.info('Upserting board entries...');
     let upserted = 0;
 
     for (let i = 0; i < allRecords.length; i += BATCH_SIZE) {
@@ -498,13 +535,13 @@ async function seedBoardLocations() {
       }
 
       if ((i + BATCH_SIZE) % 200 === 0 || i + BATCH_SIZE >= allRecords.length) {
-        console.log(`  Progress: ${Math.min(i + BATCH_SIZE, allRecords.length)}/${allRecords.length}`);
+        console.info(`  Progress: ${Math.min(i + BATCH_SIZE, allRecords.length)}/${allRecords.length}`);
       }
     }
 
-    console.log(`\nSeed complete:`);
-    console.log(`  Upserted: ${upserted} boards`);
-    console.log(`  Total gyms: ${gymIdMap.size}`);
+    console.info(`\nSeed complete:`);
+    console.info(`  Upserted: ${upserted} boards`);
+    console.info(`  Total gyms: ${gymIdMap.size}`);
   } finally {
     await close();
   }

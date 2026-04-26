@@ -9,11 +9,18 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardActionArea from '@mui/material/CardActionArea';
 import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded';
+import PlayCircleOutlineOutlined from '@mui/icons-material/PlayCircleOutlineOutlined';
 import PeopleOutlined from '@mui/icons-material/PeopleOutlined';
 import BluetoothOutlined from '@mui/icons-material/BluetoothOutlined';
 import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
 import WarningAmberOutlined from '@mui/icons-material/WarningAmberOutlined';
+import AppleIcon from '@mui/icons-material/Apple';
+import AndroidOutlined from '@mui/icons-material/AndroidOutlined';
+import Skeleton from '@mui/material/Skeleton';
 import SvgIcon from '@mui/material/SvgIcon';
+import { isNativeApp, isCapacitorWebView, waitForCapacitor } from '@/app/lib/ble/capacitor-utils';
+import { IOS_APP_STORE_URL, ANDROID_PLAY_STORE_URL, ANDROID_SIDELOAD_URL } from '@/app/lib/store-urls';
+import { useCountdown } from '@/app/lib/hooks/use-countdown';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { themeTokens } from '@/app/theme/theme-config';
@@ -23,34 +30,32 @@ import { constructBoardSlugListUrl, constructClimbListWithSlugs, tryConstructSlu
 import { getDefaultAngleForBoard } from '@/app/lib/board-config-for-playlist';
 import type { BoardConfigData } from '@/app/lib/server-board-configs';
 import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
+import { track } from '@vercel/analytics';
 import { setClimbSessionCookie } from '@/app/lib/climb-session-cookie';
+import { useOnboardingTourOptional } from '@/app/components/onboarding/onboarding-tour-provider';
+import { TOUR_OPEN_START_SESH_EVENT } from '@/app/components/onboarding/onboarding-tour-events';
 
-const StartSeshDrawer = dynamic(
-  () => import('@/app/components/session-creation/start-sesh-drawer'),
-  { ssr: false },
-);
+const StartSeshDrawer = dynamic(() => import('@/app/components/session-creation/start-sesh-drawer'), { ssr: false });
 
-const UnifiedSearchDrawer = dynamic(
-  () => import('@/app/components/search-drawer/unified-search-drawer'),
-  { ssr: false },
-);
+const UnifiedSearchDrawer = dynamic(() => import('@/app/components/search-drawer/unified-search-drawer'), {
+  ssr: false,
+});
 
-const BoardSelectorDrawer = dynamic(
-  () => import('@/app/components/board-selector-drawer/board-selector-drawer'),
-  { ssr: false },
-);
+const BoardSelectorDrawer = dynamic(() => import('@/app/components/board-selector-drawer/board-selector-drawer'), {
+  ssr: false,
+});
 
-interface HomePageContentProps {
+type HomePageContentProps = {
   boardConfigs: BoardConfigData;
   initialPopularConfigs?: PopularBoardConfig[];
-}
+};
 
-interface OnboardingCardProps {
+type OnboardingCardProps = {
   icon: React.ReactNode;
   title: string;
   description: string;
   onClick: () => void;
-}
+};
 
 function DiscordIcon() {
   return (
@@ -95,14 +100,14 @@ function OnboardingCard({ icon, title, description, onClick }: OnboardingCardPro
             <Typography
               variant="body1"
               fontWeight={themeTokens.typography.fontWeight.semibold}
-              sx={{ color: 'var(--neutral-900)', lineHeight: themeTokens.typography.lineHeight.tight }}
+              sx={{
+                color: 'var(--neutral-900)',
+                lineHeight: themeTokens.typography.lineHeight.tight,
+              }}
             >
               {title}
             </Typography>
-            <Typography
-              variant="body2"
-              sx={{ color: 'var(--neutral-500)', mt: 0.25 }}
-            >
+            <Typography variant="body2" sx={{ color: 'var(--neutral-500)', mt: 0.25 }}>
               {description}
             </Typography>
           </Box>
@@ -112,20 +117,138 @@ function OnboardingCard({ icon, title, description, onClick }: OnboardingCardPro
   );
 }
 
+const ANDROID_LAUNCH_DATE = new Date('2026-05-03T00:00:00Z');
+
+type InstallPlatform = 'unknown' | 'native' | 'android-web' | 'other-web';
+
+function InstallAppShadowCard() {
+  return (
+    <Card
+      variant="outlined"
+      aria-hidden
+      sx={{
+        borderRadius: `${themeTokens.borderRadius.lg}px`,
+        border: '1px solid var(--neutral-200)',
+        transition: themeTokens.transitions.fast,
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 2, px: 2.5 }}>
+        <Skeleton
+          variant="rounded"
+          width={44}
+          height={44}
+          sx={{ borderRadius: `${themeTokens.borderRadius.md}px`, flexShrink: 0 }}
+        />
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Skeleton variant="text" width="60%" height={20} />
+          <Skeleton variant="text" width="85%" height={18} />
+        </Box>
+      </Box>
+    </Card>
+  );
+}
+
+function InstallAppCard({ platform }: { platform: InstallPlatform }) {
+  const isAndroid = platform === 'android-web';
+  const { days, hours, minutes, seconds, done } = useCountdown(ANDROID_LAUNCH_DATE, isAndroid);
+
+  if (platform === 'unknown') return <InstallAppShadowCard />;
+  if (platform === 'native') return null;
+
+  if (isAndroid) {
+    if (done) {
+      return (
+        <OnboardingCard
+          icon={<AndroidOutlined />}
+          title="Get the Boardsesh app"
+          description="Now on Google Play"
+          onClick={() => {
+            track('App Install Click', { platform: 'android', source: 'google-play' });
+            window.open(ANDROID_PLAY_STORE_URL, '_blank', 'noopener,noreferrer');
+          }}
+        />
+      );
+    }
+    return (
+      <OnboardingCard
+        icon={<AndroidOutlined />}
+        title="Android app is almost here"
+        description={`Landing in ${days}d ${hours}h ${minutes}m ${seconds}s. Tap to sideload the preview build.`}
+        onClick={() => {
+          track('App Install Click', { platform: 'android', source: 'github-sideload' });
+          window.open(ANDROID_SIDELOAD_URL, '_blank', 'noopener,noreferrer');
+        }}
+      />
+    );
+  }
+
+  return (
+    <OnboardingCard
+      icon={<AppleIcon />}
+      title="Get the Boardsesh app"
+      description="Lights up holds on your board straight from your phone"
+      onClick={() => {
+        track('App Install Click', { platform: 'ios', source: 'app-store' });
+        window.open(IOS_APP_STORE_URL, '_blank', 'noopener,noreferrer');
+      }}
+    />
+  );
+}
+
 export default function HomePageContent({ boardConfigs, initialPopularConfigs }: HomePageContentProps) {
   const { status } = useSession();
   const router = useRouter();
   const { activeSession } = usePersistentSession();
+  const onboardingTour = useOnboardingTourOptional();
   const [seshDrawerOpen, setSeshDrawerOpen] = useState(false);
   const [findClimbersOpen, setFindClimbersOpen] = useState(false);
   const [createBoardOpen, setCreateBoardOpen] = useState(false);
   const [seshDrawerMounted, setSeshDrawerMounted] = useState(false);
   const [findClimbersMounted, setFindClimbersMounted] = useState(false);
   const [createBoardMounted, setCreateBoardMounted] = useState(false);
+  const [installPlatform, setInstallPlatform] = useState<InstallPlatform>('unknown');
+
+  useEffect(() => {
+    let cancelled = false;
+    const classifyWeb = () => (/Android/i.test(navigator.userAgent) ? 'android-web' : 'other-web');
+
+    if (isNativeApp()) {
+      setInstallPlatform('native');
+      return;
+    }
+
+    // UA heuristic says we're in a Capacitor WebView but the bridge hasn't
+    // injected window.Capacitor yet. Wait for it before classifying as web,
+    // otherwise native users get stuck with install CTAs.
+    if (isCapacitorWebView()) {
+      waitForCapacitor()
+        .then((appeared) => {
+          if (cancelled) return;
+          setInstallPlatform(appeared && isNativeApp() ? 'native' : classifyWeb());
+        })
+        .catch(() => {
+          if (!cancelled) setInstallPlatform(classifyWeb());
+        });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setInstallPlatform(classifyWeb());
+  }, []);
 
   useEffect(() => {
     if (seshDrawerOpen) setSeshDrawerMounted(true);
   }, [seshDrawerOpen]);
+
+  useEffect(() => {
+    const handler = () => {
+      setSeshDrawerMounted(true);
+      setSeshDrawerOpen(true);
+    };
+    window.addEventListener(TOUR_OPEN_START_SESH_EVENT, handler);
+    return () => window.removeEventListener(TOUR_OPEN_START_SESH_EVENT, handler);
+  }, []);
 
   useEffect(() => {
     if (findClimbersOpen) setFindClimbersMounted(true);
@@ -137,44 +260,62 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
 
   const isAuthenticated = status === 'authenticated';
 
-  const handleBoardClick = useCallback((board: UserBoard) => {
-    if (board.slug) {
-      router.push(constructBoardSlugListUrl(board.slug, board.angle));
-    }
-  }, [router]);
+  const handleBoardClick = useCallback(
+    (board: UserBoard) => {
+      if (board.slug) {
+        router.push(constructBoardSlugListUrl(board.slug, board.angle));
+      }
+    },
+    [router],
+  );
 
-  const handleConfigClick = useCallback((config: PopularBoardConfig) => {
-    const angle = getDefaultAngleForBoard(config.boardType);
-    if (config.layoutName && config.sizeName && config.setNames.length > 0) {
-      router.push(constructClimbListWithSlugs(
-        config.boardType,
-        config.layoutName,
-        config.sizeName,
-        config.sizeDescription ?? undefined,
-        config.setNames,
-        angle,
-      ));
-    } else {
-      const setIds = config.setIds.join(',');
-      const numericFallback = `/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`;
-      router.push(
-        tryConstructSlugListUrl(config.boardType, config.layoutId, config.sizeId, config.setIds, angle)
-          ?? numericFallback,
-      );
-    }
-  }, [router]);
+  const handleConfigClick = useCallback(
+    (config: PopularBoardConfig) => {
+      const angle = getDefaultAngleForBoard(config.boardType);
+      if (config.layoutName && config.sizeName && config.setNames.length > 0) {
+        router.push(
+          constructClimbListWithSlugs(
+            config.boardType,
+            config.layoutName,
+            config.sizeName,
+            config.sizeDescription ?? undefined,
+            config.setNames,
+            angle,
+          ),
+        );
+      } else {
+        const setIds = config.setIds.join(',');
+        const numericFallback = `/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`;
+        router.push(
+          tryConstructSlugListUrl(config.boardType, config.layoutId, config.sizeId, config.setIds, angle) ??
+            numericFallback,
+        );
+      }
+    },
+    [router],
+  );
 
   const handleCustomClick = useCallback(() => {
     setCreateBoardOpen(true);
   }, []);
 
-  const handleBoardCreated = useCallback((url: string) => {
-    setCreateBoardOpen(false);
-    router.push(url);
-  }, [router]);
+  const handleBoardCreated = useCallback(
+    (url: string) => {
+      setCreateBoardOpen(false);
+      router.push(url);
+    },
+    [router],
+  );
 
   return (
-    <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', pb: 'calc(120px + env(safe-area-inset-bottom, 0px))' }}>
+    <Box
+      sx={{
+        minHeight: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        pb: `calc(120px + ${themeTokens.layout.safeAreaBottom})`,
+      }}
+    >
       <Box
         component="main"
         sx={{
@@ -205,10 +346,7 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
           >
             Get on the board!
           </Typography>
-          <Typography
-            variant="body1"
-            sx={{ color: 'var(--neutral-500)', maxWidth: 320 }}
-          >
+          <Typography variant="body1" sx={{ color: 'var(--neutral-500)', maxWidth: 320 }}>
             Track your sends across Kilter, Tension, and MoonBoard.
           </Typography>
           <Button
@@ -278,6 +416,15 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
             Make it yours
           </Typography>
 
+          <InstallAppCard platform={installPlatform} />
+
+          <OnboardingCard
+            icon={<PlayCircleOutlineOutlined />}
+            title="Take the tour"
+            description="A one-minute walk-through of queuing, logging, and sessions with your crew"
+            onClick={() => onboardingTour?.start()}
+          />
+
           <OnboardingCard
             icon={<WarningAmberOutlined />}
             title="Coming from Kilter?"
@@ -320,12 +467,7 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
             <Typography variant="body2" sx={{ color: 'var(--neutral-400)', mb: 1 }}>
               Your friends are climbing.
             </Typography>
-            <Button
-              variant="text"
-              size="small"
-              onClick={() => router.push('/feed')}
-              sx={{ textTransform: 'none' }}
-            >
+            <Button variant="text" size="small" onClick={() => router.push('/feed')} sx={{ textTransform: 'none' }}>
               See the feed
             </Button>
           </Box>
@@ -333,11 +475,7 @@ export default function HomePageContent({ boardConfigs, initialPopularConfigs }:
       </Box>
 
       {seshDrawerMounted && (
-        <StartSeshDrawer
-          open={seshDrawerOpen}
-          onClose={() => setSeshDrawerOpen(false)}
-          boardConfigs={boardConfigs}
-        />
+        <StartSeshDrawer open={seshDrawerOpen} onClose={() => setSeshDrawerOpen(false)} boardConfigs={boardConfigs} />
       )}
 
       {findClimbersMounted && (

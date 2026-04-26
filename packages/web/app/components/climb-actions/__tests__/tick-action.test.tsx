@@ -1,8 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, act } from '@testing-library/react';
 import React from 'react';
 import type { Climb, BoardDetails, BoardName } from '@/app/lib/types';
 import type { UserBoard } from '@boardsesh/shared-schema';
+import { TickAction } from '../actions/tick-action';
+import type { ClimbActionProps } from '../types';
 
 // --- Mock factories ---
 
@@ -120,11 +122,15 @@ vi.mock('@/app/lib/open-external-url', () => ({
 // Simplified component mocks
 vi.mock('../../swipeable-drawer/swipeable-drawer', () => ({
   default: ({ children, title, open }: { children: React.ReactNode; title: string; open: boolean }) =>
-    open ? <div data-testid="swipeable-drawer" data-title={title}>{children}</div> : null,
+    open ? (
+      <div data-testid="swipeable-drawer" data-title={title}>
+        {children}
+      </div>
+    ) : null,
 }));
 
 vi.mock('../action-tooltip', () => ({
-  ActionTooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  ActionTooltip: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('@/app/components/providers/auth-modal-provider', () => ({
@@ -133,7 +139,13 @@ vi.mock('@/app/components/providers/auth-modal-provider', () => ({
 
 vi.mock('../../logbook/log-ascent-drawer', () => ({
   LogAscentDrawer: ({ open, onClose }: { open: boolean; onClose?: () => void }) =>
-    open ? <div data-testid="log-ascent-drawer"><button data-testid="close-drawer" onClick={onClose}>Close</button></div> : null,
+    open ? (
+      <div data-testid="log-ascent-drawer">
+        <button data-testid="close-drawer" onClick={onClose}>
+          Close
+        </button>
+      </div>
+    ) : null,
 }));
 
 vi.mock('../../logbook/logascent-form', () => ({
@@ -161,8 +173,6 @@ vi.mock('../../board-scroll/board-scroll-card', () => ({
 }));
 
 // Import after mocks
-import { TickAction } from '../actions/tick-action';
-import type { ClimbActionProps } from '../types';
 
 // --- Test data ---
 
@@ -214,7 +224,7 @@ const mockTensionBoard = createMockUserBoard({
  */
 function TestTickAction(props: ClimbActionProps) {
   const result = TickAction(props);
-  return <>{result.element}</>;
+  return result.element;
 }
 
 // --- Helper to set up mock states ---
@@ -272,10 +282,7 @@ function setupMocks(options: {
  * In production, useMyBoards goes: {boards:[], isLoading:false} -> {boards:[], isLoading:true} -> {boards:[...], isLoading:false}
  * The boardsReady ref tracks whether isLoading has been true, so tests must simulate this.
  */
-function renderWithLoadingCycle(
-  props: ClimbActionProps,
-  finalBoards: UserBoard[],
-) {
+function renderWithLoadingCycle(props: ClimbActionProps, finalBoards: UserBoard[]) {
   // Phase 1: loading
   setupMocks({ isAuthenticated: true, boards: [], isLoadingBoards: true });
   const result = render(<TestTickAction {...props} />);
@@ -346,7 +353,7 @@ describe('TickAction', () => {
       render(<TestTickAction {...defaultProps} />);
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       expect(screen.getByTestId('log-ascent-drawer')).toBeTruthy();
@@ -357,7 +364,7 @@ describe('TickAction', () => {
       render(<TestTickAction {...defaultProps} />);
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       const drawer = screen.getByTestId('swipeable-drawer');
@@ -370,7 +377,7 @@ describe('TickAction', () => {
       render(<TestTickAction {...defaultProps} />);
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       expect(screen.queryByText('Which board did you climb on?')).toBeNull();
@@ -390,7 +397,7 @@ describe('TickAction', () => {
       renderWithLoadingCycle(defaultProps, [mockUserBoard, mockUserBoard2]);
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       const drawer = screen.getByTestId('swipeable-drawer');
@@ -405,7 +412,7 @@ describe('TickAction', () => {
       renderWithLoadingCycle(defaultProps, [mockUserBoard, mockTensionBoard]);
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       // Should only show the kilter board, not the tension board
@@ -418,7 +425,7 @@ describe('TickAction', () => {
 
       // Open drawer
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       // Select a board
@@ -439,16 +446,14 @@ describe('TickAction', () => {
       renderWithLoadingCycle(defaultProps, [mockUserBoard]);
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       await act(async () => {
         screen.getByTestId('board-card-board-1').click();
       });
 
-      expect(MockBoardProvider).toHaveBeenCalledWith(
-        expect.objectContaining({ boardName: 'kilter' }),
-      );
+      expect(MockBoardProvider).toHaveBeenCalledWith(expect.objectContaining({ boardName: 'kilter' }));
     });
 
     it('fetches user boards when outside board route and authenticated', () => {
@@ -464,7 +469,7 @@ describe('TickAction', () => {
       render(<TestTickAction {...defaultProps} />);
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       expect(screen.getByTestId('board-scroll-loading')).toBeTruthy();
@@ -476,7 +481,7 @@ describe('TickAction', () => {
       renderWithLoadingCycle(defaultProps, [mockUserBoardDifferentConfig]);
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       await act(async () => {
@@ -494,7 +499,7 @@ describe('TickAction', () => {
       renderWithLoadingCycle(defaultProps, [mockTensionBoard]);
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       const form = screen.getByTestId('log-ascent-form');
@@ -512,7 +517,7 @@ describe('TickAction', () => {
       render(<TestTickAction {...defaultProps} />);
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       // Should show the board selector (in loading state), NOT skip to form
@@ -527,7 +532,7 @@ describe('TickAction', () => {
       const { rerender } = render(<TestTickAction {...defaultProps} />);
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       expect(screen.getByTestId('board-scroll-loading')).toBeTruthy();
@@ -548,7 +553,7 @@ describe('TickAction', () => {
       const { rerender } = render(<TestTickAction {...defaultProps} />);
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       // Should still be in loading state
@@ -578,7 +583,7 @@ describe('TickAction', () => {
       });
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       expect(screen.getByText(/don\u2019t have any Kilter boards saved/)).toBeTruthy();
@@ -594,13 +599,11 @@ describe('TickAction', () => {
       });
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       // Should use boardDetails.board_name (kilter) as the provider boardName
-      expect(MockBoardProvider).toHaveBeenCalledWith(
-        expect.objectContaining({ boardName: 'kilter' }),
-      );
+      expect(MockBoardProvider).toHaveBeenCalledWith(expect.objectContaining({ boardName: 'kilter' }));
     });
 
     it('skips board selector when only non-matching boards exist', async () => {
@@ -614,7 +617,7 @@ describe('TickAction', () => {
       });
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       // Should skip selector (no matching kilter boards) and go to form
@@ -629,7 +632,7 @@ describe('TickAction', () => {
       render(<TestTickAction {...defaultProps} />);
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       const drawer = screen.getByTestId('swipeable-drawer');
@@ -650,7 +653,7 @@ describe('TickAction', () => {
       render(<TestTickAction {...defaultProps} />);
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       expect(screen.queryByText('Which board did you climb on?')).toBeNull();
@@ -666,17 +669,27 @@ describe('TickAction', () => {
     });
 
     it('handles useMyBoards error without crashing', async () => {
-      setupMocks({ isAuthenticated: true, boards: [], boardsError: 'Failed to load your boards', isLoadingBoards: true });
+      setupMocks({
+        isAuthenticated: true,
+        boards: [],
+        boardsError: 'Failed to load your boards',
+        isLoadingBoards: true,
+      });
       const { rerender } = render(<TestTickAction {...defaultProps} />);
 
       // Simulate error state after loading
-      setupMocks({ isAuthenticated: true, boards: [], boardsError: 'Failed to load your boards', isLoadingBoards: false });
+      setupMocks({
+        isAuthenticated: true,
+        boards: [],
+        boardsError: 'Failed to load your boards',
+        isLoadingBoards: false,
+      });
       await act(async () => {
         rerender(<TestTickAction {...defaultProps} />);
       });
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       // Should fall through to form (no matching boards after error)
@@ -691,12 +704,14 @@ describe('TickAction', () => {
       });
 
       // Force matching by using same board_name
-      const customBoardDetails = createMockBoardDetails({ board_name: 'unknown_board' as BoardName });
+      const customBoardDetails = createMockBoardDetails({
+        board_name: 'unknown_board' as BoardName,
+      });
       const customProps = { ...defaultProps, boardDetails: customBoardDetails };
       renderWithLoadingCycle(customProps, [invalidBoard]);
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       await act(async () => {
@@ -704,9 +719,7 @@ describe('TickAction', () => {
       });
 
       // BoardProvider should receive the fallback board_name from boardDetails
-      expect(MockBoardProvider).toHaveBeenCalledWith(
-        expect.objectContaining({ boardName: 'unknown_board' }),
-      );
+      expect(MockBoardProvider).toHaveBeenCalledWith(expect.objectContaining({ boardName: 'unknown_board' }));
     });
   });
 
@@ -716,7 +729,7 @@ describe('TickAction', () => {
 
       // Open drawer
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       // Select a board
@@ -736,7 +749,7 @@ describe('TickAction', () => {
 
       // Open drawer again
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       // Should show board selector again (not the form)
@@ -792,7 +805,7 @@ describe('TickAction', () => {
       render(<TestTickAction {...defaultProps} />);
 
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
 
       expect(mockTrack).toHaveBeenCalledWith('Tick Button Clicked', {
@@ -808,7 +821,7 @@ describe('TickAction', () => {
 
       // Clicking opens the drawer but does not call onComplete yet
       await act(async () => {
-        screen.getByRole('button', { name: /tick/i }).click();
+        screen.getByRole('button', { name: /log ascent/i }).click();
       });
       expect(onComplete).not.toHaveBeenCalled();
 

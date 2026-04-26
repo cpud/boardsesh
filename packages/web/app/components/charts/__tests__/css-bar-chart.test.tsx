@@ -1,6 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+import { CssBarChart, GroupedBarChart, type CssBarChartBar, type GroupedBar } from '../css-bar-chart';
 
 // Mock MUI X Charts since they use SVG/canvas internals
 vi.mock('@mui/x-charts/BarChart', () => ({
@@ -14,14 +15,9 @@ vi.mock('@mui/x-charts/BarChart', () => ({
   ),
 }));
 
-import { CssBarChart, GroupedBarChart } from '../css-bar-chart';
-import type { CssBarChartBar, GroupedBar } from '../css-bar-chart';
-
 describe('CssBarChart', () => {
   it('renders with correct aria-label', () => {
-    const bars: CssBarChartBar[] = [
-      { key: 'a', label: 'A', segments: [{ value: 5, color: 'red' }] },
-    ];
+    const bars: CssBarChartBar[] = [{ key: 'a', label: 'A', segments: [{ value: 5, color: 'red' }] }];
     render(<CssBarChart bars={bars} />);
     expect(screen.getByRole('img', { name: 'Bar chart' })).toBeTruthy();
   });
@@ -82,9 +78,7 @@ describe('CssBarChart', () => {
 
 describe('GroupedBarChart', () => {
   it('renders with correct aria-label', () => {
-    const bars: GroupedBar[] = [
-      { key: 'v3', label: 'V3', values: [{ value: 2, color: 'green', label: 'Flash' }] },
-    ];
+    const bars: GroupedBar[] = [{ key: 'v3', label: 'V3', values: [{ value: 2, color: 'green', label: 'Flash' }] }];
     render(<GroupedBarChart bars={bars} />);
     expect(screen.getByRole('img', { name: 'Grouped bar chart' })).toBeTruthy();
   });
@@ -136,7 +130,6 @@ describe('GroupedBarChart', () => {
     ];
     const { container } = render(<GroupedBarChart bars={bars} />);
     // Only 1 unique label, so no legend entries rendered outside the chart
-    const legendItems = container.querySelectorAll('[class*="MuiBox"]');
     // The chart renders but no legend text for "Flash" outside the chart mock
     // (inside the mock it doesn't render text)
     expect(container.querySelector('[role="img"]')).toBeTruthy();

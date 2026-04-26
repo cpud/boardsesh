@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { render, screen, act } from '@testing-library/react';
 import React from 'react';
 import { connectionManager } from '../websocket-connection-manager';
@@ -23,7 +23,11 @@ class FakeClient {
 
 function TestConsumer() {
   const { state, name } = useWebSocketConnection();
-  return <div data-testid="state">{state}:{name ?? 'none'}</div>;
+  return (
+    <div data-testid="state">
+      {state}:{name ?? 'none'}
+    </div>
+  );
 }
 
 describe('WebSocketConnectionProvider', () => {

@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { themeTokens } from '@/app/theme/theme-config';
+import { RouteMarkContextDots, RouteMarkHolds } from './route-mark-svg';
 
 type LogoProps = {
   size?: 'sm' | 'md' | 'lg';
@@ -16,68 +17,9 @@ const sizes = {
   lg: { icon: 52, fontSize: 20, gap: 10 },
 };
 
-// Pixel art letter definitions (each letter on a grid)
-// B letter - 7 wide x 9 tall pixels
-const B_PIXELS = [
-  [1, 1, 1, 1, 1, 1, 0],
-  [1, 1, 1, 1, 1, 1, 1],
-  [1, 1, 0, 0, 0, 1, 1],
-  [1, 1, 1, 1, 1, 1, 0],
-  [1, 1, 1, 1, 1, 1, 1],
-  [1, 1, 0, 0, 0, 1, 1],
-  [1, 1, 0, 0, 0, 1, 1],
-  [1, 1, 1, 1, 1, 1, 1],
-  [1, 1, 1, 1, 1, 1, 0],
-];
-
-// S letter - 7 wide x 9 tall pixels
-const S_PIXELS = [
-  [0, 1, 1, 1, 1, 1, 1],
-  [1, 1, 1, 1, 1, 1, 1],
-  [1, 1, 0, 0, 0, 0, 0],
-  [1, 1, 1, 1, 1, 1, 0],
-  [0, 1, 1, 1, 1, 1, 1],
-  [0, 0, 0, 0, 0, 1, 1],
-  [0, 0, 0, 0, 0, 1, 1],
-  [1, 1, 1, 1, 1, 1, 1],
-  [1, 1, 1, 1, 1, 1, 0],
-];
-
-const PixelLetter = ({
-  pixels,
-  startX,
-  startY,
-  pixelSize,
-  fill,
-}: {
-  pixels: number[][];
-  startX: number;
-  startY: number;
-  pixelSize: number;
-  fill: string;
-}) => (
-  <>
-    {pixels.map((row, y) =>
-      row.map((pixel, x) =>
-        pixel ? (
-          <rect
-            key={`${x}-${y}`}
-            x={startX + x * pixelSize}
-            y={startY + y * pixelSize}
-            width={pixelSize}
-            height={pixelSize}
-            fill={fill}
-          />
-        ) : null,
-      ),
-    )}
-  </>
-);
-
-export const Logo = ({ size = 'md', showText = true, linkToHome = true }: LogoProps) => {
+const Logo = ({ size = 'md', showText = true, linkToHome = true }: LogoProps) => {
   const { icon, fontSize, gap } = sizes[size];
-  const pixelSize = 3;
-  const shadowOffset = 2;
+  const showContext = size !== 'sm';
 
   const logoContent = (
     <div
@@ -92,33 +34,25 @@ export const Logo = ({ size = 'md', showText = true, linkToHome = true }: LogoPr
       <svg
         width={icon}
         height={icon}
-        viewBox="0 0 48 48"
+        viewBox="0 0 64 64"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         aria-label="Boardsesh logo"
       >
-        {/* Transparent background */}
-        <rect x="0" y="0" width="48" height="48" rx="4" fill="transparent" />
-
-        {/* Rose shadow layers */}
-        <PixelLetter pixels={B_PIXELS} startX={3 + shadowOffset} startY={6 + shadowOffset} pixelSize={pixelSize} fill={themeTokens.colors.logoRose} />
-        <PixelLetter pixels={S_PIXELS} startX={24 + shadowOffset} startY={6 + shadowOffset} pixelSize={pixelSize} fill={themeTokens.colors.logoRose} />
-
-        {/* Sage green letters */}
-        <PixelLetter pixels={B_PIXELS} startX={3} startY={6} pixelSize={pixelSize} fill={themeTokens.colors.logoGreen} />
-        <PixelLetter pixels={S_PIXELS} startX={24} startY={6} pixelSize={pixelSize} fill={themeTokens.colors.logoGreen} />
+        {showContext && <RouteMarkContextDots />}
+        <RouteMarkHolds />
       </svg>
       {showText && (
         <span
           style={{
             fontSize,
-            fontWeight: themeTokens.typography.fontWeight.bold,
+            fontWeight: themeTokens.typography.fontWeight.extrabold,
             color: 'var(--neutral-800)',
             letterSpacing: '-0.02em',
             lineHeight: 1,
           }}
         >
-          Boardsesh
+          boardsesh
         </span>
       )}
     </div>

@@ -18,7 +18,7 @@ export async function registerConnection(
   connectionId: string,
   username: string,
   userId?: string | null,
-  avatarUrl?: string | null
+  avatarUrl?: string | null,
 ): Promise<void> {
   validateConnectionId(connectionId);
 
@@ -45,18 +45,15 @@ export async function registerConnection(
 
   await multi.exec();
 
-  console.log(
-    `[DistributedState] Registered connection: ${connectionId.slice(0, 8)} on instance: ${instanceId.slice(0, 8)}`
+  console.info(
+    `[DistributedState] Registered connection: ${connectionId.slice(0, 8)} on instance: ${instanceId.slice(0, 8)}`,
   );
 }
 
 /**
  * Get connection data from Redis.
  */
-export async function getConnection(
-  redis: Redis,
-  connectionId: string
-): Promise<DistributedConnection | null> {
+export async function getConnection(redis: Redis, connectionId: string): Promise<DistributedConnection | null> {
   validateConnectionId(connectionId);
   const data = await redis.hgetall(KEYS.connection(connectionId));
   if (!data || !data.connectionId) {
@@ -73,7 +70,7 @@ export async function removeConnection(
   redis: Redis,
   instanceId: string,
   connectionId: string,
-  electNewLeader: boolean = true
+  electNewLeader: boolean = true,
 ): Promise<{ sessionId: string | null; wasLeader: boolean; newLeaderId: string | null }> {
   validateConnectionId(connectionId);
 
@@ -101,7 +98,7 @@ export async function removeConnection(
 
   await multi.exec();
 
-  console.log(`[DistributedState] Removed connection: ${connectionId.slice(0, 8)}`);
+  console.info(`[DistributedState] Removed connection: ${connectionId.slice(0, 8)}`);
 
   // Automatically elect new leader if was leader and requested
   let newLeaderId: string | null = null;
@@ -115,11 +112,7 @@ export async function removeConnection(
 /**
  * Elect a new leader after a connection is removed, with fallback logic.
  */
-async function electLeaderAfterRemoval(
-  redis: Redis,
-  sessionId: string,
-  connectionId: string
-): Promise<string | null> {
+async function electLeaderAfterRemoval(redis: Redis, sessionId: string, connectionId: string): Promise<string | null> {
   try {
     const newLeaderId = (await redis.eval(
       ELECT_NEW_LEADER_SCRIPT,
@@ -128,20 +121,17 @@ async function electLeaderAfterRemoval(
       KEYS.sessionLeader(sessionId),
       connectionId,
       TTL.sessionMembership.toString(),
-      TTL.sessionMembership.toString() // Leader TTL matches session TTL
+      TTL.sessionMembership.toString(), // Leader TTL matches session TTL
     )) as string | null;
 
     if (newLeaderId) {
-      console.log(
-        `[DistributedState] Elected new leader: ${newLeaderId.slice(0, 8)} after removing ${connectionId.slice(0, 8)}`
+      console.info(
+        `[DistributedState] Elected new leader: ${newLeaderId.slice(0, 8)} after removing ${connectionId.slice(0, 8)}`,
       );
     }
     return newLeaderId;
   } catch (err) {
-    console.error(
-      `[DistributedState] Failed to elect new leader after removing ${connectionId.slice(0, 8)}:`,
-      err
-    );
+    console.error(`[DistributedState] Failed to elect new leader after removing ${connectionId.slice(0, 8)}:`, err);
     // Fallback: try to manually elect a leader from remaining members
     return electLeaderFallback(redis, sessionId, connectionId);
   }
@@ -150,11 +140,7 @@ async function electLeaderAfterRemoval(
 /**
  * Fallback leader election when Lua script fails.
  */
-async function electLeaderFallback(
-  redis: Redis,
-  sessionId: string,
-  connectionId: string
-): Promise<string | null> {
+async function electLeaderFallback(redis: Redis, sessionId: string, connectionId: string): Promise<string | null> {
   try {
     const remainingMembers = await redis.smembers(KEYS.sessionMembers(sessionId));
     const candidates = remainingMembers.filter((id) => id !== connectionId);
@@ -188,8 +174,8 @@ async function electLeaderFallback(
       const chosenLeader = earliestCandidate || candidates[0];
       await redis.set(KEYS.sessionLeader(sessionId), chosenLeader, 'EX', TTL.sessionMembership);
       await redis.hset(KEYS.connection(chosenLeader), 'isLeader', 'true');
-      console.log(
-        `[DistributedState] Fallback elected leader: ${chosenLeader.slice(0, 8)} after removing ${connectionId.slice(0, 8)}`
+      console.info(
+        `[DistributedState] Fallback elected leader: ${chosenLeader.slice(0, 8)} after removing ${connectionId.slice(0, 8)}`,
       );
       return chosenLeader;
     } else {
@@ -215,7 +201,7 @@ export async function updateUsername(
   redis: Redis,
   connectionId: string,
   username: string,
-  avatarUrl?: string
+  avatarUrl?: string,
 ): Promise<void> {
   validateConnectionId(connectionId);
   const updates: Record<string, string> = { username };

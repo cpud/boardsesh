@@ -554,6 +554,34 @@
       "when": 1776299787420,
       "tag": "0078_yummy_kylun",
       "breakpoints": true
+    },
+    {
+      "idx": 79,
+      "version": "7",
+      "when": 1776124800000,
+      "tag": "0079_backfill_tick_quality_scale",
+      "breakpoints": true
+    },
+    {
+      "idx": 80,
+      "version": "7",
+      "when": 1776987173785,
+      "tag": "0080_concerned_prism",
+      "breakpoints": true
+    },
+    {
+      "idx": 81,
+      "version": "7",
+      "when": 1776994120681,
+      "tag": "0081_nullable_feedback_rating",
+      "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1776316766635,
+      "tag": "0082_add_user_climb_percentiles",
+      "breakpoints": true
     }
   ]
 }

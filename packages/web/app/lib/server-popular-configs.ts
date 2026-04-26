@@ -1,10 +1,7 @@
 import React from 'react';
 import 'server-only';
 import { getGraphQLHttpUrl } from '@/app/lib/graphql/client';
-import {
-  GET_POPULAR_BOARD_CONFIGS,
-  type GetPopularBoardConfigsQueryResponse,
-} from '@/app/lib/graphql/operations';
+import { GET_POPULAR_BOARD_CONFIGS, type GetPopularBoardConfigsQueryResponse } from '@/app/lib/graphql/operations';
 import { GraphQLClient } from 'graphql-request';
 import type { PopularBoardConfig } from '@boardsesh/shared-schema';
 
@@ -30,10 +27,9 @@ export const getPopularBoardConfigs = React.cache(async (): Promise<PopularBoard
       headers: { 'Content-Type': 'application/json' },
       signal: controller.signal,
     });
-    const result = await client.request<GetPopularBoardConfigsQueryResponse>(
-      GET_POPULAR_BOARD_CONFIGS,
-      { input: { limit: 12, offset: 0 } },
-    );
+    const result = await client.request<GetPopularBoardConfigsQueryResponse>(GET_POPULAR_BOARD_CONFIGS, {
+      input: { limit: 12, offset: 0 },
+    });
     return result.popularBoardConfigs.configs;
   } catch {
     // Backend unreachable or timed out — client-side hook will retry

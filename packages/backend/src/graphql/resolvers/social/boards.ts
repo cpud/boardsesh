@@ -27,11 +27,12 @@ import { redisClientManager } from '../../../redis/client';
  * then picks the next available suffix in-memory — no sequential DB loop.
  */
 async function generateUniqueSlug(name: string): Promise<string> {
-  const baseSlug = name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 100) || 'board';
+  const baseSlug =
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 100) || 'board';
 
   // Fetch the base slug and all numeric-suffix variants in one query.
   // e.g. for "my-board" we match "my-board" and "my-board-2", "my-board-10", etc.
@@ -40,10 +41,7 @@ async function generateUniqueSlug(name: string): Promise<string> {
     .from(dbSchema.userBoards)
     .where(
       and(
-        or(
-          eq(dbSchema.userBoards.slug, baseSlug),
-          like(dbSchema.userBoards.slug, `${baseSlug}-%`),
-        ),
+        or(eq(dbSchema.userBoards.slug, baseSlug), like(dbSchema.userBoards.slug, `${baseSlug}-%`)),
         isNull(dbSchema.userBoards.deletedAt),
       ),
     );
@@ -91,7 +89,7 @@ export async function resolveBoardFromPath(
         eq(dbSchema.userBoards.sizeId, sizeId),
         eq(dbSchema.userBoards.setIds, setIds),
         isNull(dbSchema.userBoards.deletedAt),
-      )
+      ),
     )
     .limit(1);
 
@@ -132,18 +130,12 @@ async function enrichBoard(
         .where(
           and(
             eq(dbSchema.boardseshTicks.boardId, board.id),
-            or(
-              eq(dbSchema.boardseshTicks.status, 'flash'),
-              eq(dbSchema.boardseshTicks.status, 'send'),
-            ),
-          )
+            or(eq(dbSchema.boardseshTicks.status, 'flash'), eq(dbSchema.boardseshTicks.status, 'send')),
+          ),
         ),
 
       // Count followers
-      db
-        .select({ count: count() })
-        .from(dbSchema.boardFollows)
-        .where(eq(dbSchema.boardFollows.boardUuid, board.uuid)),
+      db.select({ count: count() }).from(dbSchema.boardFollows).where(eq(dbSchema.boardFollows.boardUuid, board.uuid)),
 
       // Count comments
       db
@@ -154,7 +146,7 @@ async function enrichBoard(
             eq(dbSchema.comments.entityType, 'board'),
             eq(dbSchema.comments.entityId, board.uuid),
             isNull(dbSchema.comments.deletedAt),
-          )
+          ),
         ),
 
       // Check if authenticated user follows this board
@@ -166,7 +158,7 @@ async function enrichBoard(
               and(
                 eq(dbSchema.boardFollows.userId, authenticatedUserId),
                 eq(dbSchema.boardFollows.boardUuid, board.uuid),
-              )
+              ),
             )
         : Promise.resolve([]),
 
@@ -267,10 +259,7 @@ async function enrichBoards(
       .where(
         and(
           inArray(dbSchema.boardseshTicks.boardId, boardIds),
-          or(
-            eq(dbSchema.boardseshTicks.status, 'flash'),
-            eq(dbSchema.boardseshTicks.status, 'send'),
-          ),
+          or(eq(dbSchema.boardseshTicks.status, 'flash'), eq(dbSchema.boardseshTicks.status, 'send')),
         ),
       )
       .groupBy(dbSchema.boardseshTicks.boardId),
@@ -380,7 +369,7 @@ async function enrichBoards(
 // Popular Board Config Cache (Redis-backed)
 // ============================================
 
-export interface CachedPopularConfig {
+export type CachedPopularConfig = {
   boardType: string;
   layoutId: number;
   layoutName: string | null;
@@ -393,7 +382,7 @@ export interface CachedPopularConfig {
   totalAscents: number;
   boardCount: number;
   displayName: string;
-}
+};
 
 const BOARD_TYPE_LABELS: Record<string, string> = {
   kilter: 'Kilter',
@@ -596,7 +585,7 @@ export async function warmPopularConfigsCache(): Promise<void> {
       // Try to acquire lock — only the winning node runs the query
       const lockAcquired = await publisher.set(REDIS_LOCK_KEY, '1', 'EX', REDIS_LOCK_TTL_SECONDS, 'NX');
       if (!lockAcquired) {
-        console.log('[PopularConfigs] Another node is refreshing the cache, skipping');
+        console.info('[PopularConfigs] Another node is refreshing the cache, skipping');
         return;
       }
       // Winning node: delete stale cache so getPopularConfigs() runs the SQL query
@@ -606,10 +595,10 @@ export async function warmPopularConfigsCache(): Promise<void> {
     }
   }
 
-  console.log('[PopularConfigs] Refreshing cache...');
+  console.info('[PopularConfigs] Refreshing cache...');
   try {
     const configs = await getPopularConfigs();
-    console.log(`[PopularConfigs] Cache warmed with ${configs.length} configs`);
+    console.info(`[PopularConfigs] Cache warmed with ${configs.length} configs`);
   } catch (err) {
     console.error('[PopularConfigs] Cache warm-up failed:', err);
   }
@@ -623,11 +612,7 @@ export const socialBoardQueries = {
   /**
    * Get a board by UUID
    */
-  board: async (
-    _: unknown,
-    { boardUuid }: { boardUuid: string },
-    ctx: ConnectionContext,
-  ) => {
+  board: async (_: unknown, { boardUuid }: { boardUuid: string }, ctx: ConnectionContext) => {
     validateInput(UUIDSchema, boardUuid, 'boardUuid');
 
     const [board] = await db
@@ -643,11 +628,7 @@ export const socialBoardQueries = {
   /**
    * Get a board by slug (for URL routing)
    */
-  boardBySlug: async (
-    _: unknown,
-    { slug }: { slug: string },
-    ctx: ConnectionContext,
-  ) => {
+  boardBySlug: async (_: unknown, { slug }: { slug: string }, ctx: ConnectionContext) => {
     // Validate slug format: lowercase alphanumeric with hyphens, max 120 chars
     if (!slug || slug.length > 120 || !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(slug)) {
       return null;
@@ -664,13 +645,81 @@ export const socialBoardQueries = {
   },
 
   /**
+   * Look up boards by controller serial numbers.
+   * Searches all boards (including unlisted/non-public) so BLE device
+   * discovery can resolve any board regardless of visibility.
+   * No auth required (BLE scan-before-login), but rate-limited.
+   * Unauthenticated callers receive stripped responses (no GPS/owner data).
+   */
+  boardsBySerialNumbers: async (_: unknown, { serialNumbers }: { serialNumbers: string[] }, ctx: ConnectionContext) => {
+    await applyRateLimit(ctx, 20);
+
+    // Filter out empty strings and limit to 20 to prevent abuse
+    const cleaned = serialNumbers.filter((s) => s.trim().length > 0).slice(0, 20);
+    if (cleaned.length === 0) return [];
+
+    const boards = await db
+      .select()
+      .from(dbSchema.userBoards)
+      .where(and(inArray(dbSchema.userBoards.serialNumber, cleaned), isNull(dbSchema.userBoards.deletedAt)));
+
+    // Unauthenticated callers get an allowlisted response built directly from
+    // the DB rows — skip enrichBoards entirely (no owner/stats/follow queries).
+    // Public boards include UGC fields; non-public boards get config only.
+    if (!ctx.isAuthenticated) {
+      return boards.map((board) => {
+        return {
+          uuid: board.uuid,
+          slug: board.slug,
+          ownerId: '',
+          ownerDisplayName: null,
+          ownerAvatarUrl: null,
+          boardType: board.boardType,
+          layoutId: Number(board.layoutId),
+          sizeId: Number(board.sizeId),
+          setIds: board.setIds,
+          name: board.isPublic ? board.name : board.boardType,
+          description: board.isPublic ? board.description : null,
+          locationName: board.isPublic ? board.locationName : null,
+          latitude: null,
+          longitude: null,
+          isPublic: board.isPublic,
+          isUnlisted: board.isUnlisted,
+          hideLocation: board.hideLocation,
+          isOwned: false,
+          angle: Number(board.angle),
+          isAngleAdjustable: board.isAngleAdjustable,
+          createdAt: board.createdAt.toISOString(),
+          layoutName: null,
+          sizeName: null,
+          sizeDescription: null,
+          setNames: null,
+          totalAscents: 0,
+          uniqueClimbers: 0,
+          followerCount: 0,
+          commentCount: 0,
+          isFollowedByMe: false,
+          gymId: null,
+          gymUuid: null,
+          gymName: null,
+          distanceMeters: null,
+          serialNumber: board.serialNumber ?? null,
+        };
+      });
+    }
+
+    const enriched = await enrichBoards(
+      boards.map((board) => ({ board })),
+      ctx.userId,
+    );
+
+    return enriched;
+  },
+
+  /**
    * Get current user's boards (owned + followed)
    */
-  myBoards: async (
-    _: unknown,
-    { input }: { input?: { limit?: number; offset?: number } },
-    ctx: ConnectionContext,
-  ) => {
+  myBoards: async (_: unknown, { input }: { input?: { limit?: number; offset?: number } }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     const validatedInput = validateInput(MyBoardsInputSchema, input || {}, 'input');
     const userId = ctx.userId!;
@@ -687,18 +736,11 @@ export const socialBoardQueries = {
 
     // Build WHERE: owned OR followed, and not deleted
     const ownerCondition = eq(dbSchema.userBoards.ownerId, userId);
-    const followedCondition = followedUuids.length > 0
-      ? inArray(dbSchema.userBoards.uuid, followedUuids)
-      : undefined;
-    const matchCondition = followedCondition
-      ? or(ownerCondition, followedCondition)!
-      : ownerCondition;
+    const followedCondition = followedUuids.length > 0 ? inArray(dbSchema.userBoards.uuid, followedUuids) : undefined;
+    const matchCondition = followedCondition ? or(ownerCondition, followedCondition)! : ownerCondition;
     const whereClause = and(matchCondition, isNull(dbSchema.userBoards.deletedAt));
 
-    const [countResult] = await db
-      .select({ count: count() })
-      .from(dbSchema.userBoards)
-      .where(whereClause);
+    const [countResult] = await db.select({ count: count() }).from(dbSchema.userBoards).where(whereClause);
 
     const totalCount = Number(countResult?.count || 0);
 
@@ -725,11 +767,7 @@ export const socialBoardQueries = {
   /**
    * Search public boards
    */
-  searchBoards: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  searchBoards: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     await applyRateLimit(ctx, 20);
     const validatedInput = validateInput(SearchBoardsInputSchema, input, 'input');
     const { query, boardType, latitude, longitude, radiusKm } = validatedInput;
@@ -782,10 +820,7 @@ export const socialBoardQueries = {
 
       const whereClause = and(...conditions);
 
-      const [countResult] = await db
-        .select({ count: count() })
-        .from(dbSchema.userBoards)
-        .where(whereClause);
+      const [countResult] = await db.select({ count: count() }).from(dbSchema.userBoards).where(whereClause);
 
       const totalCount = Number(countResult?.count || 0);
 
@@ -836,10 +871,7 @@ export const socialBoardQueries = {
 
     const whereClause = and(...conditions);
 
-    const [countResult] = await db
-      .select({ count: count() })
-      .from(dbSchema.userBoards)
-      .where(whereClause);
+    const [countResult] = await db.select({ count: count() }).from(dbSchema.userBoards).where(whereClause);
 
     const totalCount = Number(countResult?.count || 0);
 
@@ -866,20 +898,14 @@ export const socialBoardQueries = {
   /**
    * Get popular board configurations ranked by climb count
    */
-  popularBoardConfigs: async (
-    _: unknown,
-    { input }: { input?: unknown },
-    _ctx: ConnectionContext,
-  ) => {
+  popularBoardConfigs: async (_: unknown, { input }: { input?: unknown }, _ctx: ConnectionContext) => {
     const validatedInput = validateInput(PopularBoardConfigsInputSchema, input || {}, 'input');
     const { boardType, limit, offset } = validatedInput;
 
     const allConfigs = await getPopularConfigs();
 
     // Apply optional board type filter
-    const filtered = boardType
-      ? allConfigs.filter((c) => c.boardType === boardType)
-      : allConfigs;
+    const filtered = boardType ? allConfigs.filter((c) => c.boardType === boardType) : allConfigs;
 
     const totalCount = filtered.length;
     const paginated = filtered.slice(offset, offset + limit);
@@ -894,11 +920,7 @@ export const socialBoardQueries = {
   /**
    * Get leaderboard for a board
    */
-  boardLeaderboard: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  boardLeaderboard: async (_: unknown, { input }: { input: unknown }, _ctx: ConnectionContext) => {
     const validatedInput = validateInput(BoardLeaderboardInputSchema, input, 'input');
     const { boardUuid, period } = validatedInput;
     const limit = validatedInput.limit ?? 20;
@@ -931,10 +953,7 @@ export const socialBoardQueries = {
 
     const conditions = [
       eq(dbSchema.boardseshTicks.boardId, board.id),
-      or(
-        eq(dbSchema.boardseshTicks.status, 'flash'),
-        eq(dbSchema.boardseshTicks.status, 'send'),
-      )!,
+      or(eq(dbSchema.boardseshTicks.status, 'flash'), eq(dbSchema.boardseshTicks.status, 'send'))!,
     ];
 
     if (timeFilter) {
@@ -969,7 +988,7 @@ export const socialBoardQueries = {
 
     // Batch fetch user profiles
     const userIds = entries.map((e) => e.userId);
-    let userMap = new Map<string, { displayName?: string; avatarUrl?: string }>();
+    const userMap = new Map<string, { displayName?: string; avatarUrl?: string }>();
 
     if (userIds.length > 0) {
       const users = await db
@@ -1019,11 +1038,7 @@ export const socialBoardQueries = {
   /**
    * Get the user's default board
    */
-  defaultBoard: async (
-    _: unknown,
-    _args: unknown,
-    ctx: ConnectionContext,
-  ) => {
+  defaultBoard: async (_: unknown, _args: unknown, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     const userId = ctx.userId!;
 
@@ -1036,7 +1051,7 @@ export const socialBoardQueries = {
           eq(dbSchema.userBoards.ownerId, userId),
           eq(dbSchema.userBoards.isOwned, true),
           isNull(dbSchema.userBoards.deletedAt),
-        )
+        ),
       )
       .orderBy(desc(dbSchema.userBoards.createdAt))
       .limit(1);
@@ -1049,12 +1064,7 @@ export const socialBoardQueries = {
     const [anyBoard] = await db
       .select()
       .from(dbSchema.userBoards)
-      .where(
-        and(
-          eq(dbSchema.userBoards.ownerId, userId),
-          isNull(dbSchema.userBoards.deletedAt),
-        )
-      )
+      .where(and(eq(dbSchema.userBoards.ownerId, userId), isNull(dbSchema.userBoards.deletedAt)))
       .orderBy(desc(dbSchema.userBoards.createdAt))
       .limit(1);
 
@@ -1074,11 +1084,7 @@ export const socialBoardMutations = {
   /**
    * Create a new board
    */
-  createBoard: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  createBoard: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 10);
 
@@ -1097,7 +1103,7 @@ export const socialBoardMutations = {
           eq(dbSchema.userBoards.sizeId, validatedInput.sizeId),
           eq(dbSchema.userBoards.setIds, validatedInput.setIds),
           isNull(dbSchema.userBoards.deletedAt),
-        )
+        ),
       )
       .limit(1);
 
@@ -1131,7 +1137,7 @@ export const socialBoardMutations = {
               eq(dbSchema.gymMembers.gymId, gym.id),
               eq(dbSchema.gymMembers.userId, userId),
               eq(dbSchema.gymMembers.role, 'admin'),
-            )
+            ),
           )
           .limit(1);
 
@@ -1174,7 +1180,7 @@ export const socialBoardMutations = {
 
             if (validatedInput.latitude != null && validatedInput.longitude != null) {
               await tx.execute(
-                sql`UPDATE gyms SET location = ST_MakePoint(${validatedInput.longitude}, ${validatedInput.latitude})::geography WHERE id = ${newGym.id}`
+                sql`UPDATE gyms SET location = ST_MakePoint(${validatedInput.longitude}, ${validatedInput.latitude})::geography WHERE id = ${newGym.id}`,
               );
             }
 
@@ -1206,14 +1212,14 @@ export const socialBoardMutations = {
 
             if (validatedInput.latitude != null && validatedInput.longitude != null) {
               await tx.execute(
-                sql`UPDATE user_boards SET location = ST_MakePoint(${validatedInput.longitude}, ${validatedInput.latitude})::geography WHERE id = ${newBoard.id}`
+                sql`UPDATE user_boards SET location = ST_MakePoint(${validatedInput.longitude}, ${validatedInput.latitude})::geography WHERE id = ${newBoard.id}`,
               );
             }
 
             return newBoard;
           });
 
-          return enrichBoard(board, userId);
+          return await enrichBoard(board, userId);
         } catch (error) {
           // Auto-gym creation failed; continue to create the board without a gym
           console.error('Auto-gym creation failed, creating board without gym:', error);
@@ -1250,7 +1256,7 @@ export const socialBoardMutations = {
     // Populate PostGIS location column if lat/lon provided
     if (validatedInput.latitude != null && validatedInput.longitude != null) {
       await db.execute(
-        sql`UPDATE user_boards SET location = ST_MakePoint(${validatedInput.longitude}, ${validatedInput.latitude})::geography WHERE id = ${board.id}`
+        sql`UPDATE user_boards SET location = ST_MakePoint(${validatedInput.longitude}, ${validatedInput.latitude})::geography WHERE id = ${board.id}`,
       );
     }
 
@@ -1260,11 +1266,7 @@ export const socialBoardMutations = {
   /**
    * Update a board's metadata
    */
-  updateBoard: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  updateBoard: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 20);
 
@@ -1301,13 +1303,15 @@ export const socialBoardMutations = {
     if (validatedInput.hideLocation !== undefined) updateValues.hideLocation = validatedInput.hideLocation;
     if (validatedInput.isOwned !== undefined) updateValues.isOwned = validatedInput.isOwned;
     if (validatedInput.angle !== undefined) updateValues.angle = validatedInput.angle;
-    if (validatedInput.isAngleAdjustable !== undefined) updateValues.isAngleAdjustable = validatedInput.isAngleAdjustable;
+    if (validatedInput.isAngleAdjustable !== undefined)
+      updateValues.isAngleAdjustable = validatedInput.isAngleAdjustable;
     if (validatedInput.serialNumber !== undefined) updateValues.serialNumber = validatedInput.serialNumber;
 
     // Handle config field changes (layoutId, sizeId, setIds) — only allowed on boards with zero ticks
-    const hasConfigChange = validatedInput.layoutId !== undefined
-      || validatedInput.sizeId !== undefined
-      || validatedInput.setIds !== undefined;
+    const hasConfigChange =
+      validatedInput.layoutId !== undefined ||
+      validatedInput.sizeId !== undefined ||
+      validatedInput.setIds !== undefined;
 
     if (hasConfigChange) {
       const [tickCount] = await db
@@ -1317,7 +1321,7 @@ export const socialBoardMutations = {
 
       if (Number(tickCount?.total || 0) > 0) {
         throw new Error(
-          'Cannot change board configuration because this board has logged climbs. Delete the board and create a new one instead.'
+          'Cannot change board configuration because this board has logged climbs. Delete the board and create a new one instead.',
         );
       }
 
@@ -1338,7 +1342,7 @@ export const socialBoardMutations = {
             eq(dbSchema.userBoards.setIds, newSetIds),
             isNull(dbSchema.userBoards.deletedAt),
             sql`${dbSchema.userBoards.id} != ${board.id}`,
-          )
+          ),
         )
         .limit(1);
 
@@ -1362,7 +1366,7 @@ export const socialBoardMutations = {
             eq(dbSchema.userBoards.slug, validatedInput.slug),
             isNull(dbSchema.userBoards.deletedAt),
             sql`${dbSchema.userBoards.id} != ${board.id}`,
-          )
+          ),
         )
         .limit(1);
 
@@ -1389,12 +1393,10 @@ export const socialBoardMutations = {
       const lon = validatedInput.longitude ?? updated.longitude;
       if (lat != null && lon != null) {
         await db.execute(
-          sql`UPDATE user_boards SET location = ST_MakePoint(${lon}, ${lat})::geography WHERE id = ${updated.id}`
+          sql`UPDATE user_boards SET location = ST_MakePoint(${lon}, ${lat})::geography WHERE id = ${updated.id}`,
         );
       } else {
-        await db.execute(
-          sql`UPDATE user_boards SET location = NULL WHERE id = ${updated.id}`
-        );
+        await db.execute(sql`UPDATE user_boards SET location = NULL WHERE id = ${updated.id}`);
       }
     }
 
@@ -1404,11 +1406,7 @@ export const socialBoardMutations = {
   /**
    * Soft-delete a board
    */
-  deleteBoard: async (
-    _: unknown,
-    { boardUuid }: { boardUuid: string },
-    ctx: ConnectionContext,
-  ): Promise<boolean> => {
+  deleteBoard: async (_: unknown, { boardUuid }: { boardUuid: string }, ctx: ConnectionContext): Promise<boolean> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 10);
 
@@ -1429,10 +1427,7 @@ export const socialBoardMutations = {
       throw new Error('Not authorized to delete this board');
     }
 
-    await db
-      .update(dbSchema.userBoards)
-      .set({ deletedAt: new Date() })
-      .where(eq(dbSchema.userBoards.id, board.id));
+    await db.update(dbSchema.userBoards).set({ deletedAt: new Date() }).where(eq(dbSchema.userBoards.id, board.id));
 
     return true;
   },
@@ -1498,10 +1493,7 @@ export const socialBoardMutations = {
     await db
       .delete(dbSchema.boardFollows)
       .where(
-        and(
-          eq(dbSchema.boardFollows.userId, userId),
-          eq(dbSchema.boardFollows.boardUuid, validatedInput.boardUuid),
-        )
+        and(eq(dbSchema.boardFollows.userId, userId), eq(dbSchema.boardFollows.boardUuid, validatedInput.boardUuid)),
       );
 
     return true;

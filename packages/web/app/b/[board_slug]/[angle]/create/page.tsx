@@ -4,13 +4,9 @@ import { resolveBoardBySlug, boardToRouteParams } from '@/app/lib/board-slug-uti
 import { getBoardDetails } from '@/app/lib/board-constants';
 import { getClimb } from '@/app/lib/data/queries';
 import CreateClimbForm from '@/app/components/create-climb/create-climb-form';
-import {
-  MOONBOARD_LAYOUTS,
-  MOONBOARD_SETS,
-  MoonBoardLayoutKey,
-} from '@/app/lib/moonboard-config';
+import { type MoonBoardLayoutKey, MOONBOARD_LAYOUTS, MOONBOARD_SETS } from '@/app/lib/moonboard-config';
 import type { Climb } from '@/app/lib/types';
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/lib/auth/auth-options';
 
@@ -31,11 +27,15 @@ function getMoonBoardHoldSetImages(layoutKey: MoonBoardLayoutKey, setIds: number
   return sets.filter((s) => setIds.includes(s.id)).map((s) => s.imageFile);
 }
 
-interface CreatePageProps {
+type CreatePageProps = {
   params: Promise<{ board_slug: string; angle: string }>;
-  searchParams: Promise<{ forkFrames?: string; forkName?: string; forkDescription?: string; editClimbUuid?: string }>;
-
-}
+  searchParams: Promise<{
+    forkFrames?: string;
+    forkName?: string;
+    forkDescription?: string;
+    editClimbUuid?: string;
+  }>;
+};
 
 export default async function BoardSlugCreatePage(props: CreatePageProps) {
   const [params, searchParams] = await Promise.all([props.params, props.searchParams]);
@@ -66,7 +66,7 @@ export default async function BoardSlugCreatePage(props: CreatePageProps) {
     );
   }
 
-  const boardDetails = await getBoardDetails(parsedParams);
+  const boardDetails = getBoardDetails(parsedParams);
 
   // When the caller asks to edit an existing climb (drafts, or a recent
   // publish still inside the 24h edit window), load it up-front so the form
@@ -89,7 +89,7 @@ export default async function BoardSlugCreatePage(props: CreatePageProps) {
       } else {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id || loaded.userId !== session.user.id) {
-          editClimbError = "You can only edit your own climbs.";
+          editClimbError = 'You can only edit your own climbs.';
         } else {
           editClimb = loaded;
         }

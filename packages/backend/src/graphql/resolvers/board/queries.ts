@@ -20,14 +20,11 @@ export const boardQueries = {
       })
       .from(dbSchema.boardDifficultyGrades)
       .where(
-        and(
-          eq(dbSchema.boardDifficultyGrades.boardType, boardName),
-          eq(dbSchema.boardDifficultyGrades.isListed, true),
-        ),
+        and(eq(dbSchema.boardDifficultyGrades.boardType, boardName), eq(dbSchema.boardDifficultyGrades.isListed, true)),
       )
       .orderBy(asc(dbSchema.boardDifficultyGrades.difficulty));
 
-    return grades.map(g => ({
+    return grades.map((g) => ({
       difficultyId: g.difficultyId,
       name: g.name || '',
     }));
@@ -52,6 +49,6 @@ export const boardQueries = {
 
     // Handle both possible return types from execute
     const rows = Array.isArray(result) ? result : (result as { rows: { angle: number }[] }).rows;
-    return rows.map(r => ({ angle: r.angle }));
+    return rows.map((r) => ({ angle: r.angle }));
   },
 };

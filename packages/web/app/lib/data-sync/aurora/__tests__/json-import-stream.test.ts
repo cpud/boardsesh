@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import type { ImportProgressEvent, ImportResult } from '../json-import';
+import type { streamImport as _streamImportType } from '../json-import-stream';
 
 // ---------------------------------------------------------------------------
 // Helpers to build a mock ReadableStream from chunks
@@ -49,9 +50,7 @@ function makeResult(overrides: Partial<ImportResult> = {}): ImportResult {
  * Creates a stream that returns a complete event with the given result.
  */
 function makeCompleteStream(result: ImportResult): ReadableStream<Uint8Array> {
-  const events: ImportProgressEvent[] = [
-    { type: 'complete', results: result },
-  ];
+  const events: ImportProgressEvent[] = [{ type: 'complete', results: result }];
   return createMockReadableStream([events.map((e) => JSON.stringify(e)).join('\n') + '\n']);
 }
 
@@ -60,7 +59,7 @@ function makeCompleteStream(result: ImportResult): ReadableStream<Uint8Array> {
 // ---------------------------------------------------------------------------
 
 describe('streamImport', () => {
-  let streamImport: typeof import('../json-import-stream').streamImport;
+  let streamImport: typeof _streamImportType;
 
   beforeEach(async () => {
     vi.restoreAllMocks();
@@ -92,16 +91,19 @@ describe('streamImport', () => {
     });
 
     it('handles events split across multiple stream chunks', async () => {
-      const event1 = JSON.stringify({ type: 'progress', step: 'resolving', message: 'hi' } satisfies ImportProgressEvent);
-      const complete = JSON.stringify({ type: 'complete', results: emptyResult } satisfies ImportProgressEvent);
+      const event1 = JSON.stringify({
+        type: 'progress',
+        step: 'resolving',
+        message: 'hi',
+      } satisfies ImportProgressEvent);
+      const complete = JSON.stringify({
+        type: 'complete',
+        results: emptyResult,
+      } satisfies ImportProgressEvent);
 
       // Split event1 across two chunks
       const half = Math.floor(event1.length / 2);
-      const streamChunks = [
-        event1.slice(0, half),
-        event1.slice(half) + '\n',
-        complete + '\n',
-      ];
+      const streamChunks = [event1.slice(0, half), event1.slice(half) + '\n', complete + '\n'];
 
       const stream = createMockReadableStream(streamChunks);
       vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockFetchResponse(stream));
@@ -131,7 +133,11 @@ describe('streamImport', () => {
   describe('error handling', () => {
     it('throws on non-ok response with JSON error body', async () => {
       vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        mockFetchResponse(null, { ok: false, status: 400, jsonBody: { error: 'Bad request data' } }),
+        mockFetchResponse(null, {
+          ok: false,
+          status: 400,
+          jsonBody: { error: 'Bad request data' },
+        }),
       );
 
       await expect(streamImport('kilter', { user: { username: 'test' } }, vi.fn())).rejects.toThrow('Bad request data');
@@ -155,7 +161,11 @@ describe('streamImport', () => {
     });
 
     it('skips malformed JSON lines without throwing', async () => {
-      const validEvent: ImportProgressEvent = { type: 'progress', step: 'resolving', message: 'ok' };
+      const validEvent: ImportProgressEvent = {
+        type: 'progress',
+        step: 'resolving',
+        message: 'ok',
+      };
       const completeEvent: ImportProgressEvent = { type: 'complete', results: emptyResult };
       const streamChunks = [
         'not valid json\n' + JSON.stringify(validEvent) + '\n' + JSON.stringify(completeEvent) + '\n',
@@ -173,13 +183,16 @@ describe('streamImport', () => {
     });
 
     it('propagates server error events from stream', async () => {
-      const errorEvent: ImportProgressEvent = { type: 'error', error: 'Database connection failed' };
+      const errorEvent: ImportProgressEvent = {
+        type: 'error',
+        error: 'Database connection failed',
+      };
       const stream = createMockReadableStream([JSON.stringify(errorEvent) + '\n']);
       vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockFetchResponse(stream));
 
-      await expect(
-        streamImport('kilter', { user: { username: 'test' }, ascents: [1] }, vi.fn()),
-      ).rejects.toThrow('Database connection failed');
+      await expect(streamImport('kilter', { user: { username: 'test' }, ascents: [1] }, vi.fn())).rejects.toThrow(
+        'Database connection failed',
+      );
     });
 
     it('skips malformed JSON in remaining buffer without throwing', async () => {
@@ -197,22 +210,26 @@ describe('streamImport', () => {
 
     it('throws when server stream ends without a complete or error event', async () => {
       // Stream with only progress events, no complete/error
-      const progressOnly: ImportProgressEvent = { type: 'progress', step: 'resolving', message: 'working...' };
+      const progressOnly: ImportProgressEvent = {
+        type: 'progress',
+        step: 'resolving',
+        message: 'working...',
+      };
       const stream = createMockReadableStream([JSON.stringify(progressOnly) + '\n']);
       vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockFetchResponse(stream));
 
-      await expect(
-        streamImport('kilter', { user: { username: 'test' }, ascents: [1] }, vi.fn()),
-      ).rejects.toThrow('Import was interrupted: server response ended without a result');
+      await expect(streamImport('kilter', { user: { username: 'test' }, ascents: [1] }, vi.fn())).rejects.toThrow(
+        'Import was interrupted: server response ended without a result',
+      );
     });
 
     it('throws when server stream is completely empty', async () => {
       const stream = createMockReadableStream([]);
       vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockFetchResponse(stream));
 
-      await expect(
-        streamImport('kilter', { user: { username: 'test' } }, vi.fn()),
-      ).rejects.toThrow('Import was interrupted: server response ended without a result');
+      await expect(streamImport('kilter', { user: { username: 'test' } }, vi.fn())).rejects.toThrow(
+        'Import was interrupted: server response ended without a result',
+      );
     });
   });
 
@@ -223,7 +240,8 @@ describe('streamImport', () => {
       const result = makeResult({ ascents: { imported: 500, skipped: 0, failed: 0 } });
       const result2 = makeResult({ ascents: { imported: 100, skipped: 0, failed: 0 } });
 
-      const fetchSpy = vi.spyOn(globalThis, 'fetch')
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
         .mockResolvedValueOnce(mockFetchResponse(makeCompleteStream(result)))
         .mockResolvedValueOnce(mockFetchResponse(makeCompleteStream(result2)));
 
@@ -277,13 +295,14 @@ describe('streamImport', () => {
       const ascents = Array.from({ length: 100 }, (_, i) => ({ id: i }));
       const attempts = Array.from({ length: 100 }, (_, i) => ({ id: i }));
 
-      const fetchSpy = vi.spyOn(globalThis, 'fetch')
-        .mockResolvedValueOnce(mockFetchResponse(makeCompleteStream(
-          makeResult({ ascents: { imported: 100, skipped: 0, failed: 0 } }),
-        )))
-        .mockResolvedValueOnce(mockFetchResponse(makeCompleteStream(
-          makeResult({ attempts: { imported: 100, skipped: 0, failed: 0 } }),
-        )));
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValueOnce(
+          mockFetchResponse(makeCompleteStream(makeResult({ ascents: { imported: 100, skipped: 0, failed: 0 } }))),
+        )
+        .mockResolvedValueOnce(
+          mockFetchResponse(makeCompleteStream(makeResult({ attempts: { imported: 100, skipped: 0, failed: 0 } }))),
+        );
 
       await streamImport('kilter', { user: { username: 'test' }, ascents, attempts }, vi.fn());
 
@@ -304,7 +323,8 @@ describe('streamImport', () => {
       const ascents = Array.from({ length: 100 }, (_, i) => ({ id: i }));
       const circuits = [{ name: 'My Circuit', color: 'ff0000', created_at: '2024-01-01', climbs: [] }];
 
-      const fetchSpy = vi.spyOn(globalThis, 'fetch')
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
         .mockResolvedValueOnce(mockFetchResponse(makeCompleteStream(emptyResult)))
         .mockResolvedValueOnce(mockFetchResponse(makeCompleteStream(emptyResult)));
 
@@ -319,15 +339,20 @@ describe('streamImport', () => {
     });
 
     it('sends a single request for small data sets', async () => {
-      const fetchSpy = vi.spyOn(globalThis, 'fetch')
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
         .mockResolvedValueOnce(mockFetchResponse(makeCompleteStream(emptyResult)));
 
-      await streamImport('kilter', {
-        user: { username: 'test' },
-        ascents: [{ id: 1 }],
-        attempts: [],
-        circuits: [],
-      }, vi.fn());
+      await streamImport(
+        'kilter',
+        {
+          user: { username: 'test' },
+          ascents: [{ id: 1 }],
+          attempts: [],
+          circuits: [],
+        },
+        vi.fn(),
+      );
 
       expect(fetchSpy).toHaveBeenCalledTimes(1);
       const body = JSON.parse(fetchSpy.mock.calls[0][1]!.body as string);
@@ -335,7 +360,8 @@ describe('streamImport', () => {
     });
 
     it('handles empty data by sending a single empty chunk', async () => {
-      const fetchSpy = vi.spyOn(globalThis, 'fetch')
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
         .mockResolvedValueOnce(mockFetchResponse(makeCompleteStream(emptyResult)));
 
       await streamImport('kilter', { user: { username: 'test' } }, vi.fn());
@@ -355,16 +381,49 @@ describe('streamImport', () => {
       const errorEvent: ImportProgressEvent = { type: 'error', error: 'Server overloaded' };
       const errorStream = createMockReadableStream([JSON.stringify(errorEvent) + '\n']);
 
-      const fetchSpy = vi.spyOn(globalThis, 'fetch')
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
         .mockResolvedValueOnce(mockFetchResponse(makeCompleteStream(emptyResult)))
         .mockResolvedValueOnce(mockFetchResponse(errorStream));
 
-      await expect(
-        streamImport('kilter', { user: { username: 'test' }, ascents }, vi.fn()),
-      ).rejects.toThrow('Server overloaded');
+      await expect(streamImport('kilter', { user: { username: 'test' }, ascents }, vi.fn())).rejects.toThrow(
+        'Server overloaded',
+      );
 
       // Only 2 calls made (stopped at the error)
       expect(fetchSpy).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('new Aurora boards (decoy, touchstone, grasshopper)', () => {
+    it('passes decoy boardType to the import endpoint', async () => {
+      const stream = makeCompleteStream(emptyResult);
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockFetchResponse(stream));
+
+      await streamImport('decoy', { user: { username: 'test' }, ascents: [{ id: 1 }] }, vi.fn());
+
+      const body = JSON.parse(fetchSpy.mock.calls[0][1]?.body as string);
+      expect(body.boardType).toBe('decoy');
+    });
+
+    it('passes touchstone boardType to the import endpoint', async () => {
+      const stream = makeCompleteStream(emptyResult);
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockFetchResponse(stream));
+
+      await streamImport('touchstone', { user: { username: 'test' } }, vi.fn());
+
+      const body = JSON.parse(fetchSpy.mock.calls[0][1]?.body as string);
+      expect(body.boardType).toBe('touchstone');
+    });
+
+    it('passes grasshopper boardType to the import endpoint', async () => {
+      const stream = makeCompleteStream(emptyResult);
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockFetchResponse(stream));
+
+      await streamImport('grasshopper', { user: { username: 'test' } }, vi.fn());
+
+      const body = JSON.parse(fetchSpy.mock.calls[0][1]?.body as string);
+      expect(body.boardType).toBe('grasshopper');
     });
   });
 });

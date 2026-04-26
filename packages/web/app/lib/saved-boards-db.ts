@@ -1,5 +1,5 @@
 import { createIndexedDBStore } from './idb-helper';
-import { BoardName } from '@/app/lib/types';
+import type { BoardName } from '@/app/lib/types';
 
 const STORE_NAME = 'board-configurations';
 
@@ -25,9 +25,7 @@ export const loadSavedBoards = async (): Promise<StoredBoardConfig[]> => {
     const db = await getDB();
     if (!db) return [];
     const allConfigs = await db.getAll(STORE_NAME);
-    return allConfigs.sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
+    return allConfigs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   } catch (error) {
     console.error('Failed to load saved boards:', error);
     return [];

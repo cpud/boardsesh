@@ -55,31 +55,16 @@
 	</array>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSExceptionDomains</key>
-		<dict>
-			<key>ts.net</key>
-			<dict>
-				<key>NSIncludesSubdomains</key>
-				<true/>
-				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-				<true/>
-				<key>NSExceptionRequiresForwardSecrecy</key>
-				<false/>
-			</dict>
-		</dict>
-	</dict>
 	<key>WKAppBoundDomains</key>
 	<array>
 		<string>boardsesh.com</string>
 		<string>www.boardsesh.com</string>
-		<string>ts.net</string>
+		<string>tailedd9d5.ts.net</string>
 	</array>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Boardsesh reads your Apple Health data to avoid duplicate workout entries when saving climbing sessions.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Boardsesh saves your climbing sessions to Apple Health as workouts so they count toward your activity rings.</string>
-	<key>NSHealthShareUsageDescription</key>
-	<string>Boardsesh reads your workout data from Apple Health to display your climbing activity history and workout insights.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Boardsesh uses Bluetooth to connect to your Kilter Board, Tension Board, or MoonBoard and light up climbing holds. No personal data is sent over Bluetooth.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

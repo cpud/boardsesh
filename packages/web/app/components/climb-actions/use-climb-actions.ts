@@ -6,23 +6,19 @@ import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { track } from '@vercel/analytics';
 import { useQueueActions } from '../graphql-queue';
 import { useFavorite } from './use-favorite';
-import {
-  constructCreateClimbUrl,
-  constructClimbInfoUrl,
-  getContextAwareClimbViewUrl,
-} from '@/app/lib/url-utils';
-import { Climb, BoardDetails } from '@/app/lib/types';
-import { UseClimbActionsReturn } from './types';
+import { constructCreateClimbUrl, constructClimbInfoUrl, getContextAwareClimbViewUrl } from '@/app/lib/url-utils';
+import type { Climb, BoardDetails } from '@/app/lib/types';
+import type { UseClimbActionsReturn } from './types';
 import { openExternalUrl } from '@/app/lib/open-external-url';
 import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 
-interface UseClimbActionsOptions {
+type UseClimbActionsOptions = {
   climb: Climb;
   boardDetails: BoardDetails;
   angle: number;
   auroraAppUrl?: string;
   onActionComplete?: (action: string) => void;
-}
+};
 
 export function useClimbActions({
   climb,
@@ -39,7 +35,12 @@ export function useClimbActions({
   const [recentlyAddedToQueue, setRecentlyAddedToQueue] = useState(false);
   const { openAuthModal } = useAuthModal();
 
-  const { isFavorited, isLoading: isFavoriteLoading, toggleFavorite, isAuthenticated } = useFavorite({
+  const {
+    isFavorited,
+    isLoading: isFavoriteLoading,
+    toggleFavorite,
+    isAuthenticated,
+  } = useFavorite({
     climbUuid: climb?.uuid ?? '',
   });
 
@@ -55,13 +56,7 @@ export function useClimbActions({
   // URLs
   const viewDetailsUrl = useMemo(() => {
     if (!climb) return '';
-    return getContextAwareClimbViewUrl(
-      pathname,
-      boardDetails,
-      angle,
-      climb.uuid,
-      climb.name,
-    );
+    return getContextAwareClimbViewUrl(pathname, boardDetails, angle, climb.uuid, climb.name);
   }, [climb, pathname, boardDetails, angle]);
 
   const forkUrl = useMemo(() => {
@@ -113,7 +108,7 @@ export function useClimbActions({
 
     if (!isAuthenticated) {
       openAuthModal({
-        title: "Sign in to save favorites",
+        title: 'Sign in to save favorites',
         description: `Sign in to save "${climb.name}" to your favorites.`,
       });
       return;
@@ -184,9 +179,7 @@ export function useClimbActions({
   const handleShare = useCallback(async () => {
     if (!climb) return;
 
-    const shareUrl = typeof window !== 'undefined'
-      ? `${window.location.origin}${viewDetailsUrl}`
-      : viewDetailsUrl;
+    const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}${viewDetailsUrl}` : viewDetailsUrl;
 
     const shareData = {
       title: climb.name,
@@ -224,7 +217,7 @@ export function useClimbActions({
         }
       }
     }
-  }, [climb, viewDetailsUrl, boardDetails.board_name, onActionComplete]);
+  }, [climb, viewDetailsUrl, boardDetails.board_name, onActionComplete, showMessage]);
 
   return {
     // Action handlers

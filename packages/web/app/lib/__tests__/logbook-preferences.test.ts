@@ -1,9 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import {
-  ALL_LAYOUT_SELECTIONS,
-  DEFAULT_LOGBOOK_PREFERENCES,
-  sanitizeLogbookPreferences,
-} from '../logbook-preferences';
+import { describe, expect, it } from 'vite-plus/test';
+import { ALL_LAYOUT_SELECTIONS, DEFAULT_LOGBOOK_PREFERENCES, sanitizeLogbookPreferences } from '../logbook-preferences';
 
 describe('sanitizeLogbookPreferences', () => {
   it('returns defaults for non-object values', () => {

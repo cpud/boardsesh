@@ -17,12 +17,12 @@ import {
 } from '@/app/lib/graphql/operations';
 import CommentItem from './comment-item';
 
-interface CommentListProps {
+type CommentListProps = {
   entityType: SocialEntityType;
   entityId: string;
   refreshKey?: number;
   currentUserId?: string | null;
-}
+};
 
 const PAGE_SIZE = 20;
 
@@ -39,18 +39,15 @@ export default function CommentList({ entityType, entityId, refreshKey = 0, curr
     async (offset: number, append: boolean) => {
       try {
         const client = createGraphQLHttpClient(token);
-        const response = await client.request<GetCommentsQueryResponse, GetCommentsQueryVariables>(
-          GET_COMMENTS,
-          {
-            input: {
-              entityType,
-              entityId,
-              sortBy,
-              limit: PAGE_SIZE,
-              offset,
-            },
+        const response = await client.request<GetCommentsQueryResponse, GetCommentsQueryVariables>(GET_COMMENTS, {
+          input: {
+            entityType,
+            entityId,
+            sortBy,
+            limit: PAGE_SIZE,
+            offset,
           },
-        );
+        });
 
         const result = response.comments;
         if (append) {
@@ -69,7 +66,7 @@ export default function CommentList({ entityType, entityId, refreshKey = 0, curr
 
   useEffect(() => {
     setIsLoading(true);
-    fetchComments(0, false).finally(() => setIsLoading(false));
+    void fetchComments(0, false).finally(() => setIsLoading(false));
   }, [fetchComments, refreshKey]);
 
   const handleLoadMore = useCallback(async () => {
@@ -78,14 +75,11 @@ export default function CommentList({ entityType, entityId, refreshKey = 0, curr
     setIsLoadingMore(false);
   }, [fetchComments, comments.length]);
 
-  const handleSortChange = useCallback(
-    (_: React.MouseEvent<HTMLElement>, newSort: SortMode | null) => {
-      if (newSort) {
-        setSortBy(newSort);
-      }
-    },
-    [],
-  );
+  const handleSortChange = useCallback((_: React.MouseEvent<HTMLElement>, newSort: SortMode | null) => {
+    if (newSort) {
+      setSortBy(newSort);
+    }
+  }, []);
 
   const handleCommentUpdated = useCallback((updated: CommentType) => {
     setComments((prev) => prev.map((c) => (c.uuid === updated.uuid ? updated : c)));
@@ -105,15 +99,12 @@ export default function CommentList({ entityType, entityId, refreshKey = 0, curr
   hasMoreRef.current = hasMore;
   isLoadingMoreRef.current = isLoadingMore;
 
-  const handleObserver = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      const [target] = entries;
-      if (target.isIntersecting && hasMoreRef.current && !isLoadingMoreRef.current) {
-        handleLoadMoreRef.current();
-      }
-    },
-    [],
-  );
+  const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
+    const [target] = entries;
+    if (target.isIntersecting && hasMoreRef.current && !isLoadingMoreRef.current) {
+      void handleLoadMoreRef.current();
+    }
+  }, []);
 
   useEffect(() => {
     const element = sentinelRef.current;
@@ -148,12 +139,7 @@ export default function CommentList({ entityType, entityId, refreshKey = 0, curr
           <MuiTypography variant="caption" color="text.secondary">
             {totalCount} {totalCount === 1 ? 'comment' : 'comments'}
           </MuiTypography>
-          <ToggleButtonGroup
-            value={sortBy}
-            exclusive
-            onChange={handleSortChange}
-            size="small"
-          >
+          <ToggleButtonGroup value={sortBy} exclusive onChange={handleSortChange} size="small">
             <ToggleButton value="new" sx={{ textTransform: 'none', px: 1, py: 0.25, fontSize: 12 }}>
               New
             </ToggleButton>

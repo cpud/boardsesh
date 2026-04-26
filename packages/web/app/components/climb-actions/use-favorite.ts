@@ -39,11 +39,7 @@ export function useFavorite({ climbUuid }: UseFavoriteOptions): UseFavoriteRetur
 
   // Read loading/auth from external store — components only re-render when
   // the specific value they read changes, not when any context field changes.
-  const isLoading = useSyncExternalStore(
-    favoritesStore.subscribe,
-    favoritesStore.getIsLoading,
-    () => false,
-  );
+  const isLoading = useSyncExternalStore(favoritesStore.subscribe, favoritesStore.getIsLoading, () => false);
 
   const isAuthenticated = useSyncExternalStore(
     favoritesStore.subscribe,

@@ -12,11 +12,11 @@ import styles from './board-scroll.module.css';
 
 export type FindNearbyStatus = 'idle' | 'loading' | 'geo-denied' | 'error' | 'no-results';
 
-interface FindNearbyCardProps {
+type FindNearbyCardProps = {
   onClick: () => void;
   status?: FindNearbyStatus;
   size?: 'default' | 'small';
-}
+};
 
 export default function FindNearbyCard({ onClick, status = 'idle', size = 'default' }: FindNearbyCardProps) {
   const isSmall = size === 'small';
@@ -60,22 +60,35 @@ export default function FindNearbyCard({ onClick, status = 'idle', size = 'defau
       break;
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (isError) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
-    <div className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ''}`} onClick={isError ? undefined : onClick}>
+    <div
+      className={`${styles.cardScroll} ${isSmall ? styles.cardScrollSmall : ''}`}
+      onClick={isError ? undefined : onClick}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={isError ? -1 : 0}
+      aria-label={label}
+      aria-disabled={isError || undefined}
+    >
       <div className={`${styles.cardSquare} ${isError ? styles.cardSquareDisabled : ''}`}>
         <div className={styles.findNearbyBoard}>
-          <BoardRenderer
-            mirrored={false}
-            boardDetails={boardDetails}
-            thumbnail
-            fillHeight
-          />
+          <BoardRenderer mirrored={false} boardDetails={boardDetails} thumbnail fillHeight />
         </div>
-        <div className={styles.findNearbyOverlay}>
-          {icon}
-        </div>
+        <div className={styles.findNearbyOverlay}>{icon}</div>
       </div>
-      <div className={`${styles.cardName} ${status === 'geo-denied' || status === 'error' ? styles.cardNameError : ''} ${status === 'no-results' ? styles.cardNameDisabled : ''}`}>{label}</div>
+      <div
+        className={`${styles.cardName} ${status === 'geo-denied' || status === 'error' ? styles.cardNameError : ''} ${status === 'no-results' ? styles.cardNameDisabled : ''}`}
+      >
+        {label}
+      </div>
     </div>
   );
 }

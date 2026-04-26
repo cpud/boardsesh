@@ -1,12 +1,11 @@
-import { createClient, Client, Sink } from 'graphql-ws';
+import { type Client, type Sink, createClient } from 'graphql-ws';
 import { connectionManager, KEEP_ALIVE_MS } from '../connection-manager/websocket-connection-manager';
+import { INITIAL_RETRY_DELAY_MS, MAX_RETRY_DELAY_MS, BACKOFF_MULTIPLIER } from './retry-constants';
 
 export type { Client };
 
 const DEBUG = process.env.NODE_ENV === 'development';
 const MUTATION_TIMEOUT_MS = 30_000; // 30 second timeout for mutations
-
-import { INITIAL_RETRY_DELAY_MS, MAX_RETRY_DELAY_MS, BACKOFF_MULTIPLIER } from './retry-constants';
 
 let clientCounter = 0;
 
@@ -17,25 +16,23 @@ function getOperationName(operation: { query: string }, type: 'mutation' | 'quer
   const cached = operationNameCache.get(operation);
   if (cached) return cached;
 
-  const pattern = type === 'subscription'
-    ? /subscription\s+(\w+)/
-    : /(?:mutation|query)\s+(\w+)/;
+  const pattern = type === 'subscription' ? /subscription\s+(\w+)/ : /(?:mutation|query)\s+(\w+)/;
   const match = operation.query.match(pattern);
   const name = match ? match[1] : 'unknown';
   operationNameCache.set(operation, name);
   return name;
 }
 
-export interface ExtendedClient extends Client {
+export type ExtendedClient = {
   onReconnect?: (callback: () => void) => void;
-}
+} & Client;
 
-export interface GraphQLClientOptions {
+export type GraphQLClientOptions = {
   url: string;
   authToken?: string | null;
   onReconnect?: () => void;
   connectionName?: string;
-}
+};
 
 /**
  * Creates a GraphQL-WS client for connecting to the Boardsesh backend
@@ -51,16 +48,15 @@ export function createGraphQLClient(
   onReconnect?: () => void,
 ): ExtendedClient {
   // Handle both signatures for backwards compatibility
-  const options: GraphQLClientOptions = typeof urlOrOptions === 'string'
-    ? { url: urlOrOptions, onReconnect }
-    : urlOrOptions;
+  const options: GraphQLClientOptions =
+    typeof urlOrOptions === 'string' ? { url: urlOrOptions, onReconnect } : urlOrOptions;
 
   const { url, authToken, onReconnect: onReconnectCallback, connectionName } = options;
   const managerConnectionName = connectionName ?? 'primary';
 
   const clientId = ++clientCounter;
 
-  if (DEBUG) console.log(`[GraphQL] Creating client #${clientId} for ${url} (authenticated: ${!!authToken})`);
+  if (DEBUG) console.info(`[GraphQL] Creating client #${clientId} for ${url} (authenticated: ${!!authToken})`);
 
   let hasConnectedOnce = false;
 
@@ -73,7 +69,7 @@ export function createGraphQLClient(
     constructor(url: string | URL, protocols?: string | string[]) {
       super(url, protocols);
       this.addEventListener('error', (event) => {
-        if (DEBUG) console.log(`[GraphQL] Client #${clientId} WebSocket native error suppressed`, event);
+        if (DEBUG) console.info(`[GraphQL] Client #${clientId} WebSocket native error suppressed`, event);
       });
     }
   }
@@ -85,11 +81,8 @@ export function createGraphQLClient(
     shouldRetry: () => true,
     // Exponential backoff: 1s, 2s, 4s, 8s, 16s, 30s, 30s, ...
     retryWait: async (retryCount) => {
-      const delay = Math.min(
-        INITIAL_RETRY_DELAY_MS * Math.pow(BACKOFF_MULTIPLIER, retryCount),
-        MAX_RETRY_DELAY_MS,
-      );
-      if (DEBUG) console.log(`[GraphQL] Client #${clientId} retry #${retryCount + 1}, waiting ${delay}ms`);
+      const delay = Math.min(INITIAL_RETRY_DELAY_MS * Math.pow(BACKOFF_MULTIPLIER, retryCount), MAX_RETRY_DELAY_MS);
+      if (DEBUG) console.info(`[GraphQL] Client #${clientId} retry #${retryCount + 1}, waiting ${delay}ms`);
       await new Promise((resolve) => setTimeout(resolve, delay));
     },
     // Lazy connection - only connects when first subscription/mutation is made
@@ -100,18 +93,18 @@ export function createGraphQLClient(
     connectionParams: authToken ? { authToken } : undefined,
     on: {
       connected: () => {
-        if (DEBUG) console.log(`[GraphQL] Client #${clientId} connected (first: ${!hasConnectedOnce})`);
+        if (DEBUG) console.info(`[GraphQL] Client #${clientId} connected (first: ${!hasConnectedOnce})`);
         if (hasConnectedOnce && onReconnectCallback) {
-          if (DEBUG) console.log(`[GraphQL] Client #${clientId} reconnected, calling onReconnect`);
+          if (DEBUG) console.info(`[GraphQL] Client #${clientId} reconnected, calling onReconnect`);
           onReconnectCallback();
         }
         hasConnectedOnce = true;
       },
       closed: (event) => {
-        if (DEBUG) console.log(`[GraphQL] Client #${clientId} closed`, event);
+        if (DEBUG) console.info(`[GraphQL] Client #${clientId} closed`, event);
       },
       error: (error) => {
-        if (DEBUG) console.log(`[GraphQL] Client #${clientId} error`, error);
+        if (DEBUG) console.info(`[GraphQL] Client #${clientId} error`, error);
       },
     },
   }) as ExtendedClient;
@@ -151,7 +144,7 @@ export function execute<TData = unknown, TVariables = Record<string, unknown>>(
 ): Promise<TData> {
   const opName = getOperationName(operation, 'mutation');
 
-  if (DEBUG) console.log(`[GraphQL] execute START: ${opName}`);
+  if (DEBUG) console.info(`[GraphQL] execute START: ${opName}`);
 
   const executionPromise = new Promise<TData>((resolve, reject) => {
     let result: TData | undefined;
@@ -161,7 +154,12 @@ export function execute<TData = unknown, TVariables = Record<string, unknown>>(
       { query: operation.query, variables: operation.variables as Record<string, unknown> },
       {
         next: (data) => {
-          if (DEBUG) console.log(`[GraphQL] execute NEXT: ${opName}`, data.data ? 'has data' : 'no data', data.errors ? 'has errors' : 'no errors');
+          if (DEBUG)
+            console.info(
+              `[GraphQL] execute NEXT: ${opName}`,
+              data.data ? 'has data' : 'no data',
+              data.errors ? 'has errors' : 'no errors',
+            );
           // GraphQL can return null data values; keep the latest payload when present.
           if ('data' in data) {
             result = data.data as TData;
@@ -175,7 +173,7 @@ export function execute<TData = unknown, TVariables = Record<string, unknown>>(
           }
         },
         error: (err) => {
-          if (DEBUG) console.log(`[GraphQL] execute ERROR: ${opName}`, err);
+          if (DEBUG) console.info(`[GraphQL] execute ERROR: ${opName}`, err);
           if (!hasResolved) {
             hasResolved = true;
             unsubscribe();
@@ -188,7 +186,7 @@ export function execute<TData = unknown, TVariables = Record<string, unknown>>(
           }
         },
         complete: () => {
-          if (DEBUG) console.log(`[GraphQL] execute COMPLETE: ${opName}`);
+          if (DEBUG) console.info(`[GraphQL] execute COMPLETE: ${opName}`);
           if (!hasResolved) {
             hasResolved = true;
             unsubscribe();
@@ -224,13 +222,13 @@ export function subscribe<TData = unknown, TVariables = Record<string, unknown>>
 ): () => void {
   const opName = getOperationName(operation, 'subscription');
 
-  if (DEBUG) console.log(`[GraphQL] subscribe START: ${opName}`);
+  if (DEBUG) console.info(`[GraphQL] subscribe START: ${opName}`);
 
   return client.subscribe<TData>(
     { query: operation.query, variables: operation.variables as Record<string, unknown> },
     {
       next: (data) => {
-        if (DEBUG) console.log(`[GraphQL] subscribe NEXT: ${opName}`);
+        if (DEBUG) console.info(`[GraphQL] subscribe NEXT: ${opName}`);
         if (data.data) {
           sink.next?.(data.data);
         }
@@ -239,14 +237,14 @@ export function subscribe<TData = unknown, TVariables = Record<string, unknown>>
         }
       },
       error: (error) => {
-        if (DEBUG) console.log(`[GraphQL] subscribe ERROR: ${opName}`, error);
+        if (DEBUG) console.info(`[GraphQL] subscribe ERROR: ${opName}`, error);
         // graphql-ws passes raw DOM Events (ErrorEvent/CloseEvent) when the WebSocket
         // connection fails. Always forward a proper Error so callers and Sentry never
         // receive "Event `Event` (type=error) captured as promise rejection".
         sink.error?.(error instanceof Error ? error : new Error(String(error)));
       },
       complete: () => {
-        if (DEBUG) console.log(`[GraphQL] subscribe COMPLETE: ${opName}`);
+        if (DEBUG) console.info(`[GraphQL] subscribe COMPLETE: ${opName}`);
         sink.complete?.();
       },
     },

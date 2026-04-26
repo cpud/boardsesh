@@ -1,10 +1,11 @@
 import 'fake-indexeddb/auto';
 import { openDB } from 'idb';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import React from 'react';
 import { getPreference, setPreference, removePreference } from '@/app/lib/user-preferences-db';
 import type { BoardDetails } from '@/app/lib/types';
+import { PersistentSessionProvider, usePersistentSession } from '../persistent-session-context';
 
 // ---------------------------------------------------------------------------
 // Mock heavy dependencies that PersistentSessionProvider relies on
@@ -47,7 +48,6 @@ vi.mock('@/app/utils/hash', () => ({
 }));
 
 // Import AFTER mocks are set up
-import { PersistentSessionProvider, usePersistentSession } from '../persistent-session-context';
 
 // ---------------------------------------------------------------------------
 // Constants matching the source
@@ -119,7 +119,13 @@ describe('Active session persistence', () => {
       sessionId: 'session-123',
       boardPath: '/kilter/1/10/1,2/40/list',
       boardDetails: createTestBoardDetails(),
-      parsedParams: { board_name: 'kilter' as const, layout_id: 1, size_id: 10, set_ids: [1, 2], angle: 40 },
+      parsedParams: {
+        board_name: 'kilter' as const,
+        layout_id: 1,
+        size_id: 10,
+        set_ids: [1, 2],
+        angle: 40,
+      },
     };
 
     await setPreference(ACTIVE_SESSION_KEY, sessionInfo);
@@ -160,7 +166,13 @@ describe('PersistentSessionProvider auto-restore on mount', () => {
       sessionId: 'session-abc',
       boardPath: '/kilter/1/10/1,2/40/list',
       boardDetails,
-      parsedParams: { board_name: 'kilter' as const, layout_id: 1, size_id: 10, set_ids: [1, 2], angle: 40 },
+      parsedParams: {
+        board_name: 'kilter' as const,
+        layout_id: 1,
+        size_id: 10,
+        set_ids: [1, 2],
+        angle: 40,
+      },
     };
 
     await setPreference(ACTIVE_SESSION_KEY, sessionInfo);
@@ -188,7 +200,13 @@ describe('PersistentSessionProvider auto-restore on mount', () => {
       sessionId: 'new-session',
       boardPath: '/kilter/1/10/1,2/40/list',
       boardDetails: createTestBoardDetails(),
-      parsedParams: { board_name: 'kilter' as const, layout_id: 1, size_id: 10, set_ids: [1, 2], angle: 40 },
+      parsedParams: {
+        board_name: 'kilter' as const,
+        layout_id: 1,
+        size_id: 10,
+        set_ids: [1, 2],
+        angle: 40,
+      },
     };
 
     act(() => {
@@ -208,7 +226,13 @@ describe('PersistentSessionProvider auto-restore on mount', () => {
       sessionId: 'to-deactivate',
       boardPath: '/kilter/1/10/1,2/40/list',
       boardDetails: createTestBoardDetails(),
-      parsedParams: { board_name: 'kilter' as const, layout_id: 1, size_id: 10, set_ids: [1, 2], angle: 40 },
+      parsedParams: {
+        board_name: 'kilter' as const,
+        layout_id: 1,
+        size_id: 10,
+        set_ids: [1, 2],
+        angle: 40,
+      },
     };
     await setPreference(ACTIVE_SESSION_KEY, sessionInfo);
 

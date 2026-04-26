@@ -2,12 +2,12 @@ import { eq, and, desc, sql } from 'drizzle-orm';
 import type { ConnectionContext } from '@boardsesh/shared-schema';
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
-import { requireAuthenticated, validateInput } from '../shared/helpers';
+import { requireAuthenticated, validateInput, isNoMatchClimb } from '../shared/helpers';
 import { ActivityFeedInputSchema } from '../../../validation/schemas';
 import { encodeCursor, decodeCursor } from '../../../utils/feed-cursor';
 
 function mapFeedItemToGraphQL(row: typeof dbSchema.feedItems.$inferSelect) {
-  const meta = (row.metadata || {}) as Record<string, unknown>;
+  const meta = row.metadata || {};
   return {
     id: String(row.id),
     type: row.type,
@@ -29,6 +29,7 @@ function mapFeedItemToGraphQL(row: typeof dbSchema.feedItems.$inferSelect) {
     commentBody: (meta.commentBody as string) ?? null,
     isMirror: (meta.isMirror as boolean) ?? null,
     isBenchmark: (meta.isBenchmark as boolean) ?? null,
+    isNoMatch: (meta.isNoMatch as boolean) ?? null,
     difficulty: (meta.difficulty as number) ?? null,
     difficultyName: (meta.difficultyName as string) ?? null,
     quality: (meta.quality as number) ?? null,
@@ -45,13 +46,26 @@ type TickJoinRow = {
   userDisplayName: string | null;
   userAvatarUrl: string | null;
   climbName: string | null;
+  climbDescription: string | null;
   setterUsername: string | null;
   layoutId: number | null;
   frames: string | null;
   difficultyName: string | null;
 };
 
-function mapTickRowToFeedItem({ tick, userName, userImage, userDisplayName, userAvatarUrl, climbName, setterUsername, layoutId, frames, difficultyName }: TickJoinRow) {
+function mapTickRowToFeedItem({
+  tick,
+  userName,
+  userImage,
+  userDisplayName,
+  userAvatarUrl,
+  climbName,
+  climbDescription,
+  setterUsername,
+  layoutId,
+  frames,
+  difficultyName,
+}: TickJoinRow) {
   return {
     id: tick.id.toString(),
     type: 'ascent' as const,
@@ -73,6 +87,7 @@ function mapTickRowToFeedItem({ tick, userName, userImage, userDisplayName, user
     commentBody: null,
     isMirror: tick.isMirror ?? false,
     isBenchmark: tick.isBenchmark ?? false,
+    isNoMatch: isNoMatchClimb(climbDescription),
     difficulty: tick.difficulty,
     difficultyName,
     quality: tick.quality,
@@ -87,11 +102,7 @@ export const activityFeedQueries = {
    * Materialized activity feed for authenticated user (fan-out-on-write).
    * Reads from feed_items table with cursor-based pagination.
    */
-  activityFeed: async (
-    _: unknown,
-    { input }: { input?: Record<string, unknown> },
-    ctx: ConnectionContext
-  ) => {
+  activityFeed: async (_: unknown, { input }: { input?: Record<string, unknown> }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     const myUserId = ctx.userId!;
 
@@ -115,7 +126,7 @@ export const activityFeedQueries = {
         conditions.push(
           sql`(${dbSchema.feedItems.createdAt} < ${cursor.createdAt}::timestamp
             OR (${dbSchema.feedItems.createdAt} = ${cursor.createdAt}::timestamp
-                AND ${dbSchema.feedItems.id} < ${cursor.id}))`
+                AND ${dbSchema.feedItems.id} < ${cursor.id}))`,
         );
       }
     }
@@ -146,27 +157,25 @@ export const activityFeedQueries = {
    * Fan-out-on-read from boardsesh_ticks with JOINs (same pattern as globalAscentsFeed).
    * Returns cursor-based pagination using the ActivityFeedItem shape.
    */
-  trendingFeed: async (
-    _: unknown,
-    { input }: { input?: Record<string, unknown> },
-  ) => {
+  trendingFeed: async (_: unknown, { input }: { input?: Record<string, unknown> }) => {
     const validatedInput = validateInput(ActivityFeedInputSchema, input || {}, 'input');
     const limit = validatedInput.limit ?? 20;
 
     // Build conditions - only successful ascents for trending
-    const conditions = [
-      sql`${dbSchema.boardseshTicks.status} IN ('flash', 'send')`,
-    ];
+    const conditions = [sql`${dbSchema.boardseshTicks.status} IN ('flash', 'send')`];
 
     // Board filter: look up board config and filter by boardType + layoutId
     let layoutIdFilter: number | null = null;
     if (validatedInput.boardUuid) {
       const board = await db
-        .select({ boardType: dbSchema.userBoards.boardType, layoutId: dbSchema.userBoards.layoutId })
+        .select({
+          boardType: dbSchema.userBoards.boardType,
+          layoutId: dbSchema.userBoards.layoutId,
+        })
         .from(dbSchema.userBoards)
         .where(eq(dbSchema.userBoards.uuid, validatedInput.boardUuid))
         .limit(1)
-        .then(rows => rows[0]);
+        .then((rows) => rows[0]);
 
       if (board) {
         conditions.push(eq(dbSchema.boardseshTicks.boardType, board.boardType));
@@ -181,7 +190,7 @@ export const activityFeedQueries = {
         conditions.push(
           sql`(${dbSchema.boardseshTicks.climbedAt} < ${cursor.createdAt}::timestamp
             OR (${dbSchema.boardseshTicks.climbedAt} = ${cursor.createdAt}::timestamp
-                AND ${dbSchema.boardseshTicks.id} < ${cursor.id}))`
+                AND ${dbSchema.boardseshTicks.id} < ${cursor.id}))`,
         );
       }
     }
@@ -200,6 +209,7 @@ export const activityFeedQueries = {
         userDisplayName: dbSchema.userProfiles.displayName,
         userAvatarUrl: dbSchema.userProfiles.avatarUrl,
         climbName: dbSchema.boardClimbs.name,
+        climbDescription: dbSchema.boardClimbs.description,
         setterUsername: dbSchema.boardClimbs.setterUsername,
         layoutId: dbSchema.boardClimbs.layoutId,
         frames: dbSchema.boardClimbs.frames,
@@ -212,15 +222,15 @@ export const activityFeedQueries = {
         dbSchema.boardClimbs,
         and(
           eq(dbSchema.boardseshTicks.climbUuid, dbSchema.boardClimbs.uuid),
-          eq(dbSchema.boardseshTicks.boardType, dbSchema.boardClimbs.boardType)
-        )
+          eq(dbSchema.boardseshTicks.boardType, dbSchema.boardClimbs.boardType),
+        ),
       )
       .leftJoin(
         dbSchema.boardDifficultyGrades,
         and(
           eq(dbSchema.boardseshTicks.difficulty, dbSchema.boardDifficultyGrades.difficulty),
-          eq(dbSchema.boardseshTicks.boardType, dbSchema.boardDifficultyGrades.boardType)
-        )
+          eq(dbSchema.boardseshTicks.boardType, dbSchema.boardDifficultyGrades.boardType),
+        ),
       )
       .where(whereClause)
       .orderBy(desc(dbSchema.boardseshTicks.climbedAt), desc(dbSchema.boardseshTicks.id))

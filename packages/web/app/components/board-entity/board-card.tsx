@@ -15,12 +15,12 @@ import type { UserBoard } from '@boardsesh/shared-schema';
 import { themeTokens } from '@/app/theme/theme-config';
 import StatItem from '@/app/components/ui/stat-item';
 
-interface BoardCardProps {
+type BoardCardProps = {
   board: UserBoard;
   onClick?: (board: UserBoard) => void;
   /** Optional trailing action (e.g. follow button) rendered below the stats row. */
   trailingAction?: React.ReactNode;
-}
+};
 
 const BOARD_TYPE_LABELS: Record<string, string> = {
   kilter: 'Kilter',
@@ -45,7 +45,14 @@ export default function BoardCard({ board, onClick, trailingAction }: BoardCardP
     >
       <CardActionArea onClick={() => onClick?.(board)} disabled={!onClick}>
         <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: 1,
+            }}
+          >
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <MuiTypography
                 variant="subtitle1"
@@ -92,14 +99,10 @@ export default function BoardCard({ board, onClick, trailingAction }: BoardCardP
         </CardContent>
       </CardActionArea>
       {trailingAction && (
-        <Box
-          sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, pb: 1.5 }}
-          onClick={(e) => e.stopPropagation()}
-        >
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, pb: 1.5 }} onClick={(e) => e.stopPropagation()}>
           {trailingAction}
         </Box>
       )}
     </Card>
   );
 }
-

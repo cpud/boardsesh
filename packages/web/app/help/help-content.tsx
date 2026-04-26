@@ -44,11 +44,13 @@ const helpSections = [
               <img src="/help/heatmap.png" alt="Heatmap visualization" className={styles.featureImage} />
             </picture>
             <Typography variant="body1" component="p">
-              The heatmap shows hold usage patterns across all climbs, helping you identify popular
-              holds and training opportunities.
+              The heatmap shows hold usage patterns across all climbs, helping you identify popular holds and training
+              opportunities.
             </Typography>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>To access the heatmap:</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                To access the heatmap:
+              </Typography>
             </Typography>
             <ol>
               <li>Open the search drawer and expand the &quot;Holds&quot; section</li>
@@ -56,13 +58,35 @@ const helpSections = [
               <li>The board will display a color overlay from green (low usage) to red (high usage)</li>
             </ol>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>Available color modes:</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                Available color modes:
+              </Typography>
             </Typography>
             <ul>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Ascents:</Typography> Overall popularity based on total completions</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Starting Holds:</Typography> Common start positions</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Hand/Foot Holds:</Typography> Usage by limb type</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Finish Holds:</Typography> Common top-out positions</li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Ascents:
+                </Typography>{' '}
+                Overall popularity based on total completions
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Starting Holds:
+                </Typography>{' '}
+                Common start positions
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Hand/Foot Holds:
+                </Typography>{' '}
+                Usage by limb type
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Finish Holds:
+                </Typography>{' '}
+                Common top-out positions
+              </li>
             </ul>
             <Typography variant="body1" component="p">
               Use the toggle switches to show/hide hold numbers and include/exclude foot holds.
@@ -78,24 +102,50 @@ const helpSections = [
             <picture>
               <source srcSet="/help/hold-classification.avif" type="image/avif" />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/help/hold-classification.png" alt="Hold classification wizard" className={styles.featureImage} />
+              <img
+                src="/help/hold-classification.png"
+                alt="Hold classification wizard"
+                className={styles.featureImage}
+              />
             </picture>
             <Typography variant="body1" component="p">
-              Hold classification lets you create personal ratings for each hold on your board,
-              helping you understand your strengths and find suitable climbs.
+              Hold classification lets you create personal ratings for each hold on your board, helping you understand
+              your strengths and find suitable climbs.
             </Typography>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>Classification attributes:</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                Classification attributes:
+              </Typography>
             </Typography>
             <ul>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Hold Type:</Typography> Jug, Sloper, Pinch, Crimp, or Pocket</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Hand Rating:</Typography> 1-5 difficulty scale for hand use</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Foot Rating:</Typography> 1-5 difficulty scale for foot use</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Pull Direction:</Typography> 0-360 optimal pulling angle</li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Hold Type:
+                </Typography>{' '}
+                Jug, Sloper, Pinch, Crimp, or Pocket
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Hand Rating:
+                </Typography>{' '}
+                1-5 difficulty scale for hand use
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Foot Rating:
+                </Typography>{' '}
+                1-5 difficulty scale for foot use
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Pull Direction:
+                </Typography>{' '}
+                0-360 optimal pulling angle
+              </li>
             </ul>
             <Typography variant="body1" component="p">
-              Classifications are personal and stored in your account, allowing you to build a
-              customized understanding of your board over time.
+              Classifications are personal and stored in your account, allowing you to build a customized understanding
+              of your board over time.
             </Typography>
           </div>
         ),
@@ -122,11 +172,12 @@ const helpSections = [
               <img src="/help/party-mode-active.png" alt="Active party mode session" className={styles.featureImage} />
             </picture>
             <Typography variant="body1" component="p">
-              Party Mode allows multiple climbers to share a queue and take turns on the board
-              in real-time.
+              Party Mode allows multiple climbers to share a queue and take turns on the board in real-time.
             </Typography>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>To start a session:</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                To start a session:
+              </Typography>
             </Typography>
             <ol>
               <li>Tap the lightbulb icon in the queue bar at the bottom</li>
@@ -135,15 +186,34 @@ const helpSections = [
               <li>Share the session with friends using QR code or link</li>
             </ol>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>To join a session:</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                To join a session:
+              </Typography>
             </Typography>
             <ol>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Scan QR Code:</Typography> The session host can show a QR code that others can scan with their phone camera</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Share Link:</Typography> Copy and share the session URL - anyone with the link can join</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Enter Session ID:</Typography> Go to the &quot;Join Session&quot; tab and paste either the full URL or just the session ID</li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Scan QR Code:
+                </Typography>{' '}
+                The session host can show a QR code that others can scan with their phone camera
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Share Link:
+                </Typography>{' '}
+                Copy and share the session URL - anyone with the link can join
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Enter Session ID:
+                </Typography>{' '}
+                Go to the &quot;Join Session&quot; tab and paste either the full URL or just the session ID
+              </li>
             </ol>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>Session features:</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                Session features:
+              </Typography>
             </Typography>
             <ul>
               <li>Real-time queue synchronization across all devices</li>
@@ -166,22 +236,47 @@ const helpSections = [
               <img src="/help/main-interface.png" alt="Queue management" className={styles.featureImage} />
             </picture>
             <Typography variant="body1" component="p">
-              The queue lets you organize climbs for your session, whether climbing solo or with
-              others.
+              The queue lets you organize climbs for your session, whether climbing solo or with others.
             </Typography>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>Queue actions:</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                Queue actions:
+              </Typography>
             </Typography>
             <ul>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Add climbs:</Typography> Double-tap any climb in the list to add it to your queue</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Reorder:</Typography> Drag and drop climbs to change order</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Set current:</Typography> Click a climb to make it the active climb</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Remove:</Typography> Click the X on any queued climb</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Mirror:</Typography> Toggle mirror mode for bilateral training</li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Add climbs:
+                </Typography>{' '}
+                Double-tap any climb in the list to add it to your queue
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Reorder:
+                </Typography>{' '}
+                Drag and drop climbs to change order
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Set current:
+                </Typography>{' '}
+                Click a climb to make it the active climb
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Remove:
+                </Typography>{' '}
+                Click the X on any queued climb
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Mirror:
+                </Typography>{' '}
+                Toggle mirror mode for bilateral training
+              </li>
             </ul>
             <Typography variant="body1" component="p">
-              The queue syncs automatically with party members and persists offline for
-              uninterrupted sessions.
+              The queue syncs automatically with party members and persists offline for uninterrupted sessions.
             </Typography>
           </div>
         ),
@@ -206,16 +301,40 @@ const helpSections = [
               The Playlist Generator creates structured workouts tailored to your training goals.
             </Typography>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>Workout types:</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                Workout types:
+              </Typography>
             </Typography>
             <ul>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Volume:</Typography> High repetitions at a consistent grade for endurance</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Pyramid:</Typography> Ramp up to a peak grade, then back down</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Ladder:</Typography> Step progression through increasing grades</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Grade Focus:</Typography> Concentrated work at a single target grade</li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Volume:
+                </Typography>{' '}
+                High repetitions at a consistent grade for endurance
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Pyramid:
+                </Typography>{' '}
+                Ramp up to a peak grade, then back down
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Ladder:
+                </Typography>{' '}
+                Step progression through increasing grades
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Grade Focus:
+                </Typography>{' '}
+                Concentrated work at a single target grade
+              </li>
             </ul>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>Configuration options:</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                Configuration options:
+              </Typography>
             </Typography>
             <ul>
               <li>Warm-up style (Standard, Extended, or None)</li>
@@ -233,11 +352,13 @@ const helpSections = [
         children: (
           <div className={styles.answerContent}>
             <Typography variant="body1" component="p">
-              Climb mirroring flips all holds to the opposite side of the board, perfect for
-              bilateral strength training.
+              Climb mirroring flips all holds to the opposite side of the board, perfect for bilateral strength
+              training.
             </Typography>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>To mirror a climb:</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                To mirror a climb:
+              </Typography>
             </Typography>
             <ol>
               <li>Find the climb you want to mirror</li>
@@ -245,8 +366,8 @@ const helpSections = [
               <li>Toggle it on to flip the climb horizontally</li>
             </ol>
             <Typography variant="body1" component="p">
-              When connected via Bluetooth, the LED board will automatically display the mirrored
-              pattern. This feature is available on supported boards like Kilter Homewall.
+              When connected via Bluetooth, the LED board will automatically display the mirrored pattern. This feature
+              is available on supported boards like Kilter Homewall.
             </Typography>
           </div>
         ),
@@ -273,18 +394,53 @@ const helpSections = [
               <img src="/help/search-filters.png" alt="Search filters" className={styles.featureImage} />
             </picture>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>Basic Search filters:</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                Basic Search filters:
+              </Typography>
             </Typography>
             <ul>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Climb Name:</Typography> Search by climb title</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Grade Range:</Typography> Set minimum and maximum grades</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Setter:</Typography> Filter by climb creator</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Min Ascents:</Typography> Only show popular climbs</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Min Rating:</Typography> Filter by quality rating</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Classics Only:</Typography> Show only classic-rated climbs</li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Climb Name:
+                </Typography>{' '}
+                Search by climb title
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Grade Range:
+                </Typography>{' '}
+                Set minimum and maximum grades
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Setter:
+                </Typography>{' '}
+                Filter by climb creator
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Min Ascents:
+                </Typography>{' '}
+                Only show popular climbs
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Min Rating:
+                </Typography>{' '}
+                Filter by quality rating
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Classics Only:
+                </Typography>{' '}
+                Show only classic-rated climbs
+              </li>
             </ul>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>Personal Progress filters</Typography> (requires login):
+              <Typography variant="body2" component="span" fontWeight={600}>
+                Personal Progress filters
+              </Typography>{' '}
+              (requires login):
             </Typography>
             <picture>
               <source srcSet="/help/personal-progress.avif" type="image/avif" />
@@ -314,7 +470,9 @@ const helpSections = [
               Search by Hold lets you find climbs that use (or avoid) specific holds on the board.
             </Typography>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>To search by holds:</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                To search by holds:
+              </Typography>
             </Typography>
             <ol>
               <li>Open the search drawer and expand the &quot;Holds&quot; section</li>
@@ -323,10 +481,16 @@ const helpSections = [
               <li>Results update automatically as you select holds</li>
             </ol>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>Include mode:</Typography> Climbs must use the selected holds
+              <Typography variant="body2" component="span" fontWeight={600}>
+                Include mode:
+              </Typography>{' '}
+              Climbs must use the selected holds
             </Typography>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>Exclude mode:</Typography> Climbs must not use the selected holds
+              <Typography variant="body2" component="span" fontWeight={600}>
+                Exclude mode:
+              </Typography>{' '}
+              Climbs must not use the selected holds
             </Typography>
           </div>
         ),
@@ -344,15 +508,16 @@ const helpSections = [
     children: [
       {
         key: 'bluetooth',
-        label: 'How do I connect my board\'s LEDs?',
+        label: "How do I connect my board's LEDs?",
         children: (
           <div className={styles.answerContent}>
             <Typography variant="body1" component="p">
-              Boardsesh uses Web Bluetooth to control your board&apos;s LED system directly from
-              the browser.
+              Boardsesh uses Web Bluetooth to control your board&apos;s LED system directly from the browser.
             </Typography>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>Requirements:</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                Requirements:
+              </Typography>
             </Typography>
             <ul>
               <li>Chrome browser (recommended) or other Web Bluetooth-compatible browser</li>
@@ -361,7 +526,9 @@ const helpSections = [
               <li>Board powered on and in range</li>
             </ul>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>To connect:</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                To connect:
+              </Typography>
             </Typography>
             <ol>
               <li>Tap the lightbulb icon in the queue bar</li>
@@ -369,8 +536,7 @@ const helpSections = [
               <li>Once connected, LEDs automatically show the current climb</li>
             </ol>
             <Typography variant="body1" component="p">
-              The connection supports mirrored patterns and will automatically update when you
-              change climbs.
+              The connection supports mirrored patterns and will automatically update when you change climbs.
             </Typography>
           </div>
         ),
@@ -389,7 +555,9 @@ const helpSections = [
               Link your Aurora account (Kilter or Tension) to sync your climb history and progress.
             </Typography>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>To link your account:</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                To link your account:
+              </Typography>
             </Typography>
             <ol>
               <li>Open the menu (tap your avatar) and go to Settings</li>
@@ -398,7 +566,9 @@ const helpSections = [
               <li>Click &quot;Link Account&quot;</li>
             </ol>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>What syncs:</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                What syncs:
+              </Typography>
             </Typography>
             <ul>
               <li>Ascent history (completed climbs)</li>
@@ -406,8 +576,7 @@ const helpSections = [
               <li>Circuits/playlists</li>
             </ul>
             <Typography variant="body1" component="p">
-              Changes sync bidirectionally, so ascents logged in Boardsesh will appear in the
-              official apps.
+              Changes sync bidirectionally, so ascents logged in Boardsesh will appear in the official apps.
             </Typography>
           </div>
         ),
@@ -426,16 +595,33 @@ const helpSections = [
               Track your climbing progress by logging ascents and attempts.
             </Typography>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>From any climb:</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                From any climb:
+              </Typography>
             </Typography>
             <ul>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Tick:</Typography> Record an attempt on the climb</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Log Ascent:</Typography> Mark the climb as completed (sends)</li>
-              <li><Typography variant="body2" component="span" fontWeight={600}>Favorite:</Typography> Save climbs for quick access</li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Tick:
+                </Typography>{' '}
+                Record an attempt on the climb
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Log Ascent:
+                </Typography>{' '}
+                Mark the climb as completed (sends)
+              </li>
+              <li>
+                <Typography variant="body2" component="span" fontWeight={600}>
+                  Favorite:
+                </Typography>{' '}
+                Save climbs for quick access
+              </li>
             </ul>
             <Typography variant="body1" component="p">
-              Your logbook syncs with linked Aurora accounts and can be filtered in search results
-              to find new challenges or revisit old projects.
+              Your logbook syncs with linked Aurora accounts and can be filtered in search results to find new
+              challenges or revisit old projects.
             </Typography>
           </div>
         ),
@@ -449,7 +635,9 @@ const helpSections = [
               Yes! Boardsesh is designed to work reliably even with intermittent connectivity.
             </Typography>
             <Typography variant="body1" component="p">
-              <Typography variant="body2" component="span" fontWeight={600}>What works offline:</Typography>
+              <Typography variant="body2" component="span" fontWeight={600}>
+                What works offline:
+              </Typography>
             </Typography>
             <ul>
               <li>Your queue persists locally via IndexedDB</li>
@@ -458,8 +646,7 @@ const helpSections = [
               <li>Bluetooth LED control works independently</li>
             </ul>
             <Typography variant="body1" component="p">
-              When connectivity is restored, any pending changes sync automatically in the
-              background.
+              When connectivity is restored, any pending changes sync automatically in the background.
             </Typography>
           </div>
         ),
@@ -482,42 +669,38 @@ export default function HelpContent() {
       </Box>
 
       <Box component="main" className={styles.content}>
-        <MuiCard><CardContent>
-          <div className={styles.heroSection}>
-            <HelpOutlineOutlined className={styles.heroIcon} />
-            <Typography variant="h4" component="h2" className={styles.heroTitle}>
-              How can we help?
-            </Typography>
-            <Typography variant="body2" component="span" color="text.secondary" className={styles.heroSubtitle}>
-              Learn about Boardsesh features and get the most out of your climbing sessions
-            </Typography>
-          </div>
+        <MuiCard>
+          <CardContent>
+            <div className={styles.heroSection}>
+              <HelpOutlineOutlined className={styles.heroIcon} />
+              <Typography variant="h4" component="h2" className={styles.heroTitle}>
+                How can we help?
+              </Typography>
+              <Typography variant="body2" component="span" color="text.secondary" className={styles.heroSubtitle}>
+                Learn about Boardsesh features and get the most out of your climbing sessions
+              </Typography>
+            </div>
 
-          {helpSections.map((section) => (
-            <Accordion
-              key={section.key}
-              expanded={expandedSection === section.key}
-              onChange={(_, isExpanded) => setExpandedSection(isExpanded ? section.key : false)}
-              className={styles.mainCollapse}
-            >
-              <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
-                {section.label}
-              </AccordionSummary>
-              <AccordionDetails>
-                {section.children.map((item) => (
-                  <Accordion key={item.key} className={styles.nestedCollapse}>
-                    <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
-                      {item.label}
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      {item.children}
-                    </AccordionDetails>
-                  </Accordion>
-                ))}
-              </AccordionDetails>
-            </Accordion>
-          ))}
-        </CardContent></MuiCard>
+            {helpSections.map((section) => (
+              <Accordion
+                key={section.key}
+                expanded={expandedSection === section.key}
+                onChange={(_, isExpanded) => setExpandedSection(isExpanded ? section.key : false)}
+                className={styles.mainCollapse}
+              >
+                <AccordionSummary expandIcon={<ExpandMoreOutlined />}>{section.label}</AccordionSummary>
+                <AccordionDetails>
+                  {section.children.map((item) => (
+                    <Accordion key={item.key} className={styles.nestedCollapse}>
+                      <AccordionSummary expandIcon={<ExpandMoreOutlined />}>{item.label}</AccordionSummary>
+                      <AccordionDetails>{item.children}</AccordionDetails>
+                    </Accordion>
+                  ))}
+                </AccordionDetails>
+              </Accordion>
+            ))}
+          </CardContent>
+        </MuiCard>
       </Box>
     </Box>
   );

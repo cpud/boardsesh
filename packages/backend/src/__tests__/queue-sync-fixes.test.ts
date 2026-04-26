@@ -3,12 +3,9 @@
  * 1. updateQueueOnly - Redis-first approach (fixes version desync)
  * 2. addQueueItem - event publishing fix (only publish when item added)
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vite-plus/test';
 import { v4 as uuidv4 } from 'uuid';
 import { roomManager, VersionConflictError } from '../services/room-manager';
-import { db } from '../db/client';
-import { sessions, sessionQueues } from '../db/schema';
-import { eq } from 'drizzle-orm';
 import type { ClimbQueueItem } from '@boardsesh/shared-schema';
 import { queueMutations } from '../graphql/resolvers/queue/mutations';
 import { pubsub } from '../pubsub/index';
@@ -37,12 +34,7 @@ const createTestClimb = (uuid?: string): ClimbQueueItem => ({
 });
 
 // Helper function to register a client before joining
-const registerAndJoinSession = async (
-  clientId: string,
-  sessionId: string,
-  boardPath: string,
-  username: string
-) => {
+const registerAndJoinSession = async (clientId: string, sessionId: string, boardPath: string, username: string) => {
   await roomManager.registerClient(clientId);
   return roomManager.joinSession(clientId, sessionId, boardPath, username);
 };
@@ -181,9 +173,9 @@ describe('updateQueueOnly - Redis-first approach', () => {
       const currentVersion = state.version;
 
       // Try to update with wrong version
-      await expect(
-        roomManager.updateQueueOnly(sessionId, [createTestClimb()], currentVersion + 100)
-      ).rejects.toThrow(VersionConflictError);
+      await expect(roomManager.updateQueueOnly(sessionId, [createTestClimb()], currentVersion + 100)).rejects.toThrow(
+        VersionConflictError,
+      );
     });
 
     it('should succeed when expectedVersion matches current version', async () => {
@@ -329,7 +321,7 @@ describe('addQueueItem - Event publishing fix', () => {
       expect.objectContaining({
         __typename: 'QueueItemAdded',
         item: climb,
-      })
+      }),
     );
   });
 
@@ -418,7 +410,7 @@ describe('addQueueItem - Event publishing fix', () => {
       expect.objectContaining({
         __typename: 'QueueItemAdded',
         position: 0,
-      })
+      }),
     );
 
     publishSpy.mockClear();
@@ -431,7 +423,7 @@ describe('addQueueItem - Event publishing fix', () => {
       expect.objectContaining({
         __typename: 'QueueItemAdded',
         position: 0,
-      })
+      }),
     );
   });
 
@@ -467,7 +459,7 @@ describe('addQueueItem - Event publishing fix', () => {
       expect.objectContaining({
         __typename: 'QueueItemAdded',
         position: 1, // Appended at end
-      })
+      }),
     );
   });
 });
@@ -524,7 +516,7 @@ describe('reorderQueueItem - Return type handling', () => {
         uuid: climb1.uuid,
         oldIndex: 0,
         newIndex: 1,
-      })
+      }),
     );
   });
 });

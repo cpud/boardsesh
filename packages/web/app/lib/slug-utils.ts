@@ -1,5 +1,5 @@
 import { dbz } from '@/app/lib/db/db';
-import { BoardName, LayoutId, Size } from '@/app/lib/types';
+import type { BoardName, LayoutId, Size } from '@/app/lib/types';
 import { matchSetNameToSlugParts } from './slug-matching';
 import { generateSlugFromText, generateDescriptionSlug, generateLayoutSlug } from './url-utils';
 import { UNIFIED_TABLES } from '@/app/lib/db/queries/util/table-select';
@@ -26,14 +26,14 @@ export type SetRow = {
 };
 
 function findLayoutBySlug(rows: LayoutRow[], slug: string): LayoutRow | null {
-  const normalizedSlug = slug
-    .toLowerCase()
-    .replace(/^(kilter|tension|decoy|touchstone|grasshopper|moonboard)-/, '');
+  const normalizedSlug = slug.toLowerCase().replace(/^(kilter|tension|decoy|touchstone|grasshopper|moonboard)-/, '');
 
-  return rows.find((layout) => (
-    layout.name &&
-    (generateLayoutSlug(layout.name) === slug || generateLayoutSlug(layout.name) === normalizedSlug)
-  )) ?? null;
+  return (
+    rows.find(
+      (layout) =>
+        layout.name && (generateLayoutSlug(layout.name) === slug || generateLayoutSlug(layout.name) === normalizedSlug),
+    ) ?? null
+  );
 }
 
 function findSizeBySlug(rows: SizeRow[], slug: string): SizeRow | null {
@@ -69,31 +69,35 @@ function findSizeBySlug(rows: SizeRow[], slug: string): SizeRow | null {
     }
 
     if (!descSuffix) {
-      return rows.find((s) => {
-        if (!s.name) return false;
-        const sizeMatch = s.name.match(/(\d+)\s*x\s*(\d+)/i);
-        if (!sizeMatch) return false;
-        const sizeDimensions = `${sizeMatch[1]}x${sizeMatch[2]}`.toLowerCase();
-        return sizeDimensions === dimensions;
-      }) ?? null;
+      return (
+        rows.find((s) => {
+          if (!s.name) return false;
+          const sizeMatch = s.name.match(/(\d+)\s*x\s*(\d+)/i);
+          if (!sizeMatch) return false;
+          const sizeDimensions = `${sizeMatch[1]}x${sizeMatch[2]}`.toLowerCase();
+          return sizeDimensions === dimensions;
+        }) ?? null
+      );
     }
   }
 
-  return rows.find((s) => {
-    if (!s.name) return false;
+  return (
+    rows.find((s) => {
+      if (!s.name) return false;
 
-    let sizeSlug = generateSlugFromText(s.name);
+      let sizeSlug = generateSlugFromText(s.name);
 
-    if (s.description && s.description.trim()) {
-      const descSlug = generateDescriptionSlug(s.description);
+      if (s.description && s.description.trim()) {
+        const descSlug = generateDescriptionSlug(s.description);
 
-      if (descSlug) {
-        sizeSlug = `${sizeSlug}-${descSlug}`;
+        if (descSlug) {
+          sizeSlug = `${sizeSlug}-${descSlug}`;
+        }
       }
-    }
 
-    return sizeSlug === slug;
-  }) ?? null;
+      return sizeSlug === slug;
+    }) ?? null
+  );
 }
 
 function findSetsBySlug(rows: SetRow[], slug: string): SetRow[] {
@@ -118,7 +122,10 @@ export const getLayoutBySlug = async (board_name: BoardName, slug: string): Prom
     .from(layouts)
     .where(and(eq(layouts.boardType, board_name), eq(layouts.isListed, true), isNull(layouts.password)));
 
-  const layout = findLayoutBySlug(rows.filter((row): row is LayoutRow => row.name !== null), slug);
+  const layout = findLayoutBySlug(
+    rows.filter((row): row is LayoutRow => row.name !== null),
+    slug,
+  );
 
   return layout;
 };
@@ -151,10 +158,7 @@ export const getSizeBySlug = async (
     .from(productSizes)
     .innerJoin(
       layouts,
-      and(
-        eq(productSizes.boardType, layouts.boardType),
-        eq(productSizes.productId, layouts.productId),
-      ),
+      and(eq(productSizes.boardType, layouts.boardType), eq(productSizes.productId, layouts.productId)),
     )
     .where(and(eq(layouts.boardType, board_name), eq(layouts.id, layout_id)));
 
@@ -184,7 +188,10 @@ export const getSetsBySlug = async (
   slug: string,
 ): Promise<SetRow[]> => {
   const staticSets = findSetsBySlug(
-    getSetsForLayoutAndSize(board_name, layout_id, size_id).map((set) => ({ id: set.id, name: set.name })),
+    getSetsForLayoutAndSize(board_name, layout_id, size_id).map((set) => ({
+      id: set.id,
+      name: set.name,
+    })),
     slug,
   );
   if (staticSets.length > 0) {
@@ -198,10 +205,7 @@ export const getSetsBySlug = async (
     .from(sets)
     .innerJoin(
       productSizesLayoutsSets,
-      and(
-        eq(sets.boardType, productSizesLayoutsSets.boardType),
-        eq(sets.id, productSizesLayoutsSets.setId),
-      ),
+      and(eq(sets.boardType, productSizesLayoutsSets.boardType), eq(sets.id, productSizesLayoutsSets.setId)),
     )
     .where(
       and(

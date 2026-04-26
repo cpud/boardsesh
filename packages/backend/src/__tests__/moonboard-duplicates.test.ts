@@ -1,4 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+import {
+  buildMoonBoardClimbHoldRows,
+  buildMoonBoardDuplicateError,
+  encodeMoonBoardHoldsToFrames,
+  findMoonBoardDuplicateMatches,
+} from '../graphql/resolvers/climbs/moonboard-duplicates';
 
 const { mockDb } = vi.hoisted(() => ({
   mockDb: {
@@ -9,13 +15,6 @@ const { mockDb } = vi.hoisted(() => ({
 vi.mock('../db/client', () => ({
   db: mockDb,
 }));
-
-import {
-  buildMoonBoardClimbHoldRows,
-  buildMoonBoardDuplicateError,
-  encodeMoonBoardHoldsToFrames,
-  findMoonBoardDuplicateMatches,
-} from '../graphql/resolvers/climbs/moonboard-duplicates';
 
 describe('moonboard duplicate helpers', () => {
   beforeEach(() => {
@@ -68,16 +67,14 @@ describe('moonboard duplicate helpers', () => {
       finish: ['C3'],
     };
 
-    mockDb.execute
-      .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([
-        {
-          uuid: 'legacy-climb',
-          name: 'Legacy Moon',
-          frames: encodeMoonBoardHoldsToFrames(holds),
-          ascensionist_count: 0,
-        },
-      ]);
+    mockDb.execute.mockResolvedValueOnce([]).mockResolvedValueOnce([
+      {
+        uuid: 'legacy-climb',
+        name: 'Legacy Moon',
+        frames: encodeMoonBoardHoldsToFrames(holds),
+        ascensionist_count: 0,
+      },
+    ]);
 
     const result = await findMoonBoardDuplicateMatches(2, 40, [
       {
@@ -95,14 +92,34 @@ describe('moonboard duplicate helpers', () => {
   });
 
   it('normalizes hold rows and duplicate error text', () => {
-    expect(buildMoonBoardClimbHoldRows('new-climb', {
-      start: ['A1'],
-      hand: ['C3', 'B2'],
-      finish: ['C3'],
-    })).toEqual([
-      { boardType: 'moonboard', climbUuid: 'new-climb', holdId: 1, frameNumber: 0, holdState: 'STARTING' },
-      { boardType: 'moonboard', climbUuid: 'new-climb', holdId: 13, frameNumber: 0, holdState: 'HAND' },
-      { boardType: 'moonboard', climbUuid: 'new-climb', holdId: 25, frameNumber: 0, holdState: 'FINISH' },
+    expect(
+      buildMoonBoardClimbHoldRows('new-climb', {
+        start: ['A1'],
+        hand: ['C3', 'B2'],
+        finish: ['C3'],
+      }),
+    ).toEqual([
+      {
+        boardType: 'moonboard',
+        climbUuid: 'new-climb',
+        holdId: 1,
+        frameNumber: 0,
+        holdState: 'STARTING',
+      },
+      {
+        boardType: 'moonboard',
+        climbUuid: 'new-climb',
+        holdId: 13,
+        frameNumber: 0,
+        holdState: 'HAND',
+      },
+      {
+        boardType: 'moonboard',
+        climbUuid: 'new-climb',
+        holdId: 25,
+        frameNumber: 0,
+        holdState: 'FINISH',
+      },
     ]);
 
     expect(buildMoonBoardDuplicateError('Existing Climb')).toBe(

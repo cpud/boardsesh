@@ -3,15 +3,10 @@
  * This uses the `canvas` npm package to provide Canvas API in Node.js environment.
  */
 
-import { createCanvas, loadImage, Canvas, CanvasRenderingContext2D } from 'canvas';
+import { type Canvas, type CanvasRenderingContext2D, createCanvas, loadImage } from 'canvas';
 import fs from 'fs/promises';
 import path from 'path';
-import {
-  ImageProcessor,
-  RawPixelData,
-  ImageMetadata,
-  ImageRegion,
-} from '../../image-processor/types';
+import type { ImageProcessor, RawPixelData, ImageMetadata, ImageRegion } from '../../image-processor/types';
 
 /**
  * Node-canvas implementation of ImageProcessor for testing.
@@ -50,12 +45,7 @@ export class NodeCanvasImageProcessor implements ImageProcessor {
   async extractRegion(region: ImageRegion): Promise<RawPixelData> {
     if (!this.ctx) throw new Error('Image not loaded');
 
-    const imageData = this.ctx.getImageData(
-      region.x,
-      region.y,
-      region.width,
-      region.height
-    );
+    const imageData = this.ctx.getImageData(region.x, region.y, region.width, region.height);
 
     return {
       data: new Uint8ClampedArray(imageData.data),
@@ -68,12 +58,7 @@ export class NodeCanvasImageProcessor implements ImageProcessor {
   async extractFullImage(): Promise<RawPixelData> {
     if (!this.ctx || !this.canvas) throw new Error('Image not loaded');
 
-    const imageData = this.ctx.getImageData(
-      0,
-      0,
-      this.canvas.width,
-      this.canvas.height
-    );
+    const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
 
     return {
       data: new Uint8ClampedArray(imageData.data),
@@ -91,17 +76,7 @@ export class NodeCanvasImageProcessor implements ImageProcessor {
     const tempCtx = tempCanvas.getContext('2d');
 
     // Copy the region to the temp canvas
-    tempCtx.drawImage(
-      this.canvas,
-      region.x,
-      region.y,
-      region.width,
-      region.height,
-      0,
-      0,
-      region.width,
-      region.height
-    );
+    tempCtx.drawImage(this.canvas, region.x, region.y, region.width, region.height, 0, 0, region.width, region.height);
 
     // Apply grayscale and normalization (similar to Sharp's preprocessing)
     const imageData = tempCtx.getImageData(0, 0, region.width, region.height);
@@ -124,7 +99,7 @@ export class NodeCanvasImageProcessor implements ImageProcessor {
       const gray = Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
       // Normalize to 0-255 range
       const normalized = Math.round(((gray - min) / range) * 255);
-      data[i] = normalized;     // R
+      data[i] = normalized; // R
       data[i + 1] = normalized; // G
       data[i + 2] = normalized; // B
       // Alpha stays the same

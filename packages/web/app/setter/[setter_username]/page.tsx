@@ -16,11 +16,7 @@ export async function generateMetadata({
   try {
     const summary = await getSetterOgSummary(username);
     const displayName = summary.displayName;
-    const ogImagePath = buildVersionedOgImagePath(
-      '/api/og/setter',
-      { username },
-      summary.version,
-    );
+    const ogImagePath = buildVersionedOgImagePath('/api/og/setter', { username }, summary.version);
     const title = `${displayName} - Setter | Boardsesh`;
     const description = `Climbs created by ${displayName} on Boardsesh`;
     const canonicalUrl = `/setter/${encodeURIComponent(setter_username)}`;
@@ -33,7 +29,14 @@ export async function generateMetadata({
         title,
         description,
         url: canonicalUrl,
-        images: [{ url: ogImagePath, width: OG_IMAGE_WIDTH, height: OG_IMAGE_HEIGHT, alt: `${displayName}'s setter profile` }],
+        images: [
+          {
+            url: ogImagePath,
+            width: OG_IMAGE_WIDTH,
+            height: OG_IMAGE_HEIGHT,
+            alt: `${displayName}'s setter profile`,
+          },
+        ],
       },
       twitter: {
         card: 'summary_large_image',
@@ -50,11 +53,7 @@ export async function generateMetadata({
   }
 }
 
-export default async function SetterProfilePage({
-  params,
-}: {
-  params: Promise<{ setter_username: string }>;
-}) {
+export default async function SetterProfilePage({ params }: { params: Promise<{ setter_username: string }> }) {
   const { setter_username } = await params;
 
   return (

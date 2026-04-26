@@ -20,11 +20,7 @@ import { isCapacitor } from '@/app/lib/ble/capacitor-utils';
 
 export const ShareBoardButton = () => {
   const { showMessage } = useSnackbar();
-  const {
-    hasConnected,
-    isSessionActive,
-    sessionId,
-  } = useSessionData();
+  const { hasConnected, isSessionActive, sessionId } = useSessionData();
   const {
     isConnected: isBoardConnected,
     connect: btConnect,
@@ -51,10 +47,7 @@ export const ShareBoardButton = () => {
     }
     let success: boolean;
     if (currentClimbQueueItem) {
-      success = await btConnect(
-        currentClimbQueueItem.climb.frames,
-        !!currentClimbQueueItem.climb.mirrored,
-      );
+      success = await btConnect(currentClimbQueueItem.climb.frames, !!currentClimbQueueItem.climb.mirrored);
     } else {
       success = await btConnect();
     }
@@ -73,14 +66,16 @@ export const ShareBoardButton = () => {
         {isConnecting || btLoading ? (
           <CircularProgress size={16} />
         ) : isBoardConnected ? (
-          <Lightbulb sx={{
-            color: themeTokens.colors.warning,
-            '@keyframes connectedGlow': {
-              '0%': { filter: `drop-shadow(0 0 2px ${themeTokens.colors.warning}99)` },
-              '100%': { filter: `drop-shadow(0 0 6px ${themeTokens.colors.warning})` },
-            },
-            animation: 'connectedGlow 1.5s ease-in-out infinite alternate',
-          }} />
+          <Lightbulb
+            sx={{
+              color: themeTokens.colors.warning,
+              '@keyframes connectedGlow': {
+                '0%': { filter: `drop-shadow(0 0 2px ${themeTokens.colors.warning}99)` },
+                '100%': { filter: `drop-shadow(0 0 6px ${themeTokens.colors.warning})` },
+              },
+              animation: 'connectedGlow 1.5s ease-in-out infinite alternate',
+            }}
+          />
         ) : (
           <LightbulbOutlined />
         )}
@@ -105,7 +100,7 @@ export const ShareBoardButton = () => {
             <Button
               variant="contained"
               startIcon={<AppleOutlined />}
-              href="https://apps.apple.com/au/app/boardsesh/id6761350784"
+              href="https://apps.apple.com/app/boardsesh/id6761350784"
               target="_blank"
               onClick={() => setUnsupportedOpen(false)}
             >

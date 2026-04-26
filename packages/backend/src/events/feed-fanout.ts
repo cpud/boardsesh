@@ -44,8 +44,8 @@ export async function fanoutFeedItems(event: SocialEvent): Promise<void> {
 }
 
 /**
-   * Fan out new climb feed items to followers of the setter.
-   */
+ * Fan out new climb feed items to followers of the setter.
+ */
 export async function fanoutNewClimbFeedItems(event: SocialEvent): Promise<void> {
   const followers = await db
     .select({ followerId: dbSchema.userFollows.followerId })

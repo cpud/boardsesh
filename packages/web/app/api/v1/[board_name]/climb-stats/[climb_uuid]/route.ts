@@ -1,5 +1,5 @@
-import { getClimbStatsForAllAngles, ClimbStatsForAngle } from '@/app/lib/data/queries';
-import { ErrorResponse, BoardName } from '@/app/lib/types';
+import { type ClimbStatsForAngle, getClimbStatsForAllAngles } from '@/app/lib/data/queries';
+import type { ErrorResponse, BoardName } from '@/app/lib/types';
 import { NextResponse } from 'next/server';
 
 export async function GET(

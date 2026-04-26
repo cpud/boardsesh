@@ -51,7 +51,7 @@ export const gyms = pgTable(
     publicIdx: index('gyms_public_idx')
       .on(table.isPublic)
       .where(sql`${table.deletedAt} IS NULL`),
-  })
+  }),
 );
 
 /**
@@ -71,11 +71,8 @@ export const gymMembers = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => ({
-    uniqueGymUser: uniqueIndex('gym_members_unique_gym_user').on(
-      table.gymId,
-      table.userId
-    ),
-  })
+    uniqueGymUser: uniqueIndex('gym_members_unique_gym_user').on(table.gymId, table.userId),
+  }),
 );
 
 /**
@@ -94,11 +91,8 @@ export const gymFollows = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => ({
-    uniqueGymUser: uniqueIndex('gym_follows_unique_gym_user').on(
-      table.gymId,
-      table.userId
-    ),
-  })
+    uniqueGymUser: uniqueIndex('gym_follows_unique_gym_user').on(table.gymId, table.userId),
+  }),
 );
 
 // Type exports

@@ -15,14 +15,14 @@ import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import { FREEZE_CLIMB } from '@/app/lib/graphql/operations/proposals';
 
-interface FreezeClimbDialogProps {
+type FreezeClimbDialogProps = {
   open: boolean;
   onClose: () => void;
   climbUuid: string;
   boardType: string;
   currentlyFrozen: boolean;
   onFreezeChanged?: (frozen: boolean) => void;
-}
+};
 
 export default function FreezeClimbDialog({
   open,
@@ -53,7 +53,7 @@ export default function FreezeClimbDialog({
       });
       onFreezeChanged?.(frozen);
       onClose();
-    } catch (err) {
+    } catch {
       setSnackbar('Failed to update freeze status');
     } finally {
       setLoading(false);
@@ -66,12 +66,7 @@ export default function FreezeClimbDialog({
         <DialogTitle>{currentlyFrozen ? 'Unfreeze Climb' : 'Freeze Climb'}</DialogTitle>
         <DialogContent>
           <FormControlLabel
-            control={
-              <Switch
-                checked={frozen}
-                onChange={(e) => setFrozen(e.target.checked)}
-              />
-            }
+            control={<Switch checked={frozen} onChange={(e) => setFrozen(e.target.checked)} />}
             label={frozen ? 'Frozen (no new proposals)' : 'Not frozen'}
             sx={{ mb: 2, mt: 1 }}
           />
@@ -87,7 +82,9 @@ export default function FreezeClimbDialog({
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} sx={{ textTransform: 'none' }}>Cancel</Button>
+          <Button onClick={onClose} sx={{ textTransform: 'none' }}>
+            Cancel
+          </Button>
           <Button
             onClick={handleSubmit}
             variant="contained"
@@ -103,12 +100,7 @@ export default function FreezeClimbDialog({
         </DialogActions>
       </Dialog>
 
-      <Snackbar
-        open={!!snackbar}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar('')}
-        message={snackbar}
-      />
+      <Snackbar open={!!snackbar} autoHideDuration={3000} onClose={() => setSnackbar('')} message={snackbar} />
     </>
   );
 }

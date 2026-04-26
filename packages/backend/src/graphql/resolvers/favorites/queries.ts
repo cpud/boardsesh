@@ -13,7 +13,7 @@ export const favoriteQueries = {
   favorites: async (
     _: unknown,
     { boardName, climbUuids, angle }: { boardName: string; climbUuids: string[]; angle: number },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ): Promise<string[]> => {
     if (!ctx.isAuthenticated || !ctx.userId) {
       return [];
@@ -30,11 +30,11 @@ export const favoriteQueries = {
           eq(dbSchema.userFavorites.userId, ctx.userId),
           eq(dbSchema.userFavorites.boardName, boardName),
           eq(dbSchema.userFavorites.angle, angle),
-          inArray(dbSchema.userFavorites.climbUuid, climbUuids)
-        )
+          inArray(dbSchema.userFavorites.climbUuid, climbUuids),
+        ),
       );
 
-    return favorites.map(f => f.climbUuid);
+    return favorites.map((f) => f.climbUuid);
   },
 
   /**
@@ -43,7 +43,7 @@ export const favoriteQueries = {
   userFavoritesCounts: async (
     _: unknown,
     __: unknown,
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ): Promise<Array<{ boardName: string; count: number }>> => {
     requireAuthenticated(ctx);
 
@@ -62,11 +62,7 @@ export const favoriteQueries = {
   /**
    * Get board names where the current user has playlists or favorites
    */
-  userActiveBoards: async (
-    _: unknown,
-    __: unknown,
-    ctx: ConnectionContext
-  ): Promise<string[]> => {
+  userActiveBoards: async (_: unknown, __: unknown, ctx: ConnectionContext): Promise<string[]> => {
     requireAuthenticated(ctx);
 
     const userId = ctx.userId!;
@@ -75,10 +71,7 @@ export const favoriteQueries = {
     const playlistBoards = await db
       .selectDistinct({ boardName: dbSchema.playlists.boardType })
       .from(dbSchema.playlists)
-      .innerJoin(
-        dbSchema.playlistOwnership,
-        eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id)
-      )
+      .innerJoin(dbSchema.playlistOwnership, eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id))
       .where(eq(dbSchema.playlistOwnership.userId, userId));
 
     // Get distinct board names from favorites

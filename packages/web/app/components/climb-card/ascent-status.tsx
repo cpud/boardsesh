@@ -8,10 +8,12 @@ import {
   pickHighestAscentStatus,
   type AscentStatusValue,
 } from '@/app/components/ascent-status/ascent-status-utils';
-import { ClimbUuid } from '@/app/lib/types';
+import type { ClimbUuid } from '@/app/lib/types';
 import { useOptionalBoardProvider } from '../board-provider/board-provider-context';
 
-interface AscentStatusProps {
+const EMPTY_LOGBOOK: LogbookEntry[] = [];
+
+type AscentStatusProps = {
   climbUuid: ClimbUuid;
   fontSize?: number;
   /** Class for the badge wrapper (e.g. positioning on a thumbnail).
@@ -19,7 +21,7 @@ interface AscentStatusProps {
   className?: string;
   /** Additional class for the mirrored ascent badge (bottom-left positioning). */
   mirroredClassName?: string;
-}
+};
 
 function getHighestStatus(entries: LogbookEntry[]): AscentStatusValue | null {
   return pickHighestAscentStatus(
@@ -33,14 +35,9 @@ function getHighestStatus(entries: LogbookEntry[]): AscentStatusValue | null {
   );
 }
 
-export const AscentStatus = ({
-  climbUuid,
-  fontSize,
-  className,
-  mirroredClassName,
-}: AscentStatusProps) => {
+export const AscentStatus = ({ climbUuid, fontSize, className, mirroredClassName }: AscentStatusProps) => {
   const boardProvider = useOptionalBoardProvider();
-  const logbook = boardProvider?.logbook ?? [];
+  const logbook = boardProvider?.logbook ?? EMPTY_LOGBOOK;
   const boardName = boardProvider?.boardName ?? 'kilter';
 
   const ascentsForClimb = useMemo(

@@ -1,4 +1,5 @@
-import { test, expect, Page } from '@playwright/test';
+import { type Page, test, expect } from '@playwright/test';
+import { loginAs } from './helpers/auth';
 
 /**
  * E2E tests for the bottom tab bar navigation.
@@ -88,33 +89,43 @@ test.describe('Bottom Tab Bar - Navigation', () => {
     await expect(page.locator(bottomTabBar)).toBeVisible();
   });
 
-  test('Notifications tab should navigate to notifications page', async ({ page }) => {
-    await page.goto('/');
+  test('notifications bell in global header should navigate to /notifications', async ({ page }) => {
+    // The bell is not rendered on `/` (HIDDEN_HEADER_PAGES suppresses the full header
+    // there). `/you` renders the full header with the bell unconditionally.
+    await loginAs(page, '/you');
     await waitForPageReady(page);
 
-    await bottomTabButton(page, 'Notifications').click();
+    await page.getByRole('link', { name: 'Notifications' }).click();
     await expect(page).toHaveURL(/\/notifications/, { timeout: 15000 });
     await expect(page.locator(bottomTabBar)).toBeVisible();
   });
 
-  test('Create tab should open drawer with create options without immediate navigation', async ({ page }) => {
-    await page.goto(boardUrl);
+  test('You tab should open auth modal when unauthenticated', async ({ page }) => {
+    await page.goto('/');
     await waitForPageReady(page);
 
-    const currentUrl = page.url();
-    await bottomTabButton(page, 'Create').click();
+    await bottomTabButton(page, 'You').click();
 
-    await expect(page).toHaveURL(currentUrl, { timeout: 5000 });
-    await expect(page.getByTestId('create-climb-option')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByTestId('create-playlist-option')).toBeVisible({ timeout: 10000 });
+    // The auth modal title is the guard defined at bottom-tab-bar.tsx:322
+    await expect(page.getByText('Sign in to see your progress')).toBeVisible({ timeout: 10000 });
+    // Should NOT have navigated away from /
+    await expect(page).toHaveURL('/');
   });
 
-  test('Create drawer climb option should navigate to create climb page', async ({ page }) => {
+  test('You tab should navigate to /you when authenticated', async ({ page }) => {
+    await loginAs(page, '/');
+    await waitForPageReady(page);
+
+    await bottomTabButton(page, 'You').click();
+    await expect(page).toHaveURL(/\/you$/, { timeout: 15000 });
+    await expect(page.locator(bottomTabBar)).toBeVisible();
+  });
+
+  test('Create tab should navigate to create climb page', async ({ page }) => {
     await page.goto(boardUrl);
     await waitForPageReady(page);
 
     await bottomTabButton(page, 'Create').click();
-    await page.getByTestId('create-climb-option').click();
 
     await expect(page).toHaveURL(/\/create$/, { timeout: 15000 });
     await expect(page.locator(bottomTabBar)).toBeVisible();
@@ -145,11 +156,11 @@ test.describe('Bottom Tab Bar - Active State', () => {
     await expect(bottomTabButton(page, 'Discover')).toHaveClass(/Mui-selected/);
   });
 
-  test('Notifications tab should be active on notifications page', async ({ page }) => {
-    await page.goto('/notifications');
+  test('You tab should be active on /you when authenticated', async ({ page }) => {
+    await loginAs(page, '/you');
     await waitForPageReady(page);
 
-    await expect(bottomTabButton(page, 'Notifications')).toHaveClass(/Mui-selected/);
+    await expect(bottomTabButton(page, 'You')).toHaveClass(/Mui-selected/);
   });
 });
 
@@ -211,9 +222,10 @@ test.describe('Bottom Tab Bar - Queue Integration', () => {
     await expect(page).toHaveURL(/\/playlists/, { timeout: 15000 });
     await verifyBarsShowClimb();
 
-    // Navigate to Notifications
-    await bottomTabButton(page, 'Notifications').click();
-    await expect(page).toHaveURL(/\/notifications/, { timeout: 15000 });
+    // Navigate to Feed (Notifications tab was removed from the bottom bar;
+    // use Feed as a second public route to verify persistence).
+    await bottomTabButton(page, 'Feed').click();
+    await expect(page).toHaveURL(/\/feed/, { timeout: 15000 });
     await verifyBarsShowClimb();
 
     // Navigate back to Climb

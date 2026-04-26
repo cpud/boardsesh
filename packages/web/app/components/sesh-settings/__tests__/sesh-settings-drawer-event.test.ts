@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { SESH_SETTINGS_DRAWER_EVENT, dispatchOpenSeshSettingsDrawer } from '../sesh-settings-drawer-event';
 
 describe('sesh-settings-drawer-event', () => {

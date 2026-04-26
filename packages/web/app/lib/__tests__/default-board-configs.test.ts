@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { getDefaultBoardConfig, getDefaultClimbViewPath } from '../default-board-configs';
 
 describe('getDefaultBoardConfig', () => {

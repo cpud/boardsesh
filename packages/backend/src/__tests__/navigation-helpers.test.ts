@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   buildNavigationItem,
   buildNavigationContext,
@@ -159,9 +159,7 @@ describe('Navigation Helper Utilities', () => {
     });
 
     it('should handle single-item queue', () => {
-      const queue = [
-        createMockQueueItem({ uuid: 'item-1', climb: createMockClimb({ name: 'Only Climb' }) }),
-      ];
+      const queue = [createMockQueueItem({ uuid: 'item-1', climb: createMockClimb({ name: 'Only Climb' }) })];
 
       const result = buildNavigationContext(queue, 0);
 
@@ -188,10 +186,7 @@ describe('Navigation Helper Utilities', () => {
     });
 
     it('should clamp negative currentIndex to 0', () => {
-      const queue = [
-        createMockQueueItem({ uuid: 'item-1' }),
-        createMockQueueItem({ uuid: 'item-2' }),
-      ];
+      const queue = [createMockQueueItem({ uuid: 'item-1' }), createMockQueueItem({ uuid: 'item-2' })];
 
       const result = buildNavigationContext(queue, -1);
 
@@ -213,19 +208,13 @@ describe('Navigation Helper Utilities', () => {
     });
 
     it('should return -1 for non-existent UUID', () => {
-      const queue = [
-        createMockQueueItem({ uuid: 'item-1' }),
-        createMockQueueItem({ uuid: 'item-2' }),
-      ];
+      const queue = [createMockQueueItem({ uuid: 'item-1' }), createMockQueueItem({ uuid: 'item-2' })];
 
       expect(findClimbIndex(queue, 'non-existent')).toBe(-1);
     });
 
     it('should return -1 for undefined UUID', () => {
-      const queue = [
-        createMockQueueItem({ uuid: 'item-1' }),
-        createMockQueueItem({ uuid: 'item-2' }),
-      ];
+      const queue = [createMockQueueItem({ uuid: 'item-1' }), createMockQueueItem({ uuid: 'item-2' })];
 
       expect(findClimbIndex(queue, undefined)).toBe(-1);
     });

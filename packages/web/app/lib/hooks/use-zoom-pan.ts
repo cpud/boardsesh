@@ -7,18 +7,18 @@ const MIN_SCALE = 1;
 const MAX_SCALE = 4;
 const ZOOM_THRESHOLD = 1.02; // Consider "zoomed" above this
 
-interface UseZoomPanOptions {
+type UseZoomPanOptions = {
   enabled?: boolean;
-}
+};
 
-interface UseZoomPanReturn {
+type UseZoomPanReturn = {
   containerRef: React.RefCallback<HTMLDivElement>;
   contentRef: React.RefObject<HTMLDivElement | null>;
   isZoomed: boolean;
   resetZoom: () => void;
   /** Spread onto the gesture target element: <div {...gestureHandlers} /> */
   gestureHandlers: ReturnType<ReturnType<typeof useGesture>>;
-}
+};
 
 export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomPanReturn {
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -103,7 +103,11 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
               y: oy - rect.top - rect.height / 2,
             };
           }
-          return { startScale: scaleRef.current, startX: translateRef.current.x, startY: translateRef.current.y };
+          return {
+            startScale: scaleRef.current,
+            startX: translateRef.current.x,
+            startY: translateRef.current.y,
+          };
         }
 
         const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, s));
@@ -174,8 +178,8 @@ export function useZoomPan({ enabled = true }: UseZoomPanOptions = {}): UseZoomP
         // Zoom toward cursor position
         const rect = containerElRef.current?.getBoundingClientRect();
         if (rect) {
-          const cursorX = (event as WheelEvent).clientX - rect.left - rect.width / 2;
-          const cursorY = (event as WheelEvent).clientY - rect.top - rect.height / 2;
+          const cursorX = event.clientX - rect.left - rect.width / 2;
+          const cursorY = event.clientY - rect.top - rect.height / 2;
           const scaleDiff = newScale - scaleRef.current;
           translateRef.current.x -= (cursorX * scaleDiff) / newScale;
           translateRef.current.y -= (cursorY * scaleDiff) / newScale;

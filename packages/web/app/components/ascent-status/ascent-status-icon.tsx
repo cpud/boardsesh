@@ -2,26 +2,29 @@
 
 import React from 'react';
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
-import CloseOutlined from '@mui/icons-material/CloseOutlined';
 import ElectricBoltOutlined from '@mui/icons-material/ElectricBoltOutlined';
 import { themeTokens } from '@/app/theme/theme-config';
+import { PersonFallingIcon } from '@/app/components/icons/person-falling-icon';
 import { normalizeAscentStatus, type AscentStatusValue, type NormalizeAscentStatusInput } from './ascent-status-utils';
 
-interface AscentStatusIconProps extends NormalizeAscentStatusInput {
+type AscentStatusIconProps = {
   variant?: 'icon' | 'badge';
   fontSize?: number;
   className?: string;
   mirrored?: boolean;
   badgeSize?: number;
   testId?: string;
-}
+} & NormalizeAscentStatusInput;
 
-const STATUS_CONFIG: Record<AscentStatusValue, {
-  Icon: typeof CheckOutlined;
-  iconColor: string;
-  badgeBackgroundColor: string;
-  badgeIconColor: string;
-}> = {
+const STATUS_CONFIG: Record<
+  AscentStatusValue,
+  {
+    Icon: typeof CheckOutlined;
+    iconColor: string;
+    badgeBackgroundColor: string;
+    badgeIconColor: string;
+  }
+> = {
   flash: {
     Icon: ElectricBoltOutlined,
     iconColor: themeTokens.colors.amber,
@@ -35,7 +38,7 @@ const STATUS_CONFIG: Record<AscentStatusValue, {
     badgeIconColor: 'white',
   },
   attempt: {
-    Icon: CloseOutlined,
+    Icon: PersonFallingIcon,
     iconColor: themeTokens.colors.error,
     badgeBackgroundColor: themeTokens.colors.error,
     badgeIconColor: 'white',

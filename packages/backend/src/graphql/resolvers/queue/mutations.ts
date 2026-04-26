@@ -21,7 +21,7 @@ export const queueMutations = {
   addQueueItem: async (
     _: unknown,
     { item, position }: { item: ClimbQueueItem; position?: number },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ) => {
     const startTime = performance.now();
     await applyRateLimit(ctx); // Apply default rate limit
@@ -33,7 +33,15 @@ export const queueMutations = {
       validateInput(QueueIndexSchema, position, 'position');
     }
 
-    if (DEBUG) console.log('[addQueueItem] Adding item:', item.climb?.name, 'by client:', ctx.connectionId, 'at position:', position);
+    if (DEBUG)
+      console.info(
+        '[addQueueItem] Adding item:',
+        item.climb?.name,
+        'by client:',
+        ctx.connectionId,
+        'at position:',
+        position,
+      );
 
     // Track the original queue length for position calculation
     let originalQueueLength = 0;
@@ -44,14 +52,20 @@ export const queueMutations = {
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       // Get current state and update
       const currentState = await roomManager.getQueueState(sessionId);
-      if (DEBUG) console.log('[addQueueItem] Current state - queue size:', currentState.queue.length, 'version:', currentState.version);
+      if (DEBUG)
+        console.info(
+          '[addQueueItem] Current state - queue size:',
+          currentState.queue.length,
+          'version:',
+          currentState.version,
+        );
       let queue = currentState.queue;
       originalQueueLength = queue.length;
 
       // Only add if not already in queue
       if (queue.some((i) => i.uuid === item.uuid)) {
         // Item already in queue - return without publishing event
-        if (DEBUG) console.log('[addQueueItem] Item already in queue, skipping');
+        if (DEBUG) console.info('[addQueueItem] Item already in queue, skipping');
         return item;
       }
 
@@ -69,7 +83,7 @@ export const queueMutations = {
         break; // Success, exit retry loop
       } catch (error) {
         if (error instanceof VersionConflictError && attempt < MAX_RETRIES - 1) {
-          if (DEBUG) console.log(`[addQueueItem] Version conflict, retrying (attempt ${attempt + 1}/${MAX_RETRIES})`);
+          if (DEBUG) console.info(`[addQueueItem] Version conflict, retrying (attempt ${attempt + 1}/${MAX_RETRIES})`);
           continue; // Retry
         }
         throw error; // Re-throw if not a version conflict or max retries exceeded
@@ -81,9 +95,7 @@ export const queueMutations = {
       // Calculate actual position where item was inserted
       // If position was valid, item is at that index; otherwise it was appended
       const actualPosition =
-        position !== undefined && position >= 0 && position <= originalQueueLength
-          ? position
-          : originalQueueLength; // Item was appended at end of original queue
+        position !== undefined && position >= 0 && position <= originalQueueLength ? position : originalQueueLength; // Item was appended at end of original queue
 
       // Broadcast to subscribers with the actual position
       pubsub.publishQueueEvent(sessionId, {
@@ -94,7 +106,9 @@ export const queueMutations = {
       });
     }
 
-    logMutationMetrics('addQueueItem', performance.now() - startTime, sessionId, { queueSize: originalQueueLength });
+    logMutationMetrics('addQueueItem', performance.now() - startTime, sessionId, {
+      queueSize: originalQueueLength,
+    });
     return item;
   },
 
@@ -137,7 +151,7 @@ export const queueMutations = {
   reorderQueueItem: async (
     _: unknown,
     { uuid, oldIndex, newIndex }: { uuid: string; oldIndex: number; newIndex: number },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ) => {
     const startTime = performance.now();
     await applyRateLimit(ctx);
@@ -185,8 +199,12 @@ export const queueMutations = {
    */
   setCurrentClimb: async (
     _: unknown,
-    { item, shouldAddToQueue, correlationId }: { item: ClimbQueueItem | null; shouldAddToQueue?: boolean; correlationId?: string },
-    ctx: ConnectionContext
+    {
+      item,
+      shouldAddToQueue,
+      correlationId,
+    }: { item: ClimbQueueItem | null; shouldAddToQueue?: boolean; correlationId?: string },
+    ctx: ConnectionContext,
   ) => {
     const startTime = performance.now();
     await applyRateLimit(ctx);
@@ -200,9 +218,21 @@ export const queueMutations = {
     // Debug: track who's setting null
     if (DEBUG) {
       if (item === null) {
-        console.log('[setCurrentClimb] Setting current climb to NULL by client:', ctx.connectionId, 'session:', sessionId);
+        console.info(
+          '[setCurrentClimb] Setting current climb to NULL by client:',
+          ctx.connectionId,
+          'session:',
+          sessionId,
+        );
       } else {
-        console.log('[setCurrentClimb] Setting current climb to:', item.climb?.name, 'by client:', ctx.connectionId, 'correlationId:', correlationId);
+        console.info(
+          '[setCurrentClimb] Setting current climb to:',
+          item.climb?.name,
+          'by client:',
+          ctx.connectionId,
+          'correlationId:',
+          correlationId,
+        );
       }
     }
 
@@ -223,7 +253,8 @@ export const queueMutations = {
         break; // Success, exit retry loop
       } catch (error) {
         if (error instanceof VersionConflictError && attempt < MAX_RETRIES - 1) {
-          if (DEBUG) console.log(`[setCurrentClimb] Version conflict, retrying (attempt ${attempt + 1}/${MAX_RETRIES})`);
+          if (DEBUG)
+            console.info(`[setCurrentClimb] Version conflict, retrying (attempt ${attempt + 1}/${MAX_RETRIES})`);
           continue; // Retry
         }
         throw error; // Re-throw if not a version conflict or max retries exceeded
@@ -238,7 +269,9 @@ export const queueMutations = {
       correlationId: correlationId || null,
     });
 
-    logMutationMetrics('setCurrentClimb', performance.now() - startTime, sessionId, { shouldAddToQueue: !!shouldAddToQueue });
+    logMutationMetrics('setCurrentClimb', performance.now() - startTime, sessionId, {
+      shouldAddToQueue: !!shouldAddToQueue,
+    });
     return item;
   },
 
@@ -264,7 +297,7 @@ export const queueMutations = {
 
       // Also update in queue if present
       const queue = currentState.queue.map((i) =>
-        i.uuid === currentClimb!.uuid ? { ...i, climb: { ...i.climb, mirrored } } : i
+        i.uuid === currentClimb!.uuid ? { ...i, climb: { ...i.climb, mirrored } } : i,
       );
 
       const result = await roomManager.updateQueueState(sessionId, queue, currentClimb);
@@ -288,7 +321,7 @@ export const queueMutations = {
   replaceQueueItem: async (
     _: unknown,
     { uuid, item }: { uuid: string; item: ClimbQueueItem },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ) => {
     const startTime = performance.now();
     await applyRateLimit(ctx);
@@ -327,7 +360,7 @@ export const queueMutations = {
   setQueue: async (
     _: unknown,
     { queue, currentClimbQueueItem }: { queue: ClimbQueueItem[]; currentClimbQueueItem?: ClimbQueueItem },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ) => {
     const startTime = performance.now();
     await applyRateLimit(ctx, 30); // Lower limit for bulk operations
@@ -354,7 +387,9 @@ export const queueMutations = {
       state,
     });
 
-    logMutationMetrics('setQueue', performance.now() - startTime, sessionId, { queueSize: queue.length });
+    logMutationMetrics('setQueue', performance.now() - startTime, sessionId, {
+      queueSize: queue.length,
+    });
     return state;
   },
 };

@@ -1,8 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { createTestQueryClient } from '@/app/test-utils/test-providers';
 import { QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
+import { useWsAuthToken } from '../use-ws-auth-token';
+import { useSession } from 'next-auth/react';
+import { useSaveTick, type SaveTickOptions } from '../use-save-tick';
+import { accumulatedLogbookQueryKey, type LogbookEntry } from '../use-logbook';
 
 vi.mock('../use-ws-auth-token', () => ({
   useWsAuthToken: vi.fn(),
@@ -25,11 +29,6 @@ vi.mock('@/app/lib/graphql/client', () => ({
 vi.mock('@/app/lib/graphql/operations', () => ({
   SAVE_TICK: 'SAVE_TICK_MUTATION',
 }));
-
-import { useWsAuthToken } from '../use-ws-auth-token';
-import { useSession } from 'next-auth/react';
-import { useSaveTick, type SaveTickOptions } from '../use-save-tick';
-import { accumulatedLogbookQueryKey, type LogbookEntry } from '../use-logbook';
 
 const mockUseWsAuthToken = vi.mocked(useWsAuthToken);
 const mockUseSession = vi.mocked(useSession);
@@ -175,7 +174,9 @@ describe('useSaveTick', () => {
   it('creates optimistic entry on mutate', async () => {
     let resolveRequest: (value: unknown) => void;
     mockRequest.mockReturnValue(
-      new Promise((resolve) => { resolveRequest = resolve; }),
+      new Promise((resolve) => {
+        resolveRequest = resolve;
+      }),
     );
 
     const { wrapper, queryClient } = createTestWrapper();
@@ -282,7 +283,9 @@ describe('useSaveTick', () => {
   it('optimistic entry has correct is_ascent for flash/send', async () => {
     let resolveRequest: (value: unknown) => void;
     mockRequest.mockReturnValue(
-      new Promise((resolve) => { resolveRequest = resolve; }),
+      new Promise((resolve) => {
+        resolveRequest = resolve;
+      }),
     );
 
     const { wrapper, queryClient } = createTestWrapper();
@@ -316,7 +319,9 @@ describe('useSaveTick', () => {
   it('optimistic entry has is_ascent=false for attempt', async () => {
     let resolveRequest: (value: unknown) => void;
     mockRequest.mockReturnValue(
-      new Promise((resolve) => { resolveRequest = resolve; }),
+      new Promise((resolve) => {
+        resolveRequest = resolve;
+      }),
     );
 
     const { wrapper, queryClient } = createTestWrapper();
@@ -348,7 +353,9 @@ describe('useSaveTick', () => {
   it('creates the accumulated cache entry on first save even when no prior ticks were fetched', async () => {
     let resolveRequest: (value: unknown) => void;
     mockRequest.mockReturnValue(
-      new Promise((resolve) => { resolveRequest = resolve; }),
+      new Promise((resolve) => {
+        resolveRequest = resolve;
+      }),
     );
 
     const { wrapper, queryClient } = createTestWrapper();
@@ -380,7 +387,9 @@ describe('useSaveTick', () => {
   it('does not recreate cleared logbook cache on late success', async () => {
     let resolveRequest: (value: unknown) => void;
     mockRequest.mockReturnValue(
-      new Promise((resolve) => { resolveRequest = resolve; }),
+      new Promise((resolve) => {
+        resolveRequest = resolve;
+      }),
     );
 
     const { wrapper, queryClient } = createTestWrapper();

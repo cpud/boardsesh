@@ -20,13 +20,11 @@ function NativeStartInner() {
     if (submitted.current) return;
     if (!provider || !ALLOWED_PROVIDERS.has(provider)) return;
 
-    getCsrfToken().then((csrfToken: string | undefined) => {
+    void getCsrfToken().then((csrfToken: string | undefined) => {
       if (!csrfToken || !formRef.current || submitted.current) return;
       submitted.current = true;
 
-      const input = formRef.current.querySelector<HTMLInputElement>(
-        'input[name="csrfToken"]',
-      );
+      const input = formRef.current.querySelector<HTMLInputElement>('input[name="csrfToken"]');
       if (input) input.value = csrfToken;
       formRef.current.submit();
     });

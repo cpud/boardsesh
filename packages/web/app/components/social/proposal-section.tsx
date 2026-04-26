@@ -9,35 +9,39 @@ import AcUnitIcon from '@mui/icons-material/AcUnit';
 import { themeTokens } from '@/app/theme/theme-config';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  GET_CLIMB_COMMUNITY_STATUS,
-  GET_CLIMB_PROPOSALS,
-  GET_MY_ROLES,
-} from '@/app/lib/graphql/operations/proposals';
+import { GET_CLIMB_COMMUNITY_STATUS, GET_CLIMB_PROPOSALS, GET_MY_ROLES } from '@/app/lib/graphql/operations/proposals';
 import type {
   ClimbCommunityStatusType,
   Proposal,
   ProposalConnection,
   CommunityRoleAssignment,
 } from '@boardsesh/shared-schema';
-import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
-import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
+import CollapsibleSection, {
+  type CollapsibleSectionConfig,
+} from '@/app/components/collapsible-section/collapsible-section';
 import ProposalCard from './proposal-card';
 import CreateProposalForm from './create-proposal-form';
 import FreezeIndicator from './freeze-indicator';
 import FreezeClimbDialog from './freeze-climb-dialog';
 import CommunityStatusBadge from './community-status-badge';
 
-interface ProposalSectionProps {
+type ProposalSectionProps = {
   climbUuid: string;
   boardType: string;
   angle: number;
   currentClimbDifficulty?: string;
   boardName?: string;
   highlightProposalUuid?: string;
-}
+};
 
-export default function ProposalSection({ climbUuid, boardType, angle, currentClimbDifficulty, boardName, highlightProposalUuid }: ProposalSectionProps) {
+export default function ProposalSection({
+  climbUuid,
+  boardType,
+  angle,
+  currentClimbDifficulty,
+  boardName,
+  highlightProposalUuid,
+}: ProposalSectionProps) {
   const { token } = useWsAuthToken();
   const [communityStatus, setCommunityStatus] = useState<ClimbCommunityStatusType | null>(null);
   const [proposals, setProposals] = useState<Proposal[]>([]);
@@ -51,18 +55,17 @@ export default function ProposalSection({ climbUuid, boardType, angle, currentCl
       const client = createGraphQLHttpClient(token || undefined);
 
       const [statusResult, proposalsResult, acceptedResult] = await Promise.all([
-        client.request<{ climbCommunityStatus: ClimbCommunityStatusType }>(
-          GET_CLIMB_COMMUNITY_STATUS,
-          { climbUuid, boardType, angle },
-        ),
-        client.request<{ climbProposals: ProposalConnection }>(
-          GET_CLIMB_PROPOSALS,
-          { input: { climbUuid, boardType, angle, status: 'open', limit: 10, offset: 0 } },
-        ),
-        client.request<{ climbProposals: ProposalConnection }>(
-          GET_CLIMB_PROPOSALS,
-          { input: { climbUuid, boardType, angle, status: 'approved', limit: 10, offset: 0 } },
-        ),
+        client.request<{ climbCommunityStatus: ClimbCommunityStatusType }>(GET_CLIMB_COMMUNITY_STATUS, {
+          climbUuid,
+          boardType,
+          angle,
+        }),
+        client.request<{ climbProposals: ProposalConnection }>(GET_CLIMB_PROPOSALS, {
+          input: { climbUuid, boardType, angle, status: 'open', limit: 10, offset: 0 },
+        }),
+        client.request<{ climbProposals: ProposalConnection }>(GET_CLIMB_PROPOSALS, {
+          input: { climbUuid, boardType, angle, status: 'approved', limit: 10, offset: 0 },
+        }),
       ]);
 
       setCommunityStatus(statusResult.climbCommunityStatus);
@@ -91,26 +94,35 @@ export default function ProposalSection({ climbUuid, boardType, angle, currentCl
   }, [climbUuid, boardType, angle, token]);
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
   }, [fetchData]);
 
-  const handleProposalCreated = useCallback((proposal: Proposal) => {
-    setProposals((prev) => [proposal, ...prev]);
-    fetchData();
-  }, [fetchData]);
+  const handleProposalCreated = useCallback(
+    (proposal: Proposal) => {
+      setProposals((prev) => [proposal, ...prev]);
+      void fetchData();
+    },
+    [fetchData],
+  );
 
-  const handleProposalUpdated = useCallback((updated: Proposal) => {
-    setProposals((prev) => prev.map((p) => (p.uuid === updated.uuid ? updated : p)));
-    // Refresh status if proposal was resolved
-    if (updated.status !== 'open') {
-      fetchData();
-    }
-  }, [fetchData]);
+  const handleProposalUpdated = useCallback(
+    (updated: Proposal) => {
+      setProposals((prev) => prev.map((p) => (p.uuid === updated.uuid ? updated : p)));
+      // Refresh status if proposal was resolved
+      if (updated.status !== 'open') {
+        void fetchData();
+      }
+    },
+    [fetchData],
+  );
 
-  const handleProposalDeleted = useCallback((proposalUuid: string) => {
-    setAcceptedProposals((prev) => prev.filter((p) => p.uuid !== proposalUuid));
-    fetchData();
-  }, [fetchData]);
+  const handleProposalDeleted = useCallback(
+    (proposalUuid: string) => {
+      setAcceptedProposals((prev) => prev.filter((p) => p.uuid !== proposalUuid));
+      void fetchData();
+    },
+    [fetchData],
+  );
 
   if (loading) return null;
 
@@ -130,7 +142,7 @@ export default function ProposalSection({ climbUuid, boardType, angle, currentCl
       label: 'Open Proposals',
       title: 'Open Proposals',
       defaultSummary: 'None',
-      getSummary: () => hasOpen ? [`${proposals.length} open`] : [],
+      getSummary: () => (hasOpen ? [`${proposals.length} open`] : []),
       content: (
         <Box>
           {/* Section header with create button */}
@@ -141,7 +153,9 @@ export default function ProposalSection({ climbUuid, boardType, angle, currentCl
                   <IconButton
                     size="small"
                     onClick={() => setShowFreezeDialog(true)}
-                    sx={{ color: communityStatus?.isFrozen ? themeTokens.colors.warning : themeTokens.neutral[400] }}
+                    sx={{
+                      color: communityStatus?.isFrozen ? themeTokens.colors.warning : themeTokens.neutral[400],
+                    }}
                   >
                     <AcUnitIcon fontSize="small" />
                   </IconButton>
@@ -187,7 +201,7 @@ export default function ProposalSection({ climbUuid, boardType, angle, currentCl
       label: 'Accepted',
       title: 'Accepted Proposals',
       defaultSummary: 'None',
-      getSummary: () => acceptedSummaryParts.length > 0 ? acceptedSummaryParts : [],
+      getSummary: () => (acceptedSummaryParts.length > 0 ? acceptedSummaryParts : []),
       content: (
         <Box>
           {acceptedProposals.map((proposal) => (
@@ -218,9 +232,7 @@ export default function ProposalSection({ climbUuid, boardType, angle, currentCl
       )}
 
       {/* Freeze indicator */}
-      {communityStatus?.isFrozen && (
-        <FreezeIndicator reason={communityStatus.freezeReason} />
-      )}
+      {communityStatus?.isFrozen && <FreezeIndicator reason={communityStatus.freezeReason} />}
 
       {/* Section header */}
       <Typography variant="subtitle2" sx={{ fontWeight: 600, color: themeTokens.neutral[700], mb: 1.5 }}>
@@ -233,10 +245,7 @@ export default function ProposalSection({ climbUuid, boardType, angle, currentCl
       </Typography>
 
       {/* Collapsible sections */}
-      <CollapsibleSection
-        sections={sections}
-        defaultActiveKey="open"
-      />
+      <CollapsibleSection sections={sections} defaultActiveKey="open" />
 
       {/* Freeze dialog */}
       {showFreezeDialog && communityStatus && (

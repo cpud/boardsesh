@@ -22,15 +22,11 @@ export default async function PlaylistsPage() {
     cachedDiscoverPlaylists(),
   ]);
 
-  const lcpPreloadUrl = getPlaylistLcpPreloadUrl(
-    initialPlaylists?.[0] ?? initialDiscoverPlaylists?.popular?.[0],
-  );
+  const lcpPreloadUrl = getPlaylistLcpPreloadUrl(initialPlaylists?.[0] ?? initialDiscoverPlaylists?.popular?.[0]);
 
   return (
     <>
-      {lcpPreloadUrl && (
-        <link rel="preload" as="image" href={lcpPreloadUrl} fetchPriority="high" />
-      )}
+      {lcpPreloadUrl && <link rel="preload" as="image" href={lcpPreloadUrl} fetchPriority="high" />}
       <div className={styles.pageContainer}>
         <LibraryPageContent
           initialMyBoards={initialMyBoards}

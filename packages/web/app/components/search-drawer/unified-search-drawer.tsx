@@ -12,11 +12,11 @@ import BoardSearchResults from '../social/board-search-results';
 import PlaylistSearchResults from '../social/playlist-search-results';
 import GymSearchResults from '../social/gym-search-results';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
-import { BoardDetails } from '@/app/lib/types';
+import type { BoardDetails } from '@/app/lib/types';
 
 export type SearchCategory = 'climbs' | 'users' | 'playlists' | 'boards' | 'gyms';
 
-interface UnifiedSearchDrawerProps {
+type UnifiedSearchDrawerProps = {
   open: boolean;
   onClose: () => void;
   onTransitionEnd?: (open: boolean) => void;
@@ -32,7 +32,7 @@ interface UnifiedSearchDrawerProps {
   showCloseButtonOnMobile?: boolean;
   /** Show drawer close button. */
   showCloseButton?: boolean;
-}
+};
 
 export default function UnifiedSearchDrawer({
   open,
@@ -70,9 +70,7 @@ export default function UnifiedSearchDrawer({
       { key: 'users', label: 'Users', visible: true },
       { key: 'playlists', label: 'Playlists', visible: true },
     ];
-    const allowedSet = allowedCategoriesKey
-      ? new Set(allowedCategoriesKey.split('|') as SearchCategory[])
-      : null;
+    const allowedSet = allowedCategoriesKey ? new Set(allowedCategoriesKey.split('|') as SearchCategory[]) : null;
     return all
       .filter((c) => c.visible && (allowedSet ? allowedSet.has(c.key) : true))
       .map(({ key, label }) => ({ key, label }));
@@ -145,10 +143,13 @@ export default function UnifiedSearchDrawer({
               fullWidth
               size="small"
               placeholder={
-                category === 'boards' ? 'Search boards...'
-                  : category === 'gyms' ? 'Search gyms...'
-                  : category === 'users' ? 'Search climbers...'
-                  : 'Search playlists...'
+                category === 'boards'
+                  ? 'Search boards...'
+                  : category === 'gyms'
+                    ? 'Search gyms...'
+                    : category === 'users'
+                      ? 'Search climbers...'
+                      : 'Search playlists...'
               }
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -166,18 +167,10 @@ export default function UnifiedSearchDrawer({
           </Box>
 
           <Box sx={{ overflow: 'auto', flex: 1 }}>
-            {category === 'boards' && (
-              <BoardSearchResults query={query} authToken={token} />
-            )}
-            {category === 'gyms' && (
-              <GymSearchResults query={query} authToken={token} />
-            )}
-            {category === 'users' && (
-              <UserSearchResults query={query} authToken={token} />
-            )}
-            {category === 'playlists' && (
-              <PlaylistSearchResults query={query} authToken={token} />
-            )}
+            {category === 'boards' && <BoardSearchResults query={query} authToken={token} />}
+            {category === 'gyms' && <GymSearchResults query={query} authToken={token} />}
+            {category === 'users' && <UserSearchResults query={query} authToken={token} />}
+            {category === 'playlists' && <PlaylistSearchResults query={query} authToken={token} />}
           </Box>
         </>
       )}

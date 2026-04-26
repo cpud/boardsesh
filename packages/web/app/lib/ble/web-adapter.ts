@@ -12,7 +12,9 @@ import type { BleConnection, BluetoothAdapter } from './types';
 export class WebBluetoothAdapter implements BluetoothAdapter {
   constructor(private readonly boardName: BoardName = 'kilter') {}
 
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- Web Bluetooth types resolve correctly at build time
   private device: BluetoothDevice | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- Web Bluetooth types resolve correctly at build time
   private characteristic: BluetoothRemoteGATTCharacteristic | null = null;
   private disconnectHandler: (() => void) | null = null;
 
@@ -20,14 +22,12 @@ export class WebBluetoothAdapter implements BluetoothAdapter {
     return typeof navigator !== 'undefined' && !!navigator.bluetooth;
   }
 
-  async requestAndConnect(): Promise<BleConnection> {
+  async requestAndConnect(_targetSerial?: string): Promise<BleConnection> {
     // Clean up any existing device listeners
     this.cleanupListeners();
 
     const requestOptions =
-      this.boardName === 'moonboard'
-        ? MOONBOARD_REQUEST_DEVICE_OPTIONS
-        : AURORA_REQUEST_DEVICE_OPTIONS;
+      this.boardName === 'moonboard' ? MOONBOARD_REQUEST_DEVICE_OPTIONS : AURORA_REQUEST_DEVICE_OPTIONS;
 
     const device = await requestBluetoothDevice(requestOptions);
     const characteristic = await getUartCharacteristic(device);

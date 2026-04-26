@@ -16,11 +16,14 @@ export function findMatchingBoard(
     return boards.find((b) => b.slug === boardSlug) ?? null;
   }
   if (boardConfig) {
-    return boards.find((b) =>
-      b.boardType === boardConfig.boardType &&
-      b.layoutId === boardConfig.layoutId &&
-      b.sizeId === boardConfig.sizeId,
-    ) ?? null;
+    return (
+      boards.find(
+        (b) =>
+          b.boardType === boardConfig.boardType &&
+          b.layoutId === boardConfig.layoutId &&
+          b.sizeId === boardConfig.sizeId,
+      ) ?? null
+    );
   }
   return null;
 }

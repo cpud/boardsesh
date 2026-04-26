@@ -1,6 +1,8 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import { NextRequest } from 'next/server';
+import { GET } from '../route';
 
 const sessionRouteState = vi.hoisted(() => ({
   getSessionOgSummaryMock: vi.fn(),
@@ -55,27 +57,27 @@ vi.mock('@/app/lib/grade-colors', () => ({
 }));
 
 vi.mock('@/app/lib/board-data', () => ({
-  BOULDER_GRADES: [
-    { difficulty_id: 10, font_grade: 'V5' },
-  ],
+  BOULDER_GRADES: [{ difficulty_id: 10, font_grade: 'V5' }],
 }));
 
 vi.mock('@/app/lib/seo/og', () => ({
   OG_IMAGE_WIDTH: 1200,
   OG_IMAGE_HEIGHT: 630,
-  createOgImageHeaders: vi.fn(({ contentType, version, serverTiming }: { contentType: string; version?: string; serverTiming?: string }) => ({
-    'Content-Type': contentType,
-    'Cache-Control': version
-      ? 'public, max-age=31536000, s-maxage=31536000, immutable'
-      : 'public, max-age=0, s-maxage=300, stale-while-revalidate=86400',
-    'CDN-Cache-Control': version
-      ? 'public, s-maxage=31536000, immutable'
-      : 'public, s-maxage=300, stale-while-revalidate=86400',
-    'Vercel-CDN-Cache-Control': version
-      ? 'public, s-maxage=31536000, immutable'
-      : 'public, s-maxage=300, stale-while-revalidate=86400',
-    'Server-Timing': serverTiming ?? '',
-  })),
+  createOgImageHeaders: vi.fn(
+    ({ contentType, version, serverTiming }: { contentType: string; version?: string; serverTiming?: string }) => ({
+      'Content-Type': contentType,
+      'Cache-Control': version
+        ? 'public, max-age=31536000, s-maxage=31536000, immutable'
+        : 'public, max-age=0, s-maxage=300, stale-while-revalidate=86400',
+      'CDN-Cache-Control': version
+        ? 'public, s-maxage=31536000, immutable'
+        : 'public, s-maxage=300, stale-while-revalidate=86400',
+      'Vercel-CDN-Cache-Control': version
+        ? 'public, s-maxage=31536000, immutable'
+        : 'public, s-maxage=300, stale-while-revalidate=86400',
+      'Server-Timing': serverTiming ?? '',
+    }),
+  ),
 }));
 
 vi.mock('@vercel/og', () => ({
@@ -87,8 +89,6 @@ vi.mock('@vercel/og', () => ({
     });
   }),
 }));
-
-import { GET } from '../route';
 
 function makeRequest(params: Record<string, string>): NextRequest {
   const url = new URL('http://localhost:3000/api/og/session');
@@ -125,9 +125,7 @@ function collectImageSources(node: unknown): string[] {
   }
 
   const typedNode = node as { type?: unknown; props?: { src?: string; children?: unknown } };
-  const sources = typedNode.type === 'img' && typeof typedNode.props?.src === 'string'
-    ? [typedNode.props.src]
-    : [];
+  const sources = typedNode.type === 'img' && typeof typedNode.props?.src === 'string' ? [typedNode.props.src] : [];
 
   return [...sources, ...collectImageSources(typedNode.props?.children)];
 }
@@ -149,7 +147,8 @@ describe('api/og/session route', () => {
       gradeRows: [{ difficulty: 10, count: 3 }],
       boardLabel: 'Kilter Original 12x12',
       boardAngle: 40,
-      boardPreviewPath: '/api/internal/board-render?board_name=kilter&frames=&thumbnail=1&include_background=1&format=png',
+      boardPreviewPath:
+        '/api/internal/board-render?board_name=kilter&frames=&thumbnail=1&include_background=1&format=png',
       version: 'abc123',
       found: true,
     });
@@ -169,7 +168,9 @@ describe('api/og/session route', () => {
     expect(textContent).toContain('5 sends so far');
     expect(textContent).toContain('Grades climbed so far');
     expect(textContent).toContain('V5');
-    expect(imageSources).toContain('http://localhost:3000/api/internal/board-render?board_name=kilter&frames=&thumbnail=1&include_background=1&format=png');
+    expect(imageSources).toContain(
+      'http://localhost:3000/api/internal/board-render?board_name=kilter&frames=&thumbnail=1&include_background=1&format=png',
+    );
   });
 
   it('returns 404 when the session summary is not found', async () => {

@@ -1,11 +1,11 @@
-import { useEffect, useRef, Dispatch } from 'react';
+import { type Dispatch, useEffect, useRef } from 'react';
 import type { QueueAction } from '../../queue-control/types';
 
-interface UsePendingUpdateCleanupParams {
+type UsePendingUpdateCleanupParams = {
   isPersistentSessionActive: boolean;
   pendingCurrentClimbUpdates: string[];
   dispatch: Dispatch<QueueAction>;
-}
+};
 
 /**
  * Garbage-collects orphaned pending current-climb updates that were never
@@ -29,7 +29,7 @@ export function usePendingUpdateCleanup({
     const pendingTimestamps = pendingTimestampsRef.current;
 
     // Add timestamps for NEW correlation IDs only
-    pendingCurrentClimbUpdates.forEach(id => {
+    pendingCurrentClimbUpdates.forEach((id) => {
       if (!pendingTimestamps.has(id)) {
         pendingTimestamps.set(id, Date.now());
       }
@@ -59,7 +59,7 @@ export function usePendingUpdateCleanup({
           type: 'CLEANUP_PENDING_UPDATES_BATCH',
           payload: { correlationIds: staleIds },
         });
-        staleIds.forEach(id => pendingTimestamps.delete(id));
+        staleIds.forEach((id) => pendingTimestamps.delete(id));
       }
     }, 2000);
 

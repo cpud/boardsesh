@@ -4,9 +4,9 @@ import React from 'react';
 import type { ActivityFeedItem, FollowingAscentFeedItem } from '@boardsesh/shared-schema';
 import SocialFeedItem from './social-feed-item';
 
-interface FeedItemAscentProps {
+type FeedItemAscentProps = {
   item: ActivityFeedItem;
-}
+};
 
 /**
  * Thin adapter: maps ActivityFeedItem to FollowingAscentFeedItem shape
@@ -31,9 +31,14 @@ export default function FeedItemAscent({ item }: FeedItemAscentProps) {
     difficulty: item.difficulty ?? undefined,
     difficultyName: item.difficultyName ?? undefined,
     isBenchmark: item.isBenchmark ?? false,
+    isNoMatch: item.isNoMatch ?? false,
     comment: item.comment || '',
     climbedAt: item.createdAt,
     frames: item.frames ?? undefined,
+    // Social aggregates aren't carried on ActivityFeedItem, so we leave them
+    // null rather than fabricating zeros: a future tickUuid-aware
+    // SocialFeedItem would render null counts as "—" / hidden instead of
+    // silently showing "0 likes, 0 comments" on every activity row.
   };
 
   return (

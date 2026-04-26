@@ -7,20 +7,21 @@
 
 import path from 'path';
 import { SharpImageProcessor } from './image-processor/sharp-processor';
-import { MoonBoardClimb, ParseResult } from './types';
-import { parseWithProcessor, deduplicateClimbs } from './parser-core';
+import type { MoonBoardClimb, ParseResult } from './types';
+import { parseWithProcessor, deduplicateClimbs, type ParseOptions } from './parser-core';
 
 // Re-export browser-safe core functions for backward compatibility
 export { parseWithProcessor, deduplicateClimbs };
+export type { ParseOptions };
 
 /**
  * Parse a single MoonBoard screenshot from file path (Node.js API).
  * This maintains backward compatibility with the original API.
  */
-export async function parseScreenshot(imagePath: string): Promise<ParseResult> {
+export async function parseScreenshot(imagePath: string, options: ParseOptions = {}): Promise<ParseResult> {
   const processor = new SharpImageProcessor();
   await processor.load(imagePath);
-  return parseWithProcessor(processor);
+  return parseWithProcessor(processor, options);
 }
 
 /**
@@ -28,7 +29,7 @@ export async function parseScreenshot(imagePath: string): Promise<ParseResult> {
  */
 export async function parseMultipleScreenshots(
   imagePaths: string[],
-  onProgress?: (current: number, total: number, file: string) => void
+  onProgress?: (current: number, total: number, file: string) => void,
 ): Promise<{ climbs: MoonBoardClimb[]; errors: Array<{ file: string; error: string }> }> {
   const climbs: MoonBoardClimb[] = [];
   const errors: Array<{ file: string; error: string }> = [];

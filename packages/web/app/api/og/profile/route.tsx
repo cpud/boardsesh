@@ -1,6 +1,6 @@
 import React from 'react';
 import { ImageResponse } from '@vercel/og';
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { sql } from '@/app/lib/db/db';
 import { themeTokens } from '@/app/theme/theme-config';
 import { FONT_GRADE_COLORS, getGradeColorWithOpacity } from '@/app/lib/grade-colors';
@@ -76,160 +76,156 @@ export async function GET(request: NextRequest) {
     const renderMs = performance.now() - routeT0 - dbMs;
 
     return new ImageResponse(
-      (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          background: '#FFFFFF',
+          padding: '60px 80px',
+          gap: '40px',
+        }}
+      >
+        {/* Top section: Avatar + Name */}
         <div
           style={{
-            width: '100%',
-            height: '100%',
             display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
             alignItems: 'center',
-            background: '#FFFFFF',
-            padding: '60px 80px',
-            gap: '40px',
+            gap: '32px',
+            width: '100%',
           }}
         >
-          {/* Top section: Avatar + Name */}
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={avatarUrl}
+              alt=""
+              width={120}
+              height={120}
+              style={{
+                borderRadius: '60px',
+                objectFit: 'cover',
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                width: '120px',
+                height: '120px',
+                borderRadius: '60px',
+                background: themeTokens.neutral[200],
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '48px',
+                color: themeTokens.neutral[500],
+              }}
+            >
+              {displayName.charAt(0).toUpperCase()}
+            </div>
+          )}
           <div
             style={{
               display: 'flex',
-              alignItems: 'center',
-              gap: '32px',
-              width: '100%',
+              flexDirection: 'column',
+              gap: '8px',
             }}
           >
-            {avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={avatarUrl}
-                alt=""
-                width={120}
-                height={120}
-                style={{
-                  borderRadius: '60px',
-                  objectFit: 'cover',
-                }}
-              />
-            ) : (
-              <div
-                style={{
-                  width: '120px',
-                  height: '120px',
-                  borderRadius: '60px',
-                  background: themeTokens.neutral[200],
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '48px',
-                  color: themeTokens.neutral[500],
-                }}
-              >
-                {displayName.charAt(0).toUpperCase()}
-              </div>
-            )}
             <div
               style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
+                fontSize: '48px',
+                fontWeight: 'bold',
+                color: themeTokens.neutral[900],
+                lineHeight: 1.2,
               }}
             >
-              <div
-                style={{
-                  fontSize: '48px',
-                  fontWeight: 'bold',
-                  color: themeTokens.neutral[900],
-                  lineHeight: 1.2,
-                }}
-              >
-                {displayName}
-              </div>
-              <div
-                style={{
-                  fontSize: '24px',
-                  color: themeTokens.neutral[500],
-                }}
-              >
-                {totalClimbs > 0
-                  ? `${totalClimbs} distinct climb${totalClimbs !== 1 ? 's' : ''}`
-                  : 'Boardsesh climber'}
-              </div>
+              {displayName}
             </div>
-          </div>
-
-          {/* Grade chart */}
-          {gradeBars.length > 0 && (
             <div
               style={{
-                display: 'flex',
-                flexDirection: 'column',
-                width: '100%',
-                gap: '8px',
+                fontSize: '24px',
+                color: themeTokens.neutral[500],
               }}
             >
-              {/* Bars */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-end',
-                  gap: '4px',
-                  height: '160px',
-                  width: '100%',
-                }}
-              >
-                {gradeBars.map((bar) => (
-                  <div
-                    key={bar.grade}
-                    style={{
-                      flex: 1,
-                      height: `${Math.max((bar.count / maxCount) * 100, 5)}%`,
-                      backgroundColor: bar.color,
-                      borderRadius: '3px 3px 0 0',
-                    }}
-                  />
-                ))}
-              </div>
-              {/* Labels */}
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '4px',
-                  width: '100%',
-                }}
-              >
-                {gradeBars.map((bar) => (
-                  <div
-                    key={bar.grade}
-                    style={{
-                      flex: 1,
-                      fontSize: '14px',
-                      textAlign: 'center',
-                      color: themeTokens.neutral[400],
-                    }}
-                  >
-                    {bar.grade}
-                  </div>
-                ))}
-              </div>
+              {totalClimbs > 0 ? `${totalClimbs} distinct climb${totalClimbs !== 1 ? 's' : ''}` : 'Boardsesh climber'}
             </div>
-          )}
-
-          {/* Branding */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '24px',
-              right: '40px',
-              fontSize: '20px',
-              color: themeTokens.neutral[300],
-              fontWeight: 600,
-            }}
-          >
-            boardsesh.com
           </div>
         </div>
-      ),
+
+        {/* Grade chart */}
+        {gradeBars.length > 0 && (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              width: '100%',
+              gap: '8px',
+            }}
+          >
+            {/* Bars */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-end',
+                gap: '4px',
+                height: '160px',
+                width: '100%',
+              }}
+            >
+              {gradeBars.map((bar) => (
+                <div
+                  key={bar.grade}
+                  style={{
+                    flex: 1,
+                    height: `${Math.max((bar.count / maxCount) * 100, 5)}%`,
+                    backgroundColor: bar.color,
+                    borderRadius: '3px 3px 0 0',
+                  }}
+                />
+              ))}
+            </div>
+            {/* Labels */}
+            <div
+              style={{
+                display: 'flex',
+                gap: '4px',
+                width: '100%',
+              }}
+            >
+              {gradeBars.map((bar) => (
+                <div
+                  key={bar.grade}
+                  style={{
+                    flex: 1,
+                    fontSize: '14px',
+                    textAlign: 'center',
+                    color: themeTokens.neutral[400],
+                  }}
+                >
+                  {bar.grade}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Branding */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '24px',
+            right: '40px',
+            fontSize: '20px',
+            color: themeTokens.neutral[300],
+            fontWeight: 600,
+          }}
+        >
+          boardsesh.com
+        </div>
+      </div>,
       {
         width: OG_IMAGE_WIDTH,
         height: OG_IMAGE_HEIGHT,

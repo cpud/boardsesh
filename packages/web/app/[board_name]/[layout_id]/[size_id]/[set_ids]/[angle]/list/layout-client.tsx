@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { PropsWithChildren } from 'react';
+import React, { useState, useEffect, type PropsWithChildren } from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Badge from '@mui/material/Badge';
@@ -9,7 +8,7 @@ import MuiButton from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import { DeleteOutlined } from '@mui/icons-material';
 import { track } from '@vercel/analytics';
-import { BoardDetails } from '@/app/lib/types';
+import type { BoardDetails } from '@/app/lib/types';
 import dynamic from 'next/dynamic';
 
 import { getImageUrl } from '@/app/components/board-renderer/util';
@@ -18,21 +17,34 @@ import { ConfirmPopover } from '@/app/components/ui/confirm-popover';
 import { TabPanel } from '@/app/components/ui/tab-panel';
 import styles from './layout-client.module.css';
 
-const AccordionSearchForm = dynamic(() => import('@/app/components/search-drawer/accordion-search-form'), { ssr: false });
-const SearchResultsFooter = dynamic(() => import('@/app/components/search-drawer/search-results-footer'), { ssr: false });
-const QueueList = dynamic(() => import('@/app/components/queue-control/queue-list'), { ssr: false });
-const OnboardingTour = dynamic(() => import('@/app/components/onboarding/onboarding-tour'), { ssr: false });
+const AccordionSearchForm = dynamic(() => import('@/app/components/search-drawer/accordion-search-form'), {
+  ssr: false,
+});
+const SearchResultsFooter = dynamic(() => import('@/app/components/search-drawer/search-results-footer'), {
+  ssr: false,
+});
+const QueueList = dynamic(() => import('@/app/components/queue-control/queue-list'), {
+  ssr: false,
+});
+const TourQueueWatcher = dynamic(() => import('@/app/components/onboarding/tour-queue-watcher'), {
+  ssr: false,
+});
 
-
-interface ListLayoutClientProps {
+type ListLayoutClientProps = {
   boardDetails: BoardDetails;
-}
+};
 
 // Isolated component for the queue tab label - subscribes to context independently
 const QueueTabLabel: React.FC = () => {
   const { queue } = useQueueList();
   return (
-    <Badge badgeContent={queue.length} max={99} invisible={queue.length === 0} color="primary" sx={{ '& .MuiBadge-badge': { right: -8, top: -2 } }}>
+    <Badge
+      badgeContent={queue.length}
+      max={99}
+      invisible={queue.length === 0}
+      color="primary"
+      sx={{ '& .MuiBadge-badge': { right: -8, top: -2 } }}
+    >
       Queue
     </Badge>
   );
@@ -143,9 +155,10 @@ const ListLayoutClient: React.FC<PropsWithChildren<ListLayoutClientProps>> = ({ 
     };
 
     // Defer to idle time; fall back to setTimeout for Safari which lacks requestIdleCallback
-    const handle = typeof requestIdleCallback !== 'undefined'
-      ? requestIdleCallback(prefetchImages)
-      : setTimeout(prefetchImages, 1) as unknown as number;
+    const handle =
+      typeof requestIdleCallback !== 'undefined'
+        ? requestIdleCallback(prefetchImages)
+        : (setTimeout(prefetchImages, 1) as unknown as number);
 
     return () => {
       if (typeof cancelIdleCallback !== 'undefined') {
@@ -160,11 +173,13 @@ const ListLayoutClient: React.FC<PropsWithChildren<ListLayoutClientProps>> = ({ 
   return (
     <Box className={styles.listLayout}>
       <ThumbnailPreload boardDetails={boardDetails} />
-      <Box component="main" className={styles.mainContent}>{children}</Box>
+      <Box component="main" className={styles.mainContent}>
+        {children}
+      </Box>
       <Box component="aside" className={styles.sider} sx={{ width: 400, padding: '0 8px 20px 8px' }}>
         <TabsWrapper boardDetails={boardDetails} />
       </Box>
-      <OnboardingTour />
+      <TourQueueWatcher />
     </Box>
   );
 };

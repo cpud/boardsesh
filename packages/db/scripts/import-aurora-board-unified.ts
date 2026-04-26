@@ -3,6 +3,7 @@ import path from 'path';
 import { execFileSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { eq, sql } from 'drizzle-orm';
+import type { PgDatabase, PgQueryResultHKT, PgTable } from 'drizzle-orm/pg-core';
 import {
   boardAttempts,
   boardBetaLinks,
@@ -54,7 +55,9 @@ type ImportConfig = {
 
 function parseBoardName(value: string | undefined): DirectAuroraBoard {
   if (!value || !DIRECT_AURORA_BOARDS.includes(value as DirectAuroraBoard)) {
-    console.error(`Usage: bunx tsx scripts/import-aurora-board-unified.ts <${DIRECT_AURORA_BOARDS.join('|')}> <sqlite-db-path>`);
+    console.error(
+      `Usage: bunx tsx scripts/import-aurora-board-unified.ts <${DIRECT_AURORA_BOARDS.join('|')}> <sqlite-db-path>`,
+    );
     process.exit(1);
   }
 
@@ -62,20 +65,16 @@ function parseBoardName(value: string | undefined): DirectAuroraBoard {
 }
 
 function runSqliteQuery(sqlitePath: string, query: string): string {
-  return execFileSync(
-    'sqlite3',
-    [sqlitePath, '-json', query],
-    {
-      cwd: __dirname,
-      encoding: 'utf-8',
-      maxBuffer: SQLITE_MAX_BUFFER,
-    },
-  );
+  return execFileSync('sqlite3', [sqlitePath, '-json', query], {
+    cwd: __dirname,
+    encoding: 'utf-8',
+    maxBuffer: SQLITE_MAX_BUFFER,
+  });
 }
 
 function readSqliteJson(sqlitePath: string, query: string): SqliteRow[] {
   const result = runSqliteQuery(sqlitePath, query).trim();
-  return result ? JSON.parse(result) as SqliteRow[] : [];
+  return result ? (JSON.parse(result) as SqliteRow[]) : [];
 }
 
 function listSqliteTables(sqlitePath: string): Set<string> {
@@ -493,22 +492,22 @@ function createImportConfigs(): ImportConfig[] {
 }
 
 async function insertBatches(
-  tx: any,
-  destination: unknown,
+  tx: PgDatabase<PgQueryResultHKT>,
+  destination: PgTable,
   rows: Record<string, unknown>[],
   label: string,
   conflictMode: 'ignore' | 'allowDuplicates' = 'ignore',
 ) {
   if (rows.length === 0) {
-    console.log(`  - ${label}: 0 rows`);
+    console.info(`  - ${label}: 0 rows`);
     return;
   }
 
-  console.log(`  - ${label}: ${rows.length} rows`);
+  console.info(`  - ${label}: ${rows.length} rows`);
 
   for (let index = 0; index < rows.length; index += BATCH_SIZE) {
     const batch = rows.slice(index, index + BATCH_SIZE);
-    const insertQuery = tx.insert(destination as any).values(batch);
+    const insertQuery = tx.insert(destination).values(batch);
     if (conflictMode === 'ignore') {
       await insertQuery.onConflictDoNothing();
     } else {
@@ -517,7 +516,7 @@ async function insertBatches(
   }
 }
 
-async function clearBoardData(tx: any, boardName: DirectAuroraBoard) {
+async function clearBoardData(tx: PgDatabase<PgQueryResultHKT>, boardName: DirectAuroraBoard) {
   await tx.delete(boardTags).where(eq(boardTags.boardType, boardName));
   await tx.delete(boardCircuitsClimbs).where(eq(boardCircuitsClimbs.boardType, boardName));
   await tx.delete(boardBetaLinks).where(eq(boardBetaLinks.boardType, boardName));
@@ -554,8 +553,8 @@ async function main() {
 
   const databaseUrl = getScriptDatabaseUrl();
   const dbHost = new URL(databaseUrl).host;
-  console.log(`Importing ${boardName} from ${sqlitePath}`);
-  console.log(`Target database: ${dbHost}`);
+  console.info(`Importing ${boardName} from ${sqlitePath}`);
+  console.info(`Target database: ${dbHost}`);
 
   const availableTables = listSqliteTables(sqlitePath);
   const tableCache = new Map<string, SqliteRow[]>();
@@ -566,7 +565,7 @@ async function main() {
       if (required) {
         throw new Error(`Required SQLite table is missing: ${tableName}`);
       }
-      console.log(`  - ${tableName}: table missing, skipping`);
+      console.info(`  - ${tableName}: table missing, skipping`);
       return [];
     }
 
@@ -584,15 +583,18 @@ async function main() {
   }));
 
   const climbHoldsRows = availableTables.has('climb_holds') ? getRows('climb_holds', false) : [];
-  const importedClimbHolds = climbHoldsRows.length > 0
-    ? dedupeSourceClimbHolds(climbHoldsRows as Array<{
-        climb_uuid: string | null;
-        hold_id: number | null;
-        frame_number: number | null;
-        hold_state: string | null;
-        created_at?: string | null;
-      }>)
-    : sourceClimbRows.flatMap((row) => deriveClimbHoldsFromFrames(row, boardName));
+  const importedClimbHolds =
+    climbHoldsRows.length > 0
+      ? dedupeSourceClimbHolds(
+          climbHoldsRows as Array<{
+            climb_uuid: string | null;
+            hold_id: number | null;
+            frame_number: number | null;
+            hold_state: string | null;
+            created_at?: string | null;
+          }>,
+        )
+      : sourceClimbRows.flatMap((row) => deriveClimbHoldsFromFrames(row, boardName));
 
   if (sourceClimbRows.length > 0 && importedClimbHolds.length === 0) {
     throw new Error(`No climb holds could be imported for ${boardName}; aborting to avoid empty set-filter data`);
@@ -609,12 +611,12 @@ async function main() {
   const { db, close } = createScriptDb(databaseUrl);
 
   try {
-    const transactionalDb = db as any;
-    await transactionalDb.transaction(async (tx: any) => {
-      console.log(`Clearing existing ${boardName} rows from unified tables...`);
+    const transactionalDb = db as unknown as PgDatabase<PgQueryResultHKT>;
+    await transactionalDb.transaction(async (tx) => {
+      console.info(`Clearing existing ${boardName} rows from unified tables...`);
       await clearBoardData(tx, boardName);
 
-      console.log(`Loading ${boardName} tables into unified schema...`);
+      console.info(`Loading ${boardName} tables into unified schema...`);
 
       for (const config of importConfigs) {
         const sourceRows = getRows(config.sourceTable, config.required);
@@ -640,7 +642,7 @@ async function main() {
       );
 
       // Populate denormalized required_set_ids from climb_holds -> placements
-      console.log(`  Computing required_set_ids for ${boardName}...`);
+      console.info(`  Computing required_set_ids for ${boardName}...`);
       await tx.execute(sql`
         UPDATE board_climbs c SET required_set_ids = sub.sets
         FROM (
@@ -659,7 +661,7 @@ async function main() {
       `);
 
       // Populate denormalized compatible_size_ids from edge comparison
-      console.log(`  Computing compatible_size_ids for ${boardName}...`);
+      console.info(`  Computing compatible_size_ids for ${boardName}...`);
       await tx.execute(sql`
         UPDATE board_climbs c SET compatible_size_ids = sub.size_ids
         FROM (
@@ -680,7 +682,7 @@ async function main() {
       `);
     });
 
-    console.log(`Finished importing ${boardName}.`);
+    console.info(`Finished importing ${boardName}.`);
   } finally {
     await close();
   }

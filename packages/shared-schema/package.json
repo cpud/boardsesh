@@ -31,14 +31,13 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
-    "lint": "oxlint .",
-    "lint-fix": "oxlint --fix ."
+    "lint": "vp lint",
+    "lint-fix": "vp lint --fix"
   },
   "dependencies": {
     "graphql": "^16.13.0"
   },
   "devDependencies": {
-    "oxlint": "^1.50.0",
     "typescript": "^5.9.3"
   }
 }

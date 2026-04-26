@@ -4,10 +4,10 @@ import { boardUsers } from '@/app/lib/db/schema';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import AuroraClimbingClient from '@/app/lib/api-wrappers/aurora-rest-client/aurora-rest-client';
-import { BoardOnlyRouteParameters } from '@/app/lib/types';
+import type { BoardOnlyRouteParameters } from '@/app/lib/types';
 import { syncUserData } from '@/app/lib/data-sync/aurora/user-sync';
-import { Session } from '@/app/lib/api-wrappers/aurora-rest-client/types';
-import { AuroraBoardName } from '@/app/lib/api-wrappers/aurora/types';
+import type { Session } from '@/app/lib/api-wrappers/aurora-rest-client/types';
+import type { AuroraBoardName } from '@/app/lib/api-wrappers/aurora/types';
 import { getSession } from '@/app/lib/session';
 import { isAuroraBoardName } from '@/app/lib/board-constants';
 
@@ -34,7 +34,9 @@ async function login(boardName: AuroraBoardName, username: string, password: str
 
   if (loginResponse.user_id) {
     // Insert/update user in our database - handle missing user object
-    const createdAt = loginResponse.user?.created_at ? new Date(loginResponse.user.created_at).toISOString() : new Date().toISOString();
+    const createdAt = loginResponse.user?.created_at
+      ? new Date(loginResponse.user.created_at).toISOString()
+      : new Date().toISOString();
 
     await dbz
       .insert(boardUsers)

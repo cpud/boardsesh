@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-named-as-default -- `graphql-type-json` exports both default and named `GraphQLJSON`; default is the canonical scalar.
 import GraphQLJSON from 'graphql-type-json';
 
 // Import domain resolvers
@@ -35,13 +36,19 @@ import { socialCommentQueries, socialCommentMutations } from './social/comments'
 import { socialVoteQueries, socialVoteMutations } from './social/votes';
 import { socialBoardQueries, socialBoardMutations } from './social/boards';
 import { socialGymQueries, socialGymMutations } from './social/gyms';
-import { socialNotificationQueries, socialNotificationMutations, socialNotificationSubscriptions } from './social/notifications';
+import {
+  socialNotificationQueries,
+  socialNotificationMutations,
+  socialNotificationSubscriptions,
+} from './social/notifications';
 import { socialCommentSubscriptions } from './social/comment-subscriptions';
 import { socialProposalQueries, socialProposalMutations } from './social/proposals';
 import { socialRoleQueries, socialRoleMutations } from './social/roles';
 import { socialCommunitySettingsQueries, socialCommunitySettingsMutations } from './social/community-settings';
 import { newClimbSubscriptionResolvers } from './social/new-climb-subscriptions';
 import { newClimbFeedSubscription } from './social/new-climb-feed-subscription';
+import { feedbackMutations } from './feedback/mutations';
+import { isNoMatchClimb } from './shared/helpers';
 
 export const resolvers = {
   // Scalar types
@@ -96,6 +103,7 @@ export const resolvers = {
     ...socialCommunitySettingsMutations,
     ...newClimbSubscriptionResolvers.Mutation,
     ...sessionEditMutations,
+    ...feedbackMutations,
   },
 
   Subscription: {
@@ -112,8 +120,7 @@ export const resolvers = {
 
   // Climb type resolvers (derived fields)
   Climb: {
-    is_no_match: (climb: { description?: string | null }) =>
-      /^no match/i.test(climb.description || ''),
+    is_no_match: (climb: { description?: string | null }) => isNoMatchClimb(climb.description),
   },
 
   // Union type resolvers

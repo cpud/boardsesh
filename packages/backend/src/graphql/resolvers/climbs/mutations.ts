@@ -1,7 +1,11 @@
 import crypto from 'crypto';
 import { and, eq, sql } from 'drizzle-orm';
-import type { ConnectionContext, SaveClimbResult, UpdateClimbResult } from '@boardsesh/shared-schema';
-import { SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
+import {
+  type ConnectionContext,
+  type SaveClimbResult,
+  type UpdateClimbResult,
+  SUPPORTED_BOARDS,
+} from '@boardsesh/shared-schema';
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { UNIFIED_TABLES, isValidBoardName } from '../../../db/queries/util/table-select';
@@ -57,8 +61,8 @@ async function resolveDifficultyId(boardType: string, grade?: string | null): Pr
     .where(
       and(
         eq(dbSchema.boardDifficultyGrades.boardType, boardType),
-        sql`LOWER(${dbSchema.boardDifficultyGrades.boulderName}) = ${fontPart}`
-      )
+        sql`LOWER(${dbSchema.boardDifficultyGrades.boulderName}) = ${fontPart}`,
+      ),
     )
     .limit(1);
 
@@ -70,11 +74,7 @@ export const climbMutations = {
    * Save a new climb for Aurora-style boards (kilter/tension) via GraphQL.
    * Persists to the unified board_climbs table and publishes a climb.created event.
    */
-  saveClimb: async (
-    _: unknown,
-    { input }: SaveClimbArgs,
-    ctx: ConnectionContext
-  ): Promise<SaveClimbResult> => {
+  saveClimb: async (_: unknown, { input }: SaveClimbArgs, ctx: ConnectionContext): Promise<SaveClimbResult> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 10);
 
@@ -82,7 +82,9 @@ export const climbMutations = {
     const isListed = !validated.isDraft;
 
     if (!isValidBoardName(validated.boardType)) {
-      throw new Error(`Invalid board type: ${validated.boardType}. Must be one of ${SUPPORTED_BOARDS.join(', ')}`);
+      throw new Error(
+        `Invalid board type: ${String(validated.boardType)}. Must be one of ${SUPPORTED_BOARDS.join(', ')}`,
+      );
     }
 
     const now = new Date().toISOString();
@@ -144,7 +146,7 @@ export const climbMutations = {
   saveMoonBoardClimb: async (
     _: unknown,
     { input }: SaveClimbArgs,
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ): Promise<SaveClimbResult> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 10);
@@ -260,7 +262,7 @@ export const climbMutations = {
   updateClimb: async (
     _: unknown,
     { input }: { input: unknown },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ): Promise<UpdateClimbResult> => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 20);
@@ -268,7 +270,9 @@ export const climbMutations = {
     const validated = validateInput(UpdateClimbInputSchema, input, 'input');
 
     if (!isValidBoardName(validated.boardType)) {
-      throw new Error(`Invalid board type: ${validated.boardType}. Must be one of ${SUPPORTED_BOARDS.join(', ')}`);
+      throw new Error(
+        `Invalid board type: ${String(validated.boardType)}. Must be one of ${SUPPORTED_BOARDS.join(', ')}`,
+      );
     }
 
     // Load the existing row and verify ownership + edit window.
@@ -282,10 +286,7 @@ export const climbMutations = {
       })
       .from(dbSchema.boardClimbs)
       .where(
-        and(
-          eq(dbSchema.boardClimbs.uuid, validated.uuid),
-          eq(dbSchema.boardClimbs.boardType, validated.boardType),
-        )
+        and(eq(dbSchema.boardClimbs.uuid, validated.uuid), eq(dbSchema.boardClimbs.boardType, validated.boardType)),
       )
       .limit(1);
 
@@ -313,9 +314,12 @@ export const climbMutations = {
 
     // Decide the next draft/publish state. We only honor a transition from
     // draft → published; a publish → draft attempt is silently ignored.
-    const nextIsDraft = validated.isDraft === undefined
-      ? existing.isDraft ?? false
-      : (currentlyDraft && validated.isDraft === false ? false : existing.isDraft ?? false);
+    const nextIsDraft =
+      validated.isDraft === undefined
+        ? (existing.isDraft ?? false)
+        : currentlyDraft && validated.isDraft === false
+          ? false
+          : (existing.isDraft ?? false);
 
     const transitioningToPublished = currentlyDraft && validated.isDraft === false;
     const now = new Date().toISOString();
@@ -338,10 +342,7 @@ export const climbMutations = {
       .update(dbSchema.boardClimbs)
       .set(updateSet)
       .where(
-        and(
-          eq(dbSchema.boardClimbs.uuid, validated.uuid),
-          eq(dbSchema.boardClimbs.boardType, validated.boardType),
-        )
+        and(eq(dbSchema.boardClimbs.uuid, validated.uuid), eq(dbSchema.boardClimbs.boardType, validated.boardType)),
       );
 
     // If frames changed we need to refresh the denormalized edge/set columns
@@ -353,11 +354,11 @@ export const climbMutations = {
     // On a draft → published transition, announce the new climb so follower
     // feeds pick it up, the same way saveClimb does.
     if (transitioningToPublished) {
-      const { displayName, name, avatarUrl } = await getUserProfile(ctx.userId!);
+      const { displayName, name, avatarUrl } = await getUserProfile(ctx.userId);
       const preferredSetter = displayName || name || null;
       await publishSocialEvent({
         type: 'climb.created',
-        actorId: ctx.userId!,
+        actorId: ctx.userId,
         entityType: 'climb',
         entityId: validated.uuid,
         timestamp: Date.now(),

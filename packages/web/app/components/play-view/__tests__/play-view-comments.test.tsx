@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+
+import { describe, expect, it, vi, beforeEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+import PlayViewComments from '../play-view-comments';
 
 const mockUseBoardProvider = vi.fn();
 
@@ -10,16 +12,12 @@ vi.mock('../../board-provider/board-provider-context', () => ({
 }));
 
 vi.mock('@/app/components/ascent-status/ascent-status-icon', () => ({
-  AscentStatusIcon: ({ status }: { status: string }) => (
-    <div data-testid="ascent-status-icon" data-status={status} />
-  ),
+  AscentStatusIcon: ({ status }: { status: string }) => <div data-testid="ascent-status-icon" data-status={status} />,
 }));
 
 vi.mock('@mui/material/Rating', () => ({
   default: ({ value }: { value: number }) => <div data-testid="rating">{value}</div>,
 }));
-
-import PlayViewComments from '../play-view-comments';
 
 describe('PlayViewComments', () => {
   beforeEach(() => {

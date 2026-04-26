@@ -111,7 +111,7 @@ export const GET_CLIMB = gql`
 `;
 
 // Type for the search input
-export interface ClimbSearchInputVariables {
+export type ClimbSearchInputVariables = {
   input: {
     boardName: string;
     layoutId: number;
@@ -135,20 +135,21 @@ export interface ClimbSearchInputVariables {
     showOnlyAttempted?: boolean;
     showOnlyCompleted?: boolean;
     onlyDrafts?: boolean;
+    projectsOnly?: boolean;
   };
-}
+};
 
 // Type for the search response - uses the Climb type from the app
-export interface ClimbSearchResponse {
+export type ClimbSearchResponse = {
   searchClimbs: {
     climbs: Climb[];
     totalCount?: number;
     hasMore: boolean;
   };
-}
+};
 
-export interface ClimbSearchCountResponse {
+export type ClimbSearchCountResponse = {
   searchClimbs: {
     totalCount: number;
   };
-}
+};

@@ -4,12 +4,12 @@ import { db } from '../db/client';
 import { esp32Controllers } from '@boardsesh/db/schema/app';
 import { eq } from 'drizzle-orm';
 
-export interface AuthResult {
+export type AuthResult = {
   userId: string;
   isAuthenticated: true;
-}
+};
 
-export interface ControllerAuthResult {
+export type ControllerAuthResult = {
   controllerId: string;
   controllerApiKey: string;
   userId: string | null;
@@ -17,7 +17,7 @@ export interface ControllerAuthResult {
   layoutId: number;
   sizeId: number;
   setIds: string;
-}
+};
 
 // Cache the derived encryption key — it only changes if NEXTAUTH_SECRET changes,
 // which requires a process restart anyway.
@@ -29,13 +29,7 @@ async function deriveEncryptionKey(secret: string): Promise<Uint8Array> {
     return cachedEncryptionKey;
   }
   const encoder = new TextEncoder();
-  cachedEncryptionKey = await hkdf(
-    'sha256',
-    encoder.encode(secret),
-    '',
-    'NextAuth.js Generated Encryption Key',
-    32
-  );
+  cachedEncryptionKey = await hkdf('sha256', encoder.encode(secret), '', 'NextAuth.js Generated Encryption Key', 32);
   cachedSecret = secret;
   return cachedEncryptionKey;
 }
@@ -43,10 +37,10 @@ async function deriveEncryptionKey(secret: string): Promise<Uint8Array> {
 // Short-lived in-process cache for validated tokens: token → { result, expiresAt }
 // Avoids repeated JWE decryption for the same token across rapid requests.
 const TOKEN_CACHE_TTL_MS = 60_000; // 60 seconds
-interface TokenCacheEntry {
+type TokenCacheEntry = {
   result: AuthResult | null;
   expiresAt: number;
-}
+};
 const tokenCache = new Map<string, TokenCacheEntry>();
 
 // Periodically evict stale entries so the map doesn't grow unbounded.
@@ -87,7 +81,7 @@ export async function validateNextAuthToken(token: string): Promise<AuthResult |
       clockTolerance: 60,
     });
 
-    const userId = payload.sub as string | undefined;
+    const userId = payload.sub;
     if (!userId) {
       console.warn('[Auth] Token missing sub claim');
       tokenCache.set(token, { result: null, expiresAt: now + TOKEN_CACHE_TTL_MS });
@@ -110,10 +104,7 @@ export async function validateNextAuthToken(token: string): Promise<AuthResult |
  * Extract auth token from various sources.
  * Checks connection params first, then falls back to URL query params.
  */
-export function extractAuthToken(
-  connectionParams?: Record<string, unknown>,
-  requestUrl?: string
-): string | null {
+export function extractAuthToken(connectionParams?: Record<string, unknown>, requestUrl?: string): string | null {
   // Check connection params (preferred method)
   if (connectionParams?.authToken && typeof connectionParams.authToken === 'string') {
     return connectionParams.authToken;
@@ -139,9 +130,7 @@ export function extractAuthToken(
  * Extract controller API key from connection params.
  * Controllers should pass their API key in connectionParams.controllerApiKey
  */
-export function extractControllerApiKey(
-  connectionParams?: Record<string, unknown>
-): string | null {
+export function extractControllerApiKey(connectionParams?: Record<string, unknown>): string | null {
   if (connectionParams?.controllerApiKey && typeof connectionParams.controllerApiKey === 'string') {
     return connectionParams.controllerApiKey;
   }
@@ -152,22 +141,16 @@ export function extractControllerApiKey(
  * Validate a controller API key and return controller info.
  * Returns null if the API key is invalid or not found.
  */
-export async function validateControllerApiKey(
-  apiKey: string
-): Promise<ControllerAuthResult | null> {
+export async function validateControllerApiKey(apiKey: string): Promise<ControllerAuthResult | null> {
   try {
-    const [controller] = await db
-      .select()
-      .from(esp32Controllers)
-      .where(eq(esp32Controllers.apiKey, apiKey))
-      .limit(1);
+    const [controller] = await db.select().from(esp32Controllers).where(eq(esp32Controllers.apiKey, apiKey)).limit(1);
 
     if (!controller) {
       console.warn('[Auth] Controller API key not found');
       return null;
     }
 
-    console.log(`[Auth] Authenticated controller: ${controller.id}`);
+    console.info(`[Auth] Authenticated controller: ${controller.id}`);
     return {
       controllerId: controller.id,
       controllerApiKey: apiKey,

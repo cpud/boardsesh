@@ -1,7 +1,7 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
-import { Metadata } from 'next';
-import { SearchRequestPagination } from '@/app/lib/types';
+import type { Metadata } from 'next';
+import type { SearchRequestPagination, Climb } from '@/app/lib/types';
 import { parsedRouteSearchParamsToSearchParams } from '@/app/lib/url-utils';
 import { resolveBoardBySlug, boardToRouteParams } from '@/app/lib/board-slug-utils';
 import BoardPageClimbsList from '@/app/components/board-page/board-page-climbs-list';
@@ -15,10 +15,10 @@ import { scheduleOverlayWarming } from '@/app/lib/warm-overlay-cache';
 import { buildOverlayUrl } from '@/app/components/board-renderer/util';
 import { formatBoardDisplayName } from '@/app/lib/string-utils';
 
-interface BoardSlugListPageProps {
+type BoardSlugListPageProps = {
   params: Promise<{ board_slug: string; angle: string }>;
   searchParams: Promise<SearchRequestPagination>;
-}
+};
 
 export async function generateMetadata(props: BoardSlugListPageProps): Promise<Metadata> {
   const params = await props.params;
@@ -101,16 +101,12 @@ export default async function BoardSlugListPage(props: BoardSlugListPageProps) {
     userId = session?.user?.id;
   }
 
-  let searchResponse: { climbs: import('@/app/lib/types').Climb[]; hasMore: boolean };
+  let searchResponse: { climbs: Climb[]; hasMore: boolean };
 
   try {
-    searchResponse = await cachedSearchClimbs(
-      parsedParams,
-      searchParamsObject,
-      isDefaultSearch,
-      userId,
-      { cacheable: !hasProgressFilters },
-    );
+    searchResponse = await cachedSearchClimbs(parsedParams, searchParamsObject, isDefaultSearch, userId, {
+      cacheable: !hasProgressFilters,
+    });
   } catch (error) {
     console.error('Error fetching climb search results:', error);
     searchResponse = { climbs: [], hasMore: false };
@@ -119,15 +115,11 @@ export default async function BoardSlugListPage(props: BoardSlugListPageProps) {
   scheduleOverlayWarming({ boardDetails, climbs: searchResponse.climbs, variant: 'thumbnail' });
 
   const firstClimb = searchResponse.climbs[0];
-  const preloadUrl = firstClimb?.frames
-    ? buildOverlayUrl(boardDetails, firstClimb.frames, true)
-    : null;
+  const preloadUrl = firstClimb?.frames ? buildOverlayUrl(boardDetails, firstClimb.frames, true) : null;
 
   return (
     <>
-      {preloadUrl && (
-        <link rel="preload" as="image" href={preloadUrl} fetchPriority="high" />
-      )}
+      {preloadUrl && <link rel="preload" as="image" href={preloadUrl} fetchPriority="high" />}
       <BoardPageClimbsList {...parsedParams} boardDetails={boardDetails} initialClimbs={searchResponse.climbs} />
     </>
   );

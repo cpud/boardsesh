@@ -1,17 +1,19 @@
 import { getPool } from '@/app/lib/db/db';
 import { userSync } from '../../api-wrappers/aurora/userSync';
-import { SyncOptions, USER_TABLES, UserSyncData, AuroraBoardName } from '../../api-wrappers/aurora/types';
+import {
+  type SyncOptions,
+  type UserSyncData,
+  type AuroraBoardName,
+  USER_TABLES,
+} from '../../api-wrappers/aurora/types';
 import { eq, and, inArray } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import { NeonDatabase } from 'drizzle-orm/neon-serverless';
+import { drizzle, type NeonDatabase } from 'drizzle-orm/neon-serverless';
 import { UNIFIED_TABLES } from '../../db/queries/util/table-select';
 import { boardseshTicks, auroraCredentials, playlists, playlistClimbs, playlistOwnership } from '../../db/schema';
 import { randomUUID } from 'crypto';
-import { convertQuality } from './convert-quality';
+import { convertQuality } from '@boardsesh/shared-schema';
 
 import { buildInferredSessionsForUser } from './inferred-session-builder';
-
-type AuroraRowData = Record<string, string>;
 
 /**
  * Get NextAuth user ID from Aurora user ID
@@ -454,8 +456,6 @@ export async function syncUserData(
       user_id: Number(userId),
     }));
 
-    console.log('syncParams', syncParams);
-
     // Initialize results tracking
     const totalResults: Record<string, { synced: number }> = {};
 
@@ -467,10 +467,8 @@ export async function syncUserData(
 
     while (!isComplete && syncAttempts < maxSyncAttempts) {
       syncAttempts++;
-      console.log(`Sync attempt ${syncAttempts} for user ${userId}`);
 
       const syncResults = await userSync(board, userId, currentSyncParams, token);
-      console.log('syncResults', syncResults);
 
       // Process this batch in a transaction
       const pool = getPool();
@@ -490,7 +488,6 @@ export async function syncUserData(
 
         // Process each table - data is directly under table names
         for (const tableName of tables) {
-          console.log(`Syncing ${tableName} for user ${userId} (batch ${syncAttempts})`);
           if (syncResults[tableName] && Array.isArray(syncResults[tableName])) {
             const data = syncResults[tableName];
 
@@ -544,9 +541,9 @@ export async function syncUserData(
       isComplete = syncResults._complete !== false;
 
       if (!isComplete) {
-        console.log(`Sync not complete for user ${userId}, continuing with next batch...`);
+        console.info(`Sync not complete for user ${userId}, continuing with next batch...`);
       } else {
-        console.log(`Sync complete for user ${userId} after ${syncAttempts} attempts`);
+        console.info(`Sync complete for user ${userId} after ${syncAttempts} attempts`);
       }
     }
 
@@ -566,7 +563,7 @@ export async function syncUserData(
           if (nextAuthUserId) {
             const assigned = await buildInferredSessionsForUser(nextAuthUserId);
             if (assigned > 0) {
-              console.log(`Built inferred sessions: assigned ${assigned} ticks for user ${nextAuthUserId}`);
+              console.info(`Built inferred sessions: assigned ${assigned} ticks for user ${nextAuthUserId}`);
             }
           }
         } finally {

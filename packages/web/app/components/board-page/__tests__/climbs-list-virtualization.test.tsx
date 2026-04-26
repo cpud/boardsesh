@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import type { Climb, BoardDetails } from '@/app/lib/types';
+import ClimbsList from '../climbs-list';
 
 // --- Mocks ---
 
@@ -33,18 +35,8 @@ vi.mock('../../climb-card/climb-list-item', () => ({
     onThumbnailClick?: () => void;
   }) => (
     <div data-testid="climb-list-item" data-uuid={climb.uuid}>
-      <span
-        data-testid={`row-${climb.uuid}`}
-        role="button"
-        aria-hidden
-        onClick={() => onSelect?.()}
-      />
-      <span
-        data-testid={`thumb-${climb.uuid}`}
-        role="button"
-        aria-hidden
-        onClick={() => onThumbnailClick?.()}
-      />
+      <span data-testid={`row-${climb.uuid}`} role="button" aria-hidden onClick={() => onSelect?.()} />
+      <span data-testid={`thumb-${climb.uuid}`} role="button" aria-hidden onClick={() => onThumbnailClick?.()} />
       {climb.name}
     </div>
   ),
@@ -71,7 +63,7 @@ vi.mock('../../climb-actions/playlist-selection-content', () => ({
 }));
 
 vi.mock('../../error-boundary', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  default: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('../board-page-skeleton', () => ({
@@ -89,8 +81,6 @@ vi.mock('@/app/hooks/use-infinite-scroll', () => ({
 }));
 
 vi.mock('@/app/lib/rendering-metrics', () => ({
-  trackListBatchRender: vi.fn(),
-  trackRenderComplete: vi.fn(),
   trackRenderError: vi.fn(),
 }));
 
@@ -133,7 +123,12 @@ vi.mock('@/app/theme/theme-config', () => ({
 let lastVirtualizerOpts: { count: number } | null = null;
 
 vi.mock('@tanstack/react-virtual', () => ({
-  useWindowVirtualizer: (opts: { count: number; estimateSize: () => number; overscan: number; getItemKey: (i: number) => string | number }) => {
+  useWindowVirtualizer: (opts: {
+    count: number;
+    estimateSize: () => number;
+    overscan: number;
+    getItemKey: (i: number) => string | number;
+  }) => {
     lastVirtualizerOpts = opts;
     const itemCount = Math.min(opts.overscan + 7, opts.count);
     const estimatedSize = opts.estimateSize();
@@ -151,14 +146,10 @@ vi.mock('@tanstack/react-virtual', () => ({
       measureElement: vi.fn(),
       scrollToIndex: vi.fn(),
       scrollOffset: 0,
-      range: opts.count > 0
-        ? { startIndex: 0, endIndex: Math.min(6, opts.count - 1) }
-        : null,
+      range: opts.count > 0 ? { startIndex: 0, endIndex: Math.min(6, opts.count - 1) } : null,
     };
   },
 }));
-
-import ClimbsList from '../climbs-list';
 
 // --- Helpers ---
 
@@ -254,15 +245,7 @@ describe('ClimbsList virtualization', () => {
   });
 
   it('renders skeleton when fetching with no climbs', () => {
-    render(
-      <ClimbsList
-        boardDetails={makeBoardDetails()}
-        climbs={[]}
-        isFetching={true}
-        hasMore={true}
-        onLoadMore={vi.fn()}
-      />,
-    );
+    render(<ClimbsList boardDetails={makeBoardDetails()} climbs={[]} isFetching hasMore onLoadMore={vi.fn()} />);
 
     const skeletons = screen.getAllByTestId('climb-list-item-skeleton');
     expect(skeletons.length).toBeGreaterThan(0);
@@ -308,9 +291,7 @@ describe('ClimbsList thumbnail vs row click', () => {
 
     fireEvent.click(screen.getByTestId('row-climb-0'));
 
-    expect(onClimbSelect).toHaveBeenCalledWith(
-      expect.objectContaining({ uuid: 'climb-0' }),
-    );
+    expect(onClimbSelect).toHaveBeenCalledWith(expect.objectContaining({ uuid: 'climb-0' }));
     const dispatched = dispatchSpy.mock.calls.some(
       ([event]) => event instanceof CustomEvent && event.type === 'boardsesh:open-play-drawer',
     );
@@ -334,9 +315,7 @@ describe('ClimbsList thumbnail vs row click', () => {
 
     fireEvent.click(screen.getByTestId('thumb-climb-0'));
 
-    expect(onClimbSelect).toHaveBeenCalledWith(
-      expect.objectContaining({ uuid: 'climb-0' }),
-    );
+    expect(onClimbSelect).toHaveBeenCalledWith(expect.objectContaining({ uuid: 'climb-0' }));
     const dispatched = dispatchSpy.mock.calls.some(
       ([event]) => event instanceof CustomEvent && event.type === 'boardsesh:open-play-drawer',
     );
@@ -360,7 +339,7 @@ describe('ClimbsList infinite scroll', () => {
         boardDetails={makeBoardDetails()}
         climbs={allClimbs.slice(0, 20)}
         isFetching={false}
-        hasMore={true}
+        hasMore
         onLoadMore={onLoadMore}
       />,
     );
@@ -374,8 +353,8 @@ describe('ClimbsList infinite scroll', () => {
       <ClimbsList
         boardDetails={makeBoardDetails()}
         climbs={allClimbs.slice(0, 20)}
-        isFetching={true}
-        hasMore={true}
+        isFetching
+        hasMore
         onLoadMore={onLoadMore}
       />,
     );
@@ -401,13 +380,7 @@ describe('ClimbsList infinite scroll', () => {
   it('does NOT call onLoadMore with empty climb list', () => {
     const onLoadMore = vi.fn();
     render(
-      <ClimbsList
-        boardDetails={makeBoardDetails()}
-        climbs={[]}
-        isFetching={false}
-        hasMore={true}
-        onLoadMore={onLoadMore}
-      />,
+      <ClimbsList boardDetails={makeBoardDetails()} climbs={[]} isFetching={false} hasMore onLoadMore={onLoadMore} />,
     );
 
     expect(onLoadMore).not.toHaveBeenCalled();

@@ -112,11 +112,15 @@ const ScrollIndicatorWrapper: React.FC<{
   children: React.ReactNode;
 }> = ({ canScrollLeft, canScrollRight, children }) => (
   <div className={styles.scrollableWrapper}>
-    <div className={`${styles.scrollIndicator} ${styles.scrollIndicatorLeft} ${canScrollLeft ? styles.scrollIndicatorVisible : ''}`}>
+    <div
+      className={`${styles.scrollIndicator} ${styles.scrollIndicatorLeft} ${canScrollLeft ? styles.scrollIndicatorVisible : ''}`}
+    >
       <ChevronLeftIcon sx={{ fontSize: 16 }} />
     </div>
     {children}
-    <div className={`${styles.scrollIndicator} ${styles.scrollIndicatorRight} ${canScrollRight ? styles.scrollIndicatorVisible : ''}`}>
+    <div
+      className={`${styles.scrollIndicator} ${styles.scrollIndicatorRight} ${canScrollRight ? styles.scrollIndicatorVisible : ''}`}
+    >
       <ChevronRightIcon sx={{ fontSize: 16 }} />
     </div>
   </div>
@@ -126,7 +130,7 @@ const ScrollIndicatorWrapper: React.FC<{
 /*  Grade button — rendered separately from stars/tries for alignment */
 /* ------------------------------------------------------------------ */
 
-export interface TickGradeButtonProps {
+export type TickGradeButtonProps = {
   /** Current difficulty override (difficulty_id or undefined). */
   difficulty: number | undefined;
   /** Grade list for looking up the selected grade name. */
@@ -135,53 +139,51 @@ export interface TickGradeButtonProps {
   expandedControl: ExpandedControl;
   /** Toggle a control's picker open/closed. */
   onExpandedControlChange: (control: ExpandedControl) => void;
-}
+};
 
 /**
  * Standalone grade button — positioned independently from the
  * stars/tries controls so it can align with the consensus grade below.
  * Uses forwardRef so the parent can measure its position for picker scroll alignment.
  */
-export const TickGradeButton = forwardRef<HTMLButtonElement, TickGradeButtonProps>(({
-  difficulty,
-  displayedGrades,
-  expandedControl,
-  onExpandedControlChange,
-}, ref) => {
-  const isDark = useIsDarkMode();
-  const { formatGrade, getGradeColor, loaded: gradeFormatLoaded } = useGradeFormat();
+export const TickGradeButton = forwardRef<HTMLButtonElement, TickGradeButtonProps>(
+  ({ difficulty, displayedGrades, expandedControl, onExpandedControlChange }, ref) => {
+    const isDark = useIsDarkMode();
+    const { formatGrade, getGradeColor, loaded: gradeFormatLoaded } = useGradeFormat();
 
-  const selectedGrade = difficulty
-    ? displayedGrades.find((g) => g.difficulty_id === difficulty)
-    : undefined;
+    const selectedGrade = difficulty ? displayedGrades.find((g) => g.difficulty_id === difficulty) : undefined;
 
-  const displayDifficulty = selectedGrade?.difficulty_name ?? '';
-  const formattedGrade = formatGrade(displayDifficulty);
-  const gradeLabel = formattedGrade ?? (displayDifficulty || '—');
-  const gradeColor = getGradeColor(displayDifficulty, isDark);
+    const displayDifficulty = selectedGrade?.difficulty_name ?? '';
+    const formattedGrade = formatGrade(displayDifficulty);
+    const gradeLabel = formattedGrade ?? (displayDifficulty || '—');
+    const gradeColor = getGradeColor(displayDifficulty, isDark);
 
-  return (
-    <ButtonBase
-      ref={ref}
-      onClick={() => onExpandedControlChange(expandedControl === 'grade' ? null : 'grade')}
-      aria-label="Select logged grade"
-      aria-haspopup="listbox"
-      aria-expanded={expandedControl === 'grade'}
-      data-testid="quick-tick-grade"
-      className={`${styles.gradeButton} ${expandedControl === 'grade' ? styles.active : ''}`}
-      disableRipple={false}
-    >
-      {!gradeFormatLoaded ? (
-        <Skeleton variant="rounded" width={24} height={14} />
-      ) : (
-        <span className={styles.gradeNumber} {...(gradeColor ? { style: { '--grade-color': gradeColor } as React.CSSProperties } : {})}>
-          {gradeLabel}
-        </span>
-      )}
-      <span className={styles.gradeByline}>user</span>
-    </ButtonBase>
-  );
-});
+    return (
+      <ButtonBase
+        ref={ref}
+        onClick={() => onExpandedControlChange(expandedControl === 'grade' ? null : 'grade')}
+        aria-label="Select logged grade"
+        aria-haspopup="listbox"
+        aria-expanded={expandedControl === 'grade'}
+        data-testid="quick-tick-grade"
+        className={`${styles.gradeButton} ${expandedControl === 'grade' ? styles.active : ''}`}
+        disableRipple={false}
+      >
+        {!gradeFormatLoaded ? (
+          <Skeleton variant="rounded" width={24} height={14} />
+        ) : (
+          <span
+            className={styles.gradeNumber}
+            {...(gradeColor ? { style: { '--grade-color': gradeColor } as React.CSSProperties } : {})}
+          >
+            {gradeLabel}
+          </span>
+        )}
+        <span className={styles.gradeByline}>user</span>
+      </ButtonBase>
+    );
+  },
+);
 
 TickGradeButton.displayName = 'TickGradeButton';
 
@@ -189,7 +191,7 @@ TickGradeButton.displayName = 'TickGradeButton';
 /*  Stars + Tries controls                                            */
 /* ------------------------------------------------------------------ */
 
-export interface TickControlsProps {
+export type TickControlsProps = {
   /** Current quality rating (1–5 or null). */
   quality: number | null;
   /** Current attempt count. */
@@ -200,7 +202,7 @@ export interface TickControlsProps {
   onExpandedControlChange: (control: ExpandedControl) => void;
   /** Ref forwarded to the tries button for picker scroll alignment. */
   triesButtonRef?: React.RefObject<HTMLButtonElement | null>;
-}
+};
 
 /**
  * Stars + Tries buttons. Grade is rendered separately via TickGradeButton
@@ -310,35 +312,39 @@ export const InlineGradePicker: React.FC<{
   useStopHorizontalTouchPropagation(containerRef);
   const { canScrollLeft, canScrollRight } = useScrollIndicators(containerRef);
 
-  // On mount, scroll so the selected (or focus) grade aligns above the grade button.
-  // When no grade is selected, scroll to the consensus grade (focusGradeId) as a reference point.
+  // On mount, scroll so the selected (or focus) grade is visible.
+  // When a gradeButtonRef is available (compact mode), align above the button.
+  // Otherwise (expanded mode), center the grade in the container.
   const scrollTargetId = currentGradeId ?? focusGradeId;
   useLayoutEffect(() => {
     const container = containerRef.current;
-    const gradeButton = gradeButtonRef?.current;
-    if (!container || !gradeButton || scrollTargetId === undefined) return;
+    if (!container || scrollTargetId === undefined) return;
 
-    const targetEl = container.querySelector(
-      `[data-grade-id="${scrollTargetId}"]`,
-    ) as HTMLElement | null;
+    const targetEl = container.querySelector(`[data-grade-id="${scrollTargetId}"]`) as HTMLElement | null;
     if (!targetEl) return;
 
     const containerRect = container.getBoundingClientRect();
-    const gradeButtonRect = gradeButton.getBoundingClientRect();
+    const gradeButton = gradeButtonRef?.current;
 
-    const gradeButtonCenterInContainer =
-      gradeButtonRect.left + gradeButtonRect.width / 2 - containerRect.left;
-    const targetItemCenter =
-      targetEl.offsetLeft + targetEl.offsetWidth / 2;
+    const alignCenter = gradeButton
+      ? gradeButton.getBoundingClientRect().left + gradeButton.getBoundingClientRect().width / 2 - containerRect.left
+      : container.clientWidth / 2;
 
-    const targetScrollLeft = targetItemCenter - gradeButtonCenterInContainer;
+    const targetItemCenter = targetEl.offsetLeft + targetEl.offsetWidth / 2;
+    const targetScrollLeft = targetItemCenter - alignCenter;
     const maxScroll = container.scrollWidth - container.clientWidth;
     container.scrollLeft = Math.max(0, Math.min(targetScrollLeft, maxScroll));
   }, [scrollTargetId, gradeButtonRef]);
 
   return (
     <ScrollIndicatorWrapper canScrollLeft={canScrollLeft} canScrollRight={canScrollRight}>
-      <div ref={containerRef} className={styles.pickerRowScrollable} role="listbox" aria-label="Grade override" data-scrollable-picker>
+      <div
+        ref={containerRef}
+        className={styles.pickerRowScrollable}
+        role="listbox"
+        aria-label="Grade override"
+        data-scrollable-picker
+      >
         <ButtonBase
           onClick={() => onSelect(undefined)}
           className={`${styles.pickerItem} ${currentGradeId === undefined ? styles.pickerItemSelected : ''}`}
@@ -358,12 +364,15 @@ export const InlineGradePicker: React.FC<{
               key={grade.difficulty_id}
               data-grade-id={grade.difficulty_id}
               onClick={() => onSelect(grade.difficulty_id)}
-              className={`${styles.pickerItem} ${isSelected || isFocused ? styles.pickerItemSelected : ''}`}
+              className={`${styles.pickerItem} ${isSelected ? styles.pickerItemSelected : ''} ${isFocused ? styles.pickerItemFocused : ''}`}
               aria-label={isFocused ? `${formatted} (consensus)` : formatted}
-              aria-selected={isSelected || isFocused}
+              aria-selected={isSelected}
               role="option"
             >
-              <span className={styles.pickerGrade} {...(color ? { style: { '--grade-color': color } as React.CSSProperties } : {})}>
+              <span
+                className={styles.pickerGrade}
+                {...(color ? { style: { '--grade-color': color } as React.CSSProperties } : {})}
+              >
                 {formatted}
               </span>
             </ButtonBase>
@@ -394,18 +403,14 @@ export const InlineTriesPicker: React.FC<{
     const triesButton = triesButtonRef?.current;
     if (!container || !triesButton || attemptCount <= 10) return;
 
-    const selectedEl = container.querySelector(
-      `[data-tries="${attemptCount}"]`,
-    ) as HTMLElement | null;
+    const selectedEl = container.querySelector(`[data-tries="${attemptCount}"]`) as HTMLElement | null;
     if (!selectedEl) return;
 
     const containerRect = container.getBoundingClientRect();
     const triesButtonRect = triesButton.getBoundingClientRect();
 
-    const triesButtonCenterInContainer =
-      triesButtonRect.left + triesButtonRect.width / 2 - containerRect.left;
-    const selectedItemCenter =
-      selectedEl.offsetLeft + selectedEl.offsetWidth / 2;
+    const triesButtonCenterInContainer = triesButtonRect.left + triesButtonRect.width / 2 - containerRect.left;
+    const selectedItemCenter = selectedEl.offsetLeft + selectedEl.offsetWidth / 2;
 
     const targetScrollLeft = selectedItemCenter - triesButtonCenterInContainer;
     const maxScroll = container.scrollWidth - container.clientWidth;
@@ -414,7 +419,13 @@ export const InlineTriesPicker: React.FC<{
 
   return (
     <ScrollIndicatorWrapper canScrollLeft={canScrollLeft} canScrollRight={canScrollRight}>
-      <div ref={containerRef} className={styles.pickerRowScrollable} role="listbox" aria-label="Attempt count" data-scrollable-picker>
+      <div
+        ref={containerRef}
+        className={styles.pickerRowScrollable}
+        role="listbox"
+        aria-label="Attempt count"
+        data-scrollable-picker
+      >
         {ATTEMPT_OPTIONS.map((n) => (
           <ButtonBase
             key={n}

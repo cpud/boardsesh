@@ -1,4 +1,4 @@
-import {
+import type {
   BoardRouteParameters,
   ParsedBoardRouteParametersWithUuid,
   ParsedBoardRouteParameters,
@@ -13,6 +13,31 @@ import { BOARD_NAME_PREFIX_REGEX } from '@/app/lib/board-constants';
 import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import { MOONBOARD_LAYOUTS } from '@/app/lib/moonboard-config';
 import { PAGE_LIMIT } from '../components/board-page/constants';
+
+// ---------- Shared URL query param helpers ----------
+
+/**
+ * Parse a URL query param as a boolean.
+ * Accepts '1'/'true' as true, '0'/'false' as false.
+ */
+export function parseQueryParamBoolean(params: URLSearchParams, key: string): boolean | undefined {
+  const val = params.get(key);
+  if (val === '1' || val === 'true') return true;
+  if (val === '0' || val === 'false') return false;
+  return undefined;
+}
+
+/**
+ * Parse a URL query param as a finite integer.
+ */
+export function parseQueryParamInt(params: URLSearchParams, key: string): number | undefined {
+  const val = params.get(key);
+  if (val === null) return undefined;
+  const num = parseInt(val, 10);
+  return Number.isFinite(num) ? num : undefined;
+}
+
+// ---------- Board route params ----------
 
 export function parseBoardRouteParams<T extends BoardRouteParameters>(
   params: T,
@@ -41,28 +66,32 @@ export function parseBoardRouteParams<T extends BoardRouteParameters>(
   return parsedParams as T extends BoardRouteParametersWithUuid ? never : ParsedBoardRouteParameters;
 }
 
-export const searchParamsToUrlParams = ({
-  gradeAccuracy = DEFAULT_SEARCH_PARAMS.gradeAccuracy,
-  maxGrade = DEFAULT_SEARCH_PARAMS.maxGrade,
-  minGrade = DEFAULT_SEARCH_PARAMS.minGrade,
-  minAscents = DEFAULT_SEARCH_PARAMS.minAscents,
-  minRating = DEFAULT_SEARCH_PARAMS.minRating,
-  sortBy,
-  sortOrder,
-  name,
-  onlyClassics,
-  onlyTallClimbs,
-  settername,
-  setternameSuggestion,
-  holdsFilter,
-  hideAttempted,
-  hideCompleted,
-  showOnlyAttempted,
-  showOnlyCompleted,
-  onlyDrafts,
-  page,
-  pageSize,
-}: SearchRequestPagination): URLSearchParams => {
+export const searchParamsToUrlParams = (input: SearchRequestPagination): URLSearchParams => {
+  // Coalesce any missing/undefined fields to their defaults. Stored recent searches
+  // (IndexedDB) and partial filter updates can leak undefined values into this path,
+  // which would otherwise crash on `.toString()`.
+  const gradeAccuracy = input.gradeAccuracy ?? DEFAULT_SEARCH_PARAMS.gradeAccuracy;
+  const maxGrade = input.maxGrade ?? DEFAULT_SEARCH_PARAMS.maxGrade;
+  const minGrade = input.minGrade ?? DEFAULT_SEARCH_PARAMS.minGrade;
+  const minAscents = input.minAscents ?? DEFAULT_SEARCH_PARAMS.minAscents;
+  const minRating = input.minRating ?? DEFAULT_SEARCH_PARAMS.minRating;
+  const sortBy = input.sortBy ?? DEFAULT_SEARCH_PARAMS.sortBy;
+  const sortOrder = input.sortOrder ?? DEFAULT_SEARCH_PARAMS.sortOrder;
+  const name = input.name ?? DEFAULT_SEARCH_PARAMS.name;
+  const onlyClassics = input.onlyClassics ?? DEFAULT_SEARCH_PARAMS.onlyClassics;
+  const onlyTallClimbs = input.onlyTallClimbs ?? DEFAULT_SEARCH_PARAMS.onlyTallClimbs;
+  const settername = input.settername ?? DEFAULT_SEARCH_PARAMS.settername;
+  const setternameSuggestion = input.setternameSuggestion ?? DEFAULT_SEARCH_PARAMS.setternameSuggestion;
+  const holdsFilter = input.holdsFilter ?? DEFAULT_SEARCH_PARAMS.holdsFilter;
+  const hideAttempted = input.hideAttempted ?? DEFAULT_SEARCH_PARAMS.hideAttempted;
+  const hideCompleted = input.hideCompleted ?? DEFAULT_SEARCH_PARAMS.hideCompleted;
+  const showOnlyAttempted = input.showOnlyAttempted ?? DEFAULT_SEARCH_PARAMS.showOnlyAttempted;
+  const showOnlyCompleted = input.showOnlyCompleted ?? DEFAULT_SEARCH_PARAMS.showOnlyCompleted;
+  const onlyDrafts = input.onlyDrafts ?? DEFAULT_SEARCH_PARAMS.onlyDrafts;
+  const projectsOnly = input.projectsOnly ?? DEFAULT_SEARCH_PARAMS.projectsOnly;
+  const page = input.page ?? DEFAULT_SEARCH_PARAMS.page;
+  const pageSize = input.pageSize ?? DEFAULT_SEARCH_PARAMS.pageSize;
+
   const params: Record<string, string> = {};
 
   // Only add parameters that differ from defaults
@@ -123,6 +152,9 @@ export const searchParamsToUrlParams = ({
   if (onlyDrafts !== DEFAULT_SEARCH_PARAMS.onlyDrafts) {
     params.onlyDrafts = onlyDrafts.toString();
   }
+  if (projectsOnly !== DEFAULT_SEARCH_PARAMS.projectsOnly) {
+    params.projectsOnly = projectsOnly.toString();
+  }
 
   // Add holds filter entries only if they exist
   if (holdsFilter && Object.keys(holdsFilter).length > 0) {
@@ -152,6 +184,7 @@ export const DEFAULT_SEARCH_PARAMS: SearchRequestPagination = {
   showOnlyAttempted: false,
   showOnlyCompleted: false,
   onlyDrafts: false,
+  projectsOnly: false,
   page: 0,
   pageSize: PAGE_LIMIT,
 };
@@ -170,12 +203,21 @@ export const urlParamsToSearchParams = (urlParams: URLSearchParams): SearchReque
     minAscents: Number(urlParams.get('minAscents') ?? DEFAULT_SEARCH_PARAMS.minAscents),
     minGrade: Number(urlParams.get('minGrade') ?? DEFAULT_SEARCH_PARAMS.minGrade),
     minRating: Number(urlParams.get('minRating') ?? DEFAULT_SEARCH_PARAMS.minRating),
-    sortBy: (urlParams.get('sortBy') ?? DEFAULT_SEARCH_PARAMS.sortBy) as 'ascents' | 'difficulty' | 'name' | 'quality' | 'popular',
+    sortBy: (urlParams.get('sortBy') ?? DEFAULT_SEARCH_PARAMS.sortBy) as
+      | 'ascents'
+      | 'difficulty'
+      | 'name'
+      | 'quality'
+      | 'popular',
     sortOrder: (urlParams.get('sortOrder') ?? DEFAULT_SEARCH_PARAMS.sortOrder) as 'asc' | 'desc',
     name: urlParams.get('name') ?? DEFAULT_SEARCH_PARAMS.name,
     onlyClassics: urlParams.get('onlyClassics') === 'true',
     onlyTallClimbs: urlParams.get('onlyTallClimbs') === 'true',
-    settername: urlParams.get('settername')?.split(',').filter(s => s.length > 0) ?? DEFAULT_SEARCH_PARAMS.settername,
+    settername:
+      urlParams
+        .get('settername')
+        ?.split(',')
+        .filter((s) => s.length > 0) ?? DEFAULT_SEARCH_PARAMS.settername,
     setternameSuggestion: urlParams.get('setternameSuggestion') ?? DEFAULT_SEARCH_PARAMS.setternameSuggestion,
     //@ts-expect-error fix later
     holdsFilter: holdsFilter ?? DEFAULT_SEARCH_PARAMS.holdsFilter,
@@ -184,6 +226,7 @@ export const urlParamsToSearchParams = (urlParams: URLSearchParams): SearchReque
     showOnlyAttempted: urlParams.get('showOnlyAttempted') === 'true',
     showOnlyCompleted: urlParams.get('showOnlyCompleted') === 'true',
     onlyDrafts: urlParams.get('onlyDrafts') === 'true',
+    projectsOnly: urlParams.get('projectsOnly') === 'true',
     page: Number(urlParams.get('page') ?? DEFAULT_SEARCH_PARAMS.page),
     pageSize: Number(urlParams.get('pageSize') ?? DEFAULT_SEARCH_PARAMS.pageSize),
   };
@@ -225,7 +268,7 @@ export const constructClimbViewUrl = (
   climb_uuid: ClimbUuid,
   climbName?: string,
 ) => {
-  const baseUrl = `/${board_name}/${layout_id}/${size_id}/${set_ids}/${angle}/view/`;
+  const baseUrl = `/${board_name}/${layout_id}/${size_id}/${set_ids.join(',')}/${angle}/view/`;
   if (climbName && climbName.trim()) {
     const slug = generateSlugFromText(climbName.trim());
     if (slug) {
@@ -259,10 +302,7 @@ export const constructClimbViewUrlWithSlugs = (
   return `${baseUrl}${climb_uuid}`;
 };
 
-export const constructClimbInfoUrl = (
-  { board_name }: BoardDetails,
-  climb_uuid: ClimbUuid,
-): string | null => {
+export const constructClimbInfoUrl = ({ board_name }: BoardDetails, climb_uuid: ClimbUuid): string | null => {
   // Kilter board app URL is no longer accessible
   if (board_name === 'kilter') {
     return null;
@@ -276,7 +316,7 @@ export const constructSetterStatsUrl = (
   { board_name, layout_id, angle, size_id, set_ids }: ParsedBoardRouteParameters,
   searchQuery?: string,
 ) => {
-  const baseUrl = `/api/v1/${board_name}/${layout_id}/${size_id}/${set_ids}/${angle}/setters`;
+  const baseUrl = `/api/v1/${board_name}/${layout_id}/${size_id}/${set_ids.join(',')}/${angle}/setters`;
   return searchQuery ? `${baseUrl}?search=${encodeURIComponent(searchQuery)}` : baseUrl;
 };
 
@@ -473,9 +513,11 @@ export const hasOnlyNumericBoardRouteSegments = (
 ): boolean => {
   const decodedSetIds = decodeRouteSegment(params.set_ids);
 
-  return isNumericId(params.layout_id)
-    && isNumericId(params.size_id)
-    && decodedSetIds.split(',').every((id) => isNumericId(id.trim()));
+  return (
+    isNumericId(params.layout_id) &&
+    isNumericId(params.size_id) &&
+    decodedSetIds.split(',').every((id) => isNumericId(id.trim()))
+  );
 };
 
 export const constructPlayUrlWithSlugs = (
@@ -555,35 +597,66 @@ const tryResolveBoardSlugs = (
 
 /** Try to construct a slug-based play URL. Returns null if resolution fails. */
 export const tryConstructSlugPlayUrl = (
-  board_name: string, layout_id: number, size_id: number, set_ids: number[],
-  angle: number, climb_uuid: string, climbName?: string,
+  board_name: string,
+  layout_id: number,
+  size_id: number,
+  set_ids: number[],
+  angle: number,
+  climb_uuid: string,
+  climbName?: string,
 ): string | null => {
   const d = tryResolveBoardSlugs(board_name, layout_id, size_id, set_ids);
-  return d ? constructPlayUrlWithSlugs(
-    d.board_name, d.layout_name, d.size_name, d.size_description, d.set_names, angle, climb_uuid, climbName,
-  ) : null;
+  return d
+    ? constructPlayUrlWithSlugs(
+        d.board_name,
+        d.layout_name,
+        d.size_name,
+        d.size_description,
+        d.set_names,
+        angle,
+        climb_uuid,
+        climbName,
+      )
+    : null;
 };
 
 /** Try to construct a slug-based view URL. Returns null if resolution fails. */
 export const tryConstructSlugViewUrl = (
-  board_name: string, layout_id: number, size_id: number, set_ids: number[],
-  angle: number, climb_uuid: string, climbName?: string,
+  board_name: string,
+  layout_id: number,
+  size_id: number,
+  set_ids: number[],
+  angle: number,
+  climb_uuid: string,
+  climbName?: string,
 ): string | null => {
   const d = tryResolveBoardSlugs(board_name, layout_id, size_id, set_ids);
-  return d ? constructClimbViewUrlWithSlugs(
-    d.board_name, d.layout_name, d.size_name, d.size_description, d.set_names, angle, climb_uuid, climbName,
-  ) : null;
+  return d
+    ? constructClimbViewUrlWithSlugs(
+        d.board_name,
+        d.layout_name,
+        d.size_name,
+        d.size_description,
+        d.set_names,
+        angle,
+        climb_uuid,
+        climbName,
+      )
+    : null;
 };
 
 /** Try to construct a slug-based list URL. Returns null if resolution fails. */
 export const tryConstructSlugListUrl = (
-  board_name: string, layout_id: number, size_id: number, set_ids: number[],
+  board_name: string,
+  layout_id: number,
+  size_id: number,
+  set_ids: number[],
   angle: number,
 ): string | null => {
   const d = tryResolveBoardSlugs(board_name, layout_id, size_id, set_ids);
-  return d ? constructClimbListWithSlugs(
-    d.board_name, d.layout_name, d.size_name, d.size_description, d.set_names, angle,
-  ) : null;
+  return d
+    ? constructClimbListWithSlugs(d.board_name, d.layout_name, d.size_name, d.size_description, d.set_names, angle)
+    : null;
 };
 
 /**
@@ -672,8 +745,7 @@ export const constructBoardSlugUrl = (slug: string, angle: number, path?: string
  * Construct a board slug URL for the climb list.
  * /b/{board-slug}/{angle}/list
  */
-export const constructBoardSlugListUrl = (slug: string, angle: number) =>
-  constructBoardSlugUrl(slug, angle, 'list');
+export const constructBoardSlugListUrl = (slug: string, angle: number) => constructBoardSlugUrl(slug, angle, 'list');
 
 /**
  * Construct a board slug URL for the play view.
@@ -686,12 +758,7 @@ export const constructBoardSlugPlayUrl = (slug: string, angle: number, climbUuid
  * Construct a board slug URL for the climb view.
  * /b/{board-slug}/{angle}/view/{climb_uuid}
  */
-export const constructBoardSlugViewUrl = (
-  slug: string,
-  angle: number,
-  climbUuid: string,
-  climbName?: string,
-) => {
+export const constructBoardSlugViewUrl = (slug: string, angle: number, climbUuid: string, climbName?: string) => {
   if (climbName && climbName.trim()) {
     const climbSlug = generateSlugFromText(climbName.trim());
     if (climbSlug) {
@@ -750,9 +817,13 @@ export const getContextAwareClimbViewUrl = (
 
   // Try resolving names from static data
   const slugUrl = tryConstructSlugViewUrl(
-    boardDetails.board_name, boardDetails.layout_id,
-    boardDetails.size_id, boardDetails.set_ids,
-    angle, climbUuid, climbName,
+    boardDetails.board_name,
+    boardDetails.layout_id,
+    boardDetails.size_id,
+    boardDetails.set_ids,
+    angle,
+    climbUuid,
+    climbName,
   );
   if (slugUrl) return slugUrl;
 
@@ -788,7 +859,14 @@ export const getPlaylistsBasePath = (pathname: string): string => {
   const oldStyleMatch = pathname.match(/^\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)/);
   if (oldStyleMatch) {
     const [, boardName] = oldStyleMatch;
-    const validBoardNames: readonly string[] = ['kilter', 'tension', 'moonboard', 'decoy', 'touchstone', 'grasshopper'] satisfies readonly BoardName[];
+    const validBoardNames: readonly string[] = [
+      'kilter',
+      'tension',
+      'moonboard',
+      'decoy',
+      'touchstone',
+      'grasshopper',
+    ] satisfies readonly BoardName[];
     if (validBoardNames.includes(boardName)) {
       return `/${oldStyleMatch.slice(1, 6).join('/')}/playlists`;
     }

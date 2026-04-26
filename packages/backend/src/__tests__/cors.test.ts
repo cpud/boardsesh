@@ -1,11 +1,11 @@
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import { execFileSync } from 'node:child_process';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+import { initCors, isOriginAllowed, applyCorsHeaders, getAllowedOrigins } from '../handlers/cors';
 
 vi.mock('node:child_process', () => ({
   execFileSync: vi.fn(),
 }));
-
-import { initCors, isOriginAllowed, applyCorsHeaders, getAllowedOrigins } from '../handlers/cors';
 
 describe('CORS Handler', () => {
   beforeEach(() => {
@@ -92,9 +92,7 @@ describe('CORS Handler', () => {
     });
 
     it('adds Tailscale hostname origins from tailscale status when available', () => {
-      vi.mocked(execFileSync).mockReturnValue(
-        JSON.stringify({ Self: { DNSName: 'my-mac.tailnet123.ts.net.' } })
-      );
+      vi.mocked(execFileSync).mockReturnValue(JSON.stringify({ Self: { DNSName: 'my-mac.tailnet123.ts.net.' } }));
 
       initCors('https://boardsesh.com');
 
@@ -123,9 +121,7 @@ describe('CORS Handler', () => {
     });
 
     it('returns true for Vercel preview deployments matching regex', () => {
-      expect(
-        isOriginAllowed('https://boardsesh-abc123-marcodejonghs-projects.vercel.app'),
-      ).toBe(true);
+      expect(isOriginAllowed('https://boardsesh-abc123-marcodejonghs-projects.vercel.app')).toBe(true);
     });
 
     it('returns true for homelab preview deployments matching regex', () => {
@@ -152,29 +148,36 @@ describe('CORS Handler', () => {
     });
 
     it('returns false for partial regex matches with wrong prefix', () => {
-      expect(
-        isOriginAllowed('http://boardsesh-abc123-marcodejonghs-projects.vercel.app'),
-      ).toBe(false); // http not https
+      expect(isOriginAllowed('http://boardsesh-abc123-marcodejonghs-projects.vercel.app')).toBe(false); // http not https
     });
 
     it('returns false for partial regex matches with wrong suffix', () => {
-      expect(
-        isOriginAllowed('https://boardsesh-abc123-marcodejonghs-projects.vercel.app.evil.com'),
-      ).toBe(false);
+      expect(isOriginAllowed('https://boardsesh-abc123-marcodejonghs-projects.vercel.app.evil.com')).toBe(false);
     });
 
     it('returns true for localhost origins in non-production', () => {
       expect(isOriginAllowed('http://localhost:3000')).toBe(true);
       expect(isOriginAllowed('http://127.0.0.1:3001')).toBe(true);
     });
+
+    it('returns true for private LAN origins in non-production', () => {
+      expect(isOriginAllowed('http://192.168.0.42:3000')).toBe(true);
+      expect(isOriginAllowed('http://10.0.1.15:3001')).toBe(true);
+      expect(isOriginAllowed('http://172.20.10.3:3000')).toBe(true);
+    });
+
+    it('returns false for non-dev ports on private LAN origins', () => {
+      expect(isOriginAllowed('http://192.168.0.42:8080')).toBe(false);
+    });
   });
 
+  /* eslint-disable @typescript-eslint/unbound-method -- all assertions target vi.fn() mocks, no `this` concern */
   describe('applyCorsHeaders', () => {
     function createMockReq(method: string, origin?: string) {
       return {
         method,
         headers: origin ? { origin } : {},
-      } as unknown as import('http').IncomingMessage;
+      } as unknown as IncomingMessage;
     }
 
     function createMockRes() {
@@ -186,7 +189,7 @@ describe('CORS Handler', () => {
         writeHead: vi.fn(),
         end: vi.fn(),
         _headers: headers,
-      } as unknown as import('http').ServerResponse & { _headers: Record<string, string> };
+      } as unknown as ServerResponse & { _headers: Record<string, string> };
     }
 
     it('sets Access-Control-Allow-Origin to request origin when allowed', () => {
@@ -258,6 +261,7 @@ describe('CORS Handler', () => {
       expect(result).toBe(true);
     });
   });
+  /* eslint-enable @typescript-eslint/unbound-method */
 
   describe('getAllowedOrigins', () => {
     it('returns the current allowed origins list', () => {

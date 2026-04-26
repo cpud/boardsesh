@@ -1,8 +1,8 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import type { BoardDetails } from '@/app/lib/types';
 import { getImageUrl, buildOverlayUrl } from './util';
 import { THUMBNAIL_WIDTH } from './types';
-import { trackRenderComplete, trackRenderError, type RenderContext } from '@/app/lib/rendering-metrics';
+import { trackRenderError, type RenderContext } from '@/app/lib/rendering-metrics';
 
 // Use CSS Grid stacking (gridArea: 1/1) instead of absolute positioning to avoid
 // iOS 18.x WebKit bugs with absolutely positioned images in aspect-ratio containers.
@@ -19,7 +19,7 @@ const layerContainStyle: React.CSSProperties = {
   objectFit: 'contain',
 };
 
-export interface BoardImageLayersProps {
+export type BoardImageLayersProps = {
   boardDetails: BoardDetails;
   frames?: string;
   mirrored: boolean;
@@ -30,7 +30,7 @@ export interface BoardImageLayersProps {
   style?: React.CSSProperties;
   /** Set fetchpriority="high" for LCP-critical images */
   fetchPriority?: 'high' | 'low' | 'auto';
-}
+};
 
 /**
  * Renders a board as layered images:
@@ -63,18 +63,9 @@ const BoardImageLayers = React.memo(function BoardImageLayers({
     [style, mirrored],
   );
 
-  const imgStyle = (contain || thumbnail) ? layerContainStyle : layerStyle;
+  const imgStyle = contain || thumbnail ? layerContainStyle : layerStyle;
 
-  // Render timing: measure mount → overlay loaded
-  const mountTime = useRef(performance.now());
-  const hasFired = useRef(false);
   const renderContext: RenderContext = thumbnail ? 'thumbnail' : contain ? 'full-board' : 'card';
-
-  const handleOverlayLoad = useCallback(() => {
-    if (hasFired.current) return;
-    hasFired.current = true;
-    trackRenderComplete(performance.now() - mountTime.current, renderContext, 'wasm');
-  }, [renderContext]);
 
   const handleOverlayError = useCallback(() => {
     trackRenderError(renderContext, 'wasm');
@@ -99,7 +90,6 @@ const BoardImageLayers = React.memo(function BoardImageLayers({
           height={imgHeight}
           style={imgStyle}
           fetchPriority={fetchPriority}
-          onLoad={handleOverlayLoad}
           onError={handleOverlayError}
         />
       ) : (

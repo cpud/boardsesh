@@ -71,7 +71,7 @@ describe('GraphQL Schema Parser', () => {
     assert.strictEqual(input.kind, 'input');
     assert.strictEqual(input.fields.length, 5);
 
-    const roleField = input.fields.find(f => f.name === 'role');
+    const roleField = input.fields.find((f) => f.name === 'role');
     assert.strictEqual(roleField.isNullable, true);
   });
 
@@ -88,7 +88,7 @@ describe('GraphQL Schema Parser', () => {
     const types = parseGraphQLSchema(schema);
     const update = types.get('LedUpdate');
 
-    const commandsField = update.fields.find(f => f.name === 'commands');
+    const commandsField = update.fields.find((f) => f.name === 'commands');
     assert.strictEqual(commandsField.isArray, true);
     assert.strictEqual(commandsField.type, 'LedCommand');
   });
@@ -181,9 +181,7 @@ describe('C++ Struct Generation', () => {
     const type = {
       name: 'ControllerPing',
       kind: 'type',
-      fields: [
-        { name: 'timestamp', type: 'String', isNullable: false, isArray: false }
-      ]
+      fields: [{ name: 'timestamp', type: 'String', isNullable: false, isArray: false }],
     };
 
     const output = generateCppStruct(type);
@@ -201,7 +199,7 @@ describe('C++ Struct Generation', () => {
         { name: 'r', type: 'Int', isNullable: false, isArray: false },
         { name: 'g', type: 'Int', isNullable: false, isArray: false },
         { name: 'b', type: 'Int', isNullable: false, isArray: false },
-      ]
+      ],
     };
 
     const output = generateCppStruct(type);
@@ -215,9 +213,7 @@ describe('C++ Struct Generation', () => {
     const type = {
       name: 'LedUpdate',
       kind: 'type',
-      fields: [
-        { name: 'commands', type: 'LedCommand', isNullable: false, isArray: true },
-      ]
+      fields: [{ name: 'commands', type: 'LedCommand', isNullable: false, isArray: true }],
     };
 
     const output = generateCppStruct(type);
@@ -230,7 +226,7 @@ describe('C++ Struct Generation', () => {
       name: 'ControllerEvent',
       kind: 'union',
       fields: [],
-      unionTypes: ['LedUpdate', 'ControllerPing']
+      unionTypes: ['LedUpdate', 'ControllerPing'],
     };
 
     const output = generateCppStruct(type);
@@ -262,7 +258,7 @@ describe('Integration: Parse and Generate', () => {
     const ledCommand = types.get('LedCommand');
     assert.strictEqual(ledCommand.fields.length, 4);
 
-    const posField = ledCommand.fields.find(f => f.name === 'position');
+    const posField = ledCommand.fields.find((f) => f.name === 'position');
     assert.ok(posField, 'Should have position field');
 
     // Generate C++ and verify it's syntactically reasonable
@@ -370,8 +366,8 @@ describe('Edge Cases', () => {
     const types = parseGraphQLSchema(schema);
     const result = types.get('ClimbMatchResult');
 
-    const matched = result.fields.find(f => f.name === 'matched');
-    const climbUuid = result.fields.find(f => f.name === 'climbUuid');
+    const matched = result.fields.find((f) => f.name === 'matched');
+    const climbUuid = result.fields.find((f) => f.name === 'climbUuid');
 
     assert.strictEqual(matched.isNullable, false);
     assert.strictEqual(climbUuid.isNullable, true);
@@ -392,32 +388,26 @@ describe('Generated Code Verification', () => {
     // Verify parseLedUpdate checks parseLedCommand return value
     assert.ok(
       content.includes('if (!parseLedCommand(cmd, update.commands[i]))'),
-      'Should check parseLedCommand return value'
+      'Should check parseLedCommand return value',
     );
 
     // Verify cleanup happens on parse failure
     assert.ok(
       content.includes('// Parsing failed - free memory and return false'),
-      'Should have cleanup comment for parse failure'
+      'Should have cleanup comment for parse failure',
     );
 
     // Verify memory is freed on parse failure (delete before nullptr assignment)
     const parseFailureSection = content.substring(
       content.indexOf('if (!parseLedCommand(cmd, update.commands[i]))'),
-      content.indexOf('if (!parseLedCommand(cmd, update.commands[i]))') + 300
+      content.indexOf('if (!parseLedCommand(cmd, update.commands[i]))') + 300,
     );
     assert.ok(
       parseFailureSection.includes('delete[] update.commands'),
-      'Should delete commands array on parse failure'
+      'Should delete commands array on parse failure',
     );
-    assert.ok(
-      parseFailureSection.includes('update.commands = nullptr'),
-      'Should set commands to nullptr after delete'
-    );
-    assert.ok(
-      parseFailureSection.includes('update.commandsCount = 0'),
-      'Should reset commandsCount to 0 on failure'
-    );
+    assert.ok(parseFailureSection.includes('update.commands = nullptr'), 'Should set commands to nullptr after delete');
+    assert.ok(parseFailureSection.includes('update.commandsCount = 0'), 'Should reset commandsCount to 0 on failure');
   });
 
   it('should verify constants match between JS and generated code', () => {
@@ -433,13 +423,13 @@ describe('Generated Code Verification', () => {
     // Verify ROLE_NOT_SET value matches
     assert.ok(
       content.includes(`constexpr int32_t ROLE_NOT_SET = ${ROLE_NOT_SET}`),
-      `Generated ROLE_NOT_SET should match JS value (${ROLE_NOT_SET})`
+      `Generated ROLE_NOT_SET should match JS value (${ROLE_NOT_SET})`,
     );
 
     // Verify ANGLE_NOT_SET value matches
     assert.ok(
       content.includes(`constexpr int32_t ANGLE_NOT_SET = ${ANGLE_NOT_SET}`),
-      `Generated ANGLE_NOT_SET should match JS value (${ANGLE_NOT_SET})`
+      `Generated ANGLE_NOT_SET should match JS value (${ANGLE_NOT_SET})`,
     );
   });
 });

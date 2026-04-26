@@ -9,12 +9,9 @@ import { cache } from 'react';
 import { sql } from '@/app/lib/db/db';
 import { getGradeLabel } from '@boardsesh/db/queries';
 
-import { Climb, ParsedBoardRouteParametersWithUuid, BoardName, LayoutId, Size } from '../types';
-import {
-  getSizesForLayoutId,
-  getAllLayouts,
-  getSetsForLayoutAndSize,
-} from '@/app/lib/board-constants';
+import type { Climb, ParsedBoardRouteParametersWithUuid, BoardName, LayoutId, Size } from '../types';
+import { getSizesForLayoutId, getAllLayouts, getSetsForLayoutAndSize } from '@/app/lib/board-constants';
+import { isNoMatchClimb } from '@/app/lib/no-match-climb';
 
 export const getClimb = cache(async (params: ParsedBoardRouteParametersWithUuid): Promise<Climb> => {
   const result = await sql`
@@ -37,10 +34,14 @@ export const getClimb = cache(async (params: ParsedBoardRouteParametersWithUuid)
         limit 1
       `;
   const row = result[0] as Climb & { difficulty_id: number | null };
-  return { ...row, difficulty: getGradeLabel(row.difficulty_id) } as Climb;
+  return {
+    ...row,
+    difficulty: getGradeLabel(row.difficulty_id),
+    is_no_match: isNoMatchClimb(row.description),
+  } as Climb;
 });
 
-export interface ClimbStatsForAngle {
+export type ClimbStatsForAngle = {
   angle: number;
   ascensionist_count: string; // comes as string from DB
   quality_average: string | null; // comes as string from DB
@@ -49,10 +50,10 @@ export interface ClimbStatsForAngle {
   fa_username: string | null;
   fa_at: string | null;
   difficulty: string | null;
-}
+};
 
 export const getClimbStatsForAllAngles = async (
-  params: ParsedBoardRouteParametersWithUuid
+  params: ParsedBoardRouteParametersWithUuid,
 ): Promise<ClimbStatsForAngle[]> => {
   const result = await sql`
     SELECT
@@ -114,4 +115,3 @@ export const getSets = (board_name: BoardName, layout_id: LayoutId, size_id: Siz
   // Use hardcoded data instead of database query
   return getSetsForLayoutAndSize(board_name, layout_id, size_id);
 };
-

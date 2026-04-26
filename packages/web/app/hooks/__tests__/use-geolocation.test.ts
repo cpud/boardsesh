@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useGeolocation, getGeolocationErrorMessage } from '../use-geolocation';
 
@@ -14,11 +14,7 @@ function createPositionError(code: number, message = ''): GeolocationPositionErr
 }
 
 // Helper to create a mock GeolocationPosition
-function createPosition(
-  latitude: number,
-  longitude: number,
-  accuracy: number,
-): GeolocationPosition {
+function createPosition(latitude: number, longitude: number, accuracy: number): GeolocationPosition {
   const coords: GeolocationCoordinates = {
     latitude,
     longitude,
@@ -28,7 +24,15 @@ function createPosition(
     heading: null,
     speed: null,
     toJSON() {
-      return { latitude, longitude, accuracy, altitude: null, altitudeAccuracy: null, heading: null, speed: null };
+      return {
+        latitude,
+        longitude,
+        accuracy,
+        altitude: null,
+        altitudeAccuracy: null,
+        heading: null,
+        speed: null,
+      };
     },
   };
   const timestamp = Date.now();
@@ -90,11 +94,9 @@ describe('useGeolocation', () => {
 
   it('requestPermission sets loading then resolves with coordinates', async () => {
     const mockPosition = createPosition(51.5074, -0.1278, 10);
-    mockGetCurrentPosition.mockImplementation(
-      (success: PositionCallback) => {
-        success(mockPosition);
-      },
-    );
+    mockGetCurrentPosition.mockImplementation((success: PositionCallback) => {
+      success(mockPosition);
+    });
 
     const { result } = renderHook(() => useGeolocation());
 
@@ -114,11 +116,9 @@ describe('useGeolocation', () => {
 
   it('requestPermission handles permission denied (error code 1)', async () => {
     const posError = createPositionError(1, 'User denied Geolocation');
-    mockGetCurrentPosition.mockImplementation(
-      (_success: PositionCallback, error: PositionErrorCallback) => {
-        error(posError);
-      },
-    );
+    mockGetCurrentPosition.mockImplementation((_success: PositionCallback, error: PositionErrorCallback) => {
+      error(posError);
+    });
 
     const { result } = renderHook(() => useGeolocation());
 
@@ -134,11 +134,9 @@ describe('useGeolocation', () => {
 
   it('requestPermission handles position unavailable', async () => {
     const posError = createPositionError(2, 'Position unavailable');
-    mockGetCurrentPosition.mockImplementation(
-      (_success: PositionCallback, error: PositionErrorCallback) => {
-        error(posError);
-      },
-    );
+    mockGetCurrentPosition.mockImplementation((_success: PositionCallback, error: PositionErrorCallback) => {
+      error(posError);
+    });
 
     const { result } = renderHook(() => useGeolocation());
 
@@ -209,11 +207,9 @@ describe('useGeolocation', () => {
   it('refresh delegates to requestPermission when not granted', async () => {
     // Permission state is not 'granted' (default is null from initial state)
     const mockPosition = createPosition(40.7128, -74.006, 15);
-    mockGetCurrentPosition.mockImplementation(
-      (success: PositionCallback) => {
-        success(mockPosition);
-      },
-    );
+    mockGetCurrentPosition.mockImplementation((success: PositionCallback) => {
+      success(mockPosition);
+    });
 
     const { result } = renderHook(() => useGeolocation());
 
@@ -235,11 +231,9 @@ describe('useGeolocation', () => {
     const mockPosition2 = createPosition(48.8566, 2.3522, 5);
 
     // First call returns position 1
-    mockGetCurrentPosition.mockImplementationOnce(
-      (success: PositionCallback) => {
-        success(mockPosition1);
-      },
-    );
+    mockGetCurrentPosition.mockImplementationOnce((success: PositionCallback) => {
+      success(mockPosition1);
+    });
 
     const { result } = renderHook(() => useGeolocation());
 
@@ -251,11 +245,9 @@ describe('useGeolocation', () => {
     expect(result.current.permissionState).toBe('granted');
 
     // Second call returns position 2
-    mockGetCurrentPosition.mockImplementationOnce(
-      (success: PositionCallback) => {
-        success(mockPosition2);
-      },
-    );
+    mockGetCurrentPosition.mockImplementationOnce((success: PositionCallback) => {
+      success(mockPosition2);
+    });
 
     // Now refresh should take the direct path
     await act(async () => {
@@ -273,11 +265,9 @@ describe('useGeolocation', () => {
 
   it('refresh handles errors when already granted', async () => {
     const mockPosition = createPosition(51.5074, -0.1278, 10);
-    mockGetCurrentPosition.mockImplementationOnce(
-      (success: PositionCallback) => {
-        success(mockPosition);
-      },
-    );
+    mockGetCurrentPosition.mockImplementationOnce((success: PositionCallback) => {
+      success(mockPosition);
+    });
 
     const { result } = renderHook(() => useGeolocation());
 
@@ -288,11 +278,9 @@ describe('useGeolocation', () => {
 
     // Now make the next call fail
     const posError = createPositionError(2, 'Position unavailable');
-    mockGetCurrentPosition.mockImplementationOnce(
-      (_success: PositionCallback, error: PositionErrorCallback) => {
-        error(posError);
-      },
-    );
+    mockGetCurrentPosition.mockImplementationOnce((_success: PositionCallback, error: PositionErrorCallback) => {
+      error(posError);
+    });
 
     await act(async () => {
       await result.current.refresh();
@@ -336,11 +324,9 @@ describe('useGeolocation', () => {
     };
 
     const mockPosition = createPosition(0, 0, 100);
-    mockGetCurrentPosition.mockImplementation(
-      (success: PositionCallback) => {
-        success(mockPosition);
-      },
-    );
+    mockGetCurrentPosition.mockImplementation((success: PositionCallback) => {
+      success(mockPosition);
+    });
 
     const { result } = renderHook(() => useGeolocation(customOptions));
 
@@ -348,20 +334,14 @@ describe('useGeolocation', () => {
       await result.current.requestPermission();
     });
 
-    expect(mockGetCurrentPosition).toHaveBeenCalledWith(
-      expect.any(Function),
-      expect.any(Function),
-      customOptions,
-    );
+    expect(mockGetCurrentPosition).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), customOptions);
   });
 
   it('loading state is set correctly during async operations', async () => {
     let resolvePosition: ((pos: GeolocationPosition) => void) | null = null;
-    mockGetCurrentPosition.mockImplementation(
-      (success: PositionCallback) => {
-        resolvePosition = success;
-      },
-    );
+    mockGetCurrentPosition.mockImplementation((success: PositionCallback) => {
+      resolvePosition = success;
+    });
 
     const { result } = renderHook(() => useGeolocation());
 
@@ -393,17 +373,13 @@ describe('getGeolocationErrorMessage', () => {
   it('returns correct message for PERMISSION_DENIED', () => {
     const error = createPositionError(1);
     const message = getGeolocationErrorMessage(error);
-    expect(message).toBe(
-      'Location permission was denied. Please enable location access in your browser settings.',
-    );
+    expect(message).toBe('Location permission was denied. Please enable location access in your browser settings.');
   });
 
   it('returns correct message for POSITION_UNAVAILABLE', () => {
     const error = createPositionError(2);
     const message = getGeolocationErrorMessage(error);
-    expect(message).toBe(
-      'Location information is unavailable. Please try again later.',
-    );
+    expect(message).toBe('Location information is unavailable. Please try again later.');
   });
 
   it('returns correct message for TIMEOUT', () => {
@@ -415,8 +391,6 @@ describe('getGeolocationErrorMessage', () => {
   it('returns correct message for unknown error code', () => {
     const error = createPositionError(99);
     const message = getGeolocationErrorMessage(error);
-    expect(message).toBe(
-      'An unknown error occurred while getting your location.',
-    );
+    expect(message).toBe('An unknown error occurred while getting your location.');
   });
 });

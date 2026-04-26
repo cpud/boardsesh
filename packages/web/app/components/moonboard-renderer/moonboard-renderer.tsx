@@ -1,13 +1,8 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import {
-  MOONBOARD_GRID,
-  MOONBOARD_SIZE,
-  getGridPosition,
-  MOONBOARD_HOLD_STATES,
-} from '@/app/lib/moonboard-config';
-import { MoonBoardRendererProps } from './types';
+import { MOONBOARD_GRID, MOONBOARD_SIZE, getGridPosition, MOONBOARD_HOLD_STATES } from '@/app/lib/moonboard-config';
+import type { MoonBoardRendererProps } from './types';
 
 const MoonBoardRenderer: React.FC<MoonBoardRendererProps> = ({
   layoutFolder,
@@ -62,23 +57,22 @@ const MoonBoardRenderer: React.FC<MoonBoardRendererProps> = ({
   };
 
   // Memoize SVG style object to prevent recreation on every render
-  const svgStyle = useMemo(() => ({
-    width: '100%',
-    height: 'auto',
-    display: 'block' as const,
-    maxHeight: thumbnail ? '10vh' : '55vh',
-    transform: mirrored ? 'scaleX(-1)' : undefined,
-  }), [thumbnail, mirrored]);
+  const svgStyle = useMemo(
+    () => ({
+      width: '100%',
+      height: 'auto',
+      display: 'block' as const,
+      maxHeight: thumbnail ? '10vh' : '55vh',
+      transform: mirrored ? 'scaleX(-1)' : undefined,
+    }),
+    [thumbnail, mirrored],
+  );
 
   return (
-    <svg
-      viewBox={`0 0 ${width} ${height}`}
-      preserveAspectRatio="xMidYMid meet"
-      style={svgStyle}
-    >
+    <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet" style={svgStyle}>
       {/* Render MoonBoard background first */}
       <image
-        href={thumbnail ? "/images/moonboard/thumbs/moonboard-bg.webp" : "/images/moonboard/moonboard-bg.webp"}
+        href={thumbnail ? '/images/moonboard/thumbs/moonboard-bg.webp' : '/images/moonboard/moonboard-bg.webp'}
         width="100%"
         height="100%"
       />

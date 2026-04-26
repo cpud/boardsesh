@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import { RootBottomBar } from '../persistent-session-wrapper';
 
 let mockPathname = '/';
@@ -19,17 +19,21 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('../../party-manager/party-profile-context', () => ({
-  PartyProfileProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  PartyProfileProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('../../persistent-session', () => ({
-  PersistentSessionProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  PersistentSessionProvider: ({ children }: { children: React.ReactNode }) => children,
   usePersistentSession: () => ({
     sessionSummary: null,
+    sessionSummaryBoardType: null,
+    sessionSummaryHealthKitWorkoutId: null,
     dismissSessionSummary: vi.fn(),
   }),
   usePersistentSessionState: () => ({
     sessionSummary: null,
+    sessionSummaryBoardType: null,
+    sessionSummaryHealthKitWorkoutId: null,
   }),
   usePersistentSessionActions: () => ({
     dismissSessionSummary: vi.fn(),
@@ -37,7 +41,7 @@ vi.mock('../../persistent-session', () => ({
 }));
 
 vi.mock('../../queue-control/queue-bridge-context', () => ({
-  QueueBridgeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  QueueBridgeProvider: ({ children }: { children: React.ReactNode }) => children,
   useQueueBridgeBoardInfo: () => mockQueueBridgeBoardInfo,
 }));
 
@@ -58,27 +62,27 @@ vi.mock('../../bottom-tab-bar/bottom-tab-bar', () => ({
 }));
 
 vi.mock('../../board-provider/board-provider-context', () => ({
-  BoardProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  BoardProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('../../connection-manager/connection-settings-context', () => ({
-  ConnectionSettingsProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  ConnectionSettingsProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('../../connection-manager/websocket-connection-provider', () => ({
-  WebSocketConnectionProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  WebSocketConnectionProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('../../board-bluetooth-control/bluetooth-context', () => ({
-  BluetoothProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  BluetoothProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('../../climb-actions/favorites-batch-context', () => ({
-  FavoritesProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  FavoritesProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('../../climb-actions/playlists-batch-context', () => ({
-  PlaylistsProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  PlaylistsProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('@/app/hooks/use-climb-actions-data', () => ({
@@ -89,7 +93,7 @@ vi.mock('@/app/hooks/use-climb-actions-data', () => ({
 }));
 
 vi.mock('../../error-boundary', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  default: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('../../global-header/global-header', () => ({
@@ -101,7 +105,7 @@ vi.mock('../../session-summary/session-summary-dialog', () => ({
 }));
 
 vi.mock('../../search-drawer/search-drawer-bridge-context', () => ({
-  SearchDrawerBridgeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  SearchDrawerBridgeProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 const mockBoardConfigs = {} as Parameters<typeof RootBottomBar>[0]['boardConfigs'];

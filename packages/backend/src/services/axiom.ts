@@ -5,14 +5,14 @@
  * Only active in production environment.
  */
 
-export interface DeviceLog {
+export type DeviceLog = {
   _time: string;
   controller_id: string;
   level: string;
   component: string;
   message: string;
   [key: string]: unknown; // Additional metadata
-}
+};
 
 const AXIOM_INGEST_URL = 'https://api.axiom.co/v1/datasets';
 
@@ -38,7 +38,7 @@ export async function forwardLogs(logs: DeviceLog[]): Promise<boolean> {
   if (!isAxiomConfigured()) {
     // In development, just log that we would have sent logs
     if (process.env.NODE_ENV !== 'production') {
-      console.log(`[Axiom] Would forward ${logs.length} logs (disabled in development)`);
+      console.info(`[Axiom] Would forward ${logs.length} logs (disabled in development)`);
     }
     return true;
   }
@@ -67,7 +67,7 @@ export async function forwardLogs(logs: DeviceLog[]): Promise<boolean> {
       return false;
     }
 
-    console.log(`[Axiom] Successfully forwarded ${logs.length} logs`);
+    console.info(`[Axiom] Successfully forwarded ${logs.length} logs`);
     return true;
   } catch (error) {
     // Fire-and-forget: log error but don't throw

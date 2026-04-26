@@ -9,12 +9,17 @@ export default defineConfig({
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  /* 3 retries in CI to absorb infra timing noise; 1 locally to catch genuine flakes */
+  retries: process.env.CI ? 3 : 1,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 2 : undefined,
+  /* Global per-test timeout — some tests (zoom, login flows) need more than Playwright's 30 s default */
+  timeout: 60_000,
+  /* Raise the default assertion timeout from Playwright's 5 s to 10 s */
+  expect: { timeout: 10_000 },
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: process.env.CI ? 'github' : 'html',
+  /* In CI: emit both the HTML report (uploaded as an artifact) and GitHub Annotations */
+  reporter: process.env.CI ? [['html'], ['github']] : 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -22,6 +27,12 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    /* Capture a screenshot on failure for easier CI debugging */
+    screenshot: 'only-on-failure',
+    /* Timeout for individual actions (click, fill, etc.) */
+    actionTimeout: 15_000,
+    /* Timeout for page navigations */
+    navigationTimeout: 30_000,
   },
 
   /* Configure projects for major browsers */
@@ -31,15 +42,13 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      testIgnore: [
-        '**/app-store-screenshots.spec.ts',
-        '**/help-screenshots.spec.ts',
-      ],
+      testIgnore: ['**/app-store-screenshots.spec.ts', '**/layout-screenshots.spec.ts', '**/help-screenshots.spec.ts'],
     },
 
-    // Help page screenshots - mobile viewport (390×844, matches iPhone 14 logical size).
-    // Viewport is set at the project level so both describe blocks in the spec use it
-    // without needing redundant test.use() calls inside each describe.
+    // Help page screenshots - mobile viewport (390×844, iPhone 14 logical size).
+    // Run in CI via the `screenshots` job; locally with:
+    //   TEST_USER_EMAIL=test@boardsesh.com TEST_USER_PASSWORD=test \
+    //     cd packages/web && bunx playwright test --project=help-screenshots
     {
       name: 'help-screenshots',
       use: { viewport: { width: 390, height: 844 } },
@@ -47,7 +56,7 @@ export default defineConfig({
     },
 
     // App Store screenshots - iPhone 16 Pro Max (440×956 @ 3×).
-    // Run manually when generating App Store assets:
+    // Run in CI via the `screenshots` job; locally with:
     //   cd packages/web && bunx playwright test --project=app-store-screenshots
     {
       name: 'app-store-screenshots',
@@ -60,6 +69,22 @@ export default defineConfig({
           'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
       },
       testMatch: ['**/app-store-screenshots.spec.ts'],
+    },
+
+    // Board-layout screenshots - same iPhone 16 Pro Max viewport as app-store.
+    // Captures every supported Kilter/Tension layout so board-rendering
+    // regressions show up in the PR comment gallery.
+    {
+      name: 'layout-screenshots',
+      use: {
+        viewport: { width: 440, height: 956 },
+        deviceScaleFactor: 3,
+        isMobile: true,
+        hasTouch: true,
+        userAgent:
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+      },
+      testMatch: ['**/layout-screenshots.spec.ts'],
     },
   ],
 

@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
+import { useCreateClimb } from '../use-create-climb';
 
 vi.mock('../../board-renderer/types', () => ({
   HOLD_STATE_MAP: {
@@ -21,9 +22,12 @@ vi.mock('../../board-renderer/types', () => ({
       3: { name: 'FINISH', color: '#FF00FF', displayColor: '#FF00FF' },
     },
   },
+  STATE_TO_PRIMARY_CODE: {
+    kilter: { STARTING: 42, HAND: 43, FINISH: 44, FOOT: 45 },
+    tension: { STARTING: 1, HAND: 2, FINISH: 3, FOOT: 4 },
+    moonboard: { STARTING: 42, HAND: 43, FINISH: 44 },
+  },
 }));
-
-import { useCreateClimb } from '../use-create-climb';
 
 describe('useCreateClimb', () => {
   describe('initial state', () => {
@@ -292,9 +296,7 @@ describe('useCreateClimb', () => {
         200: { state: 'HAND' as const, color: '#00FFFF', displayColor: '#00FFFF' },
       };
 
-      const { result } = renderHook(() =>
-        useCreateClimb('kilter', { initialHoldsMap }),
-      );
+      const { result } = renderHook(() => useCreateClimb('kilter', { initialHoldsMap }));
 
       expect(result.current.litUpHoldsMap).toEqual(initialHoldsMap);
       expect(result.current.totalHolds).toBe(2);

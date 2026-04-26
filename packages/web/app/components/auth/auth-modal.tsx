@@ -13,10 +13,13 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import MuiDivider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
 import PersonOutlined from '@mui/icons-material/PersonOutlined';
 import LockOutlined from '@mui/icons-material/LockOutlined';
 import MailOutlined from '@mui/icons-material/MailOutlined';
 import Favorite from '@mui/icons-material/Favorite';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { signIn } from 'next-auth/react';
 import SocialLoginButtons from '@/app/components/auth/social-login-buttons';
 import { TabPanel } from '@/app/components/ui/tab-panel';
@@ -79,8 +82,8 @@ export default function AuthModal({
   open,
   onClose,
   onSuccess,
-  title = "Sign in to keep your progress",
-  description = "Your logbook, playlists, and follows stay with your account."
+  title = 'Sign in to keep your progress',
+  description = 'Your logbook, playlists, and follows stay with your account.',
 }: AuthModalProps) {
   const [loginValues, setLoginValues] = useState(initialLoginValues);
   const [loginErrors, setLoginErrors] = useState<LoginErrors>({});
@@ -89,6 +92,9 @@ export default function AuthModal({
   const [loginLoading, setLoginLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { showMessage } = useSnackbar();
 
   const handleLogin = async () => {
@@ -152,7 +158,7 @@ export default function AuthModal({
       if (data.requiresVerification) {
         showMessage('Please check your email to verify your account', 'info');
         setActiveTab('login');
-        setLoginValues(prev => ({ ...prev, email: registerValues.email }));
+        setLoginValues((prev) => ({ ...prev, email: registerValues.email }));
         setRegisterValues(initialRegisterValues);
         setRegisterErrors({});
         return;
@@ -174,7 +180,7 @@ export default function AuthModal({
         onSuccess?.();
       } else {
         setActiveTab('login');
-        setLoginValues(prev => ({ ...prev, email: registerValues.email }));
+        setLoginValues((prev) => ({ ...prev, email: registerValues.email }));
         showMessage('Please log in with your account', 'info');
       }
     } catch (error) {
@@ -194,18 +200,17 @@ export default function AuthModal({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleCancel}
-      maxWidth="xs"
-      fullWidth
-    >
+    <Dialog open={open} onClose={handleCancel} maxWidth="xs" fullWidth>
       <DialogContent>
         <Stack spacing={3} sx={{ width: '100%' }}>
           <Stack spacing={1} sx={{ width: '100%', textAlign: 'center' }}>
             <Favorite sx={{ fontSize: 32, color: themeTokens.colors.error, mx: 'auto' }} />
-            <Typography variant="body2" component="span" fontWeight={600} sx={{ fontSize: 18 }}>{title}</Typography>
-            <Typography variant="body2" component="span" color="text.secondary">{description}</Typography>
+            <Typography variant="body2" component="span" fontWeight={600} sx={{ fontSize: 18 }}>
+              {title}
+            </Typography>
+            <Typography variant="body2" component="span" color="text.secondary">
+              {description}
+            </Typography>
           </Stack>
 
           <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} centered>
@@ -216,25 +221,29 @@ export default function AuthModal({
           <TabPanel value={activeTab} index="login">
             <Box
               component="form"
-              onSubmit={(e: React.FormEvent) => { e.preventDefault(); handleLogin(); }}
+              onSubmit={(e: React.FormEvent) => {
+                e.preventDefault();
+                void handleLogin();
+              }}
               sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
             >
               <TextField
                 id="login_email"
-                label="Email"
                 placeholder="your@email.com"
                 variant="outlined"
                 size="medium"
                 fullWidth
                 value={loginValues.email}
                 onChange={(e) => {
-                  setLoginValues(prev => ({ ...prev, email: e.target.value }));
-                  if (loginErrors.email) setLoginErrors(prev => ({ ...prev, email: undefined }));
+                  setLoginValues((prev) => ({ ...prev, email: e.target.value }));
+                  if (loginErrors.email) setLoginErrors((prev) => ({ ...prev, email: undefined }));
                 }}
                 error={!!loginErrors.email}
                 helperText={loginErrors.email}
                 slotProps={{
                   input: {
+                    type: 'email',
+                    autoCapitalize: 'none',
                     startAdornment: (
                       <InputAdornment position="start">
                         <MailOutlined />
@@ -246,16 +255,15 @@ export default function AuthModal({
 
               <TextField
                 id="login_password"
-                label="Password"
-                type="password"
+                type={showLoginPassword ? 'text' : 'password'}
                 placeholder="Password"
                 variant="outlined"
                 size="medium"
                 fullWidth
                 value={loginValues.password}
                 onChange={(e) => {
-                  setLoginValues(prev => ({ ...prev, password: e.target.value }));
-                  if (loginErrors.password) setLoginErrors(prev => ({ ...prev, password: undefined }));
+                  setLoginValues((prev) => ({ ...prev, password: e.target.value }));
+                  if (loginErrors.password) setLoginErrors((prev) => ({ ...prev, password: undefined }));
                 }}
                 error={!!loginErrors.password}
                 helperText={loginErrors.password}
@@ -264,6 +272,19 @@ export default function AuthModal({
                     startAdornment: (
                       <InputAdornment position="start">
                         <LockOutlined />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowLoginPassword(!showLoginPassword)}
+                          onMouseDown={(e) => e.preventDefault()}
+                          edge="end"
+                          size="small"
+                          tabIndex={-1}
+                        >
+                          {showLoginPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
                       </InputAdornment>
                     ),
                   },
@@ -286,19 +307,21 @@ export default function AuthModal({
           <TabPanel value={activeTab} index="register">
             <Box
               component="form"
-              onSubmit={(e: React.FormEvent) => { e.preventDefault(); handleRegister(); }}
+              onSubmit={(e: React.FormEvent) => {
+                e.preventDefault();
+                void handleRegister();
+              }}
               sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
             >
               <TextField
-                label="Name"
                 placeholder="Your name (optional)"
                 variant="outlined"
                 size="medium"
                 fullWidth
                 value={registerValues.name}
                 onChange={(e) => {
-                  setRegisterValues(prev => ({ ...prev, name: e.target.value }));
-                  if (registerErrors.name) setRegisterErrors(prev => ({ ...prev, name: undefined }));
+                  setRegisterValues((prev) => ({ ...prev, name: e.target.value }));
+                  if (registerErrors.name) setRegisterErrors((prev) => ({ ...prev, name: undefined }));
                 }}
                 error={!!registerErrors.name}
                 helperText={registerErrors.name}
@@ -314,20 +337,21 @@ export default function AuthModal({
               />
 
               <TextField
-                label="Email"
                 placeholder="your@email.com"
                 variant="outlined"
                 size="medium"
                 fullWidth
                 value={registerValues.email}
                 onChange={(e) => {
-                  setRegisterValues(prev => ({ ...prev, email: e.target.value }));
-                  if (registerErrors.email) setRegisterErrors(prev => ({ ...prev, email: undefined }));
+                  setRegisterValues((prev) => ({ ...prev, email: e.target.value }));
+                  if (registerErrors.email) setRegisterErrors((prev) => ({ ...prev, email: undefined }));
                 }}
                 error={!!registerErrors.email}
                 helperText={registerErrors.email}
                 slotProps={{
                   input: {
+                    type: 'email',
+                    autoCapitalize: 'none',
                     startAdornment: (
                       <InputAdornment position="start">
                         <MailOutlined />
@@ -338,16 +362,15 @@ export default function AuthModal({
               />
 
               <TextField
-                label="Password"
-                type="password"
+                type={showRegisterPassword ? 'text' : 'password'}
                 placeholder="Password (min 8 characters)"
                 variant="outlined"
                 size="medium"
                 fullWidth
                 value={registerValues.password}
                 onChange={(e) => {
-                  setRegisterValues(prev => ({ ...prev, password: e.target.value }));
-                  if (registerErrors.password) setRegisterErrors(prev => ({ ...prev, password: undefined }));
+                  setRegisterValues((prev) => ({ ...prev, password: e.target.value }));
+                  if (registerErrors.password) setRegisterErrors((prev) => ({ ...prev, password: undefined }));
                 }}
                 error={!!registerErrors.password}
                 helperText={registerErrors.password}
@@ -358,21 +381,34 @@ export default function AuthModal({
                         <LockOutlined />
                       </InputAdornment>
                     ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                          onMouseDown={(e) => e.preventDefault()}
+                          edge="end"
+                          size="small"
+                          tabIndex={-1}
+                        >
+                          {showRegisterPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
                   },
                 }}
               />
 
               <TextField
-                label="Confirm Password"
-                type="password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="Confirm password"
                 variant="outlined"
                 size="medium"
                 fullWidth
                 value={registerValues.confirmPassword}
                 onChange={(e) => {
-                  setRegisterValues(prev => ({ ...prev, confirmPassword: e.target.value }));
-                  if (registerErrors.confirmPassword) setRegisterErrors(prev => ({ ...prev, confirmPassword: undefined }));
+                  setRegisterValues((prev) => ({ ...prev, confirmPassword: e.target.value }));
+                  if (registerErrors.confirmPassword)
+                    setRegisterErrors((prev) => ({ ...prev, confirmPassword: undefined }));
                 }}
                 error={!!registerErrors.confirmPassword}
                 helperText={registerErrors.confirmPassword}
@@ -381,6 +417,19 @@ export default function AuthModal({
                     startAdornment: (
                       <InputAdornment position="start">
                         <LockOutlined />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          onMouseDown={(e) => e.preventDefault()}
+                          edge="end"
+                          size="small"
+                          tabIndex={-1}
+                        >
+                          {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
                       </InputAdornment>
                     ),
                   },
@@ -401,7 +450,9 @@ export default function AuthModal({
           </TabPanel>
 
           <MuiDivider sx={{ margin: '8px 0' }}>
-            <Typography variant="body2" component="span" color="text.secondary">or</Typography>
+            <Typography variant="body2" component="span" color="text.secondary">
+              or
+            </Typography>
           </MuiDivider>
 
           <SocialLoginButtons />

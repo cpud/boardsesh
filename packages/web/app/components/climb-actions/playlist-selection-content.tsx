@@ -20,12 +20,12 @@ import { themeTokens } from '@/app/theme/theme-config';
 import { useSnackbar } from '../providers/snackbar-provider';
 import { isValidHexColor } from '@/app/lib/color-utils';
 
-interface PlaylistSelectionContentProps {
+type PlaylistSelectionContentProps = {
   climbUuid: string;
   boardDetails: BoardDetails;
   angle: number;
   onDone?: () => void;
-}
+};
 
 export default function PlaylistSelectionContent({
   climbUuid,
@@ -35,7 +35,11 @@ export default function PlaylistSelectionContent({
 }: PlaylistSelectionContentProps) {
   const { openAuthModal } = useAuthModal();
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [createFormValues, setCreateFormValues] = useState({ name: '', description: '', color: '' });
+  const [createFormValues, setCreateFormValues] = useState({
+    name: '',
+    description: '',
+    color: '',
+  });
   const [creatingPlaylist, setCreatingPlaylist] = useState(false);
 
   const {
@@ -77,7 +81,7 @@ export default function PlaylistSelectionContent({
         showMessage(isInPlaylist ? 'Failed to remove from playlist' : 'Failed to add to playlist', 'error');
       }
     },
-    [addToPlaylist, removeFromPlaylist, boardDetails.board_name, climbUuid, showMessage]
+    [addToPlaylist, removeFromPlaylist, boardDetails.board_name, climbUuid, showMessage],
   );
 
   const handleCreatePlaylist = useCallback(async () => {
@@ -97,8 +101,14 @@ export default function PlaylistSelectionContent({
 
       setCreatingPlaylist(true);
 
-      const colorHex = createFormValues.color && isValidHexColor(createFormValues.color) ? createFormValues.color : undefined;
-      const newPlaylist = await createPlaylist(createFormValues.name, createFormValues.description, colorHex, undefined);
+      const colorHex =
+        createFormValues.color && isValidHexColor(createFormValues.color) ? createFormValues.color : undefined;
+      const newPlaylist = await createPlaylist(
+        createFormValues.name,
+        createFormValues.description,
+        colorHex,
+        undefined,
+      );
 
       await addToPlaylist(newPlaylist.uuid);
 
@@ -125,15 +135,22 @@ export default function PlaylistSelectionContent({
         void handleTogglePlaylist(playlistId, isInPlaylist);
       }
     },
-    [handleTogglePlaylist]
+    [handleTogglePlaylist],
   );
 
   return (
-    <Box sx={{ padding: `${themeTokens.spacing[2]}px ${themeTokens.spacing[2]}px ${themeTokens.spacing[3]}px` }}>
+    <Box
+      sx={{
+        padding: `${themeTokens.spacing[2]}px ${themeTokens.spacing[2]}px ${themeTokens.spacing[3]}px`,
+      }}
+    >
       <Box sx={{ marginBottom: themeTokens.spacing[1] }}>
         <MuiTypography
           component="span"
-          sx={{ fontWeight: themeTokens.typography.fontWeight.semibold, fontSize: themeTokens.typography.fontSize.base }}
+          sx={{
+            fontWeight: themeTokens.typography.fontWeight.semibold,
+            fontSize: themeTokens.typography.fontSize.base,
+          }}
         >
           Add to Playlist
         </MuiTypography>
@@ -146,10 +163,12 @@ export default function PlaylistSelectionContent({
           </MuiTypography>
           <MuiButton
             variant="contained"
-            onClick={() => openAuthModal({
-              title: "Sign in to create playlists",
-              description: "Sign in to organize your climbs into custom playlists.",
-            })}
+            onClick={() =>
+              openAuthModal({
+                title: 'Sign in to create playlists',
+                description: 'Sign in to organize your climbs into custom playlists.',
+              })
+            }
             fullWidth
             size="small"
           >
@@ -202,16 +221,22 @@ export default function PlaylistSelectionContent({
                       >
                         <Stack direction="row" spacing={1} sx={{ width: '100%', justifyContent: 'space-between' }}>
                           <Stack spacing={0}>
-                            <MuiTypography component="span" fontWeight={600} sx={{ fontSize: themeTokens.typography.fontSize.base }}>
+                            <MuiTypography
+                              component="span"
+                              fontWeight={600}
+                              sx={{ fontSize: themeTokens.typography.fontSize.base }}
+                            >
                               {playlist.name}
                             </MuiTypography>
-                            <MuiTypography component="span" color="text.secondary" sx={{ fontSize: themeTokens.typography.fontSize.sm }}>
+                            <MuiTypography
+                              component="span"
+                              color="text.secondary"
+                              sx={{ fontSize: themeTokens.typography.fontSize.sm }}
+                            >
                               {playlist.climbCount} {playlist.climbCount === 1 ? 'climb' : 'climbs'}
                             </MuiTypography>
                           </Stack>
-                          {isInPlaylist && (
-                            <CheckOutlined sx={{ color: themeTokens.colors.success, fontSize: 18 }} />
-                          )}
+                          {isInPlaylist && <CheckOutlined sx={{ color: themeTokens.colors.success, fontSize: 18 }} />}
                         </Stack>
                       </ListItem>
                     );
@@ -235,7 +260,9 @@ export default function PlaylistSelectionContent({
             <div>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Box>
-                  <MuiTypography variant="body2" fontWeight={600} sx={{ mb: 0.5, fontSize: 12 }}>Playlist Name</MuiTypography>
+                  <MuiTypography variant="body2" fontWeight={600} sx={{ mb: 0.5, fontSize: 12 }}>
+                    Playlist Name
+                  </MuiTypography>
                   <TextField
                     placeholder="e.g., Hard Crimps"
                     autoFocus
@@ -247,7 +274,9 @@ export default function PlaylistSelectionContent({
                   />
                 </Box>
                 <Box>
-                  <MuiTypography variant="body2" fontWeight={600} sx={{ mb: 0.5, fontSize: 12 }}>Description (optional)</MuiTypography>
+                  <MuiTypography variant="body2" fontWeight={600} sx={{ mb: 0.5, fontSize: 12 }}>
+                    Description (optional)
+                  </MuiTypography>
                   <TextField
                     placeholder="Optional description..."
                     multiline
@@ -260,7 +289,9 @@ export default function PlaylistSelectionContent({
                   />
                 </Box>
                 <Box>
-                  <MuiTypography variant="body2" fontWeight={600} sx={{ mb: 0.5, fontSize: 12 }}>Color (optional)</MuiTypography>
+                  <MuiTypography variant="body2" fontWeight={600} sx={{ mb: 0.5, fontSize: 12 }}>
+                    Color (optional)
+                  </MuiTypography>
                   <TextField
                     type="color"
                     value={createFormValues.color || '#000000'}
@@ -270,7 +301,11 @@ export default function PlaylistSelectionContent({
                   />
                 </Box>
               </Box>
-              <Stack direction="row" spacing={1} sx={{ width: '100%', justifyContent: 'flex-end', mt: themeTokens.spacing[2] }}>
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ width: '100%', justifyContent: 'flex-end', mt: themeTokens.spacing[2] }}
+              >
                 <MuiButton
                   variant="outlined"
                   size="small"
@@ -295,7 +330,6 @@ export default function PlaylistSelectionContent({
           )}
         </>
       )}
-
     </Box>
   );
 }

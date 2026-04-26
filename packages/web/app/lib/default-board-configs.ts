@@ -4,14 +4,14 @@
  * These represent the most common configurations for each layout.
  */
 
-import { BoardName } from '@/app/lib/types';
-import { SetIdList } from '@/app/lib/board-data';
+import type { BoardName } from '@/app/lib/types';
+import type { SetIdList } from '@/app/lib/board-data';
 import { tryConstructSlugViewUrl } from '@/app/lib/url-utils';
 
-export interface DefaultBoardConfig {
+export type DefaultBoardConfig = {
   sizeId: number;
   setIds: SetIdList;
-}
+};
 
 /**
  * Default configurations for each layout.
@@ -44,10 +44,7 @@ const DEFAULT_CONFIGS: Record<string, DefaultBoardConfig> = {
  * Get the default board configuration for a given board type and layout.
  * Returns null if no default configuration is found.
  */
-export function getDefaultBoardConfig(
-  boardName: BoardName,
-  layoutId: number,
-): DefaultBoardConfig | null {
+export function getDefaultBoardConfig(boardName: BoardName, layoutId: number): DefaultBoardConfig | null {
   const key = `${boardName}-${layoutId}`;
   return DEFAULT_CONFIGS[key] || null;
 }
@@ -66,7 +63,8 @@ export function getDefaultClimbViewPath(
   const config = getDefaultBoardConfig(boardName, layoutId);
   if (!config) return null;
 
-  return tryConstructSlugViewUrl(
-    boardName, layoutId, config.sizeId, config.setIds, angle, climbUuid, climbName,
-  ) ?? `/${boardName}/${layoutId}/${config.sizeId}/${config.setIds.join(',')}/${angle}/view/${climbUuid}`;
+  return (
+    tryConstructSlugViewUrl(boardName, layoutId, config.sizeId, config.setIds, angle, climbUuid, climbName) ??
+    `/${boardName}/${layoutId}/${config.sizeId}/${config.setIds.join(',')}/${angle}/view/${climbUuid}`
+  );
 }

@@ -12,9 +12,9 @@ import type { Climb } from '@/app/lib/types';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import MultiboardClimbList, { type SortBy } from './multiboard-climb-list';
 
-interface UserClimbListProps {
+type UserClimbListProps = {
   userId: string;
-}
+};
 
 export default function UserClimbList({ userId }: UserClimbListProps) {
   const [sortBy, setSortBy] = useState<SortBy>('popular');
@@ -29,7 +29,7 @@ export default function UserClimbList({ userId }: UserClimbListProps) {
           userId,
           sortBy,
           limit: 20,
-          offset: pageParam as number,
+          offset: pageParam,
         },
       };
 
@@ -42,20 +42,17 @@ export default function UserClimbList({ userId }: UserClimbListProps) {
     initialPageParam: 0,
     getNextPageParam: (lastPage, _allPages, lastPageParam) => {
       if (!lastPage.hasMore) return undefined;
-      return (lastPageParam as number) + lastPage.climbs.length;
+      return lastPageParam + lastPage.climbs.length;
     },
     staleTime: 60 * 1000,
   });
 
-  const climbs: Climb[] = useMemo(
-    () => data?.pages.flatMap((p) => p.climbs) ?? [],
-    [data],
-  );
+  const climbs: Climb[] = useMemo(() => data?.pages.flatMap((p) => p.climbs) ?? [], [data]);
   const totalCount = data?.pages[0]?.totalCount ?? 0;
 
   const handleLoadMore = useCallback(() => {
     if (hasNextPage) {
-      fetchNextPage();
+      void fetchNextPage();
     }
   }, [hasNextPage, fetchNextPage]);
 

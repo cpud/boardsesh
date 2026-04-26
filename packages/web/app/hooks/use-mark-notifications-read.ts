@@ -22,7 +22,7 @@ export function useMarkGroupAsRead() {
 
   return useMutation({
     mutationFn: async (notification: GroupedNotification) => {
-      const client = createGraphQLHttpClient(token!);
+      const client = createGraphQLHttpClient(token);
       const data = await client.request<
         MarkGroupNotificationsReadMutationResponse,
         MarkGroupNotificationsReadMutationVariables
@@ -43,18 +43,14 @@ export function useMarkGroupAsRead() {
             ...old,
             pages: old.pages.map((page) => ({
               ...page,
-              groups: page.groups.map((n) =>
-                n.uuid === notification.uuid ? { ...n, isRead: true } : n,
-              ),
+              groups: page.groups.map((n) => (n.uuid === notification.uuid ? { ...n, isRead: true } : n)),
             })),
           };
         },
       );
 
       // Update unread count
-      queryClient.setQueryData<number>(UNREAD_COUNT_QUERY_KEY, (prev) =>
-        Math.max(0, (prev ?? 0) - markedCount),
-      );
+      queryClient.setQueryData<number>(UNREAD_COUNT_QUERY_KEY, (prev) => Math.max(0, (prev ?? 0) - markedCount));
     },
   });
 }
@@ -68,7 +64,7 @@ export function useMarkAllAsRead() {
 
   return useMutation({
     mutationFn: async () => {
-      const client = createGraphQLHttpClient(token!);
+      const client = createGraphQLHttpClient(token);
       await client.request(MARK_ALL_NOTIFICATIONS_READ);
     },
     onSuccess: () => {

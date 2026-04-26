@@ -1,4 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { playlistQueries } from '../graphql/resolvers/playlists/queries';
 
 const { mockDb } = vi.hoisted(() => {
   const mockDb = {
@@ -29,9 +31,35 @@ vi.mock('../utils/redis-rate-limiter', () => ({
 
 vi.mock('../db/queries/util/table-select', () => ({
   UNIFIED_TABLES: {
-    climbs: { uuid: 'uuid', layoutId: 'layoutId', boardType: 'boardType', setterUsername: 'setterUsername', name: 'name', description: 'description', frames: 'frames', createdAt: 'createdAt', edgeLeft: 'edgeLeft', edgeRight: 'edgeRight', edgeBottom: 'edgeBottom', edgeTop: 'edgeTop' },
-    climbStats: { climbUuid: 'climbUuid', boardType: 'boardType', angle: 'angle', ascensionistCount: 'ascensionistCount', qualityAverage: 'qualityAverage', difficultyAverage: 'difficultyAverage', displayDifficulty: 'displayDifficulty', benchmarkDifficulty: 'benchmarkDifficulty' },
-    difficultyGrades: { boardType: 'boardType', difficulty: 'difficulty', boulderName: 'boulderName' },
+    climbs: {
+      uuid: 'uuid',
+      layoutId: 'layoutId',
+      boardType: 'boardType',
+      setterUsername: 'setterUsername',
+      name: 'name',
+      description: 'description',
+      frames: 'frames',
+      createdAt: 'createdAt',
+      edgeLeft: 'edgeLeft',
+      edgeRight: 'edgeRight',
+      edgeBottom: 'edgeBottom',
+      edgeTop: 'edgeTop',
+    },
+    climbStats: {
+      climbUuid: 'climbUuid',
+      boardType: 'boardType',
+      angle: 'angle',
+      ascensionistCount: 'ascensionistCount',
+      qualityAverage: 'qualityAverage',
+      difficultyAverage: 'difficultyAverage',
+      displayDifficulty: 'displayDifficulty',
+      benchmarkDifficulty: 'benchmarkDifficulty',
+    },
+    difficultyGrades: {
+      boardType: 'boardType',
+      difficulty: 'difficulty',
+      boulderName: 'boulderName',
+    },
   },
   isValidBoardName: vi.fn().mockReturnValue(true),
 }));
@@ -39,9 +67,6 @@ vi.mock('../db/queries/util/table-select', () => ({
 vi.mock('../db/queries/util/hold-state', () => ({
   convertLitUpHoldsStringToMap: vi.fn().mockReturnValue([{}]),
 }));
-
-import type { ConnectionContext } from '@boardsesh/shared-schema';
-import { playlistQueries } from '../graphql/resolvers/playlists/queries';
 
 function makeCtx(overrides: Partial<ConnectionContext> = {}): ConnectionContext {
   return {
@@ -65,10 +90,22 @@ function createMockChain(resolveValue: unknown = []) {
   const calls: Record<string, unknown[][]> = {};
   const chain: Record<string, unknown> = {};
   const methods = [
-    'select', 'from', 'where', 'leftJoin', 'innerJoin',
-    'groupBy', 'orderBy', 'limit', 'offset',
-    'insert', 'values', 'onConflictDoNothing', 'returning',
-    'delete', 'update', 'set',
+    'select',
+    'from',
+    'where',
+    'leftJoin',
+    'innerJoin',
+    'groupBy',
+    'orderBy',
+    'limit',
+    'offset',
+    'insert',
+    'values',
+    'onConflictDoNothing',
+    'returning',
+    'delete',
+    'update',
+    'set',
   ];
 
   chain.then = (resolve: (value: unknown) => unknown) => Promise.resolve(resolveValue).then(resolve);
@@ -111,9 +148,7 @@ describe('allUserPlaylists resolver', () => {
   it('should require authentication', async () => {
     const ctx = makeCtx({ isAuthenticated: false, userId: null });
 
-    await expect(
-      playlistQueries.allUserPlaylists(null, { input: {} }, ctx),
-    ).rejects.toThrow('Authentication required');
+    await expect(playlistQueries.allUserPlaylists(null, { input: {} }, ctx)).rejects.toThrow('Authentication required');
   });
 
   it('should return all playlists when no filters provided', async () => {
@@ -160,9 +195,7 @@ describe('allUserPlaylists resolver', () => {
     ]);
     mockDb.select.mockReturnValueOnce(mainChain);
 
-    const { chain: countChain } = createMockChain([
-      { playlistId: BigInt(1), count: 10 },
-    ]);
+    const { chain: countChain } = createMockChain([{ playlistId: BigInt(1), count: 10 }]);
     mockDb.select.mockReturnValueOnce(countChain);
 
     const { chain: followerChain } = createMockChain([]);
@@ -171,11 +204,7 @@ describe('allUserPlaylists resolver', () => {
     const { chain: followedChain } = createMockChain([]);
     mockDb.select.mockReturnValueOnce(followedChain);
 
-    const result = await playlistQueries.allUserPlaylists(
-      null,
-      { input: { boardType: 'kilter' } },
-      ctx,
-    );
+    const result = await playlistQueries.allUserPlaylists(null, { input: { boardType: 'kilter' } }, ctx);
 
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({ uuid: 'pl-1', boardType: 'kilter' });
@@ -192,9 +221,7 @@ describe('allUserPlaylists resolver', () => {
     ]);
     mockDb.select.mockReturnValueOnce(mainChain);
 
-    const { chain: countChain } = createMockChain([
-      { playlistId: BigInt(1), count: 7 },
-    ]);
+    const { chain: countChain } = createMockChain([{ playlistId: BigInt(1), count: 7 }]);
     mockDb.select.mockReturnValueOnce(countChain);
 
     const { chain: followerChain } = createMockChain([]);
@@ -203,11 +230,7 @@ describe('allUserPlaylists resolver', () => {
     const { chain: followedChain } = createMockChain([]);
     mockDb.select.mockReturnValueOnce(followedChain);
 
-    const result = await playlistQueries.allUserPlaylists(
-      null,
-      { input: { boardType: 'kilter', layoutId: 8 } },
-      ctx,
-    );
+    const result = await playlistQueries.allUserPlaylists(null, { input: { boardType: 'kilter', layoutId: 8 } }, ctx);
 
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({ uuid: 'pl-1', boardType: 'kilter', layoutId: 8 });
@@ -238,11 +261,7 @@ describe('allUserPlaylists resolver', () => {
     const { chain: followedChain } = createMockChain([]);
     mockDb.select.mockReturnValueOnce(followedChain);
 
-    const result = await playlistQueries.allUserPlaylists(
-      null,
-      { input: { boardType: 'kilter', layoutId: 8 } },
-      ctx,
-    );
+    const result = await playlistQueries.allUserPlaylists(null, { input: { boardType: 'kilter', layoutId: 8 } }, ctx);
 
     // Both playlists should be returned (layoutId=8 match + layoutId=null circuit)
     expect(result).toHaveLength(2);
@@ -258,11 +277,7 @@ describe('allUserPlaylists resolver', () => {
 
     // No climb counts or follow stats queries needed for empty result
 
-    const result = await playlistQueries.allUserPlaylists(
-      null,
-      { input: { boardType: 'tension', layoutId: 99 } },
-      ctx,
-    );
+    const result = await playlistQueries.allUserPlaylists(null, { input: { boardType: 'tension', layoutId: 99 } }, ctx);
 
     expect(result).toHaveLength(0);
   });

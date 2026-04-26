@@ -11,7 +11,7 @@ import { ActionTooltip } from '../action-tooltip';
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
 import LoginOutlined from '@mui/icons-material/LoginOutlined';
 import AppsOutlined from '@mui/icons-material/AppsOutlined';
-import { ClimbActionProps, ClimbActionResult } from '../types';
+import type { ClimbActionProps, ClimbActionResult } from '../types';
 import { useOptionalBoardProvider, BoardProvider } from '../../board-provider/board-provider-context';
 import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 import { LogAscentForm } from '../../logbook/logascent-form';
@@ -27,8 +27,10 @@ import BoardScrollCard from '../../board-scroll/board-scroll-card';
 import type { UserBoard } from '@boardsesh/shared-schema';
 import type { BoardName, BoardDetails } from '@/app/lib/types';
 import { LogAscentDrawer } from '../../logbook/log-ascent-drawer';
+import type { LogbookEntry } from '@/app/hooks/use-logbook';
 
 const VALID_BOARD_NAMES: ReadonlySet<string> = new Set<BoardName>(['kilter', 'tension', 'moonboard']);
+const EMPTY_LOGBOOK: LogbookEntry[] = [];
 
 function isValidBoardName(value: string): value is BoardName {
   return VALID_BOARD_NAMES.has(value);
@@ -53,8 +55,8 @@ export function TickAction({
   // Use optional board provider - allows TickAction to work outside board routes
   const boardProvider = useOptionalBoardProvider();
   const { status: sessionStatus } = useSession();
-  const isAuthenticated = boardProvider?.isAuthenticated ?? (sessionStatus === 'authenticated');
-  const logbook = boardProvider?.logbook ?? [];
+  const isAuthenticated = boardProvider?.isAuthenticated ?? sessionStatus === 'authenticated';
+  const logbook = boardProvider?.logbook ?? EMPTY_LOGBOOK;
 
   // Fetch user's boards when we need the board selector (no existing BoardProvider + authenticated)
   const needsBoardSelector = !boardProvider && isAuthenticated;
@@ -70,9 +72,9 @@ export function TickAction({
   const boardsReady = hasStartedLoadingRef.current && !isLoadingBoards;
 
   // Filter boards to matching board type (e.g., only Kilter boards for a Kilter climb)
-  const matchingBoards = useMemo(() =>
-    myBoards.filter(b => b.boardType === boardDetails.board_name),
-    [myBoards, boardDetails.board_name]
+  const matchingBoards = useMemo(
+    () => myBoards.filter((b) => b.boardType === boardDetails.board_name),
+    [myBoards, boardDetails.board_name],
   );
 
   const { alwaysUseApp, loaded, enableAlwaysUseApp } = useAlwaysTickInApp();
@@ -80,39 +82,40 @@ export function TickAction({
   // Find ascent entries for this climb
   const filteredLogbook = useMemo(() => {
     if (!logbook || !climb) return [];
-    return logbook.filter(
-      (asc) => asc.climb_uuid === climb.uuid && Number(asc.angle) === angle
-    );
+    return logbook.filter((asc) => asc.climb_uuid === climb.uuid && Number(asc.angle) === angle);
   }, [logbook, climb, angle]);
 
   const hasSuccessfulAscent = filteredLogbook.some((asc) => asc.is_ascent);
   const badgeCount = filteredLogbook.length;
 
-  const handleClick = useCallback((e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    e?.preventDefault();
+  const handleClick = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      e?.preventDefault();
 
-    track('Tick Button Clicked', {
-      boardLayout: boardDetails.layout_name || '',
-      existingAscentCount: badgeCount,
-    });
+      track('Tick Button Clicked', {
+        boardLayout: boardDetails.layout_name || '',
+        existingAscentCount: badgeCount,
+      });
 
-    if (onTickAction) {
-      onTickAction();
-      return;
-    }
-
-    if (!isAuthenticated && alwaysUseApp && loaded) {
-      const url = constructClimbInfoUrl(boardDetails, climb.uuid);
-      if (url) {
-        openExternalUrl(url);
-        onComplete?.();
+      if (onTickAction) {
+        onTickAction();
         return;
       }
-    }
 
-    setDrawerVisible(true);
-  }, [boardDetails, badgeCount, isAuthenticated, alwaysUseApp, loaded, climb.uuid, angle, onTickAction]);
+      if (!isAuthenticated && alwaysUseApp && loaded) {
+        const url = constructClimbInfoUrl(boardDetails, climb.uuid);
+        if (url) {
+          openExternalUrl(url);
+          onComplete?.();
+          return;
+        }
+      }
+
+      setDrawerVisible(true);
+    },
+    [boardDetails, badgeCount, isAuthenticated, alwaysUseApp, loaded, climb.uuid, onComplete, onTickAction],
+  );
 
   const closeDrawer = useCallback(() => {
     setDrawerVisible(false);
@@ -131,11 +134,23 @@ export function TickAction({
 
   const renderSignInPrompt = () => (
     <Stack spacing={3} sx={{ width: '100%', textAlign: 'center', padding: '24px 0' }}>
-      <Typography variant="body2" component="span" fontWeight={600} sx={{ fontSize: 16 }}>Sign in to record ticks</Typography>
+      <Typography variant="body2" component="span" fontWeight={600} sx={{ fontSize: 16 }}>
+        Sign in to record ticks
+      </Typography>
       <Typography variant="body1" component="p" color="text.secondary">
         Create a Boardsesh account to log your climbs and track your progress.
       </Typography>
-      <MuiButton variant="contained" startIcon={<LoginOutlined />} onClick={() => openAuthModal({ title: "Sign in to record ticks", description: "Create an account to log your climbs and track your progress." })} fullWidth>
+      <MuiButton
+        variant="contained"
+        startIcon={<LoginOutlined />}
+        onClick={() =>
+          openAuthModal({
+            title: 'Sign in to record ticks',
+            description: 'Create an account to log your climbs and track your progress.',
+          })
+        }
+        fullWidth
+      >
         Sign In
       </MuiButton>
       {openInAppUrl && (
@@ -218,11 +233,7 @@ export function TickAction({
   );
 
   const renderLogAscentForm = () => (
-    <LogAscentForm
-      currentClimb={climb}
-      boardDetails={effectiveBoardDetails}
-      onClose={closeDrawer}
-    />
+    <LogAscentForm currentClimb={climb} boardDetails={effectiveBoardDetails} onClose={closeDrawer} />
   );
 
   const renderNoMatchingBoardsMessage = () => (
@@ -233,67 +244,62 @@ export function TickAction({
     </Stack>
   );
 
-  const drawers = (
-    <>
-      {boardProvider ? (
-        // Inside a board route - existing flow unchanged
-        isAuthenticated ? (
-          <LogAscentDrawer
-            open={drawerVisible}
-            onClose={closeDrawer}
-            currentClimb={climb}
-            boardDetails={boardDetails}
-          />
-        ) : (
-          <SwipeableDrawer
-            title="Sign In Required"
-            placement="bottom"
-            onClose={closeDrawer}
-            open={drawerVisible}
-            styles={{ wrapper: { height: '60%' } }}
-          >
-            {renderSignInPrompt()}
-          </SwipeableDrawer>
-        )
-      ) : isAuthenticated ? (
-        // Outside board route, authenticated - board selector + log form
-        <SwipeableDrawer
-          title={showBoardSelector ? 'Select Board' : 'Log Ascent'}
-          placement="bottom"
-          onClose={closeDrawer}
-          open={drawerVisible}
-          fullHeight={!showBoardSelector}
-          styles={{ wrapper: { height: showBoardSelector ? '60%' : '100%' } }}
-        >
-          {showBoardSelector ? (
-            renderBoardSelector()
-          ) : (
-            <BoardProvider boardName={resolvedBoardName}>
-              {noMatchingBoards && renderNoMatchingBoardsMessage()}
-              {renderLogAscentForm()}
-            </BoardProvider>
-          )}
-        </SwipeableDrawer>
+  const drawers = boardProvider ? (
+    // Inside a board route - existing flow unchanged
+    isAuthenticated ? (
+      <LogAscentDrawer open={drawerVisible} onClose={closeDrawer} currentClimb={climb} boardDetails={boardDetails} />
+    ) : (
+      <SwipeableDrawer
+        title="Sign In Required"
+        placement="bottom"
+        onClose={closeDrawer}
+        open={drawerVisible}
+        styles={{ wrapper: { height: '60%' } }}
+      >
+        {renderSignInPrompt()}
+      </SwipeableDrawer>
+    )
+  ) : isAuthenticated ? (
+    // Outside board route, authenticated - board selector + log form
+    <SwipeableDrawer
+      title={showBoardSelector ? 'Select Board' : 'Log Ascent'}
+      placement="bottom"
+      onClose={closeDrawer}
+      open={drawerVisible}
+      fullHeight={!showBoardSelector}
+      styles={{ wrapper: { height: showBoardSelector ? '60%' : '100%' } }}
+    >
+      {showBoardSelector ? (
+        renderBoardSelector()
       ) : (
-        // Outside board route, not authenticated - sign-in prompt
-        <SwipeableDrawer
-          title="Sign In Required"
-          placement="bottom"
-          onClose={closeDrawer}
-          open={drawerVisible}
-          styles={{ wrapper: { height: '60%' } }}
-        >
-          {renderSignInPrompt()}
-        </SwipeableDrawer>
+        <BoardProvider boardName={resolvedBoardName}>
+          {noMatchingBoards && renderNoMatchingBoardsMessage()}
+          {renderLogAscentForm()}
+        </BoardProvider>
       )}
-    </>
+    </SwipeableDrawer>
+  ) : (
+    // Outside board route, not authenticated - sign-in prompt
+    <SwipeableDrawer
+      title="Sign In Required"
+      placement="bottom"
+      onClose={closeDrawer}
+      open={drawerVisible}
+      styles={{ wrapper: { height: '60%' } }}
+    >
+      {renderSignInPrompt()}
+    </SwipeableDrawer>
   );
 
   // Icon mode - for Card actions
   const iconElement = (
     <>
       <ActionTooltip title={label}>
-        <MuiBadge badgeContent={badgeCount} max={99} sx={{ '& .MuiBadge-badge': { backgroundColor: badgeColor, color: 'common.white' } }}>
+        <MuiBadge
+          badgeContent={badgeCount}
+          max={99}
+          sx={{ '& .MuiBadge-badge': { backgroundColor: badgeColor, color: 'common.white' } }}
+        >
           <Box component="span" onClick={handleClick} sx={{ cursor: 'pointer' }} className={className}>
             {icon}
           </Box>
@@ -306,7 +312,11 @@ export function TickAction({
   // Button mode
   const buttonElement = (
     <>
-      <MuiBadge badgeContent={badgeCount} max={99} sx={{ '& .MuiBadge-badge': { backgroundColor: badgeColor, color: 'common.white' } }}>
+      <MuiBadge
+        badgeContent={badgeCount}
+        max={99}
+        sx={{ '& .MuiBadge-badge': { backgroundColor: badgeColor, color: 'common.white' } }}
+      >
         <MuiButton
           variant="outlined"
           startIcon={icon}

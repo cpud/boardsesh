@@ -1,4 +1,4 @@
-import { Climb, BoardDetails } from '@/app/lib/types';
+import type { Climb, BoardDetails } from '@/app/lib/types';
 
 /**
  * Available action types for climbs
@@ -14,6 +14,7 @@ export type ClimbActionType =
   | 'openInApp'
   | 'mirror'
   | 'share'
+  | 'instagram'
   | 'playlist';
 
 /**
@@ -33,18 +34,18 @@ export type ClimbActionSize = 'small' | 'default' | 'large';
 /**
  * Base props required for all action components
  */
-export interface ClimbActionBaseProps {
+export type ClimbActionBaseProps = {
   climb: Climb;
   boardDetails: BoardDetails;
   angle: number;
   /** Current route pathname for context-aware URL construction (e.g. preserving /b/{slug}/{angle}). */
   currentPathname?: string;
-}
+};
 
 /**
  * Props for individual action components
  */
-export interface ClimbActionProps extends ClimbActionBaseProps {
+export type ClimbActionProps = {
   viewMode: ClimbActionsViewMode;
   size?: ClimbActionSize;
   showLabel?: boolean;
@@ -56,12 +57,12 @@ export interface ClimbActionProps extends ClimbActionBaseProps {
   onTickAction?: () => void;
   /** When provided, the goToQueue action calls this to open the queue list. */
   onGoToQueue?: () => void;
-}
+} & ClimbActionBaseProps;
 
 /**
  * Props for the high-level ClimbActions component
  */
-export interface ClimbActionsProps extends ClimbActionBaseProps {
+export type ClimbActionsProps = {
   /** View mode for rendering actions */
   viewMode: ClimbActionsViewMode;
   /** Show only these actions (if not provided, shows all available) */
@@ -82,7 +83,7 @@ export interface ClimbActionsProps extends ClimbActionBaseProps {
   onTickAction?: () => void;
   /** When provided, the goToQueue action calls this to open the queue list. */
   onGoToQueue?: () => void;
-}
+} & ClimbActionBaseProps;
 
 /**
  * Menu item type for dropdown mode
@@ -99,7 +100,7 @@ export type ClimbActionMenuItem = {
 /**
  * Result from individual action components for different render modes
  */
-export interface ClimbActionResult {
+export type ClimbActionResult = {
   /** The rendered element (for icon/button modes) */
   element: React.ReactNode;
   /** Menu item config (for dropdown mode) */
@@ -110,12 +111,12 @@ export interface ClimbActionResult {
   available: boolean;
   /** Optional expanded content to render inline (e.g., playlist selector) */
   expandedContent?: React.ReactNode;
-}
+};
 
 /**
  * Return type for useClimbActions hook
  */
-export interface UseClimbActionsReturn {
+export type UseClimbActionsReturn = {
   // Action handlers
   handleViewDetails: () => void;
   handleFork: () => void;
@@ -138,7 +139,7 @@ export interface UseClimbActionsReturn {
   viewDetailsUrl: string;
   forkUrl: string | null;
   openInAppUrl: string | null;
-}
+};
 
 /**
  * Default order of actions when displayed

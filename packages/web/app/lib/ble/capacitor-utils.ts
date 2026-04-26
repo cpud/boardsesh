@@ -1,5 +1,15 @@
-export const isCapacitor = (): boolean =>
-  typeof window !== 'undefined' && window.Capacitor !== undefined;
+export const isCapacitor = (): boolean => typeof window !== 'undefined' && window.Capacitor !== undefined;
+
+type CapacitorBleManualScanPlugin = {
+  requestLEScan?: unknown;
+  stopLEScan?: unknown;
+};
+
+export const supportsCapacitorBleManualScan = (): boolean => {
+  if (!isCapacitor()) return false;
+  const plugin = window.Capacitor?.Plugins?.BluetoothLe as CapacitorBleManualScanPlugin | undefined;
+  return typeof plugin?.requestLEScan === 'function' && typeof plugin?.stopLEScan === 'function';
+};
 
 /**
  * Detect if we're running inside a Capacitor WebView even before
@@ -26,10 +36,7 @@ export const CAPACITOR_BRIDGE_TIMEOUT_MS = 3000;
  * Wait for window.Capacitor to become available, with a timeout.
  * Resolves true if Capacitor appeared, false if timed out.
  */
-export const waitForCapacitor = (
-  timeoutMs = CAPACITOR_BRIDGE_TIMEOUT_MS,
-  intervalMs = 250,
-): Promise<boolean> =>
+export const waitForCapacitor = (timeoutMs = CAPACITOR_BRIDGE_TIMEOUT_MS, intervalMs = 250): Promise<boolean> =>
   new Promise((resolve) => {
     if (isCapacitor()) {
       resolve(true);
@@ -48,8 +55,7 @@ export const waitForCapacitor = (
     }, intervalMs);
   });
 
-export const isNativeApp = (): boolean =>
-  isCapacitor() && window.Capacitor?.isNativePlatform?.() === true;
+export const isNativeApp = (): boolean => isCapacitor() && window.Capacitor?.isNativePlatform?.() === true;
 
 export const getPlatform = (): 'ios' | 'android' | 'web' => {
   if (!isCapacitor()) return 'web';

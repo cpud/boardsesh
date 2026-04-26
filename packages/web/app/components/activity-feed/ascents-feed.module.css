@@ -23,11 +23,17 @@
   min-width: 0;
 }
 
-/* Thumbnail styles */
+/* Thumbnail styles — shared by both the <Link> and the <button> variant. */
 .thumbnailLink {
   display: block;
   flex-shrink: 0;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .thumbnailLink:hover {
@@ -110,7 +116,8 @@
 
 @media (max-width: 768px) {
   .climbName {
-    max-width: 150px;
+    max-width: 180px;
+    font-size: 15px;
   }
 
   .feedItem {
@@ -120,5 +127,14 @@
   .thumbnailContainer {
     width: 56px;
     height: 56px;
+  }
+
+  .statusTag {
+    max-width: 84px;
+  }
+
+  .timeAgo {
+    font-size: 11px;
+    letter-spacing: -0.01em;
   }
 }

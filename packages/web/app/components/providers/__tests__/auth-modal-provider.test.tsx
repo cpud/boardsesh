@@ -1,29 +1,41 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
+import { AuthModalProvider, useAuthModal } from '../auth-modal-provider';
 
 const { mockAuthModal } = vi.hoisted(() => ({
-  mockAuthModal: vi.fn(({ open, onClose, onSuccess, title, description }: {
-    open: boolean;
-    onClose: () => void;
-    onSuccess?: () => void;
-    title?: string;
-    description?: string;
-  }) =>
-    open ? (
-      <div data-testid="auth-modal" data-title={title} data-description={description}>
-        <button data-testid="auth-close" onClick={onClose}>Close</button>
-        {onSuccess && <button data-testid="auth-success" onClick={onSuccess}>Success</button>}
-      </div>
-    ) : null,
+  mockAuthModal: vi.fn(
+    ({
+      open,
+      onClose,
+      onSuccess,
+      title,
+      description,
+    }: {
+      open: boolean;
+      onClose: () => void;
+      onSuccess?: () => void;
+      title?: string;
+      description?: string;
+    }) =>
+      open ? (
+        <div data-testid="auth-modal" data-title={title} data-description={description}>
+          <button data-testid="auth-close" onClick={onClose}>
+            Close
+          </button>
+          {onSuccess && (
+            <button data-testid="auth-success" onClick={onSuccess}>
+              Success
+            </button>
+          )}
+        </div>
+      ) : null,
   ),
 }));
 
 vi.mock('@/app/components/auth/auth-modal', () => ({
   default: mockAuthModal,
 }));
-
-import { AuthModalProvider, useAuthModal } from '../auth-modal-provider';
 
 function wrapper({ children }: { children: React.ReactNode }) {
   return <AuthModalProvider>{children}</AuthModalProvider>;

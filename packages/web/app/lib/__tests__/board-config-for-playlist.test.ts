@@ -1,4 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import { resolveBoardDetailsForClimb, type SessionBoardConfig } from '../board-config-for-playlist';
+import { getBoardDetails, getSizesForLayoutId, getSetsForLayoutAndSize } from '@/app/lib/board-constants';
+import { getMoonBoardDetails } from '@/app/lib/moonboard-config';
+import { canAddClimbToBoard } from '@/app/lib/board-compatibility';
+import type { Climb, BoardDetails } from '@/app/lib/types';
 
 vi.mock('@/app/lib/board-constants', () => ({
   getBoardDetails: vi.fn(),
@@ -16,16 +21,6 @@ vi.mock('@/app/lib/moonboard-config', () => ({
 vi.mock('@/app/lib/board-compatibility', () => ({
   canAddClimbToBoard: vi.fn(),
 }));
-
-import { resolveBoardDetailsForClimb, type SessionBoardConfig } from '../board-config-for-playlist';
-import {
-  getBoardDetails,
-  getSizesForLayoutId,
-  getSetsForLayoutAndSize,
-} from '@/app/lib/board-constants';
-import { getMoonBoardDetails } from '@/app/lib/moonboard-config';
-import { canAddClimbToBoard } from '@/app/lib/board-compatibility';
-import type { Climb, BoardDetails } from '@/app/lib/types';
 
 const mockGetBoardDetails = vi.mocked(getBoardDetails);
 const mockGetSizes = vi.mocked(getSizesForLayoutId);
@@ -227,9 +222,7 @@ describe('resolveBoardDetailsForClimb', () => {
 
       expect(result).toEqual({ details: midDetails, status: 'upsized' });
       // Never attempts the smaller size.
-      expect(mockGetBoardDetails).not.toHaveBeenCalledWith(
-        expect.objectContaining({ size_id: 11 }),
-      );
+      expect(mockGetBoardDetails).not.toHaveBeenCalledWith(expect.objectContaining({ size_id: 11 }));
       // Mid-size was built with the preferred (session) set IDs.
       expect(mockGetBoardDetails).toHaveBeenCalledWith({
         board_name: 'kilter',
@@ -328,9 +321,7 @@ describe('resolveBoardDetailsForClimb', () => {
 
     it('returns exact when the climb fits the moonboard session', () => {
       const details = makeDetails({ board_name: 'moonboard', layout_id: 100 });
-      mockGetMoonBoardDetails.mockReturnValue(
-        details as unknown as ReturnType<typeof getMoonBoardDetails>,
-      );
+      mockGetMoonBoardDetails.mockReturnValue(details as unknown as ReturnType<typeof getMoonBoardDetails>);
       mockCanAdd.mockReturnValue({ ok: true });
 
       const climb = makeClimb({ boardType: 'moonboard', layoutId: 100 });
@@ -341,7 +332,11 @@ describe('resolveBoardDetailsForClimb', () => {
 
     it('skips the upsize walk and falls back to incompatible when the climb does not fit moonboard', () => {
       const sessionDetails = makeDetails({ board_name: 'moonboard', layout_id: 100 });
-      const fallbackDetails = makeDetails({ board_name: 'moonboard', layout_id: 100, size_id: 999 });
+      const fallbackDetails = makeDetails({
+        board_name: 'moonboard',
+        layout_id: 100,
+        size_id: 999,
+      });
 
       let moonCalls = 0;
       mockGetMoonBoardDetails.mockImplementation(() => {

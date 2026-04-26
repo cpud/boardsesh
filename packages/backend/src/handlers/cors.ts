@@ -6,6 +6,8 @@ const VERCEL_PREVIEW_REGEX = /^https:\/\/boardsesh-[a-z0-9]+-marcodejonghs-proje
 
 // Homelab branch deploy pattern: https://{N}.preview.boardsesh.com
 const PREVIEW_ORIGIN_REGEX = /^https:\/\/\d+\.preview\.boardsesh\.com$/;
+const DEV_PRIVATE_LAN_ORIGIN_REGEX =
+  /^http:\/\/(?:(?:10(?:\.\d{1,3}){3})|(?:192\.168(?:\.\d{1,3}){2})|(?:172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})):(?:3000|3001)$/;
 const DEV_WEB_PORTS = [3000, 3001];
 const TAILSCALE_STATUS_TIMEOUT_MS = 1500;
 
@@ -83,12 +85,14 @@ export function initCors(boardseshUrl: string): void {
   if (process.env.NODE_ENV !== 'production') {
     allowedOrigins.push('http://localhost:3000', 'http://127.0.0.1:3000');
     allowedOrigins.push('http://localhost:3001', 'http://127.0.0.1:3001'); // For multi-instance testing
+    allowedOrigins.push('https://localhost:3000', 'https://127.0.0.1:3000');
+    allowedOrigins.push('https://localhost:3001', 'https://127.0.0.1:3001');
 
     // Allow additional origins for LAN/mobile testing via DEV_ALLOWED_ORIGINS env var
     // Example: DEV_ALLOWED_ORIGINS=http://192.168.0.201:3000,http://192.168.1.100:3000
     const devAllowedOrigins = process.env.DEV_ALLOWED_ORIGINS;
     if (devAllowedOrigins) {
-      devAllowedOrigins.split(',').forEach(origin => {
+      devAllowedOrigins.split(',').forEach((origin) => {
         const trimmed = origin.trim();
         if (trimmed) {
           allowedOrigins.push(trimmed);
@@ -98,12 +102,17 @@ export function initCors(boardseshUrl: string): void {
 
     const tailscale = resolveTailscaleHostname();
     if (tailscale.hostname) {
+      // Add both http:// and https:// variants — the dev orchestrator
+      // provisions a Tailscale HTTPS cert when available, so phones hit the
+      // dev server over https:// and their WebSocket upgrade origin is https
+      // too. Dev-only, so allowing both schemes here is fine.
       DEV_WEB_PORTS.forEach((port) => {
         allowedOrigins.push(`http://${tailscale.hostname}:${port}`);
+        allowedOrigins.push(`https://${tailscale.hostname}:${port}`);
       });
-      console.log(`[CORS] Added Tailscale dev origins for ${tailscale.hostname} (${tailscale.reason})`);
+      console.info(`[CORS] Added Tailscale dev origins for ${tailscale.hostname} (${tailscale.reason})`);
     } else {
-      console.log(`[CORS] Skipping Tailscale dev origins: ${tailscale.reason}`);
+      console.info(`[CORS] Skipping Tailscale dev origins: ${tailscale.reason}`);
     }
   }
 
@@ -117,6 +126,7 @@ export function isOriginAllowed(origin: string): boolean {
   if (allowedOrigins.includes(origin)) return true;
   if (VERCEL_PREVIEW_REGEX.test(origin)) return true;
   if (PREVIEW_ORIGIN_REGEX.test(origin)) return true;
+  if (process.env.NODE_ENV !== 'production' && DEV_PRIVATE_LAN_ORIGIN_REGEX.test(origin)) return true;
   return false;
 }
 

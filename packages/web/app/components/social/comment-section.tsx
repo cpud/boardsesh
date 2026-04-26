@@ -21,11 +21,11 @@ import {
 import CommentForm from './comment-form';
 import CommentList from './comment-list';
 
-interface CommentSectionProps {
+type CommentSectionProps = {
   entityType: SocialEntityType;
   entityId: string;
   title?: string;
-}
+};
 
 export default function CommentSection({ entityType, entityId, title = 'Discussion' }: CommentSectionProps) {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -67,7 +67,7 @@ export default function CommentSection({ entityType, entityId, title = 'Discussi
 
     return () => {
       unsub();
-      wsClient.dispose();
+      void wsClient.dispose();
       wsClientRef.current = null;
     };
   }, [entityType, entityId, token]);
@@ -77,10 +77,9 @@ export default function CommentSection({ entityType, entityId, title = 'Discussi
       if (!token) return;
       try {
         const client = createGraphQLHttpClient(token);
-        await client.request<AddCommentMutationResponse, AddCommentMutationVariables>(
-          ADD_COMMENT,
-          { input: { entityType, entityId, body } },
-        );
+        await client.request<AddCommentMutationResponse, AddCommentMutationVariables>(ADD_COMMENT, {
+          input: { entityType, entityId, body },
+        });
         setRefreshKey((prev) => prev + 1);
       } catch {
         showMessage('Failed to post comment', 'error');

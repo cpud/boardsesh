@@ -51,13 +51,13 @@ const TYPE_COLORS: Record<string, string> = {
   benchmark: themeTokens.colors.purple,
 };
 
-interface ProposalCardProps {
+type ProposalCardProps = {
   proposal: Proposal;
   isAdminOrLeader?: boolean;
   onUpdate?: (updated: Proposal) => void;
   onDelete?: (proposalUuid: string) => void;
   highlight?: boolean;
-}
+};
 
 export default function ProposalCard({ proposal, isAdminOrLeader, onUpdate, onDelete, highlight }: ProposalCardProps) {
   const pathname = usePathname();
@@ -75,42 +75,48 @@ export default function ProposalCard({ proposal, isAdminOrLeader, onUpdate, onDe
     }
   }, [highlight]);
 
-  const handleVote = useCallback(async (value: number) => {
-    if (!token) {
-      setSnackbar('Sign in to vote on proposals');
-      return;
-    }
-    setLoading(true);
-    try {
-      const client = createGraphQLHttpClient(token);
-      const result = await client.request<{ voteOnProposal: Proposal }>(VOTE_ON_PROPOSAL, {
-        input: { proposalUuid: localProposal.uuid, value },
-      });
-      setLocalProposal(result.voteOnProposal);
-      onUpdate?.(result.voteOnProposal);
-    } catch (err) {
-      setSnackbar('Failed to vote');
-    } finally {
-      setLoading(false);
-    }
-  }, [token, localProposal.uuid, onUpdate]);
+  const handleVote = useCallback(
+    async (value: number) => {
+      if (!token) {
+        setSnackbar('Sign in to vote on proposals');
+        return;
+      }
+      setLoading(true);
+      try {
+        const client = createGraphQLHttpClient(token);
+        const result = await client.request<{ voteOnProposal: Proposal }>(VOTE_ON_PROPOSAL, {
+          input: { proposalUuid: localProposal.uuid, value },
+        });
+        setLocalProposal(result.voteOnProposal);
+        onUpdate?.(result.voteOnProposal);
+      } catch {
+        setSnackbar('Failed to vote');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [token, localProposal.uuid, onUpdate],
+  );
 
-  const handleResolve = useCallback(async (status: 'approved' | 'rejected') => {
-    if (!token) return;
-    setLoading(true);
-    try {
-      const client = createGraphQLHttpClient(token);
-      const result = await client.request<{ resolveProposal: Proposal }>(RESOLVE_PROPOSAL, {
-        input: { proposalUuid: localProposal.uuid, status },
-      });
-      setLocalProposal(result.resolveProposal);
-      onUpdate?.(result.resolveProposal);
-    } catch (err) {
-      setSnackbar('Failed to resolve proposal');
-    } finally {
-      setLoading(false);
-    }
-  }, [token, localProposal.uuid, onUpdate]);
+  const handleResolve = useCallback(
+    async (status: 'approved' | 'rejected') => {
+      if (!token) return;
+      setLoading(true);
+      try {
+        const client = createGraphQLHttpClient(token);
+        const result = await client.request<{ resolveProposal: Proposal }>(RESOLVE_PROPOSAL, {
+          input: { proposalUuid: localProposal.uuid, status },
+        });
+        setLocalProposal(result.resolveProposal);
+        onUpdate?.(result.resolveProposal);
+      } catch {
+        setSnackbar('Failed to resolve proposal');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [token, localProposal.uuid, onUpdate],
+  );
 
   const handleDelete = useCallback(async () => {
     if (!token) return;
@@ -163,6 +169,7 @@ export default function ProposalCard({ proposal, isAdminOrLeader, onUpdate, onDe
       stars: 0,
       difficulty_error: localProposal.climbDifficultyError || '0',
       benchmark_difficulty: localProposal.climbBenchmarkDifficulty || null,
+      is_no_match: !!localProposal.climbIsNoMatch,
       layoutId,
       boardType,
     };
@@ -199,10 +206,7 @@ export default function ProposalCard({ proposal, isAdminOrLeader, onUpdate, onDe
 
           {/* Header */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-            <Avatar
-              src={localProposal.proposerAvatarUrl || undefined}
-              sx={{ width: 28, height: 28, fontSize: 14 }}
-            >
+            <Avatar src={localProposal.proposerAvatarUrl || undefined} sx={{ width: 28, height: 28, fontSize: 14 }}>
               {localProposal.proposerDisplayName?.[0] || 'U'}
             </Avatar>
             <Typography variant="body2" sx={{ fontWeight: 600, flex: 1 }}>
@@ -222,12 +226,7 @@ export default function ProposalCard({ proposal, isAdminOrLeader, onUpdate, onDe
 
           {/* Value change */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
-            <Chip
-              label={localProposal.currentValue}
-              size="small"
-              variant="outlined"
-              sx={{ fontSize: 13 }}
-            />
+            <Chip label={localProposal.currentValue} size="small" variant="outlined" sx={{ fontSize: 13 }} />
             <ArrowForwardIcon sx={{ fontSize: 16, color: themeTokens.neutral[400] }} />
             <Chip
               label={localProposal.proposedValue}
@@ -268,7 +267,11 @@ export default function ProposalCard({ proposal, isAdminOrLeader, onUpdate, onDe
                     color: localProposal.userVote === 1 ? themeTokens.colors.success : themeTokens.neutral[400],
                   }}
                 >
-                  {localProposal.userVote === 1 ? <ThumbUpIcon fontSize="small" /> : <ThumbUpOutlinedIcon fontSize="small" />}
+                  {localProposal.userVote === 1 ? (
+                    <ThumbUpIcon fontSize="small" />
+                  ) : (
+                    <ThumbUpOutlinedIcon fontSize="small" />
+                  )}
                 </IconButton>
               </Tooltip>
               <Tooltip title="Oppose">
@@ -280,7 +283,11 @@ export default function ProposalCard({ proposal, isAdminOrLeader, onUpdate, onDe
                     color: localProposal.userVote === -1 ? themeTokens.colors.error : themeTokens.neutral[400],
                   }}
                 >
-                  {localProposal.userVote === -1 ? <ThumbDownIcon fontSize="small" /> : <ThumbDownOutlinedIcon fontSize="small" />}
+                  {localProposal.userVote === -1 ? (
+                    <ThumbDownIcon fontSize="small" />
+                  ) : (
+                    <ThumbDownOutlinedIcon fontSize="small" />
+                  )}
                 </IconButton>
               </Tooltip>
 
@@ -344,10 +351,7 @@ export default function ProposalCard({ proposal, isAdminOrLeader, onUpdate, onDe
 
           {/* Comments toggle */}
           <Box sx={{ mt: 1.5 }}>
-            <FeedCommentButton
-              entityType="proposal"
-              entityId={localProposal.uuid}
-            />
+            <FeedCommentButton entityType="proposal" entityId={localProposal.uuid} />
           </Box>
 
           {/* Timestamp */}
@@ -362,8 +366,8 @@ export default function ProposalCard({ proposal, isAdminOrLeader, onUpdate, onDe
         <DialogTitle>Delete Accepted Proposal</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            This will revert the effects of this proposal (e.g., grade change, benchmark/classic status)
-            and permanently delete it. This action cannot be undone.
+            This will revert the effects of this proposal (e.g., grade change, benchmark/classic status) and permanently
+            delete it. This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -377,12 +381,7 @@ export default function ProposalCard({ proposal, isAdminOrLeader, onUpdate, onDe
       </Dialog>
 
       {/* TODO: Replace local Snackbar with useSnackbar() from SnackbarProvider */}
-      <Snackbar
-        open={!!snackbar}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar('')}
-        message={snackbar}
-      />
+      <Snackbar open={!!snackbar} autoHideDuration={3000} onClose={() => setSnackbar('')} message={snackbar} />
     </>
   );
 }

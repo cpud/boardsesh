@@ -1,11 +1,12 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { render, act, cleanup } from '@testing-library/react';
 import React from 'react';
+import SessionProviderWrapper from '../session-provider';
 
 // Mock next-auth/react
 const mockSignIn = vi.fn();
 vi.mock('next-auth/react', () => ({
-  SessionProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  SessionProvider: ({ children }: { children: React.ReactNode }) => children,
   signIn: (...args: unknown[]) => mockSignIn(...args),
 }));
 
@@ -14,8 +15,6 @@ const mockIsNativeApp = vi.fn();
 vi.mock('@/app/lib/ble/capacitor-utils', () => ({
   isNativeApp: () => mockIsNativeApp(),
 }));
-
-import SessionProviderWrapper from '../session-provider';
 
 type AppUrlOpenListener = (event: { url: string }) => void;
 
@@ -36,19 +35,19 @@ describe('SessionProviderWrapper native OAuth deep link', () => {
     mockLocationAssign.mockClear();
     mockIsNativeApp.mockReturnValue(false);
 
-    mockAddListener.mockImplementation(
-      (_event: string, listener: AppUrlOpenListener) => {
-        capturedListener = listener;
-        return Promise.resolve({ remove: mockRemove });
-      },
-    );
+    mockAddListener.mockImplementation((_event: string, listener: AppUrlOpenListener) => {
+      capturedListener = listener;
+      return Promise.resolve({ remove: mockRemove });
+    });
 
     // Mock window.location.assign — jsdom marks location properties as
     // non-configurable, so vi.spyOn fails on repeated calls. Replace the
     // entire location object instead.
     originalLocation = window.location;
     Object.defineProperty(window, 'location', {
-      value: { ...originalLocation, assign: mockLocationAssign },
+      value: Object.assign(Object.create(Object.getPrototypeOf(originalLocation)), originalLocation, {
+        assign: mockLocationAssign,
+      }),
       writable: true,
       configurable: true,
     });
@@ -113,10 +112,7 @@ describe('SessionProviderWrapper native OAuth deep link', () => {
       await new Promise((r) => setTimeout(r, 0));
     });
 
-    expect(mockAddListener).toHaveBeenCalledWith(
-      'appUrlOpen',
-      expect.any(Function),
-    );
+    expect(mockAddListener).toHaveBeenCalledWith('appUrlOpen', expect.any(Function));
     expect(capturedListener).not.toBeNull();
   });
 
@@ -310,14 +306,12 @@ describe('SessionProviderWrapper native OAuth deep link', () => {
   it('removes listener if component unmounts before registration completes', async () => {
     setupCapacitorMock();
     let resolveListener: ((value: { remove: () => Promise<void> }) => void) | null = null;
-    mockAddListener.mockImplementation(
-      (_event: string, listener: AppUrlOpenListener) => {
-        capturedListener = listener;
-        return new Promise((resolve) => {
-          resolveListener = resolve;
-        });
-      },
-    );
+    mockAddListener.mockImplementation((_event: string, listener: AppUrlOpenListener) => {
+      capturedListener = listener;
+      return new Promise((resolve) => {
+        resolveListener = resolve;
+      });
+    });
 
     const { unmount } = render(
       <SessionProviderWrapper>

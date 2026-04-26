@@ -18,27 +18,25 @@ export function LoadingSpinner({ spinning = true, size = 40, children, sx, tip }
     if (!spinning) return null;
     return (
       <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 4,
-          ...sx,
-        }}
+        sx={[
+          {
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 4,
+          },
+          ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+        ]}
       >
         <CircularProgress size={size} />
-        {tip && (
-          <Box sx={{ mt: 1, color: 'text.secondary', fontSize: 14 }}>
-            {tip}
-          </Box>
-        )}
+        {tip && <Box sx={{ mt: 1, color: 'text.secondary', fontSize: 14 }}>{tip}</Box>}
       </Box>
     );
   }
 
   return (
-    <Box sx={{ position: 'relative', ...sx }}>
+    <Box sx={[{ position: 'relative' }, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}>
       {children}
       {spinning && (
         <Box
@@ -54,11 +52,7 @@ export function LoadingSpinner({ spinning = true, size = 40, children, sx, tip }
           }}
         >
           <CircularProgress size={size} />
-          {tip && (
-            <Box sx={{ mt: 1, color: 'text.secondary', fontSize: 14 }}>
-              {tip}
-            </Box>
-          )}
+          {tip && <Box sx={{ mt: 1, color: 'text.secondary', fontSize: 14 }}>{tip}</Box>}
         </Box>
       )}
     </Box>

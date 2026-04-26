@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { parseClimbFrameHoldIds, canAddClimbToBoard } from '@/app/lib/board-compatibility';
 import type { Climb, BoardDetails } from '@/app/lib/types';
 

@@ -13,20 +13,30 @@ import SwipeableDrawer from '@/app/components/swipeable-drawer/swipeable-drawer'
 import Popover from '@mui/material/Popover';
 import CircularProgress from '@mui/material/CircularProgress';
 import { PublicOutlined, LockOutlined, CloseOutlined } from '@mui/icons-material';
+import { executeGraphQL } from '@/app/lib/graphql/client';
+import {
+  type UpdatePlaylistMutationResponse,
+  type UpdatePlaylistMutationVariables,
+  type Playlist,
+  UPDATE_PLAYLIST,
+} from '@/app/lib/graphql/operations/playlists';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { themeTokens } from '@/app/theme/theme-config';
 
 const EmojiPicker = dynamic(
-  () => import('@emoji-mart/react').then((mod) => {
-    // Pre-load the data module alongside the picker
-    return import('@emoji-mart/data').then((dataModule) => {
-      const PickerComponent = mod.default;
-      // Return a wrapper that injects the data prop
-      const PickerWithData = (props: Record<string, unknown>) => (
-        <PickerComponent data={dataModule.default} {...props} />
-      );
-      PickerWithData.displayName = 'EmojiPicker';
-      return { default: PickerWithData };
-    });
-  }),
+  () =>
+    import('@emoji-mart/react').then((mod) => {
+      // Pre-load the data module alongside the picker
+      return import('@emoji-mart/data').then((dataModule) => {
+        const PickerComponent = mod.default;
+        // Return a wrapper that injects the data prop
+        const PickerWithData = (props: Record<string, unknown>) => (
+          <PickerComponent data={dataModule.default} {...props} />
+        );
+        PickerWithData.displayName = 'EmojiPicker';
+        return { default: PickerWithData };
+      });
+    }),
   {
     ssr: false,
     loading: () => (
@@ -36,15 +46,6 @@ const EmojiPicker = dynamic(
     ),
   },
 );
-import { executeGraphQL } from '@/app/lib/graphql/client';
-import {
-  UPDATE_PLAYLIST,
-  UpdatePlaylistMutationResponse,
-  UpdatePlaylistMutationVariables,
-  Playlist,
-} from '@/app/lib/graphql/operations/playlists';
-import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
-import { themeTokens } from '@/app/theme/theme-config';
 
 // Validate hex color format
 const isValidHexColor = (color: string): boolean => {
@@ -136,7 +137,7 @@ export default function PlaylistEditDrawer({ open, playlist, onClose, onSuccess 
     } finally {
       setLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formValues, playlist.uuid, token, onSuccess, onClose, showMessage]);
 
   const handleCancel = useCallback(() => {
@@ -164,7 +165,9 @@ export default function PlaylistEditDrawer({ open, playlist, onClose, onSuccess 
       }}
       extra={
         <Stack direction="row" spacing={1}>
-          <MuiButton variant="outlined" onClick={handleCancel}>Cancel</MuiButton>
+          <MuiButton variant="outlined" onClick={handleCancel}>
+            Cancel
+          </MuiButton>
           <MuiButton variant="contained" onClick={handleSubmit} disabled={loading}>
             {loading ? 'Saving...' : 'Save'}
           </MuiButton>
@@ -173,7 +176,9 @@ export default function PlaylistEditDrawer({ open, playlist, onClose, onSuccess 
     >
       <Box sx={{ maxWidth: 600, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Box>
-          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Playlist Name</Typography>
+          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+            Playlist Name
+          </Typography>
           <TextField
             placeholder="e.g., Hard Crimps"
             slotProps={{ htmlInput: { maxLength: 100 } }}
@@ -190,7 +195,9 @@ export default function PlaylistEditDrawer({ open, playlist, onClose, onSuccess 
         </Box>
 
         <Box>
-          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Description</Typography>
+          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+            Description
+          </Typography>
           <TextField
             placeholder="Optional description for your playlist..."
             multiline
@@ -209,7 +216,9 @@ export default function PlaylistEditDrawer({ open, playlist, onClose, onSuccess 
         </Box>
 
         <Box>
-          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Color</Typography>
+          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+            Color
+          </Typography>
           <TextField
             type="color"
             value={formValues.color || '#000000'}
@@ -220,7 +229,9 @@ export default function PlaylistEditDrawer({ open, playlist, onClose, onSuccess 
         </Box>
 
         <Box>
-          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Icon</Typography>
+          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+            Icon
+          </Typography>
           <Stack direction="row" spacing={1} alignItems="center">
             <MuiButton
               variant="outlined"
@@ -258,14 +269,13 @@ export default function PlaylistEditDrawer({ open, playlist, onClose, onSuccess 
         </Box>
 
         <Box>
-          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Visibility</Typography>
+          <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+            Visibility
+          </Typography>
           <Stack spacing={0.5}>
             <Stack direction="row" spacing={1} alignItems="center">
               <LockOutlined sx={{ fontSize: 18, color: isPublic ? 'text.disabled' : 'text.secondary' }} />
-              <MuiSwitch
-                checked={isPublic}
-                onChange={(_, checked) => handleVisibilityChange(checked)}
-              />
+              <MuiSwitch checked={isPublic} onChange={(_, checked) => handleVisibilityChange(checked)} />
               <PublicOutlined sx={{ fontSize: 18, color: isPublic ? 'text.secondary' : 'text.disabled' }} />
             </Stack>
             <Typography variant="body2" component="span" color="text.secondary" sx={{ fontSize: 12 }}>

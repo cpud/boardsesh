@@ -3,10 +3,7 @@ import type { ConnectionContext } from '@boardsesh/shared-schema';
 import { db } from '../../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { requireAuthenticated, validateInput } from '../../shared/helpers';
-import {
-  GetPlaylistsForClimbInputSchema,
-  GetPlaylistsForClimbsInputSchema,
-} from '../../../../validation/schemas';
+import { GetPlaylistsForClimbInputSchema, GetPlaylistsForClimbsInputSchema } from '../../../../validation/schemas';
 import { getPlaylistFollowStats } from '../helpers/follow-stats';
 
 /**
@@ -17,7 +14,7 @@ export const playlist = async (
   _: unknown,
   { playlistId }: { playlistId: string },
   ctx: ConnectionContext,
-): Promise<unknown | null> => {
+): Promise<unknown> => {
   const userId = ctx.userId;
 
   const playlistResult = await db
@@ -49,12 +46,7 @@ export const playlist = async (
     const ownershipResult = await db
       .select({ role: dbSchema.playlistOwnership.role })
       .from(dbSchema.playlistOwnership)
-      .where(
-        and(
-          eq(dbSchema.playlistOwnership.playlistId, p.id),
-          eq(dbSchema.playlistOwnership.userId, userId),
-        ),
-      )
+      .where(and(eq(dbSchema.playlistOwnership.playlistId, p.id), eq(dbSchema.playlistOwnership.userId, userId)))
       .limit(1);
 
     if (ownershipResult.length > 0) {
@@ -114,27 +106,18 @@ export const playlistsForClimb = async (
   const results = await db
     .select({ playlistUuid: dbSchema.playlists.uuid })
     .from(dbSchema.playlistClimbs)
-    .innerJoin(
-      dbSchema.playlists,
-      eq(dbSchema.playlists.id, dbSchema.playlistClimbs.playlistId),
-    )
-    .innerJoin(
-      dbSchema.playlistOwnership,
-      eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id),
-    )
+    .innerJoin(dbSchema.playlists, eq(dbSchema.playlists.id, dbSchema.playlistClimbs.playlistId))
+    .innerJoin(dbSchema.playlistOwnership, eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id))
     .where(
       and(
         eq(dbSchema.playlistClimbs.climbUuid, input.climbUuid),
         eq(dbSchema.playlists.boardType, input.boardType),
-        or(
-          eq(dbSchema.playlists.layoutId, input.layoutId),
-          isNull(dbSchema.playlists.layoutId),
-        ),
+        or(eq(dbSchema.playlists.layoutId, input.layoutId), isNull(dbSchema.playlists.layoutId)),
         eq(dbSchema.playlistOwnership.userId, userId),
       ),
     );
 
-  return results.map(r => r.playlistUuid);
+  return results.map((r) => r.playlistUuid);
 };
 
 /**
@@ -157,22 +140,13 @@ export const playlistsForClimbs = async (
       playlistUuid: dbSchema.playlists.uuid,
     })
     .from(dbSchema.playlistClimbs)
-    .innerJoin(
-      dbSchema.playlists,
-      eq(dbSchema.playlists.id, dbSchema.playlistClimbs.playlistId),
-    )
-    .innerJoin(
-      dbSchema.playlistOwnership,
-      eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id),
-    )
+    .innerJoin(dbSchema.playlists, eq(dbSchema.playlists.id, dbSchema.playlistClimbs.playlistId))
+    .innerJoin(dbSchema.playlistOwnership, eq(dbSchema.playlistOwnership.playlistId, dbSchema.playlists.id))
     .where(
       and(
         inArray(dbSchema.playlistClimbs.climbUuid, input.climbUuids),
         eq(dbSchema.playlists.boardType, input.boardType),
-        or(
-          eq(dbSchema.playlists.layoutId, input.layoutId),
-          isNull(dbSchema.playlists.layoutId),
-        ),
+        or(eq(dbSchema.playlists.layoutId, input.layoutId), isNull(dbSchema.playlists.layoutId)),
         eq(dbSchema.playlistOwnership.userId, userId),
       ),
     );

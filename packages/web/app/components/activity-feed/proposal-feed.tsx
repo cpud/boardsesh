@@ -19,15 +19,12 @@ import ProposalCard from '@/app/components/social/proposal-card';
 import FeedItemSkeleton from './feed-item-skeleton';
 import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
 
-interface ProposalFeedProps {
+type ProposalFeedProps = {
   isAuthenticated: boolean;
   boardUuid?: string | null;
-}
+};
 
-export default function ProposalFeed({
-  isAuthenticated,
-  boardUuid,
-}: ProposalFeedProps) {
+export default function ProposalFeed({ isAuthenticated, boardUuid }: ProposalFeedProps) {
   const { token, isLoading: authLoading } = useWsAuthToken();
   const PAGE_SIZE = 20;
 
@@ -48,10 +45,7 @@ export default function ProposalFeed({
         },
       };
 
-      const response = await client.request<BrowseProposalsResponse>(
-        BROWSE_PROPOSALS,
-        variables,
-      );
+      const response = await client.request<BrowseProposalsResponse>(BROWSE_PROPOSALS, variables);
       return response.browseProposals;
     },
     initialPageParam: 0,
@@ -63,10 +57,7 @@ export default function ProposalFeed({
     staleTime: 60 * 1000,
   });
 
-  const proposals: Proposal[] = useMemo(
-    () => data?.pages.flatMap((p) => p.proposals) ?? [],
-    [data],
-  );
+  const proposals: Proposal[] = useMemo(() => data?.pages.flatMap((p) => p.proposals) ?? [], [data]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: fetchNextPage,
@@ -98,10 +89,7 @@ export default function ProposalFeed({
       )}
 
       {!error && proposals.length === 0 ? (
-        <EmptyState
-          icon={<GavelOutlined fontSize="inherit" />}
-          description="No proposals yet"
-        />
+        <EmptyState icon={<GavelOutlined fontSize="inherit" />} description="No proposals yet" />
       ) : (
         <>
           {proposals.map((proposal) => (
@@ -109,7 +97,11 @@ export default function ProposalFeed({
               <ProposalCard proposal={proposal} />
             </Box>
           ))}
-          <Box ref={sentinelRef} data-testid="proposal-feed-sentinel" sx={{ display: 'flex', flexDirection: 'column', gap: '12px', py: 2, minHeight: 20 }}>
+          <Box
+            ref={sentinelRef}
+            data-testid="proposal-feed-sentinel"
+            sx={{ display: 'flex', flexDirection: 'column', gap: '12px', py: 2, minHeight: 20 }}
+          >
             {isFetchingNextPage && (
               <>
                 <FeedItemSkeleton />

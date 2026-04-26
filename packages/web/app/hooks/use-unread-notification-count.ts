@@ -20,10 +20,8 @@ export function useUnreadNotificationCount() {
   const { data: unreadCount = 0 } = useQuery({
     queryKey: UNREAD_COUNT_QUERY_KEY,
     queryFn: async () => {
-      const client = createGraphQLHttpClient(token!);
-      const data = await client.request<GetUnreadNotificationCountQueryResponse>(
-        GET_UNREAD_NOTIFICATION_COUNT,
-      );
+      const client = createGraphQLHttpClient(token);
+      const data = await client.request<GetUnreadNotificationCountQueryResponse>(GET_UNREAD_NOTIFICATION_COUNT);
       return data.unreadNotificationCount;
     },
     enabled: isAuthenticated && !!token,

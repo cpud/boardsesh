@@ -13,7 +13,10 @@ import { EmptyState } from '@/app/components/ui/empty-state';
 import { ProfileHeaderShareInjector } from '@/app/components/profile-header-bridge/profile-header-bridge-context';
 import { CssBarChart } from '@/app/components/charts/css-bar-chart';
 import { useGradeFormat } from '@/app/hooks/use-grade-format';
-import type { GetUserProfileStatsQueryResponse } from '@/app/lib/graphql/operations/ticks';
+import type {
+  GetUserClimbPercentileQueryResponse,
+  GetUserProfileStatsQueryResponse,
+} from '@/app/lib/graphql/operations/ticks';
 import styles from './profile-page.module.css';
 import { useProfileData } from './hooks/use-profile-data';
 import { buildWeeklyBars } from './utils/chart-data-builders';
@@ -21,20 +24,22 @@ import UserCard from './components/user-card';
 import ProfileNavCard from './components/profile-nav-card';
 import type { UserProfile, LogbookEntry } from './utils/profile-constants';
 
-interface ProfilePageContentProps {
+type ProfilePageContentProps = {
   userId: string;
   initialProfile?: UserProfile | null;
   initialProfileStats?: GetUserProfileStatsQueryResponse['userProfileStats'] | null;
+  initialPercentile?: GetUserClimbPercentileQueryResponse['userClimbPercentile'] | null;
   initialAllBoardsTicks?: Record<string, LogbookEntry[]>;
   initialLogbook?: LogbookEntry[];
   initialIsOwnProfile?: boolean;
   initialNotFound?: boolean;
-}
+};
 
 export default function ProfilePageContent({
   userId,
   initialProfile,
   initialProfileStats,
+  initialPercentile,
   initialAllBoardsTicks,
   initialLogbook,
   initialIsOwnProfile,
@@ -42,16 +47,10 @@ export default function ProfilePageContent({
 }: ProfilePageContentProps) {
   const { gradeFormat } = useGradeFormat();
 
-  const {
-    loading,
-    notFound,
-    profile,
-    setProfile,
-    isOwnProfile,
-    statisticsSummary,
-  } = useProfileData(userId, {
+  const { loading, notFound, profile, setProfile, isOwnProfile, statisticsSummary } = useProfileData(userId, {
     initialProfile: initialProfile ?? undefined,
     initialProfileStats: initialProfileStats ?? undefined,
+    initialPercentile,
     initialAllBoardsTicks,
     initialLogbook,
     initialIsOwnProfile,
@@ -70,10 +69,7 @@ export default function ProfilePageContent({
     return buildWeeklyBars(allTicks, fromDate, toDate, gradeFormat);
   }, [initialAllBoardsTicks, gradeFormat]);
 
-  const sharedDisplayName = useMemo(
-    () => profile?.profile?.displayName || profile?.name || null,
-    [profile],
-  );
+  const sharedDisplayName = useMemo(() => profile?.profile?.displayName || profile?.name || null, [profile]);
 
   if (loading) {
     return (
@@ -102,12 +98,7 @@ export default function ProfilePageContent({
       <ProfileHeaderShareInjector displayName={sharedDisplayName} isActive={Boolean(profile)} />
       <Box component="main" className={styles.content}>
         {profile && (
-          <UserCard
-            userId={userId}
-            profile={profile}
-            isOwnProfile={isOwnProfile}
-            onProfileUpdate={setProfile}
-          />
+          <UserCard userId={userId} profile={profile} isOwnProfile={isOwnProfile} onProfileUpdate={setProfile} />
         )}
 
         {/* Overview: last 3 months activity */}
@@ -132,7 +123,11 @@ export default function ProfilePageContent({
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           <ProfileNavCard
             title="Statistics"
-            subtitle={statisticsSummary.totalAscents > 0 ? `${statisticsSummary.totalAscents} problems sent` : 'Grades, progression, and more'}
+            subtitle={
+              statisticsSummary.totalAscents > 0
+                ? `${statisticsSummary.totalAscents} problems sent`
+                : 'Grades, progression, and more'
+            }
             href={`/profile/${userId}/statistics`}
             icon={<ShowChartOutlined />}
           />
@@ -144,7 +139,7 @@ export default function ProfilePageContent({
           />
           <ProfileNavCard
             title="Created Climbs"
-            subtitle={isOwnProfile ? "Climbs you created" : "Climbs they created"}
+            subtitle={isOwnProfile ? 'Climbs you created' : 'Climbs they created'}
             href={`/profile/${userId}/climbs`}
             icon={<FitnessCenterOutlined />}
           />

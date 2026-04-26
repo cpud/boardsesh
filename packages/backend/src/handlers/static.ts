@@ -1,8 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 import { createReadStream } from 'fs';
 import { stat } from 'fs/promises';
-import { extname } from 'path';
-import path from 'path';
+import path, { extname } from 'path';
 import { applyCorsHeaders } from './cors';
 import { getAvatarsDir } from './avatars';
 import { isS3Configured, getFromS3 } from '../storage/s3';

@@ -11,9 +11,9 @@ import {
 } from '@/app/lib/graphql/operations';
 import type { SocialEntityType, VoteSummary } from '@boardsesh/shared-schema';
 
-interface VoteSummaryContextValue {
+type VoteSummaryContextValue = {
   getVoteSummary: (entityId: string) => VoteSummary | undefined;
-}
+};
 
 const VoteSummaryContext = createContext<VoteSummaryContextValue | null>(null);
 
@@ -25,11 +25,11 @@ export function useVoteSummaryContext(): VoteSummaryContextValue | null {
   return useContext(VoteSummaryContext);
 }
 
-interface VoteSummaryProviderProps {
+type VoteSummaryProviderProps = {
   entityType: SocialEntityType;
   entityIds: string[];
   children: React.ReactNode;
-}
+};
 
 /**
  * Batch-fetches vote summaries (including userVote) for a list of entities
@@ -50,12 +50,12 @@ export function VoteSummaryProvider({ entityType, entityIds, children }: VoteSum
     queryFn: async (): Promise<Map<string, VoteSummary>> => {
       if (sortedIds.length === 0) return new Map();
       const client = createGraphQLHttpClient(token);
-      const response = await client.request<
-        GetBulkVoteSummariesQueryResponse,
-        GetBulkVoteSummariesQueryVariables
-      >(GET_BULK_VOTE_SUMMARIES, {
-        input: { entityType, entityIds: sortedIds },
-      });
+      const response = await client.request<GetBulkVoteSummariesQueryResponse, GetBulkVoteSummariesQueryVariables>(
+        GET_BULK_VOTE_SUMMARIES,
+        {
+          input: { entityType, entityIds: sortedIds },
+        },
+      );
       const map = new Map<string, VoteSummary>();
       for (const summary of response.bulkVoteSummaries) {
         map.set(summary.entityId, summary);
@@ -67,13 +67,12 @@ export function VoteSummaryProvider({ entityType, entityIds, children }: VoteSum
     refetchOnWindowFocus: false,
   });
 
-  const value = useMemo<VoteSummaryContextValue>(() => ({
-    getVoteSummary: (entityId: string) => summariesMap?.get(entityId),
-  }), [summariesMap]);
-
-  return (
-    <VoteSummaryContext.Provider value={value}>
-      {children}
-    </VoteSummaryContext.Provider>
+  const value = useMemo<VoteSummaryContextValue>(
+    () => ({
+      getVoteSummary: (entityId: string) => summariesMap?.get(entityId),
+    }),
+    [summariesMap],
   );
+
+  return <VoteSummaryContext.Provider value={value}>{children}</VoteSummaryContext.Provider>;
 }

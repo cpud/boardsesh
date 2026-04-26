@@ -5,23 +5,21 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { TENSION_KILTER_GRADES } from '@/app/lib/board-data';
 import { themeTokens } from '@/app/theme/theme-config';
-import { CssBarChart } from '@/app/components/charts/css-bar-chart';
-import type { CssBarChartBar } from '@/app/components/charts/css-bar-chart';
-import { PlannedClimbSlot } from './types';
+import { CssBarChart, type CssBarChartBar } from '@/app/components/charts/css-bar-chart';
+import type { PlannedClimbSlot } from './types';
 
-interface GradeProgressionChartProps {
+type GradeProgressionChartProps = {
   plannedSlots: PlannedClimbSlot[];
   height?: number;
-}
+};
 
 function getGradeName(difficultyId: number): string {
-  return TENSION_KILTER_GRADES.find((g) => g.difficulty_id === difficultyId)?.difficulty_name ?? `Grade ${difficultyId}`;
+  return (
+    TENSION_KILTER_GRADES.find((g) => g.difficulty_id === difficultyId)?.difficulty_name ?? `Grade ${difficultyId}`
+  );
 }
 
-const GradeProgressionChart: React.FC<GradeProgressionChartProps> = ({
-  plannedSlots,
-  height = 120,
-}) => {
+const GradeProgressionChart: React.FC<GradeProgressionChartProps> = ({ plannedSlots, height = 120 }) => {
   const bars: CssBarChartBar[] = useMemo(() => {
     if (plannedSlots.length === 0) return [];
 
@@ -37,10 +35,12 @@ const GradeProgressionChart: React.FC<GradeProgressionChartProps> = ({
     return sortedGrades.map((gradeId) => ({
       key: String(gradeId),
       label: getGradeName(gradeId),
-      segments: [{
-        value: gradeCounts.get(gradeId)!,
-        color: themeTokens.colors.primary,
-      }],
+      segments: [
+        {
+          value: gradeCounts.get(gradeId)!,
+          color: themeTokens.colors.primary,
+        },
+      ],
     }));
   }, [plannedSlots]);
 
@@ -65,13 +65,7 @@ const GradeProgressionChart: React.FC<GradeProgressionChartProps> = ({
   }
 
   return (
-    <CssBarChart
-      bars={bars}
-      height={height}
-      mobileHeight={height}
-      showLegend
-      ariaLabel="Grade distribution preview"
-    />
+    <CssBarChart bars={bars} height={height} mobileHeight={height} showLegend ariaLabel="Grade distribution preview" />
   );
 };
 

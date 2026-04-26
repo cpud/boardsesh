@@ -1,17 +1,19 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
 import BetaVideos from '@/app/components/beta-videos/beta-videos';
 import { LogbookSection, useLogbookSummary } from '@/app/components/logbook/logbook-section';
+import { CrewLogbookView } from '@/app/components/logbook/crew-logbook-view';
 import ClimbSocialSection from '@/app/components/social/climb-social-section';
 import ClimbAnalytics from '@/app/components/charts/climb-analytics';
 import type { BetaLink } from '@/app/lib/api-wrappers/sync-api-types';
+import { dedupeBetaLinks } from '@/app/lib/instagram-url';
 import type { Climb } from '@/app/lib/types';
 
-interface BuildClimbDetailSectionsProps {
+type BuildClimbDetailSectionsProps = {
   climb: Climb;
   climbUuid: string;
   boardType: string;
@@ -25,7 +27,7 @@ interface BuildClimbDetailSectionsProps {
    *  `enabled` option on `useQuery`). `useLogbookSummary` is always called
    *  unconditionally because it reads from in-memory context — no network cost. */
   enabled?: boolean;
-}
+};
 
 export function useBuildClimbDetailSections({
   climb,
@@ -50,6 +52,7 @@ export function useBuildClimbDetailSections({
     staleTime: 5 * 60 * 1000,
     initialData: initialBetaLinks,
   });
+  const uniqueBetaLinks = useMemo(() => dedupeBetaLinks(betaLinks), [betaLinks]);
   const logbookSummary = useLogbookSummary(climb.uuid);
 
   if (!enabledProp) return [];
@@ -74,11 +77,9 @@ export function useBuildClimbDetailSections({
       title: 'Beta Videos',
       defaultSummary: 'No videos',
       getSummary: () =>
-        betaLinks.length > 0
-          ? [`${betaLinks.length} video${betaLinks.length !== 1 ? 's' : ''}`]
-          : [],
+        uniqueBetaLinks.length > 0 ? [`${uniqueBetaLinks.length} video${uniqueBetaLinks.length !== 1 ? 's' : ''}`] : [],
       lazy: true,
-      content: <BetaVideos betaLinks={betaLinks} />,
+      content: <BetaVideos betaLinks={uniqueBetaLinks} />,
     },
     {
       key: 'logbook',
@@ -88,6 +89,14 @@ export function useBuildClimbDetailSections({
       getSummary: getLogbookSummaryParts,
       lazy: true,
       content: <LogbookSection climb={climb} />,
+    },
+    {
+      key: 'crew-logbook',
+      label: 'Crew Logbook',
+      title: 'Crew Logbook',
+      defaultSummary: "See your crew's sends",
+      lazy: true,
+      content: <CrewLogbookView currentClimb={climb} boardType={boardType} />,
     },
     {
       key: 'community',
@@ -115,12 +124,7 @@ export function useBuildClimbDetailSections({
       defaultSummary: 'Ascents, quality trends',
       getSummary: () => ['Ascents', 'Quality', 'Trends'],
       lazy: true,
-      content: (
-        <ClimbAnalytics
-          climbUuid={climbUuid}
-          boardType={boardType}
-        />
-      ),
+      content: <ClimbAnalytics climbUuid={climbUuid} boardType={boardType} />,
     },
   ];
 }

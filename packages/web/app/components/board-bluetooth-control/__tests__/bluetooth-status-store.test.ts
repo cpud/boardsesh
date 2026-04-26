@@ -1,8 +1,5 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import {
-  registerBluetoothConnection,
-  disconnectAllBluetooth,
-} from '../bluetooth-status-store';
+import { describe, it, expect, vi, afterEach } from 'vite-plus/test';
+import { registerBluetoothConnection, disconnectAllBluetooth } from '../bluetooth-status-store';
 
 // Track release functions so each test can clear its own registrations
 // (the store keeps module-level state).
@@ -46,7 +43,9 @@ describe('bluetooth-status-store', () => {
 
     it('continues invoking handlers when one throws', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      const broken = vi.fn(() => { throw new Error('boom'); });
+      const broken = vi.fn(() => {
+        throw new Error('boom');
+      });
       const ok = vi.fn();
       register(broken);
       register(ok);

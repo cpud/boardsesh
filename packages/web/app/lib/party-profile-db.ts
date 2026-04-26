@@ -7,9 +7,9 @@ const PROFILE_KEY = 'party-profile';
 // Legacy localStorage keys to migrate from
 const LEGACY_USER_ID_KEY = 'boardsesh:userId';
 
-export interface PartyProfile {
+export type PartyProfile = {
   id: string; // UUID, auto-generated
-}
+};
 
 const getDB = createIndexedDBStore('boardsesh-party', STORE_NAME);
 
@@ -75,17 +75,14 @@ const migrateFromLegacyStorage = async (): Promise<boolean> => {
       return false;
     }
 
-    const migrated = await migrateFromLocalStorage<string>(
-      LEGACY_USER_ID_KEY,
-      async (legacyUserId) => {
-        await savePartyProfile({ id: legacyUserId });
-      },
-    );
+    const migrated = await migrateFromLocalStorage<string>(LEGACY_USER_ID_KEY, async (legacyUserId) => {
+      await savePartyProfile({ id: legacyUserId });
+    });
 
     if (migrated) {
       // Also clean up legacy username key if present
       localStorage.removeItem('boardsesh:username');
-      console.log('Successfully migrated party profile from localStorage to IndexedDB');
+      console.info('Successfully migrated party profile from localStorage to IndexedDB');
     }
 
     return migrated;

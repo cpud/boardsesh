@@ -12,14 +12,13 @@ import MenuItem from '@mui/material/MenuItem';
 import Alert from '@mui/material/Alert';
 import ListItemText from '@mui/material/ListItemText';
 import Check from '@mui/icons-material/Check';
-import MuiSelect from '@mui/material/Select';
-import type { SelectChangeEvent } from '@mui/material/Select';
+import MuiSelect, { type SelectChangeEvent } from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
 import MapLocationPicker from './map-location-picker';
 
-interface BoardFormFieldValues {
+type BoardFormFieldValues = {
   name: string;
   slug?: string;
   description: string;
@@ -36,9 +35,9 @@ interface BoardFormFieldValues {
   sizeId?: number;
   setIds?: string;
   serialNumber?: string;
-}
+};
 
-interface BoardFormProps {
+type BoardFormProps = {
   /** Form title displayed at the top */
   title: string;
   /** Submit button label */
@@ -68,7 +67,7 @@ interface BoardFormProps {
   onSubmit: (values: BoardFormFieldValues) => Promise<void>;
   /** Optional cancel handler */
   onCancel?: () => void;
-}
+};
 
 /**
  * Shared form component for creating and editing boards.
@@ -110,12 +109,12 @@ export default function BoardForm({
     initialValues.setIds ? initialValues.setIds.split(',').map(Number) : [],
   );
 
-  const availableSizes = configEditable && layoutId
-    ? configEditable.sizes[`${configEditable.boardType}-${layoutId}`] ?? []
-    : [];
-  const availableSets = configEditable && layoutId && sizeId
-    ? configEditable.sets[`${configEditable.boardType}-${layoutId}-${sizeId}`] ?? []
-    : [];
+  const availableSizes =
+    configEditable && layoutId ? (configEditable.sizes[`${configEditable.boardType}-${layoutId}`] ?? []) : [];
+  const availableSets =
+    configEditable && layoutId && sizeId
+      ? (configEditable.sets[`${configEditable.boardType}-${layoutId}-${sizeId}`] ?? [])
+      : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,11 +134,13 @@ export default function BoardForm({
         isOwned,
         angle,
         isAngleAdjustable,
-        ...(configEditable ? {
-          layoutId,
-          sizeId,
-          setIds: selectedSets.length > 0 ? selectedSets.sort((a, b) => a - b).join(',') : undefined,
-        } : {}),
+        ...(configEditable
+          ? {
+              layoutId,
+              sizeId,
+              setIds: selectedSets.length > 0 ? selectedSets.sort((a, b) => a - b).join(',') : undefined,
+            }
+          : {}),
         serialNumber: serialNumber.trim() || undefined,
       });
     } finally {
@@ -172,7 +173,9 @@ export default function BoardForm({
               }}
             >
               {configEditable.layouts.map(({ id, name: layoutName }) => (
-                <MenuItem key={id} value={id}>{layoutName}</MenuItem>
+                <MenuItem key={id} value={id}>
+                  {layoutName}
+                </MenuItem>
               ))}
             </MuiSelect>
           </FormControl>
@@ -352,11 +355,7 @@ export default function BoardForm({
             Cancel
           </MuiButton>
         )}
-        <MuiButton
-          type="submit"
-          variant="contained"
-          disabled={isSubmitting || !name.trim()}
-        >
+        <MuiButton type="submit" variant="contained" disabled={isSubmitting || !name.trim()}>
           {isSubmitting ? <CircularProgress size={20} color="inherit" /> : submitLabel}
         </MuiButton>
       </Box>

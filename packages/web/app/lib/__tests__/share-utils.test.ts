@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { shareWithFallback } from '../share-utils';
 
 // Mock @vercel/analytics
@@ -32,7 +32,7 @@ describe('shareWithFallback', () => {
 
   function mockNavigator(overrides: Partial<Navigator>) {
     Object.defineProperty(globalThis, 'navigator', {
-      value: { ...originalNavigator, ...overrides },
+      value: Object.assign(Object.create(Object.getPrototypeOf(originalNavigator)), originalNavigator, overrides),
       configurable: true,
       writable: true,
     });

@@ -1,19 +1,20 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import type { SessionFeedItem } from '@boardsesh/shared-schema';
+import SessionFeedCard from '../session-feed-card';
 
 // Mock dependencies
 vi.mock('next/link', () => ({
   default: ({ children, href, ...rest }: { children: React.ReactNode; href: string }) => (
-    <a href={href} data-next-link="true" {...rest}>{children}</a>
+    <a href={href} data-next-link="true" {...rest}>
+      {children}
+    </a>
   ),
 }));
 
 vi.mock('@/app/components/charts/css-bar-chart', () => ({
-  CssBarChart: (props: { ariaLabel?: string }) => (
-    <div data-testid="css-bar-chart" aria-label={props.ariaLabel} />
-  ),
+  CssBarChart: (props: { ariaLabel?: string }) => <div data-testid="css-bar-chart" aria-label={props.ariaLabel} />,
 }));
 
 vi.mock('@/app/components/charts/session-grade-bars', () => ({
@@ -71,22 +72,22 @@ vi.mock('@/app/hooks/use-grade-format', () => ({
   }),
 }));
 
-import SessionFeedCard from '../session-feed-card';
-
 function makeSession(overrides: Partial<SessionFeedItem> = {}): SessionFeedItem {
   return {
     sessionId: 'session-1',
     sessionType: 'inferred',
     sessionName: null,
     ownerUserId: 'user-1',
-    participants: [{
-      userId: 'user-1',
-      displayName: 'Test User',
-      avatarUrl: null,
-      sends: 5,
-      flashes: 2,
-      attempts: 3,
-    }],
+    participants: [
+      {
+        userId: 'user-1',
+        displayName: 'Test User',
+        avatarUrl: null,
+        sends: 5,
+        flashes: 2,
+        attempts: 3,
+      },
+    ],
     totalSends: 5,
     totalFlashes: 2,
     totalAttempts: 3,
@@ -128,8 +129,22 @@ describe('SessionFeedCard', () => {
     const session = makeSession({
       sessionType: 'party',
       participants: [
-        { userId: 'u1', displayName: 'User One', avatarUrl: null, sends: 3, flashes: 1, attempts: 1 },
-        { userId: 'u2', displayName: 'User Two', avatarUrl: null, sends: 2, flashes: 1, attempts: 2 },
+        {
+          userId: 'u1',
+          displayName: 'User One',
+          avatarUrl: null,
+          sends: 3,
+          flashes: 1,
+          attempts: 1,
+        },
+        {
+          userId: 'u2',
+          displayName: 'User Two',
+          avatarUrl: null,
+          sends: 2,
+          flashes: 1,
+          attempts: 2,
+        },
       ],
     });
 

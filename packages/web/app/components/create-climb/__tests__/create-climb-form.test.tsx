@@ -1,7 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import CreateClimbForm from '../create-climb-form';
 
 const mockShowMessage = vi.fn();
 const mockRequest = vi.fn();
@@ -104,8 +105,6 @@ vi.mock('@/app/lib/climb-search-cache', () => ({
 vi.mock('@/app/hooks/use-ws-auth-token', () => ({
   useWsAuthToken: () => ({ token: 'auth-token' }),
 }));
-
-import CreateClimbForm from '../create-climb-form';
 
 function renderComponent() {
   const queryClient = new QueryClient();
@@ -224,8 +223,6 @@ describe('CreateClimbForm', () => {
     });
 
     it('shows "Currently active" and is disabled when climb is already active', () => {
-      const previewUuid = 'preview-uuid-123';
-
       mockQueueActions = {
         setCurrentClimb: mockSetCurrentClimb,
         replaceQueueItem: mockReplaceQueueItem,
@@ -272,9 +269,12 @@ describe('CreateClimbForm', () => {
       fireEvent.click(button);
       await waitFor(() => {
         expect(mockReplaceQueueItem).toHaveBeenCalled();
-        expect(mockReplaceQueueItem).toHaveBeenCalledWith('queue-item-1', expect.objectContaining({
-          angle: 40,
-        }));
+        expect(mockReplaceQueueItem).toHaveBeenCalledWith(
+          'queue-item-1',
+          expect.objectContaining({
+            angle: 40,
+          }),
+        );
       });
     });
   });

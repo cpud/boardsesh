@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { render } from '@testing-library/react';
 import React from 'react';
 import type { UserBoard } from '@boardsesh/shared-schema';
+import BoardScrollCard from '../board-scroll-card';
 
 // Mock BoardRenderer
 vi.mock('../../board-renderer/board-renderer', () => ({
@@ -42,8 +43,6 @@ vi.mock('../board-scroll.module.css', () => ({
   ),
 }));
 
-import BoardScrollCard from '../board-scroll-card';
-
 function makeUserBoard(overrides?: Partial<UserBoard>): UserBoard {
   return {
     uuid: 'board-1',
@@ -74,7 +73,9 @@ function makeUserBoard(overrides?: Partial<UserBoard>): UserBoard {
 describe('BoardScrollCard', () => {
   it('renders card with name and ascent count for own board', () => {
     const onClick = vi.fn();
-    const { getByText } = render(<BoardScrollCard userBoard={makeUserBoard({ totalAscents: 1500 })} onClick={onClick} />);
+    const { getByText } = render(
+      <BoardScrollCard userBoard={makeUserBoard({ totalAscents: 1500 })} onClick={onClick} />,
+    );
 
     expect(getByText('My Kilter')).toBeDefined();
     expect(getByText('1.5k sends')).toBeDefined();
@@ -82,7 +83,9 @@ describe('BoardScrollCard', () => {
 
   it('renders card with type and location for nearby board', () => {
     const onClick = vi.fn();
-    const { getByText } = render(<BoardScrollCard userBoard={makeUserBoard({ distanceMeters: 500 })} onClick={onClick} />);
+    const { getByText } = render(
+      <BoardScrollCard userBoard={makeUserBoard({ distanceMeters: 500 })} onClick={onClick} />,
+    );
 
     expect(getByText('My Kilter')).toBeDefined();
     expect(getByText('Kilter · The Gym')).toBeDefined();

@@ -33,9 +33,12 @@ export async function GET(request: Request) {
 
       if (batch.length === 0) break;
 
-      await db
-        .delete(feedItems)
-        .where(inArray(feedItems.id, batch.map((r) => r.id)));
+      await db.delete(feedItems).where(
+        inArray(
+          feedItems.id,
+          batch.map((r) => r.id),
+        ),
+      );
 
       feedDeleted += batch.length;
       if (batch.length < BATCH_SIZE) break;
@@ -51,18 +54,19 @@ export async function GET(request: Request) {
 
       if (batch.length === 0) break;
 
-      await db
-        .delete(notifications)
-        .where(inArray(notifications.id, batch.map((r) => r.id)));
+      await db.delete(notifications).where(
+        inArray(
+          notifications.id,
+          batch.map((r) => r.id),
+        ),
+      );
 
       notifDeleted += batch.length;
       if (batch.length < BATCH_SIZE) break;
     }
 
     if (feedDeleted > 0 || notifDeleted > 0) {
-      console.log(
-        `[Cleanup cron] Deleted ${feedDeleted} feed items, ${notifDeleted} notifications`,
-      );
+      console.info(`[Cleanup cron] Deleted ${feedDeleted} feed items, ${notifDeleted} notifications`);
     }
 
     return NextResponse.json({
@@ -71,9 +75,6 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error('[Cleanup cron] Error:', error);
-    return NextResponse.json(
-      { error: 'Cleanup failed' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Cleanup failed' }, { status: 500 });
   }
 }

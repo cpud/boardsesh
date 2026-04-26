@@ -1,18 +1,16 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import type { CssBarChartBar, GroupedBar } from '@/app/components/charts/css-bar-chart';
 import type { LayoutLegendEntry, VPointsTimelineData } from '../../utils/chart-data-builders';
+import StatsSummary, { type StatsSummaryProps } from '../stats-summary';
 
 // Mock dependencies before component import
 vi.mock('@/app/components/charts/css-bar-chart', () => ({
-  CssBarChart: (props: { ariaLabel?: string }) => (
-    <div data-testid="css-bar-chart">{props.ariaLabel}</div>
-  ),
-  GroupedBarChart: (props: { ariaLabel?: string }) => (
-    <div data-testid="grouped-bar-chart">{props.ariaLabel}</div>
-  ),
+  CssBarChart: (props: { ariaLabel?: string }) => <div data-testid="css-bar-chart">{props.ariaLabel}</div>,
+  GroupedBarChart: (props: { ariaLabel?: string }) => <div data-testid="grouped-bar-chart">{props.ariaLabel}</div>,
 }));
 
 vi.mock('../v-points-chart', () => ({
@@ -20,9 +18,7 @@ vi.mock('../v-points-chart', () => ({
 }));
 
 vi.mock('@/app/components/ui/empty-state', () => ({
-  EmptyState: (props: { description: string }) => (
-    <div data-testid="empty-state">{props.description}</div>
-  ),
+  EmptyState: (props: { description: string }) => <div data-testid="empty-state">{props.description}</div>,
 }));
 
 vi.mock('@/app/theme/theme-config', () => ({
@@ -39,9 +35,6 @@ vi.mock('@/app/components/ascent-status/ascent-status-icon', () => ({
     <div data-testid={props.testId ?? 'ascent-status-icon'} data-status={props.status} />
   ),
 }));
-
-import StatsSummary from '../stats-summary';
-import type { StatsSummaryProps } from '../stats-summary';
 
 function createDefaultProps(overrides: Partial<StatsSummaryProps> = {}): StatsSummaryProps {
   return {
@@ -86,12 +79,8 @@ function createDefaultProps(overrides: Partial<StatsSummaryProps> = {}): StatsSu
     loadingAggregated: false,
     weeklyBars: null,
     aggregatedStackedBars: {
-      bars: [
-        { label: 'V3', segments: [{ value: 5, color: '#ff0000' }] },
-      ] as CssBarChartBar[],
-      legendEntries: [
-        { label: 'Kilter', color: '#ff0000' },
-      ] as LayoutLegendEntry[],
+      bars: [{ label: 'V3', segments: [{ value: 5, color: '#ff0000' }] }] as CssBarChartBar[],
+      legendEntries: [{ label: 'Kilter', color: '#ff0000' }] as LayoutLegendEntry[],
     },
     aggregatedFlashRedpointBars: null,
     vPointsTimeline: null,
@@ -105,9 +94,7 @@ describe('StatsSummary', () => {
   });
 
   it('returns null when loadingProfileStats is true', () => {
-    const { container } = render(
-      <StatsSummary {...createDefaultProps({ loadingProfileStats: true })} />,
-    );
+    const { container } = render(<StatsSummary {...createDefaultProps({ loadingProfileStats: true })} />);
     expect(container.innerHTML).toBe('');
   });
 
@@ -196,10 +183,7 @@ describe('StatsSummary', () => {
     expect(screen.getByText('Activity')).toBeTruthy();
 
     const chartLabels = screen.getAllByTestId('css-bar-chart').map((chart) => chart.textContent);
-    expect(chartLabels).toEqual([
-      'Weekly attempts by difficulty',
-      'Grade distribution across boards',
-    ]);
+    expect(chartLabels).toEqual(['Weekly attempts by difficulty', 'Grade distribution across boards']);
   });
 
   it('omits activity when no weekly bars are available', () => {
@@ -210,18 +194,12 @@ describe('StatsSummary', () => {
   });
 
   it('shows loading spinner when loadingAggregated is true', () => {
-    render(
-      <StatsSummary {...createDefaultProps({ loadingAggregated: true })} />,
-    );
+    render(<StatsSummary {...createDefaultProps({ loadingAggregated: true })} />);
     expect(screen.getByRole('progressbar')).toBeTruthy();
   });
 
   it('shows empty state when no aggregated bars', () => {
-    render(
-      <StatsSummary
-        {...createDefaultProps({ aggregatedStackedBars: null })}
-      />,
-    );
+    render(<StatsSummary {...createDefaultProps({ aggregatedStackedBars: null })} />);
     expect(screen.getByTestId('empty-state')).toBeTruthy();
     expect(screen.getByText('No ascent data for this period')).toBeTruthy();
   });
@@ -237,11 +215,7 @@ describe('StatsSummary', () => {
         ],
       },
     ];
-    render(
-      <StatsSummary
-        {...createDefaultProps({ aggregatedFlashRedpointBars: flashRedpointBars })}
-      />,
-    );
+    render(<StatsSummary {...createDefaultProps({ aggregatedFlashRedpointBars: flashRedpointBars })} />);
     expect(screen.getByTestId('grouped-bar-chart')).toBeTruthy();
     expect(screen.getByText('Flash vs Redpoint')).toBeTruthy();
   });
@@ -252,11 +226,7 @@ describe('StatsSummary', () => {
       series: [{ layoutKey: 'kilter-1', displayName: 'Kilter', color: '#ff0000', data: [10, 20] }],
       totalPoints: 30,
     };
-    render(
-      <StatsSummary
-        {...createDefaultProps({ vPointsTimeline })}
-      />,
-    );
+    render(<StatsSummary {...createDefaultProps({ vPointsTimeline })} />);
     expect(screen.getByTestId('v-points-chart')).toBeTruthy();
   });
 });

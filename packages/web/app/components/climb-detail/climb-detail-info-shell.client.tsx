@@ -9,7 +9,7 @@ import HeartAnimationOverlay from '@/app/components/climb-card/heart-animation-o
 import type { BetaLink } from '@/app/lib/api-wrappers/sync-api-types';
 import type { BoardDetails, Climb } from '@/app/lib/types';
 
-interface ClimbDetailInfoShellClientProps {
+type ClimbDetailInfoShellClientProps = {
   climb: Climb;
   boardDetails: BoardDetails;
   betaLinks: BetaLink[];
@@ -18,7 +18,7 @@ interface ClimbDetailInfoShellClientProps {
   angle: number;
   currentClimbDifficulty?: string;
   boardName?: string;
-}
+};
 
 export default function ClimbDetailInfoShellClient({
   climb,
@@ -40,11 +40,9 @@ export default function ClimbDetailInfoShellClient({
     boardName,
   });
 
-  const {
-    handleDoubleTap,
-    showHeart,
-    dismissHeart,
-  } = useDoubleTapFavorite({ climbUuid: climb.uuid });
+  const { handleDoubleTap, showHeart, dismissHeart } = useDoubleTapFavorite({
+    climbUuid: climb.uuid,
+  });
 
   return (
     <ClimbDetailShellClient

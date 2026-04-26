@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   V_GRADE_COLORS,
   FONT_GRADE_COLORS,
@@ -18,8 +18,32 @@ describe('V_GRADE_COLORS', () => {
 
 describe('FONT_GRADE_COLORS', () => {
   it('covers standard font grades', () => {
-    const expected = ['4a', '4b', '4c', '5a', '5b', '5c', '6a', '6a+', '6b', '6b+',
-      '6c', '6c+', '7a', '7a+', '7b', '7b+', '7c', '7c+', '8a', '8a+', '8b', '8b+', '8c', '8c+'];
+    const expected = [
+      '4a',
+      '4b',
+      '4c',
+      '5a',
+      '5b',
+      '5c',
+      '6a',
+      '6a+',
+      '6b',
+      '6b+',
+      '6c',
+      '6c+',
+      '7a',
+      '7a+',
+      '7b',
+      '7b+',
+      '7c',
+      '7c+',
+      '8a',
+      '8a+',
+      '8b',
+      '8b+',
+      '8c',
+      '8c+',
+    ];
     for (const grade of expected) {
       expect(FONT_GRADE_COLORS[grade], `Missing font grade ${grade}`).toMatch(/^#[0-9A-Fa-f]{6}$/);
     }

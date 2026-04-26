@@ -61,30 +61,41 @@ jobs:
         with:
           fetch-depth: 50
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+      # Flag (don't block) when shared Drizzle schema changes land without a
+      # parallel edit to the hand-maintained test DDL in schema-sql.ts. Keeps
+      # the two from silently drifting apart.
+      - name: Check for test schema drift
+        if: github.event_name == 'pull_request'
+        run: |
+          BASE=${{ github.event.pull_request.base.sha }}
+          HEAD=${{ github.event.pull_request.head.sha }}
+          git fetch --no-tags --depth=50 origin "$BASE" || true
+          changed=$(git diff --name-only "$BASE" "$HEAD" || true)
+          if echo "$changed" | grep -qE '^packages/db/src/schema/'; then
+            if ! echo "$changed" | grep -qE '^packages/backend/src/__tests__/schema-sql\.ts$'; then
+              echo "::warning title=Test schema may be stale::packages/db/src/schema/ changed but packages/backend/src/__tests__/schema-sql.ts was not. If your change added/removed columns the backend tests care about, mirror it there too."
+            fi
+          fi
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@v2
 
-      - name: Cache bun dependencies
-        uses: actions/cache@v4
+      - uses: voidzero-dev/setup-vp@v1
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
+          node-version: 'lts'
+          cache: true
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Build shared-schema
-        run: bun run --filter=@boardsesh/shared-schema build
+      - name: Build shared packages
+        run: vp run build:db
 
-      - name: Build db package
-        run: bun run --filter=@boardsesh/db build
+      # actions/checkout on a pull_request event fetches only the PR merge ref,
+      # so `origin/main` isn't present locally and vitest's `--changed` silently
+      # matches zero files. Fetch the base ref explicitly so the diff works.
+      - name: Fetch base ref for vitest --changed
+        if: github.event_name == 'pull_request'
+        run: git fetch --depth=50 origin ${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}
 
       - name: Run backend integration tests (shard ${{ matrix.shard }}/2)
         run: |
@@ -114,17 +125,21 @@ jobs:
       pull-requests: write
 
     steps:
+      - uses: actions/checkout@v6
+
       - name: Download all shard results
         uses: actions/download-artifact@v4
         with:
           pattern: backend-test-results-*
           path: test-results
-          merge-multiple: false
+          merge-multiple: true
 
       - name: Publish test report
-        uses: dorny/test-reporter@v1
+        uses: turing85/publish-report@v2
         with:
-          name: Backend Integration Tests
-          path: 'test-results/**/*.xml'
-          reporter: java-junit
-          fail-on-error: false
+          comment-header: backend-integration-tests
+          comment-enabled: 'true'
+          report-name: Backend Integration Tests
+          report-path: 'test-results/**/*.xml'
+          report-reporter: java-junit
+          report-fail-on-error: false

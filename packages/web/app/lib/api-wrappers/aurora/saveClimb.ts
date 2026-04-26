@@ -1,5 +1,5 @@
-import { BoardName } from '../../types';
-import { SaveClimbOptions } from './types';
+import type { BoardName } from '../../types';
+import type { SaveClimbOptions } from './types';
 import { generateUuid } from './util';
 import { dbz } from '@/app/lib/db/db';
 import { UNIFIED_TABLES } from '@/app/lib/db/queries/util/table-select';
@@ -13,15 +13,12 @@ import dayjs from 'dayjs';
  * Climbs created locally are stored with the NextAuth user ID for attribution.
  * Aurora's setter_id is not used since we don't have Aurora credentials.
  */
-export interface SaveClimbResponse {
+export type SaveClimbResponse = {
   uuid: string;
   synced: boolean;
-}
+};
 
-export async function saveClimb(
-  board: BoardName,
-  options: SaveClimbOptions
-): Promise<SaveClimbResponse> {
+export async function saveClimb(board: BoardName, options: SaveClimbOptions): Promise<SaveClimbResponse> {
   const uuid = generateUuid();
   const createdAt = dayjs().format('YYYY-MM-DD HH:mm:ss');
   const isListed = !options.is_draft;
@@ -83,17 +80,14 @@ export async function saveClimb(
  * Saves climb stats to the local database.
  * Used for storing grade/difficulty information for locally created climbs.
  */
-export interface SaveClimbStatsOptions {
+export type SaveClimbStatsOptions = {
   climbUuid: string;
   angle: number;
   displayDifficulty: number;
   benchmarkDifficulty?: number | null;
-}
+};
 
-export async function saveClimbStats(
-  board: BoardName,
-  options: SaveClimbStatsOptions
-): Promise<void> {
+export async function saveClimbStats(board: BoardName, options: SaveClimbStatsOptions): Promise<void> {
   await dbz
     .insert(boardClimbStats)
     .values({

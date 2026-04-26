@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import {
   CLIMB_SESSION_COOKIE,
   getClimbSessionCookie,

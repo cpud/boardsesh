@@ -1,14 +1,16 @@
-import { vi } from 'vitest';
+import { vi } from 'vite-plus/test';
 
 /**
  * Returns a mock shape for useWsAuthToken() with sensible defaults.
  */
-export function mockWsAuthToken(overrides?: Partial<{
-  token: string | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-}>) {
+export function mockWsAuthToken(
+  overrides?: Partial<{
+    token: string | null;
+    isAuthenticated: boolean;
+    isLoading: boolean;
+    error: string | null;
+  }>,
+) {
   return {
     token: 'mock-token',
     isAuthenticated: true,
@@ -21,10 +23,12 @@ export function mockWsAuthToken(overrides?: Partial<{
 /**
  * Returns a mock NextAuth session object.
  */
-export function mockSession(overrides?: Partial<{
-  user: { id: string; name: string; email: string };
-  expires: string;
-}>) {
+export function mockSession(
+  overrides?: Partial<{
+    user: { id: string; name: string; email: string };
+    expires: string;
+  }>,
+) {
   return {
     user: { id: 'user-1', name: 'Test User', email: 'test@example.com' },
     expires: '2099-01-01T00:00:00.000Z',

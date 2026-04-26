@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
+import GlobalHeader from '../global-header';
 
 let mockActiveSession: Record<string, unknown> | null = null;
 let mockIsOnBoardRoute = false;
@@ -67,7 +68,11 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('@/app/components/back-button', () => ({
-  default: (props: { fallbackUrl?: string }) => <button data-testid="back-button" data-fallback={props.fallbackUrl}>Back</button>,
+  default: (props: { fallbackUrl?: string }) => (
+    <button data-testid="back-button" data-fallback={props.fallbackUrl}>
+      Back
+    </button>
+  ),
 }));
 
 let mockSessionData: { user: { id: string; name: string } } | null = {
@@ -80,7 +85,9 @@ vi.mock('next-auth/react', () => ({
 
 vi.mock('next/link', () => ({
   default: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) => (
-    <a href={href} {...props}>{children}</a>
+    <a href={href} {...props}>
+      {children}
+    </a>
   ),
 }));
 
@@ -115,8 +122,6 @@ vi.mock('@/app/components/profile-header-bridge/profile-header-bridge-context', 
 vi.mock('@/app/components/providers/snackbar-provider', () => ({
   useSnackbar: () => ({ showMessage: vi.fn() }),
 }));
-
-import GlobalHeader from '../global-header';
 
 const mockBoardConfigs = {} as Parameters<typeof GlobalHeader>[0]['boardConfigs'];
 
@@ -353,11 +358,7 @@ describe('GlobalHeader', () => {
       expect(settingsLink).toBeTruthy();
       expect(settingsLink.closest('a')?.getAttribute('href')).toBe('/settings');
       const title = screen.getByText('You');
-      expect(
-        Boolean(
-          settingsLink.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING,
-        ),
-      ).toBe(true);
+      expect(Boolean(settingsLink.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
       expect(container.querySelectorAll('[aria-label="Settings"]').length).toBe(1);
     });
 

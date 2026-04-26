@@ -1,6 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+import PlaylistCard from '../playlist-card';
 
 // Mock PlaylistPreviewSquare to inspect props
 const mockPreviewSquare = vi.fn();
@@ -20,8 +21,6 @@ vi.mock('../library.module.css', () => ({
     },
   ),
 }));
-
-import PlaylistCard from '../playlist-card';
 
 describe('PlaylistCard', () => {
   it('renders grid variant with PlaylistPreviewSquare', () => {
@@ -78,13 +77,7 @@ describe('PlaylistCard', () => {
 
   it('displays name and climb count correctly', () => {
     render(
-      <PlaylistCard
-        name="Test Playlist"
-        climbCount={3}
-        boardType="kilter"
-        href="/playlists/xyz"
-        variant="scroll"
-      />,
+      <PlaylistCard name="Test Playlist" climbCount={3} boardType="kilter" href="/playlists/xyz" variant="scroll" />,
     );
 
     expect(screen.getByText('Test Playlist')).toBeDefined();
@@ -92,28 +85,14 @@ describe('PlaylistCard', () => {
   });
 
   it('uses singular "climb" for count of 1', () => {
-    render(
-      <PlaylistCard
-        name="Solo"
-        climbCount={1}
-        boardType="kilter"
-        href="/playlists/xyz"
-        variant="scroll"
-      />,
-    );
+    render(<PlaylistCard name="Solo" climbCount={1} boardType="kilter" href="/playlists/xyz" variant="scroll" />);
 
     expect(screen.getByText('1 climb')).toBeDefined();
   });
 
   it('renders correct link href', () => {
     const { container } = render(
-      <PlaylistCard
-        name="Linked"
-        climbCount={5}
-        boardType="kilter"
-        href="/playlists/linked-id"
-        variant="grid"
-      />,
+      <PlaylistCard name="Linked" climbCount={5} boardType="kilter" href="/playlists/linked-id" variant="grid" />,
     );
 
     const link = container.querySelector('a');

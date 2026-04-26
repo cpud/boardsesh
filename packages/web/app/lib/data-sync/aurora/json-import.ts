@@ -1,8 +1,7 @@
 import { z } from 'zod';
 import { eq, and, or, inArray, sql } from 'drizzle-orm';
 import { getPool } from '@/app/lib/db/db';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import type { NeonDatabase } from 'drizzle-orm/neon-serverless';
+import { drizzle, type NeonDatabase } from 'drizzle-orm/neon-serverless';
 import {
   boardseshTicks,
   boardClimbs,
@@ -11,10 +10,10 @@ import {
   playlistClimbs,
   playlistOwnership,
 } from '@/app/lib/db/schema';
-import { randomUUID } from 'crypto';
-import { createHash } from 'crypto';
+import { randomUUID, createHash } from 'crypto';
 import { fontGradeToDifficultyId } from '@/app/lib/board-data';
 import { LAYOUTS, HOLE_PLACEMENTS } from '@/app/lib/board-constants';
+import type { AuroraBoardName } from '@boardsesh/shared-schema';
 import { buildInferredSessionsForUser } from './inferred-session-builder';
 import { populateDenormalizedColumns } from '@boardsesh/db/queries';
 
@@ -81,25 +80,25 @@ export const auroraExportSchema = z.object({
 
 export type AuroraExportData = z.infer<typeof auroraExportSchema>;
 
-type BoardType = 'kilter' | 'tension';
+type BoardType = AuroraBoardName;
 
 // ---------------------------------------------------------------------------
 // Import result types
 // ---------------------------------------------------------------------------
 
-export interface ImportCounts {
+export type ImportCounts = {
   imported: number;
   skipped: number;
   failed: number;
-}
+};
 
-export interface ImportResult {
+export type ImportResult = {
   ascents: ImportCounts;
   attempts: ImportCounts;
   circuits: ImportCounts;
   climbs: ImportCounts;
   unresolvedClimbs: string[];
-}
+};
 
 // ---------------------------------------------------------------------------
 // Progress event types for streaming progress reporting
@@ -159,15 +158,18 @@ export function generateJsonImportAuroraId(
 // Climb draft import helpers
 // ---------------------------------------------------------------------------
 
-/** Map export role names to board-specific hold state codes. */
-const ROLE_TO_CODE: Record<BoardType, Record<string, number>> = {
+/** Map export role names to board-specific hold state codes.
+ * Only boards with known codes are listed — absent entries mean climb draft
+ * import is not supported for that board (ascents/attempts still import fine). */
+const ROLE_TO_CODE: Partial<Record<AuroraBoardName, Record<string, number>>> = {
   kilter: { start: 42, middle: 43, finish: 44, foot: 45 },
   tension: { start: 1, middle: 2, finish: 3, foot: 4 },
 };
 
 /** Resolve a layout name (e.g. "Kilter Board Original") to a layout ID. */
 export function resolveLayoutName(boardType: BoardType, layoutName: string): number | null {
-  const layouts = LAYOUTS[boardType];
+  const layouts = LAYOUTS[boardType as keyof typeof LAYOUTS];
+  if (!layouts) return null;
   for (const layout of Object.values(layouts)) {
     if (layout.name === layoutName) return layout.id;
   }
@@ -186,7 +188,12 @@ export function buildCoordinateMap(boardType: BoardType, layoutId: number): Map<
   if (cached) return cached;
 
   const coordMap = new Map<string, number>();
-  const boardPlacements = HOLE_PLACEMENTS[boardType];
+  const boardPlacements = HOLE_PLACEMENTS[boardType as keyof typeof HOLE_PLACEMENTS];
+
+  if (!boardPlacements) {
+    coordinateMapCache.set(cacheKey, coordMap);
+    return coordMap;
+  }
 
   for (const key of Object.keys(boardPlacements)) {
     // Keys are "layoutId-setId"
@@ -208,6 +215,7 @@ export function convertHoldsToFrames(
   boardType: BoardType,
 ): string | null {
   const roleCodes = ROLE_TO_CODE[boardType];
+  if (!roleCodes) return null; // Board doesn't support climb draft import
   const parts: string[] = [];
 
   for (const hold of holds) {
@@ -225,10 +233,16 @@ export function convertHoldsToFrames(
 
 /** Compute bounding box (edge) values from hold coordinates. */
 export function computeEdgesFromHolds(holds: { x: number; y: number }[]): {
-  edgeLeft: number; edgeRight: number; edgeBottom: number; edgeTop: number;
+  edgeLeft: number;
+  edgeRight: number;
+  edgeBottom: number;
+  edgeTop: number;
 } | null {
   if (holds.length === 0) return null;
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  let minX = Infinity,
+    maxX = -Infinity,
+    minY = Infinity,
+    maxY = -Infinity;
   for (const hold of holds) {
     if (hold.x < minX) minX = hold.x;
     if (hold.x > maxX) maxX = hold.x;
@@ -283,16 +297,10 @@ async function resolveClimbNames(
 
     // Also match user's own drafts so ascents/circuits referencing their climbs resolve
     const userDraftFilter = userId
-      ? and(
-          eq(boardClimbs.boardType, boardType),
-          inArray(boardClimbs.name, chunk),
-          eq(boardClimbs.userId, userId),
-        )
+      ? and(eq(boardClimbs.boardType, boardType), inArray(boardClimbs.name, chunk), eq(boardClimbs.userId, userId))
       : undefined;
 
-    const whereClause = userDraftFilter
-      ? or(publicFilter, userDraftFilter)
-      : publicFilter;
+    const whereClause = userDraftFilter ? or(publicFilter, userDraftFilter) : publicFilter;
 
     const results = await db
       .select({
@@ -305,10 +313,7 @@ async function resolveClimbNames(
       .from(boardClimbs)
       .leftJoin(
         boardClimbStats,
-        and(
-          eq(boardClimbStats.climbUuid, boardClimbs.uuid),
-          eq(boardClimbStats.boardType, boardClimbs.boardType),
-        ),
+        and(eq(boardClimbStats.climbUuid, boardClimbs.uuid), eq(boardClimbStats.boardType, boardClimbs.boardType)),
       )
       .where(whereClause);
 
@@ -333,9 +338,7 @@ async function resolveClimbNames(
   }
 
   // Convert to simple name -> uuid map
-  return new Map(
-    [...nameToMatch].map(([name, match]) => [name, match.uuid]),
-  );
+  return new Map([...nameToMatch].map(([name, match]) => [name, match.uuid]));
 }
 
 // ---------------------------------------------------------------------------
@@ -354,12 +357,7 @@ async function getExistingTickKeys(
       climbedAt: boardseshTicks.climbedAt,
     })
     .from(boardseshTicks)
-    .where(
-      and(
-        eq(boardseshTicks.userId, userId),
-        eq(boardseshTicks.boardType, boardType),
-      ),
-    );
+    .where(and(eq(boardseshTicks.userId, userId), eq(boardseshTicks.boardType, boardType)));
 
   return new Set(
     existing.map((row) => {
@@ -390,16 +388,18 @@ async function batchInsertTicks(
   for (let i = 0; i < rows.length; i += BATCH_SIZE) {
     const batch = rows.slice(i, i + BATCH_SIZE);
 
-    await db
-      .insert(boardseshTicks)
-      .values(batch)
-      .onConflictDoUpdate({
-        target: boardseshTicks.auroraId,
-        set: conflictSet,
-      });
+    await db.insert(boardseshTicks).values(batch).onConflictDoUpdate({
+      target: boardseshTicks.auroraId,
+      set: conflictSet,
+    });
 
     imported += batch.length;
-    onProgress?.({ type: 'progress', step, current: Math.min(i + BATCH_SIZE, rows.length), total: rows.length });
+    onProgress?.({
+      type: 'progress',
+      step,
+      current: Math.min(i + BATCH_SIZE, rows.length),
+      total: rows.length,
+    });
   }
 
   return imported;
@@ -472,11 +472,17 @@ export async function importJsonExportData(
       const draftRows: ClimbRow[] = [];
       for (const climb of draftClimbs) {
         const layoutId = resolveLayoutName(boardType, climb.layout);
-        if (layoutId == null) { result.climbs.failed++; continue; }
+        if (layoutId == null) {
+          result.climbs.failed++;
+          continue;
+        }
 
         const coordMap = buildCoordinateMap(boardType, layoutId);
         const frames = convertHoldsToFrames(climb.holds, coordMap, boardType);
-        if (!frames) { result.climbs.failed++; continue; }
+        if (!frames) {
+          result.climbs.failed++;
+          continue;
+        }
 
         const edges = computeEdgesFromHolds(climb.holds);
 
@@ -514,11 +520,17 @@ export async function importJsonExportData(
         }
 
         const layoutId = resolveLayoutName(boardType, climb.layout);
-        if (layoutId == null) { result.climbs.failed++; continue; }
+        if (layoutId == null) {
+          result.climbs.failed++;
+          continue;
+        }
 
         const coordMap = buildCoordinateMap(boardType, layoutId);
         const frames = convertHoldsToFrames(climb.holds, coordMap, boardType);
-        if (!frames) { result.climbs.failed++; continue; }
+        if (!frames) {
+          result.climbs.failed++;
+          continue;
+        }
 
         const edges = computeEdgesFromHolds(climb.holds);
 
@@ -579,18 +591,12 @@ export async function importJsonExportData(
           // Insert published climbs — skip on conflict (already exist from a prior import)
           for (let i = 0; i < publishedRows.length; i += BATCH_SIZE) {
             const batch = publishedRows.slice(i, i + BATCH_SIZE);
-            await db
-              .insert(boardClimbs)
-              .values(batch)
-              .onConflictDoNothing();
+            await db.insert(boardClimbs).values(batch).onConflictDoNothing();
             result.climbs.imported += batch.length;
           }
 
           // Populate denormalized required_set_ids and compatible_size_ids
-          const allInsertedUuids = [
-            ...draftRows.map((r) => r.uuid),
-            ...publishedRows.map((r) => r.uuid),
-          ];
+          const allInsertedUuids = [...draftRows.map((r) => r.uuid), ...publishedRows.map((r) => r.uuid)];
           await populateDenormalizedColumns(db, boardType, allInsertedUuids);
 
           await client.query('COMMIT');
@@ -600,7 +606,12 @@ export async function importJsonExportData(
         }
       }
 
-      onProgress?.({ type: 'progress', step: 'climbs', current: data.climbs.length, total: data.climbs.length });
+      onProgress?.({
+        type: 'progress',
+        step: 'climbs',
+        current: data.climbs.length,
+        total: data.climbs.length,
+      });
     } else {
       onProgress?.({ type: 'progress', step: 'climbs', current: 0, total: 0 });
     }
@@ -613,7 +624,11 @@ export async function importJsonExportData(
     ]);
 
     // Step 3: Resolve climb names to UUIDs (includes user's own drafts)
-    onProgress?.({ type: 'progress', step: 'resolving', message: `Resolving ${allClimbNames.size} climb names...` });
+    onProgress?.({
+      type: 'progress',
+      step: 'resolving',
+      message: `Resolving ${allClimbNames.size} climb names...`,
+    });
     const nameToUuid = await resolveClimbNames(db, boardType, [...allClimbNames], userId);
 
     // Track unresolved names
@@ -628,11 +643,17 @@ export async function importJsonExportData(
 
     const ascentRows = data.ascents.reduce<TickRow[]>((rows, ascent) => {
       const climbUuid = nameToUuid.get(ascent.climb);
-      if (!climbUuid) { result.ascents.failed++; return rows; }
+      if (!climbUuid) {
+        result.ascents.failed++;
+        return rows;
+      }
 
       const climbedAt = normalizeTimestamp(ascent.climbed_at);
       const tickKey = `${climbUuid}:${ascent.angle}:${climbedAt}`;
-      if (existingKeys.has(tickKey)) { result.ascents.skipped++; return rows; }
+      if (existingKeys.has(tickKey)) {
+        result.ascents.skipped++;
+        return rows;
+      }
 
       existingKeys.add(tickKey);
       rows.push({
@@ -663,11 +684,17 @@ export async function importJsonExportData(
     // Step 6: Collect attempt rows to insert
     const attemptRows = data.attempts.reduce<TickRow[]>((rows, attempt) => {
       const climbUuid = nameToUuid.get(attempt.climb);
-      if (!climbUuid) { result.attempts.failed++; return rows; }
+      if (!climbUuid) {
+        result.attempts.failed++;
+        return rows;
+      }
 
       const climbedAt = normalizeTimestamp(attempt.climbed_at);
       const tickKey = `${climbUuid}:${attempt.angle}:${climbedAt}`;
-      if (existingKeys.has(tickKey)) { result.attempts.skipped++; return rows; }
+      if (existingKeys.has(tickKey)) {
+        result.attempts.skipped++;
+        return rows;
+      }
 
       existingKeys.add(tickKey);
       rows.push({
@@ -698,7 +725,8 @@ export async function importJsonExportData(
 
     try {
       result.ascents.imported = await batchInsertTicks(
-        db, ascentRows,
+        db,
+        ascentRows,
         {
           climbUuid: sql`excluded.climb_uuid`,
           angle: sql`excluded.angle`,
@@ -710,11 +738,14 @@ export async function importJsonExportData(
           updatedAt: sql`excluded.updated_at`,
           auroraSyncedAt: sql`excluded.aurora_synced_at`,
         },
-        'ascents', data.ascents.length, onProgress,
+        'ascents',
+        data.ascents.length,
+        onProgress,
       );
 
       result.attempts.imported = await batchInsertTicks(
-        db, attemptRows,
+        db,
+        attemptRows,
         {
           climbUuid: sql`excluded.climb_uuid`,
           angle: sql`excluded.angle`,
@@ -723,7 +754,9 @@ export async function importJsonExportData(
           updatedAt: sql`excluded.updated_at`,
           auroraSyncedAt: sql`excluded.aurora_synced_at`,
         },
-        'attempts', data.attempts.length, onProgress,
+        'attempts',
+        data.attempts.length,
+        onProgress,
       );
 
       await client.query('COMMIT');
@@ -816,7 +849,12 @@ export async function importJsonExportData(
         result.circuits.failed++;
       }
 
-      onProgress?.({ type: 'progress', step: 'circuits', current: ci + 1, total: data.circuits.length });
+      onProgress?.({
+        type: 'progress',
+        step: 'circuits',
+        current: ci + 1,
+        total: data.circuits.length,
+      });
     }
 
     // Step 9: Build inferred sessions for imported ticks (skipped during chunked imports
@@ -828,7 +866,7 @@ export async function importJsonExportData(
       try {
         const assigned = await buildInferredSessionsForUser(userId);
         if (assigned > 0) {
-          console.log(`Built inferred sessions: assigned ${assigned} ticks for user ${userId}`);
+          console.info(`Built inferred sessions: assigned ${assigned} ticks for user ${userId}`);
         }
       } catch (error) {
         console.error('Error building inferred sessions after JSON import:', error);

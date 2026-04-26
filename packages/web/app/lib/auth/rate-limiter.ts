@@ -34,7 +34,7 @@ const DEFAULT_MAX_REQUESTS = 5;
 export function checkRateLimit(
   identifier: string,
   maxRequests: number = DEFAULT_MAX_REQUESTS,
-  windowMs: number = DEFAULT_WINDOW_MS
+  windowMs: number = DEFAULT_WINDOW_MS,
 ): { limited: boolean; retryAfterSeconds: number } {
   const now = Date.now();
   const entry = memoryStore.get(identifier);

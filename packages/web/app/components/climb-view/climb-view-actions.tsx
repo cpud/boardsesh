@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
-import { Climb, BoardDetails } from '@/app/lib/types';
+import type { Climb, BoardDetails } from '@/app/lib/types';
 import styles from './climb-view-actions.module.css';
 import { constructClimbListWithSlugs } from '@/app/lib/url-utils';
 import BackButton from '../back-button';
@@ -55,7 +55,7 @@ const ClimbViewActions = ({ climb, boardDetails, auroraAppUrl, angle }: ClimbVie
             angle={angle}
             currentPathname={pathname}
             viewMode="dropdown"
-            include={['tick', 'share', 'openInApp']}
+            include={['instagram', 'tick', 'share', 'openInApp']}
             auroraAppUrl={auroraAppUrl}
           />
         </div>
@@ -72,7 +72,7 @@ const ClimbViewActions = ({ climb, boardDetails, auroraAppUrl, angle }: ClimbVie
             angle={angle}
             currentPathname={pathname}
             viewMode="button"
-            include={['favorite', 'tick', 'queue', 'share', 'openInApp']}
+            include={['favorite', 'instagram', 'tick', 'queue', 'share', 'openInApp']}
             auroraAppUrl={auroraAppUrl}
           />
         </div>

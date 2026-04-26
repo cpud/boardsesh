@@ -16,10 +16,10 @@ import AddCircleOutline from '@mui/icons-material/AddCircleOutline';
 import type { GroupedNotification, NotificationType } from '@boardsesh/shared-schema';
 import { themeTokens } from '@/app/theme/theme-config';
 
-interface NotificationItemProps {
+type NotificationItemProps = {
   notification: GroupedNotification;
   onClick: (notification: GroupedNotification) => void;
-}
+};
 
 function formatTimeAgo(dateStr: string): string {
   const date = new Date(dateStr);
@@ -139,19 +139,13 @@ export default function NotificationItem({ notification, onClick }: Notification
         {showAvatarGroup ? (
           <AvatarGroup max={3} sx={{ '& .MuiAvatar-root': { width: 28, height: 28, fontSize: 12 } }}>
             {actors.map((actor) => (
-              <Avatar
-                key={actor.id}
-                src={actor.avatarUrl || undefined}
-              >
+              <Avatar key={actor.id} src={actor.avatarUrl || undefined}>
                 {getNotificationIcon(notification.type)}
               </Avatar>
             ))}
           </AvatarGroup>
         ) : (
-          <Avatar
-            src={actors[0]?.avatarUrl || undefined}
-            sx={{ width: 40, height: 40 }}
-          >
+          <Avatar src={actors[0]?.avatarUrl || undefined} sx={{ width: 40, height: 40 }}>
             {getNotificationIcon(notification.type)}
           </Avatar>
         )}

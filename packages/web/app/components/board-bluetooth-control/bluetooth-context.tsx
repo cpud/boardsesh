@@ -5,18 +5,34 @@ import { track } from '@vercel/analytics';
 import { useBoardBluetooth } from './use-board-bluetooth';
 import { useCurrentClimb } from '../graphql-queue';
 import type { BoardDetails } from '@/app/lib/types';
-import { isCapacitor, isCapacitorWebView, waitForCapacitor, CAPACITOR_BRIDGE_TIMEOUT_MS } from '@/app/lib/ble/capacitor-utils';
+import {
+  isCapacitor,
+  isCapacitorWebView,
+  waitForCapacitor,
+  CAPACITOR_BRIDGE_TIMEOUT_MS,
+} from '@/app/lib/ble/capacitor-utils';
 import { registerBluetoothConnection } from './bluetooth-status-store';
+import { DevicePickerDialog } from './device-picker-dialog';
+import { AutoConnectHandler } from './auto-connect-handler';
+import { parseSerialNumber } from './bluetooth-aurora';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { resolveSerialNumbers } from '@/app/lib/ble/resolve-serials';
+import type { UserBoard } from '@boardsesh/shared-schema';
 
-interface BluetoothContextValue {
+type BluetoothContextValue = {
   isConnected: boolean;
   loading: boolean;
-  connect: (initialFrames?: string, mirrored?: boolean) => Promise<boolean>;
+  connect: (initialFrames?: string, mirrored?: boolean, targetSerial?: string) => Promise<boolean>;
   disconnect: () => void;
-  sendFramesToBoard: (frames: string, mirrored?: boolean, signal?: AbortSignal) => Promise<boolean | undefined>;
+  sendFramesToBoard: (
+    frames: string,
+    mirrored?: boolean,
+    signal?: AbortSignal,
+    climbUuid?: string,
+  ) => Promise<boolean | undefined>;
   isBluetoothSupported: boolean;
   isIOS: boolean;
-}
+};
 
 const BluetoothContext = createContext<BluetoothContextValue | null>(null);
 
@@ -30,7 +46,12 @@ function BluetoothAutoSender({
   sendFramesToBoard,
   layoutName,
 }: {
-  sendFramesToBoard: (frames: string, mirrored?: boolean, signal?: AbortSignal) => Promise<boolean | undefined>;
+  sendFramesToBoard: (
+    frames: string,
+    mirrored?: boolean,
+    signal?: AbortSignal,
+    climbUuid?: string,
+  ) => Promise<boolean | undefined>;
   layoutName: string;
 }) {
   const { currentClimbQueueItem } = useCurrentClimb();
@@ -50,6 +71,7 @@ function BluetoothAutoSender({
           currentClimbQueueItem.climb.frames,
           !!currentClimbQueueItem.climb.mirrored,
           controller.signal,
+          currentClimbQueueItem.climb.uuid,
         );
 
         // Skip analytics if this send was aborted (rapid swiping)
@@ -75,7 +97,7 @@ function BluetoothAutoSender({
         });
       }
     };
-    sendClimb();
+    void sendClimb();
 
     return () => {
       controller.abort();
@@ -92,11 +114,46 @@ export function BluetoothProvider({
   boardDetails: BoardDetails;
   children: React.ReactNode;
 }) {
-  const { isConnected, loading, connect, disconnect, sendFramesToBoard } =
-    useBoardBluetooth({ boardDetails });
+  const { isConnected, loading, connect, disconnect, sendFramesToBoard, pickerState } = useBoardBluetooth({
+    boardDetails,
+  });
+  const { token } = useWsAuthToken();
 
   const [isBluetoothSupported, setIsBluetoothSupported] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+
+  // Resolve BLE device serial numbers to known boards
+  const [resolvedBoards, setResolvedBoards] = useState<Map<string, UserBoard>>(new Map());
+  const resolvedSerialsRef = useRef<string>('');
+
+  useEffect(() => {
+    if (!pickerState || pickerState.devices.length === 0 || !token) {
+      return;
+    }
+
+    const serials: string[] = [];
+    for (const device of pickerState.devices) {
+      const serial = parseSerialNumber(device.name);
+      if (serial) serials.push(serial);
+    }
+
+    if (serials.length === 0) return;
+
+    // Check if we already resolved these serials (resolveSerialNumbers deduplicates internally)
+    const sortedSerials = [...serials].sort();
+    const serialsKey = sortedSerials.join(',');
+    if (serialsKey === resolvedSerialsRef.current) return;
+
+    resolveSerialNumbers(token, sortedSerials)
+      .then((boardMap) => {
+        // Only mark as resolved on success so transient failures allow retries
+        resolvedSerialsRef.current = serialsKey;
+        setResolvedBoards(boardMap);
+      })
+      .catch((err) => {
+        console.error('[BLE] Failed to resolve serial numbers:', err);
+      });
+  }, [pickerState, token]);
 
   useEffect(() => {
     let cancelPolling: (() => void) | undefined;
@@ -111,19 +168,19 @@ export function BluetoothProvider({
       // UA looks like a native WebView — bridge may not be injected yet.
       // Poll for window.Capacitor; only confirm support once the bridge appears.
       let cancelled = false;
-      waitForCapacitor(CAPACITOR_BRIDGE_TIMEOUT_MS).then((found) => {
+      void waitForCapacitor(CAPACITOR_BRIDGE_TIMEOUT_MS).then((found) => {
         if (!cancelled && found) {
           setIsBluetoothSupported(true);
         }
       });
-      cancelPolling = () => { cancelled = true; };
+      cancelPolling = () => {
+        cancelled = true;
+      };
     }
 
     if (
       typeof navigator !== 'undefined' &&
-      /iPhone|iPad|iPod/i.test(
-        navigator.userAgent || (navigator as { vendor?: string }).vendor || '',
-      )
+      /iPhone|iPad|iPod/i.test(navigator.userAgent || (navigator as { vendor?: string }).vendor || '')
     ) {
       setIsIOS(true);
     }
@@ -150,25 +207,23 @@ export function BluetoothProvider({
       isBluetoothSupported,
       isIOS,
     }),
-    [
-      isConnected,
-      loading,
-      connect,
-      disconnect,
-      sendFramesToBoard,
-      isBluetoothSupported,
-      isIOS,
-    ],
+    [isConnected, loading, connect, disconnect, sendFramesToBoard, isBluetoothSupported, isIOS],
   );
 
   return (
     <BluetoothContext.Provider value={value}>
       {isConnected && (
-        <BluetoothAutoSender
-          sendFramesToBoard={sendFramesToBoard}
-          layoutName={boardDetails.layout_name ?? ''}
+        <BluetoothAutoSender sendFramesToBoard={sendFramesToBoard} layoutName={boardDetails.layout_name ?? ''} />
+      )}
+      {pickerState && (
+        <DevicePickerDialog
+          devices={pickerState.devices}
+          onSelect={pickerState.handleSelect}
+          onCancel={pickerState.handleCancel}
+          resolvedBoards={resolvedBoards}
         />
       )}
+      <AutoConnectHandler connect={connect} isBluetoothSupported={isBluetoothSupported} />
       {children}
     </BluetoothContext.Provider>
   );
@@ -177,9 +232,7 @@ export function BluetoothProvider({
 export function useBluetoothContext() {
   const context = useContext(BluetoothContext);
   if (!context) {
-    throw new Error(
-      'useBluetoothContext must be used within a BluetoothProvider',
-    );
+    throw new Error('useBluetoothContext must be used within a BluetoothProvider');
   }
   return context;
 }

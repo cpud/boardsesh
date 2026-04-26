@@ -62,6 +62,53 @@ run_pending_drizzle_sql_migrations() {
   done
 }
 
+# ── Fast path: if everything is already running, just check migrations ─
+# This makes multi-worktree setups fast — the second worktree skips all
+# container setup and pg_hba configuration.
+all_running=true
+for svc in postgres neon-proxy redis; do
+  container=$(docker compose ps -q "$svc" 2>/dev/null)
+  if [ -z "$container" ] || ! docker inspect "$container" --format='{{.State.Running}}' 2>/dev/null | grep -q true; then
+    all_running=false
+    break
+  fi
+done
+
+if [ "$all_running" = true ]; then
+  echo "All containers already running — checking for pending migrations..."
+  PG_CONTAINER=$(docker compose ps -q postgres)
+  run_pending_drizzle_sql_migrations
+  echo ""
+  echo "Development database is ready."
+  echo "  Test user: test@boardsesh.com / test"
+  exit 0
+fi
+
+# ── Cross-worktree fast path: postgres already running on port 5432 ──────
+# If another worktree already started the DB stack, reuse it instead of
+# starting duplicate containers (which would fail on port conflicts anyway).
+# Only reuse the container if it is actually the boardsesh dev DB image —
+# another project's postgres on port 5432 must not receive boardsesh migrations.
+PG_CONTAINER=$(docker ps --filter "publish=5432" --filter "status=running" -q 2>/dev/null | head -1)
+if [ -n "$PG_CONTAINER" ]; then
+  PG_IMAGE=$(docker inspect "$PG_CONTAINER" --format='{{.Config.Image}}' 2>/dev/null)
+  case "$PG_IMAGE" in
+    *boardsesh-dev-db*) ;;
+    *)
+      echo "WARNING: A postgres container is running on port 5432 but it is not the boardsesh dev DB (expected image matching *boardsesh-dev-db*, got: $PG_IMAGE). Skipping cross-worktree fast path."
+      PG_CONTAINER=""
+      ;;
+  esac
+fi
+if [ -n "$PG_CONTAINER" ]; then
+  echo "Postgres already running on port 5432 (shared DB detected) — skipping container startup..."
+  run_pending_drizzle_sql_migrations
+  echo ""
+  echo "Development database is ready (shared from another worktree)."
+  echo "  Test user: test@boardsesh.com / test"
+  exit 0
+fi
+
 echo "Starting development database containers..."
 docker compose up -d postgres redis
 

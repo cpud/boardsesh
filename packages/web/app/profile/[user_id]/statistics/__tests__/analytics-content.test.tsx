@@ -1,6 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+import AnalyticsContent from '../analytics-content';
+import { useProfileData } from '../../hooks/use-profile-data';
 
 vi.mock('../../hooks/use-profile-data', () => ({
   useProfileData: vi.fn(),
@@ -8,10 +10,7 @@ vi.mock('../../hooks/use-profile-data', () => ({
 
 vi.mock('../../components/stats-summary', () => ({
   default: (props: { weeklyBars?: unknown[] | null }) => (
-    <div
-      data-testid="stats-summary"
-      data-has-weekly-bars={props.weeklyBars ? 'true' : 'false'}
-    />
+    <div data-testid="stats-summary" data-has-weekly-bars={props.weeklyBars ? 'true' : 'false'} />
   ),
 }));
 
@@ -23,9 +22,6 @@ vi.mock('../../components/board-stats-section', () => ({
     />
   ),
 }));
-
-import AnalyticsContent from '../analytics-content';
-import { useProfileData } from '../../hooks/use-profile-data';
 
 const mockUseProfileData = vi.mocked(useProfileData);
 
@@ -51,6 +47,7 @@ function mockProfileDataReturn(overrides?: Partial<ReturnType<typeof useProfileD
     loadingAggregated: false,
     aggregatedStackedBars: null,
     loadingProfileStats: false,
+    layoutStats: [],
     statisticsSummary: { totalAscents: 0, layoutPercentages: [] },
     hardestSend: null,
     hardestFlash: null,
@@ -73,19 +70,21 @@ describe('AnalyticsContent', () => {
   });
 
   it('passes weekly bars into StatsSummary and not BoardStatsSection', () => {
-    mockUseProfileData.mockReturnValue(mockProfileDataReturn({
-      filteredLogbook: [{
-        climbed_at: new Date().toISOString(),
-        difficulty: 10,
-        tries: 1,
-        angle: 40,
-        status: 'send',
-        climbUuid: 'climb-1',
-      }],
-      weeklyBars: [
-        { key: '2026-W1', label: 'W1', segments: [{ value: 2, color: '#ccc', label: 'V3' }] },
-      ],
-    }));
+    mockUseProfileData.mockReturnValue(
+      mockProfileDataReturn({
+        filteredLogbook: [
+          {
+            climbed_at: new Date().toISOString(),
+            difficulty: 10,
+            tries: 1,
+            angle: 40,
+            status: 'send',
+            climbUuid: 'climb-1',
+          },
+        ],
+        weeklyBars: [{ key: '2026-W1', label: 'W1', segments: [{ value: 2, color: '#ccc', label: 'V3' }] }],
+      }),
+    );
 
     render(<AnalyticsContent userId="user-2" />);
 

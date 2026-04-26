@@ -14,10 +14,10 @@ import type { Gym } from '@boardsesh/shared-schema';
 import { themeTokens } from '@/app/theme/theme-config';
 import StatItem from '@/app/components/ui/stat-item';
 
-interface GymCardProps {
+type GymCardProps = {
   gym: Gym;
   onClick?: (gym: Gym) => void;
-}
+};
 
 export default function GymCard({ gym, onClick }: GymCardProps) {
   return (
@@ -32,7 +32,14 @@ export default function GymCard({ gym, onClick }: GymCardProps) {
     >
       <CardActionArea onClick={() => onClick?.(gym)} disabled={!onClick}>
         <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: 1,
+            }}
+          >
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <MuiTypography
                 variant="subtitle1"
@@ -71,4 +78,3 @@ export default function GymCard({ gym, onClick }: GymCardProps) {
     </Card>
   );
 }
-

@@ -10,8 +10,25 @@ export const metadata = createNoIndexMetadata({
 
 function AuthPageFallback() {
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--semantic-background)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <div style={{ width: 40, height: 40, border: '3px solid var(--neutral-200)', borderTopColor: 'var(--color-primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'var(--semantic-background)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <div
+        style={{
+          width: 40,
+          height: 40,
+          border: '3px solid var(--neutral-200)',
+          borderTopColor: 'var(--color-primary)',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+        }}
+      />
     </div>
   );
 }

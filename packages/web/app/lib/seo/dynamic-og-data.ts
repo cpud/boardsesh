@@ -282,18 +282,20 @@ async function resolveSessionBoardInfo(seed: SessionBoardSeed): Promise<{
 
 export const getSessionOgSummary = cache(async (sessionId: string): Promise<SessionOgSummary> => {
   let sessionType: 'party' | 'inferred' | null = null;
-  let sessionRow: {
-    name: string | null;
-    leader_name: string | null;
-    version_at: string | Date | null;
-    board_path: string | null;
-    board_slug: string | null;
-    board_angle: number | null;
-    board_type: string | null;
-    layout_id: number | null;
-    size_id: number | null;
-    set_ids: string | null;
-  } | undefined;
+  let sessionRow:
+    | {
+        name: string | null;
+        leader_name: string | null;
+        version_at: string | Date | null;
+        board_path: string | null;
+        board_slug: string | null;
+        board_angle: number | null;
+        board_type: string | null;
+        layout_id: number | null;
+        size_id: number | null;
+        set_ids: string | null;
+      }
+    | undefined;
 
   const partySessionResult = await dbz.execute<{
     name: string | null;
@@ -407,9 +409,10 @@ export const getSessionOgSummary = cache(async (sessionId: string): Promise<Sess
     };
   }
 
-  const tickWhereClause = sessionType === 'party'
-    ? drizzleSql`bt.session_id = ${sessionId}`
-    : drizzleSql`bt.inferred_session_id = ${sessionId}`;
+  const tickWhereClause =
+    sessionType === 'party'
+      ? drizzleSql`bt.session_id = ${sessionId}`
+      : drizzleSql`bt.inferred_session_id = ${sessionId}`;
 
   const [participantCountResult, participantResult, totalSendsResult, gradeResult, boardInfo] = await Promise.all([
     dbz.execute<{

@@ -19,21 +19,19 @@ import {
   UNFOLLOW_USER,
   FOLLOW_SETTER,
   UNFOLLOW_SETTER,
-} from '@/app/lib/graphql/operations';
-import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
   SEARCH_USERS_AND_SETTERS,
   type SearchUsersAndSettersQueryVariables,
   type SearchUsersAndSettersQueryResponse,
 } from '@/app/lib/graphql/operations';
+import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import type { UnifiedSearchResult, UnifiedSearchConnection } from '@boardsesh/shared-schema';
 import { useDebouncedValue } from '@/app/hooks/use-debounced-value';
 import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
 
-interface UserSearchResultsProps {
+type UserSearchResultsProps = {
   query: string;
   authToken: string | null;
-}
+};
 
 export default function UserSearchResults({ query, authToken }: UserSearchResultsProps) {
   const debouncedQuery = useDebouncedValue(query, 300);
@@ -47,7 +45,9 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
       const client = createGraphQLHttpClient(authToken);
       const response = await client.request<SearchUsersAndSettersQueryResponse, SearchUsersAndSettersQueryVariables>(
         SEARCH_USERS_AND_SETTERS,
-        { input: { query: debouncedQuery, limit: 20, offset: pageParam as number } }
+        {
+          input: { query: debouncedQuery, limit: 20, offset: pageParam as number },
+        },
       );
       return response.searchUsersAndSetters;
     },
@@ -60,10 +60,7 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
     staleTime: 30 * 1000,
   });
 
-  const results: UnifiedSearchResult[] = useMemo(
-    () => data?.pages.flatMap((p) => p.results) ?? [],
-    [data],
-  );
+  const results: UnifiedSearchResult[] = useMemo(() => data?.pages.flatMap((p) => p.results) ?? [], [data]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: fetchNextPage,
@@ -141,7 +138,8 @@ export default function UserSearchResults({ query, authToken }: UserSearchResult
                       )}
                       {result.setter && (
                         <Typography variant="caption" component="span" color="text.secondary">
-                          {result.setter.climbCount} climb{result.setter.climbCount !== 1 ? 's' : ''} set
+                          {result.setter.climbCount} climb
+                          {result.setter.climbCount !== 1 ? 's' : ''} set
                         </Typography>
                       )}
                     </Box>

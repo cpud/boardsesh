@@ -1,6 +1,6 @@
 import { fetch } from 'undici';
-import { SyncData } from '../sync-api-types';
-import { WEB_HOSTS, SyncOptions, AuroraBoardName } from './types';
+import type { SyncData } from '../sync-api-types';
+import { type SyncOptions, type AuroraBoardName, WEB_HOSTS } from './types';
 import { handleAuroraApiResponse } from './util';
 
 //TODO: Can probably be consolidated with userSync
@@ -8,7 +8,6 @@ export async function sharedSync(
   board: AuroraBoardName,
   options: Omit<SyncOptions, 'walls' | 'wallExpungements'> = {},
   token: string,
-   
 ): Promise<SyncData> {
   const { sharedSyncs = [] } = options;
 

@@ -15,12 +15,12 @@ import { useWsAuthToken } from './use-ws-auth-token';
 
 export type HealthKitSaveState = 'idle' | 'saving' | 'saved' | 'error' | 'unavailable';
 
-interface UseHealthKitSyncOptions {
+type UseHealthKitSyncOptions = {
   summary: SessionSummary | null;
   boardType: string;
   /** If the session already has a HealthKit workout id persisted, start in 'saved' state. */
   existingWorkoutId?: string | null;
-}
+};
 
 export function useHealthKitSync({ summary, boardType, existingWorkoutId }: UseHealthKitSyncOptions) {
   const [available, setAvailable] = useState(false);
@@ -29,7 +29,7 @@ export function useHealthKitSync({ summary, boardType, existingWorkoutId }: UseH
 
   useEffect(() => {
     let cancelled = false;
-    isHealthKitAvailable().then((v) => {
+    void isHealthKitAvailable().then((v) => {
       if (!cancelled) setAvailable(v);
     });
     return () => {
@@ -90,7 +90,7 @@ export function useHealthKitAutoSync() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    getHealthKitAutoSync().then((v) => {
+    void getHealthKitAutoSync().then((v) => {
       setEnabled(v);
       setLoaded(true);
     });

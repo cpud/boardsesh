@@ -25,13 +25,18 @@ import {
   type ImportPhase,
   type ImportProgress,
 } from './aurora-credentials-section';
-import { parseAuroraExport, type AuroraExportPreview, type StrippedExportData } from '@/app/lib/data-sync/aurora/parse-aurora-export';
+import {
+  parseAuroraExport,
+  type AuroraExportPreview,
+  type StrippedExportData,
+} from '@/app/lib/data-sync/aurora/parse-aurora-export';
+import type { AuroraBoardName } from '@boardsesh/shared-schema';
 import styles from './aurora-credentials-section.module.css';
 
-interface BoardImportPromptProps {
-  boardType: 'kilter' | 'tension';
+type BoardImportPromptProps = {
+  boardType: AuroraBoardName;
   onImportComplete?: () => void;
-}
+};
 
 export default function BoardImportPrompt({ boardType, onImportComplete }: BoardImportPromptProps) {
   const { showMessage } = useSnackbar();
@@ -60,9 +65,7 @@ export default function BoardImportPrompt({ boardType, onImportComplete }: Board
       const response = await fetch('/api/internal/aurora-credentials');
       if (response.ok) {
         const data = await response.json();
-        const cred = (data.credentials as AuroraCredentialStatus[]).find(
-          (c) => c.boardType === boardType,
-        );
+        const cred = (data.credentials as AuroraCredentialStatus[]).find((c) => c.boardType === boardType);
         setCredential(cred ?? null);
       }
     } catch (error) {
@@ -73,7 +76,7 @@ export default function BoardImportPrompt({ boardType, onImportComplete }: Board
   };
 
   useEffect(() => {
-    fetchCredential();
+    void fetchCredential();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boardType]);
 
@@ -107,11 +110,7 @@ export default function BoardImportPrompt({ boardType, onImportComplete }: Board
         throw new Error(error.error || 'Failed to save credentials');
       }
 
-      if (boardType === 'tension') {
-        showMessage('Tension account linked. Your data will show up within 12 hours.', 'success');
-      } else {
-        showMessage(`${boardName} account linked successfully`, 'success');
-      }
+      showMessage(`${boardName} account linked. Your data will show up within 12 hours.`, 'success');
       setIsModalOpen(false);
       setFormValues({ username: '', password: '' });
       await fetchCredential();
@@ -241,7 +240,9 @@ export default function BoardImportPrompt({ boardType, onImportComplete }: Board
       });
 
       if (!receivedCompleteRef.current) {
-        setImportError('Import was interrupted. The server may have timed out. Your data may have been partially imported.');
+        setImportError(
+          'Import was interrupted. The server may have timed out. Your data may have been partially imported.',
+        );
         setImportPhase('error');
         showMessage('Import was interrupted', 'error');
       }
@@ -261,15 +262,21 @@ export default function BoardImportPrompt({ boardType, onImportComplete }: Board
   };
 
   const isImporting = importPhase === 'importing';
-  const isImportDialogOpen = importPhase === 'preview' || importPhase === 'importing' || importPhase === 'complete' || importPhase === 'error';
+  const isImportDialogOpen =
+    importPhase === 'preview' || importPhase === 'importing' || importPhase === 'complete' || importPhase === 'error';
 
   const getImportDialogTitle = () => {
     switch (importPhase) {
-      case 'preview': return 'Import Aurora Data';
-      case 'importing': return 'Importing Aurora Data...';
-      case 'complete': return 'Import Complete';
-      case 'error': return 'Import Failed';
-      default: return '';
+      case 'preview':
+        return 'Import Aurora Data';
+      case 'importing':
+        return 'Importing Aurora Data...';
+      case 'complete':
+        return 'Import Complete';
+      case 'error':
+        return 'Import Failed';
+      default:
+        return '';
     }
   };
 
@@ -303,15 +310,15 @@ export default function BoardImportPrompt({ boardType, onImportComplete }: Board
         <DialogTitle>{`Link ${boardName} Account`}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" component="span" color="text.secondary" className={styles.modalDescription}>
-            Enter your {boardName} Board username and password to import your Aurora data.
-            Your credentials are encrypted and securely stored. Data syncs every 12 hours.
+            Enter your {boardName} Board username and password to import your Aurora data. Your credentials are
+            encrypted and securely stored. Data syncs every 12 hours.
           </Typography>
           <Box
             component="form"
             onSubmit={(e: React.FormEvent) => {
               e.preventDefault();
               if (!formValues.username || !formValues.password) return;
-              handleSaveCredentials(formValues);
+              void handleSaveCredentials(formValues);
             }}
             sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}
           >
@@ -362,27 +369,32 @@ export default function BoardImportPrompt({ boardType, onImportComplete }: Board
           {importPhase === 'preview' && importPreview && (
             <>
               <Typography variant="body2" color="text.secondary" className={styles.modalDescription}>
-                Import data from <strong>{importPreview.username}</strong> to{' '}
-                <strong>{boardName}</strong>:
+                Import data from <strong>{importPreview.username}</strong> to <strong>{boardName}</strong>:
               </Typography>
               <List dense>
                 {importPreview.climbs > 0 && (
-                  <ListItem><ListItemText primary={`${importPreview.climbs} draft climbs`} /></ListItem>
+                  <ListItem>
+                    <ListItemText primary={`${importPreview.climbs} draft climbs`} />
+                  </ListItem>
                 )}
-                <ListItem><ListItemText primary={`${importPreview.ascents} ascents`} /></ListItem>
-                <ListItem><ListItemText primary={`${importPreview.attempts} attempts`} /></ListItem>
-                <ListItem><ListItemText primary={`${importPreview.circuits} circuits`} /></ListItem>
+                <ListItem>
+                  <ListItemText primary={`${importPreview.ascents} ascents`} />
+                </ListItem>
+                <ListItem>
+                  <ListItemText primary={`${importPreview.attempts} attempts`} />
+                </ListItem>
+                <ListItem>
+                  <ListItemText primary={`${importPreview.circuits} circuits`} />
+                </ListItem>
               </List>
               <Typography variant="body2" color="text.secondary">
-                Climbs will be matched by name. Any that can't be matched will be reported after import.
+                Climbs will be matched by name. Any that can&apos;t be matched will be reported after import.
                 Re-importing the same file will not create duplicates.
               </Typography>
             </>
           )}
 
-          {importPhase === 'importing' && (
-            <ImportProgressSteps progress={importProgress} />
-          )}
+          {importPhase === 'importing' && <ImportProgressSteps progress={importProgress} />}
 
           {importPhase === 'complete' && importResult && (
             <>
@@ -417,11 +429,14 @@ export default function BoardImportPrompt({ boardType, onImportComplete }: Board
               {importResult.unresolvedClimbs.length > 0 && (
                 <MuiAlert severity="warning" className={styles.unsyncedAlert}>
                   <AlertTitle>
-                    {importResult.unresolvedClimbs.length} climb{importResult.unresolvedClimbs.length > 1 ? 's' : ''} could not be matched
+                    {importResult.unresolvedClimbs.length} climb
+                    {importResult.unresolvedClimbs.length > 1 ? 's' : ''} could not be matched
                   </AlertTitle>
                   <div className={styles.unresolvedList}>
                     {importResult.unresolvedClimbs.slice(0, 20).map((name) => (
-                      <Typography key={name} variant="body2">{name}</Typography>
+                      <Typography key={name} variant="body2">
+                        {name}
+                      </Typography>
                     ))}
                     {importResult.unresolvedClimbs.length > 20 && (
                       <Typography variant="body2" color="text.secondary">
@@ -445,12 +460,16 @@ export default function BoardImportPrompt({ boardType, onImportComplete }: Board
         {importPhase === 'preview' && (
           <DialogActions>
             <Button onClick={handleImportDialogClose}>Cancel</Button>
-            <Button variant="contained" onClick={handleImportConfirm}>Import</Button>
+            <Button variant="contained" onClick={handleImportConfirm}>
+              Import
+            </Button>
           </DialogActions>
         )}
         {(importPhase === 'complete' || importPhase === 'error') && (
           <DialogActions>
-            <Button variant="contained" onClick={handleImportDialogClose}>Close</Button>
+            <Button variant="contained" onClick={handleImportDialogClose}>
+              Close
+            </Button>
           </DialogActions>
         )}
       </Dialog>

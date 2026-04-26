@@ -50,7 +50,7 @@ export function generateBoardTitle(boardDetails: BoardDetails): string {
 }
 
 export function getBoardDetailsForBoard(
-  params: ParsedBoardRouteParameters | { board_name: string; layout_id: number; size_id: number; set_ids: SetIdList }
+  params: ParsedBoardRouteParameters | { board_name: string; layout_id: number; size_id: number; set_ids: SetIdList },
 ): BoardDetails {
   if (params.board_name === 'moonboard') {
     return getMoonBoardDetails({

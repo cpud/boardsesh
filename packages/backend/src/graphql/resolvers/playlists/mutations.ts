@@ -17,11 +17,7 @@ export const playlistMutations = {
   /**
    * Create a new playlist with the authenticated user as owner
    */
-  createPlaylist: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext
-  ): Promise<unknown> => {
+  createPlaylist: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext): Promise<unknown> => {
     requireAuthenticated(ctx);
     const validatedInput = validateInput(CreatePlaylistInputSchema, input, 'input');
 
@@ -76,11 +72,7 @@ export const playlistMutations = {
   /**
    * Update an existing playlist (requires owner role)
    */
-  updatePlaylist: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext
-  ): Promise<unknown> => {
+  updatePlaylist: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext): Promise<unknown> => {
     requireAuthenticated(ctx);
     const validatedInput = validateInput(UpdatePlaylistInputSchema, input, 'input');
 
@@ -90,16 +82,13 @@ export const playlistMutations = {
     const ownership = await db
       .select()
       .from(dbSchema.playlistOwnership)
-      .innerJoin(
-        dbSchema.playlists,
-        eq(dbSchema.playlists.id, dbSchema.playlistOwnership.playlistId)
-      )
+      .innerJoin(dbSchema.playlists, eq(dbSchema.playlists.id, dbSchema.playlistOwnership.playlistId))
       .where(
         and(
           eq(dbSchema.playlists.uuid, validatedInput.playlistId),
           eq(dbSchema.playlistOwnership.userId, userId),
-          eq(dbSchema.playlistOwnership.role, 'owner')
-        )
+          eq(dbSchema.playlistOwnership.role, 'owner'),
+        ),
       )
       .limit(1);
 
@@ -162,7 +151,7 @@ export const playlistMutations = {
   deletePlaylist: async (
     _: unknown,
     { playlistId }: { playlistId: string },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ): Promise<boolean> => {
     requireAuthenticated(ctx);
 
@@ -172,16 +161,13 @@ export const playlistMutations = {
     const ownership = await db
       .select({ id: dbSchema.playlists.id })
       .from(dbSchema.playlistOwnership)
-      .innerJoin(
-        dbSchema.playlists,
-        eq(dbSchema.playlists.id, dbSchema.playlistOwnership.playlistId)
-      )
+      .innerJoin(dbSchema.playlists, eq(dbSchema.playlists.id, dbSchema.playlistOwnership.playlistId))
       .where(
         and(
           eq(dbSchema.playlists.uuid, playlistId),
           eq(dbSchema.playlistOwnership.userId, userId),
-          eq(dbSchema.playlistOwnership.role, 'owner')
-        )
+          eq(dbSchema.playlistOwnership.role, 'owner'),
+        ),
       )
       .limit(1);
 
@@ -198,11 +184,7 @@ export const playlistMutations = {
   /**
    * Add a climb to a playlist
    */
-  addClimbToPlaylist: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext
-  ): Promise<unknown> => {
+  addClimbToPlaylist: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext): Promise<unknown> => {
     requireAuthenticated(ctx);
     const validatedInput = validateInput(AddClimbToPlaylistInputSchema, input, 'input');
 
@@ -212,16 +194,8 @@ export const playlistMutations = {
     const ownership = await db
       .select({ id: dbSchema.playlists.id })
       .from(dbSchema.playlistOwnership)
-      .innerJoin(
-        dbSchema.playlists,
-        eq(dbSchema.playlists.id, dbSchema.playlistOwnership.playlistId)
-      )
-      .where(
-        and(
-          eq(dbSchema.playlists.uuid, validatedInput.playlistId),
-          eq(dbSchema.playlistOwnership.userId, userId)
-        )
-      )
+      .innerJoin(dbSchema.playlists, eq(dbSchema.playlists.id, dbSchema.playlistOwnership.playlistId))
+      .where(and(eq(dbSchema.playlists.uuid, validatedInput.playlistId), eq(dbSchema.playlistOwnership.userId, userId)))
       .limit(1);
 
     if (ownership.length === 0) {
@@ -237,8 +211,8 @@ export const playlistMutations = {
       .where(
         and(
           eq(dbSchema.playlistClimbs.playlistId, playlistId),
-          eq(dbSchema.playlistClimbs.climbUuid, validatedInput.climbUuid)
-        )
+          eq(dbSchema.playlistClimbs.climbUuid, validatedInput.climbUuid),
+        ),
       )
       .limit(1);
 
@@ -303,7 +277,7 @@ export const playlistMutations = {
   removeClimbFromPlaylist: async (
     _: unknown,
     { input }: { input: unknown },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ): Promise<boolean> => {
     requireAuthenticated(ctx);
     const validatedInput = validateInput(RemoveClimbFromPlaylistInputSchema, input, 'input');
@@ -314,16 +288,8 @@ export const playlistMutations = {
     const ownership = await db
       .select({ id: dbSchema.playlists.id })
       .from(dbSchema.playlistOwnership)
-      .innerJoin(
-        dbSchema.playlists,
-        eq(dbSchema.playlists.id, dbSchema.playlistOwnership.playlistId)
-      )
-      .where(
-        and(
-          eq(dbSchema.playlists.uuid, validatedInput.playlistId),
-          eq(dbSchema.playlistOwnership.userId, userId)
-        )
-      )
+      .innerJoin(dbSchema.playlists, eq(dbSchema.playlists.id, dbSchema.playlistOwnership.playlistId))
+      .where(and(eq(dbSchema.playlists.uuid, validatedInput.playlistId), eq(dbSchema.playlistOwnership.userId, userId)))
       .limit(1);
 
     if (ownership.length === 0) {
@@ -341,15 +307,12 @@ export const playlistMutations = {
       .where(
         and(
           eq(dbSchema.playlistClimbs.playlistId, playlistId),
-          eq(dbSchema.playlistClimbs.climbUuid, validatedInput.climbUuid)
-        )
+          eq(dbSchema.playlistClimbs.climbUuid, validatedInput.climbUuid),
+        ),
       );
 
     // Update playlist updatedAt
-    await db
-      .update(dbSchema.playlists)
-      .set({ updatedAt: new Date() })
-      .where(eq(dbSchema.playlists.id, playlistId));
+    await db.update(dbSchema.playlists).set({ updatedAt: new Date() }).where(eq(dbSchema.playlists.id, playlistId));
 
     return true;
   },
@@ -360,7 +323,7 @@ export const playlistMutations = {
   updatePlaylistLastAccessed: async (
     _: unknown,
     { playlistId }: { playlistId: string },
-    ctx: ConnectionContext
+    ctx: ConnectionContext,
   ): Promise<boolean> => {
     requireAuthenticated(ctx);
 
@@ -370,16 +333,8 @@ export const playlistMutations = {
     const ownership = await db
       .select({ id: dbSchema.playlists.id })
       .from(dbSchema.playlistOwnership)
-      .innerJoin(
-        dbSchema.playlists,
-        eq(dbSchema.playlists.id, dbSchema.playlistOwnership.playlistId)
-      )
-      .where(
-        and(
-          eq(dbSchema.playlists.uuid, playlistId),
-          eq(dbSchema.playlistOwnership.userId, userId)
-        )
-      )
+      .innerJoin(dbSchema.playlists, eq(dbSchema.playlists.id, dbSchema.playlistOwnership.playlistId))
+      .where(and(eq(dbSchema.playlists.uuid, playlistId), eq(dbSchema.playlistOwnership.userId, userId)))
       .limit(1);
 
     if (ownership.length === 0) {
@@ -451,8 +406,8 @@ export const playlistMutations = {
       .where(
         and(
           eq(dbSchema.playlistFollows.followerId, userId),
-          eq(dbSchema.playlistFollows.playlistUuid, validatedInput.playlistUuid)
-        )
+          eq(dbSchema.playlistFollows.playlistUuid, validatedInput.playlistUuid),
+        ),
       );
 
     return true;

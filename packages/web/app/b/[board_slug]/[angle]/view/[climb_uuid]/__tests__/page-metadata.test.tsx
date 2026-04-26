@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vite-plus/test';
 
 vi.mock('next/navigation', () => ({
   notFound: vi.fn(),
@@ -74,9 +74,7 @@ vi.mock('@/app/components/board-renderer/util', () => ({
 
 const pageModule = await import('../page');
 
-function getOpenGraphImageUrl(
-  image: string | URL | { url: string | URL } | undefined,
-) {
+function getOpenGraphImageUrl(image: string | URL | { url: string | URL } | undefined) {
   if (!image) {
     return undefined;
   }
@@ -102,9 +100,7 @@ describe('board slug climb metadata', () => {
       }),
     });
 
-    const image = Array.isArray(metadata.openGraph?.images)
-      ? metadata.openGraph.images[0]
-      : metadata.openGraph?.images;
+    const image = Array.isArray(metadata.openGraph?.images) ? metadata.openGraph.images[0] : metadata.openGraph?.images;
     const imageUrl = getOpenGraphImageUrl(image);
 
     expect(imageUrl).toBe('/api/internal/board-render?board_name=kilter&variant=og&format=png');

@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi } from 'vite-plus/test';
 
 /**
  * Mocks navigator.geolocation for testing.
@@ -83,10 +83,7 @@ export function setupIntersectionObserverMock() {
     disconnect: disconnectFn,
     /** Trigger the observer callback with a mock entry */
     triggerIntersect: (isIntersecting: boolean) => {
-      lastCallback?.(
-        [{ isIntersecting } as IntersectionObserverEntry],
-        {} as IntersectionObserver,
-      );
+      lastCallback?.([{ isIntersecting } as IntersectionObserverEntry], {} as IntersectionObserver);
     },
   };
 }
@@ -99,7 +96,9 @@ export function setupPermissionsApiMock(initialState: PermissionState = 'prompt'
   let changeHandler: (() => void) | null = null;
 
   const permissionStatus = {
-    get state() { return currentState; },
+    get state() {
+      return currentState;
+    },
     addEventListener: vi.fn((event: string, handler: () => void) => {
       if (event === 'change') changeHandler = handler;
     }),

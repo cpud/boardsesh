@@ -7,14 +7,14 @@ const FLASH_COLOR = 'rgba(75,192,192,0.7)';
 const SEND_COLOR = 'rgba(192,75,75,0.7)';
 const ATTEMPT_COLOR = 'rgba(158,158,158,0.7)';
 
-interface OutcomeDoughnutProps {
+type OutcomeDoughnutProps = {
   flashes: number;
   sends: number;
   attempts: number;
   height?: number;
   /** Compact mode: no legend, no tooltips */
   compact?: boolean;
-}
+};
 
 export default function OutcomeDoughnut({
   flashes,
@@ -35,11 +35,13 @@ export default function OutcomeDoughnut({
   return (
     <div data-testid="outcome-doughnut" style={{ height }}>
       <PieChart
-        series={[{
-          data,
-          innerRadius: '55%',
-          paddingAngle: 1,
-        }]}
+        series={[
+          {
+            data,
+            innerRadius: '55%',
+            paddingAngle: 1,
+          },
+        ]}
         height={height}
         margin={{ top: 0, bottom: 0, left: 0, right: compact ? 0 : 100 }}
         hideLegend={compact}

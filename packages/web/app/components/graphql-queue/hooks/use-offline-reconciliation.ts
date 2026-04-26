@@ -4,7 +4,7 @@ import type { ClimbQueueItem } from '../../queue-control/types';
 
 const RECONCILIATION_TIMEOUT_MS = 15000;
 
-export interface UseOfflineReconciliationParams {
+export type UseOfflineReconciliationParams = {
   offlineBuffer: {
     getBufferedAdditions: () => ClimbQueueItem[];
     clearBuffer: () => void;
@@ -24,7 +24,7 @@ export interface UseOfflineReconciliationParams {
   };
   currentQueue: ClimbQueueItem[];
   currentClimbQueueItem: ClimbQueueItem | null;
-}
+};
 
 /**
  * Watches for disconnected-to-connected transitions and reconciles local queue
@@ -123,7 +123,7 @@ export function useOfflineReconciliation({
 
     async function reconcileAdditionsOnly(serverQueue: ClimbQueueItem[]) {
       const pending = offlineBuffer.getBufferedAdditions();
-      const serverUuids = new Set(serverQueue.map(item => item.uuid));
+      const serverUuids = new Set(serverQueue.map((item) => item.uuid));
 
       for (const item of pending) {
         if (isSuperseded()) return;

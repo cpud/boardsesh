@@ -1,7 +1,8 @@
-// Aurora boards only (kilter/tension) - different from main BoardName which includes moonboard
-export type AuroraBoardName = 'kilter' | 'tension';
+import { AURORA_BOARDS, type AuroraBoardName } from '@boardsesh/shared-schema/types';
 
-export interface BoardUser {
+export { AURORA_BOARDS, type AuroraBoardName };
+
+export type BoardUser = {
   id: number;
   username: string;
   email_address: string;
@@ -16,9 +17,9 @@ export interface BoardUser {
   height: number | null;
   weight: number | null;
   wingspan: number | null;
-}
+};
 
-export interface LoginResponse {
+export type LoginResponse = {
   error?: string;
   login?: {
     created_at: string;
@@ -33,14 +34,14 @@ export interface LoginResponse {
     token: string;
     user_id: number;
   };
-}
+};
 
-export interface Session {
+export type Session = {
   user_id: number;
   token: string;
-}
+};
 
-export interface SyncOptions {
+export type SyncOptions = {
   tables?: string[];
   walls?: Array<{
     uuid: string;
@@ -65,12 +66,12 @@ export interface SyncOptions {
   }>;
   sharedSyncs?: Array<LastSyncData>;
   userSyncs?: Array<UserSyncData>;
-}
+};
 
-export interface LastSyncData {
+export type LastSyncData = {
   table_name: string;
   last_synchronized_at: string;
-}
+};
 
 export type UserSyncData = LastSyncData & {
   user_id: number;
@@ -79,6 +80,9 @@ export type UserSyncData = LastSyncData & {
 export const HOST_BASES: Record<AuroraBoardName, string> = {
   kilter: 'kilterboardapp',
   tension: 'tensionboardapp2',
+  decoy: 'decoyboardapp',
+  touchstone: 'touchstoneboardapp',
+  grasshopper: 'grasshopperboardapp',
 };
 
 export const API_HOSTS: Record<AuroraBoardName, string> = Object.fromEntries(
@@ -118,8 +122,8 @@ export const SHARED_SYNC_TABLES = [
   'kits',
 ];
 
-export interface ClientOptions {
+export type ClientOptions = {
   boardName: AuroraBoardName;
   token?: string | null;
   apiVersion?: string;
-}
+};

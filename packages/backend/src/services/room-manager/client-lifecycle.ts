@@ -1,12 +1,11 @@
 import type { ClimbQueueItem, SessionUser } from '@boardsesh/shared-schema';
 import { db } from '../../db/client';
-import { sessions } from '../../db/schema';
+import { sessions, type Session } from '../../db/schema';
 import type { RedisSessionStore } from '../redis-session-store';
 import type { DistributedStateManager } from '../distributed-state';
 import type { ConnectedClient } from './types';
 import { restoreSessionWithLock } from './session-restoration';
 import type { WriteScheduler } from './write-scheduler';
-import type { Session } from '../../db/schema';
 
 /**
  * Register a new client connection.
@@ -17,7 +16,7 @@ export async function registerClient(
   distributedState: DistributedStateManager | null,
   username?: string,
   userId?: string,
-  avatarUrl?: string
+  avatarUrl?: string,
 ): Promise<string> {
   const defaultUsername = username || `User-${connectionId.substring(0, 6)}`;
   clients.set(connectionId, {
@@ -58,17 +57,28 @@ export async function joinSession(
   writeScheduler: WriteScheduler,
   sessionGraceTimers: Map<string, NodeJS.Timeout>,
   pendingJoinPersists: Map<string, Promise<void>>,
-  getQueueStateFn: (sessionId: string) => Promise<{ queue: ClimbQueueItem[]; currentClimbQueueItem: ClimbQueueItem | null; version: number; sequence: number; stateHash: string }>,
+  getQueueStateFn: (sessionId: string) => Promise<{
+    queue: ClimbQueueItem[];
+    currentClimbQueueItem: ClimbQueueItem | null;
+    version: number;
+    sequence: number;
+    stateHash: string;
+  }>,
   getSessionUsers: (sessionId: string) => Promise<SessionUser[]>,
   getSessionUsersLocal: (sessionId: string) => SessionUser[],
   getSessionById: (sessionId: string) => Promise<Session | null>,
-  updateQueueStateImmediate: (sessionId: string, queue: ClimbQueueItem[], currentClimbQueueItem: ClimbQueueItem | null, expectedVersion?: number) => Promise<number>,
+  updateQueueStateImmediate: (
+    sessionId: string,
+    queue: ClimbQueueItem[],
+    currentClimbQueueItem: ClimbQueueItem | null,
+    expectedVersion?: number,
+  ) => Promise<number>,
   leaveSessionFn: (connectionId: string) => Promise<{ sessionId: string; newLeaderId?: string } | null>,
   username?: string,
   avatarUrl?: string,
   initialQueue?: ClimbQueueItem[],
   initialCurrentClimb?: ClimbQueueItem | null,
-  sessionName?: string
+  sessionName?: string,
 ): Promise<{
   clientId: string;
   users: SessionUser[];
@@ -106,27 +116,26 @@ export async function joinSession(
   if (graceTimer) {
     clearTimeout(graceTimer);
     sessionGraceTimers.delete(sessionId);
-    console.log(`[RoomManager] Cancelled grace timer for session ${sessionId} (client reconnecting)`);
+    console.info(`[RoomManager] Cancelled grace timer for session ${sessionId} (client reconnecting)`);
   }
 
   // Create or get session in memory - with lazy restore
   if (!sessionsMap.has(sessionId)) {
     if (redisStore) {
-      isNewSession = await restoreSessionWithLock(
-        sessionId,
-        sessionsMap,
-        redisStore,
-        getSessionById
-      );
+      isNewSession = await restoreSessionWithLock(sessionId, sessionsMap, redisStore, getSessionById);
       if (isNewSession) {
-        console.log(`[RoomManager] Creating new session ${sessionId} with ${initialQueue?.length || 0} initial queue items`);
+        console.info(
+          `[RoomManager] Creating new session ${sessionId} with ${initialQueue?.length || 0} initial queue items`,
+        );
       }
     } else {
       // No Redis, check Postgres directly for session existence
       const pgSession = await getSessionById(sessionId);
       if (!pgSession || pgSession.status === 'ended') {
         isNewSession = true;
-        console.log(`[RoomManager] Creating new session ${sessionId} with ${initialQueue?.length || 0} initial queue items`);
+        console.info(
+          `[RoomManager] Creating new session ${sessionId} with ${initialQueue?.length || 0} initial queue items`,
+        );
       }
       sessionsMap.set(sessionId, new Set());
     }
@@ -137,12 +146,7 @@ export async function joinSession(
   let isLeader: boolean;
 
   if (distributedState) {
-    const result = await distributedState.joinSession(
-      connectionId,
-      sessionId,
-      client.username,
-      client.avatarUrl
-    );
+    const result = await distributedState.joinSession(connectionId, sessionId, client.username, client.avatarUrl);
     isLeader = result.isLeader;
   } else {
     isLeader = sessionClientIds.size === 0;
@@ -155,9 +159,7 @@ export async function joinSession(
   // Existing sessions stay Redis-only for join/leave activity.
   if (isNewSession) {
     const previous = pendingJoinPersists.get(sessionId) ?? Promise.resolve();
-    const chained = previous.then(() =>
-      ensureSessionRecordExists(sessionId, boardPath, client.userId, sessionName)
-    );
+    const chained = previous.then(() => ensureSessionRecordExists(sessionId, boardPath, client.userId, sessionName));
 
     pendingJoinPersists.set(sessionId, chained);
     try {
@@ -171,21 +173,13 @@ export async function joinSession(
 
   // Initialize queue state for new sessions with provided initial queue
   if (isNewSession && initialQueue && initialQueue.length > 0) {
-    console.log(`[RoomManager] Initializing queue for new session ${sessionId} with ${initialQueue.length} items`);
-    await updateQueueStateImmediate(
-      sessionId,
-      initialQueue,
-      initialCurrentClimb || null,
-      0
-    );
+    console.info(`[RoomManager] Initializing queue for new session ${sessionId} with ${initialQueue.length} items`);
+    await updateQueueStateImmediate(sessionId, initialQueue, initialCurrentClimb || null, 0);
   }
 
   // Update Redis session state
   if (redisStore) {
-    await Promise.all([
-      redisStore.markActive(sessionId),
-      redisStore.refreshTTL(sessionId),
-    ]);
+    await Promise.all([redisStore.markActive(sessionId), redisStore.refreshTTL(sessionId)]);
 
     if (!distributedState) {
       const users = getSessionUsersLocal(sessionId);
@@ -225,7 +219,7 @@ export async function leaveSession(
   writeScheduler: WriteScheduler,
   sessionGraceTimers: Map<string, NodeJS.Timeout>,
   pendingJoinPersists: Map<string, Promise<void>>,
-  SESSION_GRACE_PERIOD_MS: number
+  SESSION_GRACE_PERIOD_MS: number,
 ): Promise<{ sessionId: string; newLeaderId?: string } | null> {
   const client = clients.get(connectionId);
   if (!client || !client.sessionId) {
@@ -247,7 +241,7 @@ export async function leaveSession(
         const currentClients = sessionsMap.get(sessionId);
         if (currentClients && currentClients.size === 0) {
           sessionsMap.delete(sessionId);
-          console.log(`[RoomManager] Session ${sessionId} removed from memory after grace period`);
+          console.info(`[RoomManager] Session ${sessionId} removed from memory after grace period`);
         }
         sessionGraceTimers.delete(sessionId);
       }, SESSION_GRACE_PERIOD_MS);
@@ -260,7 +254,7 @@ export async function leaveSession(
         if (!distributedState) {
           await redisStore.saveUsers(sessionId, []);
         }
-        console.log(`[RoomManager] Session ${sessionId} marked inactive - grace period started (60s)`);
+        console.info(`[RoomManager] Session ${sessionId} marked inactive - grace period started (60s)`);
       }
 
       // Await pending session insert for brand-new sessions.
@@ -310,7 +304,7 @@ export async function removeClient(
   connectionId: string,
   clients: Map<string, ConnectedClient>,
   sessionsMap: Map<string, Set<string>>,
-  distributedState: DistributedStateManager | null
+  distributedState: DistributedStateManager | null,
 ): Promise<{ distributedStateCleanedUp: boolean }> {
   let distributedStateCleanedUp = true;
 
@@ -318,13 +312,13 @@ export async function removeClient(
     try {
       const result = await distributedState.removeConnection(connectionId);
       if (result.newLeaderId) {
-        console.log(`[RoomManager] New leader ${result.newLeaderId.slice(0, 8)} elected after client removal`);
+        console.info(`[RoomManager] New leader ${result.newLeaderId.slice(0, 8)} elected after client removal`);
       }
     } catch (err) {
       distributedStateCleanedUp = false;
       console.error(
         `[RoomManager] Failed to remove connection ${connectionId.slice(0, 8)} from distributed state. ` +
-        `Redis data may remain until TTL expires. Error: ${err}`
+          `Redis data may remain until TTL expires. Error: ${String(err)}`,
       );
     }
   }
@@ -351,7 +345,7 @@ async function ensureSessionRecordExists(
   sessionId: string,
   boardPath: string,
   userId: string | null,
-  sessionName?: string
+  sessionName?: string,
 ): Promise<void> {
   const now = new Date();
   await db

@@ -16,12 +16,7 @@
  */
 
 // Main parsing functions
-export {
-  parseScreenshot,
-  parseMultipleScreenshots,
-  parseWithProcessor,
-  deduplicateClimbs,
-} from './parser';
+export { parseScreenshot, parseMultipleScreenshots, parseWithProcessor, deduplicateClimbs } from './parser';
 
 // Image processor for advanced use cases
 export { SharpImageProcessor } from './image-processor/sharp-processor';
@@ -42,10 +37,7 @@ export {
   findNearestGridPosition,
 } from './core/holds';
 export { runOCR, parseHeaderText } from './core/ocr';
-export {
-  calculateRegions,
-  calculateRegionsFromDetectedBoard,
-} from './core/regions';
+export { calculateRegions, calculateRegionsFromDetectedBoard } from './core/regions';
 
 // Types
 export type {

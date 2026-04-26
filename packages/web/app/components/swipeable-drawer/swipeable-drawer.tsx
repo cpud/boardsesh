@@ -11,7 +11,7 @@ import styles from './swipeable-drawer.module.css';
 
 type Placement = 'left' | 'right' | 'top' | 'bottom';
 
-export interface SwipeableDrawerProps {
+export type SwipeableDrawerProps = {
   swipeEnabled?: boolean;
   showDragHandle?: boolean;
   // Drawer props
@@ -43,7 +43,7 @@ export interface SwipeableDrawerProps {
   /** Ref forwarded to the MUI Paper element inside the drawer. */
   paperRef?: React.Ref<HTMLDivElement>;
   children?: React.ReactNode;
-}
+};
 
 const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
   swipeEnabled,
@@ -71,7 +71,7 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
 }) => {
   // If swipeEnabled is explicitly passed, use it directly.
   // Otherwise, disable swipe when showCloseButton is explicitly false.
-  const effectiveSwipeEnabled = swipeEnabled ?? (showCloseButton !== false);
+  const effectiveSwipeEnabled = swipeEnabled ?? showCloseButton !== false;
 
   // `rootClassName` and `className` are accepted as aliases and are not meant
   // to be merged — prefer `rootClassName`, fall back to `className`. When
@@ -79,29 +79,27 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
   // the `mobileHideClose` CSS module class that otherwise hides the close
   // button on viewports <768px.
   const userClasses = userRootClassName ?? className;
-  const rootClassName = [
-    showCloseButtonOnMobile ? null : styles.mobileHideClose,
-    userClasses,
-  ]
+  const rootClassName = [showCloseButtonOnMobile ? null : styles.mobileHideClose, userClasses]
     .filter(Boolean)
     .join(' ');
 
-  const horizontalDragHandle = useMemo(() => showDragHandle ? (
-    <div className={styles.dragHandleZoneHorizontal}>
-      <div className={styles.dragHandleBarHorizontal} />
-    </div>
-  ) : null, [showDragHandle]);
+  const horizontalDragHandle = useMemo(
+    () =>
+      showDragHandle ? (
+        <div className={styles.dragHandleZoneHorizontal}>
+          <div className={styles.dragHandleBarHorizontal} />
+        </div>
+      ) : null,
+    [showDragHandle],
+  );
 
-  const verticalDragHandle = useMemo(() => effectiveSwipeEnabled && showDragHandle ? (
-    <div
-      className={
-        placement === 'left'
-          ? styles.dragHandleZoneRight
-          : styles.dragHandleZoneLeft
-      }
-    >
-    </div>
-  ) : null, [effectiveSwipeEnabled, showDragHandle, placement]);
+  const verticalDragHandle = useMemo(
+    () =>
+      effectiveSwipeEnabled && showDragHandle ? (
+        <div className={placement === 'left' ? styles.dragHandleZoneRight : styles.dragHandleZoneLeft} />
+      ) : null,
+    [effectiveSwipeEnabled, showDragHandle, placement],
+  );
 
   // For bottom placement with a title:
   // Inject the drag handle into the title so it appears above the header content.
@@ -127,12 +125,19 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
           ...userStyles?.header,
         }}
       >
-        <Typography variant="h6" component="div" sx={{ flex: 1, minWidth: 0, fontWeight: themeTokens.typography.fontWeight.semibold, fontSize: themeTokens.typography.fontSize.base }}>
+        <Typography
+          variant="h6"
+          component="div"
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            fontWeight: themeTokens.typography.fontWeight.semibold,
+            fontSize: themeTokens.typography.fontSize.base,
+          }}
+        >
           {userTitle}
         </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {extra}
-        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>{extra}</Box>
       </Box>
     );
 
@@ -241,8 +246,7 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
     // pass fullHeight explicitly.
     const normalizedHeight = typeof sx.height === 'string' ? sx.height.trim().toLowerCase() : '';
     const isFullHeightDrawer =
-      fullHeightProp ??
-      (normalizedHeight === '100%' || normalizedHeight === '100vh' || normalizedHeight === '100dvh');
+      fullHeightProp ?? (normalizedHeight === '100%' || normalizedHeight === '100vh' || normalizedHeight === '100dvh');
     if (isFullHeightDrawer && !sx.backgroundColor) {
       sx.backgroundColor = 'var(--semantic-background)';
     }
@@ -251,11 +255,11 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
     // safe-area-inset-top padding to avoid rendering behind the device notch/pill.
     // (Top/left/right anchors get this from the MUI theme overrides.)
     if (isFullHeightDrawer && placement === 'bottom' && !sx.paddingTop) {
-      sx.paddingTop = 'env(safe-area-inset-top, 0px)';
+      sx.paddingTop = themeTokens.layout.safeAreaTop;
     }
 
     return sx;
-  }, [userStyles?.wrapper, height, width, fullHeightProp]);
+  }, [userStyles?.wrapper, height, width, fullHeightProp, placement]);
 
   // SwipeableDrawer onClose handler.
   // When triggered by a swipe fling, the Paper is at an intermediate position
@@ -274,9 +278,7 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
       const isHorizontal = placement === 'left' || placement === 'right';
       const maxTranslate = isHorizontal ? paper.offsetWidth : paper.offsetHeight;
       const sign = placement === 'right' || placement === 'bottom' ? 1 : -1;
-      const target = isHorizontal
-        ? `translate(${sign * maxTranslate}px, 0)`
-        : `translate(0, ${sign * maxTranslate}px)`;
+      const target = isHorizontal ? `translate(${sign * maxTranslate}px, 0)` : `translate(0, ${sign * maxTranslate}px)`;
 
       // Calculate duration proportional to remaining distance so the animation
       // feels like it carries the fling momentum. A short fling from near the
@@ -346,10 +348,13 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
     // Intentionally empty: opening is controlled by parent state
   }, []);
 
-  const slideProps = useMemo(() => ({
-    onExited: () => userOnTransitionEnd?.(false),
-    onEntered: () => userOnTransitionEnd?.(true),
-  }), [userOnTransitionEnd]);
+  const slideProps = useMemo(
+    () => ({
+      onExited: () => userOnTransitionEnd?.(false),
+      onEntered: () => userOnTransitionEnd?.(true),
+    }),
+    [userOnTransitionEnd],
+  );
 
   const handleBackdropClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -369,21 +374,37 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
   // { ...defaults, ...external } — a PaperProps.ref (even undefined) overwrites
   // MUI's internal handleRef, breaking swipe-to-close. We forward paperRef
   // through the wrapper Box's callback ref instead.
-  const muiPaperProps = useMemo(
-    () => ({ sx: paperSx, 'data-swipeable-drawer': 'true' }),
-    [paperSx],
-  );
+  const muiPaperProps = useMemo(() => ({ sx: paperSx, 'data-swipeable-drawer': 'true' }), [paperSx]);
 
-  // Prevent parent MUI SwipeableDrawer from claiming touches inside nested
-  // drawers. MUI registers touchstart handlers on `document` in effect order,
-  // so the parent's handler always fires first and sets defaultMuiPrevented,
-  // stealing the touch from the child. React synthetic handlers fire at the
-  // React root (before document), so we can set the flag first.
-  const handleNestedTouchStart = useCallback((e: React.TouchEvent) => {
-    if (disablePortal && (open ?? false)) {
-      (e.nativeEvent as unknown as Record<string, unknown>).defaultMuiPrevented = true;
-    }
-  }, [disablePortal, open]);
+  // Prevent MUI SwipeableDrawer from claiming touches that belong to the
+  // drawer's inner content. We set `defaultMuiPrevented` on the native event
+  // before MUI's document-level touchstart listener fires — React synthetic
+  // handlers dispatch from the React root during bubbling, which beats
+  // document listeners. Two cases:
+  //
+  // 1. Nested drawers (disablePortal + open): the parent drawer's document
+  //    listener would otherwise claim every touch inside the child.
+  //
+  // 2. Any open drawer with a touch starting inside `[data-swipe-blocked]`:
+  //    the attribute is also checked in `allowSwipeInChildren`, but that
+  //    callback is only consulted when the drawer is closed (MUI v7 gates
+  //    it behind `if (!open)`), so we need this second path to actually
+  //    block swipe-to-close from map/zoom/drag-handle zones.
+  const handleNestedTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      if (!(open ?? false)) return;
+      const nativeEvent = e.nativeEvent as unknown as Record<string, unknown>;
+      if (disablePortal) {
+        nativeEvent.defaultMuiPrevented = true;
+        return;
+      }
+      const target = e.target as Element | null;
+      if (target?.closest('[data-swipe-blocked]')) {
+        nativeEvent.defaultMuiPrevented = true;
+      }
+    },
+    [disablePortal, open],
+  );
 
   // Forward paperRef to the MUI Paper element via the wrapper Box's parent.
   const lastPaperRef = useRef<HTMLDivElement | null>(null);
@@ -453,7 +474,17 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
       slotProps={slotProps}
       PaperProps={muiPaperProps}
     >
-      <Box ref={wrapperBoxRef} onTouchStart={handleNestedTouchStart} sx={{ position: 'relative', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+      <Box
+        ref={wrapperBoxRef}
+        onTouchStart={handleNestedTouchStart}
+        sx={{
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          minHeight: 0,
+        }}
+      >
         {bodyContent}
       </Box>
     </MuiSwipeableDrawer>
@@ -461,5 +492,4 @@ const SwipeableDrawer: React.FC<SwipeableDrawerProps> = ({
 };
 
 const MemoSwipeableDrawer = React.memo(SwipeableDrawer);
-export { MemoSwipeableDrawer as SwipeableDrawer };
 export default MemoSwipeableDrawer;

@@ -2,19 +2,14 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
-import {
-  PartyProfile,
-  getPartyProfile,
-  clearPartyProfile,
-  ensurePartyProfile,
-} from '@/app/lib/party-profile-db';
+import { type PartyProfile, getPartyProfile, clearPartyProfile, ensurePartyProfile } from '@/app/lib/party-profile-db';
 
-interface UserProfileData {
+type UserProfileData = {
   displayName: string | null;
   avatarUrl: string | null;
-}
+};
 
-interface PartyProfileContextType {
+type PartyProfileContextType = {
   profile: PartyProfile | null;
   isLoading: boolean;
   hasProfile: boolean;
@@ -24,7 +19,7 @@ interface PartyProfileContextType {
   isAuthenticated: boolean;
   clearProfile: () => Promise<void>;
   refreshProfile: () => Promise<void>;
-}
+};
 
 const PartyProfileContext = createContext<PartyProfileContextType | undefined>(undefined);
 
@@ -54,7 +49,7 @@ export const PartyProfileProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }
     };
 
-    loadProfile();
+    void loadProfile();
 
     return () => {
       mounted = false;
@@ -84,7 +79,7 @@ export const PartyProfileProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }
     };
 
-    fetchUserProfile();
+    void fetchUserProfile();
 
     return () => {
       mounted = false;

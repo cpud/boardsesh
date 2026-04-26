@@ -1,11 +1,10 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useMemo } from 'react';
 import { getImageUrl } from './util';
-import { BoardDetails } from '@/app/lib/types';
+import type { BoardDetails } from '@/app/lib/types';
 import BoardLitupHolds from './board-litup-holds';
-import { LitUpHoldsMap } from './types';
+import type { LitUpHoldsMap } from './types';
 import styles from './board-renderer.module.css';
 import MoonBoardRenderer from '../moonboard-renderer/moonboard-renderer';
-import { trackRenderComplete, type RenderContext } from '@/app/lib/rendering-metrics';
 
 export type BoardProps = {
   boardDetails: BoardDetails;
@@ -21,16 +20,15 @@ export type BoardProps = {
 
 const BoardRenderer = React.memo(
   ({ boardDetails, thumbnail, maxHeight, fillHeight, litUpHoldsMap, mirrored, onHoldClick }: BoardProps) => {
-    // Render timing: measure mount → paint (useEffect fires after DOM update)
-    const mountTime = useRef(performance.now());
-    const hasFired = useRef(false);
     const isMoonBoard = boardDetails.board_name === 'moonboard' && !!boardDetails.layoutFolder;
-    const renderContext: RenderContext = thumbnail ? 'thumbnail' : fillHeight ? 'full-board' : 'card';
-    useEffect(() => {
-      if (hasFired.current || isMoonBoard) return;
-      hasFired.current = true;
-      trackRenderComplete(performance.now() - mountTime.current, renderContext, 'svg');
-    }, [isMoonBoard, renderContext]);
+
+    // Only compute maxHeight when not using fillHeight - memoized to prevent recreation.
+    // Hoisted above the MoonBoard early return so hook call order is stable regardless
+    // of the branch taken.
+    const svgStyle = useMemo(
+      () => (fillHeight ? undefined : { maxHeight: maxHeight ?? (thumbnail ? '10vh' : '55vh') }),
+      [fillHeight, maxHeight, thumbnail],
+    );
 
     // Delegate to MoonBoardRenderer for Moonboard (uses grid-based rendering)
     if (isMoonBoard) {
@@ -50,15 +48,7 @@ const BoardRenderer = React.memo(
 
     // When fillHeight is true, SVG fills container and uses preserveAspectRatio to fit
     // Otherwise, use auto height with maxHeight constraint
-    const svgClassName = fillHeight
-      ? `${styles.svg} ${styles.svgFillHeight}`
-      : `${styles.svg} ${styles.svgAutoHeight}`;
-
-    // Only compute maxHeight when not using fillHeight - memoized to prevent recreation
-    const svgStyle = useMemo(() => 
-      fillHeight ? undefined : { maxHeight: maxHeight ?? (thumbnail ? '10vh' : '55vh') },
-      [fillHeight, maxHeight, thumbnail]
-    );
+    const svgClassName = fillHeight ? `${styles.svg} ${styles.svgFillHeight}` : `${styles.svg} ${styles.svgAutoHeight}`;
 
     return (
       <svg

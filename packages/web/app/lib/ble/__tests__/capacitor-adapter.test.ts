@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterAll } from 'vite-plus/test';
 import {
   AURORA_OPTIONAL_SERVICE_UUIDS,
   AURORA_SCAN_SERVICE_UUIDS,
@@ -7,6 +7,7 @@ import {
   MOONBOARD_OPTIONAL_SERVICE_UUIDS,
   MOONBOARD_SCAN_SERVICE_UUIDS,
 } from '@/app/components/board-bluetooth-control/bluetooth-moonboard';
+import { CapacitorBleAdapter, _resetInitCache } from '../capacitor-adapter';
 
 // Mock window.Capacitor before importing the adapter
 const mockListenerRemove = vi.fn().mockResolvedValue(undefined);
@@ -48,8 +49,6 @@ afterAll(() => {
     window.Capacitor = originalCapacitor;
   }
 });
-
-import { CapacitorBleAdapter, _resetInitCache } from '../capacitor-adapter';
 
 describe('CapacitorBleAdapter', () => {
   let adapter: CapacitorBleAdapter;
@@ -117,10 +116,7 @@ describe('CapacitorBleAdapter', () => {
     it('registers disconnect listener after connecting', async () => {
       await adapter.requestAndConnect();
 
-      expect(mockBlePlugin.addListener).toHaveBeenCalledWith(
-        'disconnected',
-        expect.any(Function),
-      );
+      expect(mockBlePlugin.addListener).toHaveBeenCalledWith('disconnected', expect.any(Function));
     });
 
     it('falls back to default MTU when negotiation fails', async () => {

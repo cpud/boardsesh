@@ -90,17 +90,18 @@ Targeted hooks: `useQueueActions()`, `useQueueData()`, `usePersistentSessionActi
 
 ## Technology Stack
 
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| WebSocket Protocol | `graphql-ws` | GraphQL subscriptions over WebSocket |
-| Backend Framework | GraphQL Yoga | HTTP + WS GraphQL server |
-| Frontend Client | `graphql-ws` client | Connection management |
-| Pub/Sub | Redis (subscriber connection) | Multi-instance event distribution |
-| Hot Cache | Redis (publisher connection) | Real-time session state (4h TTL) |
-| Stream Consumer | Redis (streamConsumer connection) | Dedicated connection for blocking `XREADGROUP` in EventBroker |
-| Persistent Storage | PostgreSQL | Durable session & queue history |
+| Component          | Technology                        | Purpose                                                       |
+| ------------------ | --------------------------------- | ------------------------------------------------------------- |
+| WebSocket Protocol | `graphql-ws`                      | GraphQL subscriptions over WebSocket                          |
+| Backend Framework  | GraphQL Yoga                      | HTTP + WS GraphQL server                                      |
+| Frontend Client    | `graphql-ws` client               | Connection management                                         |
+| Pub/Sub            | Redis (subscriber connection)     | Multi-instance event distribution                             |
+| Hot Cache          | Redis (publisher connection)      | Real-time session state (4h TTL)                              |
+| Stream Consumer    | Redis (streamConsumer connection) | Dedicated connection for blocking `XREADGROUP` in EventBroker |
+| Persistent Storage | PostgreSQL                        | Durable session & queue history                               |
 
 **Redis Connection Architecture:** The backend maintains 3 Redis connections:
+
 1. **Publisher** — shared by RoomManager, RedisSessionStore, DistributedState, EventBroker (non-blocking ops like `xadd`, `xack`)
 2. **Subscriber** — dedicated to ioredis pub/sub mode (enters special subscribe-only mode)
 3. **Stream Consumer** — dedicated to EventBroker's blocking `XREADGROUP BLOCK 5000` loop, preventing it from starving the publisher connection
@@ -187,6 +188,7 @@ sequenceDiagram
 When a user starts party mode while they already have climbs in their local queue, the client sends the existing queue along with the `joinSession` mutation. This ensures users don't lose their queued climbs when transitioning to party mode.
 
 **GraphQL Mutation Parameters:**
+
 ```graphql
 mutation JoinSession(
   $sessionId: ID!
@@ -210,12 +212,14 @@ mutation JoinSession(
 ```
 
 **Behavior:**
+
 - `initialQueue`, `initialCurrentClimb`, and `sessionName` are **only applied when creating a new session**
 - If joining an existing session (active, warm, or dormant), these values are ignored and the existing session state is used
 - The queue is persisted immediately to Postgres (not debounced) to ensure durability for new sessions
 - All users who join after the initial seed will receive the seeded queue state
 
 **Client Flow (PersistentSessionContext):**
+
 1. User calls `startSession()` which generates a new session ID
 2. Client stores current queue in `pendingInitialQueue` via `setInitialQueueForSession()`
 3. On WebSocket connection, the `joinSession` mutation includes the initial queue data
@@ -227,6 +231,7 @@ mutation JoinSession(
 The WebSocket connection should remain stable when users navigate within the same board configuration. This is controlled by the **base board path** concept.
 
 **URL Structure:**
+
 ```
 /{board}/{layout}/{size}/{sets}/{angle}/{view}/{climb}
   │       │        │      │      │       │       │
@@ -248,6 +253,7 @@ The WebSocket connection should remain stable when users navigate within the sam
 
 **Implementation:**
 The `getBaseBoardPath()` utility in `url-utils.ts` extracts the stable board configuration path by stripping:
+
 - `/play/[climb_uuid]` - climb being viewed
 - `/view/[climb_slug]` - climb detail view
 - `/list`, `/create` - view type
@@ -265,10 +271,10 @@ The WebSocket backend URL is resolved at runtime by `packages/web/app/lib/backen
 
 Branch deploy previews use per-PR subdomains:
 
-| Service | Domain pattern | Example (PR #42) |
-|---------|---------------|-------------------|
-| Web frontend | `{N}.preview.boardsesh.com` | `42.preview.boardsesh.com` |
-| WS backend | `{N}.ws.preview.boardsesh.com` | `42.ws.preview.boardsesh.com` |
+| Service      | Domain pattern                 | Example (PR #42)              |
+| ------------ | ------------------------------ | ----------------------------- |
+| Web frontend | `{N}.preview.boardsesh.com`    | `42.preview.boardsesh.com`    |
+| WS backend   | `{N}.ws.preview.boardsesh.com` | `42.ws.preview.boardsesh.com` |
 
 The runtime resolver maps the frontend hostname to the backend:
 
@@ -309,6 +315,15 @@ On the server side (SSR), only the build-time env var is used.
 ```
 
 The main Traefik instance routes `*.preview.boardsesh.com` and `*.ws.preview.boardsesh.com` traffic to a dedicated branch-deploy VM. A second Traefik instance on that VM routes to the per-PR containers using the numeric prefix as the routing key.
+
+### Local dev: WSS via Tailscale cert
+
+`vp run dev` will provision a TLS cert for your Tailscale hostname (one-time, via `tailscale cert`) and start both the Next.js web server and the backend over HTTPS/WSS. That lets real phones on your tailnet hit the dev backend in a secure context — required for shake-to-feedback (DeviceMotion), Web Bluetooth, clipboard, etc.
+
+- Cert cache: `$XDG_CACHE_HOME/boardsesh-dev-certs/<host>.{crt,key}` (fallback `~/.cache/...`), refreshed after 24h.
+- Backend flip: `packages/backend/src/server.ts` reads `DEV_HTTPS_CERT_FILE` / `DEV_HTTPS_KEY_FILE` and, when both are present, uses `https.createServer(...)` so WS upgrades ride `wss://` on the same server.
+- Web flip: the orchestrator sets the same env vars + `TAILSCALE_HOSTNAME` for the web dev script, which switches `NEXT_PUBLIC_WS_URL` / `NEXTAUTH_URL` / `BASE_URL` to `https://` / `wss://` and passes `--experimental-https --experimental-https-cert --experimental-https-key` to `next dev`.
+- Fallback: any failure (Tailscale not installed, not logged in, tailnet missing the HTTPS Certificates feature, operator-permission denied) prints a targeted hint and continues on plain HTTP, so non-Tailscale devs are unaffected. Prod/branch-preview flow above is unchanged.
 
 ---
 
@@ -379,24 +394,26 @@ If the grace period expires, the session is evicted from memory but remains rest
 
 Sessions support the following configurable properties set at creation time:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `goal` | `String?` | Free-text session goal (max 500 chars), displayed in the session header |
-| `color` | `String?` | Hex color code for multi-session display (e.g., `#FF5722`) |
+| Property      | Type      | Description                                                                            |
+| ------------- | --------- | -------------------------------------------------------------------------------------- |
+| `goal`        | `String?` | Free-text session goal (max 500 chars), displayed in the session header                |
+| `color`       | `String?` | Hex color code for multi-session display (e.g., `#FF5722`)                             |
 | `isPermanent` | `Boolean` | Optional flag for long-lived kiosk-style sessions, persisted with the session metadata |
-| `isPublic` | `Boolean` | Whether the session appears in discovery (default: true) |
-| `boardIds` | `[Int]?` | Multi-board support — links session to specific boards within a gym |
+| `isPublic`    | `Boolean` | Whether the session appears in discovery (default: true)                               |
+| `boardIds`    | `[Int]?`  | Multi-board support — links session to specific boards within a gym                    |
 
 ### Session Ending and Summaries
 
 Sessions only end when a client explicitly calls `endSession`. Last-user disconnects, grace-period expiry, and Redis TTL expiry do not mark a session as ended; they only evict hot state and force later restoration from Redis or Postgres.
 
 When a session ends via `endSession`:
+
 - `endedAt` timestamp is recorded in Postgres
 - A `SessionEnded` event is broadcast to all connected clients
 - A `SessionSummary` is generated and returned to the caller
 
 **Session Summary** includes:
+
 - Total sends and attempts across all participants
 - Grade distribution (sends grouped by difficulty grade)
 - Hardest climb sent (with climb name and grade)
@@ -409,6 +426,7 @@ The frontend displays the summary in a dialog when the session ends, and optiona
 ### Multi-Board Sessions
 
 Sessions can be linked to multiple boards within the same gym via the `sessionBoards` junction table. This is validated at creation time:
+
 - All `boardIds` must exist in the `userBoards` table
 - All boards must belong to the same gym (different gyms are rejected)
 
@@ -417,10 +435,12 @@ Sessions can be linked to multiple boards within the same gym via the `sessionBo
 Leader election uses Redis-backed atomic operations for consistency across instances:
 
 **Single Instance Mode:**
+
 - First client to join becomes leader
 - On leader disconnect, earliest connected client is elected
 
 **Multi-Instance Mode (Distributed):**
+
 - Uses Lua scripts for atomic leader election
 - Leader stored in Redis: `boardsesh:session:{id}:leader`
 - Consistent across all backend instances
@@ -450,6 +470,7 @@ sequenceDiagram
 ```
 
 **Lua Script Atomicity:**
+
 ```lua
 -- ELECT_NEW_LEADER_SCRIPT
 -- Gets all session members, filters out leaving connection
@@ -461,12 +482,12 @@ sequenceDiagram
 
 `sessionUpdates(sessionId)` emits membership/lifecycle events and live stats updates.
 
-| Event | When emitted | Key fields |
-|-------|--------------|------------|
-| `UserJoined` | A client joins the session | `user` |
-| `UserLeft` | A client disconnects/leaves | `userId` |
-| `LeaderChanged` | Leader election selects a new leader | `leaderId` |
-| `SessionEnded` | Session is ended explicitly or by cleanup | `reason`, `newPath` |
+| Event                 | When emitted                                | Key fields                                                                                                                                                        |
+| --------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `UserJoined`          | A client joins the session                  | `user`                                                                                                                                                            |
+| `UserLeft`            | A client disconnects/leaves                 | `userId`                                                                                                                                                          |
+| `LeaderChanged`       | Leader election selects a new leader        | `leaderId`                                                                                                                                                        |
+| `SessionEnded`        | Session is ended explicitly or by cleanup   | `reason`, `newPath`                                                                                                                                               |
 | `SessionStatsUpdated` | A tick is saved for an active party session | `totalSends`, `totalFlashes`, `totalAttempts`, `tickCount`, `participants`, `gradeDistribution`, `boardTypes`, `hardestGrade`, `durationMinutes`, `goal`, `ticks` |
 
 `SessionStatsUpdated` payloads now include full `ticks` rows so clients can update charts and climbs/attempt lists without issuing an extra session detail refetch.
@@ -477,27 +498,27 @@ sequenceDiagram
 
 ### Event Types
 
-| Event | Description | Fields |
-|-------|-------------|--------|
-| `FullSync` | Complete state snapshot | `sequence`, `state` (queue + currentClimb) |
-| `QueueItemAdded` | Item added to queue | `sequence`, `item`, `position` |
-| `QueueItemRemoved` | Item removed from queue | `sequence`, `uuid` |
-| `QueueReordered` | Item moved in queue | `sequence`, `uuid`, `oldIndex`, `newIndex` |
-| `CurrentClimbChanged` | Active climb changed | `sequence`, `item`, `clientId`, `correlationId` |
-| `ClimbMirrored` | Mirror state toggled | `sequence`, `mirrored` |
+| Event                 | Description             | Fields                                          |
+| --------------------- | ----------------------- | ----------------------------------------------- |
+| `FullSync`            | Complete state snapshot | `sequence`, `state` (queue + currentClimb)      |
+| `QueueItemAdded`      | Item added to queue     | `sequence`, `item`, `position`                  |
+| `QueueItemRemoved`    | Item removed from queue | `sequence`, `uuid`                              |
+| `QueueReordered`      | Item moved in queue     | `sequence`, `uuid`, `oldIndex`, `newIndex`      |
+| `CurrentClimbChanged` | Active climb changed    | `sequence`, `item`, `clientId`, `correlationId` |
+| `ClimbMirrored`       | Mirror state toggled    | `sequence`, `mirrored`                          |
 
 ### Queue Mutations
 
-| Mutation | Event emitted | Notes |
-|----------|---------------|-------|
-| `addQueueItem` | `QueueItemAdded` | Appends to queue or inserts at `position`. Idempotent on `item.uuid` — duplicate adds are collapsed server-side during offline reconciliation. |
-| `removeQueueItem` | `QueueItemRemoved` | Removes by queue-item uuid. |
-| `reorderQueue` | `QueueReordered` | Moves a queue item to a new index. |
-| `setCurrentClimbQueueItem` | `CurrentClimbChanged` | Activates an existing queue item by uuid. |
-| `setCurrentClimb` | `CurrentClimbChanged` + `QueueItemAdded` | Adds the climb to the queue (if not already present) and activates it. |
-| `replaceQueueItem` | `FullSync` | Replaces the climb inside an existing queue slot in place, preserving position and the queue-item uuid. Used by the create-climb form to push saves of the currently-authored climb to peers without reshuffling the queue. Emits `FullSync` rather than a narrow delta because replace is infrequent and simpler to reconcile. |
-| `mirrorCurrentClimb` | `ClimbMirrored` | Flips the mirror flag on the current climb. |
-| `setQueue` | `FullSync` | Bulk replaces queue + current climb. Used for offline → online reconciliation. |
+| Mutation                   | Event emitted                            | Notes                                                                                                                                                                                                                                                                                                                           |
+| -------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `addQueueItem`             | `QueueItemAdded`                         | Appends to queue or inserts at `position`. Idempotent on `item.uuid` — duplicate adds are collapsed server-side during offline reconciliation.                                                                                                                                                                                  |
+| `removeQueueItem`          | `QueueItemRemoved`                       | Removes by queue-item uuid.                                                                                                                                                                                                                                                                                                     |
+| `reorderQueue`             | `QueueReordered`                         | Moves a queue item to a new index.                                                                                                                                                                                                                                                                                              |
+| `setCurrentClimbQueueItem` | `CurrentClimbChanged`                    | Activates an existing queue item by uuid.                                                                                                                                                                                                                                                                                       |
+| `setCurrentClimb`          | `CurrentClimbChanged` + `QueueItemAdded` | Adds the climb to the queue (if not already present) and activates it.                                                                                                                                                                                                                                                          |
+| `replaceQueueItem`         | `FullSync`                               | Replaces the climb inside an existing queue slot in place, preserving position and the queue-item uuid. Used by the create-climb form to push saves of the currently-authored climb to peers without reshuffling the queue. Emits `FullSync` rather than a narrow delta because replace is infrequent and simpler to reconcile. |
+| `mirrorCurrentClimb`       | `ClimbMirrored`                          | Flips the mirror flag on the current climb.                                                                                                                                                                                                                                                                                     |
+| `setQueue`                 | `FullSync`                               | Bulk replaces queue + current climb. Used for offline → online reconciliation.                                                                                                                                                                                                                                                  |
 
 ### Tick Mode and Queue Bar Freeze
 
@@ -593,14 +614,14 @@ The backend supports horizontal scaling with multiple instances behind a load ba
 
 The `DistributedStateManager` enables true horizontal scaling:
 
-| Feature | Description |
-|---------|-------------|
-| Connection Tracking | All connections visible across instances via Redis |
-| Session Membership | Aggregated user list from all instances |
-| Leader Election | Atomic Lua scripts ensure consistent leader |
-| Instance Heartbeat | 30s heartbeat detects dead instances |
+| Feature             | Description                                         |
+| ------------------- | --------------------------------------------------- |
+| Connection Tracking | All connections visible across instances via Redis  |
+| Session Membership  | Aggregated user list from all instances             |
+| Leader Election     | Atomic Lua scripts ensure consistent leader         |
+| Instance Heartbeat  | 30s heartbeat detects dead instances                |
 | WebSocket Ping/Pong | 30s ping detects dead connections on live instances |
-| Graceful Cleanup | Connections cleaned up on instance shutdown |
+| Graceful Cleanup    | Connections cleaned up on instance shutdown         |
 
 ### Redis Pub/Sub for Cross-Instance Events
 
@@ -697,6 +718,7 @@ sequenceDiagram
 ```
 
 **Recovery mechanism:**
+
 - Exponential backoff: 1s, 2s, 4s, 8s, 16s, 30s (max)
 - Up to 10 retry attempts
 - On reconnection: re-join session and sync state
@@ -746,6 +768,7 @@ sequenceDiagram
 ```
 
 **Key behavior:**
+
 - If `REDIS_URL` is configured, Redis is **required** (fail-closed)
 - Without Redis config: local-only mode (single instance)
 - Publish failures logged but don't block local dispatch
@@ -784,6 +807,7 @@ sequenceDiagram
 ```
 
 **Mitigation:**
+
 - Redis is the real-time source of truth
 - Postgres writes are debounced (30s) and retried
 - Graceful shutdown flushes all pending writes
@@ -817,6 +841,7 @@ sequenceDiagram
 ```
 
 **Lock mechanism:**
+
 - Redis-based distributed lock (10s TTL)
 - Lua script ensures only owner can release
 - Backoff waiting: 50ms → 100ms → 200ms → ... (5 attempts)
@@ -845,6 +870,7 @@ sequenceDiagram
 ```
 
 **Additional checks:**
+
 - Current climb must exist in queue
 - Sequence numbers must increment by 1
 - Hash updated after each delta event
@@ -882,22 +908,26 @@ sequenceDiagram
 ```
 
 **Corruption sources:**
+
 - Server sends malformed queue data
 - State corruption during delta sync
 - Race conditions in event handling
 
 **Detection points:**
+
 1. **FullSync handler**: Filters null items when receiving initial/full state
 2. **QueueItemAdded handler**: Skips events with null items
 3. **State hash effect**: Detects corruption in current queue state
 
 **Resync cooldown:**
+
 - 30 second cooldown between corruption-triggered resyncs
 - Prevents infinite loop if server keeps returning corrupted data
 - During cooldown: filter corrupted items locally instead of resyncing
 - All corruption events logged at `console.error` level for Sentry visibility
 
 **Implementation:**
+
 - `computeQueueStateHash()` defensively filters null/undefined items
 - `isFilteringCorruptedItemsRef` prevents useEffect re-trigger loops
 - `lastCorruptionResyncRef` tracks cooldown timing
@@ -956,14 +986,14 @@ graphql-ws Client(s)
 
 ### Connection States
 
-| State | Meaning |
-|-------|---------|
-| `idle` | No clients registered |
-| `connecting` | Client is establishing a WebSocket connection |
-| `connected` | Client connected and receiving keep-alive pongs |
-| `reconnecting` | Connection lost — `graphql-ws` is retrying |
-| `stale` | No activity received within `STALE_GRACE_MS` |
-| `error` | Client reported an error event |
+| State          | Meaning                                         |
+| -------------- | ----------------------------------------------- |
+| `idle`         | No clients registered                           |
+| `connecting`   | Client is establishing a WebSocket connection   |
+| `connected`    | Client connected and receiving keep-alive pongs |
+| `reconnecting` | Connection lost — `graphql-ws` is retrying      |
+| `stale`        | No activity received within `STALE_GRACE_MS`    |
+| `error`        | Client reported an error event                  |
 
 ### Health Check
 
@@ -1045,20 +1075,20 @@ When Redis is unavailable, RoomManager falls back to **Postgres-only mode**:
 
 ### Session State Tiers
 
-| Tier | Storage | TTL | Use Case |
-|------|---------|-----|----------|
-| **Hot** | In-Memory + Redis | 4 hours | Active sessions with connected users |
-| **Warm** | Redis only | 4 hours | No connected users, but fast restoration is still available |
-| **Cold** | PostgreSQL | Indefinite | Durable session rows, including dormant sessions restorable until explicitly ended |
+| Tier     | Storage           | TTL        | Use Case                                                                           |
+| -------- | ----------------- | ---------- | ---------------------------------------------------------------------------------- |
+| **Hot**  | In-Memory + Redis | 4 hours    | Active sessions with connected users                                               |
+| **Warm** | Redis only        | 4 hours    | No connected users, but fast restoration is still available                        |
+| **Cold** | PostgreSQL        | Indefinite | Durable session rows, including dormant sessions restorable until explicitly ended |
 
 ### Participant Tracking (Postgres)
 
 Session participation is tracked in two layers:
 
-| Layer | Table / Key | Granularity | Lifetime |
-|-------|-------------|-------------|----------|
-| **Real-time** (Redis) | `boardsesh:session:{id}:members` | Per connection ID | Ephemeral (4h TTL) |
-| **Historical** (Postgres) | `board_session_participants` | Per authenticated user | Permanent |
+| Layer                     | Table / Key                      | Granularity            | Lifetime           |
+| ------------------------- | -------------------------------- | ---------------------- | ------------------ |
+| **Real-time** (Redis)     | `boardsesh:session:{id}:members` | Per connection ID      | Ephemeral (4h TTL) |
+| **Historical** (Postgres) | `board_session_participants`     | Per authenticated user | Permanent          |
 
 **`board_session_participants`** records one row per (session_id, user_id) with a `joined_at` timestamp. It is upserted (`ON CONFLICT DO NOTHING`) when an authenticated user joins a session. Rows are never deleted on disconnect — they serve as a permanent historical record of who participated.
 
@@ -1067,6 +1097,7 @@ Session participation is tracked in two layers:
 ### Key Redis Data Structures
 
 **Session State (RedisSessionStore):**
+
 ```
 boardsesh:session:{id}              # Hash - session data (queue, version, etc.)
 boardsesh:session:{id}:users        # Hash - connected users (legacy)
@@ -1077,6 +1108,7 @@ boardsesh:lock:session:restore:{id} # String - distributed lock (10s TTL)
 ```
 
 **Distributed State (DistributedStateManager):**
+
 ```
 boardsesh:conn:{connectionId}       # Hash - connection data (1h TTL, refreshed on activity)
 boardsesh:session:{id}:members      # Set - connection IDs in session (4h TTL)
@@ -1086,6 +1118,7 @@ boardsesh:instance:{id}:heartbeat   # String - instance heartbeat timestamp (60s
 ```
 
 **Pub/Sub Channels:**
+
 ```
 boardsesh:queue:{sessionId}         # Queue events (add, remove, reorder, etc.)
 boardsesh:session:{sessionId}       # Session events (join, leave, leader change)
@@ -1156,6 +1189,7 @@ The `DistributedStateManager` actively discovers and cleans up dead instances:
 - **Periodically**: Piggybacks on the 30s heartbeat cycle, running every 4th heartbeat (~2 minutes)
 
 The cleanup process:
+
 1. SCANs for `boardsesh:instance:*:conns` keys
 2. Checks if the corresponding heartbeat key exists (skip current instance)
 3. For each dead instance: fetches its connection IDs, groups by session
@@ -1176,12 +1210,12 @@ Even between cleanup cycles, stale entries never inflate participant counts:
 
 **6. TTL Self-Healing (defense in depth)**
 
-| Key | TTL | Refreshed |
-|-----|-----|-----------|
-| `boardsesh:conn:{id}` | 1 hour | On client activity |
-| `boardsesh:instance:{id}:conns` | 2 hours | On every heartbeat (30s) |
-| `boardsesh:instance:{id}:heartbeat` | 60 seconds | Every 30s |
-| `boardsesh:session:{id}:members` | 4 hours | On join/leave/refresh |
+| Key                                 | TTL        | Refreshed                |
+| ----------------------------------- | ---------- | ------------------------ |
+| `boardsesh:conn:{id}`               | 1 hour     | On client activity       |
+| `boardsesh:instance:{id}:conns`     | 2 hours    | On every heartbeat (30s) |
+| `boardsesh:instance:{id}:heartbeat` | 60 seconds | Every 30s                |
+| `boardsesh:session:{id}:members`    | 4 hours    | On join/leave/refresh    |
 
 Even if all active cleanup fails, orphaned data expires naturally via these TTLs.
 
@@ -1238,7 +1272,12 @@ The backend extracts this from `connectionParams.controllerApiKey` during the `o
 subscription ControllerEvents($sessionId: ID!) {
   controllerEvents(sessionId: $sessionId) {
     ... on LedUpdate {
-      commands { position r g b }
+      commands {
+        position
+        r
+        g
+        b
+      }
       climbUuid
       climbName
       climbGrade
@@ -1254,42 +1293,42 @@ subscription ControllerEvents($sessionId: ID!) {
 
 ### Events
 
-| Event | Description |
-|-------|-------------|
-| `LedUpdate` | LED commands for current climb (RGB values and positions) |
+| Event                 | Description                                                  |
+| --------------------- | ------------------------------------------------------------ |
+| `LedUpdate`           | LED commands for current climb (RGB values and positions)    |
 | `ControllerQueueSync` | Full queue state sync (sent on connection and queue changes) |
-| `ControllerPing` | Keep-alive ping (not currently implemented) |
+| `ControllerPing`      | Keep-alive ping (not currently implemented)                  |
 
 ### LedUpdate Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `commands` | Array | LED positions with RGB values |
-| `queueItemUuid` | String | UUID of the queue item (for navigation) |
-| `climbUuid` | String | Unique identifier for the climb |
-| `climbName` | String | Display name of the climb |
-| `climbGrade` | String | The climb difficulty/grade (e.g., "V5", "6a/V3") |
-| `gradeColor` | String | Hex color for the grade (e.g., "#00FF00") |
-| `boardPath` | String | Board configuration path for context-aware operations (e.g., "kilter/1/12/1,2,3/40") |
-| `angle` | Int | Board angle in degrees |
-| `clientId` | String | Identifier of client that initiated the change (used by ESP32 to decide whether to disconnect BLE client - if clientId matches ESP32's MAC, it was self-initiated via BLE) |
-| `navigation` | Object | Navigation context with previousClimbs, nextClimb, currentIndex, totalCount |
+| Field           | Type   | Description                                                                                                                                                                |
+| --------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `commands`      | Array  | LED positions with RGB values                                                                                                                                              |
+| `queueItemUuid` | String | UUID of the queue item (for navigation)                                                                                                                                    |
+| `climbUuid`     | String | Unique identifier for the climb                                                                                                                                            |
+| `climbName`     | String | Display name of the climb                                                                                                                                                  |
+| `climbGrade`    | String | The climb difficulty/grade (e.g., "V5", "6a/V3")                                                                                                                           |
+| `gradeColor`    | String | Hex color for the grade (e.g., "#00FF00")                                                                                                                                  |
+| `boardPath`     | String | Board configuration path for context-aware operations (e.g., "kilter/1/12/1,2,3/40")                                                                                       |
+| `angle`         | Int    | Board angle in degrees                                                                                                                                                     |
+| `clientId`      | String | Identifier of client that initiated the change (used by ESP32 to decide whether to disconnect BLE client - if clientId matches ESP32's MAC, it was self-initiated via BLE) |
+| `navigation`    | Object | Navigation context with previousClimbs, nextClimb, currentIndex, totalCount                                                                                                |
 
 ### ControllerQueueSync Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `queue` | Array | Array of queue items with uuid, climbUuid, name, grade, gradeColor |
-| `currentIndex` | Int | Index of the current climb in the queue (-1 if none) |
+| Field          | Type  | Description                                                        |
+| -------------- | ----- | ------------------------------------------------------------------ |
+| `queue`        | Array | Array of queue items with uuid, climbUuid, name, grade, gradeColor |
+| `currentIndex` | Int   | Index of the current climb in the queue (-1 if none)               |
 
 ### LED Color Mapping
 
-| Hold State | RGB Value |
-|------------|-----------|
-| STARTING | (0, 255, 0) Green |
-| FINISH | (255, 0, 255) Magenta |
-| HAND | (0, 255, 255) Cyan |
-| FOOT | (255, 170, 0) Orange |
+| Hold State | RGB Value             |
+| ---------- | --------------------- |
+| STARTING   | (0, 255, 0) Green     |
+| FINISH     | (255, 0, 255) Magenta |
+| HAND       | (0, 255, 255) Cyan    |
+| FOOT       | (255, 170, 0) Orange  |
 
 ### Controller Mutations
 
@@ -1326,13 +1365,14 @@ mutation Heartbeat($sessionId: ID!) {
 
 The `navigateQueue` mutation allows ESP32 controllers to browse the queue via hardware buttons:
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `sessionId` | ID! | Session to navigate within |
-| `direction` | String! | "next" or "previous" (fallback if queueItemUuid not found) |
-| `queueItemUuid` | String | Direct navigation to specific queue item (preferred) |
+| Parameter       | Type    | Description                                                |
+| --------------- | ------- | ---------------------------------------------------------- |
+| `sessionId`     | ID!     | Session to navigate within                                 |
+| `direction`     | String! | "next" or "previous" (fallback if queueItemUuid not found) |
+| `queueItemUuid` | String  | Direct navigation to specific queue item (preferred)       |
 
 **Navigation Flow:**
+
 1. ESP32 maintains local queue state from `ControllerQueueSync` events
 2. On button press, ESP32 calculates the target item locally (optimistic update)
 3. ESP32 sends `navigateQueue` with the target `queueItemUuid`
@@ -1340,6 +1380,7 @@ The `navigateQueue` mutation allows ESP32 controllers to browse the queue via ha
 5. ESP32 receives `LedUpdate` with new climb data
 
 **Debounce Behavior:**
+
 - Navigation mutations are debounced with a 100ms delay to prevent WebSocket disconnection from rapid button presses
 - UI updates immediately (optimistic), but only ONE mutation is sent after 100ms of button inactivity
 - Example: Pressing "next" 10 times quickly results in 10 immediate display updates but only 1 mutation (to the final position)
@@ -1364,32 +1405,32 @@ Requires user authentication and controller ownership.
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `REDIS_URL` | Redis connection string | None (local-only mode) |
-| `PORT` | HTTP/WS server port | 8080 |
-| `BOARDSESH_URL` | Allowed CORS origin | https://boardsesh.com |
+| Variable        | Description             | Default                |
+| --------------- | ----------------------- | ---------------------- |
+| `REDIS_URL`     | Redis connection string | None (local-only mode) |
+| `PORT`          | HTTP/WS server port     | 8080                   |
+| `BOARDSESH_URL` | Allowed CORS origin     | https://boardsesh.com  |
 
 ### Timeouts and Limits
 
-| Setting | Value | Purpose |
-|---------|-------|---------|
-| Retry attempts | 10 | WebSocket reconnection |
-| Max retry delay | 30s | Exponential backoff cap |
-| Keep-alive interval | 10s | Connection health check |
-| Mutation timeout | 30s | Prevent hanging mutations |
-| Redis TTL | 4 hours | Session cache expiry |
-| Postgres debounce | 30s | Batch writes |
-| Event buffer size | 100 | Delta sync limit |
-| Event buffer TTL | 5 min | Old events cleanup |
-| Hash verification | 60s | State drift detection |
-| Subscription queue | 1000 | Max pending events |
-| Connection TTL | 1 hour | Distributed connection expiry |
-| WebSocket ping interval | 30s | Dead connection detection |
-| Instance heartbeat | 30s | Heartbeat update interval |
-| Instance heartbeat TTL | 60s | Dead instance detection |
-| Session members TTL | 4 hours | Matches session TTL |
-| Session grace period | 60s | In-memory retention after last disconnect |
+| Setting                 | Value   | Purpose                                   |
+| ----------------------- | ------- | ----------------------------------------- |
+| Retry attempts          | 10      | WebSocket reconnection                    |
+| Max retry delay         | 30s     | Exponential backoff cap                   |
+| Keep-alive interval     | 10s     | Connection health check                   |
+| Mutation timeout        | 30s     | Prevent hanging mutations                 |
+| Redis TTL               | 4 hours | Session cache expiry                      |
+| Postgres debounce       | 30s     | Batch writes                              |
+| Event buffer size       | 100     | Delta sync limit                          |
+| Event buffer TTL        | 5 min   | Old events cleanup                        |
+| Hash verification       | 60s     | State drift detection                     |
+| Subscription queue      | 1000    | Max pending events                        |
+| Connection TTL          | 1 hour  | Distributed connection expiry             |
+| WebSocket ping interval | 30s     | Dead connection detection                 |
+| Instance heartbeat      | 30s     | Heartbeat update interval                 |
+| Instance heartbeat TTL  | 60s     | Dead instance detection                   |
+| Session members TTL     | 4 hours | Matches session TTL                       |
+| Session grace period    | 60s     | In-memory retention after last disconnect |
 
 ---
 
@@ -1458,14 +1499,14 @@ Backend publishes CurrentClimbChanged
 
 The main app and widget extension share data via App Group (`group.com.boardsesh.app`):
 
-| Key | Type | Purpose |
-|-----|------|---------|
-| `queue_items` | JSON array | Serialized `SharedQueueItem` list |
-| `current_index` | Int | Current position in queue |
-| `session_id` | String | Active session identifier |
-| `server_url` | String | Backend URL for thumbnail fetching |
-| `board_name`, `layout_id`, `size_id`, `set_ids` | String/Int | Board details for thumbnail URL construction |
-| `pending_action` | String | Widget→app navigation request ("next"/"previous") |
+| Key                                             | Type       | Purpose                                           |
+| ----------------------------------------------- | ---------- | ------------------------------------------------- |
+| `queue_items`                                   | JSON array | Serialized `SharedQueueItem` list                 |
+| `current_index`                                 | Int        | Current position in queue                         |
+| `session_id`                                    | String     | Active session identifier                         |
+| `server_url`                                    | String     | Backend URL for thumbnail fetching                |
+| `board_name`, `layout_id`, `size_id`, `set_ids` | String/Int | Board details for thumbnail URL construction      |
+| `pending_action`                                | String     | Widget→app navigation request ("next"/"previous") |
 
 ### Lifecycle
 
@@ -1510,3 +1551,19 @@ The main app and widget extension share data via App Group (`group.com.boardsesh
 
 - `packages/shared-schema/src/schema.ts` - GraphQL schema definition
 - `packages/shared-schema/src/types.ts` - TypeScript types
+
+## Onboarding tour integration points
+
+The onboarding tour (see `packages/web/app/components/onboarding/`) drives the real session UI with mock data so a new user can see what a populated party session looks like without creating one. A few escape hatches in the session-related components exist solely for the tour — do not remove them thinking they are dead code:
+
+- **`SeshSettingsDrawer` — `tourMockSession?: SessionDetail` prop.** When set, the drawer skips its GraphQL `sessionDetail` query, bypasses the `activeSession` guard, hides the Stop-session button, and swaps the real invite link / QR for a non-URL preview string (`boardsesh:onboarding-tour-preview`). It renders entirely from the mock object generated by `packages/web/app/components/onboarding/mock-session-detail.ts`.
+- **`SeshSettingsDrawer` / `SessionDetailContent` — `tourActiveSection?: 'invite' | 'activity' | 'analytics' | null` prop.** Threads down to `CollapsibleSection`'s `forcedActiveKey`, which forces a specific section open and disables the user's collapse/expand interaction while the tour is driving it.
+- **`CollapsibleSection` — `forcedActiveKey?: string | null` prop.** Controlled-mode override used by the tour to walk the user through Invite → Activity → Analytics in sequence. When unset, the section is uncontrolled (existing behaviour).
+- **`QueueControlBar` — `TOUR_CLOSE_PLAY_VIEW_EVENT` window event (`onboarding:close-play-view`).** The bar closes the play drawer on demand so the session overview can be shown without stacking.
+- **`QueueControlBar` session mini-bar — `data-tour-anchor="session-mini-bar"`.** Placed on the always-rendered `.sessionHeaderInner` wrapper so the anchor resolves whether or not a real `activeSession` exists. The "Open your session" step anchors here.
+- **`ClimbsList` — `TOUR_CLIMB_LIST_PICK_EVENT` window event (`onboarding:climb-list-pick`).** Dispatched when the user explicitly taps a climb card while the tour is on the `climb-list` step. The provider advances on this signal rather than on `currentClimb` observation, so async queue hydration into a newly-created session can't falsely skip the step.
+- **`PlayViewDrawer` — `TOUR_OPEN_PLAY_QUEUE_EVENT` + `TOUR_CLOSE_PLAY_QUEUE_EVENT` window events.** Let the tour open/close the nested queue drawer inside the play view. On tour-driven open, the nested `QueueDrawer` is mounted with `initialShowHistory=true` so every queued climb is visible regardless of which one is currently active.
+
+All of the above are cheap conditional paths — they only branch when the matching prop/event is present. They do not affect the WebSocket flow or any real-session behaviour.
+
+The event constants live in `packages/web/app/components/onboarding/onboarding-tour-events.ts`. The state machine and side-effect dispatcher live in `packages/web/app/components/onboarding/onboarding-tour-provider.tsx`.

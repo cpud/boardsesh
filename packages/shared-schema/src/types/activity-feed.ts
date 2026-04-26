@@ -20,9 +20,16 @@ export type FollowingAscentFeedItem = {
   difficulty?: number;
   difficultyName?: string;
   isBenchmark: boolean;
+  isNoMatch: boolean;
   comment: string;
   climbedAt: string;
   frames?: string;
+  // Populated only by resolvers that join vote_counts / count comments
+  // (e.g. followingClimbAscents). Null for adapter paths and for the
+  // paginated followingAscentsFeed / globalAscentsFeed endpoints.
+  upvotes?: number | null;
+  downvotes?: number | null;
+  commentCount?: number | null;
 };
 
 export type AscentFeedItem = {
@@ -41,7 +48,9 @@ export type AscentFeedItem = {
   difficultyName?: string | null;
   consensusDifficulty?: number | null;
   consensusDifficultyName?: string | null;
+  qualityAverage?: number | null;
   isBenchmark: boolean;
+  isNoMatch: boolean;
   comment: string;
   climbedAt: string;
   frames?: string | null;
@@ -84,6 +93,15 @@ export type FollowingAscentsFeedResult = {
   hasMore: boolean;
 };
 
+export type FollowingClimbAscentsInput = {
+  boardType: string;
+  climbUuid: string;
+};
+
+export type FollowingClimbAscentsResult = {
+  items: FollowingAscentFeedItem[];
+};
+
 export type ActivityFeedItemType = 'ascent' | 'new_climb' | 'comment' | 'proposal_approved' | 'session_summary';
 
 export type ActivityFeedItem = {
@@ -107,6 +125,7 @@ export type ActivityFeedItem = {
   commentBody?: string | null;
   isMirror?: boolean | null;
   isBenchmark?: boolean | null;
+  isNoMatch?: boolean | null;
   difficulty?: number | null;
   difficultyName?: string | null;
   quality?: number | null;
@@ -197,6 +216,7 @@ export type SessionDetailTick = {
   quality?: number | null;
   isMirror: boolean;
   isBenchmark: boolean;
+  isNoMatch: boolean;
   comment?: string | null;
   frames?: string | null;
   setterUsername?: string | null;
@@ -227,6 +247,7 @@ export type SessionDetail = {
   downvotes: number;
   voteScore: number;
   commentCount: number;
+  healthKitWorkoutId?: string | null;
 };
 
 export type SessionLiveStats = {

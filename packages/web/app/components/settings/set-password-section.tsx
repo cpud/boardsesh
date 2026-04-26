@@ -14,12 +14,12 @@ import LockOutlined from '@mui/icons-material/LockOutlined';
 import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 
-interface SetPasswordSectionProps {
+type SetPasswordSectionProps = {
   hasPassword: boolean;
   userEmail: string;
   linkedProviders: string[];
   onPasswordSet: () => void;
-}
+};
 
 function formatProviderName(provider: string): string {
   const names: Record<string, string> = {
@@ -124,22 +124,18 @@ export default function SetPasswordSection({
       <CardContent>
         <Typography variant="h5">Email & Password Login</Typography>
         <Typography variant="body2" component="span" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-          Set a password to log in with your email address. This is useful for browsers
-          that don&apos;t support Google sign-in (e.g., the Boardsesh iOS app).
+          Set a password to log in with your email address. This is useful for browsers that don&apos;t support Google
+          sign-in (e.g., the Boardsesh iOS app).
         </Typography>
 
         {providerNames.length > 0 && (
           <Alert severity="info" sx={{ mb: 2 }}>
-            You&apos;re currently signed in with {providerNames.join(', ')}. Setting a password
-            will not affect your {providerNames.length === 1 ? providerNames[0] : 'social'} login.
+            You&apos;re currently signed in with {providerNames.join(', ')}. Setting a password will not affect your{' '}
+            {providerNames.length === 1 ? providerNames[0] : 'social'} login.
           </Alert>
         )}
 
-        <Box
-          component="form"
-          onSubmit={handleSubmit}
-          sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-        >
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
             label="Password"
             type="password"

@@ -29,12 +29,7 @@ export async function GET(request: Request) {
     const usersWithUnassigned = await db
       .selectDistinct({ userId: boardseshTicks.userId })
       .from(boardseshTicks)
-      .where(
-        and(
-          isNull(boardseshTicks.sessionId),
-          isNull(boardseshTicks.inferredSessionId),
-        ),
-      )
+      .where(and(isNull(boardseshTicks.sessionId), isNull(boardseshTicks.inferredSessionId)))
       .orderBy(boardseshTicks.userId)
       .limit(MAX_USERS_PER_RUN);
 
@@ -53,7 +48,7 @@ export async function GET(request: Request) {
     for (const { userId } of usersWithUnassigned) {
       // Stop processing before we hit the Vercel timeout
       if (Date.now() - startedAt > DEADLINE_MS) {
-        console.log(
+        console.info(
           `[Inferred sessions backfill] Deadline reached after ${usersSucceeded}/${usersWithUnassigned.length} users`,
         );
         break;
@@ -82,9 +77,6 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error('[Inferred sessions backfill] Error:', error);
-    return NextResponse.json(
-      { error: 'Backfill failed' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Backfill failed' }, { status: 500 });
   }
 }

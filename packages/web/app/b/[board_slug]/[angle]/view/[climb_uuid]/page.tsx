@@ -1,6 +1,6 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { resolveBoardBySlug, boardToRouteParams } from '@/app/lib/board-slug-utils';
 import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import { getClimb } from '@/app/lib/data/queries';
@@ -12,9 +12,9 @@ import { extractUuidFromSlug } from '@/app/lib/url-utils';
 import { buildOgBoardRenderUrl } from '@/app/components/board-renderer/util';
 import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from '@/app/lib/seo/og';
 
-interface BoardSlugViewPageProps {
+type BoardSlugViewPageProps = {
   params: Promise<{ board_slug: string; angle: string; climb_uuid: string }>;
-}
+};
 
 export async function generateMetadata(props: BoardSlugViewPageProps): Promise<Metadata> {
   const params = await props.params;
@@ -30,10 +30,8 @@ export async function generateMetadata(props: BoardSlugViewPageProps): Promise<M
       climb_uuid: extractUuidFromSlug(params.climb_uuid),
     };
 
-    const [boardDetails, currentClimb] = await Promise.all([
-      getBoardDetailsForBoard(parsedParams),
-      getClimb(parsedParams),
-    ]);
+    const boardDetails = getBoardDetailsForBoard(parsedParams);
+    const currentClimb = await getClimb(parsedParams);
 
     const climbName = currentClimb.name || `${boardDetails.board_name} Climb`;
     const climbGrade = currentClimb.difficulty || 'Unknown Grade';
@@ -91,8 +89,8 @@ export default async function BoardSlugViewPage(props: BoardSlugViewPageProps) {
   };
 
   try {
-    const [boardDetails, currentClimb, detailData] = await Promise.all([
-      getBoardDetailsForBoard(parsedParams),
+    const boardDetails = getBoardDetailsForBoard(parsedParams);
+    const [currentClimb, detailData] = await Promise.all([
       getClimb(parsedParams),
       fetchClimbDetailData({
         boardName: parsedParams.board_name,

@@ -17,22 +17,24 @@ import ToggleButton from '@mui/material/ToggleButton';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import { track } from '@vercel/analytics';
-import { Climb, BoardDetails } from '@/app/lib/types';
-import { useBoardProvider, TickStatus } from '../board-provider/board-provider-context';
+import type { Climb, BoardDetails } from '@/app/lib/types';
+import { type TickStatus, useBoardProvider } from '../board-provider/board-provider-context';
 import { TENSION_KILTER_GRADES, ANGLES } from '@/app/lib/board-data';
+import { isInstagramUrl } from '@/app/lib/instagram-url';
 
 import dayjs from 'dayjs';
 
 type LogType = 'ascent' | 'attempt';
 
-interface LogAscentFormValues {
+type LogAscentFormValues = {
   date: dayjs.Dayjs;
   angle: number;
   attempts: number;
   quality: number;
   difficulty: number;
   notes?: string;
-}
+  videoUrl?: string;
+};
 
 // Helper to determine tick status from attempt count (for ascents)
 const getAscentStatus = (attempts: number): TickStatus => {
@@ -47,11 +49,11 @@ const getTickStatus = (logType: LogType, attempts: number): TickStatus => {
   return getAscentStatus(attempts);
 };
 
-interface LogAscentFormProps {
+type LogAscentFormProps = {
   currentClimb: Climb;
   boardDetails: BoardDetails;
   onClose: () => void;
-}
+};
 
 export const LogAscentForm: React.FC<LogAscentFormProps> = ({ currentClimb, boardDetails, onClose }) => {
   const { saveTick, isAuthenticated } = useBoardProvider();
@@ -79,7 +81,8 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({ currentClimb, boar
       ...prev,
       date: dayjs(),
       angle: currentClimb?.angle || prev.angle,
-      difficulty: grades.find((grade) => grade.difficulty_name === currentClimb?.difficulty)?.difficulty_id || prev.difficulty,
+      difficulty:
+        grades.find((grade) => grade.difficulty_name === currentClimb?.difficulty)?.difficulty_id || prev.difficulty,
       attempts: 1,
     }));
     setIsMirrored(!!currentClimb?.mirrored);
@@ -88,6 +91,11 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({ currentClimb, boar
   const handleMirrorToggle = () => {
     setIsMirrored((prev) => !prev);
   };
+
+  const videoUrlError =
+    logType === 'ascent' && formValues.videoUrl && !isInstagramUrl(formValues.videoUrl)
+      ? 'Needs to be an Instagram post or reel URL'
+      : null;
 
   // Validation function matching backend rules
   const validateTickInput = (values: LogAscentFormValues): string | null => {
@@ -106,6 +114,10 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({ currentClimb, boar
     // Send requires attemptCount > 1
     if (status === 'send' && values.attempts <= 1) {
       return 'Send requires more than 1 attempt';
+    }
+
+    if (values.videoUrl && !isInstagramUrl(values.videoUrl)) {
+      return 'Needs to be an Instagram post or reel URL';
     }
 
     return null; // Valid
@@ -128,6 +140,7 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({ currentClimb, boar
     const status = getTickStatus(logType, values.attempts);
 
     try {
+      const trimmedVideoUrl = values.videoUrl?.trim();
       await saveTick({
         climbUuid: currentClimb.uuid,
         angle: Number(values.angle),
@@ -142,6 +155,7 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({ currentClimb, boar
         layoutId: boardDetails.layout_id,
         sizeId: boardDetails.size_id,
         setIds: Array.isArray(boardDetails.set_ids) ? boardDetails.set_ids.join(',') : String(boardDetails.set_ids),
+        videoUrl: logType === 'ascent' && trimmedVideoUrl ? trimmedVideoUrl : undefined,
       });
 
       track('Tick Logged', {
@@ -163,14 +177,15 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({ currentClimb, boar
   };
 
   return (
-    <Box component="form" onSubmit={(e: React.FormEvent) => { e.preventDefault(); handleSubmit(formValues); }}>
+    <Box
+      component="form"
+      onSubmit={(e: React.FormEvent) => {
+        e.preventDefault();
+        void handleSubmit(formValues);
+      }}
+    >
       <Box sx={{ mb: 2 }}>
-        <ToggleButtonGroup
-          exclusive
-          fullWidth
-          value={logType}
-          onChange={(_, val) => val && setLogType(val as LogType)}
-        >
+        <ToggleButtonGroup exclusive fullWidth value={logType} onChange={(_, val) => val && setLogType(val as LogType)}>
           <ToggleButton value="ascent">Ascent</ToggleButton>
           <ToggleButton value="attempt">Attempt</ToggleButton>
         </ToggleButtonGroup>
@@ -291,11 +306,29 @@ export const LogAscentForm: React.FC<LogAscentFormProps> = ({ currentClimb, boar
         </Box>
       </Box>
 
+      {logType === 'ascent' && (
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 1.5 }}>
+          <Typography sx={{ width: 120, flexShrink: 0, pt: 1 }}>Video</Typography>
+          <Box sx={{ flex: 1 }}>
+            <TextField
+              placeholder="https://www.instagram.com/reel/..."
+              variant="outlined"
+              size="small"
+              fullWidth
+              value={formValues.videoUrl || ''}
+              onChange={(e) => setFormValues((prev) => ({ ...prev, videoUrl: e.target.value }))}
+              error={!!videoUrlError}
+              helperText={videoUrlError ?? 'Paste a reel link so others can see your beta. (Optional)'}
+            />
+          </Box>
+        </Box>
+      )}
+
       <Box sx={{ mb: 1 }}>
         <Button
           variant="contained"
           type="submit"
-          disabled={isSaving}
+          disabled={isSaving || !!videoUrlError}
           startIcon={isSaving ? <CircularProgress size={16} /> : undefined}
           fullWidth
           size="large"

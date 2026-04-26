@@ -1,5 +1,5 @@
 import React from 'react';
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getServerAuthToken } from '@/app/lib/auth/server-auth';
 import { getServerSession } from 'next-auth/next';
@@ -90,6 +90,7 @@ export default async function ProfilePage({ params }: PageProps) {
       userId={user_id}
       initialProfile={initialProfile}
       initialProfileStats={statsData.initialProfileStats}
+      initialPercentile={statsData.initialPercentile}
       initialAllBoardsTicks={statsData.initialAllBoardsTicks}
       initialLogbook={statsData.initialLogbook}
       initialIsOwnProfile={viewerUserId === user_id}

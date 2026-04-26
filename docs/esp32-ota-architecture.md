@@ -41,11 +41,11 @@ The OTA system enables remote firmware updates for deployed ESP32 controllers th
 
 Firmware is automatically built and published based on Git source:
 
-| Source | Channel | Description | Auto-update |
-|--------|---------|-------------|-------------|
-| Pull Request | `alpha` | Experimental builds from feature branches | No |
-| `main` branch | `beta` | Latest merged features, pre-release testing | Opt-in |
-| Tagged `latest` | `stable` | Production-ready releases | Yes (default) |
+| Source          | Channel  | Description                                 | Auto-update   |
+| --------------- | -------- | ------------------------------------------- | ------------- |
+| Pull Request    | `alpha`  | Experimental builds from feature branches   | No            |
+| `main` branch   | `beta`   | Latest merged features, pre-release testing | Opt-in        |
+| Tagged `latest` | `stable` | Production-ready releases                   | Yes (default) |
 
 ### Channel Behavior
 
@@ -151,9 +151,9 @@ type FirmwareRelease {
 }
 
 enum FirmwareChannel {
-  STABLE   # Tagged releases marked as "latest"
-  BETA     # Builds from main branch
-  ALPHA    # Builds from PRs
+  STABLE # Tagged releases marked as "latest"
+  BETA # Builds from main branch
+  ALPHA # Builds from PRs
 }
 
 type FirmwareUpdateInfo {
@@ -216,8 +216,8 @@ extend type Query {
   # Returns firmwares grouped by channel, sorted by recency
   availableFirmware(
     boardType: String!
-    includeChannels: [FirmwareChannel!]  # Default: all channels
-    limit: Int                            # Per channel, default 10
+    includeChannels: [FirmwareChannel!] # Default: all channels
+    limit: Int # Per channel, default 10
   ): AvailableFirmwareResponse!
 
   # For admin - get update status of all controllers
@@ -232,8 +232,8 @@ type AvailableFirmwareResponse {
   stable: [FirmwareRelease!]!
   beta: [FirmwareRelease!]!
   alpha: [FirmwareRelease!]!
-  currentVersion: String         # Controller's current version (if authenticated)
-  recommendedUpdate: FirmwareRelease  # Recommended update based on channel preference
+  currentVersion: String # Controller's current version (if authenticated)
+  recommendedUpdate: FirmwareRelease # Recommended update based on channel preference
 }
 ```
 
@@ -242,11 +242,7 @@ type AvailableFirmwareResponse {
 ```graphql
 extend type Mutation {
   # Called by ESP32 to check for updates (uses controller's channel preference)
-  checkFirmwareUpdate(
-    currentVersion: String!
-    currentVersionCode: Int!
-    boardType: String!
-  ): FirmwareUpdateInfo!
+  checkFirmwareUpdate(currentVersion: String!, currentVersionCode: Int!, boardType: String!): FirmwareUpdateInfo!
 
   # Called by ESP32 to report update progress
   reportFirmwareStatus(input: ReportFirmwareStatusInput!): Boolean!
@@ -765,6 +761,7 @@ void WSClient::sendFirmwareStatus(OTAState state, int progress, const String& cu
 ## ESP32 WebUI Firmware Browser
 
 The ESP32's built-in web interface includes a firmware browser that allows users to:
+
 - View all available firmware across all channels (stable, beta, alpha)
 - See PR details for alpha builds (title, author, PR number)
 - Manually install any firmware version
@@ -942,104 +939,181 @@ The firmware browser UI is served as a single-page application:
 <!-- Embedded in ESP32 flash, served at /firmware.html -->
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Firmware Update</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-        * { box-sizing: border-box; font-family: -apple-system, sans-serif; }
-        body { margin: 0; padding: 16px; background: #1a1a2e; color: #eee; }
-        .card { background: #16213e; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
-        .channel-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-        .tab { padding: 8px 16px; border-radius: 4px; cursor: pointer; background: #0f3460; }
-        .tab.active { background: #e94560; }
-        .firmware-item { padding: 12px; border-bottom: 1px solid #0f3460; }
-        .firmware-item:last-child { border-bottom: none; }
-        .version { font-weight: bold; font-size: 1.1em; }
-        .meta { color: #888; font-size: 0.85em; margin-top: 4px; }
-        .pr-info { background: #0f3460; padding: 8px; border-radius: 4px; margin-top: 8px; }
-        .btn { background: #e94560; color: white; border: none; padding: 8px 16px;
-               border-radius: 4px; cursor: pointer; }
-        .btn:disabled { background: #666; cursor: not-allowed; }
-        .btn-secondary { background: #0f3460; }
-        .progress { height: 4px; background: #0f3460; border-radius: 2px; margin-top: 8px; }
-        .progress-bar { height: 100%; background: #e94560; border-radius: 2px; transition: width 0.3s; }
-        .current { border: 2px solid #4ecca3; }
-        .status { padding: 8px; border-radius: 4px; margin-bottom: 16px; }
-        .status.updating { background: #e94560; }
-        .status.success { background: #4ecca3; color: #000; }
-        .status.error { background: #ff6b6b; }
+      * {
+        box-sizing: border-box;
+        font-family: -apple-system, sans-serif;
+      }
+      body {
+        margin: 0;
+        padding: 16px;
+        background: #1a1a2e;
+        color: #eee;
+      }
+      .card {
+        background: #16213e;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+      .channel-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      .tab {
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        background: #0f3460;
+      }
+      .tab.active {
+        background: #e94560;
+      }
+      .firmware-item {
+        padding: 12px;
+        border-bottom: 1px solid #0f3460;
+      }
+      .firmware-item:last-child {
+        border-bottom: none;
+      }
+      .version {
+        font-weight: bold;
+        font-size: 1.1em;
+      }
+      .meta {
+        color: #888;
+        font-size: 0.85em;
+        margin-top: 4px;
+      }
+      .pr-info {
+        background: #0f3460;
+        padding: 8px;
+        border-radius: 4px;
+        margin-top: 8px;
+      }
+      .btn {
+        background: #e94560;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .btn:disabled {
+        background: #666;
+        cursor: not-allowed;
+      }
+      .btn-secondary {
+        background: #0f3460;
+      }
+      .progress {
+        height: 4px;
+        background: #0f3460;
+        border-radius: 2px;
+        margin-top: 8px;
+      }
+      .progress-bar {
+        height: 100%;
+        background: #e94560;
+        border-radius: 2px;
+        transition: width 0.3s;
+      }
+      .current {
+        border: 2px solid #4ecca3;
+      }
+      .status {
+        padding: 8px;
+        border-radius: 4px;
+        margin-bottom: 16px;
+      }
+      .status.updating {
+        background: #e94560;
+      }
+      .status.success {
+        background: #4ecca3;
+        color: #000;
+      }
+      .status.error {
+        background: #ff6b6b;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Firmware Update</h1>
 
     <div class="card">
-        <h3>Current Firmware</h3>
-        <div id="current-info">Loading...</div>
-        <div style="margin-top: 12px">
-            <label>Update Channel: </label>
-            <select id="channel-select" onchange="changeChannel(this.value)">
-                <option value="stable">Stable (Recommended)</option>
-                <option value="beta">Beta (Latest from main)</option>
-                <option value="alpha">Alpha (PR builds)</option>
-            </select>
-        </div>
+      <h3>Current Firmware</h3>
+      <div id="current-info">Loading...</div>
+      <div style="margin-top: 12px">
+        <label>Update Channel: </label>
+        <select id="channel-select" onchange="changeChannel(this.value)">
+          <option value="stable">Stable (Recommended)</option>
+          <option value="beta">Beta (Latest from main)</option>
+          <option value="alpha">Alpha (PR builds)</option>
+        </select>
+      </div>
     </div>
 
     <div id="update-status" class="status" style="display: none;"></div>
 
     <div class="channel-tabs">
-        <div class="tab active" onclick="showChannel('stable')">Stable</div>
-        <div class="tab" onclick="showChannel('beta')">Beta</div>
-        <div class="tab" onclick="showChannel('alpha')">Alpha (PRs)</div>
+      <div class="tab active" onclick="showChannel('stable')">Stable</div>
+      <div class="tab" onclick="showChannel('beta')">Beta</div>
+      <div class="tab" onclick="showChannel('alpha')">Alpha (PRs)</div>
     </div>
 
     <div class="card">
-        <div id="firmware-list">Loading available firmware...</div>
+      <div id="firmware-list">Loading available firmware...</div>
     </div>
 
     <script>
-        // All communication goes through local ESP32 endpoints
-        // ESP32 proxies to backend via GraphQL WebSocket
-        let currentVersion = '';
-        let firmwareData = { stable: [], beta: [], alpha: [] };
-        let activeChannel = 'stable';
+      // All communication goes through local ESP32 endpoints
+      // ESP32 proxies to backend via GraphQL WebSocket
+      let currentVersion = '';
+      let firmwareData = { stable: [], beta: [], alpha: [] };
+      let activeChannel = 'stable';
 
-        async function init() {
-            await fetchStatus();
-            await fetchFirmware();
-            pollStatus();
-        }
+      async function init() {
+        await fetchStatus();
+        await fetchFirmware();
+        pollStatus();
+      }
 
-        async function fetchStatus() {
-            const res = await fetch('/api/firmware/status');
-            const data = await res.json();
-            currentVersion = data.currentVersion;
-            document.getElementById('channel-select').value = data.channel;
-            document.getElementById('current-info').innerHTML = `
+      async function fetchStatus() {
+        const res = await fetch('/api/firmware/status');
+        const data = await res.json();
+        currentVersion = data.currentVersion;
+        document.getElementById('channel-select').value = data.channel;
+        document.getElementById('current-info').innerHTML = `
                 <div class="version">${data.currentVersion}</div>
                 <div class="meta">Board: ${data.boardType} | Channel: ${data.channel}</div>
             `;
-            updateStatusDisplay(data);
+        updateStatusDisplay(data);
+      }
+
+      async function fetchFirmware() {
+        // Fetch from local ESP32 endpoint (cached from GraphQL)
+        const res = await fetch('/api/firmware/available');
+        firmwareData = await res.json();
+        renderFirmwareList();
+      }
+
+      function renderFirmwareList() {
+        const list = firmwareData[activeChannel] || [];
+        const container = document.getElementById('firmware-list');
+
+        if (list.length === 0) {
+          container.innerHTML = '<p>No firmware available in this channel.</p>';
+          return;
         }
 
-        async function fetchFirmware() {
-            // Fetch from local ESP32 endpoint (cached from GraphQL)
-            const res = await fetch('/api/firmware/available');
-            firmwareData = await res.json();
-            renderFirmwareList();
-        }
-
-        function renderFirmwareList() {
-            const list = firmwareData[activeChannel] || [];
-            const container = document.getElementById('firmware-list');
-
-            if (list.length === 0) {
-                container.innerHTML = '<p>No firmware available in this channel.</p>';
-                return;
-            }
-
-            container.innerHTML = list.map(fw => `
+        container.innerHTML = list
+          .map(
+            (fw) => `
                 <div class="firmware-item ${fw.version === currentVersion ? 'current' : ''}">
                     <div class="version">
                         ${fw.version}
@@ -1049,12 +1123,16 @@ The firmware browser UI is served as a single-page application:
                         ${new Date(fw.createdAt).toLocaleDateString()}
                         ${fw.binarySize ? ` • ${(fw.binarySize / 1024).toFixed(0)} KB` : ''}
                     </div>
-                    ${fw.prNumber ? `
+                    ${
+                      fw.prNumber
+                        ? `
                         <div class="pr-info">
                             <strong>PR #${fw.prNumber}</strong>: ${fw.prTitle || 'No title'}
                             <div class="meta">by ${fw.prAuthor || 'unknown'}</div>
                         </div>
-                    ` : ''}
+                    `
+                        : ''
+                    }
                     ${fw.releaseNotes ? `<div class="meta" style="margin-top: 8px;">${fw.releaseNotes}</div>` : ''}
                     <button class="btn" style="margin-top: 8px;"
                             onclick="installFirmware(${JSON.stringify(fw).replace(/"/g, '&quot;')})"
@@ -1062,77 +1140,79 @@ The firmware browser UI is served as a single-page application:
                         ${fw.version === currentVersion ? 'Installed' : 'Install'}
                     </button>
                 </div>
-            `).join('');
+            `,
+          )
+          .join('');
+      }
+
+      function showChannel(channel) {
+        activeChannel = channel;
+        document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+        event.target.classList.add('active');
+        renderFirmwareList();
+      }
+
+      async function installFirmware(fw) {
+        if (!confirm(`Install firmware ${fw.version}? The device will reboot after installation.`)) {
+          return;
         }
 
-        function showChannel(channel) {
-            activeChannel = channel;
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            renderFirmwareList();
+        const res = await fetch('/api/firmware/install', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(fw),
+        });
+
+        if (res.ok) {
+          showStatus('updating', 'Starting firmware update...');
+        } else {
+          showStatus('error', 'Failed to start update');
         }
+      }
 
-        async function installFirmware(fw) {
-            if (!confirm(`Install firmware ${fw.version}? The device will reboot after installation.`)) {
-                return;
-            }
+      async function changeChannel(channel) {
+        await fetch('/api/firmware/channel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ channel }),
+        });
+        fetchStatus();
+      }
 
-            const res = await fetch('/api/firmware/install', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(fw)
-            });
-
-            if (res.ok) {
-                showStatus('updating', 'Starting firmware update...');
-            } else {
-                showStatus('error', 'Failed to start update');
-            }
+      function updateStatusDisplay(data) {
+        if (data.state === 'DOWNLOADING' || data.state === 'INSTALLING') {
+          showStatus('updating', `${data.state}: ${data.progress}%`);
+        } else if (data.state === 'SUCCESS') {
+          showStatus('success', 'Update complete! Device will reboot.');
+        } else if (data.state === 'FAILED') {
+          showStatus('error', 'Update failed. Please try again.');
+        } else {
+          hideStatus();
         }
+      }
 
-        async function changeChannel(channel) {
-            await fetch('/api/firmware/channel', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ channel })
-            });
-            fetchStatus();
-        }
+      function showStatus(type, message) {
+        const el = document.getElementById('update-status');
+        el.className = `status ${type}`;
+        el.textContent = message;
+        el.style.display = 'block';
+      }
 
-        function updateStatusDisplay(data) {
-            if (data.state === 'DOWNLOADING' || data.state === 'INSTALLING') {
-                showStatus('updating', `${data.state}: ${data.progress}%`);
-            } else if (data.state === 'SUCCESS') {
-                showStatus('success', 'Update complete! Device will reboot.');
-            } else if (data.state === 'FAILED') {
-                showStatus('error', 'Update failed. Please try again.');
-            } else {
-                hideStatus();
-            }
-        }
+      function hideStatus() {
+        document.getElementById('update-status').style.display = 'none';
+      }
 
-        function showStatus(type, message) {
-            const el = document.getElementById('update-status');
-            el.className = `status ${type}`;
-            el.textContent = message;
-            el.style.display = 'block';
-        }
+      function pollStatus() {
+        setInterval(async () => {
+          const res = await fetch('/api/firmware/status');
+          const data = await res.json();
+          updateStatusDisplay(data);
+        }, 2000);
+      }
 
-        function hideStatus() {
-            document.getElementById('update-status').style.display = 'none';
-        }
-
-        function pollStatus() {
-            setInterval(async () => {
-                const res = await fetch('/api/firmware/status');
-                const data = await res.json();
-                updateStatusDisplay(data);
-            }, 2000);
-        }
-
-        init();
+      init();
     </script>
-</body>
+  </body>
 </html>
 ```
 
@@ -1153,35 +1233,44 @@ export const firmwareQueries = {
     const { boardType, limit = 10 } = args;
 
     const [stable, beta, alpha] = await Promise.all([
-      db.select()
+      db
+        .select()
         .from(esp32FirmwareReleases)
-        .where(and(
-          eq(esp32FirmwareReleases.boardType, boardType),
-          eq(esp32FirmwareReleases.channel, 'stable'),
-          eq(esp32FirmwareReleases.isActive, true)
-        ))
+        .where(
+          and(
+            eq(esp32FirmwareReleases.boardType, boardType),
+            eq(esp32FirmwareReleases.channel, 'stable'),
+            eq(esp32FirmwareReleases.isActive, true),
+          ),
+        )
         .orderBy(desc(esp32FirmwareReleases.versionCode))
         .limit(limit),
 
-      db.select()
+      db
+        .select()
         .from(esp32FirmwareReleases)
-        .where(and(
-          eq(esp32FirmwareReleases.boardType, boardType),
-          eq(esp32FirmwareReleases.channel, 'beta'),
-          eq(esp32FirmwareReleases.isActive, true)
-        ))
+        .where(
+          and(
+            eq(esp32FirmwareReleases.boardType, boardType),
+            eq(esp32FirmwareReleases.channel, 'beta'),
+            eq(esp32FirmwareReleases.isActive, true),
+          ),
+        )
         .orderBy(desc(esp32FirmwareReleases.createdAt))
         .limit(limit),
 
-      db.select()
+      db
+        .select()
         .from(esp32FirmwareReleases)
-        .where(and(
-          eq(esp32FirmwareReleases.boardType, boardType),
-          eq(esp32FirmwareReleases.channel, 'alpha'),
-          eq(esp32FirmwareReleases.isActive, true)
-        ))
+        .where(
+          and(
+            eq(esp32FirmwareReleases.boardType, boardType),
+            eq(esp32FirmwareReleases.channel, 'alpha'),
+            eq(esp32FirmwareReleases.isActive, true),
+          ),
+        )
         .orderBy(desc(esp32FirmwareReleases.createdAt))
-        .limit(limit * 2),  // More alpha builds since there are many PRs
+        .limit(limit * 2), // More alpha builds since there are many PRs
     ]);
 
     return { stable, beta, alpha };
@@ -1198,9 +1287,19 @@ export const firmwareMutations = {
     requireCIAuth(ctx);
 
     const {
-      boardType, channel, version, binaryUrl, binarySize,
-      checksumSha256, gitRef, gitSha, prNumber, prTitle,
-      prAuthor, releaseNotes, workflowRunId
+      boardType,
+      channel,
+      version,
+      binaryUrl,
+      binarySize,
+      checksumSha256,
+      gitRef,
+      gitSha,
+      prNumber,
+      prTitle,
+      prAuthor,
+      releaseNotes,
+      workflowRunId,
     } = input;
 
     // Calculate version code
@@ -1212,7 +1311,8 @@ export const firmwareMutations = {
       versionCode = Math.floor(Date.now() / 1000);
     }
 
-    const [release] = await db.insert(esp32FirmwareReleases)
+    const [release] = await db
+      .insert(esp32FirmwareReleases)
       .values({
         version,
         versionCode,
@@ -1233,7 +1333,7 @@ export const firmwareMutations = {
       })
       .onConflictDoUpdate({
         target: [esp32FirmwareReleases.boardType, esp32FirmwareReleases.channel, esp32FirmwareReleases.gitSha],
-        set: { binaryUrl, binarySize, checksumSha256, version }
+        set: { binaryUrl, binarySize, checksumSha256, version },
       })
       .returning();
 
@@ -1241,23 +1341,23 @@ export const firmwareMutations = {
   },
 
   // CI: Cleanup old alpha builds for a PR
-  cleanupAlphaBuilds: async (_: unknown, { prNumber, keepCount = 5 }: { prNumber: number; keepCount?: number }, ctx: Context) => {
+  cleanupAlphaBuilds: async (
+    _: unknown,
+    { prNumber, keepCount = 5 }: { prNumber: number; keepCount?: number },
+    ctx: Context,
+  ) => {
     requireCIAuth(ctx);
 
-    const builds = await db.select()
+    const builds = await db
+      .select()
       .from(esp32FirmwareReleases)
-      .where(and(
-        eq(esp32FirmwareReleases.channel, 'alpha'),
-        eq(esp32FirmwareReleases.prNumber, prNumber)
-      ))
+      .where(and(eq(esp32FirmwareReleases.channel, 'alpha'), eq(esp32FirmwareReleases.prNumber, prNumber)))
       .orderBy(desc(esp32FirmwareReleases.createdAt));
 
     const toDeactivate = builds.slice(keepCount);
 
     for (const build of toDeactivate) {
-      await db.update(esp32FirmwareReleases)
-        .set({ isActive: false })
-        .where(eq(esp32FirmwareReleases.id, build.id));
+      await db.update(esp32FirmwareReleases).set({ isActive: false }).where(eq(esp32FirmwareReleases.id, build.id));
     }
 
     return { deactivatedCount: toDeactivate.length };
@@ -1492,11 +1592,11 @@ To create a stable release:
 
 Different channels use different version naming schemes:
 
-| Channel | Version Format | Example | Version Code |
-|---------|---------------|---------|--------------|
-| **Stable** | Semantic version | `1.2.3` | `10000 * major + 100 * minor + patch` |
-| **Beta** | `main-{sha}` | `main-abc1234` | Unix timestamp of commit |
-| **Alpha** | `pr-{num}-{sha}` | `pr-123-abc1234` | Unix timestamp of commit |
+| Channel    | Version Format   | Example          | Version Code                          |
+| ---------- | ---------------- | ---------------- | ------------------------------------- |
+| **Stable** | Semantic version | `1.2.3`          | `10000 * major + 100 * minor + patch` |
+| **Beta**   | `main-{sha}`     | `main-abc1234`   | Unix timestamp of commit              |
+| **Alpha**  | `pr-{num}-{sha}` | `pr-123-abc1234` | Unix timestamp of commit              |
 
 ### Version Code Calculation
 
@@ -1516,41 +1616,49 @@ Alpha:   Unix timestamp (seconds since epoch)
 ## Security Considerations
 
 ### 1. Binary Integrity
+
 - SHA256 checksum verification before flashing
 - Checksum stored in database and verified by ESP32
 
 ### 2. Transport Security
+
 - HTTPS-only for binary downloads
 - TLS certificate validation on ESP32
 
 ### 3. Authentication
+
 - ESP32 uses API key for all GraphQL operations
 - Admin endpoints require user JWT with admin role
 
 ### 4. Rollback Protection
+
 - ESP32 uses dual OTA partitions
 - New firmware must call `esp_ota_mark_app_valid_cancel_rollback()` within 60 seconds
 - Automatic rollback if validation fails
 
 ### 5. Rate Limiting
+
 - Firmware check: max once per 5 minutes per controller
 - Download: max 3 concurrent downloads per controller
 
 ## Admin Dashboard Features
 
 ### Firmware Management
+
 - Upload new firmware releases
 - Set release channel (stable/beta/dev)
 - View download statistics
 - Rollback to previous versions
 
 ### Controller Monitoring
+
 - View all controllers with firmware versions
 - See update status in real-time
 - Trigger updates for individual or all controllers
 - View update history and error logs
 
 ### Alerts
+
 - Failed update notifications
 - Controllers stuck on old versions
 - Rollback events

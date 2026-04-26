@@ -1,6 +1,7 @@
-import { afterEach, describe, it, expect, vi } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vite-plus/test';
 import React, { useRef, useEffect } from 'react';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
+import HoldTypePicker, { buildOptions } from '../hold-type-picker';
 
 // Mock HOLD_STATE_MAP so picker color assertions don't depend on the real LED
 // colors — if production LED hex values change, these tests should keep passing
@@ -47,8 +48,6 @@ vi.mock('../../board-renderer/types', () => ({
     },
   },
 }));
-
-import HoldTypePicker, { buildOptions } from '../hold-type-picker';
 
 // Note: MUI Popover prints "anchorEl is invalid" warnings during the brief
 // window between `cleanup()` and the Popover exit transition. They're benign
@@ -198,8 +197,8 @@ describe('HoldTypePicker', () => {
       currentState: 'OFF',
     });
 
-    const startButton = screen.getByLabelText('Start') as HTMLButtonElement;
-    expect(startButton.disabled).toBe(true);
+    const startButton = screen.getByLabelText('Start');
+    expect((startButton as HTMLButtonElement).disabled).toBe(true);
 
     fireEvent.click(startButton);
     expect(onSelect).not.toHaveBeenCalled();
@@ -212,8 +211,8 @@ describe('HoldTypePicker', () => {
       currentState: 'OFF',
     });
 
-    const finishButton = screen.getByLabelText('Finish') as HTMLButtonElement;
-    expect(finishButton.disabled).toBe(true);
+    const finishButton = screen.getByLabelText('Finish');
+    expect((finishButton as HTMLButtonElement).disabled).toBe(true);
 
     fireEvent.click(finishButton);
     expect(onSelect).not.toHaveBeenCalled();
@@ -228,8 +227,8 @@ describe('HoldTypePicker', () => {
       currentState: 'STARTING',
     });
 
-    const startButton = screen.getByLabelText('Start') as HTMLButtonElement;
-    expect(startButton.disabled).toBe(false);
+    const startButton = screen.getByLabelText('Start');
+    expect((startButton as HTMLButtonElement).disabled).toBe(false);
 
     fireEvent.click(startButton);
     expect(onSelect).toHaveBeenCalledWith('STARTING');
@@ -249,8 +248,8 @@ describe('HoldTypePicker', () => {
       finishCount: 2,
     });
 
-    const footButton = screen.getByLabelText('Foot') as HTMLButtonElement;
-    expect(footButton.disabled).toBe(false);
+    const footButton = screen.getByLabelText('Foot');
+    expect((footButton as HTMLButtonElement).disabled).toBe(false);
 
     fireEvent.click(footButton);
     expect(onSelect).toHaveBeenCalledWith('FOOT');

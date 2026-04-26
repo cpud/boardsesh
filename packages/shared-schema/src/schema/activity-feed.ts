@@ -37,8 +37,12 @@ export const activityFeedTypeDefs = /* GraphQL */ `
     consensusDifficulty: Int
     "Human-readable consensus difficulty name"
     consensusDifficultyName: String
+    "Average quality rating from all users"
+    qualityAverage: Float
     "Whether this is a benchmark climb"
     isBenchmark: Boolean!
+    "Whether matching is disallowed on this climb"
+    isNoMatch: Boolean!
     "Comment"
     comment: String!
     "When climbed (ISO 8601)"
@@ -86,6 +90,8 @@ export const activityFeedTypeDefs = /* GraphQL */ `
     difficultyName: String
     "Whether this is a benchmark climb"
     isBenchmark: Boolean!
+    "Whether matching is disallowed on this climb"
+    isNoMatch: Boolean!
     "Date of the attempts (YYYY-MM-DD)"
     date: String!
     "Number of flash sends"
@@ -124,6 +130,8 @@ export const activityFeedTypeDefs = /* GraphQL */ `
     offset: Int
     "Optional board type filter (kilter, tension, moonboard)"
     boardType: String
+    "Optional board type filter for multiple board types"
+    boardTypes: [String!]
     "Optional layout filters within the selected board type"
     layoutIds: [Int!]
     "Legacy status filter (flash, send, attempt)"
@@ -196,12 +204,25 @@ export const activityFeedTypeDefs = /* GraphQL */ `
     difficultyName: String
     "Whether this is a benchmark climb"
     isBenchmark: Boolean!
+    "Whether matching is disallowed on this climb"
+    isNoMatch: Boolean!
     "Comment"
     comment: String!
     "When climbed (ISO 8601)"
     climbedAt: String!
     "Encoded hold frames for thumbnail display"
     frames: String
+    # Social aggregates are only populated by resolvers that opt-in to the
+    # tick comment / vote joins (e.g. \`followingClimbAscents\`). They are
+    # nullable here so adapter paths like activity-feed or the paginated
+    # \`followingAscentsFeed\` / \`globalAscentsFeed\` don't have to compute or
+    # fake counts they don't need.
+    "Number of upvotes (likes) on this tick. Null if the resolver doesn't compute it."
+    upvotes: Int
+    "Number of downvotes on this tick. Null if the resolver doesn't compute it."
+    downvotes: Int
+    "Number of (non-deleted) comments on this tick. Null if the resolver doesn't compute it."
+    commentCount: Int
   }
 
   """
@@ -224,6 +245,24 @@ export const activityFeedTypeDefs = /* GraphQL */ `
     totalCount: Int!
     "Whether more items are available"
     hasMore: Boolean!
+  }
+
+  """
+  Input for fetching followed users' ticks on a specific climb.
+  """
+  input FollowingClimbAscentsInput {
+    "Board type (kilter, tension, moonboard)"
+    boardType: String!
+    "Climb UUID"
+    climbUuid: String!
+  }
+
+  """
+  Unpaginated result: all ticks from followed users for a given climb.
+  """
+  type FollowingClimbAscentsResult {
+    "List of feed items"
+    items: [FollowingAscentFeedItem!]!
   }
 
   # ============================================
@@ -282,6 +321,8 @@ export const activityFeedTypeDefs = /* GraphQL */ `
     isMirror: Boolean
     "Whether this is a benchmark climb"
     isBenchmark: Boolean
+    "Whether matching is disallowed on this climb"
+    isNoMatch: Boolean
     "Difficulty rating"
     difficulty: Int
     "Human-readable difficulty name"
@@ -415,6 +456,7 @@ export const activityFeedTypeDefs = /* GraphQL */ `
     quality: Int
     isMirror: Boolean!
     isBenchmark: Boolean!
+    isNoMatch: Boolean!
     comment: String
     frames: String
     setterUsername: String
@@ -449,5 +491,6 @@ export const activityFeedTypeDefs = /* GraphQL */ `
     downvotes: Int!
     voteScore: Int!
     commentCount: Int!
+    healthKitWorkoutId: String
   }
 `;

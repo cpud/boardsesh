@@ -11,22 +11,19 @@ import {
 import type { Gym } from '@boardsesh/shared-schema';
 import GymForm, { type GymFormFieldValues } from './gym-form';
 
-interface EditGymFormProps {
+type EditGymFormProps = {
   gym: Gym;
   onSuccess?: (gym: Gym) => void;
   onCancel?: () => void;
-}
+};
 
 export default function EditGymForm({ gym, onSuccess, onCancel }: EditGymFormProps) {
   const { showMessage } = useSnackbar();
 
-  const { execute } = useEntityMutation<UpdateGymMutationResponse, UpdateGymMutationVariables>(
-    UPDATE_GYM,
-    {
-      successMessage: 'Gym updated!',
-      errorMessage: 'Failed to update gym',
-    },
-  );
+  const { execute } = useEntityMutation<UpdateGymMutationResponse, UpdateGymMutationVariables>(UPDATE_GYM, {
+    successMessage: 'Gym updated!',
+    errorMessage: 'Failed to update gym',
+  });
 
   const handleSubmit = useCallback(
     async (values: GymFormFieldValues) => {

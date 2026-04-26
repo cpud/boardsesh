@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import OgImage, { alt, size, contentType } from '../opengraph-image';
 
 describe('opengraph-image', () => {

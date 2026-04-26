@@ -15,6 +15,9 @@ import { VercelToolbar } from '@vercel/toolbar/next';
 import { getAllBoardConfigs } from './lib/server-board-configs';
 import { EMPTY_FEATURE_FLAGS } from './flags';
 import { FeatureFlagsProvider } from './components/providers/feature-flags-provider';
+import { OnboardingTourProvider } from './components/onboarding/onboarding-tour-provider';
+import OnboardingTourOverlay from './components/onboarding/onboarding-tour-overlay';
+import OnboardingDummySeshMount from './components/onboarding/onboarding-dummy-sesh-mount';
 import './components/index.css';
 import type { Viewport, Metadata } from 'next';
 
@@ -34,7 +37,11 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
   },
   icons: {
-    icon: '/favicon.ico',
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/icons/apple-touch-icon.png',
   },
 };
 
@@ -43,7 +50,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: 'cover',
-  themeColor: '#0A0A0A',
+  themeColor: '#0e0e10',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -59,13 +66,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <ColorModeProvider>
                 <SnackbarProvider>
                   <AuthModalProvider>
-                  <FeatureFlagsProvider flags={EMPTY_FEATURE_FLAGS}>
-                    <PersistentSessionWrapper boardConfigs={boardConfigs}>
-                      <NavigationLoadingProvider>
-                        <NotificationSubscriptionManager>{children}</NotificationSubscriptionManager>
-                      </NavigationLoadingProvider>
-                    </PersistentSessionWrapper>
-                  </FeatureFlagsProvider>
+                    <FeatureFlagsProvider flags={EMPTY_FEATURE_FLAGS}>
+                      <PersistentSessionWrapper boardConfigs={boardConfigs}>
+                        <NavigationLoadingProvider>
+                          <OnboardingTourProvider>
+                            <NotificationSubscriptionManager>{children}</NotificationSubscriptionManager>
+                            <OnboardingTourOverlay />
+                            <OnboardingDummySeshMount />
+                          </OnboardingTourProvider>
+                        </NavigationLoadingProvider>
+                      </PersistentSessionWrapper>
+                    </FeatureFlagsProvider>
                   </AuthModalProvider>
                 </SnackbarProvider>
               </ColorModeProvider>

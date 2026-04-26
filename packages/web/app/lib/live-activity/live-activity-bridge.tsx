@@ -6,7 +6,7 @@ import { isNativeApp, getPlatform } from '../ble/capacitor-utils';
 import type { ClimbQueueItem } from '@/app/components/queue-control/types';
 import type { BoardDetails } from '../types';
 
-interface LiveActivityBridgeProps {
+type LiveActivityBridgeProps = {
   queue: ClimbQueueItem[];
   currentClimbQueueItem: ClimbQueueItem | null;
   boardDetails: BoardDetails | null;
@@ -15,13 +15,9 @@ interface LiveActivityBridgeProps {
   onSetCurrentClimb?: (item: ClimbQueueItem) => void;
   /** Called when a widget navigation includes a correlationId (party mode optimistic path). */
   onWidgetNavigate?: (item: ClimbQueueItem, correlationId: string) => void;
-}
+};
 
-export default function LiveActivityBridge({
-  onSetCurrentClimb,
-  onWidgetNavigate,
-  ...props
-}: LiveActivityBridgeProps) {
+export default function LiveActivityBridge({ onSetCurrentClimb, onWidgetNavigate, ...props }: LiveActivityBridgeProps) {
   useLiveActivity(props);
 
   // Listen for widget next/previous button taps and navigate the queue.
@@ -62,12 +58,16 @@ export default function LiveActivityBridge({
     let cleaned = false;
     const removeRef: { remove?: () => void } = {};
     const applyHandle = (h: { remove: () => void }) => {
-      if (cleaned) { h.remove(); } else { removeRef.remove = h.remove; }
+      if (cleaned) {
+        h.remove();
+      } else {
+        removeRef.remove = h.remove;
+      }
     };
     if (handle && typeof (handle as { remove?: () => void }).remove === 'function') {
       applyHandle(handle as { remove: () => void });
     } else if (handle && typeof (handle as Promise<{ remove: () => void }>).then === 'function') {
-      (handle as Promise<{ remove: () => void }>).then(applyHandle);
+      void (handle as Promise<{ remove: () => void }>).then(applyHandle);
     }
 
     return () => {

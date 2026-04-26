@@ -1,6 +1,15 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useMemo, useRef, useLayoutEffect, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useLayoutEffect,
+  useEffect,
+} from 'react';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
@@ -8,7 +17,7 @@ const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffec
 // State context (consumed by GlobalHeader)
 // -------------------------------------------------------------------
 
-interface StatsFilterBridgeState {
+type StatsFilterBridgeState = {
   /** Whether a statistics page is currently active. */
   isActive: boolean;
   /** Page title for the header (e.g. "Statistics", "Progress"). */
@@ -19,7 +28,7 @@ interface StatsFilterBridgeState {
   openFilterDrawer: (() => void) | null;
   /** Whether any non-default filters are active (for indicator dot). */
   hasActiveFilters: boolean;
-}
+};
 
 const StatsFilterBridgeContext = createContext<StatsFilterBridgeState>({
   isActive: false,
@@ -37,11 +46,11 @@ export function useStatsFilterBridge() {
 // Setter context (consumed by the injector in page content)
 // -------------------------------------------------------------------
 
-interface StatsFilterBridgeSetters {
+type StatsFilterBridgeSetters = {
   register: (openDrawer: () => void, pageTitle: string, backUrl: string | null, hasActiveFilters: boolean) => void;
   update: (hasActiveFilters: boolean) => void;
   deregister: () => void;
-}
+};
 
 const StatsFilterBridgeSetterContext = createContext<StatsFilterBridgeSetters>({
   register: () => {},
@@ -84,13 +93,16 @@ export function StatsFilterBridgeProvider({ children }: { children: React.ReactN
     openDrawerRef.current?.();
   }, []);
 
-  const state = useMemo<StatsFilterBridgeState>(() => ({
-    isActive: isRegistered,
-    pageTitle,
-    backUrl,
-    openFilterDrawer: isRegistered ? stableOpenDrawer : null,
-    hasActiveFilters,
-  }), [isRegistered, pageTitle, backUrl, stableOpenDrawer, hasActiveFilters]);
+  const state = useMemo<StatsFilterBridgeState>(
+    () => ({
+      isActive: isRegistered,
+      pageTitle,
+      backUrl,
+      openFilterDrawer: isRegistered ? stableOpenDrawer : null,
+      hasActiveFilters,
+    }),
+    [isRegistered, pageTitle, backUrl, stableOpenDrawer, hasActiveFilters],
+  );
 
   const setters = useMemo<StatsFilterBridgeSetters>(
     () => ({ register, update, deregister }),
@@ -99,9 +111,7 @@ export function StatsFilterBridgeProvider({ children }: { children: React.ReactN
 
   return (
     <StatsFilterBridgeSetterContext.Provider value={setters}>
-      <StatsFilterBridgeContext.Provider value={state}>
-        {children}
-      </StatsFilterBridgeContext.Provider>
+      <StatsFilterBridgeContext.Provider value={state}>{children}</StatsFilterBridgeContext.Provider>
     </StatsFilterBridgeSetterContext.Provider>
   );
 }
@@ -110,13 +120,13 @@ export function StatsFilterBridgeProvider({ children }: { children: React.ReactN
 // Injector (placed inside page content)
 // -------------------------------------------------------------------
 
-interface StatsFilterBridgeInjectorProps {
+type StatsFilterBridgeInjectorProps = {
   openDrawer: () => void;
   pageTitle: string;
   backUrl: string | null;
   hasActiveFilters: boolean;
   isActive: boolean;
-}
+};
 
 export function StatsFilterBridgeInjector({
   openDrawer,
@@ -138,16 +148,13 @@ export function StatsFilterBridgeInjector({
 
   useIsomorphicLayoutEffect(() => {
     if (isActive) {
-      register(
-        () => openDrawerRef.current(),
-        pageTitleRef.current,
-        backUrlRef.current,
-        hasActiveFiltersRef.current,
-      );
+      register(() => openDrawerRef.current(), pageTitleRef.current, backUrlRef.current, hasActiveFiltersRef.current);
     } else {
       deregister();
     }
-    return () => { deregister(); };
+    return () => {
+      deregister();
+    };
   }, [isActive, register, deregister]);
 
   useEffect(() => {

@@ -3,7 +3,7 @@ import type { TickStatus } from '@/app/hooks/use-logbook';
 
 const STORE_NAME = 'tick-drafts';
 
-export interface TickDraft {
+export type TickDraft = {
   climbUuid: string;
   angle: number;
   quality: number | null;
@@ -11,7 +11,8 @@ export interface TickDraft {
   attemptCount: number;
   comment: string;
   status: TickStatus;
-}
+  videoUrl?: string;
+};
 
 function draftKey(climbUuid: string, angle: number): string {
   return `${climbUuid}:${angle}`;

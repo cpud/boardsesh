@@ -15,7 +15,7 @@ import type { BoardName } from '@/app/lib/types';
 import { ANGLES } from '@/app/lib/board-data';
 import BoardForm from './board-form';
 
-interface CreateBoardFormProps {
+type CreateBoardFormProps = {
   boardType: string;
   layoutId: number;
   sizeId: number;
@@ -23,7 +23,7 @@ interface CreateBoardFormProps {
   defaultAngle: number;
   onSuccess?: (board: UserBoard) => void;
   onCancel?: () => void;
-}
+};
 
 export default function CreateBoardForm({
   boardType,
@@ -39,16 +39,25 @@ export default function CreateBoardForm({
 
   const availableAngles = ANGLES[boardType as BoardName] ?? [];
 
-  const { execute } = useEntityMutation<CreateBoardMutationResponse, CreateBoardMutationVariables>(
-    CREATE_BOARD,
-    {
-      errorMessage: 'Failed to create board. It may already exist for this configuration.',
-      authRequiredMessage: 'You must be signed in to create a board',
-    },
-  );
+  const { execute } = useEntityMutation<CreateBoardMutationResponse, CreateBoardMutationVariables>(CREATE_BOARD, {
+    errorMessage: 'Failed to create board. It may already exist for this configuration.',
+    authRequiredMessage: 'You must be signed in to create a board',
+  });
 
   const handleSubmit = useCallback(
-    async (values: { name: string; description: string; locationName: string; latitude?: number | null; longitude?: number | null; isPublic: boolean; isUnlisted: boolean; hideLocation: boolean; isOwned: boolean; angle?: number; isAngleAdjustable?: boolean }) => {
+    async (values: {
+      name: string;
+      description: string;
+      locationName: string;
+      latitude?: number | null;
+      longitude?: number | null;
+      isPublic: boolean;
+      isUnlisted: boolean;
+      hideLocation: boolean;
+      isOwned: boolean;
+      angle?: number;
+      isAngleAdjustable?: boolean;
+    }) => {
       if (!values.name) {
         showMessage('Board name is required', 'error');
         return;

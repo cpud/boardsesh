@@ -13,12 +13,7 @@ type UsePlaylistsReturn = {
   playlistsContainingClimb: Set<string>;
   addToPlaylist: (playlistId: string) => Promise<void>;
   removeFromPlaylist: (playlistId: string) => Promise<void>;
-  createPlaylist: (
-    name: string,
-    description?: string,
-    color?: string,
-    icon?: string
-  ) => Promise<Playlist>;
+  createPlaylist: (name: string, description?: string, color?: string, icon?: string) => Promise<Playlist>;
   isLoading: boolean;
   isAuthenticated: boolean;
   refreshPlaylists: () => Promise<void>;
@@ -55,7 +50,7 @@ export function usePlaylists({ climbUuid, angle }: UsePlaylistsOptions): UsePlay
       if (!context) return;
       return context.addToPlaylist(playlistId, climbUuid, angle);
     },
-    [context, climbUuid, angle]
+    [context, climbUuid, angle],
   );
 
   const removeFromPlaylist = useCallback(
@@ -63,7 +58,7 @@ export function usePlaylists({ climbUuid, angle }: UsePlaylistsOptions): UsePlay
       if (!context) return;
       return context.removeFromPlaylist(playlistId, climbUuid);
     },
-    [context, climbUuid]
+    [context, climbUuid],
   );
 
   if (!context) {

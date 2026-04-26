@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import MuiButton from '@mui/material/Button';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { track } from '@vercel/analytics';
-import { Climb, BoardDetails, Angle } from '@/app/lib/types';
+import type { Climb, BoardDetails, Angle } from '@/app/lib/types';
 import { useQueueActions, useCurrentClimb, useQueueList } from '@/app/components/graphql-queue';
 import SwipeBoardCarousel from '@/app/components/board-renderer/swipe-board-carousel';
 import ClimbTitle from '@/app/components/climb-card/climb-title';
@@ -27,20 +27,14 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
   const searchParams = useSearchParams();
   const { currentClimb } = useCurrentClimb();
   const { queue } = useQueueList();
-  const {
-    setCurrentClimbQueueItem,
-    getNextClimbQueueItem,
-    getPreviousClimbQueueItem,
-  } = useQueueActions();
+  const { setCurrentClimbQueueItem, getNextClimbQueueItem, getPreviousClimbQueueItem } = useQueueActions();
 
   // Use queue's current climb if available (has real-time state like mirrored),
   // otherwise fall back to the initial climb from SSR.
   const displayClimb = currentClimb || initialClimb;
 
   // Get the mirrored state from currentClimb when it matches the displayed climb
-  const isMirrored = currentClimb?.uuid === displayClimb?.uuid
-    ? !!currentClimb?.mirrored
-    : !!displayClimb?.mirrored;
+  const isMirrored = currentClimb?.uuid === displayClimb?.uuid ? !!currentClimb?.mirrored : !!displayClimb?.mirrored;
 
   // Sync queue state with URL on browser back/forward navigation.
   // Uses refs to avoid re-subscribing the listener on every queue change.
@@ -55,7 +49,7 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
       const lastSegment = pathSegments[pathSegments.length - 1];
       if (!lastSegment) return;
       const uuid = extractUuidFromSlug(lastSegment);
-      const item = queueRef.current.find(i => i.climb.uuid === uuid);
+      const item = queueRef.current.find((i) => i.climb.uuid === uuid);
       if (item) {
         setCurrentClimbRef.current(item);
       }
@@ -166,7 +160,11 @@ const PlayViewClient: React.FC<PlayViewClientProps> = ({ boardDetails, initialCl
             layout="horizontal"
             showSetterInfo
             titleFontSize={themeTokens.typography.fontSize['2xl']}
-            rightAddon={displayClimb && <AscentStatus climbUuid={displayClimb.uuid} fontSize={themeTokens.typography.fontSize['2xl']} />}
+            rightAddon={
+              displayClimb && (
+                <AscentStatus climbUuid={displayClimb.uuid} fontSize={themeTokens.typography.fontSize['2xl']} />
+              )
+            }
             isNoMatch={!!displayClimb?.is_no_match}
           />
         </div>

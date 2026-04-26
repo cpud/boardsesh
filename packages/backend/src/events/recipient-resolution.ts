@@ -1,12 +1,12 @@
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { db } from '../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import type { NotificationType } from '@boardsesh/db/schema';
 
-interface RecipientInfo {
+type RecipientInfo = {
   recipientId: string;
   notificationType: NotificationType;
-}
+};
 
 /**
  * Resolve recipients for a comment event.
@@ -66,10 +66,7 @@ export async function resolveCommentRecipients(
 /**
  * Resolve recipients for a vote event.
  */
-export async function resolveVoteRecipients(
-  entityType: string,
-  entityId: string,
-): Promise<RecipientInfo[]> {
+export async function resolveVoteRecipients(entityType: string, entityId: string): Promise<RecipientInfo[]> {
   if (entityType === 'tick') {
     const [tick] = await db
       .select({ userId: dbSchema.boardseshTicks.userId })
@@ -78,10 +75,12 @@ export async function resolveVoteRecipients(
       .limit(1);
 
     if (tick) {
-      return [{
-        recipientId: tick.userId,
-        notificationType: 'vote_on_tick',
-      }];
+      return [
+        {
+          recipientId: tick.userId,
+          notificationType: 'vote_on_tick',
+        },
+      ];
     }
   }
 
@@ -93,10 +92,12 @@ export async function resolveVoteRecipients(
       .limit(1);
 
     if (comment) {
-      return [{
-        recipientId: comment.userId,
-        notificationType: 'vote_on_comment',
-      }];
+      return [
+        {
+          recipientId: comment.userId,
+          notificationType: 'vote_on_comment',
+        },
+      ];
     }
   }
 
@@ -107,9 +108,7 @@ export async function resolveVoteRecipients(
  * Resolve recipients for a proposal vote event.
  * Notifies the proposer.
  */
-export async function resolveProposalVoteRecipients(
-  proposalUuid: string,
-): Promise<RecipientInfo[]> {
+export async function resolveProposalVoteRecipients(proposalUuid: string): Promise<RecipientInfo[]> {
   const [proposal] = await db
     .select({ proposerId: dbSchema.climbProposals.proposerId })
     .from(dbSchema.climbProposals)
@@ -118,19 +117,19 @@ export async function resolveProposalVoteRecipients(
 
   if (!proposal) return [];
 
-  return [{
-    recipientId: proposal.proposerId,
-    notificationType: 'proposal_vote',
-  }];
+  return [
+    {
+      recipientId: proposal.proposerId,
+      notificationType: 'proposal_vote',
+    },
+  ];
 }
 
 /**
  * Resolve recipients for a proposal approval event.
  * Notifies the proposer and all upvoters.
  */
-export async function resolveProposalApprovalRecipients(
-  proposalUuid: string,
-): Promise<RecipientInfo[]> {
+export async function resolveProposalApprovalRecipients(proposalUuid: string): Promise<RecipientInfo[]> {
   const [proposal] = await db
     .select({
       id: dbSchema.climbProposals.id,
@@ -142,21 +141,18 @@ export async function resolveProposalApprovalRecipients(
 
   if (!proposal) return [];
 
-  const recipients: RecipientInfo[] = [{
-    recipientId: proposal.proposerId,
-    notificationType: 'proposal_approved',
-  }];
+  const recipients: RecipientInfo[] = [
+    {
+      recipientId: proposal.proposerId,
+      notificationType: 'proposal_approved',
+    },
+  ];
 
   // Also notify upvoters
   const upvoters = await db
     .select({ userId: dbSchema.proposalVotes.userId })
     .from(dbSchema.proposalVotes)
-    .where(
-      and(
-        eq(dbSchema.proposalVotes.proposalId, proposal.id),
-        eq(dbSchema.proposalVotes.value, 1),
-      ),
-    );
+    .where(and(eq(dbSchema.proposalVotes.proposalId, proposal.id), eq(dbSchema.proposalVotes.value, 1)));
 
   const seen = new Set<string>([proposal.proposerId]);
   for (const v of upvoters) {
@@ -176,9 +172,7 @@ export async function resolveProposalApprovalRecipients(
  * Resolve recipients for a proposal rejection event.
  * Notifies the proposer.
  */
-export async function resolveProposalRejectionRecipients(
-  proposalUuid: string,
-): Promise<RecipientInfo[]> {
+export async function resolveProposalRejectionRecipients(proposalUuid: string): Promise<RecipientInfo[]> {
   const [proposal] = await db
     .select({ proposerId: dbSchema.climbProposals.proposerId })
     .from(dbSchema.climbProposals)
@@ -187,10 +181,12 @@ export async function resolveProposalRejectionRecipients(
 
   if (!proposal) return [];
 
-  return [{
-    recipientId: proposal.proposerId,
-    notificationType: 'proposal_rejected',
-  }];
+  return [
+    {
+      recipientId: proposal.proposerId,
+      notificationType: 'proposal_rejected',
+    },
+  ];
 }
 
 /**
@@ -205,12 +201,7 @@ export async function resolveProposalCreatedRecipients(
   const climbers = await db
     .select({ userId: dbSchema.boardseshTicks.userId })
     .from(dbSchema.boardseshTicks)
-    .where(
-      and(
-        eq(dbSchema.boardseshTicks.climbUuid, climbUuid),
-        eq(dbSchema.boardseshTicks.boardType, boardType),
-      ),
-    )
+    .where(and(eq(dbSchema.boardseshTicks.climbUuid, climbUuid), eq(dbSchema.boardseshTicks.boardType, boardType)))
     .groupBy(dbSchema.boardseshTicks.userId);
 
   return climbers
@@ -224,9 +215,7 @@ export async function resolveProposalCreatedRecipients(
 /**
  * Resolve recipient for a follow event.
  */
-export function resolveFollowRecipient(
-  metadata: Record<string, string>,
-): RecipientInfo | null {
+export function resolveFollowRecipient(metadata: Record<string, string>): RecipientInfo | null {
   const followedUserId = metadata.followedUserId;
   if (!followedUserId) return null;
 
@@ -239,9 +228,7 @@ export function resolveFollowRecipient(
 /**
  * Resolve recipients when a user creates a climb: all followers of the setter.
  */
-export async function resolveClimbCreatedFollowerRecipients(
-  setterId: string,
-): Promise<RecipientInfo[]> {
+export async function resolveClimbCreatedFollowerRecipients(setterId: string): Promise<RecipientInfo[]> {
   const followers = await db
     .select({ followerId: dbSchema.userFollows.followerId })
     .from(dbSchema.userFollows)

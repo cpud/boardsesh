@@ -1,7 +1,7 @@
 import 'server-only';
 import { cache } from 'react';
 import { notFound } from 'next/navigation';
-import {
+import type {
   BoardRouteParameters,
   ParsedBoardRouteParametersWithUuid,
   ParsedBoardRouteParameters,
@@ -16,12 +16,7 @@ import {
   parseBoardRouteParams,
   getMoonBoardLayoutBySlug,
 } from './url-utils';
-import {
-  MOONBOARD_LAYOUTS,
-  MOONBOARD_SETS,
-  MOONBOARD_SIZE,
-  MoonBoardLayoutKey,
-} from './moonboard-config';
+import { type MoonBoardLayoutKey, MOONBOARD_LAYOUTS, MOONBOARD_SETS, MOONBOARD_SIZE } from './moonboard-config';
 
 // Helper to parse MoonBoard size slug (always returns the single size)
 function getMoonBoardSizeBySlug(): { id: number; name: string } {
@@ -182,7 +177,9 @@ export async function parseBoardRouteParamsWithSlugs<T extends BoardRouteParamet
 async function parseRouteParamsImpl<T extends BoardRouteParameters>(
   params: T,
 ): Promise<{
-  parsedParams: T extends BoardRouteParametersWithUuid ? ParsedBoardRouteParametersWithUuid : ParsedBoardRouteParameters;
+  parsedParams: T extends BoardRouteParametersWithUuid
+    ? ParsedBoardRouteParametersWithUuid
+    : ParsedBoardRouteParameters;
   isNumericFormat: boolean;
 }> {
   const isNumericFormat = hasOnlyNumericBoardRouteSegments(params);
@@ -190,10 +187,13 @@ async function parseRouteParamsImpl<T extends BoardRouteParameters>(
   if (isNumericFormat) {
     // For UUID routes, extract the UUID from the slug before parsing
     const paramsToPass = (params as BoardRouteParametersWithUuid).climb_uuid
-      ? { ...params, climb_uuid: extractUuidFromSlug((params as BoardRouteParametersWithUuid).climb_uuid) }
+      ? {
+          ...params,
+          climb_uuid: extractUuidFromSlug((params as BoardRouteParametersWithUuid).climb_uuid),
+        }
       : params;
 
-    const parsedParams = parseBoardRouteParams(paramsToPass as T);
+    const parsedParams = parseBoardRouteParams(paramsToPass);
     const hasInvalidNumericIds =
       Number.isNaN(parsedParams.layout_id) ||
       Number.isNaN(parsedParams.size_id) ||
@@ -219,4 +219,4 @@ async function parseRouteParamsImpl<T extends BoardRouteParameters>(
   };
 }
 
-export const parseRouteParams = cache(parseRouteParamsImpl) as typeof parseRouteParamsImpl;
+export const parseRouteParams = cache(parseRouteParamsImpl);

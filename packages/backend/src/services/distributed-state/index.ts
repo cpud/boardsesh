@@ -14,19 +14,11 @@ let distributedStateManager: DistributedStateManager | null = null;
  * Safe for hot module reload: if already initialized, returns existing instance
  * and logs a warning (once per instance to avoid log spam).
  */
-export function initializeDistributedState(
-  redis: Redis,
-  instanceId?: string
-): DistributedStateManager {
+export function initializeDistributedState(redis: Redis, instanceId?: string): DistributedStateManager {
   if (distributedStateManager) {
-    if (
-      !(distributedStateManager as DistributedStateManager & { _hasWarnedReInit?: boolean })
-        ._hasWarnedReInit
-    ) {
+    if (!(distributedStateManager as DistributedStateManager & { _hasWarnedReInit?: boolean })._hasWarnedReInit) {
       console.warn('[DistributedState] Already initialized, returning existing instance');
-      (
-        distributedStateManager as DistributedStateManager & { _hasWarnedReInit?: boolean }
-      )._hasWarnedReInit = true;
+      (distributedStateManager as DistributedStateManager & { _hasWarnedReInit?: boolean })._hasWarnedReInit = true;
     }
     return distributedStateManager;
   }
@@ -85,7 +77,7 @@ export function forceResetDistributedState(): void {
     if (!distributedStateManager.isStopped()) {
       console.warn(
         '[DistributedState] Force resetting without prior stop() - ' +
-          'clearing heartbeat interval but Redis state may be orphaned'
+          'clearing heartbeat interval but Redis state may be orphaned',
       );
       distributedStateManager.stopHeartbeat();
     }

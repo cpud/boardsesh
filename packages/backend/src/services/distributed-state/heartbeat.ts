@@ -1,7 +1,7 @@
 import type Redis from 'ioredis';
 import { KEYS, TTL } from './constants';
 import { cleanupStaleSessionMembers } from './session-ops';
-import { removeConnection, getConnection } from './connection-ops';
+import { removeConnection } from './connection-ops';
 
 /**
  * Update instance heartbeat in Redis.
@@ -56,7 +56,7 @@ export async function discoverDeadInstances(redis: Redis, instanceId: string): P
  */
 export async function cleanupDeadInstanceConnections(
   redis: Redis,
-  instanceId: string
+  instanceId: string,
 ): Promise<{
   deadInstances: string[];
   staleConnections: string[];
@@ -67,8 +67,8 @@ export async function cleanupDeadInstanceConnections(
     return { deadInstances: [], staleConnections: [], sessionsAffected: [] };
   }
 
-  console.log(
-    `[DistributedState] Found ${deadInstances.length} dead instances: ${deadInstances.map((id) => id.slice(0, 8)).join(', ')}`
+  console.info(
+    `[DistributedState] Found ${deadInstances.length} dead instances: ${deadInstances.map((id) => id.slice(0, 8)).join(', ')}`,
   );
 
   const allStaleConnections: string[] = [];
@@ -82,8 +82,8 @@ export async function cleanupDeadInstanceConnections(
       continue;
     }
 
-    console.log(
-      `[DistributedState] Dead instance ${deadInstanceId.slice(0, 8)} has ${connectionIds.length} orphaned connections`
+    console.info(
+      `[DistributedState] Dead instance ${deadInstanceId.slice(0, 8)} has ${connectionIds.length} orphaned connections`,
     );
 
     // Group connections by session for batch pruning
@@ -122,17 +122,14 @@ export async function cleanupDeadInstanceConnections(
       try {
         await cleanupStaleSessionMembers(redis, sessionId);
       } catch (err) {
-        console.error(
-          `[DistributedState] Failed to prune session ${sessionId.slice(0, 8)}:`,
-          err
-        );
+        console.error(`[DistributedState] Failed to prune session ${sessionId.slice(0, 8)}:`, err);
       }
     }
   }
 
-  console.log(
+  console.info(
     `[DistributedState] Cleanup complete: removed ${allStaleConnections.length} stale connections ` +
-      `from ${deadInstances.length} dead instances affecting ${allSessionsAffected.size} sessions`
+      `from ${deadInstances.length} dead instances affecting ${allSessionsAffected.size} sessions`,
   );
 
   return {
@@ -146,10 +143,7 @@ export async function cleanupDeadInstanceConnections(
  * Clean up all connections belonging to an instance.
  * Called on graceful shutdown. Uses parallel cleanup with Promise.allSettled.
  */
-export async function cleanupInstanceConnections(
-  redis: Redis,
-  instanceId: string
-): Promise<void> {
+export async function cleanupInstanceConnections(redis: Redis, instanceId: string): Promise<void> {
   const connectionIds = await redis.smembers(KEYS.instanceConnections(instanceId));
 
   if (connectionIds.length === 0) {
@@ -158,7 +152,7 @@ export async function cleanupInstanceConnections(
 
   // Use Promise.allSettled for parallel cleanup - faster than sequential
   const results = await Promise.allSettled(
-    connectionIds.map((connectionId) => removeConnection(redis, instanceId, connectionId))
+    connectionIds.map((connectionId) => removeConnection(redis, instanceId, connectionId)),
   );
 
   // Collect failed connection IDs
@@ -168,7 +162,7 @@ export async function cleanupInstanceConnections(
     if (result.status === 'rejected') {
       console.error(
         `[DistributedState] Failed to remove connection ${connectionIds[i].slice(0, 8)} during cleanup:`,
-        result.reason
+        result.reason,
       );
       failedConnectionIds.push(connectionIds[i]);
     }
@@ -176,9 +170,7 @@ export async function cleanupInstanceConnections(
 
   // Force cleanup of failed connections to prevent orphaned data
   if (failedConnectionIds.length > 0) {
-    console.warn(
-      `[DistributedState] Force cleaning ${failedConnectionIds.length} failed connections`
-    );
+    console.warn(`[DistributedState] Force cleaning ${failedConnectionIds.length} failed connections`);
     const cleanupMulti = redis.multi();
     for (const connectionId of failedConnectionIds) {
       cleanupMulti.del(KEYS.connection(connectionId));
@@ -196,7 +188,7 @@ export async function cleanupInstanceConnections(
   multi.del(KEYS.instanceHeartbeat(instanceId));
   await multi.exec();
 
-  console.log(
-    `[DistributedState] Cleaned up ${connectionIds.length} connections for instance: ${instanceId.slice(0, 8)}`
+  console.info(
+    `[DistributedState] Cleaned up ${connectionIds.length} connections for instance: ${instanceId.slice(0, 8)}`,
   );
 }

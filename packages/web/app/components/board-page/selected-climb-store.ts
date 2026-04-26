@@ -45,7 +45,7 @@ export function useIsClimbSelected(climbUuid: string): boolean {
   const store = useContext(SelectionStoreContext);
   const subscribe = store?.subscribe ?? noopSubscribe;
   const getSnapshot = useMemo(
-    () => store ? () => store.getSnapshot() === climbUuid : () => false,
+    () => (store ? () => store.getSnapshot() === climbUuid : () => false),
     [store, climbUuid],
   );
   return useSyncExternalStore(subscribe, getSnapshot, serverSnapshot);

@@ -1,9 +1,9 @@
 import { useEffect, useState, useMemo } from 'react';
-import { BoardName, SearchRequestPagination } from '@/app/lib/types';
-import { HeatmapData } from '../board-renderer/types';
+import type { BoardName, SearchRequestPagination } from '@/app/lib/types';
+import type { HeatmapData } from '../board-renderer/types';
 import { searchParamsToUrlParams } from '@/app/lib/url-utils';
 
-interface UseHeatmapDataProps {
+type UseHeatmapDataProps = {
   boardName: BoardName;
   layoutId: number;
   sizeId: number;
@@ -11,7 +11,7 @@ interface UseHeatmapDataProps {
   angle: number;
   filters: SearchRequestPagination;
   enabled?: boolean;
-}
+};
 
 export default function useHeatmapData({
   boardName,
@@ -70,12 +70,12 @@ export default function useHeatmapData({
       }
     };
 
-    fetchHeatmapData();
+    void fetchHeatmapData();
 
     return () => {
       cancelled = true;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- filtersKey is a serialized version of filters
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- filtersKey is a serialized version of filters
   }, [boardName, layoutId, sizeId, setIds, angle, filtersKey, enabled]);
 
   return { data: heatmapData, loading, error };

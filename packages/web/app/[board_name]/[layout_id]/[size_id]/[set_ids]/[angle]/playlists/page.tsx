@@ -1,8 +1,8 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
-import { BoardRouteParameters } from '@/app/lib/types';
+import type { BoardRouteParameters } from '@/app/lib/types';
 import { parseBoardRouteParamsWithSlugs } from '@/app/lib/url-utils.server';
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { getServerAuthToken } from '@/app/lib/auth/server-auth';
 import { serverMyBoards, serverUserPlaylists, cachedDiscoverPlaylists } from '@/app/lib/graphql/server-cached-client';
 import LibraryPageContent from '@/app/playlists/library-page-content';
@@ -34,15 +34,11 @@ export default async function PlaylistsPage(props: { params: Promise<BoardRouteP
       cachedDiscoverPlaylists(playlistFilter),
     ]);
 
-    const lcpPreloadUrl = getPlaylistLcpPreloadUrl(
-      initialPlaylists?.[0] ?? initialDiscoverPlaylists?.popular?.[0],
-    );
+    const lcpPreloadUrl = getPlaylistLcpPreloadUrl(initialPlaylists?.[0] ?? initialDiscoverPlaylists?.popular?.[0]);
 
     return (
       <>
-        {lcpPreloadUrl && (
-          <link rel="preload" as="image" href={lcpPreloadUrl} fetchPriority="high" />
-        )}
+        {lcpPreloadUrl && <link rel="preload" as="image" href={lcpPreloadUrl} fetchPriority="high" />}
         <div className={styles.pageContainer}>
           <LibraryPageContent
             playlistsBasePath={playlistsBasePath}

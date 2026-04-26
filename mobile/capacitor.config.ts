@@ -17,6 +17,13 @@ const config: CapacitorConfig = {
     backgroundColor: '#0A0A0A',
     overScrollMode: 'never',
   },
+  plugins: {
+    // @capacitor-community/safe-area handles inset propagation itself. Disable
+    // Capacitor's built-in SystemBars inset handling so the two don't fight.
+    SystemBars: {
+      insetsHandling: 'disable',
+    },
+  },
 };
 
 export default config;

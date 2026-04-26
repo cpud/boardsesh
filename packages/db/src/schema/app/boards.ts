@@ -70,7 +70,7 @@ export const userBoards = pgTable(
       .where(sql`${table.deletedAt} IS NULL`),
     // UUID lookup
     uuidIdx: index('user_boards_uuid_idx').on(table.uuid),
-  })
+  }),
 );
 
 /**
@@ -89,13 +89,10 @@ export const boardFollows = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
   (table) => ({
-    uniqueUserBoard: uniqueIndex('board_follows_unique_user_board').on(
-      table.userId,
-      table.boardUuid
-    ),
+    uniqueUserBoard: uniqueIndex('board_follows_unique_user_board').on(table.userId, table.boardUuid),
     userIdx: index('board_follows_user_idx').on(table.userId),
     boardUuidIdx: index('board_follows_board_uuid_idx').on(table.boardUuid),
-  })
+  }),
 );
 
 // Type exports

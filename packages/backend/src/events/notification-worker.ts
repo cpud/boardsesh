@@ -17,6 +17,7 @@ import {
   resolveClimbCreatedSubscriptionRecipients,
 } from './recipient-resolution';
 import { fanoutFeedItems, fanoutNewClimbFeedItems } from './feed-fanout';
+import { isNoMatchClimb } from '../graphql/resolvers/shared/helpers';
 import crypto from 'crypto';
 
 export class NotificationWorker {
@@ -28,7 +29,7 @@ export class NotificationWorker {
 
   start(): void {
     this.eventBroker.startConsumer(this.processEvent.bind(this));
-    console.log('[NotificationWorker] Started');
+    console.info('[NotificationWorker] Started');
   }
 
   private async processEvent(event: SocialEvent): Promise<void> {
@@ -73,10 +74,7 @@ export class NotificationWorker {
   }
 
   private async handleCommentCreated(event: SocialEvent): Promise<void> {
-    const recipients = await resolveCommentRecipients(
-      event.entityType,
-      event.entityId,
-    );
+    const recipients = await resolveCommentRecipients(event.entityType, event.entityId);
 
     for (const recipient of recipients) {
       await this.createAndPublishNotification(
@@ -91,11 +89,7 @@ export class NotificationWorker {
   }
 
   private async handleCommentReply(event: SocialEvent): Promise<void> {
-    const recipients = await resolveCommentRecipients(
-      event.entityType,
-      event.entityId,
-      event.metadata.parentCommentId,
-    );
+    const recipients = await resolveCommentRecipients(event.entityType, event.entityId, event.metadata.parentCommentId);
 
     for (const recipient of recipients) {
       await this.createAndPublishNotification(
@@ -110,10 +104,7 @@ export class NotificationWorker {
   }
 
   private async handleVoteCast(event: SocialEvent): Promise<void> {
-    const recipients = await resolveVoteRecipients(
-      event.entityType,
-      event.entityId,
-    );
+    const recipients = await resolveVoteRecipients(event.entityType, event.entityId);
 
     for (const recipient of recipients) {
       // Deduplicate: skip if same actor voted on same entity recently (1 hour)
@@ -253,11 +244,7 @@ export class NotificationWorker {
     if (!boardType || !layoutId) return;
 
     const followerRecipients = await resolveClimbCreatedFollowerRecipients(event.actorId);
-    const subscriberRecipients = await resolveClimbCreatedSubscriptionRecipients(
-      boardType,
-      layoutId,
-      event.actorId,
-    );
+    const subscriberRecipients = await resolveClimbCreatedSubscriptionRecipients(boardType, layoutId, event.actorId);
 
     const followerIds = new Set(followerRecipients.map((r) => r.recipientId));
     const allRecipients = [
@@ -283,6 +270,7 @@ export class NotificationWorker {
       .select({
         uuid: dbSchema.boardClimbs.uuid,
         name: dbSchema.boardClimbs.name,
+        description: dbSchema.boardClimbs.description,
         layoutId: dbSchema.boardClimbs.layoutId,
         angle: dbSchema.boardClimbs.angle,
         frames: dbSchema.boardClimbs.frames,
@@ -309,12 +297,7 @@ export class NotificationWorker {
           eq(dbSchema.boardDifficultyGrades.difficulty, dbSchema.boardClimbStats.displayDifficulty),
         ),
       )
-      .where(
-        and(
-          eq(dbSchema.boardClimbs.uuid, event.entityId),
-          eq(dbSchema.boardClimbs.boardType, boardType),
-        ),
-      )
+      .where(and(eq(dbSchema.boardClimbs.uuid, event.entityId), eq(dbSchema.boardClimbs.boardType, boardType)))
       .limit(1);
 
     if (climb) {
@@ -330,6 +313,7 @@ export class NotificationWorker {
           angle: climb.angle ?? null,
           frames: climb.frames ?? null,
           difficultyName: climb.difficultyName ?? event.metadata.difficultyName ?? null,
+          isNoMatch: isNoMatchClimb(climb.description),
           createdAt: climb.createdAt ?? new Date().toISOString(),
         },
       });
@@ -381,17 +365,15 @@ export class NotificationWorker {
     }
 
     // Persist notification
-    await db
-      .insert(dbSchema.notifications)
-      .values({
-        uuid,
-        recipientId,
-        actorId,
-        type,
-        entityType: entityType as dbSchema.SocialEntityType | null,
-        entityId,
-        commentId,
-      });
+    await db.insert(dbSchema.notifications).values({
+      uuid,
+      recipientId,
+      actorId,
+      type,
+      entityType: entityType as dbSchema.SocialEntityType | null,
+      entityId,
+      commentId,
+    });
 
     // Enrich for real-time delivery
     const enriched = await this.enrichNotification(uuid, actorId, type, entityType, entityId, commentUuid);
@@ -430,9 +412,7 @@ export class NotificationWorker {
         .where(eq(dbSchema.comments.uuid, commentUuid))
         .limit(1);
       if (comment?.body) {
-        commentBody = comment.body.length > 100
-          ? comment.body.slice(0, 100) + '...'
-          : comment.body;
+        commentBody = comment.body.length > 100 ? comment.body.slice(0, 100) + '...' : comment.body;
       }
     }
 

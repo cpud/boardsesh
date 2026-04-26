@@ -2,6 +2,7 @@ import { eq, and, sql, inArray } from 'drizzle-orm';
 import { db } from '../../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { resolveCommunitySetting, DEFAULTS } from '../community-settings';
+import { isNoMatchClimb } from '../../shared/helpers';
 
 /**
  * Enrich a single proposal with proposer info, vote counts, climb data, and stats.
@@ -40,16 +41,12 @@ export async function enrichProposal(
       .from(dbSchema.proposalVotes)
       .where(eq(dbSchema.proposalVotes.proposalId, proposal.id)),
 
-    resolveCommunitySetting(
-      'approval_threshold',
-      proposal.climbUuid,
-      proposal.angle,
-      proposal.boardType,
-    ),
+    resolveCommunitySetting('approval_threshold', proposal.climbUuid, proposal.angle, proposal.boardType),
 
     db
       .select({
         name: dbSchema.boardClimbs.name,
+        description: dbSchema.boardClimbs.description,
         frames: dbSchema.boardClimbs.frames,
         layoutId: dbSchema.boardClimbs.layoutId,
         setterUsername: dbSchema.boardClimbs.setterUsername,
@@ -57,10 +54,7 @@ export async function enrichProposal(
       })
       .from(dbSchema.boardClimbs)
       .where(
-        and(
-          eq(dbSchema.boardClimbs.uuid, proposal.climbUuid),
-          eq(dbSchema.boardClimbs.boardType, proposal.boardType),
-        ),
+        and(eq(dbSchema.boardClimbs.uuid, proposal.climbUuid), eq(dbSchema.boardClimbs.boardType, proposal.boardType)),
       )
       .limit(1),
 
@@ -127,14 +121,17 @@ export async function enrichProposal(
 
     if (stats) {
       climbDifficulty = stats.boulderName || undefined;
-      climbQualityAverage = stats.qualityAverage != null ? String(Math.round(stats.qualityAverage * 100) / 100) : undefined;
+      climbQualityAverage =
+        stats.qualityAverage != null ? String(Math.round(stats.qualityAverage * 100) / 100) : undefined;
       climbAscensionistCount = stats.ascensionistCount ?? undefined;
-      climbDifficultyError = (stats.difficultyAverage != null && stats.displayDifficulty != null)
-        ? String(Math.round((stats.difficultyAverage - stats.displayDifficulty) * 100) / 100)
-        : undefined;
-      climbBenchmarkDifficulty = (stats.benchmarkDifficulty != null && stats.benchmarkDifficulty > 0)
-        ? String(stats.benchmarkDifficulty)
-        : undefined;
+      climbDifficultyError =
+        stats.difficultyAverage != null && stats.displayDifficulty != null
+          ? String(Math.round((stats.difficultyAverage - stats.displayDifficulty) * 100) / 100)
+          : undefined;
+      climbBenchmarkDifficulty =
+        stats.benchmarkDifficulty != null && stats.benchmarkDifficulty > 0
+          ? String(stats.benchmarkDifficulty)
+          : undefined;
     }
   }
 
@@ -167,6 +164,7 @@ export async function enrichProposal(
     climbAscensionistCount,
     climbDifficultyError,
     climbBenchmarkDifficulty,
+    climbIsNoMatch: isNoMatchClimb(climb?.description),
   };
 }
 
@@ -225,6 +223,7 @@ export async function batchEnrichProposals(
       uuid: dbSchema.boardClimbs.uuid,
       boardType: dbSchema.boardClimbs.boardType,
       name: dbSchema.boardClimbs.name,
+      description: dbSchema.boardClimbs.description,
       frames: dbSchema.boardClimbs.frames,
       layoutId: dbSchema.boardClimbs.layoutId,
       setterUsername: dbSchema.boardClimbs.setterUsername,
@@ -255,7 +254,9 @@ export async function batchEnrichProposals(
   const statsMap = new Map<string, StatsEntry>();
 
   if (proposalsWithEffectiveAngle.length > 0) {
-    const uniqueStatsKeys = [...new Set(proposalsWithEffectiveAngle.map((p) => `${p.climbUuid}:${p.boardType}:${p.effectiveAngle}`))];
+    const uniqueStatsKeys = [
+      ...new Set(proposalsWithEffectiveAngle.map((p) => `${p.climbUuid}:${p.boardType}:${p.effectiveAngle}`)),
+    ];
     const statsConditions = uniqueStatsKeys.map((key) => {
       const [climbUuid, boardType, angle] = key.split(':');
       return sql`(${dbSchema.boardClimbStats.climbUuid} = ${climbUuid} AND ${dbSchema.boardClimbStats.boardType} = ${boardType} AND ${dbSchema.boardClimbStats.angle} = ${parseInt(angle, 10)})`;
@@ -308,8 +309,14 @@ export async function batchEnrichProposals(
       and(
         eq(dbSchema.communitySettings.key, 'approval_threshold'),
         sql`(
-          (${dbSchema.communitySettings.scope} = 'climb' AND ${dbSchema.communitySettings.scopeKey} IN (${sql.join(uniqueClimbUuids.map((u) => sql`${u}`), sql`, `)}))
-          OR (${dbSchema.communitySettings.scope} = 'board' AND ${dbSchema.communitySettings.scopeKey} IN (${sql.join(uniqueBoardTypes.map((b) => sql`${b}`), sql`, `)}))
+          (${dbSchema.communitySettings.scope} = 'climb' AND ${dbSchema.communitySettings.scopeKey} IN (${sql.join(
+            uniqueClimbUuids.map((u) => sql`${u}`),
+            sql`, `,
+          )}))
+          OR (${dbSchema.communitySettings.scope} = 'board' AND ${dbSchema.communitySettings.scopeKey} IN (${sql.join(
+            uniqueBoardTypes.map((b) => sql`${b}`),
+            sql`, `,
+          )}))
           OR (${dbSchema.communitySettings.scope} = 'global' AND ${dbSchema.communitySettings.scopeKey} = '')
         )`,
       ),
@@ -358,9 +365,10 @@ export async function batchEnrichProposals(
 
     // Use proposal angle for stats, falling back to climb's default angle for classic proposals
     const effectiveAngle = proposal.angle ?? climb?.angle;
-    const stats = effectiveAngle != null
-      ? statsMap.get(`${proposal.climbUuid}:${proposal.boardType}:${effectiveAngle}`)
-      : undefined;
+    const stats =
+      effectiveAngle != null
+        ? statsMap.get(`${proposal.climbUuid}:${proposal.boardType}:${effectiveAngle}`)
+        : undefined;
 
     return {
       uuid: proposal.uuid,
@@ -387,14 +395,18 @@ export async function batchEnrichProposals(
       layoutId: climb?.layoutId || undefined,
       climbSetterUsername: climb?.setterUsername || undefined,
       climbDifficulty: stats?.boulderName || undefined,
-      climbQualityAverage: stats?.qualityAverage != null ? String(Math.round(stats.qualityAverage * 100) / 100) : undefined,
+      climbQualityAverage:
+        stats?.qualityAverage != null ? String(Math.round(stats.qualityAverage * 100) / 100) : undefined,
       climbAscensionistCount: stats?.ascensionistCount ?? undefined,
-      climbDifficultyError: (stats?.difficultyAverage != null && stats?.displayDifficulty != null)
-        ? String(Math.round((stats.difficultyAverage - stats.displayDifficulty) * 100) / 100)
-        : undefined,
-      climbBenchmarkDifficulty: (stats?.benchmarkDifficulty != null && stats.benchmarkDifficulty > 0)
-        ? String(stats.benchmarkDifficulty)
-        : undefined,
+      climbDifficultyError:
+        stats?.difficultyAverage != null && stats?.displayDifficulty != null
+          ? String(Math.round((stats.difficultyAverage - stats.displayDifficulty) * 100) / 100)
+          : undefined,
+      climbBenchmarkDifficulty:
+        stats?.benchmarkDifficulty != null && stats.benchmarkDifficulty > 0
+          ? String(stats.benchmarkDifficulty)
+          : undefined,
+      climbIsNoMatch: isNoMatchClimb(climb?.description),
     };
   });
 }

@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { queueReducer } from '../reducer';
-import { QueueState, QueueAction, ClimbQueueItem } from '../types';
-import { SearchRequestPagination, Climb } from '@/app/lib/types';
+import type { QueueState, QueueAction, ClimbQueueItem } from '../types';
+import type { SearchRequestPagination, Climb } from '@/app/lib/types';
 
 const mockClimb: Climb = {
   uuid: 'climb-1',
@@ -18,14 +18,14 @@ const mockClimb: Climb = {
   mirrored: false,
   benchmark_difficulty: null,
   userAscents: 0,
-  userAttempts: 0
+  userAttempts: 0,
 };
 
 const mockClimbQueueItem: ClimbQueueItem = {
   climb: mockClimb,
   addedBy: 'user-1',
   uuid: 'queue-item-1',
-  suggested: false
+  suggested: false,
 };
 
 const mockSearchParams: SearchRequestPagination = {
@@ -48,7 +48,8 @@ const mockSearchParams: SearchRequestPagination = {
   hideCompleted: false,
   showOnlyAttempted: false,
   showOnlyCompleted: false,
-  onlyDrafts: false
+  onlyDrafts: false,
+  projectsOnly: false,
 };
 
 const initialState: QueueState = {
@@ -68,7 +69,7 @@ describe('queueReducer', () => {
     it('should add a climb to an empty queue', () => {
       const action: QueueAction = {
         type: 'ADD_TO_QUEUE',
-        payload: mockClimbQueueItem
+        payload: mockClimbQueueItem,
       };
 
       const result = queueReducer(initialState, action);
@@ -81,22 +82,22 @@ describe('queueReducer', () => {
     it('should add a climb to an existing queue', () => {
       const existingItem: ClimbQueueItem = {
         ...mockClimbQueueItem,
-        uuid: 'existing-item'
+        uuid: 'existing-item',
       };
-      
+
       const stateWithQueue: QueueState = {
         ...initialState,
-        queue: [existingItem]
+        queue: [existingItem],
       };
 
       const newItem: ClimbQueueItem = {
         ...mockClimbQueueItem,
-        uuid: 'new-item'
+        uuid: 'new-item',
       };
 
       const action: QueueAction = {
         type: 'ADD_TO_QUEUE',
-        payload: newItem
+        payload: newItem,
       };
 
       const result = queueReducer(stateWithQueue, action);
@@ -115,12 +116,12 @@ describe('queueReducer', () => {
 
       const stateWithQueue: QueueState = {
         ...initialState,
-        queue: [item1, item2, item3]
+        queue: [item1, item2, item3],
       };
 
       const action: QueueAction = {
         type: 'REMOVE_FROM_QUEUE',
-        payload: [item1, item3] // Remove item2
+        payload: [item1, item3], // Remove item2
       };
 
       const result = queueReducer(stateWithQueue, action);
@@ -132,12 +133,12 @@ describe('queueReducer', () => {
     it('should handle removing all items', () => {
       const stateWithQueue: QueueState = {
         ...initialState,
-        queue: [mockClimbQueueItem]
+        queue: [mockClimbQueueItem],
       };
 
       const action: QueueAction = {
         type: 'REMOVE_FROM_QUEUE',
-        payload: []
+        payload: [],
       };
 
       const result = queueReducer(stateWithQueue, action);
@@ -150,7 +151,7 @@ describe('queueReducer', () => {
     it('should set current climb and add to empty queue', () => {
       const action: QueueAction = {
         type: 'SET_CURRENT_CLIMB',
-        payload: mockClimbQueueItem
+        payload: mockClimbQueueItem,
       };
 
       const result = queueReducer(initialState, action);
@@ -169,12 +170,12 @@ describe('queueReducer', () => {
       const stateWithCurrentClimb: QueueState = {
         ...initialState,
         queue: [item1, item2, item3],
-        currentClimbQueueItem: item2
+        currentClimbQueueItem: item2,
       };
 
       const action: QueueAction = {
         type: 'SET_CURRENT_CLIMB',
-        payload: newItem
+        payload: newItem,
       };
 
       const result = queueReducer(stateWithCurrentClimb, action);
@@ -192,12 +193,12 @@ describe('queueReducer', () => {
       const stateWithCurrentClimb: QueueState = {
         ...initialState,
         queue: [item1],
-        currentClimbQueueItem: currentItem
+        currentClimbQueueItem: currentItem,
       };
 
       const action: QueueAction = {
         type: 'SET_CURRENT_CLIMB',
-        payload: newItem
+        payload: newItem,
       };
 
       const result = queueReducer(stateWithCurrentClimb, action);
@@ -213,12 +214,12 @@ describe('queueReducer', () => {
       const existingItem: ClimbQueueItem = { ...mockClimbQueueItem, uuid: 'existing' };
       const stateWithQueue: QueueState = {
         ...initialState,
-        queue: [existingItem]
+        queue: [existingItem],
       };
 
       const action: QueueAction = {
         type: 'SET_CURRENT_CLIMB_QUEUE_ITEM',
-        payload: existingItem
+        payload: existingItem,
       };
 
       const result = queueReducer(stateWithQueue, action);
@@ -229,20 +230,20 @@ describe('queueReducer', () => {
 
     it('should add suggested item to queue if not present', () => {
       const existingItem: ClimbQueueItem = { ...mockClimbQueueItem, uuid: 'existing' };
-      const suggestedItem: ClimbQueueItem = { 
-        ...mockClimbQueueItem, 
+      const suggestedItem: ClimbQueueItem = {
+        ...mockClimbQueueItem,
         uuid: 'suggested',
-        suggested: true
+        suggested: true,
       };
 
       const stateWithQueue: QueueState = {
         ...initialState,
-        queue: [existingItem]
+        queue: [existingItem],
       };
 
       const action: QueueAction = {
         type: 'SET_CURRENT_CLIMB_QUEUE_ITEM',
-        payload: suggestedItem
+        payload: suggestedItem,
       };
 
       const result = queueReducer(stateWithQueue, action);
@@ -253,20 +254,20 @@ describe('queueReducer', () => {
     });
 
     it('should not add suggested item if already in queue', () => {
-      const suggestedItem: ClimbQueueItem = { 
-        ...mockClimbQueueItem, 
+      const suggestedItem: ClimbQueueItem = {
+        ...mockClimbQueueItem,
         uuid: 'suggested',
-        suggested: true
+        suggested: true,
       };
 
       const stateWithQueue: QueueState = {
         ...initialState,
-        queue: [suggestedItem]
+        queue: [suggestedItem],
       };
 
       const action: QueueAction = {
         type: 'SET_CURRENT_CLIMB_QUEUE_ITEM',
-        payload: suggestedItem
+        payload: suggestedItem,
       };
 
       const result = queueReducer(stateWithQueue, action);
@@ -299,12 +300,13 @@ describe('queueReducer', () => {
         hideCompleted: false,
         showOnlyAttempted: false,
         showOnlyCompleted: false,
-        onlyDrafts: false
+        onlyDrafts: false,
+        projectsOnly: false,
       };
 
       const action: QueueAction = {
         type: 'SET_CLIMB_SEARCH_PARAMS',
-        payload: newParams
+        payload: newParams,
       };
 
       const result = queueReducer(initialState, action);
@@ -324,8 +326,8 @@ describe('queueReducer', () => {
         type: 'UPDATE_QUEUE',
         payload: {
           queue: newQueue,
-          currentClimbQueueItem: newCurrentClimb
-        }
+          currentClimbQueueItem: newCurrentClimb,
+        },
       };
 
       const result = queueReducer(initialState, action);
@@ -338,7 +340,7 @@ describe('queueReducer', () => {
       const existingCurrentClimb = mockClimbQueueItem;
       const stateWithCurrentClimb: QueueState = {
         ...initialState,
-        currentClimbQueueItem: existingCurrentClimb
+        currentClimbQueueItem: existingCurrentClimb,
       };
 
       const newQueue = [{ ...mockClimbQueueItem, uuid: 'new-item' }];
@@ -346,8 +348,8 @@ describe('queueReducer', () => {
       const action: QueueAction = {
         type: 'UPDATE_QUEUE',
         payload: {
-          queue: newQueue
-        }
+          queue: newQueue,
+        },
       };
 
       const result = queueReducer(stateWithCurrentClimb, action);
@@ -366,8 +368,8 @@ describe('queueReducer', () => {
         type: 'INITIAL_QUEUE_DATA',
         payload: {
           queue: newQueue,
-          currentClimbQueueItem: newCurrentClimb
-        }
+          currentClimbQueueItem: newCurrentClimb,
+        },
       };
 
       const result = queueReducer(initialState, action);
@@ -382,7 +384,7 @@ describe('queueReducer', () => {
     it('should set hasDoneFirstFetch to true', () => {
       const action: QueueAction = {
         type: 'SET_FIRST_FETCH',
-        payload: true
+        payload: true,
       };
 
       const result = queueReducer(initialState, action);
@@ -393,12 +395,12 @@ describe('queueReducer', () => {
     it('should set hasDoneFirstFetch to false', () => {
       const stateWithFirstFetch: QueueState = {
         ...initialState,
-        hasDoneFirstFetch: true
+        hasDoneFirstFetch: true,
       };
 
       const action: QueueAction = {
         type: 'SET_FIRST_FETCH',
-        payload: false
+        payload: false,
       };
 
       const result = queueReducer(stateWithFirstFetch, action);
@@ -411,16 +413,16 @@ describe('queueReducer', () => {
     it('should toggle mirrored state of current climb', () => {
       const currentClimb: ClimbQueueItem = {
         ...mockClimbQueueItem,
-        climb: { ...mockClimb, mirrored: false }
+        climb: { ...mockClimb, mirrored: false },
       };
 
       const stateWithCurrentClimb: QueueState = {
         ...initialState,
-        currentClimbQueueItem: currentClimb
+        currentClimbQueueItem: currentClimb,
       };
 
       const action: QueueAction = {
-        type: 'MIRROR_CLIMB'
+        type: 'MIRROR_CLIMB',
       };
 
       const result = queueReducer(stateWithCurrentClimb, action);
@@ -431,16 +433,16 @@ describe('queueReducer', () => {
     it('should toggle mirrored state from true to false', () => {
       const currentClimb: ClimbQueueItem = {
         ...mockClimbQueueItem,
-        climb: { ...mockClimb, mirrored: true }
+        climb: { ...mockClimb, mirrored: true },
       };
 
       const stateWithCurrentClimb: QueueState = {
         ...initialState,
-        currentClimbQueueItem: currentClimb
+        currentClimbQueueItem: currentClimb,
       };
 
       const action: QueueAction = {
-        type: 'MIRROR_CLIMB'
+        type: 'MIRROR_CLIMB',
       };
 
       const result = queueReducer(stateWithCurrentClimb, action);
@@ -450,7 +452,7 @@ describe('queueReducer', () => {
 
     it('should do nothing when no current climb', () => {
       const action: QueueAction = {
-        type: 'MIRROR_CLIMB'
+        type: 'MIRROR_CLIMB',
       };
 
       const result = queueReducer(initialState, action);
@@ -463,7 +465,7 @@ describe('queueReducer', () => {
     it('should add item to queue', () => {
       const action: QueueAction = {
         type: 'DELTA_ADD_QUEUE_ITEM',
-        payload: { item: mockClimbQueueItem }
+        payload: { item: mockClimbQueueItem },
       };
 
       const result = queueReducer(initialState, action);
@@ -477,27 +479,27 @@ describe('queueReducer', () => {
       const item1: ClimbQueueItem = {
         ...mockClimbQueueItem,
         uuid: 'item-1',
-        climb: { ...mockClimb, uuid: 'climb-1' }
+        climb: { ...mockClimb, uuid: 'climb-1' },
       };
       const item2: ClimbQueueItem = {
         ...mockClimbQueueItem,
         uuid: 'item-2',
-        climb: { ...mockClimb, uuid: 'climb-2' }
+        climb: { ...mockClimb, uuid: 'climb-2' },
       };
       const newItem: ClimbQueueItem = {
         ...mockClimbQueueItem,
         uuid: 'new-item',
-        climb: { ...mockClimb, uuid: 'climb-new' }
+        climb: { ...mockClimb, uuid: 'climb-new' },
       };
 
       const stateWithQueue: QueueState = {
         ...initialState,
-        queue: [item1, item2]
+        queue: [item1, item2],
       };
 
       const action: QueueAction = {
         type: 'DELTA_ADD_QUEUE_ITEM',
-        payload: { item: newItem, position: 1 }
+        payload: { item: newItem, position: 1 },
       };
 
       const result = queueReducer(stateWithQueue, action);
@@ -510,12 +512,12 @@ describe('queueReducer', () => {
     it('should skip adding duplicate item (deduplication)', () => {
       const stateWithQueue: QueueState = {
         ...initialState,
-        queue: [mockClimbQueueItem]
+        queue: [mockClimbQueueItem],
       };
 
       const action: QueueAction = {
         type: 'DELTA_ADD_QUEUE_ITEM',
-        payload: { item: mockClimbQueueItem }
+        payload: { item: mockClimbQueueItem },
       };
 
       const result = queueReducer(stateWithQueue, action);
@@ -532,12 +534,12 @@ describe('queueReducer', () => {
 
       const stateWithQueue: QueueState = {
         ...initialState,
-        queue: [item1, item2]
+        queue: [item1, item2],
       };
 
       const action: QueueAction = {
         type: 'DELTA_REMOVE_QUEUE_ITEM',
-        payload: { uuid: 'item-1' }
+        payload: { uuid: 'item-1' },
       };
 
       const result = queueReducer(stateWithQueue, action);
@@ -550,12 +552,12 @@ describe('queueReducer', () => {
       const stateWithCurrentClimb: QueueState = {
         ...initialState,
         queue: [mockClimbQueueItem],
-        currentClimbQueueItem: mockClimbQueueItem
+        currentClimbQueueItem: mockClimbQueueItem,
       };
 
       const action: QueueAction = {
         type: 'DELTA_REMOVE_QUEUE_ITEM',
-        payload: { uuid: mockClimbQueueItem.uuid }
+        payload: { uuid: mockClimbQueueItem.uuid },
       };
 
       const result = queueReducer(stateWithCurrentClimb, action);
@@ -573,12 +575,12 @@ describe('queueReducer', () => {
 
       const stateWithQueue: QueueState = {
         ...initialState,
-        queue: [item1, item2, item3]
+        queue: [item1, item2, item3],
       };
 
       const action: QueueAction = {
         type: 'DELTA_REORDER_QUEUE_ITEM',
-        payload: { uuid: 'item-1', oldIndex: 0, newIndex: 2 }
+        payload: { uuid: 'item-1', oldIndex: 0, newIndex: 2 },
       };
 
       const result = queueReducer(stateWithQueue, action);
@@ -589,12 +591,12 @@ describe('queueReducer', () => {
     it('should return unchanged state for invalid indices', () => {
       const stateWithQueue: QueueState = {
         ...initialState,
-        queue: [mockClimbQueueItem]
+        queue: [mockClimbQueueItem],
       };
 
       const action: QueueAction = {
         type: 'DELTA_REORDER_QUEUE_ITEM',
-        payload: { uuid: mockClimbQueueItem.uuid, oldIndex: 5, newIndex: 0 }
+        payload: { uuid: mockClimbQueueItem.uuid, oldIndex: 5, newIndex: 0 },
       };
 
       const result = queueReducer(stateWithQueue, action);
@@ -608,12 +610,12 @@ describe('queueReducer', () => {
 
       const stateWithQueue: QueueState = {
         ...initialState,
-        queue: [item1, item2]
+        queue: [item1, item2],
       };
 
       const action: QueueAction = {
         type: 'DELTA_REORDER_QUEUE_ITEM',
-        payload: { uuid: 'wrong-uuid', oldIndex: 0, newIndex: 1 }
+        payload: { uuid: 'wrong-uuid', oldIndex: 0, newIndex: 1 },
       };
 
       const result = queueReducer(stateWithQueue, action);
@@ -626,7 +628,7 @@ describe('queueReducer', () => {
     it('should update current climb', () => {
       const action: QueueAction = {
         type: 'DELTA_UPDATE_CURRENT_CLIMB',
-        payload: { item: mockClimbQueueItem, shouldAddToQueue: false }
+        payload: { item: mockClimbQueueItem, shouldAddToQueue: false },
       };
 
       const result = queueReducer(initialState, action);
@@ -638,7 +640,7 @@ describe('queueReducer', () => {
     it('should add to queue when shouldAddToQueue is true', () => {
       const action: QueueAction = {
         type: 'DELTA_UPDATE_CURRENT_CLIMB',
-        payload: { item: mockClimbQueueItem, shouldAddToQueue: true }
+        payload: { item: mockClimbQueueItem, shouldAddToQueue: true },
       };
 
       const result = queueReducer(initialState, action);
@@ -651,12 +653,12 @@ describe('queueReducer', () => {
     it('should skip if same item is already current (deduplication)', () => {
       const stateWithCurrentClimb: QueueState = {
         ...initialState,
-        currentClimbQueueItem: mockClimbQueueItem
+        currentClimbQueueItem: mockClimbQueueItem,
       };
 
       const action: QueueAction = {
         type: 'DELTA_UPDATE_CURRENT_CLIMB',
-        payload: { item: mockClimbQueueItem, shouldAddToQueue: false }
+        payload: { item: mockClimbQueueItem, shouldAddToQueue: false },
       };
 
       const result = queueReducer(stateWithCurrentClimb, action);
@@ -667,12 +669,12 @@ describe('queueReducer', () => {
     it('should handle null item', () => {
       const stateWithCurrentClimb: QueueState = {
         ...initialState,
-        currentClimbQueueItem: mockClimbQueueItem
+        currentClimbQueueItem: mockClimbQueueItem,
       };
 
       const action: QueueAction = {
         type: 'DELTA_UPDATE_CURRENT_CLIMB',
-        payload: { item: null, shouldAddToQueue: false }
+        payload: { item: null, shouldAddToQueue: false },
       };
 
       const result = queueReducer(stateWithCurrentClimb, action);
@@ -685,18 +687,18 @@ describe('queueReducer', () => {
     it('should set mirrored state on current climb', () => {
       const currentClimb: ClimbQueueItem = {
         ...mockClimbQueueItem,
-        climb: { ...mockClimb, mirrored: false }
+        climb: { ...mockClimb, mirrored: false },
       };
 
       const stateWithCurrentClimb: QueueState = {
         ...initialState,
         currentClimbQueueItem: currentClimb,
-        queue: [currentClimb]
+        queue: [currentClimb],
       };
 
       const action: QueueAction = {
         type: 'DELTA_MIRROR_CURRENT_CLIMB',
-        payload: { mirrored: true }
+        payload: { mirrored: true },
       };
 
       const result = queueReducer(stateWithCurrentClimb, action);
@@ -708,7 +710,7 @@ describe('queueReducer', () => {
     it('should do nothing when no current climb', () => {
       const action: QueueAction = {
         type: 'DELTA_MIRROR_CURRENT_CLIMB',
-        payload: { mirrored: true }
+        payload: { mirrored: true },
       };
 
       const result = queueReducer(initialState, action);
@@ -723,17 +725,17 @@ describe('queueReducer', () => {
       const replacementItem: ClimbQueueItem = {
         ...mockClimbQueueItem,
         uuid: 'item-1',
-        climb: { ...mockClimb, name: 'Updated Climb' }
+        climb: { ...mockClimb, name: 'Updated Climb' },
       };
 
       const stateWithQueue: QueueState = {
         ...initialState,
-        queue: [originalItem]
+        queue: [originalItem],
       };
 
       const action: QueueAction = {
         type: 'DELTA_REPLACE_QUEUE_ITEM',
-        payload: { uuid: 'item-1', item: replacementItem }
+        payload: { uuid: 'item-1', item: replacementItem },
       };
 
       const result = queueReducer(stateWithQueue, action);
@@ -745,17 +747,17 @@ describe('queueReducer', () => {
       const stateWithCurrentClimb: QueueState = {
         ...initialState,
         queue: [mockClimbQueueItem],
-        currentClimbQueueItem: mockClimbQueueItem
+        currentClimbQueueItem: mockClimbQueueItem,
       };
 
       const replacementItem: ClimbQueueItem = {
         ...mockClimbQueueItem,
-        climb: { ...mockClimb, name: 'Updated Climb' }
+        climb: { ...mockClimb, name: 'Updated Climb' },
       };
 
       const action: QueueAction = {
         type: 'DELTA_REPLACE_QUEUE_ITEM',
-        payload: { uuid: mockClimbQueueItem.uuid, item: replacementItem }
+        payload: { uuid: mockClimbQueueItem.uuid, item: replacementItem },
       };
 
       const result = queueReducer(stateWithCurrentClimb, action);
@@ -766,12 +768,12 @@ describe('queueReducer', () => {
     it('should return unchanged state if uuid not found', () => {
       const stateWithQueue: QueueState = {
         ...initialState,
-        queue: [mockClimbQueueItem]
+        queue: [mockClimbQueueItem],
       };
 
       const action: QueueAction = {
         type: 'DELTA_REPLACE_QUEUE_ITEM',
-        payload: { uuid: 'non-existent', item: mockClimbQueueItem }
+        payload: { uuid: 'non-existent', item: mockClimbQueueItem },
       };
 
       const result = queueReducer(stateWithQueue, action);
@@ -1070,7 +1072,6 @@ describe('queueReducer', () => {
 
       expect(result.pendingCurrentClimbUpdates).toHaveLength(0);
     });
-
   });
 
   describe('DELTA_UPDATE_CURRENT_CLIMB - Widget Navigation (optimistic dispatch)', () => {
@@ -1079,9 +1080,21 @@ describe('queueReducer', () => {
     // The reducer should update state immediately and track the correlationId so the
     // subsequent server echo is suppressed.
 
-    const itemA: ClimbQueueItem = { ...mockClimbQueueItem, uuid: 'item-a', climb: { ...mockClimb, uuid: 'climb-a', name: 'Climb A' } };
-    const itemB: ClimbQueueItem = { ...mockClimbQueueItem, uuid: 'item-b', climb: { ...mockClimb, uuid: 'climb-b', name: 'Climb B' } };
-    const itemC: ClimbQueueItem = { ...mockClimbQueueItem, uuid: 'item-c', climb: { ...mockClimb, uuid: 'climb-c', name: 'Climb C' } };
+    const itemA: ClimbQueueItem = {
+      ...mockClimbQueueItem,
+      uuid: 'item-a',
+      climb: { ...mockClimb, uuid: 'climb-a', name: 'Climb A' },
+    };
+    const itemB: ClimbQueueItem = {
+      ...mockClimbQueueItem,
+      uuid: 'item-b',
+      climb: { ...mockClimb, uuid: 'climb-b', name: 'Climb B' },
+    };
+    const itemC: ClimbQueueItem = {
+      ...mockClimbQueueItem,
+      uuid: 'item-c',
+      climb: { ...mockClimb, uuid: 'climb-c', name: 'Climb C' },
+    };
 
     it('should optimistically navigate to next climb and track correlationId', () => {
       const state: QueueState = {
@@ -1130,7 +1143,7 @@ describe('queueReducer', () => {
       expect(result.pendingCurrentClimbUpdates).not.toContain(correlationId);
     });
 
-    it('should apply a different user\'s update even with a pending widget correlationId', () => {
+    it("should apply a different user's update even with a pending widget correlationId", () => {
       const widgetCorrelationId = 'native-ws-uuid-1';
       const state: QueueState = {
         ...initialState,

@@ -27,12 +27,9 @@ export function getListPageCacheTTL(pathname: string, searchParams: URLSearchPar
   const pathParts = pathname.split('/').filter(Boolean);
 
   const isLegacyFormat =
-    pathParts.length >= 6 &&
-    (SUPPORTED_BOARDS as readonly string[]).includes(pathParts[0].toLowerCase());
+    pathParts.length >= 6 && (SUPPORTED_BOARDS as readonly string[]).includes(pathParts[0].toLowerCase());
 
-  const isSlugFormat =
-    pathParts.length >= 4 &&
-    pathParts[0] === 'b';
+  const isSlugFormat = pathParts.length >= 4 && pathParts[0] === 'b';
 
   if (!isLegacyFormat && !isSlugFormat) {
     return null;

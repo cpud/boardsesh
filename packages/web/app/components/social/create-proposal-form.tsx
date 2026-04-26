@@ -25,7 +25,7 @@ import SwipeableDrawer from '@/app/components/swipeable-drawer/swipeable-drawer'
 import type { Proposal, ProposalType } from '@boardsesh/shared-schema';
 import type { BoardName } from '@/app/lib/types';
 
-interface CreateProposalFormProps {
+type CreateProposalFormProps = {
   climbUuid: string;
   boardType: string;
   angle: number;
@@ -34,7 +34,7 @@ interface CreateProposalFormProps {
   currentClimbDifficulty?: string;
   boardName?: string;
   onCreated?: (proposal: Proposal) => void;
-}
+};
 
 export default function CreateProposalForm({
   climbUuid,
@@ -55,27 +55,30 @@ export default function CreateProposalForm({
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState('');
 
-  const boardAngles = boardName ? (ANGLES[boardName as BoardName] || []) : [];
+  const boardAngles = boardName ? ANGLES[boardName as BoardName] || [] : [];
 
   const handleClose = useCallback(() => {
     setOpen(false);
   }, []);
 
-  const handleTypeChange = useCallback((_: React.MouseEvent, val: ProposalType | null) => {
-    if (!val) return;
-    setType(val);
-    // Reset proposed value when changing type
-    if (val === 'grade' || val === 'benchmark') {
-      setSelectedAngle(angle);
-    } else {
-      setSelectedAngle('all');
-    }
-    if (val === 'grade') {
-      setProposedValue(currentClimbDifficulty || '');
-    } else {
-      setProposedValue('');
-    }
-  }, [currentClimbDifficulty, angle]);
+  const handleTypeChange = useCallback(
+    (_: React.MouseEvent, val: ProposalType | null) => {
+      if (!val) return;
+      setType(val);
+      // Reset proposed value when changing type
+      if (val === 'grade' || val === 'benchmark') {
+        setSelectedAngle(angle);
+      } else {
+        setSelectedAngle('all');
+      }
+      if (val === 'grade') {
+        setProposedValue(currentClimbDifficulty || '');
+      } else {
+        setProposedValue('');
+      }
+    },
+    [currentClimbDifficulty, angle],
+  );
 
   const handleSubmit = useCallback(async () => {
     if (!token) {
@@ -98,7 +101,7 @@ export default function CreateProposalForm({
         input: {
           climbUuid,
           boardType,
-          angle: type === 'classic' ? null : (selectedAngle === 'all' ? null : selectedAngle),
+          angle: type === 'classic' ? null : selectedAngle === 'all' ? null : selectedAngle,
           type,
           proposedValue,
           reason: reason || null,
@@ -112,7 +115,7 @@ export default function CreateProposalForm({
 
       onCreated?.(result.createProposal);
       handleClose();
-      setProposedValue(type === 'grade' ? (currentClimbDifficulty || '') : '');
+      setProposedValue(type === 'grade' ? currentClimbDifficulty || '' : '');
       setReason('');
       setSnackbar('Proposal created');
     } catch (err) {
@@ -125,13 +128,22 @@ export default function CreateProposalForm({
     } finally {
       setLoading(false);
     }
-  }, [token, climbUuid, boardType, selectedAngle, type, proposedValue, reason, onCreated, handleClose, currentClimbDifficulty]);
+  }, [
+    token,
+    climbUuid,
+    boardType,
+    selectedAngle,
+    type,
+    proposedValue,
+    reason,
+    onCreated,
+    handleClose,
+    currentClimbDifficulty,
+  ]);
 
   if (isFrozen) return null;
 
-  const gradeBackground = type === 'grade' && proposedValue
-    ? getGradeTintColor(proposedValue, 'light')
-    : undefined;
+  const gradeBackground = type === 'grade' && proposedValue ? getGradeTintColor(proposedValue, 'light') : undefined;
 
   return (
     <>
@@ -163,7 +175,9 @@ export default function CreateProposalForm({
         onClose={handleClose}
         footer={
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-            <Button onClick={handleClose} sx={{ textTransform: 'none' }}>Cancel</Button>
+            <Button onClick={handleClose} sx={{ textTransform: 'none' }}>
+              Cancel
+            </Button>
             <Button
               onClick={handleSubmit}
               variant="contained"
@@ -181,13 +195,7 @@ export default function CreateProposalForm({
       >
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {/* Type selector */}
-          <ToggleButtonGroup
-            value={type}
-            exclusive
-            onChange={handleTypeChange}
-            size="small"
-            fullWidth
-          >
+          <ToggleButtonGroup value={type} exclusive onChange={handleTypeChange} size="small" fullWidth>
             <ToggleButton value="grade">Grade</ToggleButton>
             <ToggleButton value="classic">Classic</ToggleButton>
             <ToggleButton value="benchmark">Benchmark</ToggleButton>
@@ -200,11 +208,13 @@ export default function CreateProposalForm({
               <Select
                 value={selectedAngle}
                 label="Angle"
-                onChange={(e) => setSelectedAngle(e.target.value as number | 'all')}
+                onChange={(e) => setSelectedAngle(e.target.value)}
                 MenuProps={{ PaperProps: { sx: { maxHeight: 300 } } }}
               >
                 {boardAngles.map((a) => (
-                  <MenuItem key={a} value={a}>{a}°</MenuItem>
+                  <MenuItem key={a} value={a}>
+                    {a}°
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -234,9 +244,7 @@ export default function CreateProposalForm({
           {(type === 'classic' || type === 'benchmark') && (
             <>
               <Typography variant="caption" sx={{ color: themeTokens.neutral[500] }}>
-                {type === 'classic'
-                  ? 'Classic proposals apply to all angles.'
-                  : 'Benchmark proposals are per-angle.'}
+                {type === 'classic' ? 'Classic proposals apply to all angles.' : 'Benchmark proposals are per-angle.'}
               </Typography>
               <FormControl size="small" fullWidth>
                 <InputLabel>Proposed Status</InputLabel>
@@ -267,19 +275,14 @@ export default function CreateProposalForm({
           {/* Outlier warning */}
           {outlierWarning && type === 'grade' && (
             <Alert severity="info" sx={{ fontSize: 13 }}>
-              The grade at this angle appears to be an outlier compared to adjacent angles.
-              This proposal may be auto-approved if it aligns with neighboring data.
+              The grade at this angle appears to be an outlier compared to adjacent angles. This proposal may be
+              auto-approved if it aligns with neighboring data.
             </Alert>
           )}
         </Box>
       </SwipeableDrawer>
 
-      <Snackbar
-        open={!!snackbar}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar('')}
-        message={snackbar}
-      />
+      <Snackbar open={!!snackbar} autoHideDuration={3000} onClose={() => setSnackbar('')} message={snackbar} />
     </>
   );
 }

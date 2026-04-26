@@ -26,58 +26,41 @@ import {
 } from '@/app/lib/graphql/operations/playlists';
 import { useIncrementalQuery } from '@/app/hooks/use-incremental-query';
 
-interface UseClimbActionsDataOptions {
+type UseClimbActionsDataOptions = {
   boardName: string;
   layoutId: number;
   angle: number;
   climbUuids: string[];
-}
+};
 
 // Merge helpers (stable references to avoid re-creating on every render)
-const mergeSetFn = (acc: Set<string>, fetched: Set<string>): Set<string> =>
-  new Set([...acc, ...fetched]);
+const mergeSetFn = (acc: Set<string>, fetched: Set<string>): Set<string> => new Set([...acc, ...fetched]);
 
 // Shallow merge (overwrites per-key) is safe here because the incremental fetch
 // pattern guarantees no key overlap between accumulated and fetched batches —
 // each UUID is only fetched once and never re-fetched unless the cache is reset.
-const mergeMapFn = (
-  acc: Map<string, Set<string>>,
-  fetched: Map<string, Set<string>>,
-): Map<string, Set<string>> => new Map([...acc, ...fetched]);
+const mergeMapFn = (acc: Map<string, Set<string>>, fetched: Map<string, Set<string>>): Map<string, Set<string>> =>
+  new Map([...acc, ...fetched]);
 
 // Size-only comparison is intentional: merge always grows (union/append),
 // so a size change reliably signals new data without expensive deep equality.
-const hasSetSizeChanged = (prev: Set<string>, next: Set<string>): boolean =>
-  prev.size !== next.size;
+const hasSetSizeChanged = (prev: Set<string>, next: Set<string>): boolean => prev.size !== next.size;
 
-const hasMapSizeChanged = (
-  prev: Map<string, Set<string>>,
-  next: Map<string, Set<string>>,
-): boolean => prev.size !== next.size;
+const hasMapSizeChanged = (prev: Map<string, Set<string>>, next: Map<string, Set<string>>): boolean =>
+  prev.size !== next.size;
 
 const EMPTY_SET = new Set<string>();
 const EMPTY_MAP = new Map<string, Set<string>>();
 
-export function useClimbActionsData({
-  boardName,
-  layoutId,
-  angle,
-  climbUuids,
-}: UseClimbActionsDataOptions) {
+export function useClimbActionsData({ boardName, layoutId, angle, climbUuids }: UseClimbActionsDataOptions) {
   const { token, isAuthenticated, isLoading: isAuthLoading } = useWsAuthToken();
   const { showMessage } = useSnackbar();
   const queryClient = useQueryClient();
 
   // === Favorites (incremental) ===
 
-  const favAccKey = useMemo(
-    () => ['favorites', boardName, angle, 'accumulated'] as const,
-    [boardName, angle],
-  );
-  const favFetchKeyPrefix = useMemo(
-    () => ['favorites', boardName, angle, 'fetch'] as const,
-    [boardName, angle],
-  );
+  const favAccKey = useMemo(() => ['favorites', boardName, angle, 'accumulated'] as const, [boardName, angle]);
+  const favFetchKeyPrefix = useMemo(() => ['favorites', boardName, angle, 'fetch'] as const, [boardName, angle]);
 
   const favFetchChunk = useCallback(
     async (uuids: string[]): Promise<Set<string>> => {
@@ -101,18 +84,15 @@ export function useClimbActionsData({
     data: favorites,
     isLoading: isLoadingFavorites,
     cancelFetches: cancelFavFetches,
-  } = useIncrementalQuery<Set<string>>(
-    climbUuids,
-    {
-      accumulatedKey: favAccKey,
-      fetchKeyPrefix: favFetchKeyPrefix,
-      enabled: isAuthenticated && !isAuthLoading && !!boardName,
-      fetchChunk: favFetchChunk,
-      merge: mergeSetFn,
-      initialValue: EMPTY_SET,
-      hasChanged: hasSetSizeChanged,
-    },
-  );
+  } = useIncrementalQuery<Set<string>>(climbUuids, {
+    accumulatedKey: favAccKey,
+    fetchKeyPrefix: favFetchKeyPrefix,
+    enabled: isAuthenticated && !isAuthLoading && !!boardName,
+    fetchChunk: favFetchChunk,
+    merge: mergeSetFn,
+    initialValue: EMPTY_SET,
+    hasChanged: hasSetSizeChanged,
+  });
 
   // Toggle favorite mutation — targets the accumulated cache key
   const toggleFavoriteMutation = useMutation({
@@ -158,14 +138,11 @@ export function useClimbActionsData({
   const isAuthenticatedRef = useRef(isAuthenticated);
   isAuthenticatedRef.current = isAuthenticated;
 
-  const toggleFavorite = useCallback(
-    async (climbUuid: string): Promise<boolean> => {
-      if (!isAuthenticatedRef.current) return false;
-      const result = await toggleFavMutateRef.current(climbUuid);
-      return result.favorited;
-    },
-    [],
-  );
+  const toggleFavorite = useCallback(async (climbUuid: string): Promise<boolean> => {
+    if (!isAuthenticatedRef.current) return false;
+    const result = await toggleFavMutateRef.current(climbUuid);
+    return result.favorited;
+  }, []);
 
   // === Playlists ===
 
@@ -200,10 +177,9 @@ export function useClimbActionsData({
     async (uuids: string[]): Promise<Map<string, Set<string>>> => {
       const client = createGraphQLHttpClient(token);
       try {
-        const response = await client.request<GetPlaylistsForClimbsQueryResponse>(
-          GET_PLAYLISTS_FOR_CLIMBS,
-          { input: { boardType: boardName, layoutId, climbUuids: uuids } },
-        );
+        const response = await client.request<GetPlaylistsForClimbsQueryResponse>(GET_PLAYLISTS_FOR_CLIMBS, {
+          input: { boardType: boardName, layoutId, climbUuids: uuids },
+        });
         const memberships = new Map<string, Set<string>>();
         for (const entry of response.playlistsForClimbs) {
           memberships.set(entry.climbUuid, new Set(entry.playlistUuids));
@@ -217,21 +193,13 @@ export function useClimbActionsData({
     [token, boardName, layoutId],
   );
 
-  const {
-    data: membershipsData,
-    cancelFetches: cancelMemFetches,
-  } = useIncrementalQuery<Map<string, Set<string>>>(
+  const { data: membershipsData, cancelFetches: cancelMemFetches } = useIncrementalQuery<Map<string, Set<string>>>(
     climbUuids,
     {
       accumulatedKey: memAccKey,
       fetchKeyPrefix: memFetchKeyPrefix,
       // MoonBoard doesn't support playlists (no playlist API in Aurora for MoonBoard)
-      enabled:
-        isAuthenticated &&
-        !isAuthLoading &&
-        !!boardName &&
-        layoutId > 0 &&
-        boardName !== 'moonboard',
+      enabled: isAuthenticated && !isAuthLoading && !!boardName && layoutId > 0 && boardName !== 'moonboard',
       fetchChunk: memFetchChunk,
       merge: mergeMapFn,
       initialValue: EMPTY_MAP,
@@ -242,68 +210,67 @@ export function useClimbActionsData({
   // Playlist mutations — update the accumulated membership cache
   // Ref holding latest values so playlist callbacks can be stable (same pattern as toggleFavorite above)
   const playlistRef = useRef({
-    token, cancelMemFetches, queryClient, memAccKey, playlistsQueryKey, boardName, layoutId,
+    token,
+    cancelMemFetches,
+    queryClient,
+    memAccKey,
+    playlistsQueryKey,
+    boardName,
+    layoutId,
   });
   playlistRef.current = {
-    token, cancelMemFetches, queryClient, memAccKey, playlistsQueryKey, boardName, layoutId,
+    token,
+    cancelMemFetches,
+    queryClient,
+    memAccKey,
+    playlistsQueryKey,
+    boardName,
+    layoutId,
   };
 
-  const addToPlaylist = useCallback(
-    async (playlistId: string, climbUuid: string, climbAngle: number) => {
-      const r = playlistRef.current;
-      if (!r.token) throw new Error('Not authenticated');
-      const client = createGraphQLHttpClient(r.token);
-      await client.request<AddClimbToPlaylistMutationResponse>(ADD_CLIMB_TO_PLAYLIST, {
-        input: { playlistId, climbUuid, angle: climbAngle },
-      });
-      await r.cancelMemFetches();
-      const prevMem = r.queryClient.getQueryData<Map<string, Set<string>>>(r.memAccKey) ?? new Map();
-      const updatedMem = new Map(prevMem);
-      const currentSet = new Set(updatedMem.get(climbUuid) || []);
-      currentSet.add(playlistId);
-      updatedMem.set(climbUuid, currentSet);
-      r.queryClient.setQueryData(r.memAccKey, updatedMem);
-      r.queryClient.setQueryData<Playlist[]>(r.playlistsQueryKey, (prev) =>
-        prev?.map((p) => (p.uuid === playlistId ? { ...p, climbCount: p.climbCount + 1 } : p)),
-      );
-    },
-    [],
-  );
+  const addToPlaylist = useCallback(async (playlistId: string, climbUuid: string, climbAngle: number) => {
+    const r = playlistRef.current;
+    if (!r.token) throw new Error('Not authenticated');
+    const client = createGraphQLHttpClient(r.token);
+    await client.request<AddClimbToPlaylistMutationResponse>(ADD_CLIMB_TO_PLAYLIST, {
+      input: { playlistId, climbUuid, angle: climbAngle },
+    });
+    await r.cancelMemFetches();
+    const prevMem = r.queryClient.getQueryData<Map<string, Set<string>>>(r.memAccKey) ?? new Map();
+    const updatedMem = new Map(prevMem);
+    const currentSet = new Set(updatedMem.get(climbUuid) || []);
+    currentSet.add(playlistId);
+    updatedMem.set(climbUuid, currentSet);
+    r.queryClient.setQueryData(r.memAccKey, updatedMem);
+    r.queryClient.setQueryData<Playlist[]>(r.playlistsQueryKey, (prev) =>
+      prev?.map((p) => (p.uuid === playlistId ? { ...p, climbCount: p.climbCount + 1 } : p)),
+    );
+  }, []);
 
-  const removeFromPlaylist = useCallback(
-    async (playlistId: string, climbUuid: string) => {
-      const r = playlistRef.current;
-      if (!r.token) throw new Error('Not authenticated');
-      const client = createGraphQLHttpClient(r.token);
-      await client.request<RemoveClimbFromPlaylistMutationResponse>(REMOVE_CLIMB_FROM_PLAYLIST, {
-        input: { playlistId, climbUuid },
-      });
-      await r.cancelMemFetches();
-      const prevMem = r.queryClient.getQueryData<Map<string, Set<string>>>(r.memAccKey) ?? new Map();
-      const updatedMem = new Map(prevMem);
-      const currentPlaylists = updatedMem.get(climbUuid);
-      if (currentPlaylists) {
-        const next = new Set(currentPlaylists);
-        next.delete(playlistId);
-        updatedMem.set(climbUuid, next);
-      }
-      r.queryClient.setQueryData(r.memAccKey, updatedMem);
-      r.queryClient.setQueryData<Playlist[]>(r.playlistsQueryKey, (prev) =>
-        prev?.map((p) =>
-          p.uuid === playlistId ? { ...p, climbCount: Math.max(0, p.climbCount - 1) } : p,
-        ),
-      );
-    },
-    [],
-  );
+  const removeFromPlaylist = useCallback(async (playlistId: string, climbUuid: string) => {
+    const r = playlistRef.current;
+    if (!r.token) throw new Error('Not authenticated');
+    const client = createGraphQLHttpClient(r.token);
+    await client.request<RemoveClimbFromPlaylistMutationResponse>(REMOVE_CLIMB_FROM_PLAYLIST, {
+      input: { playlistId, climbUuid },
+    });
+    await r.cancelMemFetches();
+    const prevMem = r.queryClient.getQueryData<Map<string, Set<string>>>(r.memAccKey) ?? new Map();
+    const updatedMem = new Map(prevMem);
+    const currentPlaylists = updatedMem.get(climbUuid);
+    if (currentPlaylists) {
+      const next = new Set(currentPlaylists);
+      next.delete(playlistId);
+      updatedMem.set(climbUuid, next);
+    }
+    r.queryClient.setQueryData(r.memAccKey, updatedMem);
+    r.queryClient.setQueryData<Playlist[]>(r.playlistsQueryKey, (prev) =>
+      prev?.map((p) => (p.uuid === playlistId ? { ...p, climbCount: Math.max(0, p.climbCount - 1) } : p)),
+    );
+  }, []);
 
   const createPlaylist = useCallback(
-    async (
-      name: string,
-      description?: string,
-      color?: string,
-      icon?: string,
-    ): Promise<Playlist> => {
+    async (name: string, description?: string, color?: string, icon?: string): Promise<Playlist> => {
       const r = playlistRef.current;
       if (!r.token) throw new Error('Not authenticated');
       const client = createGraphQLHttpClient(r.token);

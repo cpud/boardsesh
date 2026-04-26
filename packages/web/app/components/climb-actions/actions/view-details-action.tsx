@@ -6,10 +6,8 @@ import { ActionTooltip } from '../action-tooltip';
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import Link from 'next/link';
 import { track } from '@vercel/analytics';
-import { ClimbActionProps, ClimbActionResult } from '../types';
-import {
-  getContextAwareClimbViewUrl,
-} from '@/app/lib/url-utils';
+import type { ClimbActionProps, ClimbActionResult } from '../types';
+import { getContextAwareClimbViewUrl } from '@/app/lib/url-utils';
 import { themeTokens } from '@/app/theme/theme-config';
 import { buildActionResult, computeActionDisplay } from '../action-view-renderer';
 
@@ -29,13 +27,7 @@ export function ViewDetailsAction({
 }: ClimbActionProps): ClimbActionResult {
   const { iconSize, shouldShowLabel } = computeActionDisplay(viewMode, size, showLabel);
 
-  const url = getContextAwareClimbViewUrl(
-    currentPathname ?? '',
-    boardDetails,
-    angle,
-    climb.uuid,
-    climb.name,
-  );
+  const url = getContextAwareClimbViewUrl(currentPathname ?? '', boardDetails, angle, climb.uuid, climb.name);
 
   const handleClick = () => {
     track('Climb Info Viewed', {

@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi } from 'vite-plus/test';
 import type Redis from 'ioredis';
 
 export type MockRedis = Redis & {
@@ -28,7 +28,7 @@ export const createMockRedis = (): MockRedis => {
   const mockRedis = {
     set: vi.fn(async (key: string, value: string, ...opts: unknown[]) => {
       // Support NX flag (only set if key doesn't exist) used by acquireLock
-      const hasNX = opts.some(o => typeof o === 'string' && o.toUpperCase() === 'NX');
+      const hasNX = opts.some((o) => typeof o === 'string' && o.toUpperCase() === 'NX');
       if (hasNX && store.has(key)) {
         return null; // Key exists, NX prevents overwrite
       }
@@ -218,9 +218,7 @@ export const createMockRedis = (): MockRedis => {
         // Clear old leader's isLeader flag
         const oldLeader = store.get(leaderKey);
         if (oldLeader) {
-          const oldLeaderConnKey = Array.from(hashes.keys()).find(k =>
-            hashes.get(k)?.connectionId === oldLeader
-          );
+          const oldLeaderConnKey = Array.from(hashes.keys()).find((k) => hashes.get(k)?.connectionId === oldLeader);
           if (oldLeaderConnKey) {
             hashes.get(oldLeaderConnKey)!.isLeader = 'false';
           }
@@ -233,7 +231,7 @@ export const createMockRedis = (): MockRedis => {
           return null;
         }
 
-        const candidates = Array.from(memberSet).filter(id => id !== leavingConnectionId);
+        const candidates = Array.from(memberSet).filter((id) => id !== leavingConnectionId);
         if (candidates.length === 0) {
           store.delete(leaderKey);
           return null;
@@ -241,9 +239,7 @@ export const createMockRedis = (): MockRedis => {
 
         const newLeader = candidates[0];
         store.set(leaderKey, newLeader);
-        const newLeaderConnKey = Array.from(hashes.keys()).find(k =>
-          hashes.get(k)?.connectionId === newLeader
-        );
+        const newLeaderConnKey = Array.from(hashes.keys()).find((k) => hashes.get(k)?.connectionId === newLeader);
         if (newLeaderConnKey) {
           hashes.get(newLeaderConnKey)!.isLeader = 'true';
         }
@@ -302,9 +298,7 @@ export const createMockRedis = (): MockRedis => {
             const newLeader = Array.from(memberSet)[0];
             store.set(leaderKey, newLeader);
             // Update new leader's connection data
-            const newLeaderConnKey = Array.from(hashes.keys()).find(k =>
-              hashes.get(k)?.connectionId === newLeader
-            );
+            const newLeaderConnKey = Array.from(hashes.keys()).find((k) => hashes.get(k)?.connectionId === newLeader);
             if (newLeaderConnKey) {
               hashes.get(newLeaderConnKey)!.isLeader = 'true';
             }

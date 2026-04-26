@@ -1,14 +1,14 @@
-import { NextAuthOptions } from "next-auth";
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import GoogleProvider from "next-auth/providers/google";
-import AppleProvider from "next-auth/providers/apple";
-import FacebookProvider from "next-auth/providers/facebook";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { getDb } from "@/app/lib/db/db";
-import * as schema from "@/app/lib/db/schema";
-import { and, eq, isNull } from "drizzle-orm";
-import bcrypt from "bcryptjs";
-import { verifyNativeOAuthTransferToken } from "@/app/lib/auth/native-oauth-transfer";
+import type { NextAuthOptions } from 'next-auth';
+import { DrizzleAdapter } from '@auth/drizzle-adapter';
+import GoogleProvider from 'next-auth/providers/google';
+import AppleProvider from 'next-auth/providers/apple';
+import FacebookProvider from 'next-auth/providers/facebook';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { getDb } from '@/app/lib/db/db';
+import * as schema from '@/app/lib/db/schema';
+import { and, eq, isNull } from 'drizzle-orm';
+import { compare } from 'bcryptjs';
+import { verifyNativeOAuthTransferToken } from '@/app/lib/auth/native-oauth-transfer';
 
 // Build providers array conditionally based on available env vars
 const providers: NextAuthOptions['providers'] = [];
@@ -20,7 +20,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       allowDangerousEmailAccountLinking: true,
-    })
+    }),
   );
 }
 
@@ -30,9 +30,9 @@ if (process.env.APPLE_ID && process.env.APPLE_SECRET) {
     AppleProvider({
       clientId: process.env.APPLE_ID,
       clientSecret: process.env.APPLE_SECRET,
-      checks: ["pkce"],
+      checks: ['pkce'],
       allowDangerousEmailAccountLinking: true,
-    })
+    }),
   );
 }
 
@@ -43,17 +43,17 @@ if (process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET) {
       clientId: process.env.FACEBOOK_CLIENT_ID,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
       allowDangerousEmailAccountLinking: true,
-    })
+    }),
   );
 }
 
 // Always add credentials provider
 providers.push(
   CredentialsProvider({
-    id: "native-oauth",
-    name: "Native OAuth",
+    id: 'native-oauth',
+    name: 'Native OAuth',
     credentials: {
-      transferToken: { label: "Transfer Token", type: "text" },
+      transferToken: { label: 'Transfer Token', type: 'text' },
     },
     async authorize(credentials) {
       if (!credentials?.transferToken) {
@@ -66,11 +66,7 @@ providers.push(
       }
 
       const db = getDb();
-      const users = await db
-        .select()
-        .from(schema.users)
-        .where(eq(schema.users.id, decoded.userId))
-        .limit(1);
+      const users = await db.select().from(schema.users).where(eq(schema.users.id, decoded.userId)).limit(1);
 
       if (users.length === 0) {
         return null;
@@ -90,69 +86,60 @@ providers.push(
 // Always add email/password credentials provider
 providers.push(
   CredentialsProvider({
-      name: "Email",
-      credentials: {
-        email: { label: "Email", type: "email", placeholder: "your@email.com" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
+    name: 'Email',
+    credentials: {
+      email: { label: 'Email', type: 'email', placeholder: 'your@email.com' },
+      password: { label: 'Password', type: 'password' },
+    },
+    async authorize(credentials) {
+      if (!credentials?.email || !credentials?.password) {
+        return null;
+      }
 
-        const db = getDb();
+      const db = getDb();
 
-        // Look up user by email
-        const users = await db
-          .select()
-          .from(schema.users)
-          .where(eq(schema.users.email, credentials.email))
-          .limit(1);
+      // Look up user by email
+      const users = await db.select().from(schema.users).where(eq(schema.users.email, credentials.email)).limit(1);
 
-        if (users.length === 0) {
-          return null;
-        }
+      if (users.length === 0) {
+        return null;
+      }
 
-        const user = users[0];
+      const user = users[0];
 
-        // Get user credentials (password hash)
-        const userCredentials = await db
-          .select()
-          .from(schema.userCredentials)
-          .where(eq(schema.userCredentials.userId, user.id))
-          .limit(1);
+      // Get user credentials (password hash)
+      const userCredentials = await db
+        .select()
+        .from(schema.userCredentials)
+        .where(eq(schema.userCredentials.userId, user.id))
+        .limit(1);
 
-        if (userCredentials.length === 0) {
-          // User exists but has no password (e.g., OAuth only)
-          return null;
-        }
+      if (userCredentials.length === 0) {
+        // User exists but has no password (e.g., OAuth only)
+        return null;
+      }
 
-        // Verify password
-        const isValidPassword = await bcrypt.compare(
-          credentials.password,
-          userCredentials[0].passwordHash
-        );
+      // Verify password
+      const isValidPassword = await compare(credentials.password, userCredentials[0].passwordHash);
 
-        if (!isValidPassword) {
-          return null;
-        }
+      if (!isValidPassword) {
+        return null;
+      }
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-        };
-      },
-    })
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.image,
+      };
+    },
+  }),
 );
 
 // Apple Sign-In posts its callback cross-origin (response_mode=form_post),
 // so verification cookies need SameSite=None (which requires Secure).
 // We override callbackUrl, state, nonce, and pkceCodeVerifier cookies for this reason.
-const useSecureCookies =
-  process.env.NEXTAUTH_URL?.startsWith("https://") ??
-  !!process.env.VERCEL_URL;
+const useSecureCookies = process.env.NEXTAUTH_URL?.startsWith('https://') ?? !!process.env.VERCEL_URL;
 
 export const authOptions: NextAuthOptions = {
   adapter: DrizzleAdapter(getDb(), {
@@ -164,55 +151,55 @@ export const authOptions: NextAuthOptions = {
   providers,
   cookies: {
     callbackUrl: {
-      name: `${useSecureCookies ? "__Secure-" : ""}next-auth.callback-url`,
+      name: `${useSecureCookies ? '__Secure-' : ''}next-auth.callback-url`,
       options: {
         httpOnly: true,
-        sameSite: useSecureCookies ? "none" : "lax",
-        path: "/",
+        sameSite: useSecureCookies ? 'none' : 'lax',
+        path: '/',
         secure: useSecureCookies,
       },
     },
     state: {
-      name: `${useSecureCookies ? "__Secure-" : ""}next-auth.state`,
+      name: `${useSecureCookies ? '__Secure-' : ''}next-auth.state`,
       options: {
         httpOnly: true,
-        sameSite: useSecureCookies ? "none" : "lax",
-        path: "/",
+        sameSite: useSecureCookies ? 'none' : 'lax',
+        path: '/',
         secure: useSecureCookies,
       },
     },
     nonce: {
-      name: `${useSecureCookies ? "__Secure-" : ""}next-auth.nonce`,
+      name: `${useSecureCookies ? '__Secure-' : ''}next-auth.nonce`,
       options: {
         httpOnly: true,
-        sameSite: useSecureCookies ? "none" : "lax",
-        path: "/",
+        sameSite: useSecureCookies ? 'none' : 'lax',
+        path: '/',
         secure: useSecureCookies,
       },
     },
     pkceCodeVerifier: {
-      name: `${useSecureCookies ? "__Secure-" : ""}next-auth.pkce.code_verifier`,
+      name: `${useSecureCookies ? '__Secure-' : ''}next-auth.pkce.code_verifier`,
       options: {
         httpOnly: true,
-        sameSite: useSecureCookies ? "none" : "lax",
-        path: "/",
+        sameSite: useSecureCookies ? 'none' : 'lax',
+        path: '/',
         secure: useSecureCookies,
       },
     },
   },
   session: {
-    strategy: "jwt", // Required for credentials provider
+    strategy: 'jwt', // Required for credentials provider
   },
   pages: {
-    signIn: "/auth/login",
-    verifyRequest: "/auth/verify-request",
-    error: "/auth/error",
+    signIn: '/auth/login',
+    verifyRequest: '/auth/verify-request',
+    error: '/auth/error',
   },
   callbacks: {
     async signIn({ user, account }) {
       // OAuth providers - allow sign in (emails are pre-verified by provider)
       // Skip native-oauth (transfer token flow) — email is already verified
-      if (account?.provider !== "credentials" && account?.provider !== "native-oauth") {
+      if (account?.provider !== 'credentials' && account?.provider !== 'native-oauth') {
         // Mark email as verified if not already (provider already verified it)
         if (user.id) {
           try {
@@ -223,14 +210,14 @@ export const authOptions: NextAuthOptions = {
               .where(and(eq(schema.users.id, user.id), isNull(schema.users.emailVerified)));
           } catch (error) {
             // Best-effort — don't block sign-in if this fails
-            console.warn("Failed to mark email as verified during OAuth sign-in:", error);
+            console.warn('Failed to mark email as verified during OAuth sign-in:', error);
           }
         }
         return true;
       }
 
       // Native OAuth transfer tokens — already authenticated, allow through
-      if (account?.provider === "native-oauth") {
+      if (account?.provider === 'native-oauth') {
         return true;
       }
 
@@ -240,17 +227,13 @@ export const authOptions: NextAuthOptions = {
       }
 
       const db = getDb();
-      const existingUser = await db
-        .select()
-        .from(schema.users)
-        .where(eq(schema.users.email, user.email))
-        .limit(1);
+      const existingUser = await db.select().from(schema.users).where(eq(schema.users.email, user.email)).limit(1);
 
       // Check if email verification is enabled (disabled by default until Fastmail auth is set up)
-      const emailVerificationEnabled = process.env.EMAIL_VERIFICATION_ENABLED === "true";
+      const emailVerificationEnabled = process.env.EMAIL_VERIFICATION_ENABLED === 'true';
       if (emailVerificationEnabled && existingUser.length > 0 && !existingUser[0].emailVerified) {
         // Redirect to verification page with error
-        return "/auth/verify-request?error=EmailNotVerified";
+        return '/auth/verify-request?error=EmailNotVerified';
       }
 
       return true;
@@ -286,9 +269,12 @@ export const authOptions: NextAuthOptions = {
       // Create profile for new OAuth users
       if (user.id) {
         const db = getDb();
-        await db.insert(schema.userProfiles).values({
-          userId: user.id,
-        }).onConflictDoNothing();
+        await db
+          .insert(schema.userProfiles)
+          .values({
+            userId: user.id,
+          })
+          .onConflictDoNothing();
       }
     },
   },

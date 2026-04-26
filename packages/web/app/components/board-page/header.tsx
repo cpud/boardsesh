@@ -9,11 +9,20 @@ import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import UnifiedSearchDrawer from '../search-drawer/unified-search-drawer';
 import AccordionSearchForm from '../search-drawer/accordion-search-form';
 import { SearchDrawerBridgeInjector } from '../search-drawer/search-drawer-bridge-context';
-import { BoardDetails } from '@/app/lib/types';
-import { constructClimbListWithSlugs, generateLayoutSlug, generateSizeSlug, generateSetSlug } from '@/app/lib/url-utils';
+import type { BoardDetails } from '@/app/lib/types';
+import {
+  constructClimbListWithSlugs,
+  generateLayoutSlug,
+  generateSizeSlug,
+  generateSetSlug,
+} from '@/app/lib/url-utils';
 import { useCurrentClimb, useSearchData } from '../graphql-queue';
 import { useUISearchParams } from '../queue-control/ui-searchparams-provider';
-import { hasActiveFilters, hasActiveNonNameFilters as computeNonNameFilters, getSearchPillSummary } from '../search-drawer/search-summary-utils';
+import {
+  hasActiveFilters,
+  hasActiveNonNameFilters as computeNonNameFilters,
+  getSearchPillSummary,
+} from '../search-drawer/search-summary-utils';
 import { addRecentSearch } from '../search-drawer/recent-searches-storage';
 import AddOutlined from '@mui/icons-material/AddOutlined';
 import ChevronLeftOutlined from '@mui/icons-material/ChevronLeftOutlined';
@@ -51,9 +60,12 @@ export default function BoardSeshHeader({ boardDetails, angle, isAngleAdjustable
   const nonNameFiltersActive = computeNonNameFilters(uiSearchParams);
 
   // Name filter callbacks for the bridge
-  const handleNameFilterChange = useCallback((name: string) => {
-    updateFilters({ name });
-  }, [updateFilters]);
+  const handleNameFilterChange = useCallback(
+    (name: string) => {
+      updateFilters({ name });
+    },
+    [updateFilters],
+  );
 
   // Create mode has its own header in the form — hide the board toolbar
   if (isCreatePage) {
@@ -79,9 +91,10 @@ export default function BoardSeshHeader({ boardDetails, angle, isAngleAdjustable
     return baseUrl;
   };
 
-  const createClimbUrl = angle !== undefined && boardDetails.layout_name && boardDetails.size_name && boardDetails.set_names
-    ? `/${boardDetails.board_name}/${generateLayoutSlug(boardDetails.layout_name)}/${generateSizeSlug(boardDetails.size_name, boardDetails.size_description)}/${generateSetSlug(boardDetails.set_names)}/${angle}/create`
-    : null;
+  const createClimbUrl =
+    angle !== undefined && boardDetails.layout_name && boardDetails.size_name && boardDetails.set_names
+      ? `/${boardDetails.board_name}/${generateLayoutSlug(boardDetails.layout_name)}/${generateSizeSlug(boardDetails.size_name, boardDetails.size_description)}/${generateSetSlug(boardDetails.set_names)}/${angle}/create`
+      : null;
 
   // Check if we have any content to show — if not, don't render the toolbar
   const hasBackButton = isPlayPage;
@@ -121,10 +134,7 @@ export default function BoardSeshHeader({ boardDetails, angle, isAngleAdjustable
           <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
             {hasBackButton && (
               <div className={styles.mobileOnly}>
-                <IconButton
-                  aria-label="Back to climb list"
-                  onClick={() => router.push(getBackToListUrl())}
-                >
+                <IconButton aria-label="Back to climb list" onClick={() => router.push(getBackToListUrl())}>
                   <ChevronLeftOutlined />
                 </IconButton>
               </div>
@@ -174,19 +184,33 @@ export default function BoardSeshHeader({ boardDetails, angle, isAngleAdjustable
           }
           setSearchDropdownOpen(false);
         }}
-        renderClimbSearch={() => (
-          <AccordionSearchForm boardDetails={boardDetails} />
-        )}
+        renderClimbSearch={() => <AccordionSearchForm boardDetails={boardDetails} />}
         renderClimbFooter={() => {
           const currentFiltersActive = hasActiveFilters(uiSearchParams);
           const resultCount = totalSearchResultCount ?? 0;
           const showResultCount = currentFiltersActive && !isFetchingClimbs && resultCount > 0;
           return (
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2, px: 3, background: 'var(--semantic-surface)', borderTop: '1px solid var(--neutral-100)' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                py: 2,
+                px: 3,
+                background: 'var(--semantic-surface)',
+                borderTop: '1px solid var(--neutral-100)',
+              }}
+            >
               <MuiButton
                 variant="text"
                 onClick={clearClimbSearchParams}
-                sx={{ textDecoration: 'underline', fontWeight: 600, color: 'var(--neutral-900)', p: 0, minWidth: 'auto' }}
+                sx={{
+                  textDecoration: 'underline',
+                  fontWeight: 600,
+                  color: 'var(--neutral-900)',
+                  p: 0,
+                  minWidth: 'auto',
+                }}
               >
                 Clear all
               </MuiButton>

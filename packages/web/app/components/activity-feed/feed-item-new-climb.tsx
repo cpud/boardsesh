@@ -19,14 +19,15 @@ import type { ActivityFeedItem } from '@boardsesh/shared-schema';
 import AscentThumbnail from './ascent-thumbnail';
 import VoteButton from '@/app/components/social/vote-button';
 import CommentSection from '@/app/components/social/comment-section';
+import ClimbIcons from '@/app/components/climb-card/climb-icons';
 import { themeTokens } from '@/app/theme/theme-config';
 import styles from './ascents-feed.module.css';
 
 dayjs.extend(relativeTime);
 
-interface FeedItemNewClimbProps {
+type FeedItemNewClimbProps = {
   item: ActivityFeedItem;
-}
+};
 
 export default function FeedItemNewClimb({ item }: FeedItemNewClimbProps) {
   const [commentsOpen, setCommentsOpen] = useState(false);
@@ -55,10 +56,12 @@ export default function FeedItemNewClimb({ item }: FeedItemNewClimbProps) {
               {item.actorDisplayName || 'User'}
             </MuiTypography>
             <MuiTypography variant="body2" component="span" color="text.secondary">
-              {' '}created a new climb{' '}
+              {' '}
+              created a new climb{' '}
             </MuiTypography>
             <MuiTypography variant="body2" component="span" fontWeight={600}>
               {item.climbName}
+              <ClimbIcons isNoMatch={!!item.isNoMatch} isBenchmark={!!item.isBenchmark} />
             </MuiTypography>
           </Box>
           <MuiTypography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>
@@ -82,12 +85,8 @@ export default function FeedItemNewClimb({ item }: FeedItemNewClimbProps) {
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }} className={styles.feedItemContent}>
             <Box sx={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-              {item.difficultyName && (
-                <Chip label={item.difficultyName} size="small" color="primary" />
-              )}
-              {item.angle != null && (
-                <Chip icon={<LocationOnOutlined />} label={`${item.angle}\u00B0`} size="small" />
-              )}
+              {item.difficultyName && <Chip label={item.difficultyName} size="small" color="primary" />}
+              {item.angle != null && <Chip icon={<LocationOnOutlined />} label={`${item.angle}\u00B0`} size="small" />}
               {item.boardType && (
                 <MuiTypography variant="body2" component="span" color="text.secondary" className={styles.boardType}>
                   {item.boardType.charAt(0).toUpperCase() + item.boardType.slice(1)}

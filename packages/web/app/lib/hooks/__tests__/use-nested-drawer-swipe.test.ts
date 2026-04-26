@@ -1,12 +1,10 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 import { useNestedDrawerSwipe } from '../use-nested-drawer-swipe';
 
 function createTouchEvent(type: string, clientY: number, touches?: number): TouchEvent {
   const touch = { clientY, clientX: 0, identifier: 0 } as Touch;
-  const touchList = touches !== undefined
-    ? Array.from({ length: touches }, () => touch)
-    : [touch];
+  const touchList = touches !== undefined ? Array.from({ length: touches }, () => touch) : [touch];
 
   return new TouchEvent(type, {
     touches: touchList as unknown as Touch[],
@@ -277,10 +275,9 @@ describe('useNestedDrawerSwipe', () => {
   it('uses latest onClose callback via ref', () => {
     const onClose1 = vi.fn();
     const onClose2 = vi.fn();
-    const { result, rerender } = renderHook(
-      ({ onClose }) => useNestedDrawerSwipe(onClose),
-      { initialProps: { onClose: onClose1 } },
-    );
+    const { result, rerender } = renderHook(({ onClose }) => useNestedDrawerSwipe(onClose), {
+      initialProps: { onClose: onClose1 },
+    });
     const paper = createPaperElement();
 
     act(() => {

@@ -6,7 +6,7 @@ import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import type { TypedDocumentNode } from '@graphql-typed-document-node/core';
 
-interface UseFollowToggleConfig {
+type UseFollowToggleConfig = {
   entityId: string;
   initialIsFollowing: boolean;
   followMutation: TypedDocumentNode | string;
@@ -14,7 +14,7 @@ interface UseFollowToggleConfig {
   entityLabel: string;
   getFollowVariables: (entityId: string) => Record<string, unknown>;
   onFollowChange?: (isFollowing: boolean) => void;
-}
+};
 
 export function useFollowToggle({
   entityId,
@@ -63,7 +63,18 @@ export function useFollowToggle({
     } finally {
       setIsLoading(false);
     }
-  }, [isFollowing, isAuthenticated, token, entityId, entityLabel, followMutation, unfollowMutation, getFollowVariables, onFollowChange, showMessage]);
+  }, [
+    isFollowing,
+    isAuthenticated,
+    token,
+    entityId,
+    entityLabel,
+    followMutation,
+    unfollowMutation,
+    getFollowVariables,
+    onFollowChange,
+    showMessage,
+  ]);
 
   return {
     isFollowing,

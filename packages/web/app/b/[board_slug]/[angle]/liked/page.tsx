@@ -11,9 +11,9 @@ export const metadata = createNoIndexMetadata({
   description: 'Your liked climbs',
 });
 
-interface LikedPageProps {
+type LikedPageProps = {
   params: Promise<{ board_slug: string; angle: string }>;
-}
+};
 
 export default async function BoardSlugLikedPage(props: LikedPageProps) {
   const params = await props.params;
@@ -29,10 +29,7 @@ export default async function BoardSlugLikedPage(props: LikedPageProps) {
 
     return (
       <div className={styles.pageContainer}>
-        <LikedClimbsViewContent
-          boardDetails={boardDetails}
-          angle={parsedParams.angle}
-        />
+        <LikedClimbsViewContent boardDetails={boardDetails} angle={parsedParams.angle} />
       </div>
     );
   } catch (error) {

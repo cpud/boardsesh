@@ -10,8 +10,4 @@ export {
 
 export { runOCR, parseHeaderText, type OcrResult } from './ocr';
 
-export {
-  calculateRegions,
-  calculateRegionsFromDetectedBoard,
-  type ImageRegions,
-} from './regions';
+export { calculateRegions, calculateRegionsFromDetectedBoard, type ImageRegions } from './regions';

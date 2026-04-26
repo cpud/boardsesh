@@ -10,10 +10,10 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import MoreVertOutlined from '@mui/icons-material/MoreVertOutlined';
 import {
-  ClimbActionsProps,
-  ClimbActionType,
-  ClimbActionResult,
-  ClimbActionProps,
+  type ClimbActionsProps,
+  type ClimbActionType,
+  type ClimbActionResult,
+  type ClimbActionProps,
   DEFAULT_ACTION_ORDER,
 } from './types';
 import {
@@ -27,13 +27,14 @@ import {
   OpenInAppAction,
   MirrorAction,
   ShareAction,
+  InstagramAction,
   PlaylistAction,
 } from './actions';
 
 // Extended props for OpenInAppAction
-interface OpenInAppActionProps extends ClimbActionProps {
+type OpenInAppActionProps = {
   auroraAppUrl?: string;
-}
+} & ClimbActionProps;
 
 // Local type for menu items used in dropdown mode
 type ActionMenuItemType = {
@@ -45,29 +46,28 @@ type ActionMenuItemType = {
 };
 
 // Map action types to their handler functions
-const ACTION_FUNCTIONS: Record<
-  ClimbActionType,
-  (props: ClimbActionProps | OpenInAppActionProps) => ClimbActionResult
-> = {
-  viewDetails: ViewDetailsAction,
-  fork: ForkAction,
-  favorite: FavoriteAction,
-  setActive: SetActiveAction,
-  queue: QueueAction,
-  goToQueue: GoToQueueAction,
-  tick: TickAction,
-  openInApp: OpenInAppAction,
-  mirror: MirrorAction,
-  share: ShareAction,
-  playlist: PlaylistAction,
-};
+const ACTION_FUNCTIONS: Record<ClimbActionType, (props: ClimbActionProps | OpenInAppActionProps) => ClimbActionResult> =
+  {
+    viewDetails: ViewDetailsAction,
+    fork: ForkAction,
+    favorite: FavoriteAction,
+    setActive: SetActiveAction,
+    queue: QueueAction,
+    goToQueue: GoToQueueAction,
+    tick: TickAction,
+    openInApp: OpenInAppAction,
+    mirror: MirrorAction,
+    share: ShareAction,
+    instagram: InstagramAction,
+    playlist: PlaylistAction,
+  };
 
 /**
  * Helper function to create a renderer component for an action type.
  * This ensures hooks are called at the component level (valid), not inside useMemo (invalid).
  */
 function createActionRenderer(
-  actionFn: (props: ClimbActionProps | OpenInAppActionProps) => ClimbActionResult
+  actionFn: (props: ClimbActionProps | OpenInAppActionProps) => ClimbActionResult,
 ): React.FC<ClimbActionProps | OpenInAppActionProps> {
   return function ActionRenderer(props) {
     // Call the action function at component level - hooks inside are now valid
@@ -90,6 +90,7 @@ const ACTION_RENDERERS: Record<ClimbActionType, React.FC<ClimbActionProps | Open
   openInApp: createActionRenderer(OpenInAppAction),
   mirror: createActionRenderer(MirrorAction),
   share: createActionRenderer(ShareAction),
+  instagram: createActionRenderer(InstagramAction),
   playlist: createActionRenderer(PlaylistAction),
 };
 
@@ -131,13 +132,27 @@ export function ClimbActions({
       onTickAction,
       onGoToQueue,
     }),
-    [climb, boardDetails, angle, currentPathname, viewMode, size, onOpenPlaylistSelector, auroraAppUrl, onTickAction, onGoToQueue]
+    [
+      climb,
+      boardDetails,
+      angle,
+      currentPathname,
+      viewMode,
+      size,
+      onOpenPlaylistSelector,
+      auroraAppUrl,
+      onTickAction,
+      onGoToQueue,
+    ],
   );
 
   // Memoize action complete handler to prevent creating new functions on every render
-  const handleActionComplete = useCallback((actionType: ClimbActionType) => {
-    onActionComplete?.(actionType);
-  }, [onActionComplete]);
+  const handleActionComplete = useCallback(
+    (actionType: ClimbActionType) => {
+      onActionComplete?.(actionType);
+    },
+    [onActionComplete],
+  );
 
   // Icon mode - render each action as a component
   if (viewMode === 'icon') {
@@ -241,35 +256,34 @@ function DropdownActions({
   // Create a stable callback for collecting menu items
   const menuItemsRef = React.useRef<Map<string, ClimbActionResult['menuItem']>>(new Map());
 
-  const handleMenuItem = React.useCallback((actionType: ClimbActionType, item: ClimbActionResult['menuItem']) => {
-    menuItemsRef.current.set(actionType, item);
-    // Update menu items state (collect all items in order)
-    const items = actionsToShow
-      .map((type) => {
-        const menuItem = menuItemsRef.current.get(type);
-        if (!menuItem) return undefined;
-        return {
-          key: menuItem.key as string,
-          label: menuItem.label,
-          icon: menuItem.icon,
-          onClick: menuItem.onClick,
-          danger: menuItem.danger,
-        } as ActionMenuItemType;
-      })
-      .filter((item): item is ActionMenuItemType => item !== undefined);
-    setMenuItems(items);
-  }, [actionsToShow]);
+  const handleMenuItem = React.useCallback(
+    (actionType: ClimbActionType, item: ClimbActionResult['menuItem']) => {
+      menuItemsRef.current.set(actionType, item);
+      // Update menu items state (collect all items in order)
+      const items = actionsToShow
+        .map((type) => {
+          const menuItem = menuItemsRef.current.get(type);
+          if (!menuItem) return undefined;
+          return {
+            key: menuItem.key as string,
+            label: menuItem.label,
+            icon: menuItem.icon,
+            onClick: menuItem.onClick,
+            danger: menuItem.danger,
+          } as ActionMenuItemType;
+        })
+        .filter((item): item is ActionMenuItemType => item !== undefined);
+      setMenuItems(items);
+    },
+    [actionsToShow],
+  );
 
   return (
     <>
       <IconButton className={className} onClick={handleOpen}>
         <MoreVertOutlined />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         {menuItems.map((item) => (
           <MenuItem
             key={item.key}
@@ -338,11 +352,12 @@ function DropdownActionRenderer({
       hasReportedRef.current = true;
       onMenuItemRef.current(result.menuItem);
     }
-  }, [result.available]); // Only depend on availability, not menuItem object
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Only depend on availability, not menuItem object
+  }, [result.available]);
 
   // Render any elements needed in DOM (modals, drawers, etc.)
   if (!result.available || !result.element) return null;
-  return <>{result.element}</>;
+  return result.element;
 }
 
 export default ClimbActions;

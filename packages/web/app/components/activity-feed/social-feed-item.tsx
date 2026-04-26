@@ -12,7 +12,7 @@ import IconButton from '@mui/material/IconButton';
 import PersonOutlined from '@mui/icons-material/PersonOutlined';
 import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
 import ElectricBoltOutlined from '@mui/icons-material/ElectricBoltOutlined';
-import CancelOutlined from '@mui/icons-material/CancelOutlined';
+import { PersonFallingIcon } from '@/app/components/icons/person-falling-icon';
 import LocationOnOutlined from '@mui/icons-material/LocationOnOutlined';
 import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import Link from 'next/link';
@@ -22,6 +22,7 @@ import type { FollowingAscentFeedItem } from '@boardsesh/shared-schema';
 import AscentThumbnail from './ascent-thumbnail';
 import VoteButton from '@/app/components/social/vote-button';
 import CommentSection from '@/app/components/social/comment-section';
+import ClimbIcons from '@/app/components/climb-card/climb-icons';
 import { themeTokens } from '@/app/theme/theme-config';
 import styles from './ascents-feed.module.css';
 
@@ -54,16 +55,16 @@ const getStatusDisplay = (status: string) => {
     case 'send':
       return { label: 'Send', icon: <CheckCircleOutlined />, chipColor: 'success' as const };
     case 'attempt':
-      return { label: 'Attempt', icon: <CancelOutlined />, chipColor: undefined };
+      return { label: 'Attempt', icon: <PersonFallingIcon />, chipColor: undefined };
     default:
       return { label: status, icon: null, chipColor: undefined };
   }
 };
 
-interface SocialFeedItemProps {
+type SocialFeedItemProps = {
   item: FollowingAscentFeedItem;
   showUserHeader?: boolean;
-}
+};
 
 const SocialFeedItem: React.FC<SocialFeedItemProps> = ({ item, showUserHeader = false }) => {
   const [commentsOpen, setCommentsOpen] = useState(false);
@@ -96,10 +97,12 @@ const SocialFeedItem: React.FC<SocialFeedItemProps> = ({ item, showUserHeader = 
                 {item.userDisplayName || 'User'}
               </MuiTypography>
               <MuiTypography variant="body2" component="span" color="text.secondary">
-                {' '}climbed{' '}
+                {' '}
+                climbed{' '}
               </MuiTypography>
               <MuiTypography variant="body2" component="span" fontWeight={600}>
                 {item.climbName}
+                <ClimbIcons isNoMatch={!!item.isNoMatch} isBenchmark={!!item.isBenchmark} />
               </MuiTypography>
             </Box>
             <MuiTypography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>
@@ -126,7 +129,15 @@ const SocialFeedItem: React.FC<SocialFeedItemProps> = ({ item, showUserHeader = 
           {/* Details */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }} className={styles.feedItemContent}>
             {/* Status and climb name row */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '8px',
+              }}
+            >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Chip
                   icon={statusDisplay.icon as React.ReactElement}
@@ -139,6 +150,7 @@ const SocialFeedItem: React.FC<SocialFeedItemProps> = ({ item, showUserHeader = 
                 {!showUserHeader && (
                   <MuiTypography variant="body2" component="span" fontWeight={600} className={styles.climbName}>
                     {item.climbName}
+                    <ClimbIcons isNoMatch={!!item.isNoMatch} isBenchmark={!!item.isBenchmark} />
                   </MuiTypography>
                 )}
               </Box>
@@ -151,9 +163,7 @@ const SocialFeedItem: React.FC<SocialFeedItemProps> = ({ item, showUserHeader = 
 
             {/* Climb details chips */}
             <Box sx={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-              {item.difficultyName && (
-                <Chip label={item.difficultyName} size="small" color="primary" />
-              )}
+              {item.difficultyName && <Chip label={item.difficultyName} size="small" color="primary" />}
               <Chip icon={<LocationOnOutlined />} label={`${item.angle}\u00B0`} size="small" />
               <MuiTypography variant="body2" component="span" color="text.secondary" className={styles.boardType}>
                 {boardDisplay}

@@ -6,16 +6,23 @@ import VoteButton from './vote-button';
 import CommentSection from './comment-section';
 import ProposalSection from './proposal-section';
 
-interface ClimbSocialSectionProps {
+type ClimbSocialSectionProps = {
   climbUuid: string;
   boardType?: string;
   angle?: number;
   currentClimbDifficulty?: string;
   boardName?: string;
   highlightProposalUuid?: string;
-}
+};
 
-export default function ClimbSocialSection({ climbUuid, boardType, angle, currentClimbDifficulty, boardName, highlightProposalUuid }: ClimbSocialSectionProps) {
+export default function ClimbSocialSection({
+  climbUuid,
+  boardType,
+  angle,
+  currentClimbDifficulty,
+  boardName,
+  highlightProposalUuid,
+}: ClimbSocialSectionProps) {
   return (
     <Box>
       {boardType && angle != null && (

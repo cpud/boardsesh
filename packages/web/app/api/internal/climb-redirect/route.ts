@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/app/lib/db/db';
 import * as schema from '@/app/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -31,12 +31,7 @@ export async function GET(request: NextRequest) {
         name: schema.boardClimbs.name,
       })
       .from(schema.boardClimbs)
-      .where(
-        and(
-          eq(schema.boardClimbs.uuid, climbUuid),
-          eq(schema.boardClimbs.boardType, boardType),
-        ),
-      )
+      .where(and(eq(schema.boardClimbs.uuid, climbUuid), eq(schema.boardClimbs.boardType, boardType)))
       .limit(1);
 
     if (!climb) {
@@ -76,14 +71,19 @@ export async function GET(request: NextRequest) {
         ),
       );
 
-    const setIdArray = setRows
-      .map((r) => r.setId)
-      .filter((id): id is number => id != null);
+    const setIdArray = setRows.map((r) => r.setId).filter((id): id is number => id != null);
 
     const numericFallback = `/${boardType}/${climb.layoutId}/${psls.productSizeId}/${setIdArray.join(',')}/${angle}/view/${climbUuid}`;
-    let url = tryConstructSlugViewUrl(
-      boardType, climb.layoutId, psls.productSizeId, setIdArray, angle, climbUuid, climb.name ?? undefined,
-    ) ?? numericFallback;
+    let url =
+      tryConstructSlugViewUrl(
+        boardType,
+        climb.layoutId,
+        psls.productSizeId,
+        setIdArray,
+        angle,
+        climbUuid,
+        climb.name ?? undefined,
+      ) ?? numericFallback;
 
     if (proposalUuid) {
       url += `?proposalUuid=${encodeURIComponent(proposalUuid)}`;

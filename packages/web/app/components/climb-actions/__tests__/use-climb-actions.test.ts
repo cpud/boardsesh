@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
+import { useClimbActions } from '../use-climb-actions';
 
 // --- Mocks ---
 
@@ -58,8 +59,6 @@ vi.mock('@/app/lib/url-utils', () => ({
   constructClimbInfoUrl: vi.fn(() => '/climb/info'),
 }));
 
-import { useClimbActions } from '../use-climb-actions';
-
 // --- Test data ---
 
 const mockClimb = {
@@ -107,11 +106,10 @@ describe('useClimbActions', () => {
 
     // Mock window.open
     Object.defineProperty(global, 'window', {
-      value: {
-        ...global.window,
+      value: Object.assign(Object.create(Object.getPrototypeOf(global.window)), global.window, {
         open: vi.fn(),
         location: { origin: 'https://boardsesh.com' },
-      },
+      }),
       writable: true,
       configurable: true,
     });
@@ -128,9 +126,12 @@ describe('useClimbActions', () => {
       result.current.handleViewDetails();
     });
 
-    expect(mockTrack).toHaveBeenCalledWith('Climb Info Viewed', expect.objectContaining({
-      climbUuid: 'climb-1',
-    }));
+    expect(mockTrack).toHaveBeenCalledWith(
+      'Climb Info Viewed',
+      expect.objectContaining({
+        climbUuid: 'climb-1',
+      }),
+    );
     expect(mockPush).toHaveBeenCalledWith('/climb/view-context');
     expect(defaultOptions.onActionComplete).toHaveBeenCalledWith('viewDetails');
   });
@@ -175,9 +176,12 @@ describe('useClimbActions', () => {
     });
 
     expect(mockAddToQueue).toHaveBeenCalledWith(mockClimb);
-    expect(mockTrack).toHaveBeenCalledWith('Add to Queue', expect.objectContaining({
-      boardLayout: 'Original',
-    }));
+    expect(mockTrack).toHaveBeenCalledWith(
+      'Add to Queue',
+      expect.objectContaining({
+        boardLayout: 'Original',
+      }),
+    );
     expect(defaultOptions.onActionComplete).toHaveBeenCalledWith('queue');
   });
 
@@ -222,12 +226,17 @@ describe('useClimbActions', () => {
       await result.current.handleShare();
     });
 
-    expect(mockShare).toHaveBeenCalledWith(expect.objectContaining({
-      title: 'Test Climb',
-    }));
-    expect(mockTrack).toHaveBeenCalledWith('Climb Shared', expect.objectContaining({
-      method: 'native',
-    }));
+    expect(mockShare).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Test Climb',
+      }),
+    );
+    expect(mockTrack).toHaveBeenCalledWith(
+      'Climb Shared',
+      expect.objectContaining({
+        method: 'native',
+      }),
+    );
   });
 
   it('handleShare falls back to clipboard when share not available', async () => {
@@ -250,9 +259,12 @@ describe('useClimbActions', () => {
 
     expect(mockWriteText).toHaveBeenCalled();
     expect(mockShowMessage).toHaveBeenCalledWith('Link copied to clipboard!', 'success');
-    expect(mockTrack).toHaveBeenCalledWith('Climb Shared', expect.objectContaining({
-      method: 'clipboard',
-    }));
+    expect(mockTrack).toHaveBeenCalledWith(
+      'Climb Shared',
+      expect.objectContaining({
+        method: 'clipboard',
+      }),
+    );
   });
 
   it('handleOpenInApp opens URL in new tab', () => {
@@ -310,9 +322,7 @@ describe('useClimbActions', () => {
       set_names: undefined,
     };
 
-    const { result } = renderHook(() =>
-      useClimbActions({ ...defaultOptions, boardDetails: boardDetailsNoFork }),
-    );
+    const { result } = renderHook(() => useClimbActions({ ...defaultOptions, boardDetails: boardDetailsNoFork }));
 
     expect(result.current.canFork).toBe(false);
     expect(result.current.forkUrl).toBeNull();
@@ -320,9 +330,7 @@ describe('useClimbActions', () => {
 
   it('onActionComplete callback is called', () => {
     const onComplete = vi.fn();
-    const { result } = renderHook(() =>
-      useClimbActions({ ...defaultOptions, onActionComplete: onComplete }),
-    );
+    const { result } = renderHook(() => useClimbActions({ ...defaultOptions, onActionComplete: onComplete }));
 
     act(() => {
       result.current.handleViewDetails();

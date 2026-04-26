@@ -1,6 +1,18 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
+import { QueueBridgeProvider, QueueBridgeInjector, useQueueBridgeBoardInfo } from '../queue-bridge-context';
+import {
+  QueueContext,
+  QueueActionsContext,
+  QueueDataContext,
+  CurrentClimbUuidContext,
+  type GraphQLQueueContextType,
+  type GraphQLQueueActionsType,
+  type GraphQLQueueDataType,
+} from '../../graphql-queue/QueueContext';
+import type { BoardDetails, Climb, Angle } from '@/app/lib/types';
+import type { ClimbQueueItem } from '../types';
 
 // ---------------------------------------------------------------------------
 // Mocks — must be defined before importing the SUT
@@ -102,15 +114,6 @@ vi.mock('@/app/lib/board-config-for-playlist', () => ({
 }));
 
 // Now import the SUT — after all vi.mock calls
-import {
-  QueueBridgeProvider,
-  QueueBridgeInjector,
-  useQueueBridgeBoardInfo,
-} from '../queue-bridge-context';
-import { QueueContext, QueueActionsContext, QueueDataContext, CurrentClimbUuidContext } from '../../graphql-queue/QueueContext';
-import type { GraphQLQueueContextType, GraphQLQueueActionsType, GraphQLQueueDataType } from '../../graphql-queue/QueueContext';
-import type { BoardDetails, Climb, Angle } from '@/app/lib/types';
-import type { ClimbQueueItem } from '../types';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -234,6 +237,8 @@ function createFakeQueueContext(overrides?: Partial<GraphQLQueueContextType>): G
     joinSession: vi.fn(async () => {}),
     endSession: vi.fn(),
     sessionSummary: null,
+    sessionSummaryBoardType: null,
+    sessionSummaryHealthKitWorkoutId: null,
     dismissSessionSummary: vi.fn(),
     sessionGoal: null,
     users: [],
@@ -269,21 +274,21 @@ function useTestQueueContext() {
  * Hook to read the QueueActionsContext value exposed by QueueBridgeProvider.
  */
 function useTestQueueActions() {
-  return React.useContext(QueueActionsContext) as GraphQLQueueActionsType | undefined;
+  return React.useContext(QueueActionsContext);
 }
 
 /**
  * Hook to read the QueueDataContext value exposed by QueueBridgeProvider.
  */
 function useTestQueueData() {
-  return React.useContext(QueueDataContext) as GraphQLQueueDataType | undefined;
+  return React.useContext(QueueDataContext);
 }
 
 /**
  * Hook to read the CurrentClimbUuidContext value exposed by QueueBridgeProvider.
  */
 function useTestCurrentClimbUuid() {
-  return React.useContext(CurrentClimbUuidContext) as string | null;
+  return React.useContext(CurrentClimbUuidContext);
 }
 
 /** Extract the actions slice from a combined context (simulates GraphQLQueueProvider's actionsValue) */
@@ -403,7 +408,13 @@ describe('queue-bridge-context', () => {
           sessionId: 'party-1',
           boardPath: '/kilter/1/10/1,2/40/list',
           boardDetails: bd,
-          parsedParams: { board_name: 'kilter', layout_id: 1, size_id: 10, set_ids: [1, 2], angle: 40 },
+          parsedParams: {
+            board_name: 'kilter',
+            layout_id: 1,
+            size_id: 10,
+            set_ids: [1, 2],
+            angle: 40,
+          },
         },
         queue: [],
         currentClimbQueueItem: null,
@@ -570,7 +581,7 @@ describe('queue-bridge-context', () => {
         const item1 = createTestQueueItem(climb1, 'u1');
         const { result } = renderWithLocalQueue([item1], item1);
         act(() => {
-          result.current!.setCurrentClimb(climb2);
+          void result.current!.setCurrentClimb(climb2);
         });
         expect(mockSetLocalQueueState).toHaveBeenCalled();
         const [newQueue, newCurrent] = mockSetLocalQueueState.mock.calls[0];
@@ -606,11 +617,10 @@ describe('queue-bridge-context', () => {
         const climb = createTestClimb({ uuid: 'c-cold', boardType: 'kilter', layoutId: 1 });
         const { result } = renderWithoutLocalBoard();
         act(() => {
-          result.current!.setCurrentClimb(climb);
+          void result.current!.setCurrentClimb(climb);
         });
         expect(mockSetLocalQueueState).toHaveBeenCalledTimes(1);
-        const [newQueue, newCurrent, boardPath, boardDetails] =
-          mockSetLocalQueueState.mock.calls[0];
+        const [newQueue, newCurrent, boardPath, boardDetails] = mockSetLocalQueueState.mock.calls[0];
         expect(newQueue).toHaveLength(1);
         expect(newQueue[0].climb.uuid).toBe('c-cold');
         expect(newCurrent.climb.uuid).toBe('c-cold');
@@ -623,7 +633,7 @@ describe('queue-bridge-context', () => {
         const climb = createTestClimb({ uuid: 'mb-1', boardType: 'moonboard', layoutId: 99 });
         const { result } = renderWithoutLocalBoard();
         act(() => {
-          result.current!.setCurrentClimb(climb);
+          void result.current!.setCurrentClimb(climb);
         });
         expect(mockSetLocalQueueState).toHaveBeenCalledTimes(1);
         const [, , boardPath, boardDetails] = mockSetLocalQueueState.mock.calls[0];
@@ -649,7 +659,7 @@ describe('queue-bridge-context', () => {
         const climb = createTestClimb({ uuid: 'orphan', boardType: 'kilter', layoutId: null });
         const { result } = renderWithoutLocalBoard();
         act(() => {
-          result.current!.setCurrentClimb(climb);
+          void result.current!.setCurrentClimb(climb);
         });
         expect(mockSetLocalQueueState).not.toHaveBeenCalled();
       });
@@ -658,7 +668,7 @@ describe('queue-bridge-context', () => {
         const climb = createTestClimb({ uuid: 'orphan', boardType: undefined, layoutId: 1 });
         const { result } = renderWithoutLocalBoard();
         act(() => {
-          result.current!.setCurrentClimb(climb);
+          void result.current!.setCurrentClimb(climb);
         });
         expect(mockSetLocalQueueState).not.toHaveBeenCalled();
       });
@@ -735,7 +745,9 @@ describe('queue-bridge-context', () => {
       const wrapper2 = ({ children }: { children: React.ReactNode }) => (
         <QueueBridgeProvider>{children}</QueueBridgeProvider>
       );
-      const { result: result2 } = renderHook(() => useQueueBridgeBoardInfo(), { wrapper: wrapper2 });
+      const { result: result2 } = renderHook(() => useQueueBridgeBoardInfo(), {
+        wrapper: wrapper2,
+      });
       expect(result2.current.hasActiveQueue).toBe(false);
     });
 
@@ -809,10 +821,7 @@ describe('queue-bridge-context', () => {
         </QueueBridgeProvider>
       );
 
-      const { result } = renderHook(
-        () => useTestQueueActions(),
-        { wrapper },
-      );
+      const { result } = renderHook(() => useTestQueueActions(), { wrapper });
 
       expect(result.current?.disconnect).toBe(mockDisconnect);
     });
@@ -986,7 +995,13 @@ describe('queue-bridge-context', () => {
           sessionId: 'party-1',
           boardPath: '/kilter/1/10/1,2/40',
           boardDetails: bd,
-          parsedParams: { board_name: 'kilter', layout_id: 1, size_id: 10, set_ids: [1, 2], angle: 40 },
+          parsedParams: {
+            board_name: 'kilter',
+            layout_id: 1,
+            size_id: 10,
+            set_ids: [1, 2],
+            angle: 40,
+          },
         },
       };
 

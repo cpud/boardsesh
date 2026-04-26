@@ -1,11 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { v4 as uuidv4 } from 'uuid';
-import { Climb } from '@/app/lib/types';
-import { ClimbQueueItem, UserName } from '../types';
+import type { Climb } from '@/app/lib/types';
+import type { ClimbQueueItem, UserName } from '../types';
 
 // Mock uuid
 vi.mock('uuid', () => ({
-  v4: vi.fn(() => 'test-uuid-123')
+  v4: vi.fn(() => 'test-uuid-123'),
 }));
 
 const mockClimb: Climb = {
@@ -23,7 +23,7 @@ const mockClimb: Climb = {
   mirrored: false,
   benchmark_difficulty: null,
   userAscents: 0,
-  userAttempts: 0
+  userAttempts: 0,
 };
 
 // Re-implement the createClimbQueueItem function from queue-context.tsx for testing
@@ -44,7 +44,7 @@ describe('queue-context utilities', () => {
         climb: mockClimb,
         addedBy: userName,
         uuid: 'test-uuid-123',
-        suggested: false
+        suggested: false,
       });
     });
 
@@ -56,7 +56,7 @@ describe('queue-context utilities', () => {
         climb: mockClimb,
         addedBy: userName,
         uuid: 'test-uuid-123',
-        suggested: true
+        suggested: true,
       });
     });
 
@@ -68,7 +68,7 @@ describe('queue-context utilities', () => {
         climb: mockClimb,
         addedBy: null,
         uuid: 'test-uuid-123',
-        suggested: false
+        suggested: false,
       });
     });
 
@@ -80,7 +80,7 @@ describe('queue-context utilities', () => {
         climb: mockClimb,
         addedBy: userName,
         uuid: 'test-uuid-123',
-        suggested: false
+        suggested: false,
       });
     });
 
@@ -92,7 +92,7 @@ describe('queue-context utilities', () => {
         climb: mockClimb,
         addedBy: userName,
         uuid: 'test-uuid-123',
-        suggested: false
+        suggested: false,
       });
     });
   });
@@ -103,23 +103,29 @@ describe('queue-context utilities', () => {
         climb: { ...mockClimb, uuid: 'climb-1', name: 'Climb 1' },
         addedBy: 'user1',
         uuid: 'item-1',
-        suggested: false
+        suggested: false,
       },
       {
         climb: { ...mockClimb, uuid: 'climb-2', name: 'Climb 2' },
         addedBy: 'user1',
         uuid: 'item-2',
-        suggested: false
+        suggested: false,
       },
       {
         climb: { ...mockClimb, uuid: 'climb-3', name: 'Climb 3' },
         addedBy: 'user1',
         uuid: 'item-3',
-        suggested: false
-      }
+        suggested: false,
+      },
     ];
 
-    const getNextClimbQueueItem = (queue: ClimbQueueItem[], currentItem: ClimbQueueItem | null, suggestedClimbs: Climb[], peerId: string, climbSearchResults?: Climb[]) => {
+    const getNextClimbQueueItem = (
+      queue: ClimbQueueItem[],
+      currentItem: ClimbQueueItem | null,
+      suggestedClimbs: Climb[],
+      peerId: string,
+      climbSearchResults?: Climb[],
+    ) => {
       const queueItemIndex = currentItem ? queue.findIndex(({ uuid }) => uuid === currentItem.uuid) : -1;
 
       if (
@@ -164,7 +170,7 @@ describe('queue-context utilities', () => {
           climb: suggestedClimbs[0],
           addedBy: 'test-user',
           uuid: 'test-uuid-123',
-          suggested: true
+          suggested: true,
         });
       });
 
@@ -177,7 +183,7 @@ describe('queue-context utilities', () => {
           climb: suggestedClimbs[0],
           addedBy: 'test-user',
           uuid: 'test-uuid-123',
-          suggested: true
+          suggested: true,
         });
       });
 
@@ -217,7 +223,7 @@ describe('queue-context utilities', () => {
           climb: mockClimb,
           addedBy: 'user1',
           uuid: 'not-in-queue',
-          suggested: false
+          suggested: false,
         };
         const result = getPreviousClimbQueueItem(mockQueue, currentItem);
 

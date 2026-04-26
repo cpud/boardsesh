@@ -34,8 +34,16 @@ export const MOONBOARD_LAYOUTS = {
   'moonboard-2010': { id: 1, name: 'MoonBoard 2010', folder: 'moonboard2010' },
   'moonboard-2016': { id: 2, name: 'MoonBoard 2016', folder: 'moonboard2016' },
   'moonboard-2024': { id: 3, name: 'MoonBoard 2024', folder: 'moonboard2024' },
-  'moonboard-masters-2017': { id: 4, name: 'MoonBoard Masters 2017', folder: 'moonboardmasters2017' },
-  'moonboard-masters-2019': { id: 5, name: 'MoonBoard Masters 2019', folder: 'moonboardmasters2019' },
+  'moonboard-masters-2017': {
+    id: 4,
+    name: 'MoonBoard Masters 2017',
+    folder: 'moonboardmasters2017',
+  },
+  'moonboard-masters-2019': {
+    id: 5,
+    name: 'MoonBoard Masters 2019',
+    folder: 'moonboardmasters2019',
+  },
   'mini-moonboard-2020': { id: 6, name: 'Mini MoonBoard 2020', folder: 'minimoonboard2020' },
 } as const;
 
@@ -43,9 +51,7 @@ export type MoonBoardLayoutKey = keyof typeof MOONBOARD_LAYOUTS;
 
 // Hold sets available per layout
 export const MOONBOARD_SETS: Record<MoonBoardLayoutKey, { id: number; name: string; imageFile: string }[]> = {
-  'moonboard-2010': [
-    { id: 1, name: 'Original School Holds', imageFile: 'originalschoolholds.png' },
-  ],
+  'moonboard-2010': [{ id: 1, name: 'Original School Holds', imageFile: 'originalschoolholds.png' }],
   'moonboard-2016': [
     { id: 2, name: 'Hold Set A', imageFile: 'holdseta.png' },
     { id: 3, name: 'Hold Set B', imageFile: 'holdsetb.png' },
@@ -220,13 +226,7 @@ export function getHoldSetImages(layoutKey: MoonBoardLayoutKey, setIds: number[]
  * Get MoonBoard details in a format compatible with BoardDetails type.
  * This allows MoonBoard pages to use the same layout structure as Aurora boards.
  */
-export function getMoonBoardDetails({
-  layout_id,
-  set_ids,
-}: {
-  layout_id: number;
-  set_ids: number[];
-}) {
+export function getMoonBoardDetails({ layout_id, set_ids }: { layout_id: number; set_ids: number[] }) {
   const layoutEntry = getLayoutById(layout_id);
   if (!layoutEntry) {
     throw new Error(`MoonBoard layout not found: ${layout_id}`);
@@ -241,20 +241,17 @@ export function getMoonBoardDetails({
   const cellHeight = MOONBOARD_SIZE.height / MOONBOARD_GRID.numRows;
   const holdRadius = Math.min(cellWidth, cellHeight) * 0.35;
 
-  const holdsData = Array.from(
-    { length: MOONBOARD_GRID.numColumns * MOONBOARD_GRID.numRows },
-    (_, i) => {
-      const holdId = i + 1;
-      const pos = getGridPosition(holdId);
-      return {
-        id: holdId,
-        mirroredHoldId: null,
-        cx: pos.x * MOONBOARD_SIZE.width,
-        cy: pos.y * MOONBOARD_SIZE.height,
-        r: holdRadius,
-      };
-    },
-  );
+  const holdsData = Array.from({ length: MOONBOARD_GRID.numColumns * MOONBOARD_GRID.numRows }, (_, i) => {
+    const holdId = i + 1;
+    const pos = getGridPosition(holdId);
+    return {
+      id: holdId,
+      mirroredHoldId: null,
+      cx: pos.x * MOONBOARD_SIZE.width,
+      cy: pos.y * MOONBOARD_SIZE.height,
+      r: holdRadius,
+    };
+  });
 
   // Build images_to_holds with background + hold set images as keys.
   // Values are empty arrays — only keys are used for background URL construction
@@ -292,11 +289,7 @@ export function getMoonBoardDetails({
  * Encode MoonBoard holds to frames format for database storage.
  * Format: p{holdId}r{roleCode} (e.g., "p1r42p45r43p198r44")
  */
-export function encodeMoonBoardHoldsToFrames(holds: {
-  start: string[];
-  hand: string[];
-  finish: string[];
-}): string {
+export function encodeMoonBoardHoldsToFrames(holds: { start: string[]; hand: string[]; finish: string[] }): string {
   const parts: string[] = [];
 
   holds.start.forEach((coord) => {

@@ -1,13 +1,12 @@
 import { userSync } from '../api/user-sync-api';
-import { SyncOptions, USER_TABLES, UserSyncData, AuroraBoardName } from '../api/types';
+import { type SyncOptions, type UserSyncData, type AuroraBoardName, USER_TABLES } from '../api/types';
 import { eq, and, inArray, sql } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import type { NeonDatabase } from 'drizzle-orm/neon-serverless';
+import { drizzle, type NeonDatabase } from 'drizzle-orm/neon-serverless';
 import type { Pool } from '@neondatabase/serverless';
 import { UNIFIED_TABLES } from '../db/table-select';
 import { boardseshTicks, playlists, playlistClimbs, playlistOwnership } from '@boardsesh/db/schema/app';
 import { randomUUID } from 'crypto';
-import { convertQuality } from './convert-quality';
+import { convertQuality } from '@boardsesh/shared-schema';
 
 // Batch size for bulk inserts
 const BATCH_SIZE = 100;
@@ -26,11 +25,11 @@ async function processBatches<T>(
   }
 }
 
-interface UpsertResult {
+type UpsertResult = {
   synced: number;
   skipped: number;
   skippedReason?: string;
-}
+};
 
 type AuroraApiRow = Record<string, string>;
 
@@ -41,7 +40,7 @@ async function upsertTableData(
   auroraUserId: number,
   nextAuthUserId: string,
   data: AuroraApiRow[],
-  log: (message: string) => void = console.log,
+  log: (message: string) => void = console.info,
 ): Promise<UpsertResult> {
   if (data.length === 0) return { synced: 0, skipped: 0 };
 
@@ -407,7 +406,11 @@ async function upsertTableData(
 
     default:
       log(`  No specific upsert logic for table: ${tableName}`);
-      return { synced: 0, skipped: data.length, skippedReason: `No upsert logic for table: ${tableName}` };
+      return {
+        synced: 0,
+        skipped: data.length,
+        skippedReason: `No upsert logic for table: ${tableName}`,
+      };
   }
 
   return { synced: data.length, skipped: 0 };
@@ -470,9 +473,7 @@ export async function getLastSharedSyncTimes(pool: Pool, boardName: AuroraBoardN
     const result = await db
       .select()
       .from(sharedSyncsSchema)
-      .where(
-        and(eq(sharedSyncsSchema.boardType, boardName), inArray(sharedSyncsSchema.tableName, tableNames)),
-      );
+      .where(and(eq(sharedSyncsSchema.boardType, boardName), inArray(sharedSyncsSchema.tableName, tableNames)));
 
     return result;
   } finally {
@@ -480,15 +481,13 @@ export async function getLastSharedSyncTimes(pool: Pool, boardName: AuroraBoardN
   }
 }
 
-export interface SyncTableResult {
+export type SyncTableResult = {
   synced: number;
   skipped?: number;
   skippedReason?: string;
-}
+};
 
-export interface SyncUserDataResult {
-  [tableName: string]: SyncTableResult;
-}
+export type SyncUserDataResult = Record<string, SyncTableResult>;
 
 export async function syncUserData(
   pool: Pool,
@@ -497,7 +496,7 @@ export async function syncUserData(
   auroraUserId: number,
   nextAuthUserId: string,
   tables: string[] = USER_TABLES,
-  log: (message: string) => void = console.log,
+  log: (message: string) => void = console.info,
 ): Promise<SyncUserDataResult> {
   try {
     const syncParams: SyncOptions = {

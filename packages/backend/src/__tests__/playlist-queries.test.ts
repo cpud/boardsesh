@@ -1,4 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { playlistQueries, getPlaylistFollowStats } from '../graphql/resolvers/playlists/queries';
 
 const { mockDb } = vi.hoisted(() => {
   const mockDb = {
@@ -29,9 +31,35 @@ vi.mock('../utils/redis-rate-limiter', () => ({
 
 vi.mock('../db/queries/util/table-select', () => ({
   UNIFIED_TABLES: {
-    climbs: { uuid: 'uuid', layoutId: 'layoutId', boardType: 'boardType', setterUsername: 'setterUsername', name: 'name', description: 'description', frames: 'frames', createdAt: 'createdAt', edgeLeft: 'edgeLeft', edgeRight: 'edgeRight', edgeBottom: 'edgeBottom', edgeTop: 'edgeTop' },
-    climbStats: { climbUuid: 'climbUuid', boardType: 'boardType', angle: 'angle', ascensionistCount: 'ascensionistCount', qualityAverage: 'qualityAverage', difficultyAverage: 'difficultyAverage', displayDifficulty: 'displayDifficulty', benchmarkDifficulty: 'benchmarkDifficulty' },
-    difficultyGrades: { boardType: 'boardType', difficulty: 'difficulty', boulderName: 'boulderName' },
+    climbs: {
+      uuid: 'uuid',
+      layoutId: 'layoutId',
+      boardType: 'boardType',
+      setterUsername: 'setterUsername',
+      name: 'name',
+      description: 'description',
+      frames: 'frames',
+      createdAt: 'createdAt',
+      edgeLeft: 'edgeLeft',
+      edgeRight: 'edgeRight',
+      edgeBottom: 'edgeBottom',
+      edgeTop: 'edgeTop',
+    },
+    climbStats: {
+      climbUuid: 'climbUuid',
+      boardType: 'boardType',
+      angle: 'angle',
+      ascensionistCount: 'ascensionistCount',
+      qualityAverage: 'qualityAverage',
+      difficultyAverage: 'difficultyAverage',
+      displayDifficulty: 'displayDifficulty',
+      benchmarkDifficulty: 'benchmarkDifficulty',
+    },
+    difficultyGrades: {
+      boardType: 'boardType',
+      difficulty: 'difficulty',
+      boulderName: 'boulderName',
+    },
   },
   isValidBoardName: vi.fn().mockReturnValue(true),
 }));
@@ -39,9 +67,6 @@ vi.mock('../db/queries/util/table-select', () => ({
 vi.mock('../db/queries/util/hold-state', () => ({
   convertLitUpHoldsStringToMap: vi.fn().mockReturnValue([{}]),
 }));
-
-import type { ConnectionContext } from '@boardsesh/shared-schema';
-import { playlistQueries, getPlaylistFollowStats } from '../graphql/resolvers/playlists/queries';
 
 function makeCtx(overrides: Partial<ConnectionContext> = {}): ConnectionContext {
   return {
@@ -59,10 +84,22 @@ function makeCtx(overrides: Partial<ConnectionContext> = {}): ConnectionContext 
 function createMockChain(resolveValue: unknown = []): Record<string, unknown> {
   const chain: Record<string, unknown> = {};
   const methods = [
-    'select', 'from', 'where', 'leftJoin', 'innerJoin',
-    'groupBy', 'orderBy', 'limit', 'offset',
-    'insert', 'values', 'onConflictDoNothing', 'returning',
-    'delete', 'update', 'set',
+    'select',
+    'from',
+    'where',
+    'leftJoin',
+    'innerJoin',
+    'groupBy',
+    'orderBy',
+    'limit',
+    'offset',
+    'insert',
+    'values',
+    'onConflictDoNothing',
+    'returning',
+    'delete',
+    'update',
+    'set',
   ];
 
   chain.then = (resolve: (value: unknown) => unknown) => Promise.resolve(resolveValue).then(resolve);
@@ -94,9 +131,7 @@ describe('getPlaylistFollowStats', () => {
     mockDb.select.mockReturnValueOnce(followerCountChain);
 
     // 2. Is-followed-by-me query
-    const followedChain = createMockChain([
-      { playlistUuid: 'pl-1' },
-    ]);
+    const followedChain = createMockChain([{ playlistUuid: 'pl-1' }]);
     mockDb.select.mockReturnValueOnce(followedChain);
 
     const result = await getPlaylistFollowStats(['pl-1', 'pl-2'], 'user-123');
@@ -107,9 +142,7 @@ describe('getPlaylistFollowStats', () => {
 
   it('should skip follow check when userId is null', async () => {
     // Only follower counts query — no follow check query
-    const followerCountChain = createMockChain([
-      { playlistUuid: 'pl-1', count: 3 },
-    ]);
+    const followerCountChain = createMockChain([{ playlistUuid: 'pl-1', count: 3 }]);
     mockDb.select.mockReturnValueOnce(followerCountChain);
 
     const result = await getPlaylistFollowStats(['pl-1'], null);
@@ -132,13 +165,9 @@ describe('playlistClimbs resolver', () => {
     const selectChain = createMockChain([]);
     mockDb.select.mockReturnValueOnce(selectChain);
 
-    await expect(
-      playlistQueries.playlistClimbs(
-        null,
-        { input: { playlistId: 'nonexistent' } },
-        ctx,
-      ),
-    ).rejects.toThrow('Playlist not found or access denied');
+    await expect(playlistQueries.playlistClimbs(null, { input: { playlistId: 'nonexistent' } }, ctx)).rejects.toThrow(
+      'Playlist not found or access denied',
+    );
   });
 
   it('should throw for private playlist when not authenticated', async () => {
@@ -148,13 +177,9 @@ describe('playlistClimbs resolver', () => {
     const playlistChain = createMockChain([{ id: BigInt(1), isPublic: false }]);
     mockDb.select.mockReturnValueOnce(playlistChain);
 
-    await expect(
-      playlistQueries.playlistClimbs(
-        null,
-        { input: { playlistId: 'private-pl' } },
-        ctx,
-      ),
-    ).rejects.toThrow('Playlist not found or access denied');
+    await expect(playlistQueries.playlistClimbs(null, { input: { playlistId: 'private-pl' } }, ctx)).rejects.toThrow(
+      'Playlist not found or access denied',
+    );
   });
 
   it('should return climbs in all-boards mode when boardName is omitted', async () => {
@@ -209,11 +234,7 @@ describe('playlistClimbs resolver', () => {
     ]);
     mockDb.select.mockReturnValueOnce(climbsChain);
 
-    const result = await playlistQueries.playlistClimbs(
-      null,
-      { input: { playlistId: 'test-pl' } },
-      ctx,
-    );
+    const result = await playlistQueries.playlistClimbs(null, { input: { playlistId: 'test-pl' } }, ctx);
 
     expect(result.totalCount).toBe(2);
     expect(result.climbs).toHaveLength(2);

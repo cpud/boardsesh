@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import type { BoardDetails } from '@/app/lib/types';
 import type { BoardConfigData } from '@/app/lib/server-board-configs';
+import BottomTabBar from '../bottom-tab-bar';
 
 const mockPush = vi.fn();
 const mockShowMessage = vi.fn();
@@ -54,7 +55,13 @@ vi.mock('../../swipeable-drawer/swipeable-drawer', () => ({
     title: string;
     children: React.ReactNode;
     extra?: React.ReactNode;
-  }) => (open ? <div data-testid={`drawer-${title}`}>{children}{extra}</div> : null),
+  }) =>
+    open ? (
+      <div data-testid={`drawer-${title}`}>
+        {children}
+        {extra}
+      </div>
+    ) : null,
 }));
 
 vi.mock('../../board-selector-drawer/board-selector-drawer', () => ({
@@ -66,21 +73,20 @@ vi.mock('../../board-selector-drawer/board-selector-drawer', () => ({
     open: boolean;
     onClose: () => void;
     onBoardSelected?: (url: string, config?: unknown) => void;
-  }) => (open
-    ? (
-        <div data-testid="board-selector-drawer">
-          <button
-            type="button"
-            onClick={() => {
-              onBoardSelected?.('/kilter/original/12x12-square/screw_bolt/40/list', mockBoardConfig);
-              onClose();
-            }}
-          >
-            Select Board
-          </button>
-        </div>
-      )
-    : null),
+  }) =>
+    open ? (
+      <div data-testid="board-selector-drawer">
+        <button
+          type="button"
+          onClick={() => {
+            onBoardSelected?.('/kilter/original/12x12-square/screw_bolt/40/list', mockBoardConfig);
+            onClose();
+          }}
+        >
+          Select Board
+        </button>
+      </div>
+    ) : null,
 }));
 
 let mockSessionData: { user: { id: string } } | null = null;
@@ -90,11 +96,37 @@ vi.mock('next-auth/react', () => ({
 }));
 
 vi.mock('@/app/components/board-scroll/board-discovery-scroll', () => ({
-  default: ({ onBoardClick }: { onBoardClick?: (board: { uuid: string; slug: string; angle: number; name: string; boardType: string; layoutId: number; sizeId: number; setIds: string; createdAt: string }) => void }) => (
+  default: ({
+    onBoardClick,
+  }: {
+    onBoardClick?: (board: {
+      uuid: string;
+      slug: string;
+      angle: number;
+      name: string;
+      boardType: string;
+      layoutId: number;
+      sizeId: number;
+      setIds: string;
+      createdAt: string;
+    }) => void;
+  }) => (
     <div data-testid="board-discovery-scroll">
       <button
         type="button"
-        onClick={() => onBoardClick?.({ uuid: 'b1', slug: 'kilter-original', angle: 40, name: 'Kilter', boardType: 'kilter', layoutId: 1, sizeId: 1, setIds: '1', createdAt: '2026-01-01T00:00:00.000Z' })}
+        onClick={() =>
+          onBoardClick?.({
+            uuid: 'b1',
+            slug: 'kilter-original',
+            angle: 40,
+            name: 'Kilter',
+            boardType: 'kilter',
+            layoutId: 1,
+            sizeId: 1,
+            setIds: '1',
+            createdAt: '2026-01-01T00:00:00.000Z',
+          })
+        }
       >
         Select Board
       </button>
@@ -154,8 +186,6 @@ vi.mock('@/app/lib/color-utils', () => ({
   isValidHexColor: (c: string) => /^#[0-9a-f]{6}$/i.test(c),
 }));
 
-import BottomTabBar from '../bottom-tab-bar';
-
 const boardDetails = {
   images_to_holds: {},
   holdsData: [],
@@ -198,9 +228,7 @@ describe('BottomTabBar session preservation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Climb' }));
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith(
-        expect.stringContaining('session=test-session-123'),
-      );
+      expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('session=test-session-123'));
     });
   });
 
@@ -216,9 +244,7 @@ describe('BottomTabBar session preservation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Climb' }));
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith(
-        expect.stringContaining('/b/my-board/35/list'),
-      );
+      expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('/b/my-board/35/list'));
     });
   });
 
@@ -250,9 +276,7 @@ describe('BottomTabBar create flow', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));
 
-    expect(mockPush).toHaveBeenCalledWith(
-      expect.stringContaining('/create'),
-    );
+    expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('/create'));
   });
 
   it('opens board selector when no board context, then navigates to create after board selection', () => {
@@ -264,9 +288,7 @@ describe('BottomTabBar create flow', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Select Board' }));
 
-    expect(mockPush).toHaveBeenCalledWith(
-      expect.stringContaining('/create'),
-    );
+    expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('/create'));
   });
 });
 

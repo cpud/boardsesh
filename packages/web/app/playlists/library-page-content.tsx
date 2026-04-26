@@ -3,23 +3,19 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import MuiButton from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import {
-  LabelOutlined,
-  LoginOutlined,
-  SentimentDissatisfiedOutlined,
-} from '@mui/icons-material';
+import { LabelOutlined, LoginOutlined, SentimentDissatisfiedOutlined } from '@mui/icons-material';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { executeGraphQL } from '@/app/lib/graphql/client';
 import {
+  type GetAllUserPlaylistsQueryResponse,
+  type GetAllUserPlaylistsInput,
+  type DiscoverPlaylistsQueryResponse,
+  type DiscoverPlaylistsInput,
+  type Playlist,
+  type DiscoverablePlaylist,
   GET_ALL_USER_PLAYLISTS,
-  GetAllUserPlaylistsQueryResponse,
-  GetAllUserPlaylistsInput,
   DISCOVER_PLAYLISTS,
-  DiscoverPlaylistsQueryResponse,
-  DiscoverPlaylistsInput,
-  Playlist,
-  DiscoverablePlaylist,
 } from '@/app/lib/graphql/operations/playlists';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { useMyBoards } from '@/app/hooks/use-my-boards';
@@ -45,7 +41,10 @@ type LibraryPageContentProps = {
   /** SSR-fetched user playlists for instant rendering. */
   initialPlaylists?: Playlist[] | null;
   /** SSR-fetched discover playlists for instant rendering. */
-  initialDiscoverPlaylists?: { popular: DiscoverablePlaylist[]; recent: DiscoverablePlaylist[] } | null;
+  initialDiscoverPlaylists?: {
+    popular: DiscoverablePlaylist[];
+    recent: DiscoverablePlaylist[];
+  } | null;
 };
 
 export default function LibraryPageContent({
@@ -66,8 +65,8 @@ export default function LibraryPageContent({
   const hasServerUserData = hasInitialPlaylistData || hasInitialBoardData;
   const isAuthenticated = deriveIsAuthenticated(sessionStatus, hasServerUserData);
   // Initialize selectedBoard from SSR data immediately when boardSlug is provided
-  const [selectedBoard, setSelectedBoard] = useState<UserBoard | null>(
-    () => findMatchingBoard(initialMyBoards, boardSlug),
+  const [selectedBoard, setSelectedBoard] = useState<UserBoard | null>(() =>
+    findMatchingBoard(initialMyBoards, boardSlug),
   );
   const { openAuthModal } = useAuthModal();
   const defaultBoardAppliedRef = useRef(!!selectedBoard);
@@ -98,15 +97,13 @@ export default function LibraryPageContent({
       // Wait if there's an active queue but board details haven't loaded yet
       if (!currentBoardDetails && hasActiveQueue) return;
 
-      const match = currentBoardDetails ? findMatchingBoard(
-        myBoards,
-        undefined,
-        {
-          boardType: currentBoardDetails.board_name,
-          layoutId: currentBoardDetails.layout_id,
-          sizeId: currentBoardDetails.size_id,
-        },
-      ) : null;
+      const match = currentBoardDetails
+        ? findMatchingBoard(myBoards, undefined, {
+            boardType: currentBoardDetails.board_name,
+            layoutId: currentBoardDetails.layout_id,
+            sizeId: currentBoardDetails.size_id,
+          })
+        : null;
       if (match) {
         setSelectedBoard(match);
       }
@@ -183,14 +180,12 @@ export default function LibraryPageContent({
       };
 
       const [popularRes, recentRes] = await Promise.all([
-        executeGraphQL<DiscoverPlaylistsQueryResponse, { input: DiscoverPlaylistsInput }>(
-          DISCOVER_PLAYLISTS,
-          { input: { ...baseInput, sortBy: 'popular' } },
-        ),
-        executeGraphQL<DiscoverPlaylistsQueryResponse, { input: DiscoverPlaylistsInput }>(
-          DISCOVER_PLAYLISTS,
-          { input: { ...baseInput, sortBy: 'recent' } },
-        ),
+        executeGraphQL<DiscoverPlaylistsQueryResponse, { input: DiscoverPlaylistsInput }>(DISCOVER_PLAYLISTS, {
+          input: { ...baseInput, sortBy: 'popular' },
+        }),
+        executeGraphQL<DiscoverPlaylistsQueryResponse, { input: DiscoverPlaylistsInput }>(DISCOVER_PLAYLISTS, {
+          input: { ...baseInput, sortBy: 'recent' },
+        }),
       ]);
 
       setPopularPlaylists(popularRes.discoverPlaylists.playlists);
@@ -204,16 +199,19 @@ export default function LibraryPageContent({
   }, [selectedBoard]);
 
   useEffect(() => {
-    fetchUserData();
+    void fetchUserData();
   }, [fetchUserData]);
 
   useEffect(() => {
-    fetchDiscoverData();
+    void fetchDiscoverData();
   }, [fetchDiscoverData]);
 
-  const getPlaylistUrl = useCallback((playlistUuid: string) => {
-    return `${playlistsBasePath}/${playlistUuid}`;
-  }, [playlistsBasePath]);
+  const getPlaylistUrl = useCallback(
+    (playlistUuid: string) => {
+      return `${playlistsBasePath}/${playlistUuid}`;
+    },
+    [playlistsBasePath],
+  );
 
   // Filter discover playlists to exclude user's own
   const getDiscoverPlaylists = useCallback(() => {
@@ -232,38 +230,41 @@ export default function LibraryPageContent({
     return filtered;
   }, [popularPlaylists, recentPlaylists, session?.user?.id]);
 
-  const handleBoardSelect = useCallback((board: UserBoard | null) => {
-    setSelectedBoard(board);
-    // Reset data refs so loading skeletons show for new board filter
-    hasPlaylistDataRef.current = false;
-    hasDiscoverDataRef.current = false;
+  const handleBoardSelect = useCallback(
+    (board: UserBoard | null) => {
+      setSelectedBoard(board);
+      // Reset data refs so loading skeletons show for new board filter
+      hasPlaylistDataRef.current = false;
+      hasDiscoverDataRef.current = false;
 
-    // When rendered from a board route, switching boards navigates to the correct URL
-    if (boardSlug || playlistsBasePath !== '/playlists') {
-      if (board) {
-        const nextPlaylistsPath = constructBoardSlugPlaylistsUrl(board.slug, board.angle);
-        router.push(nextPlaylistsPath);
-      } else {
-        router.push('/playlists');
+      // When rendered from a board route, switching boards navigates to the correct URL
+      if (boardSlug || playlistsBasePath !== '/playlists') {
+        if (board) {
+          const nextPlaylistsPath = constructBoardSlugPlaylistsUrl(board.slug, board.angle);
+          router.push(nextPlaylistsPath);
+        } else {
+          router.push('/playlists');
+        }
       }
-    }
-  }, [boardSlug, playlistsBasePath, router]);
+    },
+    [boardSlug, playlistsBasePath, router],
+  );
 
   // Error state (only for authenticated users with fetch errors)
   if (isAuthenticated && error) {
     return (
-      <>
-        <div className={styles.errorContainer}>
-          <SentimentDissatisfiedOutlined className={styles.errorIcon} />
-          <Typography variant="h6" component="h4" sx={{ mb: 1 }}>
-            Unable to Load Library
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            There was an error loading your library. Please try again.
-          </Typography>
-          <MuiButton variant="outlined" onClick={fetchUserData}>Try Again</MuiButton>
-        </div>
-      </>
+      <div className={styles.errorContainer}>
+        <SentimentDissatisfiedOutlined className={styles.errorIcon} />
+        <Typography variant="h6" component="h4" sx={{ mb: 1 }}>
+          Unable to Load Library
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          There was an error loading your library. Please try again.
+        </Typography>
+        <MuiButton variant="outlined" onClick={fetchUserData}>
+          Try Again
+        </MuiButton>
+      </div>
     );
   }
 
@@ -303,7 +304,12 @@ export default function LibraryPageContent({
           <MuiButton
             variant="contained"
             size="small"
-            onClick={() => openAuthModal({ title: 'Sign in to Boardsesh', description: 'Sign in to track your climbs and manage playlists.' })}
+            onClick={() =>
+              openAuthModal({
+                title: 'Sign in to Boardsesh',
+                description: 'Sign in to track your climbs and manage playlists.',
+              })
+            }
           >
             Sign In
           </MuiButton>
@@ -312,11 +318,7 @@ export default function LibraryPageContent({
 
       {/* Authenticated: Recent Playlists Grid */}
       {isAuthenticated && (
-        <PlaylistCardGrid
-          playlists={filteredPlaylists}
-          getPlaylistUrl={getPlaylistUrl}
-          loading={isLoading}
-        />
+        <PlaylistCardGrid playlists={filteredPlaylists} getPlaylistUrl={getPlaylistUrl} loading={isLoading} />
       )}
 
       {/* Empty state if no playlists (authenticated only) */}
@@ -372,7 +374,6 @@ export default function LibraryPageContent({
           ))}
         </PlaylistScrollSection>
       )}
-
     </>
   );
 }

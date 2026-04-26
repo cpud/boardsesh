@@ -9,7 +9,7 @@ import MuiButton from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import MuiTypography from '@mui/material/Typography';
 
-export interface GymFormFieldValues {
+export type GymFormFieldValues = {
   name: string;
   slug?: string;
   description: string;
@@ -17,16 +17,16 @@ export interface GymFormFieldValues {
   contactEmail: string;
   contactPhone: string;
   isPublic: boolean;
-}
+};
 
-interface GymFormProps {
+type GymFormProps = {
   title: string;
   submitLabel: string;
   initialValues: GymFormFieldValues;
   showSlugField?: boolean;
   onSubmit: (values: GymFormFieldValues) => Promise<void>;
   onCancel?: () => void;
-}
+};
 
 export default function GymForm({
   title,
@@ -141,11 +141,7 @@ export default function GymForm({
             Cancel
           </MuiButton>
         )}
-        <MuiButton
-          type="submit"
-          variant="contained"
-          disabled={isSubmitting || !name.trim()}
-        >
+        <MuiButton type="submit" variant="contained" disabled={isSubmitting || !name.trim()}>
           {isSubmitting ? <CircularProgress size={20} color="inherit" /> : submitLabel}
         </MuiButton>
       </Box>

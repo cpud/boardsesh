@@ -32,9 +32,7 @@ export type PreloadImagesMessage = {
 
 export type WorkerMessage = RenderRequest | PreloadImagesMessage;
 
-export type RenderResponse =
-  | { id: number; bitmap: ImageBitmap }
-  | { id: number; error: string };
+export type RenderResponse = { id: number; bitmap: ImageBitmap } | { id: number; error: string };
 
 // --- WASM module state ---
 let wasmRenderOverlay: ((configJson: string) => Uint8Array) | null = null;
@@ -85,8 +83,18 @@ async function fetchBackgroundImage(url: string): Promise<ImageBitmap> {
 async function renderBoard(request: RenderRequest): Promise<ImageBitmap> {
   await ensureWasmInitialized();
 
-  const { boardWidth, boardHeight, outputWidth, frames, mirrored, thumbnail, holds, holdStateMap, backgroundUrls, cropTop = 0 } =
-    request;
+  const {
+    boardWidth,
+    boardHeight,
+    outputWidth,
+    frames,
+    mirrored,
+    thumbnail,
+    holds,
+    holdStateMap,
+    backgroundUrls,
+    cropTop = 0,
+  } = request;
 
   const fullOutputHeight = Math.round((outputWidth * boardHeight) / boardWidth);
   const outputHeight = fullOutputHeight - cropTop;
@@ -158,7 +166,7 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
   }
 
   // Render request
-  const request = msg as RenderRequest;
+  const request = msg;
   if (request.origin && !baseOrigin) {
     baseOrigin = request.origin;
   }

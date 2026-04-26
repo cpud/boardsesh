@@ -1,8 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vite-plus/test';
 import { db } from '../db/client';
 import { esp32Controllers } from '@boardsesh/db/schema/app';
-import { eq } from 'drizzle-orm';
-import { sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { controllerMutations } from '../graphql/resolvers/controller/mutations';
 import { controllerQueries } from '../graphql/resolvers/controller/queries';
 import type { ConnectionContext } from '@boardsesh/shared-schema';
@@ -26,7 +25,7 @@ function createMockContext(overrides: Partial<ConnectionContext> = {}): Connecti
 function createControllerContext(
   controllerId: string,
   controllerApiKey: string,
-  overrides: Partial<ConnectionContext> = {}
+  overrides: Partial<ConnectionContext> = {},
 ): ConnectionContext {
   return {
     connectionId: `conn-${Date.now()}`,
@@ -71,7 +70,7 @@ describe('Controller Mutations', () => {
             name: 'Test Controller',
           },
         },
-        ctx
+        ctx,
       );
 
       expect(result.controllerId).toBeDefined();
@@ -79,10 +78,7 @@ describe('Controller Mutations', () => {
       expect(result.apiKey).toHaveLength(64); // 32 bytes hex = 64 chars
 
       // Verify controller was created in database
-      const [controller] = await db
-        .select()
-        .from(esp32Controllers)
-        .where(eq(esp32Controllers.id, result.controllerId));
+      const [controller] = await db.select().from(esp32Controllers).where(eq(esp32Controllers.id, result.controllerId));
 
       expect(controller).toBeDefined();
       expect(controller.userId).toBe(TEST_USER_ID);
@@ -104,8 +100,8 @@ describe('Controller Mutations', () => {
               setIds: '1,2,3',
             },
           },
-          ctx
-        )
+          ctx,
+        ),
       ).rejects.toThrow('Authentication required');
     });
   });
@@ -125,14 +121,14 @@ describe('Controller Mutations', () => {
             setIds: '1,2,3',
           },
         },
-        ctx
+        ctx,
       );
 
       // Delete it
       const result = await controllerMutations.deleteController(
         undefined,
         { controllerId: registered.controllerId },
-        ctx
+        ctx,
       );
 
       expect(result).toBe(true);
@@ -173,15 +169,11 @@ describe('Controller Mutations', () => {
             setIds: '1,2,3',
           },
         },
-        ctx1
+        ctx1,
       );
 
       // Try to delete as user-2 (should not throw but won't delete)
-      await controllerMutations.deleteController(
-        undefined,
-        { controllerId: registered.controllerId },
-        ctx2
-      );
+      await controllerMutations.deleteController(undefined, { controllerId: registered.controllerId }, ctx2);
 
       // Verify controller still exists
       const [controller] = await db
@@ -211,14 +203,14 @@ describe('Controller Mutations', () => {
             setIds: '1,2,3',
           },
         },
-        ctx
+        ctx,
       );
 
       // Authorize for session
       const result = await controllerMutations.authorizeControllerForSession(
         undefined,
         { controllerId: registered.controllerId, sessionId: TEST_SESSION_ID },
-        ctx
+        ctx,
       );
 
       expect(result).toBe(true);
@@ -259,7 +251,7 @@ describe('Controller Mutations', () => {
             setIds: '1,2,3',
           },
         },
-        ctx1
+        ctx1,
       );
 
       // Try to authorize as user-2
@@ -267,8 +259,8 @@ describe('Controller Mutations', () => {
         controllerMutations.authorizeControllerForSession(
           undefined,
           { controllerId: registered.controllerId, sessionId: TEST_SESSION_ID },
-          ctx2
-        )
+          ctx2,
+        ),
       ).rejects.toThrow('Controller not found or not owned by user');
 
       // Cleanup
@@ -281,11 +273,7 @@ describe('Controller Mutations', () => {
       const ctx = createMockContext(); // No controller auth
 
       await expect(
-        controllerMutations.controllerHeartbeat(
-          undefined,
-          { sessionId: TEST_SESSION_ID },
-          ctx
-        )
+        controllerMutations.controllerHeartbeat(undefined, { sessionId: TEST_SESSION_ID }, ctx),
       ).rejects.toThrow('Controller authentication required');
     });
 
@@ -303,19 +291,16 @@ describe('Controller Mutations', () => {
             setIds: '1,2,3',
           },
         },
-        ctx
+        ctx,
       );
 
       // Create controller context
-      const controllerCtx = createControllerContext(
-        registered.controllerId,
-        registered.apiKey
-      );
+      const controllerCtx = createControllerContext(registered.controllerId, registered.apiKey);
 
       const result = await controllerMutations.controllerHeartbeat(
         undefined,
         { sessionId: TEST_SESSION_ID },
-        controllerCtx
+        controllerCtx,
       );
 
       expect(result).toBe(true);
@@ -372,7 +357,7 @@ describe('Controller Queries', () => {
             name: 'Controller 1',
           },
         },
-        ctx
+        ctx,
       );
 
       await controllerMutations.registerController(
@@ -386,7 +371,7 @@ describe('Controller Queries', () => {
             name: 'Controller 2',
           },
         },
-        ctx
+        ctx,
       );
 
       const result = await controllerQueries.myControllers(undefined, undefined, ctx);
@@ -398,9 +383,9 @@ describe('Controller Queries', () => {
     it('should require authentication', async () => {
       const ctx = createMockContext({ isAuthenticated: false, userId: undefined });
 
-      await expect(
-        controllerQueries.myControllers(undefined, undefined, ctx)
-      ).rejects.toThrow('Authentication required');
+      await expect(controllerQueries.myControllers(undefined, undefined, ctx)).rejects.toThrow(
+        'Authentication required',
+      );
     });
 
     it('should show controller online status correctly', async () => {
@@ -417,7 +402,7 @@ describe('Controller Queries', () => {
             setIds: '1,2,3',
           },
         },
-        ctx
+        ctx,
       );
 
       // Initially not online (never seen)

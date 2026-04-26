@@ -1,24 +1,24 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useQueueDataFetching } from '../../hooks/use-queue-data-fetching';
-import { ParsedBoardRouteParameters, SearchRequestPagination, Climb } from '@/app/lib/types';
-import { ClimbQueue } from '../../types';
+import type { ParsedBoardRouteParameters, SearchRequestPagination, Climb } from '@/app/lib/types';
+import type { ClimbQueue } from '../../types';
 import { useBoardProvider, useOptionalBoardProvider } from '../../../board-provider/board-provider-context';
 import React from 'react';
 
 // Mock dependencies
 vi.mock('@/app/lib/url-utils', () => ({
-  searchParamsToUrlParams: vi.fn(() => new URLSearchParams('page=1'))
+  searchParamsToUrlParams: vi.fn(() => new URLSearchParams('page=1')),
 }));
 
 vi.mock('../../../board-provider/board-provider-context', () => ({
   useBoardProvider: vi.fn(() => ({
-    getLogbook: vi.fn().mockResolvedValue(true)
+    getLogbook: vi.fn().mockResolvedValue(true),
   })),
   useOptionalBoardProvider: vi.fn(() => ({
-    getLogbook: vi.fn().mockResolvedValue(true)
-  }))
+    getLogbook: vi.fn().mockResolvedValue(true),
+  })),
 }));
 
 vi.mock('@/app/hooks/use-ws-auth-token', () => ({
@@ -26,20 +26,20 @@ vi.mock('@/app/hooks/use-ws-auth-token', () => ({
     token: 'mock-token',
     isAuthenticated: true,
     isLoading: false,
-    error: null
-  }))
+    error: null,
+  })),
 }));
 
 vi.mock('../../board-page/constants', () => ({
-  PAGE_LIMIT: 20
+  PAGE_LIMIT: 20,
 }));
 
 // Mock GraphQL client
 const mockGraphQLRequest = vi.fn();
 vi.mock('@/app/lib/graphql/client', () => ({
   createGraphQLHttpClient: vi.fn(() => ({
-    request: mockGraphQLRequest
-  }))
+    request: mockGraphQLRequest,
+  })),
 }));
 
 // Set environment variable for GraphQL client
@@ -48,16 +48,16 @@ process.env.NEXT_PUBLIC_WS_URL = 'ws://localhost:4000/graphql';
 // Mock history.replaceState
 Object.defineProperty(window, 'history', {
   value: {
-    replaceState: vi.fn()
+    replaceState: vi.fn(),
   },
-  writable: true
+  writable: true,
 });
 
 Object.defineProperty(window, 'location', {
   value: {
-    pathname: '/test/path'
+    pathname: '/test/path',
   },
-  writable: true
+  writable: true,
 });
 
 const mockUseBoardProvider = vi.mocked(useBoardProvider);
@@ -78,7 +78,7 @@ const mockClimb: Climb = {
   mirrored: false,
   benchmark_difficulty: null,
   userAscents: 0,
-  userAttempts: 0
+  userAttempts: 0,
 };
 
 const mockSearchParams: SearchRequestPagination = {
@@ -101,7 +101,8 @@ const mockSearchParams: SearchRequestPagination = {
   hideCompleted: false,
   showOnlyAttempted: false,
   showOnlyCompleted: false,
-  onlyDrafts: false
+  onlyDrafts: false,
+  projectsOnly: false,
 };
 
 const mockParsedParams: ParsedBoardRouteParameters = {
@@ -109,7 +110,7 @@ const mockParsedParams: ParsedBoardRouteParameters = {
   layout_id: 1,
   size_id: 1,
   set_ids: [1],
-  angle: 40
+  angle: 40,
 };
 
 const mockQueue: ClimbQueue = [];
@@ -147,7 +148,7 @@ describe('useQueueDataFetching', () => {
       saveTick: vi.fn(),
       saveClimb: vi.fn(),
       updateClimb: vi.fn(),
-      boardName: 'kilter'
+      boardName: 'kilter',
     });
 
     mockUseOptionalBoardProvider.mockReturnValue({
@@ -160,7 +161,7 @@ describe('useQueueDataFetching', () => {
       saveTick: vi.fn(),
       saveClimb: vi.fn(),
       updateClimb: vi.fn(),
-      boardName: 'kilter'
+      boardName: 'kilter',
     });
 
     mockUseOptionalBoardProvider.mockReturnValue({
@@ -173,7 +174,7 @@ describe('useQueueDataFetching', () => {
       saveTick: vi.fn(),
       saveClimb: vi.fn(),
       updateClimb: vi.fn(),
-      boardName: 'kilter'
+      boardName: 'kilter',
     });
 
     // Mock GraphQL client requests
@@ -187,13 +188,13 @@ describe('useQueueDataFetching', () => {
           searchClimbs: {
             climbs: [mockClimb],
             totalCount: null,
-            hasMore: true
-          }
+            hasMore: true,
+          },
         };
       } else if (query.includes('favorites')) {
         // Favorites query
         return {
-          favorites: []
+          favorites: [],
         };
       }
 
@@ -215,9 +216,9 @@ describe('useQueueDataFetching', () => {
           queue: mockQueue,
           parsedParams: mockParsedParams,
           hasDoneFirstFetch: false,
-          setHasDoneFirstFetch: mockSetHasDoneFirstFetch
+          setHasDoneFirstFetch: mockSetHasDoneFirstFetch,
         }),
-      { wrapper: createWrapper() }
+      { wrapper: createWrapper() },
     );
 
     await waitFor(() => {
@@ -235,8 +236,8 @@ describe('useQueueDataFetching', () => {
         climb: mockClimb,
         addedBy: 'user1',
         uuid: 'queue-item-1',
-        suggested: false
-      }
+        suggested: false,
+      },
     ];
 
     const { result } = renderHook(
@@ -247,9 +248,9 @@ describe('useQueueDataFetching', () => {
           queue: queueWithClimb,
           parsedParams: mockParsedParams,
           hasDoneFirstFetch: false,
-          setHasDoneFirstFetch: mockSetHasDoneFirstFetch
+          setHasDoneFirstFetch: mockSetHasDoneFirstFetch,
         }),
-      { wrapper: createWrapper() }
+      { wrapper: createWrapper() },
     );
 
     await waitFor(() => {
@@ -268,9 +269,9 @@ describe('useQueueDataFetching', () => {
           queue: mockQueue,
           parsedParams: mockParsedParams,
           hasDoneFirstFetch: false,
-          setHasDoneFirstFetch: mockSetHasDoneFirstFetch
+          setHasDoneFirstFetch: mockSetHasDoneFirstFetch,
         }),
-      { wrapper: createWrapper() }
+      { wrapper: createWrapper() },
     );
 
     await waitFor(() => {
@@ -287,9 +288,9 @@ describe('useQueueDataFetching', () => {
           queue: mockQueue,
           parsedParams: mockParsedParams,
           hasDoneFirstFetch: true,
-          setHasDoneFirstFetch: mockSetHasDoneFirstFetch
+          setHasDoneFirstFetch: mockSetHasDoneFirstFetch,
         }),
-      { wrapper: createWrapper() }
+      { wrapper: createWrapper() },
     );
 
     await waitFor(() => {
@@ -308,9 +309,9 @@ describe('useQueueDataFetching', () => {
           queue: mockQueue,
           parsedParams: mockParsedParams,
           hasDoneFirstFetch: false,
-          setHasDoneFirstFetch: mockSetHasDoneFirstFetch
+          setHasDoneFirstFetch: mockSetHasDoneFirstFetch,
         }),
-      { wrapper: createWrapper() }
+      { wrapper: createWrapper() },
     );
 
     await waitFor(() => {
@@ -323,8 +324,8 @@ describe('useQueueDataFetching', () => {
       searchClimbs: {
         climbs: [],
         totalCount: null,
-        hasMore: false
-      }
+        hasMore: false,
+      },
     });
 
     const { result } = renderHook(
@@ -335,9 +336,9 @@ describe('useQueueDataFetching', () => {
           queue: mockQueue,
           parsedParams: mockParsedParams,
           hasDoneFirstFetch: false,
-          setHasDoneFirstFetch: mockSetHasDoneFirstFetch
+          setHasDoneFirstFetch: mockSetHasDoneFirstFetch,
         }),
-      { wrapper: createWrapper() }
+      { wrapper: createWrapper() },
     );
 
     await waitFor(() => {
@@ -354,8 +355,8 @@ describe('useQueueDataFetching', () => {
       searchClimbs: {
         climbs: Array(20).fill(mockClimb),
         totalCount: null,
-        hasMore: true
-      }
+        hasMore: true,
+      },
     });
 
     const { result } = renderHook(
@@ -366,9 +367,9 @@ describe('useQueueDataFetching', () => {
           queue: mockQueue,
           parsedParams: mockParsedParams,
           hasDoneFirstFetch: false,
-          setHasDoneFirstFetch: mockSetHasDoneFirstFetch
+          setHasDoneFirstFetch: mockSetHasDoneFirstFetch,
         }),
-      { wrapper: createWrapper() }
+      { wrapper: createWrapper() },
     );
 
     await waitFor(() => {
@@ -381,8 +382,8 @@ describe('useQueueDataFetching', () => {
       searchClimbs: {
         climbs: Array(10).fill(mockClimb),
         totalCount: null,
-        hasMore: false
-      }
+        hasMore: false,
+      },
     });
 
     const { result } = renderHook(
@@ -393,9 +394,9 @@ describe('useQueueDataFetching', () => {
           queue: mockQueue,
           parsedParams: mockParsedParams,
           hasDoneFirstFetch: false,
-          setHasDoneFirstFetch: mockSetHasDoneFirstFetch
+          setHasDoneFirstFetch: mockSetHasDoneFirstFetch,
         }),
-      { wrapper: createWrapper() }
+      { wrapper: createWrapper() },
     );
 
     await waitFor(() => {
@@ -410,8 +411,8 @@ describe('useQueueDataFetching', () => {
         climb: anotherClimb,
         addedBy: 'user1',
         uuid: 'queue-item-1',
-        suggested: false
-      }
+        suggested: false,
+      },
     ];
 
     renderHook(
@@ -422,9 +423,9 @@ describe('useQueueDataFetching', () => {
           queue: queueWithClimb,
           parsedParams: mockParsedParams,
           hasDoneFirstFetch: false,
-          setHasDoneFirstFetch: mockSetHasDoneFirstFetch
+          setHasDoneFirstFetch: mockSetHasDoneFirstFetch,
         }),
-      { wrapper: createWrapper() }
+      { wrapper: createWrapper() },
     );
 
     await waitFor(() => {

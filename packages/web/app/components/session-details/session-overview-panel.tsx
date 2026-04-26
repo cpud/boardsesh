@@ -45,7 +45,7 @@ export function buildSessionSummaryParts(stats: {
   return parts;
 }
 
-interface SessionOverviewPanelProps {
+type SessionOverviewPanelProps = {
   totalSends: number;
   totalFlashes: number;
   totalAttempts: number;
@@ -66,7 +66,7 @@ interface SessionOverviewPanelProps {
   onAngleChange?: (angle: number) => void;
   /** User-facing name of the named board (e.g., "My Home Wall") */
   namedBoardName?: string;
-}
+};
 
 function formatDuration(minutes: number): string {
   if (minutes < 60) return `${minutes}min`;
@@ -114,16 +114,11 @@ export default function SessionOverviewPanel({
               aspectRatio: '1',
             }}
           >
-            <BoardRenderer
-              boardDetails={boardDetails}
-              mirrored={false}
-              thumbnail
-              fillHeight
-            />
+            <BoardRenderer boardDetails={boardDetails} mirrored={false} thumbnail fillHeight />
           </Box>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0, flexShrink: 0 }}>
             <Typography variant="body2" fontWeight={600}>
-              {namedBoardName || (boardDetails.board_name.charAt(0).toUpperCase() + boardDetails.board_name.slice(1))}
+              {namedBoardName || boardDetails.board_name.charAt(0).toUpperCase() + boardDetails.board_name.slice(1)}
             </Typography>
             {currentAngle != null && onAngleChange && (
               <AngleSelector
@@ -156,14 +151,18 @@ export default function SessionOverviewPanel({
               <Chip
                 icon={<FlashOnOutlined />}
                 label={`${totalFlashes} flash${totalFlashes !== 1 ? 'es' : ''}`}
-                sx={{ bgcolor: 'success.main', color: 'success.contrastText', '& .MuiChip-icon': { color: 'inherit' } }}
+                sx={{
+                  bgcolor: 'success.main',
+                  color: 'success.contrastText',
+                  '& .MuiChip-icon': { color: 'inherit' },
+                }}
               />
             )}
             {/* totalSends includes flashes — subtract to avoid double-counting */}
-            {(totalSends - totalFlashes) > 0 && (
+            {totalSends - totalFlashes > 0 && (
               <Chip
                 icon={<CheckCircleOutlineOutlined />}
-                label={`${totalSends - totalFlashes} send${(totalSends - totalFlashes) !== 1 ? 's' : ''}`}
+                label={`${totalSends - totalFlashes} send${totalSends - totalFlashes !== 1 ? 's' : ''}`}
                 color="primary"
               />
             )}
@@ -175,18 +174,15 @@ export default function SessionOverviewPanel({
               />
             )}
             {durationMinutes != null && durationMinutes > 0 && (
-              <Chip
-                icon={<TimerOutlined />}
-                label={formatDuration(durationMinutes)}
-                variant="outlined"
-              />
+              <Chip icon={<TimerOutlined />} label={formatDuration(durationMinutes)} variant="outlined" />
             )}
             <Chip label={`${tickCount} climb${tickCount !== 1 ? 's' : ''}`} variant="outlined" />
-            {hardestGrade && (
-              gradeFormatLoaded
-                ? <Chip label={`Hardest: ${formatGrade(hardestGrade) ?? hardestGrade}`} variant="outlined" />
-                : <Skeleton variant="rounded" width={80} height={32} />
-            )}
+            {hardestGrade &&
+              (gradeFormatLoaded ? (
+                <Chip label={`Hardest: ${formatGrade(hardestGrade) ?? hardestGrade}`} variant="outlined" />
+              ) : (
+                <Skeleton variant="rounded" width={80} height={32} />
+              ))}
           </Box>
 
           {boardTypes.length > 0 && (
@@ -219,7 +215,9 @@ export default function SessionOverviewPanel({
                   {SESSION_GRADE_LEGEND.map((entry) => (
                     <Box key={entry.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <Box sx={{ width: 10, height: 10, borderRadius: '2px', bgcolor: entry.color }} />
-                      <Typography variant="caption" color="text.secondary">{entry.label}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {entry.label}
+                      </Typography>
                     </Box>
                   ))}
                 </Box>

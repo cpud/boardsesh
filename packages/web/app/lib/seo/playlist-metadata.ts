@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { createNoIndexMetadata } from './metadata';
 import { buildVersionedOgImagePath, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from './og';
 import { getPlaylistOgSummary } from './dynamic-og-data';
@@ -26,7 +26,8 @@ export async function generatePlaylistMetadata(playlistUuid: string): Promise<Me
 
     const name = playlist.name;
     const climbCount = playlist.climbCount;
-    const description = playlist.description || `A climbing playlist on Boardsesh with ${climbCount} climb${climbCount === 1 ? '' : 's'}`;
+    const description =
+      playlist.description || `A climbing playlist on Boardsesh with ${climbCount} climb${climbCount === 1 ? '' : 's'}`;
     const title = `${name} | Boardsesh`;
 
     const ogImagePath = buildVersionedOgImagePath('/api/og/playlist', { uuid: playlistUuid }, playlist.version);
@@ -41,7 +42,14 @@ export async function generatePlaylistMetadata(playlistUuid: string): Promise<Me
         description,
         type: 'website',
         url: canonicalUrl,
-        images: [{ url: ogImagePath, width: OG_IMAGE_WIDTH, height: OG_IMAGE_HEIGHT, alt: `${name} playlist` }],
+        images: [
+          {
+            url: ogImagePath,
+            width: OG_IMAGE_WIDTH,
+            height: OG_IMAGE_HEIGHT,
+            alt: `${name} playlist`,
+          },
+        ],
       },
       twitter: {
         card: 'summary_large_image',

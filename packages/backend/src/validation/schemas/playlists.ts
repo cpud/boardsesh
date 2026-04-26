@@ -1,25 +1,16 @@
 import { z } from 'zod';
 import { ExternalUUIDSchema, BoardNameSchema } from './primitives';
 
-export const PlaylistNameSchema = z
-  .string()
-  .min(1, 'Playlist name cannot be empty')
-  .max(100, 'Playlist name too long');
+export const PlaylistNameSchema = z.string().min(1, 'Playlist name cannot be empty').max(100, 'Playlist name too long');
 
-export const PlaylistDescriptionSchema = z
-  .string()
-  .max(500, 'Playlist description too long')
-  .optional();
+export const PlaylistDescriptionSchema = z.string().max(500, 'Playlist description too long').optional();
 
 export const PlaylistColorSchema = z
   .string()
   .regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color format (must be hex)')
   .optional();
 
-export const PlaylistIconSchema = z
-  .string()
-  .max(50, 'Icon name too long')
-  .optional();
+export const PlaylistIconSchema = z.string().max(50, 'Icon name too long').optional();
 
 export const CreatePlaylistInputSchema = z.object({
   boardType: BoardNameSchema,

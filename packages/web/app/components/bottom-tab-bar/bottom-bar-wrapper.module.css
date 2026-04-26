@@ -1,7 +1,7 @@
 .bottomBarWrapper {
   --tab-bar-top-radius: 16px;
   --tab-bar-bottom-radius: 16px;
-  --tab-bar-safe-area-padding: 0px;
+  --tab-bar-safe-area-padding: var(--safe-area-inset-bottom);
   --tab-bar-bottom-extension: 0px;
   position: fixed;
   bottom: 0;
@@ -12,22 +12,20 @@
   border-radius: 16px;
 }
 
+/* In Capacitor native the tab bar sits edge-to-edge. Safe-area clearance
+   is already handled: on Android the @capacitor-community/safe-area plugin
+   pads the WebView decorView (Chromium < 140) or passes real insets through
+   to env() (Chromium 140+); on iOS WKWebView env() reports home-indicator
+   inset natively. --tab-bar-safe-area-padding (inherited from the base
+   .bottomBarWrapper rule above, which reads --safe-area-inset-bottom from
+   :root) therefore picks up the correct inset automatically — no extra
+   Android floor or native-specific override is needed here. */
 .nativeApp {
   --tab-bar-top-radius: 0px;
   --tab-bar-bottom-radius: 0px;
-  --tab-bar-safe-area-padding: env(safe-area-inset-bottom, 0px);
   left: 0;
   right: 0;
   border-radius: 0;
-}
-
-/* iOS Capacitor: env(safe-area-inset-bottom) may return 0 depending on
-   how the WKWebView is configured. Use a minimum of 34px to guarantee
-   coverage of the home indicator and screen corner rounding area. */
-@supports (-webkit-touch-callout: none) {
-  .nativeApp {
-    --tab-bar-safe-area-padding: max(env(safe-area-inset-bottom, 0px), 34px);
-  }
 }
 
 @media (min-width: 768px) {
@@ -44,7 +42,14 @@
    (which creates a visible backdrop-filter seam), extend the BottomNavigation
    below the wrapper via negative margin so the frosted glass is one element.
    The wrapper has no overflow:hidden, so the child visually overflows to
-   cover the 2dvh gap plus any safe area beyond it. */
+   cover the 2dvh gap plus any safe area beyond it.
+
+   Use raw env(safe-area-inset-bottom) here instead of the :root-defined
+   var(--safe-area-inset-bottom). iOS Safari resolves var()-of-env() to 0
+   inside nested calc/max in some contexts, which collapses the negative
+   bottom-extension and leaves the Safari URL-bar area uncovered (visible
+   body background, which is black in dark mode). env() is reliable here
+   because this block only matches iOS Safari. */
 @supports (-webkit-touch-callout: none) {
   @media (hover: none) and (pointer: coarse) {
     .bottomBarWrapper:not(.nativeApp) {

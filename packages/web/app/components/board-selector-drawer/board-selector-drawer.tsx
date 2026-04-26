@@ -5,27 +5,26 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import MuiSelect, { SelectChangeEvent } from '@mui/material/Select';
+import MuiSelect, { type SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
-import CollapsibleSection from '@/app/components/collapsible-section/collapsible-section';
-import type { CollapsibleSectionConfig } from '@/app/components/collapsible-section/collapsible-section';
+import CollapsibleSection, {
+  type CollapsibleSectionConfig,
+} from '@/app/components/collapsible-section/collapsible-section';
 import { useRouter } from 'next/navigation';
 import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
-import { BoardConfigData } from '@/app/lib/server-board-configs';
-import { BoardName } from '@/app/lib/types';
-import { BOARD_NAME_PREFIX_REGEX } from '@/app/lib/board-constants';
+import type { BoardConfigData } from '@/app/lib/server-board-configs';
+import type { BoardName, BoardRouteIdentity } from '@/app/lib/types';
+import { BOARD_NAME_PREFIX_REGEX, getDefaultSizeForLayout } from '@/app/lib/board-constants';
 import { SUPPORTED_BOARDS, ANGLES } from '@/app/lib/board-data';
-import { getDefaultSizeForLayout } from '@/app/lib/board-constants';
 import { constructClimbListWithSlugs, constructBoardSlugListUrl } from '@/app/lib/url-utils';
-import { saveBoardConfig, StoredBoardConfig } from '@/app/lib/saved-boards-db';
+import { type StoredBoardConfig, saveBoardConfig } from '@/app/lib/saved-boards-db';
 import type { UserBoard } from '@boardsesh/shared-schema';
 import { useBoardSwitchGuard } from '@/app/components/board-lock/use-board-switch-guard';
-import type { BoardRouteIdentity } from '@/app/lib/types';
 
 const CreateBoardForm = lazy(() => import('../board-entity/create-board-form'));
 
-interface BoardConfigSelectsProps {
+type BoardConfigSelectsProps = {
   selectedBoard: BoardName | undefined;
   selectedLayout: number | undefined;
   selectedSize: number | undefined;
@@ -39,12 +38,22 @@ interface BoardConfigSelectsProps {
   onSizeChange: (sizeId: number) => void;
   onSetsChange: (setIds: number[]) => void;
   onAngleChange: (angle: number) => void;
-}
+};
 
 function BoardConfigSelects({
-  selectedBoard, selectedLayout, selectedSize, selectedSets, selectedAngle,
-  layouts, sizes, sets,
-  onBoardChange, onLayoutChange, onSizeChange, onSetsChange, onAngleChange,
+  selectedBoard,
+  selectedLayout,
+  selectedSize,
+  selectedSets,
+  selectedAngle,
+  layouts,
+  sizes,
+  sets,
+  onBoardChange,
+  onLayoutChange,
+  onSizeChange,
+  onSetsChange,
+  onAngleChange,
 }: BoardConfigSelectsProps) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
@@ -72,7 +81,9 @@ function BoardConfigSelects({
           disabled={!selectedBoard}
         >
           {layouts.map(({ id, name }) => (
-            <MenuItem key={id} value={id}>{name}</MenuItem>
+            <MenuItem key={id} value={id}>
+              {name}
+            </MenuItem>
           ))}
         </MuiSelect>
       </FormControl>
@@ -103,7 +114,9 @@ function BoardConfigSelects({
           disabled={!selectedSize}
         >
           {sets.map(({ id, name }) => (
-            <MenuItem key={id} value={id}>{name}</MenuItem>
+            <MenuItem key={id} value={id}>
+              {name}
+            </MenuItem>
           ))}
         </MuiSelect>
       </FormControl>
@@ -113,12 +126,14 @@ function BoardConfigSelects({
         <MuiSelect
           value={selectedAngle}
           label="Angle"
-          onChange={(e: SelectChangeEvent<number>) => onAngleChange(e.target.value as number)}
+          onChange={(e: SelectChangeEvent<number>) => onAngleChange(e.target.value)}
           disabled={!selectedBoard}
         >
           {selectedBoard &&
             ANGLES[selectedBoard].map((angle) => (
-              <MenuItem key={angle} value={angle}>{angle}</MenuItem>
+              <MenuItem key={angle} value={angle}>
+                {angle}
+              </MenuItem>
             ))}
         </MuiSelect>
       </FormControl>
@@ -126,14 +141,14 @@ function BoardConfigSelects({
   );
 }
 
-interface BoardSelectorDrawerProps {
+type BoardSelectorDrawerProps = {
   open: boolean;
   onClose: () => void;
   onTransitionEnd?: (open: boolean) => void;
   boardConfigs: BoardConfigData;
   placement?: 'top' | 'bottom';
   onBoardSelected?: (url: string, config?: StoredBoardConfig) => void;
-}
+};
 
 export default function BoardSelectorDrawer({
   open,
@@ -174,10 +189,10 @@ export default function BoardSelectorDrawer({
   // Auto-select first board on open
   useEffect(() => {
     if (open && !selectedBoard && SUPPORTED_BOARDS.length > 0) {
-      setSelectedBoard(SUPPORTED_BOARDS[0] as BoardName);
+      setSelectedBoard(SUPPORTED_BOARDS[0]);
     }
-  // selectedBoard intentionally excluded: we only auto-select on open, not on every board change
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // selectedBoard intentionally excluded: we only auto-select on open, not on every board change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   // Auto-cascade: layout when board changes
@@ -234,7 +249,14 @@ export default function BoardSelectorDrawer({
     const size = sizes.find((s) => s.id === selectedSize);
     const selectedSetNames = sets.filter((s) => selectedSets.includes(s.id)).map((s) => s.name);
     if (layout && size && selectedSetNames.length > 0) {
-      return constructClimbListWithSlugs(selectedBoard, layout.name, size.name, size.description, selectedSetNames, selectedAngle);
+      return constructClimbListWithSlugs(
+        selectedBoard,
+        layout.name,
+        size.name,
+        size.description,
+        selectedSetNames,
+        selectedAngle,
+      );
     }
     return null;
   }, [selectedBoard, selectedLayout, selectedSize, selectedSets, selectedAngle, layouts, sizes, sets]);
@@ -279,7 +301,20 @@ export default function BoardSelectorDrawer({
         onClose();
       }
     });
-  }, [selectedBoard, selectedLayout, selectedSize, selectedSets, selectedAngle, targetUrl, layouts, sizes, onBoardSelected, onClose, router, guardBoardSwitch]);
+  }, [
+    selectedBoard,
+    selectedLayout,
+    selectedSize,
+    selectedSets,
+    selectedAngle,
+    targetUrl,
+    layouts,
+    sizes,
+    onBoardSelected,
+    onClose,
+    router,
+    guardBoardSwitch,
+  ]);
 
   const isFormComplete = selectedBoard && selectedLayout && selectedSize && selectedSets.length > 0;
 
@@ -329,13 +364,7 @@ export default function BoardSelectorDrawer({
             >
               Create board
             </Button>
-            <Button
-              variant="contained"
-              size="large"
-              fullWidth
-              onClick={handleStartClimbing}
-              disabled={!isFormComplete}
-            >
+            <Button variant="contained" size="large" fullWidth onClick={handleStartClimbing} disabled={!isFormComplete}>
               Quick session
             </Button>
           </Box>
@@ -354,44 +383,52 @@ export default function BoardSelectorDrawer({
         >
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <CollapsibleSection
-              sections={[{
-                key: 'config',
-                label: 'Board config',
-                title: 'Board config',
-                defaultSummary: 'Select a board',
-                getSummary: () => {
-                  const parts: string[] = [];
-                  if (selectedBoard) parts.push(selectedBoard.charAt(0).toUpperCase() + selectedBoard.slice(1));
-                  const layout = layouts.find((l) => l.id === selectedLayout);
-                  if (layout) {
-                    const cleanName = layout.name.replace(BOARD_NAME_PREFIX_REGEX, '').trim();
-                    if (cleanName) parts.push(cleanName);
-                  }
-                  const size = sizes.find((s) => s.id === selectedSize);
-                  if (size) parts.push(size.name);
-                  parts.push(`${selectedAngle}\u00B0`);
-                  return parts;
-                },
-                content: (
-                  <BoardConfigSelects
-                    selectedBoard={selectedBoard}
-                    selectedLayout={selectedLayout}
-                    selectedSize={selectedSize}
-                    selectedSets={selectedSets}
-                    selectedAngle={selectedAngle}
-                    layouts={layouts}
-                    sizes={sizes}
-                    sets={sets}
-                    onBoardChange={setSelectedBoard}
-                    onLayoutChange={setSelectedLayout}
-                    onSizeChange={setSelectedSize}
-                    onSetsChange={setSelectedSets}
-                    onAngleChange={setSelectedAngle}
-                  />
-                ),
-              } satisfies CollapsibleSectionConfig]}
+              sections={[
+                {
+                  key: 'config',
+                  label: 'Board config',
+                  title: 'Board config',
+                  defaultSummary: 'Select a board',
+                  getSummary: () => {
+                    const parts: string[] = [];
+                    if (selectedBoard) parts.push(selectedBoard.charAt(0).toUpperCase() + selectedBoard.slice(1));
+                    const layout = layouts.find((l) => l.id === selectedLayout);
+                    if (layout) {
+                      const cleanName = layout.name.replace(BOARD_NAME_PREFIX_REGEX, '').trim();
+                      if (cleanName) parts.push(cleanName);
+                    }
+                    const size = sizes.find((s) => s.id === selectedSize);
+                    if (size) parts.push(size.name);
+                    parts.push(`${selectedAngle}\u00B0`);
+                    return parts;
+                  },
+                  content: (
+                    <BoardConfigSelects
+                      selectedBoard={selectedBoard}
+                      selectedLayout={selectedLayout}
+                      selectedSize={selectedSize}
+                      selectedSets={selectedSets}
+                      selectedAngle={selectedAngle}
+                      layouts={layouts}
+                      sizes={sizes}
+                      sets={sets}
+                      onBoardChange={setSelectedBoard}
+                      onLayoutChange={setSelectedLayout}
+                      onSizeChange={setSelectedSize}
+                      onSetsChange={setSelectedSets}
+                      onAngleChange={setSelectedAngle}
+                    />
+                  ),
+                } satisfies CollapsibleSectionConfig,
+              ]}
             />
-            <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={32} /></Box>}>
+            <Suspense
+              fallback={
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                  <CircularProgress size={32} />
+                </Box>
+              }
+            >
               <CreateBoardForm
                 boardType={selectedBoard}
                 layoutId={selectedLayout}

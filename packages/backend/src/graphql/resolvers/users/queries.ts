@@ -1,5 +1,10 @@
 import { eq, and, count } from 'drizzle-orm';
-import type { ConnectionContext, UserProfile, AuroraCredentialStatus, DeleteAccountInfo } from '@boardsesh/shared-schema';
+import type {
+  ConnectionContext,
+  UserProfile,
+  AuroraCredentialStatus,
+  DeleteAccountInfo,
+} from '@boardsesh/shared-schema';
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { requireAuthenticated, validateInput } from '../shared/helpers';
@@ -53,7 +58,7 @@ export const userQueries = {
       .from(dbSchema.auroraCredentials)
       .where(eq(dbSchema.auroraCredentials.userId, ctx.userId));
 
-    return credentials.map(c => ({
+    return credentials.map((c) => ({
       boardType: c.boardType,
       username: c.encryptedUsername, // Username is stored as-is (not encrypted)
       userId: c.auroraUserId || undefined,
@@ -76,10 +81,7 @@ export const userQueries = {
       .select()
       .from(dbSchema.auroraCredentials)
       .where(
-        and(
-          eq(dbSchema.auroraCredentials.userId, ctx.userId),
-          eq(dbSchema.auroraCredentials.boardType, boardType)
-        )
+        and(eq(dbSchema.auroraCredentials.userId, ctx.userId), eq(dbSchema.auroraCredentials.boardType, boardType)),
       )
       .limit(1);
 
@@ -101,22 +103,13 @@ export const userQueries = {
   /**
    * Get info needed before account deletion (published climb count)
    */
-  deleteAccountInfo: async (
-    _: unknown,
-    __: unknown,
-    ctx: ConnectionContext
-  ): Promise<DeleteAccountInfo> => {
+  deleteAccountInfo: async (_: unknown, __: unknown, ctx: ConnectionContext): Promise<DeleteAccountInfo> => {
     requireAuthenticated(ctx);
 
     const result = await db
       .select({ count: count() })
       .from(dbSchema.boardClimbs)
-      .where(
-        and(
-          eq(dbSchema.boardClimbs.userId, ctx.userId!),
-          eq(dbSchema.boardClimbs.isDraft, false)
-        )
-      );
+      .where(and(eq(dbSchema.boardClimbs.userId, ctx.userId!), eq(dbSchema.boardClimbs.isDraft, false)));
 
     return {
       publishedClimbCount: result[0]?.count ?? 0,

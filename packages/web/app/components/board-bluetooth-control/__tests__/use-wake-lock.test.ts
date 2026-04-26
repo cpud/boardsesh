@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useWakeLock } from '../use-wake-lock';
 
@@ -101,10 +101,9 @@ describe('useWakeLock', () => {
     const sentinel = createMockWakeLockSentinel();
     mockRequest.mockResolvedValue(sentinel);
 
-    const { result, rerender } = renderHook(
-      ({ enabled }) => useWakeLock(enabled),
-      { initialProps: { enabled: true } },
-    );
+    const { result, rerender } = renderHook(({ enabled }) => useWakeLock(enabled), {
+      initialProps: { enabled: true },
+    });
 
     await waitFor(() => {
       expect(result.current.isActive).toBe(true);
@@ -117,7 +116,7 @@ describe('useWakeLock', () => {
       expect(result.current.isActive).toBe(false);
     });
 
-    expect(sentinel.release).toHaveBeenCalled();
+    expect(sentinel.release).toHaveBeenCalled(); // eslint-disable-line @typescript-eslint/unbound-method -- vi.fn() mock, no `this` concern
   });
 
   it('re-acquires wake lock on visibility change when document becomes visible', async () => {
@@ -184,10 +183,7 @@ describe('useWakeLock', () => {
     const { result } = renderHook(() => useWakeLock(true));
 
     await waitFor(() => {
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        'Wake Lock request failed:',
-        expect.any(Error),
-      );
+      expect(consoleWarnSpy).toHaveBeenCalledWith('Wake Lock request failed:', expect.any(Error));
     });
 
     expect(result.current.isActive).toBe(false);
@@ -200,14 +196,11 @@ describe('useWakeLock', () => {
     mockRequest.mockResolvedValue(sentinel);
 
     // Make release fail
-    (sentinel.release as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new Error('Release failed'),
-    );
+    (sentinel.release as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Release failed'));
 
-    const { result, rerender } = renderHook(
-      ({ enabled }) => useWakeLock(enabled),
-      { initialProps: { enabled: true } },
-    );
+    const { result, rerender } = renderHook(({ enabled }) => useWakeLock(enabled), {
+      initialProps: { enabled: true },
+    });
 
     await waitFor(() => {
       expect(result.current.isActive).toBe(true);
@@ -217,10 +210,7 @@ describe('useWakeLock', () => {
     rerender({ enabled: false });
 
     await waitFor(() => {
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        'Wake Lock release failed:',
-        expect.any(Error),
-      );
+      expect(consoleWarnSpy).toHaveBeenCalledWith('Wake Lock release failed:', expect.any(Error));
     });
 
     consoleWarnSpy.mockRestore();
@@ -239,17 +229,16 @@ describe('useWakeLock', () => {
     unmount();
 
     // Release should have been called during cleanup
-    expect(sentinel.release).toHaveBeenCalled();
+    expect(sentinel.release).toHaveBeenCalled(); // eslint-disable-line @typescript-eslint/unbound-method -- vi.fn() mock, no `this` concern
   });
 
   it('sets isActive correctly through lifecycle', async () => {
     const sentinel = createMockWakeLockSentinel();
     mockRequest.mockResolvedValue(sentinel);
 
-    const { result, rerender } = renderHook(
-      ({ enabled }) => useWakeLock(enabled),
-      { initialProps: { enabled: false } },
-    );
+    const { result, rerender } = renderHook(({ enabled }) => useWakeLock(enabled), {
+      initialProps: { enabled: false },
+    });
 
     // Initially not active
     expect(result.current.isActive).toBe(false);

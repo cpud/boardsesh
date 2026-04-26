@@ -3,7 +3,7 @@ import type { ClimbQueueItem, SessionUser } from '@boardsesh/shared-schema';
 import { RedisSessionStore } from '../redis-session-store';
 import type { Session } from '../../db/schema';
 import {
-  DistributedStateManager,
+  type DistributedStateManager,
   initializeDistributedState,
   shutdownDistributedState,
   forceResetDistributedState,
@@ -31,11 +31,11 @@ import {
 } from './session-discovery';
 
 class RoomManager {
-  private clients: Map<string, ConnectedClient> = new Map();
-  private sessions: Map<string, Set<string>> = new Map();
+  private clients = new Map<string, ConnectedClient>();
+  private sessions = new Map<string, Set<string>>();
   private redisStore: RedisSessionStore | null = null;
   private distributedState: DistributedStateManager | null = null;
-  private sessionGraceTimers: Map<string, NodeJS.Timeout> = new Map();
+  private sessionGraceTimers = new Map<string, NodeJS.Timeout>();
   private readonly SESSION_GRACE_PERIOD_MS = 60_000;
   private pendingJoinPersists = new Map<string, Promise<void>>();
   private writeScheduler = new WriteScheduler();
@@ -71,13 +71,13 @@ class RoomManager {
   async initialize(redis?: Redis): Promise<void> {
     if (redis) {
       this.redisStore = new RedisSessionStore(redis);
-      console.log('[RoomManager] Redis session storage enabled');
+      console.info('[RoomManager] Redis session storage enabled');
 
       this.distributedState = initializeDistributedState(redis);
       this.distributedState.start();
-      console.log('[RoomManager] Distributed state enabled for multi-instance support');
+      console.info('[RoomManager] Distributed state enabled for multi-instance support');
     } else {
-      console.log('[RoomManager] Redis not available - using Postgres only mode (single instance)');
+      console.info('[RoomManager] Redis not available - using Postgres only mode (single instance)');
     }
   }
 
@@ -87,7 +87,7 @@ class RoomManager {
   async shutdown(): Promise<void> {
     await this.flushPendingWrites();
     await shutdownDistributedState();
-    console.log('[RoomManager] Shutdown complete');
+    console.info('[RoomManager] Shutdown complete');
   }
 
   /**
@@ -117,7 +117,7 @@ class RoomManager {
     avatarUrl?: string,
     initialQueue?: ClimbQueueItem[],
     initialCurrentClimb?: ClimbQueueItem | null,
-    sessionName?: string
+    sessionName?: string,
   ): Promise<{
     clientId: string;
     users: SessionUser[];
@@ -149,7 +149,7 @@ class RoomManager {
       avatarUrl,
       initialQueue,
       initialCurrentClimb,
-      sessionName
+      sessionName,
     );
   }
 
@@ -163,7 +163,7 @@ class RoomManager {
       this.writeScheduler,
       this.sessionGraceTimers,
       this.pendingJoinPersists,
-      this.SESSION_GRACE_PERIOD_MS
+      this.SESSION_GRACE_PERIOD_MS,
     );
   }
 
@@ -249,16 +249,24 @@ class RoomManager {
     sessionId: string,
     queue: ClimbQueueItem[],
     currentClimbQueueItem: ClimbQueueItem | null,
-    expectedVersion?: number
+    expectedVersion?: number,
   ): Promise<{ version: number; sequence: number; stateHash: string }> {
-    return updateQueueStateFn(sessionId, queue, currentClimbQueueItem, expectedVersion, this.redisStore, this.writeScheduler, this.distributedState);
+    return updateQueueStateFn(
+      sessionId,
+      queue,
+      currentClimbQueueItem,
+      expectedVersion,
+      this.redisStore,
+      this.writeScheduler,
+      this.distributedState,
+    );
   }
 
   async updateQueueStateImmediate(
     sessionId: string,
     queue: ClimbQueueItem[],
     currentClimbQueueItem: ClimbQueueItem | null,
-    expectedVersion?: number
+    expectedVersion?: number,
   ): Promise<number> {
     return updateQueueStateImmediateFn(sessionId, queue, currentClimbQueueItem, expectedVersion, this.redisStore);
   }
@@ -266,9 +274,16 @@ class RoomManager {
   async updateQueueOnly(
     sessionId: string,
     queue: ClimbQueueItem[],
-    expectedVersion?: number
+    expectedVersion?: number,
   ): Promise<{ version: number; sequence: number; stateHash: string }> {
-    return updateQueueOnlyFn(sessionId, queue, expectedVersion, this.redisStore, this.writeScheduler, this.distributedState);
+    return updateQueueOnlyFn(
+      sessionId,
+      queue,
+      expectedVersion,
+      this.redisStore,
+      this.writeScheduler,
+      this.distributedState,
+    );
   }
 
   async getQueueState(sessionId: string): Promise<QueueState> {
@@ -288,17 +303,30 @@ class RoomManager {
     name?: string,
     goal?: string,
     isPermanent?: boolean,
-    color?: string
+    color?: string,
   ): Promise<Session> {
-    return createDiscoverableSessionFn(sessionId, boardPath, userId, latitude, longitude, name, goal, isPermanent, color);
+    return createDiscoverableSessionFn(
+      sessionId,
+      boardPath,
+      userId,
+      latitude,
+      longitude,
+      name,
+      goal,
+      isPermanent,
+      color,
+    );
   }
 
-  async findNearbySessions(
-    latitude: number,
-    longitude: number,
-    radiusMeters?: number
-  ): Promise<DiscoverableSession[]> {
-    return findNearbySessionsFn(latitude, longitude, radiusMeters, this.sessions, this.redisStore, this.distributedState);
+  async findNearbySessions(latitude: number, longitude: number, radiusMeters?: number): Promise<DiscoverableSession[]> {
+    return findNearbySessionsFn(
+      latitude,
+      longitude,
+      radiusMeters,
+      this.sessions,
+      this.redisStore,
+      this.distributedState,
+    );
   }
 
   async getUserSessions(userId: string): Promise<Session[]> {
@@ -312,7 +340,7 @@ class RoomManager {
       this.redisStore,
       this.writeScheduler,
       this.sessionGraceTimers,
-      this.pendingJoinPersists
+      this.pendingJoinPersists,
     );
   }
 

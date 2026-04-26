@@ -20,6 +20,7 @@ import { mutationsTypeDefs } from './mutations';
 import { subscriptionsTypeDefs } from './subscriptions';
 import { eventsTypeDefs } from './events';
 import { controllerTypeDefs } from './controller';
+import { feedbackTypeDefs } from './feedback';
 
 export const typeDefs = [
   scalarTypeDefs,
@@ -44,4 +45,5 @@ export const typeDefs = [
   subscriptionsTypeDefs,
   eventsTypeDefs,
   controllerTypeDefs,
+  feedbackTypeDefs,
 ];

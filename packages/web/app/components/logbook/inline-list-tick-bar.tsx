@@ -5,7 +5,8 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import CheckOutlined from '@mui/icons-material/CheckOutlined';
 import CloseOutlined from '@mui/icons-material/CloseOutlined';
-import { Climb, BoardDetails, Angle } from '@/app/lib/types';
+import { PersonFallingIcon } from '@/app/components/icons/person-falling-icon';
+import type { Climb, BoardDetails, Angle } from '@/app/lib/types';
 import { useBoardProvider } from '../board-provider/board-provider-context';
 import { TENSION_KILTER_GRADES } from '@/app/lib/board-data';
 import { loadTickDraft } from '@/app/lib/tick-draft-db';
@@ -21,14 +22,14 @@ import {
 } from './tick-controls';
 import styles from './inline-list-tick-bar.module.css';
 
-export interface InlineListTickBarProps {
+export type InlineListTickBarProps = {
   climb: Climb;
   angle: Angle;
   boardDetails: BoardDetails;
   onClose: () => void;
   /** Called when a save fails so the parent can show feedback. */
   onError?: () => void;
-}
+};
 
 export const InlineListTickBar: React.FC<InlineListTickBarProps> = ({
   climb,
@@ -43,9 +44,7 @@ export const InlineListTickBar: React.FC<InlineListTickBarProps> = ({
   // initializer always produces a value. This avoids recomputing
   // hasPriorHistory on every logbook mutation (logbook is a new array
   // reference after each optimistic save).
-  const [tickTarget] = useState<TickTarget | null>(
-    () => buildTickTarget(climb, angle, boardDetails, logbook),
-  );
+  const [tickTarget] = useState<TickTarget | null>(() => buildTickTarget(climb, angle, boardDetails, logbook));
 
   const [quality, setQuality] = useState<number | null>(null);
   const [difficulty, setDifficulty] = useState<number | undefined>(undefined);
@@ -58,13 +57,15 @@ export const InlineListTickBar: React.FC<InlineListTickBarProps> = ({
     if (!tickTarget || draftLoaded.current) return;
     draftLoaded.current = true;
     let cancelled = false;
-    loadTickDraft(tickTarget.climb.uuid, Number(tickTarget.angle)).then((draft) => {
+    void loadTickDraft(tickTarget.climb.uuid, Number(tickTarget.angle)).then((draft) => {
       if (cancelled || !draft) return;
       setQuality(draft.quality);
       setDifficulty(draft.difficulty);
       setAttemptCount(draft.attemptCount);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [tickTarget]);
 
   // Track picker visibility for collapse animation
@@ -137,9 +138,7 @@ export const InlineListTickBar: React.FC<InlineListTickBarProps> = ({
         {/* Picker panel — expands above the controls row */}
         <div className={`${styles.pickerPanel} ${expandedControl ? styles.pickerPanelExpanded : ''}`}>
           <div className={styles.pickerPanelContent}>
-            {renderedControl === 'stars' && (
-              <InlineStarPicker quality={quality} onSelect={handleStarSelect} />
-            )}
+            {renderedControl === 'stars' && <InlineStarPicker quality={quality} onSelect={handleStarSelect} />}
             {renderedControl === 'grade' && (
               <InlineGradePicker
                 grades={grades}
@@ -150,7 +149,11 @@ export const InlineListTickBar: React.FC<InlineListTickBarProps> = ({
               />
             )}
             {renderedControl === 'tries' && (
-              <InlineTriesPicker attemptCount={attemptCount} onSelect={handleTriesSelect} triesButtonRef={triesButtonRef} />
+              <InlineTriesPicker
+                attemptCount={attemptCount}
+                onSelect={handleTriesSelect}
+                triesButtonRef={triesButtonRef}
+              />
             )}
           </div>
         </div>
@@ -191,9 +194,6 @@ export const InlineListTickBar: React.FC<InlineListTickBarProps> = ({
             >
               <CheckOutlined sx={{ fontSize: 18 }} />
             </IconButton>
-            {/* Intentional: both the attempt and cancel buttons use CloseOutlined.
-                The red "X" (attempt/fail) vs small muted "X" (cancel) distinction is
-                a deliberate design choice — do not change these icons. */}
             <IconButton
               ref={attemptButtonRef}
               size="small"
@@ -207,7 +207,7 @@ export const InlineListTickBar: React.FC<InlineListTickBarProps> = ({
                 '&:hover': { backgroundColor: themeTokens.colors.error },
               }}
             >
-              <CloseOutlined sx={{ fontSize: 18 }} />
+              <PersonFallingIcon sx={{ fontSize: 18 }} />
             </IconButton>
             <IconButton
               size="small"

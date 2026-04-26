@@ -3,11 +3,7 @@ import type { ConnectionContext } from '@boardsesh/shared-schema';
 import { db } from '../../../db/client';
 import * as dbSchema from '@boardsesh/db/schema';
 import { requireAuthenticated, applyRateLimit, validateInput } from '../shared/helpers';
-import {
-  GrantRoleInputSchema,
-  RevokeRoleInputSchema,
-  BoardNameSchema,
-} from '../../../validation/schemas';
+import { GrantRoleInputSchema, RevokeRoleInputSchema } from '../../../validation/schemas';
 
 /**
  * Check if a user has admin role (global or for a specific board type).
@@ -21,9 +17,7 @@ export async function requireAdmin(ctx: ConnectionContext, boardType?: string | 
     .from(dbSchema.communityRoles)
     .where(eq(dbSchema.communityRoles.userId, userId));
 
-  const isAdmin = roles.some(
-    (r) => r.role === 'admin' && (r.boardType === null || r.boardType === boardType),
-  );
+  const isAdmin = roles.some((r) => r.role === 'admin' && (r.boardType === null || r.boardType === boardType));
 
   if (!isAdmin) {
     throw new Error('Admin role required for this operation');
@@ -43,9 +37,7 @@ export async function requireAdminOrLeader(ctx: ConnectionContext, boardType?: s
     .where(eq(dbSchema.communityRoles.userId, userId));
 
   const hasRole = roles.some(
-    (r) =>
-      (r.role === 'admin' || r.role === 'community_leader') &&
-      (r.boardType === null || r.boardType === boardType),
+    (r) => (r.role === 'admin' || r.role === 'community_leader') && (r.boardType === null || r.boardType === boardType),
   );
 
   if (!hasRole) {
@@ -106,50 +98,29 @@ async function enrichRoleAssignment(role: typeof dbSchema.communityRoles.$inferS
 }
 
 export const socialRoleQueries = {
-  communityRoles: async (
-    _: unknown,
-    { boardType }: { boardType?: string },
-    ctx: ConnectionContext,
-  ) => {
-    const conditions = boardType
-      ? [eq(dbSchema.communityRoles.boardType, boardType)]
-      : [];
+  communityRoles: async (_: unknown, { boardType }: { boardType?: string }, _ctx: ConnectionContext) => {
+    const conditions = boardType ? [eq(dbSchema.communityRoles.boardType, boardType)] : [];
 
-    const roles = conditions.length > 0
-      ? await db
-          .select()
-          .from(dbSchema.communityRoles)
-          .where(conditions[0])
-      : await db
-          .select()
-          .from(dbSchema.communityRoles);
+    const roles =
+      conditions.length > 0
+        ? await db.select().from(dbSchema.communityRoles).where(conditions[0])
+        : await db.select().from(dbSchema.communityRoles);
 
     return Promise.all(roles.map(enrichRoleAssignment));
   },
 
-  myRoles: async (
-    _: unknown,
-    __: unknown,
-    ctx: ConnectionContext,
-  ) => {
+  myRoles: async (_: unknown, __: unknown, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     const userId = ctx.userId!;
 
-    const roles = await db
-      .select()
-      .from(dbSchema.communityRoles)
-      .where(eq(dbSchema.communityRoles.userId, userId));
+    const roles = await db.select().from(dbSchema.communityRoles).where(eq(dbSchema.communityRoles.userId, userId));
 
     return Promise.all(roles.map(enrichRoleAssignment));
   },
 };
 
 export const socialRoleMutations = {
-  grantRole: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  grantRole: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     await requireAdmin(ctx);
     await applyRateLimit(ctx, 10);
 
@@ -198,11 +169,7 @@ export const socialRoleMutations = {
     return enrichRoleAssignment(inserted);
   },
 
-  revokeRole: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  revokeRole: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     await requireAdmin(ctx);
     await applyRateLimit(ctx, 10);
 
@@ -212,19 +179,10 @@ export const socialRoleMutations = {
     // Prevent removing the last admin
     if (role === 'admin') {
       const adminConditions = boardType
-        ? and(
-            eq(dbSchema.communityRoles.role, 'admin'),
-            eq(dbSchema.communityRoles.boardType, boardType),
-          )
-        : and(
-            eq(dbSchema.communityRoles.role, 'admin'),
-            isNull(dbSchema.communityRoles.boardType),
-          );
+        ? and(eq(dbSchema.communityRoles.role, 'admin'), eq(dbSchema.communityRoles.boardType, boardType))
+        : and(eq(dbSchema.communityRoles.role, 'admin'), isNull(dbSchema.communityRoles.boardType));
 
-      const [adminCount] = await db
-        .select({ count: count() })
-        .from(dbSchema.communityRoles)
-        .where(adminConditions);
+      const [adminCount] = await db.select({ count: count() }).from(dbSchema.communityRoles).where(adminConditions);
 
       if (Number(adminCount?.count || 0) <= 1) {
         throw new Error('Cannot remove the last admin');

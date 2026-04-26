@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import {
   getVGradeColor,
   getFontGradeColor,
@@ -175,14 +175,14 @@ describe('Grade Colors', () => {
     });
 
     it('adds "+" when Font grade has "+" and V-grade has multiple Font grades', () => {
-      expect(formatVGrade('6a+/V3')).toBe('V3+');  // V3 has 6a and 6a+
-      expect(formatVGrade('6c+/V5')).toBe('V5+');  // V5 has 6c and 6c+
-      expect(formatVGrade('6b+/V4')).toBe('V4+');  // V4 has 6b and 6b+
-      expect(formatVGrade('7b+/V8')).toBe('V8+');  // V8 has 7b and 7b+
+      expect(formatVGrade('6a+/V3')).toBe('V3+'); // V3 has 6a and 6a+
+      expect(formatVGrade('6c+/V5')).toBe('V5+'); // V5 has 6c and 6c+
+      expect(formatVGrade('6b+/V4')).toBe('V4+'); // V4 has 6b and 6b+
+      expect(formatVGrade('7b+/V8')).toBe('V8+'); // V8 has 7b and 7b+
     });
 
     it('does not add "+" when V-grade has only one Font grade', () => {
-      expect(formatVGrade('7a+/V7')).toBe('V7');   // V7 only has 7a+
+      expect(formatVGrade('7a+/V7')).toBe('V7'); // V7 only has 7a+
       expect(formatVGrade('7c+/V10')).toBe('V10'); // V10 only has 7c+
       expect(formatVGrade('8a+/V12')).toBe('V12'); // V12 only has 8a+
       expect(formatVGrade('8b+/V14')).toBe('V14'); // V14 only has 8b+

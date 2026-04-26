@@ -8,12 +8,12 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
 import { useIsDarkMode } from '@/app/hooks/use-is-dark-mode';
 import { track } from '@vercel/analytics';
-import { Climb, BoardDetails } from '@/app/lib/types';
+import type { Climb, BoardDetails } from '@/app/lib/types';
 import { executeGraphQL } from '@/app/lib/graphql/client';
 import {
+  type GetUserFavoriteClimbsQueryResponse,
+  type GetUserFavoriteClimbsQueryVariables,
   GET_USER_FAVORITE_CLIMBS,
-  GetUserFavoriteClimbsQueryResponse,
-  GetUserFavoriteClimbsQueryVariables,
 } from '@/app/lib/graphql/operations/favorites';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { useQueueActions } from '@/app/components/graphql-queue';
@@ -41,13 +41,19 @@ type ViewMode = 'grid' | 'list';
 const sharedDrawerStyles = {
   wrapper: { height: 'auto', width: '100%' },
   body: { padding: `${themeTokens.spacing[2]}px 0` },
-  header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
+  header: {
+    paddingLeft: `${themeTokens.spacing[3]}px`,
+    paddingRight: `${themeTokens.spacing[3]}px`,
+  },
 } as const;
 
 const sharedPlaylistDrawerStyles = {
   wrapper: { height: 'auto', maxHeight: '70vh', width: '100%' },
   body: { padding: 0 },
-  header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
+  header: {
+    paddingLeft: `${themeTokens.spacing[3]}px`,
+    paddingRight: `${themeTokens.spacing[3]}px`,
+  },
 } as const;
 
 // --- Shared drawers extracted to isolate state from list re-renders ---
@@ -60,13 +66,14 @@ type LikedDrawersProps = {
   boardDetails: BoardDetails;
 };
 
-const LikedDrawers = forwardRef<LikedDrawerHandle, LikedDrawersProps>(
-  ({ boardDetails }, ref) => {
-    const pathname = usePathname();
-    const [activeDrawerClimb, setActiveDrawerClimb] = useState<Climb | null>(null);
-    const [drawerMode, setDrawerMode] = useState<'actions' | 'playlist' | null>(null);
+const LikedDrawers = forwardRef<LikedDrawerHandle, LikedDrawersProps>(({ boardDetails }, ref) => {
+  const pathname = usePathname();
+  const [activeDrawerClimb, setActiveDrawerClimb] = useState<Climb | null>(null);
+  const [drawerMode, setDrawerMode] = useState<'actions' | 'playlist' | null>(null);
 
-    useImperativeHandle(ref, () => ({
+  useImperativeHandle(
+    ref,
+    () => ({
       openActions: (climb: Climb) => {
         setActiveDrawerClimb(climb);
         setDrawerMode('actions');
@@ -75,64 +82,69 @@ const LikedDrawers = forwardRef<LikedDrawerHandle, LikedDrawersProps>(
         setActiveDrawerClimb(climb);
         setDrawerMode('playlist');
       },
-    }), []);
+    }),
+    [],
+  );
 
-    const handleCloseDrawer = useCallback(() => setDrawerMode(null), []);
-    const handleSwitchToPlaylist = useCallback(() => setDrawerMode('playlist'), []);
-    const handleDrawerTransitionEnd = useCallback((open: boolean) => {
-      if (!open) setActiveDrawerClimb(null);
-    }, []);
+  const handleCloseDrawer = useCallback(() => setDrawerMode(null), []);
+  const handleSwitchToPlaylist = useCallback(() => setDrawerMode('playlist'), []);
+  const handleDrawerTransitionEnd = useCallback((open: boolean) => {
+    if (!open) setActiveDrawerClimb(null);
+  }, []);
 
-    const excludeActions = useMemo(
-      () => getExcludedClimbActions(boardDetails.board_name, 'list'),
-      [boardDetails.board_name],
-    );
+  const excludeActions = useMemo(
+    () => getExcludedClimbActions(boardDetails.board_name, 'list'),
+    [boardDetails.board_name],
+  );
 
-    return (
-      <>
-        <SwipeableDrawer
-          title={activeDrawerClimb ? <DrawerClimbHeader climb={activeDrawerClimb} boardDetails={boardDetails} /> : undefined}
-          placement="bottom"
-          open={drawerMode === 'actions'}
-          onClose={handleCloseDrawer}
-          onTransitionEnd={handleDrawerTransitionEnd}
-          styles={sharedDrawerStyles}
-        >
-          {activeDrawerClimb && (
-            <ClimbActions
-              climb={activeDrawerClimb}
-              boardDetails={boardDetails}
-              angle={activeDrawerClimb.angle}
-              currentPathname={pathname}
-              viewMode="list"
-              exclude={excludeActions}
-              onOpenPlaylistSelector={handleSwitchToPlaylist}
-              onActionComplete={handleCloseDrawer}
-            />
-          )}
-        </SwipeableDrawer>
+  return (
+    <>
+      <SwipeableDrawer
+        title={
+          activeDrawerClimb ? <DrawerClimbHeader climb={activeDrawerClimb} boardDetails={boardDetails} /> : undefined
+        }
+        placement="bottom"
+        open={drawerMode === 'actions'}
+        onClose={handleCloseDrawer}
+        onTransitionEnd={handleDrawerTransitionEnd}
+        styles={sharedDrawerStyles}
+      >
+        {activeDrawerClimb && (
+          <ClimbActions
+            climb={activeDrawerClimb}
+            boardDetails={boardDetails}
+            angle={activeDrawerClimb.angle}
+            currentPathname={pathname}
+            viewMode="list"
+            exclude={excludeActions}
+            onOpenPlaylistSelector={handleSwitchToPlaylist}
+            onActionComplete={handleCloseDrawer}
+          />
+        )}
+      </SwipeableDrawer>
 
-        <SwipeableDrawer
-          title={activeDrawerClimb ? <DrawerClimbHeader climb={activeDrawerClimb} boardDetails={boardDetails} /> : undefined}
-          placement="bottom"
-          open={drawerMode === 'playlist'}
-          onClose={handleCloseDrawer}
-          onTransitionEnd={handleDrawerTransitionEnd}
-          styles={sharedPlaylistDrawerStyles}
-        >
-          {activeDrawerClimb && (
-            <PlaylistSelectionContent
-              climbUuid={activeDrawerClimb.uuid}
-              boardDetails={boardDetails}
-              angle={activeDrawerClimb.angle}
-              onDone={handleCloseDrawer}
-            />
-          )}
-        </SwipeableDrawer>
-      </>
-    );
-  },
-);
+      <SwipeableDrawer
+        title={
+          activeDrawerClimb ? <DrawerClimbHeader climb={activeDrawerClimb} boardDetails={boardDetails} /> : undefined
+        }
+        placement="bottom"
+        open={drawerMode === 'playlist'}
+        onClose={handleCloseDrawer}
+        onTransitionEnd={handleDrawerTransitionEnd}
+        styles={sharedPlaylistDrawerStyles}
+      >
+        {activeDrawerClimb && (
+          <PlaylistSelectionContent
+            climbUuid={activeDrawerClimb.uuid}
+            boardDetails={boardDetails}
+            angle={activeDrawerClimb.angle}
+            onDone={handleCloseDrawer}
+          />
+        )}
+      </SwipeableDrawer>
+    </>
+  );
+});
 LikedDrawers.displayName = 'LikedDrawers';
 
 type LikedClimbsListProps = {
@@ -154,10 +166,7 @@ const ClimbsListSkeleton = ({ aspectRatio }: { aspectRatio: number }) => {
   );
 };
 
-export default function LikedClimbsList({
-  boardDetails,
-  angle,
-}: LikedClimbsListProps) {
+export default function LikedClimbsList({ boardDetails, angle }: LikedClimbsListProps) {
   const pathname = usePathname();
   const isDark = useIsDarkMode();
   const { token, isLoading: tokenLoading } = useWsAuthToken();
@@ -168,32 +177,21 @@ export default function LikedClimbsList({
   const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   useEffect(() => {
-    getPreference<ViewMode>('likedClimbsViewMode').then((saved) => {
+    void getPreference<ViewMode>('likedClimbsViewMode').then((saved) => {
       if (saved) setViewMode(saved);
     });
   }, []);
 
   const handleViewModeChange = useCallback((mode: ViewMode) => {
     setViewMode(mode);
-    setPreference('likedClimbsViewMode', mode);
+    void setPreference('likedClimbsViewMode', mode);
     track('Liked Climbs View Mode Changed', { mode });
   }, []);
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetching,
-    isFetchingNextPage,
-    isLoading,
-    error,
-  } = useInfiniteQuery({
+  const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage, isLoading, error } = useInfiniteQuery({
     queryKey: ['likedClimbs', boardDetails.board_name, boardDetails.layout_id, boardDetails.size_id, angle],
-    queryFn: async ({ pageParam = 0 }) => {
-      const response = await executeGraphQL<
-        GetUserFavoriteClimbsQueryResponse,
-        GetUserFavoriteClimbsQueryVariables
-      >(
+    queryFn: async ({ pageParam }) => {
+      const response = await executeGraphQL<GetUserFavoriteClimbsQueryResponse, GetUserFavoriteClimbsQueryVariables>(
         GET_USER_FAVORITE_CLIMBS,
         {
           input: {
@@ -219,7 +217,7 @@ export default function LikedClimbsList({
     staleTime: 5 * 60 * 1000,
   });
 
-  const allClimbs: Climb[] = data?.pages.flatMap((page) => page.climbs as Climb[]) ?? [];
+  const allClimbs: Climb[] = useMemo(() => data?.pages.flatMap((page) => page.climbs as Climb[]) ?? [], [data?.pages]);
   const totalCount = data?.pages[0]?.totalCount ?? 0;
 
   useEffect(() => {
@@ -232,6 +230,7 @@ export default function LikedClimbsList({
   // Show all liked climbs regardless of layout (unlike playlists, favorites span all layouts)
   const visibleClimbs: Climb[] = useMemo(() => {
     return allClimbs.map((climb) => ({ ...climb, angle }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allClimbs, angle]);
 
   const handleLoadMore = useCallback(() => {
@@ -239,7 +238,7 @@ export default function LikedClimbsList({
       currentCount: allClimbs.length,
       hasMore: hasNextPage,
     });
-    fetchNextPage();
+    void fetchNextPage();
   }, [allClimbs.length, hasNextPage, fetchNextPage]);
 
   const { sentinelRef } = useInfiniteScroll({
@@ -250,25 +249,31 @@ export default function LikedClimbsList({
 
   // Row click: activates the climb but does NOT open the play drawer.
   // Only the thumbnail (list mode) or card cover (grid mode) opens the drawer.
-  const handleClimbSelect = useCallback((climb: Climb) => {
-    setSelectedClimbUuid(climb.uuid);
-    setCurrentClimb(climb);
-  }, [setCurrentClimb]);
+  const handleClimbSelect = useCallback(
+    (climb: Climb) => {
+      setSelectedClimbUuid(climb.uuid);
+      void setCurrentClimb(climb);
+    },
+    [setCurrentClimb],
+  );
 
   // Thumbnail / card-cover click: activates the climb and opens the play drawer.
-  const handleClimbOpenDrawer = useCallback((climb: Climb) => {
-    setSelectedClimbUuid(climb.uuid);
-    setCurrentClimb(climb);
-    dispatchOpenPlayDrawer();
-    track('Liked Climb Card Clicked', {
-      climbUuid: climb.uuid,
-      angle: climb.angle,
-    });
-  }, [setCurrentClimb]);
+  const handleClimbOpenDrawer = useCallback(
+    (climb: Climb) => {
+      setSelectedClimbUuid(climb.uuid);
+      void setCurrentClimb(climb);
+      dispatchOpenPlayDrawer();
+      track('Liked Climb Card Clicked', {
+        climbUuid: climb.uuid,
+        angle: climb.angle,
+      });
+    },
+    [setCurrentClimb],
+  );
 
   const selectHandlersMap = useMemo(() => {
     const map = new Map<string, () => void>();
-    visibleClimbs.forEach(climb => {
+    visibleClimbs.forEach((climb) => {
       map.set(climb.uuid, () => handleClimbSelect(climb));
     });
     return map;
@@ -276,26 +281,29 @@ export default function LikedClimbsList({
 
   const openDrawerHandlersMap = useMemo(() => {
     const map = new Map<string, () => void>();
-    visibleClimbs.forEach(climb => {
+    visibleClimbs.forEach((climb) => {
       map.set(climb.uuid, () => handleClimbOpenDrawer(climb));
     });
     return map;
   }, [visibleClimbs, handleClimbOpenDrawer]);
 
-  const sentinelStyle = useMemo(
-    () => ({ minHeight: '20px', marginTop: '16px' }),
+  const sentinelStyle = useMemo(() => ({ minHeight: '20px', marginTop: '16px' }), []);
+
+  const gridContainerSx = useMemo(
+    () => ({
+      display: 'flex',
+      flexWrap: 'wrap' as const,
+      gap: '16px',
+    }),
     [],
   );
 
-  const gridContainerSx = useMemo(() => ({
-    display: 'flex',
-    flexWrap: 'wrap' as const,
-    gap: '16px',
-  }), []);
-
-  const cardBoxSx = useMemo(() => ({
-    width: { xs: '100%', lg: '50%' },
-  }), []);
+  const cardBoxSx = useMemo(
+    () => ({
+      width: { xs: '100%', lg: '50%' },
+    }),
+    [],
+  );
 
   const aspectRatio = boardDetails.boardWidth / boardDetails.boardHeight;
 
@@ -344,80 +352,77 @@ export default function LikedClimbsList({
 
   return (
     <SelectionStoreContext.Provider value={selectionStore}>
-    <div className={styles.climbsSection}>
-      {/* View Mode Toggle */}
-      <div className={styles.viewModeToggle}>
-        <IconButton
-          size="small"
-          color={viewMode === 'list' ? 'primary' : 'default'}
-          onClick={() => handleViewModeChange('list')}
-          aria-label="List view"
-        >
-          <FormatListBulletedOutlined />
-        </IconButton>
-        <IconButton
-          size="small"
-          color={viewMode === 'grid' ? 'primary' : 'default'}
-          onClick={() => handleViewModeChange('grid')}
-          aria-label="Grid view"
-        >
-          <AppsOutlined />
-        </IconButton>
-      </div>
+      <div className={styles.climbsSection}>
+        {/* View Mode Toggle */}
+        <div className={styles.viewModeToggle}>
+          <IconButton
+            size="small"
+            color={viewMode === 'list' ? 'primary' : 'default'}
+            onClick={() => handleViewModeChange('list')}
+            aria-label="List view"
+          >
+            <FormatListBulletedOutlined />
+          </IconButton>
+          <IconButton
+            size="small"
+            color={viewMode === 'grid' ? 'primary' : 'default'}
+            onClick={() => handleViewModeChange('grid')}
+            aria-label="Grid view"
+          >
+            <AppsOutlined />
+          </IconButton>
+        </div>
 
-
-      {viewMode === 'grid' ? (
-        <Box sx={gridContainerSx}>
-          {visibleClimbs.map((climb) => (
-            <Box sx={cardBoxSx} key={climb.uuid} className={listStyles.gridItem}>
-              <ClimbCard
-                climb={climb}
-                boardDetails={boardDetails}
-                onCoverClick={openDrawerHandlersMap.get(climb.uuid)}
-              />
-            </Box>
-          ))}
-          {isFetching && allClimbs.length === 0 && (
-            <ClimbsListSkeleton aspectRatio={aspectRatio} />
-          )}
-        </Box>
-      ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          {visibleClimbs.map((climb) => (
-            <div key={climb.uuid} className={listStyles.listItem}>
-            <ClimbListItem
-              climb={climb}
-              boardDetails={boardDetails}
-              pathname={pathname}
-              isDark={isDark}
-              onSelect={selectHandlersMap.get(climb.uuid)}
-              onThumbnailClick={openDrawerHandlersMap.get(climb.uuid)}
-              onOpenActions={handleOpenActions}
-              onOpenPlaylistSelector={handleOpenPlaylistSelector}
-              addToQueue={addToQueue}
-            />
-            </div>
-          ))}
-        </Box>
-      )}
-
-      {/* Sentinel element for Intersection Observer */}
-      <div ref={sentinelRef} style={sentinelStyle}>
-        {isFetchingNextPage && (
+        {viewMode === 'grid' ? (
           <Box sx={gridContainerSx}>
-            <ClimbsListSkeleton aspectRatio={aspectRatio} />
+            {visibleClimbs.map((climb) => (
+              <Box sx={cardBoxSx} key={climb.uuid} className={listStyles.gridItem}>
+                <ClimbCard
+                  climb={climb}
+                  boardDetails={boardDetails}
+                  onCoverClick={openDrawerHandlersMap.get(climb.uuid)}
+                />
+              </Box>
+            ))}
+            {isFetching && allClimbs.length === 0 && <ClimbsListSkeleton aspectRatio={aspectRatio} />}
+          </Box>
+        ) : (
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            {visibleClimbs.map((climb) => (
+              <div key={climb.uuid} className={listStyles.listItem}>
+                <ClimbListItem
+                  climb={climb}
+                  boardDetails={boardDetails}
+                  pathname={pathname}
+                  isDark={isDark}
+                  onSelect={selectHandlersMap.get(climb.uuid)}
+                  onThumbnailClick={openDrawerHandlersMap.get(climb.uuid)}
+                  onOpenActions={handleOpenActions}
+                  onOpenPlaylistSelector={handleOpenPlaylistSelector}
+                  addToQueue={addToQueue}
+                />
+              </div>
+            ))}
           </Box>
         )}
-        {!hasNextPage && visibleClimbs.length > 0 && (
-          <div className={styles.endOfList}>
-            {allClimbs.length >= totalCount ? `All ${visibleClimbs.length} climbs loaded` : 'No more climbs'}
-          </div>
-        )}
-      </div>
 
-      {/* Shared drawers — owns its own state so open/close doesn't re-render the list */}
-      <LikedDrawers ref={drawerRef} boardDetails={boardDetails} />
-    </div>
+        {/* Sentinel element for Intersection Observer */}
+        <div ref={sentinelRef} style={sentinelStyle}>
+          {isFetchingNextPage && (
+            <Box sx={gridContainerSx}>
+              <ClimbsListSkeleton aspectRatio={aspectRatio} />
+            </Box>
+          )}
+          {!hasNextPage && visibleClimbs.length > 0 && (
+            <div className={styles.endOfList}>
+              {allClimbs.length >= totalCount ? `All ${visibleClimbs.length} climbs loaded` : 'No more climbs'}
+            </div>
+          )}
+        </div>
+
+        {/* Shared drawers — owns its own state so open/close doesn't re-render the list */}
+        <LikedDrawers ref={drawerRef} boardDetails={boardDetails} />
+      </div>
     </SelectionStoreContext.Provider>
   );
 }

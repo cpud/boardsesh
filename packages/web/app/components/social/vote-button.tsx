@@ -23,7 +23,7 @@ import { themeTokens } from '@/app/theme/theme-config';
 import type { SocialEntityType } from '@boardsesh/shared-schema';
 import { useVoteSummaryContext } from './vote-summary-context';
 
-interface VoteButtonProps {
+type VoteButtonProps = {
   entityType: SocialEntityType;
   entityId: string;
   initialUpvotes?: number;
@@ -32,7 +32,7 @@ interface VoteButtonProps {
   layout?: 'vertical' | 'horizontal';
   likeOnly?: boolean;
   onVoteChange?: (summary: { upvotes: number; downvotes: number; voteScore: number; userVote: number }) => void;
-}
+};
 
 export default function VoteButton({
   entityType,
@@ -104,7 +104,7 @@ export default function VoteButton({
       }
     };
 
-    fetchVoteSummary();
+    void fetchVoteSummary();
 
     return () => {
       cancelled = true;
@@ -156,10 +156,9 @@ export default function VoteButton({
       setIsLoading(true);
       try {
         const client = createGraphQLHttpClient(token);
-        const response = await client.request<VoteMutationResponse, VoteMutationVariables>(
-          VOTE,
-          { input: { entityType, entityId, value } },
-        );
+        const response = await client.request<VoteMutationResponse, VoteMutationVariables>(VOTE, {
+          input: { entityType, entityId, value },
+        });
 
         // Use server response as source of truth
         const s = response.vote;
@@ -203,11 +202,7 @@ export default function VoteButton({
             p: 0.5,
           }}
         >
-          {isLiked ? (
-            <FavoriteOutlined sx={{ fontSize: 18 }} />
-          ) : (
-            <FavoriteBorderOutlined sx={{ fontSize: 18 }} />
-          )}
+          {isLiked ? <FavoriteOutlined sx={{ fontSize: 18 }} /> : <FavoriteBorderOutlined sx={{ fontSize: 18 }} />}
         </IconButton>
         {upvotes > 0 && (
           <MuiTypography

@@ -30,7 +30,7 @@ const DRAFTS_DRAWER_STYLES = {
   body: { padding: 0, overflow: 'hidden' as const, touchAction: 'pan-y' as const },
 } as const;
 
-export interface DraftsDrawerProps {
+export type DraftsDrawerProps = {
   open: boolean;
   onClose: () => void;
   boardDetails: BoardDetails;
@@ -42,7 +42,7 @@ export interface DraftsDrawerProps {
    * falls back to navigating to the climb view page.
    */
   onLoadDraft?: (climb: Climb) => void;
-}
+};
 
 const DraftsDrawer: React.FC<DraftsDrawerProps> = ({ open, onClose, boardDetails, angle, onLoadDraft }) => {
   const router = useRouter();
@@ -84,32 +84,36 @@ const DraftsDrawer: React.FC<DraftsDrawerProps> = ({ open, onClose, boardDetails
     }
   }, []);
 
-  const handleDragEnd = useCallback((e: React.TouchEvent) => {
-    if (!isDragGestureRef.current) return;
-    const deltaY = e.changedTouches[0].clientY - dragStartY.current;
-    const THRESHOLD = 30;
+  const handleDragEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isDragGestureRef.current) return;
+      const deltaY = e.changedTouches[0].clientY - dragStartY.current;
+      const THRESHOLD = 30;
 
-    if (deltaY < -THRESHOLD) {
-      updateDraftsDrawerHeight('100%');
-    } else if (deltaY > THRESHOLD) {
-      if (dragStartHeightRef.current === '100%') {
-        updateDraftsDrawerHeight('60%');
-      } else {
-        onClose();
+      if (deltaY < -THRESHOLD) {
+        updateDraftsDrawerHeight('100%');
+      } else if (deltaY > THRESHOLD) {
+        if (dragStartHeightRef.current === '100%') {
+          updateDraftsDrawerHeight('60%');
+        } else {
+          onClose();
+        }
       }
-    }
-  }, [onClose, updateDraftsDrawerHeight]);
+    },
+    [onClose, updateDraftsDrawerHeight],
+  );
 
   // Query: only run when drawer is open and user has a token
   const queryKey = useMemo(
-    () => [
-      'climbDrafts',
-      boardDetails.board_name,
-      boardDetails.layout_id,
-      boardDetails.size_id,
-      boardDetails.set_ids.join(','),
-      angle,
-    ] as const,
+    () =>
+      [
+        'climbDrafts',
+        boardDetails.board_name,
+        boardDetails.layout_id,
+        boardDetails.size_id,
+        boardDetails.set_ids.join(','),
+        angle,
+      ] as const,
     [boardDetails.board_name, boardDetails.layout_id, boardDetails.size_id, boardDetails.set_ids, angle],
   );
 

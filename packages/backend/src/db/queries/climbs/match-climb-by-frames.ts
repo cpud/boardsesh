@@ -2,10 +2,10 @@ import { sql } from 'drizzle-orm';
 import { db } from '../../client';
 import { UNIFIED_TABLES, type BoardName } from '../util/table-select';
 
-interface MatchedClimb {
+type MatchedClimb = {
   uuid: string;
   name: string;
-}
+};
 
 /**
  * Find a climb by exact frames string match.
@@ -21,7 +21,7 @@ export async function matchClimbByFrames(
   boardName: BoardName,
   layoutId: number,
   frames: string,
-  angle?: number
+  angle?: number,
 ): Promise<MatchedClimb | null> {
   const tables = UNIFIED_TABLES;
 
@@ -37,7 +37,7 @@ export async function matchClimbByFrames(
         tables.climbStats,
         sql`${tables.climbStats.climbUuid} = ${tables.climbs.uuid}
           AND ${tables.climbStats.boardType} = ${boardName}
-          ${angle !== undefined ? sql`AND ${tables.climbStats.angle} = ${angle}` : sql``}`
+          ${angle !== undefined ? sql`AND ${tables.climbStats.angle} = ${angle}` : sql``}`,
       )
       .where(
         sql`${tables.climbs.boardType} = ${boardName}
@@ -45,7 +45,7 @@ export async function matchClimbByFrames(
           AND ${tables.climbs.frames} = ${frames}
           AND ${tables.climbs.framesCount} = 1
           AND ${tables.climbs.isListed} = true
-          AND ${tables.climbs.isDraft} = false`
+          AND ${tables.climbs.isDraft} = false`,
       )
       .orderBy(sql`${tables.climbStats.ascensionistCount} DESC NULLS LAST`)
       .limit(1);

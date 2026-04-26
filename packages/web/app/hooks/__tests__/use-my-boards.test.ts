@@ -1,5 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, waitFor } from '@testing-library/react';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { useMyBoards } from '../use-my-boards';
 
 vi.mock('@/app/hooks/use-ws-auth-token', () => ({
   useWsAuthToken: vi.fn(),
@@ -14,14 +16,25 @@ vi.mock('@/app/lib/graphql/operations', () => ({
   GET_MY_BOARDS: 'GET_MY_BOARDS',
 }));
 
-import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
-import { useMyBoards } from '../use-my-boards';
-
 const mockUseWsAuthToken = vi.mocked(useWsAuthToken);
 
 const mockBoards = [
-  { uuid: 'board-1', name: 'Home Kilter', slug: 'home-kilter', boardType: 'kilter', angle: 40, locationName: 'Home' },
-  { uuid: 'board-2', name: 'Gym Tension', slug: 'gym-tension', boardType: 'tension', angle: 30, locationName: 'Gym' },
+  {
+    uuid: 'board-1',
+    name: 'Home Kilter',
+    slug: 'home-kilter',
+    boardType: 'kilter',
+    angle: 40,
+    locationName: 'Home',
+  },
+  {
+    uuid: 'board-2',
+    name: 'Gym Tension',
+    slug: 'gym-tension',
+    boardType: 'tension',
+    angle: 30,
+    locationName: 'Gym',
+  },
 ];
 
 describe('useMyBoards', () => {
@@ -106,13 +119,19 @@ describe('useMyBoards', () => {
     renderHook(() => useMyBoards(true, 20));
 
     await waitFor(() => {
-      expect(mockRequest).toHaveBeenCalledWith('GET_MY_BOARDS', { input: { limit: 20, offset: 0 } });
+      expect(mockRequest).toHaveBeenCalledWith('GET_MY_BOARDS', {
+        input: { limit: 20, offset: 0 },
+      });
     });
   });
 
   it('cancels in-flight request when unmounted', async () => {
     let resolveRequest: (value: unknown) => void;
-    mockRequest.mockReturnValueOnce(new Promise((resolve) => { resolveRequest = resolve; }));
+    mockRequest.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveRequest = resolve;
+      }),
+    );
 
     const { result, unmount } = renderHook(() => useMyBoards(true));
 
@@ -129,10 +148,9 @@ describe('useMyBoards', () => {
   it('refetches when token changes', async () => {
     mockRequest.mockResolvedValueOnce({ myBoards: { boards: [mockBoards[0]] } });
 
-    const { result, rerender } = renderHook(
-      ({ enabled }) => useMyBoards(enabled),
-      { initialProps: { enabled: true } },
-    );
+    const { result, rerender } = renderHook(({ enabled }) => useMyBoards(enabled), {
+      initialProps: { enabled: true },
+    });
 
     await waitFor(() => {
       expect(result.current.boards).toHaveLength(1);
@@ -157,10 +175,9 @@ describe('useMyBoards', () => {
   it('clears error on successful refetch', async () => {
     mockRequest.mockRejectedValueOnce(new Error('fail'));
 
-    const { result, rerender } = renderHook(
-      ({ enabled }) => useMyBoards(enabled),
-      { initialProps: { enabled: true } },
-    );
+    const { result, rerender } = renderHook(({ enabled }) => useMyBoards(enabled), {
+      initialProps: { enabled: true },
+    });
 
     await waitFor(() => {
       expect(result.current.error).toBe('Failed to load your boards');

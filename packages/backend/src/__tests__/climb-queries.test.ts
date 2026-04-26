@@ -1,6 +1,11 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { searchClimbs, countClimbs, getClimbByUuid } from '../db/queries/climbs/index';
-import type { ParsedBoardRouteParameters, ClimbSearchParams } from '../db/queries/climbs/index';
+import { describe, it, expect, beforeAll, afterAll } from 'vite-plus/test';
+import {
+  searchClimbs,
+  countClimbs,
+  getClimbByUuid,
+  type ParsedBoardRouteParameters,
+  type ClimbSearchParams,
+} from '../db/queries/climbs/index';
 import { db } from '../db/client';
 import { sql } from 'drizzle-orm';
 
@@ -314,7 +319,12 @@ describe('Climb Query Functions', () => {
         angle: 40,
       };
 
-      const result = await searchClimbs(params, { page: 0, pageSize: 100, sortBy: 'creation', sortOrder: 'desc' });
+      const result = await searchClimbs(params, {
+        page: 0,
+        pageSize: 100,
+        sortBy: 'creation',
+        sortOrder: 'desc',
+      });
       const uuids = result.climbs.map((c) => c.uuid);
 
       // Should include mainline-only climb
@@ -333,7 +343,12 @@ describe('Climb Query Functions', () => {
         angle: 40,
       };
 
-      const result = await searchClimbs(params, { page: 0, pageSize: 100, sortBy: 'creation', sortOrder: 'desc' });
+      const result = await searchClimbs(params, {
+        page: 0,
+        pageSize: 100,
+        sortBy: 'creation',
+        sortOrder: 'desc',
+      });
       const uuids = result.climbs.map((c) => c.uuid);
 
       // All three climbs should appear when both sets are selected
@@ -367,7 +382,12 @@ describe('Climb Query Functions', () => {
       };
 
       // Should not throw and should return results (no set filtering applied)
-      const result = await searchClimbs(params, { page: 0, pageSize: 100, sortBy: 'creation', sortOrder: 'desc' });
+      const result = await searchClimbs(params, {
+        page: 0,
+        pageSize: 100,
+        sortBy: 'creation',
+        sortOrder: 'desc',
+      });
       const uuids = result.climbs.map((c) => c.uuid);
 
       // All test climbs should appear since no set filter is applied

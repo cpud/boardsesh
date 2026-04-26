@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getSetsBySlug, SetRow } from '@/app/lib/slug-utils';
-import { BoardName } from '@/app/lib/types';
+import { type SetRow, getSetsBySlug } from '@/app/lib/slug-utils';
+import type { BoardName } from '@/app/lib/types';
 
 export async function GET(
   req: Request,
-  props: { params: Promise<{ board_name: string; layout_id: string; size_id: string; slug: string }> },
+  props: {
+    params: Promise<{ board_name: string; layout_id: string; size_id: string; slug: string }>;
+  },
 ): Promise<NextResponse<SetRow[] | { error: string }>> {
   const params = await props.params;
   const { board_name, layout_id, size_id, slug } = params;

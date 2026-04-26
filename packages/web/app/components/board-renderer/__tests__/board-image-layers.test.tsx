@@ -1,8 +1,11 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
+
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { render } from '@testing-library/react';
 import React from 'react';
 import type { BoardDetails } from '@/app/lib/types';
+import BoardImageLayers from '../board-image-layers';
+import { buildOverlayUrl } from '../util';
 
 vi.mock('../util', () => ({
   getImageUrl: (imageUrl: string, board: string) => `/images/${board}/${imageUrl}`,
@@ -11,9 +14,6 @@ vi.mock('../util', () => ({
       `/api/internal/board-render?frames=${frames}${thumbnail ? '&thumbnail=1' : ''}&include_background=1`,
   ),
 }));
-
-import BoardImageLayers from '../board-image-layers';
-import { buildOverlayUrl } from '../util';
 
 const mockBoardDetails: BoardDetails = {
   board_name: 'kilter',
@@ -33,11 +33,7 @@ const mockBoardDetails: BoardDetails = {
 describe('BoardImageLayers', () => {
   it('renders single composited image when frames are provided', () => {
     const { container } = render(
-      <BoardImageLayers
-        boardDetails={mockBoardDetails}
-        frames="p1r42p2r43"
-        mirrored={false}
-      />,
+      <BoardImageLayers boardDetails={mockBoardDetails} frames="p1r42p2r43" mirrored={false} />,
     );
 
     const images = container.querySelectorAll('img');
@@ -47,12 +43,7 @@ describe('BoardImageLayers', () => {
   });
 
   it('renders background images when no frames are provided', () => {
-    const { container } = render(
-      <BoardImageLayers
-        boardDetails={mockBoardDetails}
-        mirrored={false}
-      />,
-    );
+    const { container } = render(<BoardImageLayers boardDetails={mockBoardDetails} mirrored={false} />);
 
     const images = container.querySelectorAll('img');
     expect(images).toHaveLength(1);
@@ -68,12 +59,7 @@ describe('BoardImageLayers', () => {
       },
     };
 
-    const { container } = render(
-      <BoardImageLayers
-        boardDetails={multiSetBoard}
-        mirrored={false}
-      />,
-    );
+    const { container } = render(<BoardImageLayers boardDetails={multiSetBoard} mirrored={false} />);
 
     expect(container.querySelectorAll('img')).toHaveLength(2);
   });
@@ -87,13 +73,7 @@ describe('BoardImageLayers', () => {
       },
     };
 
-    const { container } = render(
-      <BoardImageLayers
-        boardDetails={multiSetBoard}
-        frames="p1r42"
-        mirrored={false}
-      />,
-    );
+    const { container } = render(<BoardImageLayers boardDetails={multiSetBoard} frames="p1r42" mirrored={false} />);
 
     // Only 1 composited image, no separate backgrounds
     expect(container.querySelectorAll('img')).toHaveLength(1);
@@ -101,12 +81,7 @@ describe('BoardImageLayers', () => {
 
   it('applies scaleX(-1) transform when mirrored', () => {
     const { container } = render(
-      <BoardImageLayers
-        boardDetails={mockBoardDetails}
-        frames="p1r42"
-        mirrored={true}
-        style={{ width: '100%' }}
-      />,
+      <BoardImageLayers boardDetails={mockBoardDetails} frames="p1r42" mirrored style={{ width: '100%' }} />,
     );
 
     const wrapper = container.firstChild as HTMLElement;
@@ -115,12 +90,7 @@ describe('BoardImageLayers', () => {
 
   it('does not apply transform when not mirrored', () => {
     const { container } = render(
-      <BoardImageLayers
-        boardDetails={mockBoardDetails}
-        frames="p1r42"
-        mirrored={false}
-        style={{ width: '100%' }}
-      />,
+      <BoardImageLayers boardDetails={mockBoardDetails} frames="p1r42" mirrored={false} style={{ width: '100%' }} />,
     );
 
     const wrapper = container.firstChild as HTMLElement;
@@ -128,26 +98,14 @@ describe('BoardImageLayers', () => {
   });
 
   it('passes thumbnail flag to buildOverlayUrl', () => {
-    render(
-      <BoardImageLayers
-        boardDetails={mockBoardDetails}
-        frames="p1r42"
-        mirrored={false}
-        thumbnail
-      />,
-    );
+    render(<BoardImageLayers boardDetails={mockBoardDetails} frames="p1r42" mirrored={false} thumbnail />);
 
     expect(buildOverlayUrl).toHaveBeenCalledWith(mockBoardDetails, 'p1r42', true);
   });
 
   it('uses object-fit contain when contain prop is set', () => {
     const { container } = render(
-      <BoardImageLayers
-        boardDetails={mockBoardDetails}
-        frames="p1r42"
-        mirrored={false}
-        contain
-      />,
+      <BoardImageLayers boardDetails={mockBoardDetails} frames="p1r42" mirrored={false} contain />,
     );
 
     const images = container.querySelectorAll('img');
@@ -158,12 +116,7 @@ describe('BoardImageLayers', () => {
 
   it('uses object-fit contain when thumbnail prop is set', () => {
     const { container } = render(
-      <BoardImageLayers
-        boardDetails={mockBoardDetails}
-        frames="p1r42"
-        mirrored={false}
-        thumbnail
-      />,
+      <BoardImageLayers boardDetails={mockBoardDetails} frames="p1r42" mirrored={false} thumbnail />,
     );
 
     const images = container.querySelectorAll('img');
@@ -174,12 +127,7 @@ describe('BoardImageLayers', () => {
 
   it('uses thumbnail dimensions for img width/height when thumbnail is set', () => {
     const { container } = render(
-      <BoardImageLayers
-        boardDetails={mockBoardDetails}
-        frames="p1r42"
-        mirrored={false}
-        thumbnail
-      />,
+      <BoardImageLayers boardDetails={mockBoardDetails} frames="p1r42" mirrored={false} thumbnail />,
     );
 
     const img = container.querySelector('img')!;
@@ -189,17 +137,10 @@ describe('BoardImageLayers', () => {
   });
 
   it('uses full board dimensions for img width/height when not thumbnail', () => {
-    const { container } = render(
-      <BoardImageLayers
-        boardDetails={mockBoardDetails}
-        frames="p1r42"
-        mirrored={false}
-      />,
-    );
+    const { container } = render(<BoardImageLayers boardDetails={mockBoardDetails} frames="p1r42" mirrored={false} />);
 
     const img = container.querySelector('img')!;
     expect(img.getAttribute('width')).toBe('1080');
     expect(img.getAttribute('height')).toBe('1350');
   });
-
 });

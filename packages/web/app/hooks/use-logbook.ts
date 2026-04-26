@@ -5,18 +5,14 @@ import { useRef, useEffect, useMemo, useState, useCallback } from 'react';
 import { useWsAuthToken } from './use-ws-auth-token';
 import { useSession } from 'next-auth/react';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  GET_TICKS,
-  type GetTicksQueryVariables,
-  type GetTicksQueryResponse,
-} from '@/app/lib/graphql/operations';
+import { GET_TICKS, type GetTicksQueryVariables, type GetTicksQueryResponse } from '@/app/lib/graphql/operations';
 import type { BoardName, ClimbUuid } from '@/app/lib/types';
 
 // Tick status type matching the database enum
 export type TickStatus = 'flash' | 'send' | 'attempt';
 
 // Logbook entry representing a user's tick on a climb
-export interface LogbookEntry {
+export type LogbookEntry = {
   uuid: string;
   climb_uuid: string;
   angle: number;
@@ -28,7 +24,10 @@ export interface LogbookEntry {
   climbed_at: string;
   is_ascent: boolean;
   status?: TickStatus;
-}
+  upvotes: number;
+  downvotes: number;
+  commentCount: number;
+};
 
 type LogbookSourceTick = {
   uuid: string;
@@ -41,6 +40,9 @@ type LogbookSourceTick = {
   difficulty: number | null;
   comment: string;
   climbedAt: string;
+  upvotes?: number | null;
+  downvotes?: number | null;
+  commentCount?: number | null;
 };
 
 export function toLogbookEntry(tick: LogbookSourceTick): LogbookEntry {
@@ -56,6 +58,9 @@ export function toLogbookEntry(tick: LogbookSourceTick): LogbookEntry {
     climbed_at: tick.climbedAt,
     is_ascent: tick.status === 'flash' || tick.status === 'send',
     status: tick.status,
+    upvotes: tick.upvotes ?? 0,
+    downvotes: tick.downvotes ?? 0,
+    commentCount: tick.commentCount ?? 0,
   };
 }
 
@@ -63,10 +68,7 @@ function transformTicks(ticks: GetTicksQueryResponse['ticks']): LogbookEntry[] {
   return ticks.map(toLogbookEntry);
 }
 
-export function mergeLogbookEntries(
-  existing: LogbookEntry[],
-  incoming: LogbookEntry[],
-): LogbookEntry[] {
+export function mergeLogbookEntries(existing: LogbookEntry[], incoming: LogbookEntry[]): LogbookEntry[] {
   if (incoming.length === 0) return existing;
 
   const existingUuids = new Set(existing.map((entry) => entry.uuid));
@@ -132,6 +134,7 @@ export function useLogbook(boardName: BoardName, climbUuids: ClimbUuid[]) {
   // fetchedUuidsRef, since climbUuids/isEnabled may not have changed.
   const newUuids = useMemo(
     () => (isEnabled ? climbUuids.filter((uuid) => !fetchedUuidsRef.current.has(uuid)) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- invalidationCount forces recomputation after cache invalidation clears fetchedUuidsRef
     [climbUuids, isEnabled, invalidationCount],
   );
 
@@ -145,7 +148,7 @@ export function useLogbook(boardName: BoardName, climbUuids: ClimbUuid[]) {
 
       if (uuidsToFetch.length === 0) return [];
 
-      const client = createGraphQLHttpClient(token!);
+      const client = createGraphQLHttpClient(token);
       const variables: GetTicksQueryVariables = {
         input: {
           boardType: boardName,
@@ -173,9 +176,8 @@ export function useLogbook(boardName: BoardName, climbUuids: ClimbUuid[]) {
     // Mark these UUIDs as fetched (including those with no ticks)
     newUuids.forEach((uuid) => fetchedUuidsRef.current.add(uuid));
 
-    queryClient.setQueryData<LogbookEntry[]>(
-      accumulatedKey,
-      (existing = []) => mergeLogbookEntries(existing, fetchQuery.data),
+    queryClient.setQueryData<LogbookEntry[]>(accumulatedKey, (existing = []) =>
+      mergeLogbookEntries(existing, fetchQuery.data),
     );
   }, [fetchQuery.data, newUuids, accumulatedKey, queryClient]);
 

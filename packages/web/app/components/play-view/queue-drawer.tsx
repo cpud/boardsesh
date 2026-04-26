@@ -11,7 +11,7 @@ import EditOutlined from '@mui/icons-material/EditOutlined';
 import CloseOutlined from '@mui/icons-material/CloseOutlined';
 import HistoryOutlined from '@mui/icons-material/HistoryOutlined';
 import { useQueueActions, useQueueList, useSessionData } from '../graphql-queue';
-import QueueList, { QueueListHandle } from '../queue-control/queue-list';
+import QueueList, { type QueueListHandle } from '../queue-control/queue-list';
 import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
 import { usePullToClose } from '@/app/lib/hooks/pull-to-close';
 import { useDrawerDragResize } from '@/app/hooks/use-drawer-drag-resize';
@@ -28,22 +28,29 @@ const QUEUE_DRAWER_STYLES = {
   body: { padding: 0, overflow: 'hidden' as const, touchAction: 'pan-y' as const },
 } as const;
 
-export interface QueueDrawerProps {
+export type QueueDrawerProps = {
   open: boolean;
   onClose: () => void;
   onTransitionEnd?: (open: boolean) => void;
   boardDetails: BoardDetails;
-}
+  /**
+   * When true, history (climbs queued before the current one) is visible on
+   * mount. Useful for the onboarding tour so the user sees every climb they
+   * queued regardless of which one is currently active.
+   */
+  initialShowHistory?: boolean;
+};
 
 const QueueDrawer: React.FC<QueueDrawerProps> = ({
   open,
   onClose,
   onTransitionEnd,
   boardDetails,
+  initialShowHistory = false,
 }) => {
   // Internal state
   const [isEditMode, setIsEditMode] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
+  const [showHistory, setShowHistory] = useState(initialShowHistory);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
   // Refs
@@ -104,33 +111,43 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
     onClose: closeDrawer,
   });
 
-  const handleQueueSwipeStart = useCallback((e: React.TouchEvent) => {
-    queuePull.onTouchStart(e.touches[0].clientY, queueScrollRef.current);
-  }, [queuePull]);
+  const handleQueueSwipeStart = useCallback(
+    (e: React.TouchEvent) => {
+      queuePull.onTouchStart(e.touches[0].clientY, queueScrollRef.current);
+    },
+    [queuePull],
+  );
 
-  const handleQueueSwipeMove = useCallback((e: React.TouchEvent) => {
-    queuePull.onTouchMove(e.touches[0].clientY, e.touches.length);
-  }, [queuePull]);
+  const handleQueueSwipeMove = useCallback(
+    (e: React.TouchEvent) => {
+      queuePull.onTouchMove(e.touches[0].clientY, e.touches.length);
+    },
+    [queuePull],
+  );
 
   const handleQueueSwipeEnd = useCallback(() => {
     queuePull.onTouchEnd();
   }, [queuePull]);
 
   // Transition end handler
-  const handleTransitionEnd = useCallback((transitionOpen: boolean) => {
-    if (transitionOpen) {
-      // Clear any leftover inline styles from a custom pull-to-close gesture
-      if (queuePaperRef.current) {
-        queuePaperRef.current.style.transform = '';
-        queuePaperRef.current.style.transition = '';
+  const handleTransitionEnd = useCallback(
+    (transitionOpen: boolean) => {
+      if (transitionOpen) {
+        // Clear any leftover inline styles from a custom pull-to-close gesture
+        if (queuePaperRef.current) {
+          queuePaperRef.current.style.transform = '';
+          queuePaperRef.current.style.transition = '';
+        }
+        setTimeout(() => {
+          queueListRef.current?.scrollToCurrentClimb();
+        }, 100);
       }
-      setTimeout(() => {
-        queueListRef.current?.scrollToCurrentClimb();
-      }, 100);
-    }
-    // Always propagate to parent for lifecycle management
-    onTransitionEnd?.(transitionOpen);
-  }, [onTransitionEnd]);
+      // Always propagate to parent for lifecycle management
+      onTransitionEnd?.(transitionOpen);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- queuePaperRef is a stable ref
+    [onTransitionEnd],
+  );
 
   return (
     <SwipeableDrawer
@@ -147,11 +164,7 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
       styles={QUEUE_DRAWER_STYLES}
     >
       {/* Custom drag header — resize only on deliberate drag, not scroll */}
-      <div
-        className={styles.queueDragHeader}
-        data-swipe-blocked=""
-        {...dragHandlers}
-      >
+      <div className={styles.queueDragHeader} data-swipe-blocked="" {...dragHandlers}>
         <div className={drawerStyles.dragHandleZoneHorizontal}>
           <div className={drawerStyles.dragHandleBarHorizontal} />
         </div>
@@ -164,12 +177,20 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
             borderBottom: '1px solid var(--neutral-200)',
           }}
         >
-          <Typography variant="h6" component="div" sx={{ fontWeight: themeTokens.typography.fontWeight.semibold, fontSize: themeTokens.typography.fontSize.base }}>
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{
+              fontWeight: themeTokens.typography.fontWeight.semibold,
+              fontSize: themeTokens.typography.fontSize.base,
+            }}
+          >
             Queue
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {queue.length > 0 && !viewOnlyMode && (
-              isEditMode ? (
+            {queue.length > 0 &&
+              !viewOnlyMode &&
+              (isEditMode ? (
                 <Stack direction="row" spacing={1}>
                   <MuiButton
                     variant="text"
@@ -182,7 +203,9 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
                   >
                     Clear
                   </MuiButton>
-                  <IconButton onClick={handleExitEditMode}><CloseOutlined /></IconButton>
+                  <IconButton onClick={handleExitEditMode}>
+                    <CloseOutlined />
+                  </IconButton>
                 </Stack>
               ) : (
                 <Stack direction="row" spacing={1}>
@@ -193,10 +216,11 @@ const QueueDrawer: React.FC<QueueDrawerProps> = ({
                   >
                     <HistoryOutlined />
                   </IconButton>
-                  <IconButton onClick={() => setIsEditMode(true)}><EditOutlined /></IconButton>
+                  <IconButton onClick={() => setIsEditMode(true)}>
+                    <EditOutlined />
+                  </IconButton>
                 </Stack>
-              )
-            )}
+              ))}
           </Box>
         </Box>
       </div>

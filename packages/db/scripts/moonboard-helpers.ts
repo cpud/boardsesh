@@ -22,12 +22,12 @@ export const NUM_COLUMNS = 11;
 // Types
 // =============================================================================
 
-export interface MoonBoardMove {
+export type MoonBoardMove = {
   problemId: number;
   description: string; // e.g., "J3", "E4"
   isStart: boolean;
   isEnd: boolean;
-}
+};
 
 // =============================================================================
 // Helper functions
@@ -72,18 +72,20 @@ export function coordinateToHoldId(coord: string): number {
  * Format: p{holdId}r{roleCode}
  */
 export function movesToFrames(moves: MoonBoardMove[]): string {
-  return moves.map((move) => {
-    const holdId = coordinateToHoldId(move.description);
-    let role: number;
-    if (move.isStart) {
-      role = HOLD_STATE_CODES.start;
-    } else if (move.isEnd) {
-      role = HOLD_STATE_CODES.finish;
-    } else {
-      role = HOLD_STATE_CODES.hand;
-    }
-    return `p${holdId}r${role}`;
-  }).join('');
+  return moves
+    .map((move) => {
+      const holdId = coordinateToHoldId(move.description);
+      let role: number;
+      if (move.isStart) {
+        role = HOLD_STATE_CODES.start;
+      } else if (move.isEnd) {
+        role = HOLD_STATE_CODES.finish;
+      } else {
+        role = HOLD_STATE_CODES.hand;
+      }
+      return `p${holdId}r${role}`;
+    })
+    .join('');
 }
 
 /**

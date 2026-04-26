@@ -2,7 +2,7 @@ import type { SessionSummary } from '@boardsesh/shared-schema';
 import { isNativeApp, getPlatform } from '../ble/capacitor-utils';
 import { getPreference, setPreference } from '../user-preferences-db';
 
-interface HealthKitPlugin {
+type HealthKitPlugin = {
   isAvailable(): Promise<{ available: boolean }>;
   requestAuthorization(): Promise<{ granted: boolean }>;
   saveWorkout(options: {
@@ -14,7 +14,7 @@ interface HealthKitPlugin {
     hardestGrade?: string;
     boardType: string;
   }): Promise<{ workoutId: string }>;
-}
+};
 
 const HEALTHKIT_AUTO_SYNC_KEY = 'healthKitAutoSync';
 
@@ -48,9 +48,9 @@ export async function requestHealthKitAuthorization(): Promise<boolean> {
   }
 }
 
-export interface SaveSessionResult {
+export type SaveSessionResult = {
   workoutId: string;
-}
+};
 
 export async function saveSessionToHealthKit(
   summary: SessionSummary,
@@ -61,6 +61,15 @@ export async function saveSessionToHealthKit(
   if (!summary.startedAt || !summary.endedAt) {
     console.warn('[HealthKit] Skipping save: missing startedAt/endedAt');
     return null;
+  }
+  const startMs = new Date(summary.startedAt).getTime();
+  const endMs = new Date(summary.endedAt).getTime();
+  const durationSec = Math.round((endMs - startMs) / 1000);
+  console.info(
+    `[HealthKit] Saving workout: startedAt=${summary.startedAt} endedAt=${summary.endedAt} duration=${durationSec}s durationMinutes=${summary.durationMinutes}`,
+  );
+  if (durationSec < 60) {
+    console.warn(`[HealthKit] Duration is only ${durationSec}s — workout will appear as <1 min in Apple Health`);
   }
   try {
     const result = await plugin.saveWorkout({

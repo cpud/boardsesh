@@ -18,7 +18,7 @@ import { PlaylistsProvider } from '../climb-actions/playlists-batch-context';
 import { useClimbActionsData } from '@/app/hooks/use-climb-actions-data';
 import ErrorBoundary from '../error-boundary';
 import bottomBarStyles from '../bottom-tab-bar/bottom-bar-wrapper.module.css';
-import { BoardConfigData } from '@/app/lib/server-board-configs';
+import type { BoardConfigData } from '@/app/lib/server-board-configs';
 import { isBoardRoutePath } from '@/app/lib/board-route-paths';
 import GlobalHeader from '../global-header/global-header';
 import SessionSummaryDialog from '../session-summary/session-summary-dialog';
@@ -28,14 +28,17 @@ import { ProfileHeaderShareProvider } from '../profile-header-bridge/profile-hea
 import { isNativeApp } from '@/app/lib/ble/capacitor-utils';
 import dynamic from 'next/dynamic';
 import { SESH_SETTINGS_DRAWER_EVENT } from '../sesh-settings/sesh-settings-drawer-event';
-
-const SeshSettingsDrawer = dynamic(() => import('../sesh-settings/sesh-settings-drawer'), { ssr: false });
 import { BoardSwitchConfirmProvider } from '../board-lock/board-switch-confirm-provider';
+import { FeedbackPromptBanner } from '../feedback/feedback-prompt-banner';
 
-interface PersistentSessionWrapperProps {
+const SeshSettingsDrawer = dynamic(() => import('../sesh-settings/sesh-settings-drawer'), {
+  ssr: false,
+});
+
+type PersistentSessionWrapperProps = {
   children: React.ReactNode;
   boardConfigs: BoardConfigData;
-}
+};
 
 /**
  * Root-level wrapper that provides:
@@ -74,8 +77,16 @@ export default function PersistentSessionWrapper({ children, boardConfigs }: Per
  * so session ending works from any page (not just board routes).
  */
 function RootSessionSummaryDialog() {
-  const { sessionSummary, dismissSessionSummary } = usePersistentSession();
-  return <SessionSummaryDialog summary={sessionSummary} onDismiss={dismissSessionSummary} />;
+  const { sessionSummary, sessionSummaryBoardType, sessionSummaryHealthKitWorkoutId, dismissSessionSummary } =
+    usePersistentSession();
+  return (
+    <SessionSummaryDialog
+      summary={sessionSummary}
+      boardType={sessionSummaryBoardType ?? ''}
+      existingWorkoutId={sessionSummaryHealthKitWorkoutId}
+      onDismiss={dismissSessionSummary}
+    />
+  );
 }
 
 /**
@@ -103,13 +114,7 @@ function RootSeshSettingsDrawer() {
 
   if (!rendered) return null;
 
-  return (
-    <SeshSettingsDrawer
-      open={open}
-      onClose={handleClose}
-      onTransitionEnd={handleTransitionEnd}
-    />
-  );
+  return <SeshSettingsDrawer open={open} onClose={handleClose} onTransitionEnd={handleTransitionEnd} />;
 }
 
 /**
@@ -133,6 +138,7 @@ export function RootBottomBar({ boardConfigs }: { boardConfigs: BoardConfigData 
       className={`${bottomBarStyles.bottomBarWrapper} ${isNative ? bottomBarStyles.nativeApp : ''}`}
       data-testid="bottom-bar-wrapper"
     >
+      <FeedbackPromptBanner />
       {hasActiveQueue && boardDetails && (
         <ErrorBoundary>
           <BoardProvider boardName={boardDetails.board_name}>
@@ -168,7 +174,7 @@ function RootQueueControlBarWithProviders({
   const { queue } = useQueueList();
 
   const climbUuids = useMemo(() => {
-    const queueUuids = queue.map((item) => item.climb?.uuid).filter(Boolean) as string[];
+    const queueUuids = queue.map((item) => item.climb?.uuid).filter(Boolean);
     if (currentClimb?.uuid) {
       queueUuids.push(currentClimb.uuid);
     }

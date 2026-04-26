@@ -1,9 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { type QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createTestQueryClient } from '@/app/test-utils/test-providers';
 import type { SessionFeedItem } from '@boardsesh/shared-schema';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import ActivityFeed from '../activity-feed';
 
 // --- Mocks ---
 
@@ -33,9 +35,6 @@ vi.mock('../feed-item-skeleton', () => ({
   default: () => <div data-testid="feed-item-skeleton" />,
 }));
 
-import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
-import ActivityFeed from '../activity-feed';
-
 const mockUseWsAuthToken = vi.mocked(useWsAuthToken);
 
 // --- Helpers ---
@@ -45,14 +44,16 @@ function makeSessionFeedItem(id: string): SessionFeedItem {
     sessionId: id,
     sessionType: 'inferred',
     sessionName: null,
-    participants: [{
-      userId: 'user-1',
-      displayName: 'Test User',
-      avatarUrl: null,
-      sends: 3,
-      flashes: 1,
-      attempts: 2,
-    }],
+    participants: [
+      {
+        userId: 'user-1',
+        displayName: 'Test User',
+        avatarUrl: null,
+        sends: 3,
+        flashes: 1,
+        attempts: 2,
+      },
+    ],
     totalSends: 3,
     totalFlashes: 1,
     totalAttempts: 2,
@@ -186,7 +187,7 @@ describe('ActivityFeed', () => {
         sessionGroupedFeed: { sessions, cursor: 'cursor-1', hasMore: true },
       });
 
-      render(<ActivityFeed isAuthenticated={true} />, { wrapper: createWrapper() });
+      render(<ActivityFeed isAuthenticated />, { wrapper: createWrapper() });
 
       await waitFor(() => {
         expect(screen.getAllByTestId('activity-feed-item')).toHaveLength(2);
@@ -201,10 +202,9 @@ describe('ActivityFeed', () => {
         sessionGroupedFeed: { sessions: [], cursor: null, hasMore: false },
       });
 
-      render(
-        <ActivityFeed isAuthenticated={true} onFindClimbers={onFindClimbers} />,
-        { wrapper: createWrapper() },
-      );
+      render(<ActivityFeed isAuthenticated onFindClimbers={onFindClimbers} />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(screen.getByText(/Find Climbers/)).toBeTruthy();
@@ -227,10 +227,9 @@ describe('ActivityFeed', () => {
         hasMore: true,
       };
 
-      render(
-        <ActivityFeed isAuthenticated={false} initialFeedResult={initialFeedResult} />,
-        { wrapper: createWrapper() },
-      );
+      render(<ActivityFeed isAuthenticated={false} initialFeedResult={initialFeedResult} />, {
+        wrapper: createWrapper(),
+      });
 
       expect(screen.getByText('init-1')).toBeTruthy();
     });
@@ -249,10 +248,9 @@ describe('ActivityFeed', () => {
         sessionGroupedFeed: { sessions: [], cursor: null, hasMore: false },
       });
 
-      render(
-        <ActivityFeed isAuthenticated={false} boardUuid="board-123" />,
-        { wrapper: createWrapper() },
-      );
+      render(<ActivityFeed isAuthenticated={false} boardUuid="board-123" />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(mockRequest).toHaveBeenCalledWith(

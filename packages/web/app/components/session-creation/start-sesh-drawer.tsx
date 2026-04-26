@@ -5,7 +5,6 @@ import { track } from '@vercel/analytics';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import ButtonBase from '@mui/material/ButtonBase';
 import LoginOutlined from '@mui/icons-material/LoginOutlined';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import PlayCircleOutlineOutlined from '@mui/icons-material/PlayCircleOutlineOutlined';
@@ -14,8 +13,7 @@ import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
 import drawerCss from '../swipeable-drawer/swipeable-drawer.module.css';
 import { useDrawerDragResize } from '@/app/hooks/use-drawer-drag-resize';
 import { themeTokens } from '@/app/theme/theme-config';
-import SessionCreationForm from './session-creation-form';
-import type { SessionCreationFormData } from './session-creation-form';
+import SessionCreationForm, { type SessionCreationFormData } from './session-creation-form';
 import BoardSelectorDrawer from '@/app/components/board-selector-drawer/board-selector-drawer';
 import BoardDiscoveryScroll from '@/app/components/board-scroll/board-discovery-scroll';
 import BoardScrollCard from '@/app/components/board-scroll/board-scroll-card';
@@ -23,7 +21,12 @@ import { useCreateSession } from '@/app/hooks/use-create-session';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
-import { constructBoardSlugListUrl, getBaseBoardPath, constructClimbListWithSlugs, tryConstructSlugListUrl } from '@/app/lib/url-utils';
+import {
+  constructBoardSlugListUrl,
+  getBaseBoardPath,
+  constructClimbListWithSlugs,
+  tryConstructSlugListUrl,
+} from '@/app/lib/url-utils';
 import { getDefaultAngleForBoard } from '@/app/lib/board-config-for-playlist';
 import { isBoardRoutePath } from '@/app/lib/board-route-paths';
 import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
@@ -32,17 +35,17 @@ import { usePersistentSession } from '@/app/components/persistent-session/persis
 import { useQueueBridgeBoardInfo } from '@/app/components/queue-control/queue-bridge-context';
 import { useQueueList, useCurrentClimb } from '@/app/components/graphql-queue';
 import { useMyBoards } from '@/app/hooks/use-my-boards';
-import { BoardConfigData } from '@/app/lib/server-board-configs';
+import type { BoardConfigData } from '@/app/lib/server-board-configs';
 import type { StoredBoardConfig } from '@/app/lib/saved-boards-db';
 import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
 import type { BoardName } from '@/app/lib/types';
 
-interface StartSeshDrawerProps {
+type StartSeshDrawerProps = {
   open: boolean;
   onClose: () => void;
   onTransitionEnd?: (open: boolean) => void;
   boardConfigs?: BoardConfigData;
-}
+};
 
 export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardConfigs }: StartSeshDrawerProps) {
   const { status } = useSession();
@@ -101,7 +104,11 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
           b.boardType === localBoardDetails.board_name &&
           b.layoutId === localBoardDetails.layout_id &&
           b.sizeId === localBoardDetails.size_id &&
-          b.setIds.split(',').map(Number).sort((a, b) => a - b).join(',') === sortedLocalSetIds,
+          b.setIds
+            .split(',')
+            .map(Number)
+            .sort((a, b) => a - b)
+            .join(',') === sortedLocalSetIds,
       );
     }
 
@@ -138,9 +145,12 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
     setBoardSelectorExpanded(false);
   }, []);
 
-  const handleDiscoveryBoardClick = useCallback((board: UserBoard) => {
-    handleBoardSelect(board);
-  }, [handleBoardSelect]);
+  const handleDiscoveryBoardClick = useCallback(
+    (board: UserBoard) => {
+      handleBoardSelect(board);
+    },
+    [handleBoardSelect],
+  );
 
   const handleConfigClick = useCallback((config: PopularBoardConfig) => {
     // For popular configs in the session drawer, navigate to that board config
@@ -157,8 +167,9 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
       );
     } else {
       const setIds = config.setIds.join(',');
-      url = tryConstructSlugListUrl(config.boardType, config.layoutId, config.sizeId, config.setIds, angle)
-        ?? `/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`;
+      url =
+        tryConstructSlugListUrl(config.boardType, config.layoutId, config.sizeId, config.setIds, angle) ??
+        `/${config.boardType}/${config.layoutId}/${config.sizeId}/${setIds}/${angle}/list`;
     }
     // Store as custom path selection
     setSelectedCustomPath(url);
@@ -212,7 +223,9 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
       const effectiveBoardDetails = localBoardDetails ?? bridgeBoardDetails;
       const effectiveBaseBoardPath = localBoardPath
         ? getBaseBoardPath(localBoardPath)
-        : (bridgeBoardDetails && pathname ? getBaseBoardPath(pathname) : null);
+        : bridgeBoardDetails && pathname
+          ? getBaseBoardPath(pathname)
+          : null;
       const effectiveQueue = localQueue.length > 0 ? localQueue : bridgeQueue;
       const effectiveCurrentClimb = localCurrentClimbQueueItem ?? bridgeCurrentClimbQueueItem;
       const boardsMatch = effectiveBaseBoardPath != null && effectiveBaseBoardPath === getBaseBoardPath(boardPath);
@@ -265,18 +278,19 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
   };
 
   const hasSelection = selectedBoard || selectedCustomConfig;
-  const selectedName = selectedBoard?.name ?? selectedCustomConfig?.name;
 
   const boardSelector = (
     <Box>
       {hasSelection && !boardSelectorExpanded ? (
         <Box>
-          <Typography
-            sx={{ fontSize: 16, fontWeight: 600, color: 'var(--neutral-900)', mb: 1.5 }}
-          >
+          <Typography sx={{ fontSize: 16, fontWeight: 600, color: 'var(--neutral-900)', mb: 1.5 }}>
             Boards near you
           </Typography>
-          <Box data-testid="selected-board-card" sx={{ position: 'relative', width: 'fit-content' }} onClick={() => setBoardSelectorExpanded(true)}>
+          <Box
+            data-testid="selected-board-card"
+            sx={{ position: 'relative', width: 'fit-content' }}
+            onClick={() => setBoardSelectorExpanded(true)}
+          >
             <BoardScrollCard
               userBoard={selectedBoard ?? undefined}
               storedConfig={selectedCustomConfig ?? undefined}
@@ -327,7 +341,9 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
       <SwipeableDrawer
         title={
           <div data-swipe-blocked="" {...dragHandlers} className={drawerCss.dragHeaderWrapper}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Start session</Typography>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+              Start session
+            </Typography>
           </div>
         }
         placement="bottom"
@@ -338,8 +354,15 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
         onClose={handleClose}
         onTransitionEnd={onTransitionEnd}
         styles={{
-          wrapper: { width: '100%', touchAction: 'pan-y' as const, transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)' },
-          header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
+          wrapper: {
+            width: '100%',
+            touchAction: 'pan-y' as const,
+            transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          },
+          header: {
+            paddingLeft: `${themeTokens.spacing[3]}px`,
+            paddingRight: `${themeTokens.spacing[3]}px`,
+          },
           body: { padding: `${themeTokens.spacing[2]}px 0` },
         }}
         footer={
@@ -378,7 +401,12 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
               variant="text"
               size="small"
               startIcon={<LoginOutlined />}
-              onClick={() => openAuthModal({ title: 'Sign in to save your session', description: "Your sends won't disappear when you close the tab." })}
+              onClick={() =>
+                openAuthModal({
+                  title: 'Sign in to save your session',
+                  description: "Your sends won't disappear when you close the tab.",
+                })
+              }
               sx={{ alignSelf: 'center' }}
             >
               Sign in for more features
@@ -396,7 +424,6 @@ export default function StartSeshDrawer({ open, onClose, onTransitionEnd, boardC
           onBoardSelected={handleCustomSelect}
         />
       )}
-
     </>
   );
 }

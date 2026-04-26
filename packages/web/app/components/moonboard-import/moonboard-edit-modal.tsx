@@ -21,15 +21,14 @@ import type { MoonBoardClimb, GridCoordinate } from '@boardsesh/moonboard-ocr/br
 import type { LitUpHoldsMap } from '../board-renderer/types';
 import styles from './moonboard-edit-modal.module.css';
 
-
-interface MoonBoardEditModalProps {
+type MoonBoardEditModalProps = {
   open: boolean;
   climb: MoonBoardClimb;
   layoutFolder: string;
   holdSetImages: string[];
   onSave: (updatedClimb: MoonBoardClimb) => void;
   onCancel: () => void;
-}
+};
 
 /**
  * Convert OCR climb holds to the lit up holds map format
@@ -91,16 +90,8 @@ export default function MoonBoardEditModal({
 
   const initialHoldsMap = convertClimbToHoldsMap(climb);
 
-  const {
-    litUpHoldsMap,
-    setLitUpHoldsMap,
-    setHoldState,
-    startingCount,
-    finishCount,
-    handCount,
-    totalHolds,
-    isValid,
-  } = useMoonBoardCreateClimb({ initialHoldsMap });
+  const { litUpHoldsMap, setLitUpHoldsMap, setHoldState, startingCount, finishCount, handCount, totalHolds, isValid } =
+    useMoonBoardCreateClimb({ initialHoldsMap });
 
   const picker = useHoldTypePicker({ litUpHoldsMap, setHoldState });
 
@@ -124,13 +115,7 @@ export default function MoonBoardEditModal({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onCancel}
-      maxWidth="sm"
-      fullWidth
-      className={styles.modal}
-    >
+    <Dialog open={open} onClose={onCancel} maxWidth="sm" fullWidth className={styles.modal}>
       <DialogTitle>Edit Climb</DialogTitle>
       <DialogContent>
         <div className={styles.content}>
@@ -181,16 +166,24 @@ export default function MoonBoardEditModal({
             />
 
             <div className={styles.climbInfo}>
-              <Typography variant="body2" component="span" color="text.secondary">Setter: {climb.setter || 'Unknown'}</Typography>
-              <Typography variant="body2" component="span" color="text.secondary">Grade: {climb.userGrade || 'Unknown'}</Typography>
-              <Typography variant="body2" component="span" color="text.secondary">Angle: {climb.angle}°</Typography>
+              <Typography variant="body2" component="span" color="text.secondary">
+                Setter: {climb.setter || 'Unknown'}
+              </Typography>
+              <Typography variant="body2" component="span" color="text.secondary">
+                Grade: {climb.userGrade || 'Unknown'}
+              </Typography>
+              <Typography variant="body2" component="span" color="text.secondary">
+                Angle: {climb.angle}°
+              </Typography>
             </div>
           </div>
         </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={onCancel}>Cancel</Button>
-        <Button variant="contained" onClick={handleOk} disabled={!isValid}>Save Changes</Button>
+        <Button variant="contained" onClick={handleOk} disabled={!isValid}>
+          Save Changes
+        </Button>
       </DialogActions>
     </Dialog>
   );

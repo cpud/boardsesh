@@ -4,24 +4,19 @@ import React, { useCallback, useRef } from 'react';
 import { themeTokens } from '@/app/theme/theme-config';
 import styles from './direction-picker.module.css';
 
-interface DirectionPickerProps {
+type DirectionPickerProps = {
   value: number | null;
   onChange: (direction: number) => void;
   disabled?: boolean;
   size?: number;
-}
+};
 
 /**
  * Circular direction picker component
  * Allows users to select a direction of pull (0-360 degrees)
  * 0 = up, 90 = right, 180 = down, 270 = left
  */
-const DirectionPicker: React.FC<DirectionPickerProps> = ({
-  value,
-  onChange,
-  disabled = false,
-  size = 120,
-}) => {
+const DirectionPicker: React.FC<DirectionPickerProps> = ({ value, onChange, disabled = false, size = 120 }) => {
   const circleRef = useRef<SVGSVGElement>(null);
 
   const calculateAngleFromEvent = useCallback((clientX: number, clientY: number) => {
@@ -47,23 +42,29 @@ const DirectionPicker: React.FC<DirectionPickerProps> = ({
     return Math.round(angle);
   }, []);
 
-  const handleClick = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
-    if (disabled) return;
+  const handleClick = useCallback(
+    (e: React.MouseEvent<SVGSVGElement>) => {
+      if (disabled) return;
 
-    const angle = calculateAngleFromEvent(e.clientX, e.clientY);
-    if (angle !== null) {
-      onChange(angle);
-    }
-  }, [disabled, calculateAngleFromEvent, onChange]);
+      const angle = calculateAngleFromEvent(e.clientX, e.clientY);
+      if (angle !== null) {
+        onChange(angle);
+      }
+    },
+    [disabled, calculateAngleFromEvent, onChange],
+  );
 
-  const handlePointerMove = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
-    if (disabled || e.buttons !== 1) return;
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent<SVGSVGElement>) => {
+      if (disabled || e.buttons !== 1) return;
 
-    const angle = calculateAngleFromEvent(e.clientX, e.clientY);
-    if (angle !== null) {
-      onChange(angle);
-    }
-  }, [disabled, calculateAngleFromEvent, onChange]);
+      const angle = calculateAngleFromEvent(e.clientX, e.clientY);
+      if (angle !== null) {
+        onChange(angle);
+      }
+    },
+    [disabled, calculateAngleFromEvent, onChange],
+  );
 
   const center = size / 2;
   const radius = size / 2 - 10;
@@ -113,18 +114,21 @@ const DirectionPicker: React.FC<DirectionPickerProps> = ({
         />
 
         {/* Direction indicators */}
-        <text x={center} y={12} textAnchor="middle" className={styles.label}>Up</text>
-        <text x={size - 8} y={center + 4} textAnchor="end" className={styles.label}>R</text>
-        <text x={center} y={size - 4} textAnchor="middle" className={styles.label}>Down</text>
-        <text x={8} y={center + 4} textAnchor="start" className={styles.label}>L</text>
+        <text x={center} y={12} textAnchor="middle" className={styles.label}>
+          Up
+        </text>
+        <text x={size - 8} y={center + 4} textAnchor="end" className={styles.label}>
+          R
+        </text>
+        <text x={center} y={size - 4} textAnchor="middle" className={styles.label}>
+          Down
+        </text>
+        <text x={8} y={center + 4} textAnchor="start" className={styles.label}>
+          L
+        </text>
 
         {/* Center dot */}
-        <circle
-          cx={center}
-          cy={center}
-          r={4}
-          fill="var(--neutral-400)"
-        />
+        <circle cx={center} cy={center} r={4} fill="var(--neutral-400)" />
 
         {/* Arrow line */}
         {value !== null && (
@@ -156,11 +160,7 @@ const DirectionPicker: React.FC<DirectionPickerProps> = ({
         />
       </svg>
 
-      {value !== null && (
-        <div className={styles.angleDisplay}>
-          {value}°
-        </div>
-      )}
+      {value !== null && <div className={styles.angleDisplay}>{value}°</div>}
     </div>
   );
 };

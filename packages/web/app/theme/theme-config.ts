@@ -15,12 +15,24 @@ export const themeTokens = {
     warningBg: '#FAF5EC',
     error: '#B8524C', // Muted brick red
     errorBg: '#F9EFEE',
+    errorMuted: 'rgba(184, 82, 76, 0.18)', // Translucent error for non-destructive action buttons
+    errorMutedHover: 'rgba(184, 82, 76, 0.28)',
     purple: '#7C3AED', // For mirror button
     purpleHover: '#6D28D9',
     amber: '#FBBF24', // For flash/benchmark badges
     pink: '#EC4899', // For finish holds in climb creation
-    logoGreen: '#5DBE94', // Brighter sage green for logo
-    logoRose: '#C75B64', // Brighter dusty rose for logo
+    logoGreen: '#5fb27a', // Route mark green
+    logoRose: '#d65a4f', // Brand coral
+  },
+
+  // Route mark colors — the climbing hold indicators in the brand logo
+  routeMark: {
+    holdGrey: '#7a7a7e', // Hold surface fill
+    contextGrey: '#4a4a52', // Background context dots
+    purple: '#c44a8a', // Start hold ring
+    cyan: '#3fb8c4', // Hand hold ring
+    green: '#5fb27a', // Foot hold ring
+    orange: '#e2a44d', // Finish hold ring
   },
 
   // Neutral palette
@@ -73,9 +85,9 @@ export const themeTokens = {
 
   // Typography
   typography: {
-    fontFamily:
-      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
     fontSize: {
+      xxs: 8,
       xs: 12,
       sm: 14,
       base: 16,
@@ -89,6 +101,7 @@ export const themeTokens = {
       medium: 500,
       semibold: 600,
       bold: 700,
+      extrabold: 800,
     },
     lineHeight: {
       tight: 1.25,
@@ -137,6 +150,7 @@ export const themeTokens = {
     modal: 1040,
     popover: 1050,
     tooltip: 1060,
+    animation: 1500,
   },
 
   // Opacity
@@ -149,7 +163,11 @@ export const themeTokens = {
   layout: {
     /** CSS height value for a spacer that prevents the bottom nav bar from covering content on mobile Safari.
      *  Accounts for nav height (~72px), iOS Safari 2dvh offset, and safe area inset. */
-    bottomNavSpacer: 'calc(80px + env(safe-area-inset-bottom, 0px))',
+    bottomNavSpacer: 'calc(80px + var(--safe-area-inset-bottom))',
+    /** Safe-area bottom inset. Resolves through --safe-area-inset-bottom defined on :root in index.css. */
+    safeAreaBottom: 'var(--safe-area-inset-bottom)',
+    /** Safe-area top inset. Resolves through --safe-area-inset-top defined on :root in index.css. */
+    safeAreaTop: 'var(--safe-area-inset-top)',
   },
 } as const;
 
@@ -157,12 +175,12 @@ export const themeTokens = {
 // Brand colors (primary, success, error, warning, purple, amber, pink) stay the same.
 export const darkTokens = {
   neutral: {
-    50: '#000000',
-    100: '#121212',
-    200: '#1E1E1E',
-    300: '#2C2C2C',
+    50: '#121212',
+    100: '#222222',
+    200: '#333333',
+    300: '#3A3A3A',
     400: '#6B7280',
-    500: '#9CA3AF',
+    500: '#B3B3B3',
     600: '#D1D5DB',
     700: '#E5E7EB',
     800: '#F3F4F6',
@@ -170,15 +188,15 @@ export const darkTokens = {
   },
 
   semantic: {
-    selected: 'rgba(175, 45, 60, 0.14)',
-    selectedHover: 'rgba(175, 45, 60, 0.20)',
-    selectedLight: 'rgba(175, 45, 60, 0.08)',
+    selected: 'rgba(175, 45, 60, 0.22)',
+    selectedHover: 'rgba(175, 45, 60, 0.30)',
+    selectedLight: 'rgba(175, 45, 60, 0.12)',
     selectedBorder: '#8C4A52',
-    background: '#000000',
-    surface: '#0A0A0A',
-    surfaceElevated: '#121212',
+    background: '#0e0e10',
+    surface: '#1A1A1A',
+    surfaceElevated: '#282828',
     inputSurface: '#FFFFFF',
-    surfaceOverlay: 'rgba(10, 10, 10, 0.95)',
+    surfaceOverlay: 'rgba(26, 26, 26, 0.95)',
     overlayLight: 'rgba(0, 0, 0, 0.4)',
     overlayDark: 'rgba(0, 0, 0, 0.7)',
   },

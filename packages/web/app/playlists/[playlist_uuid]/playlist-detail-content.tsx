@@ -21,25 +21,25 @@ import {
   IosShare,
 } from '@mui/icons-material';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { Climb } from '@/app/lib/types';
+import type { Climb } from '@/app/lib/types';
 import { executeGraphQL, createGraphQLHttpClient } from '@/app/lib/graphql/client';
 import {
+  type GetPlaylistQueryResponse,
+  type GetPlaylistQueryVariables,
+  type GetPlaylistClimbsQueryResponse,
+  type Playlist,
+  type UpdatePlaylistLastAccessedMutationVariables,
+  type UpdatePlaylistLastAccessedMutationResponse,
+  type DeletePlaylistMutationVariables,
+  type DeletePlaylistMutationResponse,
   GET_PLAYLIST,
   GET_PLAYLIST_CLIMBS,
   DELETE_PLAYLIST,
   UPDATE_PLAYLIST_LAST_ACCESSED,
   FOLLOW_PLAYLIST,
   UNFOLLOW_PLAYLIST,
-  GetPlaylistQueryResponse,
-  GetPlaylistQueryVariables,
-  GetPlaylistClimbsQueryResponse,
   type GetPlaylistClimbsQueryVariables,
   type GetPlaylistClimbsInput,
-  Playlist,
-  UpdatePlaylistLastAccessedMutationVariables,
-  UpdatePlaylistLastAccessedMutationResponse,
-  DeletePlaylistMutationVariables,
-  DeletePlaylistMutationResponse,
 } from '@/app/lib/graphql/operations/playlists';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
 import { shareWithFallback } from '@/app/lib/share-utils';
@@ -106,8 +106,8 @@ export default function PlaylistDetailContent({
   const [listRefreshKey, setListRefreshKey] = useState(0);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   // Initialize selectedBoard from SSR data immediately (avoids flash from "All" to selected board)
-  const [selectedBoard, setSelectedBoard] = useState<UserBoard | null>(
-    () => findMatchingBoard(initialMyBoards, boardSlug, boardConfig),
+  const [selectedBoard, setSelectedBoard] = useState<UserBoard | null>(() =>
+    findMatchingBoard(initialMyBoards, boardSlug, boardConfig),
   );
   const lastAccessedUpdatedRef = useRef(false);
   const defaultBoardAppliedRef = useRef(!!selectedBoard);
@@ -163,7 +163,7 @@ export default function PlaylistDetailContent({
   }, [playlistUuid, token, tokenLoading]);
 
   useEffect(() => {
-    fetchPlaylist();
+    void fetchPlaylist();
   }, [fetchPlaylist]);
 
   // Update lastAccessedAt when playlist loads (fire-and-forget, only for owners)
@@ -190,18 +190,13 @@ export default function PlaylistDetailContent({
     isFetchingNextPage,
     isLoading: isClimbsLoading,
   } = useInfiniteQuery({
-    queryKey: [
-      'playlistClimbs',
-      playlistUuid,
-      selectedBoard?.uuid ?? 'all',
-      listRefreshKey,
-    ],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryKey: ['playlistClimbs', playlistUuid, selectedBoard?.uuid ?? 'all', listRefreshKey],
+    queryFn: async ({ pageParam }) => {
       const client = createGraphQLHttpClient(token);
 
       const input: GetPlaylistClimbsInput = {
         playlistId: playlistUuid,
-        page: pageParam as number,
+        page: pageParam,
         pageSize: 20,
         // Specific-board mode when a board is selected
         ...(selectedBoard && {
@@ -213,10 +208,9 @@ export default function PlaylistDetailContent({
         }),
       };
 
-      const response = await client.request<GetPlaylistClimbsQueryResponse>(
-        GET_PLAYLIST_CLIMBS,
-        { input } satisfies GetPlaylistClimbsQueryVariables,
-      );
+      const response = await client.request<GetPlaylistClimbsQueryResponse>(GET_PLAYLIST_CLIMBS, {
+        input,
+      } satisfies GetPlaylistClimbsQueryVariables);
       return response.playlistClimbs;
     },
     enabled: !tokenLoading && !!token,
@@ -246,7 +240,7 @@ export default function PlaylistDetailContent({
 
   const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
+      void fetchNextPage();
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
@@ -256,7 +250,7 @@ export default function PlaylistDetailContent({
 
   const handlePlaylistUpdated = useCallback(() => {
     setListRefreshKey((prev) => prev + 1);
-    fetchPlaylist();
+    void fetchPlaylist();
   }, [fetchPlaylist]);
 
   const handleDelete = useCallback(async () => {
@@ -332,7 +326,9 @@ export default function PlaylistDetailContent({
             ? 'This playlist may have been deleted or you may not have permission to view it.'
             : 'There was an error loading this playlist. Please try again.'}
         </div>
-        <MuiButton variant="outlined" onClick={fetchPlaylist}>Try Again</MuiButton>
+        <MuiButton variant="outlined" onClick={fetchPlaylist}>
+          Try Again
+        </MuiButton>
       </div>
     );
   }
@@ -375,9 +371,13 @@ export default function PlaylistDetailContent({
                   }`}
                 >
                   {playlist.isPublic ? (
-                    <><PublicOutlined sx={{ fontSize: 14 }} /> Public</>
+                    <>
+                      <PublicOutlined sx={{ fontSize: 14 }} /> Public
+                    </>
                   ) : (
-                    <><LockOutlined sx={{ fontSize: 14 }} /> Private</>
+                    <>
+                      <LockOutlined sx={{ fontSize: 14 }} /> Private
+                    </>
                   )}
                 </span>
               </div>
@@ -412,10 +412,7 @@ export default function PlaylistDetailContent({
           {/* Share + Ellipsis Menu */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
             {playlist.isPublic && (
-              <IconButton
-                onClick={handleShare}
-                aria-label="Share playlist"
-              >
+              <IconButton onClick={handleShare} aria-label="Share playlist">
                 <IosShare />
               </IconButton>
             )}
@@ -428,26 +425,38 @@ export default function PlaylistDetailContent({
             </IconButton>
           </Box>
 
-          <Menu
-            anchorEl={menuAnchor}
-            open={Boolean(menuAnchor)}
-            onClose={() => setMenuAnchor(null)}
-          >
+          <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>
             {isOwner && (
-              <MenuItem onClick={() => { setMenuAnchor(null); setGeneratorOpen(true); }}>
-                <ListItemIcon><ElectricBoltOutlined /></ListItemIcon>
+              <MenuItem
+                onClick={() => {
+                  setMenuAnchor(null);
+                  setGeneratorOpen(true);
+                }}
+              >
+                <ListItemIcon>
+                  <ElectricBoltOutlined />
+                </ListItemIcon>
                 <ListItemText>Generate</ListItemText>
               </MenuItem>
             )}
             {isOwner && (
-              <MenuItem onClick={() => { setMenuAnchor(null); setEditDrawerOpen(true); }}>
-                <ListItemIcon><EditOutlined /></ListItemIcon>
+              <MenuItem
+                onClick={() => {
+                  setMenuAnchor(null);
+                  setEditDrawerOpen(true);
+                }}
+              >
+                <ListItemIcon>
+                  <EditOutlined />
+                </ListItemIcon>
                 <ListItemText>Edit</ListItemText>
               </MenuItem>
             )}
             {isOwner && (
               <MenuItem onClick={handleDelete} sx={{ color: themeTokens.colors.error }}>
-                <ListItemIcon><DeleteOutlined sx={{ color: themeTokens.colors.error }} /></ListItemIcon>
+                <ListItemIcon>
+                  <DeleteOutlined sx={{ color: themeTokens.colors.error }} />
+                </ListItemIcon>
                 <ListItemText>Delete</ListItemText>
               </MenuItem>
             )}
@@ -479,11 +488,7 @@ export default function PlaylistDetailContent({
         {/* Discussion */}
         {playlist.isPublic && (
           <div className={styles.discussionSection}>
-            <CommentSection
-              entityType="playlist_climb"
-              entityId={`${playlistUuid}:_all`}
-              title="Discussion"
-            />
+            <CommentSection entityType="playlist_climb" entityId={`${playlistUuid}:_all`} title="Discussion" />
           </div>
         )}
       </div>

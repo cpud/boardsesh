@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import type { PopularBoardConfig, PopularBoardConfigConnection } from '@boardsesh/shared-schema';
+import { usePopularBoardConfigs } from '../use-popular-board-configs';
 
 // --- Mocks ---
 
@@ -15,8 +16,6 @@ vi.mock('@/app/lib/graphql/operations', () => ({
 }));
 
 // --- Import after mocks ---
-
-import { usePopularBoardConfigs } from '../use-popular-board-configs';
 
 // --- Helpers ---
 
@@ -80,10 +79,7 @@ describe('usePopularBoardConfigs', () => {
   });
 
   it('fetches first page on mount and sets configs/hasMore correctly', async () => {
-    const page1 = [
-      makeConfig('kilter', 500),
-      makeConfig('tension', 300),
-    ];
+    const page1 = [makeConfig('kilter', 500), makeConfig('tension', 300)];
     mockRequest.mockResolvedValueOnce(makeResponse(page1, true));
 
     const { result } = renderHook(() => usePopularBoardConfigs());
@@ -109,10 +105,9 @@ describe('usePopularBoardConfigs', () => {
     });
 
     expect(mockRequest).toHaveBeenCalledTimes(1);
-    expect(mockRequest).toHaveBeenCalledWith(
-      'GET_POPULAR_BOARD_CONFIGS_QUERY',
-      { input: { limit: 5, offset: 0 } },
-    );
+    expect(mockRequest).toHaveBeenCalledWith('GET_POPULAR_BOARD_CONFIGS_QUERY', {
+      input: { limit: 5, offset: 0 },
+    });
   });
 
   it('uses default limit of 12 when none provided', async () => {
@@ -124,10 +119,9 @@ describe('usePopularBoardConfigs', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(mockRequest).toHaveBeenCalledWith(
-      'GET_POPULAR_BOARD_CONFIGS_QUERY',
-      { input: { limit: 12, offset: 0 } },
-    );
+    expect(mockRequest).toHaveBeenCalledWith('GET_POPULAR_BOARD_CONFIGS_QUERY', {
+      input: { limit: 12, offset: 0 },
+    });
   });
 
   it('loadMore fetches next page and appends to existing configs', async () => {
@@ -389,10 +383,9 @@ describe('usePopularBoardConfigs', () => {
     const page1 = [makeConfig('kilter', 500)];
     mockRequest.mockResolvedValueOnce(makeResponse(page1, false));
 
-    const { result, rerender } = renderHook(
-      ({ limit }: { limit: number }) => usePopularBoardConfigs({ limit }),
-      { initialProps: { limit: 5 } },
-    );
+    const { result, rerender } = renderHook(({ limit }: { limit: number }) => usePopularBoardConfigs({ limit }), {
+      initialProps: { limit: 5 },
+    });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);

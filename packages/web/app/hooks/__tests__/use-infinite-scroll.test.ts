@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, act } from '@testing-library/react';
 import React from 'react';
 import { useInfiniteScroll } from '../use-infinite-scroll';
@@ -28,20 +28,12 @@ beforeEach(() => {
 
 function triggerIntersection(isIntersecting: boolean) {
   act(() => {
-    observerCallback(
-      [{ isIntersecting } as IntersectionObserverEntry],
-      {} as IntersectionObserver,
-    );
+    observerCallback([{ isIntersecting } as IntersectionObserverEntry], {} as IntersectionObserver);
   });
 }
 
 // Test component that renders the sentinel div so the ref gets attached
-function TestComponent(props: {
-  onLoadMore: () => void;
-  hasMore: boolean;
-  isFetching?: boolean;
-  rootMargin?: string;
-}) {
+function TestComponent(props: { onLoadMore: () => void; hasMore: boolean; isFetching?: boolean; rootMargin?: string }) {
   const { sentinelRef } = useInfiniteScroll(props);
   return React.createElement('div', { ref: sentinelRef, 'data-testid': 'sentinel' });
 }
@@ -59,9 +51,7 @@ function DeferredSentinelComponent(props: {
     'div',
     null,
     React.createElement('span', null, 'content'),
-    showSentinel
-      ? React.createElement('div', { ref: sentinelRef, 'data-testid': 'sentinel' })
-      : null,
+    showSentinel ? React.createElement('div', { ref: sentinelRef, 'data-testid': 'sentinel' }) : null,
   );
 }
 
@@ -124,14 +114,10 @@ describe('useInfiniteScroll', () => {
     const onLoadMore1 = vi.fn();
     const onLoadMore2 = vi.fn();
 
-    const { rerender } = render(
-      React.createElement(TestComponent, { onLoadMore: onLoadMore1, hasMore: true }),
-    );
+    const { rerender } = render(React.createElement(TestComponent, { onLoadMore: onLoadMore1, hasMore: true }));
 
     // Update the callback
-    rerender(
-      React.createElement(TestComponent, { onLoadMore: onLoadMore2, hasMore: true }),
-    );
+    rerender(React.createElement(TestComponent, { onLoadMore: onLoadMore2, hasMore: true }));
 
     triggerIntersection(true);
     expect(onLoadMore1).not.toHaveBeenCalled();
@@ -141,14 +127,10 @@ describe('useInfiniteScroll', () => {
   it('respects updated hasMore value without recreating observer', () => {
     const onLoadMore = vi.fn();
 
-    const { rerender } = render(
-      React.createElement(TestComponent, { onLoadMore, hasMore: true }),
-    );
+    const { rerender } = render(React.createElement(TestComponent, { onLoadMore, hasMore: true }));
 
     // Disable further loading
-    rerender(
-      React.createElement(TestComponent, { onLoadMore, hasMore: false }),
-    );
+    rerender(React.createElement(TestComponent, { onLoadMore, hasMore: false }));
 
     triggerIntersection(true);
     expect(onLoadMore).not.toHaveBeenCalled();
@@ -157,22 +139,16 @@ describe('useInfiniteScroll', () => {
   it('respects updated isFetching value without recreating observer', () => {
     const onLoadMore = vi.fn();
 
-    const { rerender } = render(
-      React.createElement(TestComponent, { onLoadMore, hasMore: true, isFetching: false }),
-    );
+    const { rerender } = render(React.createElement(TestComponent, { onLoadMore, hasMore: true, isFetching: false }));
 
     // Start fetching
-    rerender(
-      React.createElement(TestComponent, { onLoadMore, hasMore: true, isFetching: true }),
-    );
+    rerender(React.createElement(TestComponent, { onLoadMore, hasMore: true, isFetching: true }));
 
     triggerIntersection(true);
     expect(onLoadMore).not.toHaveBeenCalled();
 
     // Stop fetching
-    rerender(
-      React.createElement(TestComponent, { onLoadMore, hasMore: true, isFetching: false }),
-    );
+    rerender(React.createElement(TestComponent, { onLoadMore, hasMore: true, isFetching: false }));
 
     triggerIntersection(true);
     expect(onLoadMore).toHaveBeenCalledTimes(1);
@@ -181,9 +157,7 @@ describe('useInfiniteScroll', () => {
   it('disconnects the observer on unmount', () => {
     const onLoadMore = vi.fn();
 
-    const { unmount } = render(
-      React.createElement(TestComponent, { onLoadMore, hasMore: true }),
-    );
+    const { unmount } = render(React.createElement(TestComponent, { onLoadMore, hasMore: true }));
 
     unmount();
     expect(mockDisconnect).toHaveBeenCalled();
@@ -192,9 +166,7 @@ describe('useInfiniteScroll', () => {
   it('accepts a custom rootMargin', () => {
     const onLoadMore = vi.fn();
 
-    render(
-      React.createElement(TestComponent, { onLoadMore, hasMore: true, rootMargin: '500px' }),
-    );
+    render(React.createElement(TestComponent, { onLoadMore, hasMore: true, rootMargin: '500px' }));
 
     expect(observerOptions?.rootMargin).toBe('500px');
   });

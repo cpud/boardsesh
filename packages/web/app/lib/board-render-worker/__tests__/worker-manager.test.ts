@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 import type { BoardDetails } from '@/app/lib/types';
 import type { RenderResponse } from '../board-render.worker';
@@ -23,9 +23,7 @@ vi.mock('@/app/components/board-renderer/util', () => ({
 // Mock rendering-metrics so analytics calls don't hit @vercel/analytics during tests
 vi.mock('@/app/lib/rendering-metrics', () => ({
   trackWorkerRenderingDisabled: vi.fn(),
-  trackRenderComplete: vi.fn(),
   trackRenderError: vi.fn(),
-  trackListBatchRender: vi.fn(),
 }));
 
 // Mock HOLD_STATE_MAP
@@ -488,7 +486,7 @@ describe('renderBoard', () => {
       for (const call of worker.postMessage.mock.calls) {
         const msg = call[0] as Record<string, unknown>;
         if (isRenderMessage(msg)) {
-          resolveWorkerRequest(worker, msg.id as number, makeFakeBitmap());
+          resolveWorkerRequest(worker, msg.id, makeFakeBitmap());
         }
       }
     }
@@ -527,7 +525,7 @@ describe('renderBoard', () => {
       for (const call of worker.postMessage.mock.calls) {
         const msg = call[0] as Record<string, unknown>;
         if (isRenderMessage(msg)) {
-          resolveWorkerRequest(worker, msg.id as number, makeFakeBitmap());
+          resolveWorkerRequest(worker, msg.id, makeFakeBitmap());
         }
       }
     }
@@ -563,7 +561,7 @@ describe('renderBoard', () => {
       for (const call of worker.postMessage.mock.calls) {
         const msg = call[0] as Record<string, unknown>;
         if (isRenderMessage(msg)) {
-          resolveWorkerRequest(worker, msg.id as number, makeFakeBitmap());
+          resolveWorkerRequest(worker, msg.id, makeFakeBitmap());
         }
       }
     }
@@ -649,7 +647,10 @@ describe('renderBoard', () => {
 
     const worker = findWorkerWithRenderMsg('p88r42')!;
     act(() => {
-      worker.onerror?.({ message: 'Load failed', preventDefault: vi.fn() } as unknown as ErrorEvent);
+      worker.onerror?.({
+        message: 'Load failed',
+        preventDefault: vi.fn(),
+      } as unknown as ErrorEvent);
     });
 
     // Force useSyncExternalStore to re-read after the listener fires.
@@ -660,7 +661,7 @@ describe('renderBoard', () => {
   it('sends the correct render request shape to the worker', async () => {
     const { renderBoard } = await import('../worker-manager');
 
-    renderBoard({
+    void renderBoard({
       boardDetails: mockBoardDetails,
       frames: 'p1r42p2r43',
       mirrored: true,
@@ -704,7 +705,7 @@ describe('renderBoard', () => {
   it('sets outputWidth to boardWidth when thumbnail is false', async () => {
     const { renderBoard } = await import('../worker-manager');
 
-    renderBoard({
+    void renderBoard({
       boardDetails: mockBoardDetails,
       frames: 'p5r42',
       mirrored: false,
@@ -736,7 +737,7 @@ describe('worker pool size', () => {
     stubGlobals();
     const { renderBoard } = await import('../worker-manager');
 
-    renderBoard({
+    void renderBoard({
       boardDetails: mockBoardDetails,
       frames: 'p1r42',
       mirrored: false,
@@ -757,7 +758,7 @@ describe('worker pool size', () => {
 
     const { renderBoard } = await import('../worker-manager');
 
-    renderBoard({
+    void renderBoard({
       boardDetails: mockBoardDetails,
       frames: 'p1r42',
       mirrored: false,

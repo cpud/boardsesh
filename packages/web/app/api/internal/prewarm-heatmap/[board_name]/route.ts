@@ -40,10 +40,7 @@ async function getAnglesForLayout(boardName: AuroraBoardName, layoutId: number):
   return result.rows.map((row) => Number(row.angle));
 }
 
-function buildTargetsForBoard(
-  boardName: AuroraBoardName,
-  anglesByLayout: Map<number, number[]>,
-): WarmTarget[] {
+function buildTargetsForBoard(boardName: AuroraBoardName, anglesByLayout: Map<number, number[]>): WarmTarget[] {
   const selectorOptions = getBoardSelectorOptions();
   const layouts = selectorOptions.layouts[boardName] ?? [];
   const targets: WarmTarget[] = [];
@@ -144,7 +141,7 @@ export async function GET(request: Request, props: { params: Promise<PrewarmRout
   const boardName = boardNameParam;
 
   try {
-    console.log(`[prewarm-heatmap] starting for ${boardName}`);
+    console.info(`[prewarm-heatmap] starting for ${boardName}`);
 
     const selectorOptions = getBoardSelectorOptions();
     const layouts = selectorOptions.layouts[boardName] ?? [];
@@ -157,26 +154,21 @@ export async function GET(request: Request, props: { params: Promise<PrewarmRout
           const angles = await getAnglesForLayout(boardName, layout.id);
           anglesByLayout.set(layout.id, angles);
         } catch (error) {
-          console.error(
-            `[prewarm-heatmap] failed to load angles for ${boardName} layout ${layout.id}:`,
-            error,
-          );
+          console.error(`[prewarm-heatmap] failed to load angles for ${boardName} layout ${layout.id}:`, error);
           anglesByLayout.set(layout.id, []);
         }
       }),
     );
 
     const targets = buildTargetsForBoard(boardName, anglesByLayout);
-    console.log(`[prewarm-heatmap] ${boardName}: ${targets.length} combinations to warm`);
+    console.info(`[prewarm-heatmap] ${boardName}: ${targets.length} combinations to warm`);
 
     const { warmed, failed } = await runWithConcurrency(targets, CONCURRENCY, (target) =>
       warmTarget(boardName, target),
     );
 
     const durationMs = Date.now() - startedAt;
-    console.log(
-      `[prewarm-heatmap] ${boardName} done in ${durationMs}ms — warmed=${warmed} failed=${failed}`,
-    );
+    console.info(`[prewarm-heatmap] ${boardName} done in ${durationMs}ms — warmed=${warmed} failed=${failed}`);
 
     return NextResponse.json({
       board: boardName,

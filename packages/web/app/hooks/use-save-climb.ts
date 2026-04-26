@@ -18,18 +18,18 @@ import type { BoardName } from '@/app/lib/types';
 import type { SaveClimbOptions } from '@/app/lib/api-wrappers/aurora/types';
 import type { UpdateClimbInput } from '@boardsesh/shared-schema';
 
-export interface SaveClimbResponse {
+export type SaveClimbResponse = {
   uuid: string;
   createdAt?: string | null;
   publishedAt?: string | null;
-}
+};
 
-export interface UpdateClimbResponse {
+export type UpdateClimbResponse = {
   uuid: string;
   createdAt?: string | null;
   publishedAt?: string | null;
   isDraft: boolean;
-}
+};
 
 /**
  * Hook to save a new climb via GraphQL mutation.
@@ -67,14 +67,14 @@ export function useSaveClimb(boardName: BoardName) {
           },
         };
 
-        const result = await execute<SaveClimbMutationResponse, SaveClimbMutationVariables>(
-          client,
-          { query: SAVE_CLIMB_MUTATION, variables },
-        );
+        const result = await execute<SaveClimbMutationResponse, SaveClimbMutationVariables>(client, {
+          query: SAVE_CLIMB_MUTATION,
+          variables,
+        });
 
         return result.saveClimb;
       } finally {
-        client.dispose();
+        void client.dispose();
       }
     },
     onError: () => {
@@ -105,13 +105,13 @@ export function useUpdateClimb() {
 
       try {
         const variables: UpdateClimbMutationVariables = { input };
-        const result = await execute<UpdateClimbMutationResponse, UpdateClimbMutationVariables>(
-          client,
-          { query: UPDATE_CLIMB_MUTATION, variables },
-        );
+        const result = await execute<UpdateClimbMutationResponse, UpdateClimbMutationVariables>(client, {
+          query: UPDATE_CLIMB_MUTATION,
+          variables,
+        });
         return result.updateClimb;
       } finally {
-        client.dispose();
+        void client.dispose();
       }
     },
   });

@@ -1,5 +1,6 @@
 import { createIndexedDBStore, migrateFromLocalStorage } from './idb-helper';
 import type { LogbookPreferences } from './logbook-preferences';
+import type { GradeDisplayFormat } from './grade-colors';
 
 const STORE_NAME = 'preferences';
 
@@ -8,6 +9,9 @@ export type UserPreferenceKeyMap = {
   logbookPreferences: LogbookPreferences;
   'swipeHint:climbListSeen': boolean;
   'swipeHint:queueBarSeen': boolean;
+  'swipeHint:logbookSeen': boolean;
+  tickBarExpanded: boolean;
+  'shakeToReport:dismissed': boolean;
 };
 
 // Map of IDB preference keys to their legacy localStorage keys for one-time migration
@@ -28,7 +32,7 @@ export const getPreference = async <T = unknown, K extends string = string>(
     const db = await getDB();
     if (!db) return null;
     const value = await db.get(STORE_NAME, key);
-    if (value !== undefined) return value as (K extends keyof UserPreferenceKeyMap ? UserPreferenceKeyMap[K] : T);
+    if (value !== undefined) return value as K extends keyof UserPreferenceKeyMap ? UserPreferenceKeyMap[K] : T;
 
     // Attempt one-time migration from localStorage
     const legacyKey = LEGACY_LOCALSTORAGE_KEYS[key];
@@ -40,7 +44,7 @@ export const getPreference = async <T = unknown, K extends string = string>(
         migratedValue = val;
         migrated = true;
       });
-      if (migrated) return migratedValue as (K extends keyof UserPreferenceKeyMap ? UserPreferenceKeyMap[K] : T);
+      if (migrated) return migratedValue as K extends keyof UserPreferenceKeyMap ? UserPreferenceKeyMap[K] : T;
     }
 
     return null;
@@ -97,7 +101,22 @@ export const setAlwaysTickInApp = async (enabled: boolean): Promise<void> => {
 export type { GradeDisplayFormat } from './grade-colors';
 // Re-export so existing consumers don't break.
 // The canonical definition lives in grade-colors.ts.
-import type { GradeDisplayFormat } from './grade-colors';
+
+/**
+ * Get the "shake to report bug" dismissed preference.
+ * When true, the shake detector stays detached for that user.
+ */
+export const getShakeToReportDismissed = async (): Promise<boolean> => {
+  const value = await getPreference<boolean>('shakeToReport:dismissed');
+  return value === true;
+};
+
+/**
+ * Persist the user's decision to disable shake-to-report.
+ */
+export const setShakeToReportDismissed = async (dismissed: boolean): Promise<void> => {
+  await setPreference('shakeToReport:dismissed', dismissed);
+};
 
 /**
  * Get the grade display format preference.

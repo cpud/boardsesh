@@ -1,9 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { type QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createTestQueryClient } from '@/app/test-utils/test-providers';
 import type { Proposal } from '@boardsesh/shared-schema';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import ProposalFeed from '../proposal-feed';
 
 // --- Mocks ---
 
@@ -25,17 +27,12 @@ vi.mock('@/app/hooks/use-infinite-scroll', () => ({
 }));
 
 vi.mock('@/app/components/social/proposal-card', () => ({
-  default: ({ proposal }: { proposal: Proposal }) => (
-    <div data-testid="proposal-card">{proposal.uuid}</div>
-  ),
+  default: ({ proposal }: { proposal: Proposal }) => <div data-testid="proposal-card">{proposal.uuid}</div>,
 }));
 
 vi.mock('../feed-item-skeleton', () => ({
   default: () => <div data-testid="feed-item-skeleton" />,
 }));
-
-import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
-import ProposalFeed from '../proposal-feed';
 
 const mockUseWsAuthToken = vi.mocked(useWsAuthToken);
 
@@ -148,10 +145,9 @@ describe('ProposalFeed', () => {
         browseProposals: { proposals: [], totalCount: 0, hasMore: false },
       });
 
-      render(
-        <ProposalFeed isAuthenticated={false} boardUuid="board-123" />,
-        { wrapper: createWrapper() },
-      );
+      render(<ProposalFeed isAuthenticated={false} boardUuid="board-123" />, {
+        wrapper: createWrapper(),
+      });
 
       await waitFor(() => {
         expect(mockRequest).toHaveBeenCalledWith(

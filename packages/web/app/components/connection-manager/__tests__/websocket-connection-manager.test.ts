@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import type { Client } from 'graphql-ws';
 import { connectionManager, STALE_GRACE_MS } from '../websocket-connection-manager';
 
@@ -189,12 +189,12 @@ describe('WebSocketConnectionManager', () => {
     expect(connectionManager.getSnapshot().state).toBe('connected');
 
     expect(states).toEqual([
-      'idle',       // initial snapshot from subscribe
+      'idle', // initial snapshot from subscribe
       'connecting', // registerClient
-      'connected',  // connected event
+      'connected', // connected event
       'reconnecting', // closed event
       'connecting', // connecting event
-      'connected',  // connected event again
+      'connected', // connected event again
     ]);
 
     unregister();

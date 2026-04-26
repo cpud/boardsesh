@@ -1,10 +1,16 @@
 import { getPool } from '@/app/lib/db/db';
-import { SyncOptions, AuroraBoardName } from '../../api-wrappers/aurora/types';
+import type { SyncOptions, AuroraBoardName } from '../../api-wrappers/aurora/types';
 import { sharedSync } from '../../api-wrappers/aurora/sharedSync';
 import { sql, eq, inArray } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import { NeonDatabase } from 'drizzle-orm/neon-serverless';
-import { Attempt, BetaLink, Climb, ClimbStats, SharedSync, SyncPutFields } from '../../api-wrappers/sync-api-types';
+import { drizzle, type NeonDatabase } from 'drizzle-orm/neon-serverless';
+import type {
+  Attempt,
+  BetaLink,
+  Climb,
+  ClimbStats,
+  SharedSync,
+  SyncPutFields,
+} from '../../api-wrappers/sync-api-types';
 import { UNIFIED_TABLES } from '../../db/queries/util/table-select';
 import { convertLitUpHoldsStringToMap } from '@/app/components/board-renderer/util';
 import { populateDenormalizedColumns } from '@boardsesh/db/queries';
@@ -148,7 +154,11 @@ async function upsertBetaLinks(db: NeonDatabase<Record<string, never>>, board: A
   );
 }
 
-async function upsertClimbs(db: NeonDatabase<Record<string, never>>, board: AuroraBoardName, data: Climb[]): Promise<NewClimbInfo[]> {
+async function upsertClimbs(
+  db: NeonDatabase<Record<string, never>>,
+  board: AuroraBoardName,
+  data: Climb[],
+): Promise<NewClimbInfo[]> {
   const climbsSchema = UNIFIED_TABLES.climbs;
   const climbHoldsSchema = UNIFIED_TABLES.climbHolds;
 
@@ -263,13 +273,13 @@ async function upsertSharedTableData(
       await upsertBetaLinks(db, boardName, data as BetaLink[]);
       return [];
     case 'climbs':
-      return await upsertClimbs(db, boardName, data as Climb[]);
+      return upsertClimbs(db, boardName, data as Climb[]);
     case 'shared_syncs':
       await updateSharedSyncs(db, boardName, data as SharedSync[]);
       return [];
     default:
       // Tables not in TABLES_TO_PROCESS are handled in the main sync loop
-      console.log(`Table ${tableName} not handled in upsertSharedTableData`);
+      console.info(`Table ${tableName} not handled in upsertSharedTableData`);
       return [];
   }
 }
@@ -321,13 +331,14 @@ export async function getLastSharedSyncTimes(boardName: AuroraBoardName) {
 export async function syncSharedData(
   board: AuroraBoardName,
   token: string,
-): Promise<{ complete: boolean; results: Record<string, { synced: number; complete: boolean }>; newClimbs: NewClimbInfo[] }> {
+): Promise<{
+  complete: boolean;
+  results: Record<string, { synced: number; complete: boolean }>;
+  newClimbs: NewClimbInfo[];
+}> {
   try {
-    console.log('Entered sync shared data');
-
     // Get shared sync times
     const allSyncTimes = await getLastSharedSyncTimes(board);
-    console.log('Fetched previous sync times:', allSyncTimes);
 
     // Create a map of existing sync times
     const sharedSyncMap = new Map(allSyncTimes.map((sync) => [sync.table_name, sync.last_synchronized_at]));
@@ -343,16 +354,12 @@ export async function syncSharedData(
       })),
     };
 
-    console.log('syncParams', syncParams);
-
     // Initialize results tracking
     const totalResults: Record<string, { synced: number; complete: boolean }> = {};
     const allNewClimbs: NewClimbInfo[] = [];
     let isComplete = false;
 
     const syncResults = await sharedSync(board, syncParams, token);
-    console.log('syncResults keys:', Object.keys(syncResults));
-    console.log('syncResults structure:', JSON.stringify(syncResults, null, 2).substring(0, 1000));
 
     // Process this batch in a transaction
     const pool = getPool();
@@ -370,7 +377,7 @@ export async function syncSharedData(
 
           // Only process tables we actually care about
           if (TABLES_TO_PROCESS.has(tableName)) {
-            console.log(`Syncing ${tableName}: ${data.length} records`);
+            console.info(`Syncing ${tableName}: ${data.length} records`);
             const newClimbs = await upsertSharedTableData(tx, board, tableName, data);
             allNewClimbs.push(...newClimbs);
 
@@ -380,7 +387,7 @@ export async function syncSharedData(
             }
             totalResults[tableName].synced += data.length;
           } else {
-            console.log(`Skipping ${tableName}: ${data.length} records (not processed)`);
+            console.info(`Skipping ${tableName}: ${data.length} records (not processed)`);
             // Still track in results but don't sync
             if (!totalResults[tableName]) {
               totalResults[tableName] = { synced: 0, complete: false };
@@ -393,7 +400,7 @@ export async function syncSharedData(
 
       // Update shared_syncs table with new sync times from this batch
       if (syncResults['shared_syncs']) {
-        console.log('Updating shared_syncs with data:', syncResults['shared_syncs']);
+        console.info('Updating shared_syncs with data:', syncResults['shared_syncs']);
         await updateSharedSyncs(tx, board, syncResults['shared_syncs']);
 
         // Update sync params for next iteration with new timestamps
@@ -407,13 +414,13 @@ export async function syncSharedData(
         // Log timestamp updates for debugging
         const climbsSync = newSharedSyncs.find((s: { table_name: string }) => s.table_name === 'climbs');
         if (climbsSync) {
-          console.log(`Climbs table sync timestamp updated to: ${climbsSync.last_synchronized_at}`);
+          console.info(`Climbs table sync timestamp updated to: ${climbsSync.last_synchronized_at}`);
         }
 
         // Update syncParams for next batch
         syncParams.sharedSyncs = newSharedSyncs;
       } else {
-        console.log('No shared_syncs data in sync results');
+        console.info('No shared_syncs data in sync results');
       }
 
       await client.query('COMMIT');
@@ -428,7 +435,7 @@ export async function syncSharedData(
     // Check if sync is complete - default to true if _complete is not present (matches Android app behavior)
     isComplete = syncResults._complete !== false;
 
-    console.log(`Sync complete. _complete flag: ${syncResults._complete}, isComplete: ${isComplete}`);
+    console.info(`Sync complete. _complete flag: ${syncResults._complete}, isComplete: ${isComplete}`);
 
     // Mark completion status for all tables
     Object.keys(totalResults).forEach((table) => {
@@ -436,13 +443,13 @@ export async function syncSharedData(
     });
 
     // Log summary of what was synced
-    console.log('Sync batch summary:');
+    console.info('Sync batch summary:');
     Object.entries(totalResults).forEach(([table, result]) => {
       if (result.synced > 0) {
-        console.log(`  ${table}: ${result.synced} records synced`);
+        console.info(`  ${table}: ${result.synced} records synced`);
       }
     });
-    console.log(`Sync complete: ${isComplete}`);
+    console.info(`Sync complete: ${isComplete}`);
 
     return { complete: isComplete, results: totalResults, newClimbs: allNewClimbs };
   } catch (error) {

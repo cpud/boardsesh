@@ -65,13 +65,19 @@ export const boardseshTicks = pgTable(
     sessionId: text('session_id').references(() => boardSessions.id, { onDelete: 'set null' }),
 
     // Optional link to inferred session (for ticks not in party mode)
-    inferredSessionId: text('inferred_session_id').references(() => inferredSessions.id, { onDelete: 'set null' }),
+    inferredSessionId: text('inferred_session_id').references(() => inferredSessions.id, {
+      onDelete: 'set null',
+    }),
 
     // Stores original inferredSessionId before manual reassignment (for undo)
-    previousInferredSessionId: text('previous_inferred_session_id').references(() => inferredSessions.id, { onDelete: 'set null' }),
+    previousInferredSessionId: text('previous_inferred_session_id').references(() => inferredSessions.id, {
+      onDelete: 'set null',
+    }),
 
     // Optional link to the board entity this tick was recorded on
-    boardId: bigint('board_id', { mode: 'number' }).references(() => userBoards.id, { onDelete: 'set null' }),
+    boardId: bigint('board_id', { mode: 'number' }).references(() => userBoards.id, {
+      onDelete: 'set null',
+    }),
 
     // Aurora sync tracking - populated by periodic sync job
     auroraType: auroraTableTypeEnum('aurora_type'), // 'ascents' or 'bids'
@@ -81,23 +87,14 @@ export const boardseshTicks = pgTable(
   },
   (table) => ({
     // Index for efficient user logbook queries
-    userBoardIdx: index('boardsesh_ticks_user_board_idx').on(
-      table.userId,
-      table.boardType
-    ),
+    userBoardIdx: index('boardsesh_ticks_user_board_idx').on(table.userId, table.boardType),
     // Index for looking up ticks by climb
-    climbIdx: index('boardsesh_ticks_climb_idx').on(
-      table.climbUuid,
-      table.boardType
-    ),
+    climbIdx: index('boardsesh_ticks_climb_idx').on(table.climbUuid, table.boardType),
     // Unique index for Aurora sync - allows upsert on aurora_id
     // PostgreSQL unique indexes allow multiple NULLs by default
     auroraIdUnique: uniqueIndex('boardsesh_ticks_aurora_id_unique').on(table.auroraId),
     // Index for pending sync queries (ticks without aurora_id)
-    syncPendingIdx: index('boardsesh_ticks_sync_pending_idx').on(
-      table.auroraId,
-      table.userId
-    ),
+    syncPendingIdx: index('boardsesh_ticks_sync_pending_idx').on(table.auroraId, table.userId),
     // Index for session queries
     sessionIdx: index('boardsesh_ticks_session_idx').on(table.sessionId),
     // Index for inferred session queries
@@ -116,7 +113,7 @@ export const boardseshTicks = pgTable(
       table.angle,
       table.climbUuid,
     ),
-  })
+  }),
 );
 
 // Type exports

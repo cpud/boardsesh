@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+import PlaylistPreviewSquare from '../playlist-preview-square';
 
-// Mock BoardRenderer
-vi.mock('../../board-renderer/board-renderer', () => ({
-  default: () => <div data-testid="board-renderer" />,
+// Mock BoardImageLayers (used instead of BoardRenderer)
+vi.mock('../../board-renderer/board-image-layers', () => ({
+  default: () => <div data-testid="board-image-layers" />,
 }));
 
 // Mock getBoardDetailsForPlaylist
@@ -39,8 +40,6 @@ vi.mock('../library.module.css', () => ({
   ),
 }));
 
-import PlaylistPreviewSquare from '../playlist-preview-square';
-
 const MOCK_BOARD_DETAILS = {
   board_name: 'kilter',
   layout_id: 1,
@@ -65,42 +64,24 @@ describe('PlaylistPreviewSquare', () => {
   it('renders BoardRenderer when board details are available', () => {
     mockGetBoardDetailsForPlaylist.mockReturnValue(MOCK_BOARD_DETAILS);
 
-    render(
-      <PlaylistPreviewSquare
-        boardType="kilter"
-        layoutId={1}
-        color="#FF6600"
-      />,
-    );
+    render(<PlaylistPreviewSquare boardType="kilter" layoutId={1} color="#FF6600" />);
 
-    expect(screen.getByTestId('board-renderer')).toBeDefined();
+    expect(screen.getByTestId('board-image-layers')).toBeDefined();
     expect(mockGetBoardDetailsForPlaylist).toHaveBeenCalledWith('kilter', 1);
   });
 
   it('does not render BoardRenderer when board details are null', () => {
     mockGetBoardDetailsForPlaylist.mockReturnValue(null);
 
-    render(
-      <PlaylistPreviewSquare
-        boardType="unknown"
-        color="#FF6600"
-      />,
-    );
+    render(<PlaylistPreviewSquare boardType="unknown" color="#FF6600" />);
 
-    expect(screen.queryByTestId('board-renderer')).toBeNull();
+    expect(screen.queryByTestId('board-image-layers')).toBeNull();
   });
 
   it('renders emoji when provided', () => {
     mockGetBoardDetailsForPlaylist.mockReturnValue(MOCK_BOARD_DETAILS);
 
-    const { container } = render(
-      <PlaylistPreviewSquare
-        boardType="kilter"
-        layoutId={1}
-        icon="🔥"
-        color="#FF6600"
-      />,
-    );
+    const { container } = render(<PlaylistPreviewSquare boardType="kilter" layoutId={1} icon="🔥" color="#FF6600" />);
 
     const emoji = container.querySelector('.previewEmoji');
     expect(emoji).toBeDefined();
@@ -110,13 +91,7 @@ describe('PlaylistPreviewSquare', () => {
   it('renders fallback LabelOutlined icon when no emoji is provided', () => {
     mockGetBoardDetailsForPlaylist.mockReturnValue(MOCK_BOARD_DETAILS);
 
-    const { container } = render(
-      <PlaylistPreviewSquare
-        boardType="kilter"
-        layoutId={1}
-        color="#FF6600"
-      />,
-    );
+    const { container } = render(<PlaylistPreviewSquare boardType="kilter" layoutId={1} color="#FF6600" />);
 
     // Should render the icon class, not the emoji class
     expect(container.querySelector('.previewIcon')).toBeDefined();
@@ -126,16 +101,10 @@ describe('PlaylistPreviewSquare', () => {
   it('renders FavoriteOutlined for isLikedClimbs', () => {
     mockGetBoardDetailsForPlaylist.mockReturnValue(MOCK_BOARD_DETAILS);
 
-    const { container } = render(
-      <PlaylistPreviewSquare
-        boardType="kilter"
-        layoutId={1}
-        isLikedClimbs
-      />,
-    );
+    const { container } = render(<PlaylistPreviewSquare boardType="kilter" layoutId={1} isLikedClimbs />);
 
     // Should NOT render the board preview for liked climbs
-    expect(screen.queryByTestId('board-renderer')).toBeNull();
+    expect(screen.queryByTestId('board-image-layers')).toBeNull();
     // Should have the liked gradient class
     expect(container.querySelector('.likedGradient')).toBeDefined();
   });
@@ -143,13 +112,7 @@ describe('PlaylistPreviewSquare', () => {
   it('renders frosted overlay when board preview is shown', () => {
     mockGetBoardDetailsForPlaylist.mockReturnValue(MOCK_BOARD_DETAILS);
 
-    const { container } = render(
-      <PlaylistPreviewSquare
-        boardType="kilter"
-        layoutId={1}
-        color="#FF6600"
-      />,
-    );
+    const { container } = render(<PlaylistPreviewSquare boardType="kilter" layoutId={1} color="#FF6600" />);
 
     expect(container.querySelector('.previewFrostedOverlay')).toBeDefined();
     expect(container.querySelector('.previewBoardLayer')).toBeDefined();
@@ -158,12 +121,7 @@ describe('PlaylistPreviewSquare', () => {
   it('does not render frosted overlay when falling back to solid color', () => {
     mockGetBoardDetailsForPlaylist.mockReturnValue(null);
 
-    const { container } = render(
-      <PlaylistPreviewSquare
-        boardType="unknown"
-        color="#FF6600"
-      />,
-    );
+    const { container } = render(<PlaylistPreviewSquare boardType="unknown" color="#FF6600" />);
 
     expect(container.querySelector('.previewFrostedOverlay')).toBeNull();
     expect(container.querySelector('.previewBoardLayer')).toBeNull();
@@ -173,12 +131,7 @@ describe('PlaylistPreviewSquare', () => {
     mockGetBoardDetailsForPlaylist.mockReturnValue(MOCK_BOARD_DETAILS);
 
     const { container } = render(
-      <PlaylistPreviewSquare
-        boardType="kilter"
-        layoutId={1}
-        color="#FF6600"
-        className="custom-class"
-      />,
+      <PlaylistPreviewSquare boardType="kilter" layoutId={1} color="#FF6600" className="custom-class" />,
     );
 
     const root = container.firstChild as HTMLElement;
@@ -188,13 +141,7 @@ describe('PlaylistPreviewSquare', () => {
   it('uses fallback color from PLAYLIST_COLORS when no valid color is provided', () => {
     mockGetBoardDetailsForPlaylist.mockReturnValue(null);
 
-    const { container } = render(
-      <PlaylistPreviewSquare
-        boardType="kilter"
-        layoutId={1}
-        index={0}
-      />,
-    );
+    const { container } = render(<PlaylistPreviewSquare boardType="kilter" layoutId={1} index={0} />);
 
     const root = container.firstChild as HTMLElement;
     // Browser converts hex to rgb — #4F46E5 = rgb(79, 70, 229)
@@ -204,13 +151,7 @@ describe('PlaylistPreviewSquare', () => {
   it('applies frosted overlay with rgba color derived from hex', () => {
     mockGetBoardDetailsForPlaylist.mockReturnValue(MOCK_BOARD_DETAILS);
 
-    const { container } = render(
-      <PlaylistPreviewSquare
-        boardType="kilter"
-        layoutId={1}
-        color="#FF6600"
-      />,
-    );
+    const { container } = render(<PlaylistPreviewSquare boardType="kilter" layoutId={1} color="#FF6600" />);
 
     const overlay = container.querySelector('.previewFrostedOverlay') as HTMLElement;
     expect(overlay.style.background).toBe('rgba(255, 102, 0, 0.45)');

@@ -1,6 +1,7 @@
 import { getAllLayouts } from '@/app/lib/board-constants';
+import { AURORA_BOARDS, type AuroraBoardName } from '@boardsesh/shared-schema';
 
-export type BoardFilter = 'all' | 'kilter' | 'tension' | 'moonboard';
+export type BoardFilter = 'all' | 'moonboard' | AuroraBoardName;
 export type SortPreset = 'recent' | 'hardest';
 export type SortField = 'climbName' | 'loggedGrade' | 'consensusGrade' | 'date' | 'attemptCount';
 export type SortDirection = 'asc' | 'desc';
@@ -38,7 +39,7 @@ export const DEFAULT_ANGLE_RANGE: [number, number] = [0, 70];
 
 export const DEFAULT_FILTERS: LogbookFilterState = {
   includeSends: true,
-  includeAttempts: false,
+  includeAttempts: true,
   flashOnly: false,
   minGrade: '',
   maxGrade: '',
@@ -61,6 +62,9 @@ export const ALL_LAYOUT_SELECTIONS: Record<Exclude<BoardFilter, 'all'>, number[]
   kilter: getAllLayouts('kilter').map((layout) => layout.id),
   tension: getAllLayouts('tension').map((layout) => layout.id),
   moonboard: getAllLayouts('moonboard').map((layout) => layout.id),
+  decoy: getAllLayouts('decoy').map((layout) => layout.id),
+  touchstone: getAllLayouts('touchstone').map((layout) => layout.id),
+  grasshopper: getAllLayouts('grasshopper').map((layout) => layout.id),
 };
 
 export const DEFAULT_LOGBOOK_PREFERENCES: LogbookPreferences = {
@@ -71,8 +75,15 @@ export const DEFAULT_LOGBOOK_PREFERENCES: LogbookPreferences = {
   sort: DEFAULT_SORT,
 };
 
-const VALID_BOARD_FILTERS: BoardFilter[] = ['all', 'kilter', 'tension', 'moonboard'];
-const VALID_SORT_FIELDS: Array<SortField | ''> = ['', 'climbName', 'loggedGrade', 'consensusGrade', 'date', 'attemptCount'];
+const VALID_BOARD_FILTERS: BoardFilter[] = ['all', 'moonboard', ...AURORA_BOARDS];
+const VALID_SORT_FIELDS: Array<SortField | ''> = [
+  '',
+  'climbName',
+  'loggedGrade',
+  'consensusGrade',
+  'date',
+  'attemptCount',
+];
 const VALID_SORT_DIRECTIONS: SortDirection[] = ['asc', 'desc'];
 const VALID_SORT_PRESETS: SortPreset[] = ['recent', 'hardest'];
 
@@ -101,12 +112,16 @@ function sanitizeAngleRange(value: unknown): [number, number] {
 }
 
 function sanitizeLayoutSelections(value: unknown): Record<Exclude<BoardFilter, 'all'>, number[]> {
-  const source = value && typeof value === 'object' ? value as Partial<Record<Exclude<BoardFilter, 'all'>, unknown>> : {};
+  const source =
+    value && typeof value === 'object' ? (value as Partial<Record<Exclude<BoardFilter, 'all'>, unknown>>) : {};
 
   return {
     kilter: sanitizeBoardLayouts(source.kilter, 'kilter'),
     tension: sanitizeBoardLayouts(source.tension, 'tension'),
     moonboard: sanitizeBoardLayouts(source.moonboard, 'moonboard'),
+    decoy: sanitizeBoardLayouts(source.decoy, 'decoy'),
+    touchstone: sanitizeBoardLayouts(source.touchstone, 'touchstone'),
+    grasshopper: sanitizeBoardLayouts(source.grasshopper, 'grasshopper'),
   };
 }
 
@@ -130,14 +145,20 @@ export function sanitizeLogbookPreferences(value: unknown): LogbookPreferences {
 
   const sanitizedFilters: LogbookFilterState = {
     includeSends: sanitizeBoolean((filters as Partial<LogbookFilterState>).includeSends, DEFAULT_FILTERS.includeSends),
-    includeAttempts: sanitizeBoolean((filters as Partial<LogbookFilterState>).includeAttempts, DEFAULT_FILTERS.includeAttempts),
+    includeAttempts: sanitizeBoolean(
+      (filters as Partial<LogbookFilterState>).includeAttempts,
+      DEFAULT_FILTERS.includeAttempts,
+    ),
     flashOnly: sanitizeBoolean((filters as Partial<LogbookFilterState>).flashOnly, DEFAULT_FILTERS.flashOnly),
     minGrade: sanitizeDifficulty((filters as Partial<LogbookFilterState>).minGrade),
     maxGrade: sanitizeDifficulty((filters as Partial<LogbookFilterState>).maxGrade),
     fromDate: sanitizeDate((filters as Partial<LogbookFilterState>).fromDate),
     toDate: sanitizeDate((filters as Partial<LogbookFilterState>).toDate),
     angleRange: sanitizeAngleRange((filters as Partial<LogbookFilterState>).angleRange),
-    benchmarkOnly: sanitizeBoolean((filters as Partial<LogbookFilterState>).benchmarkOnly, DEFAULT_FILTERS.benchmarkOnly),
+    benchmarkOnly: sanitizeBoolean(
+      (filters as Partial<LogbookFilterState>).benchmarkOnly,
+      DEFAULT_FILTERS.benchmarkOnly,
+    ),
   };
 
   if (!sanitizedFilters.includeSends && !sanitizedFilters.includeAttempts) {
@@ -153,13 +174,13 @@ export function sanitizeLogbookPreferences(value: unknown): LogbookPreferences {
       ? ((sort as Partial<LogbookSortState>).preset as SortPreset)
       : DEFAULT_SORT.preset,
     primaryField: VALID_SORT_FIELDS.includes((sort as Partial<LogbookSortState>).primaryField ?? 'date')
-      ? (((sort as Partial<LogbookSortState>).primaryField || 'date') as SortField)
+      ? (sort as Partial<LogbookSortState>).primaryField || 'date'
       : DEFAULT_SORT.primaryField,
     primaryDirection: VALID_SORT_DIRECTIONS.includes((sort as Partial<LogbookSortState>).primaryDirection ?? 'desc')
       ? ((sort as Partial<LogbookSortState>).primaryDirection as SortDirection)
       : DEFAULT_SORT.primaryDirection,
     secondaryField: VALID_SORT_FIELDS.includes((sort as Partial<LogbookSortState>).secondaryField ?? '')
-      ? (((sort as Partial<LogbookSortState>).secondaryField ?? '') as '' | SortField)
+      ? ((sort as Partial<LogbookSortState>).secondaryField ?? '')
       : DEFAULT_SORT.secondaryField,
     secondaryDirection: VALID_SORT_DIRECTIONS.includes((sort as Partial<LogbookSortState>).secondaryDirection ?? 'desc')
       ? ((sort as Partial<LogbookSortState>).secondaryDirection as SortDirection)

@@ -2,11 +2,12 @@
 
 import React, { useMemo } from 'react';
 import DashboardOutlined from '@mui/icons-material/DashboardOutlined';
+import BluetoothOutlined from '@mui/icons-material/BluetoothOutlined';
 import BoardRenderer from '../board-renderer/board-renderer';
 import { useBoardDetails } from './board-thumbnail';
 import { formatCount, formatSends } from '@/app/lib/format-climb-stats';
-import { BoardConfigData } from '@/app/lib/server-board-configs';
-import { StoredBoardConfig } from '@/app/lib/saved-boards-db';
+import type { BoardConfigData } from '@/app/lib/server-board-configs';
+import type { StoredBoardConfig } from '@/app/lib/saved-boards-db';
 import type { UserBoard, PopularBoardConfig } from '@boardsesh/shared-schema';
 import styles from './board-scroll.module.css';
 
@@ -25,8 +26,7 @@ function formatDistance(meters: number): string {
   return `${(meters / 1000).toFixed(1)}km`;
 }
 
-
-interface BoardScrollCardProps {
+type BoardScrollCardProps = {
   userBoard?: UserBoard;
   storedConfig?: StoredBoardConfig;
   popularConfig?: PopularBoardConfig;
@@ -35,9 +35,10 @@ interface BoardScrollCardProps {
   disabled?: boolean;
   disabledText?: string;
   distanceMeters?: number | null;
+  bluetoothNearby?: boolean;
   size?: 'default' | 'small';
   onClick: () => void;
-}
+};
 
 export default function BoardScrollCard({
   userBoard,
@@ -48,6 +49,7 @@ export default function BoardScrollCard({
   disabled,
   disabledText,
   distanceMeters,
+  bluetoothNearby,
   size = 'default',
   onClick,
 }: BoardScrollCardProps) {
@@ -73,7 +75,7 @@ export default function BoardScrollCard({
       if (boardConfigs) {
         const layouts = boardConfigs.layouts[storedConfig.board] || [];
         const layout = layouts.find((l) => l.id === storedConfig.layoutId);
-        cardMeta = layout?.name || (storedConfig.board.charAt(0).toUpperCase() + storedConfig.board.slice(1));
+        cardMeta = layout?.name || storedConfig.board.charAt(0).toUpperCase() + storedConfig.board.slice(1);
       } else {
         cardMeta = storedConfig.board.charAt(0).toUpperCase() + storedConfig.board.slice(1);
       }
@@ -101,25 +103,27 @@ export default function BoardScrollCard({
         className={`${styles.cardSquare} ${selected ? styles.cardSquareSelected : ''} ${disabled ? styles.cardSquareDisabled : ''}`}
       >
         {boardDetails ? (
-          <BoardRenderer
-            mirrored={false}
-            boardDetails={boardDetails}
-            thumbnail
-            fillHeight
-          />
+          <BoardRenderer mirrored={false} boardDetails={boardDetails} thumbnail fillHeight />
         ) : (
           <div className={styles.cardFallback}>
             <DashboardOutlined sx={{ fontSize: iconSize }} />
           </div>
         )}
-        {distanceMeters != null && (
-          <div className={styles.distanceBadge}>{formatDistance(distanceMeters)}</div>
+        {distanceMeters != null && <div className={styles.distanceBadge}>{formatDistance(distanceMeters)}</div>}
+        {bluetoothNearby && (
+          <div className={`${styles.distanceBadge} ${styles.bluetoothBadge}`}>
+            <BluetoothOutlined sx={{ fontSize: 14, verticalAlign: 'middle' }} />
+          </div>
         )}
       </div>
-      <div className={`${styles.cardName} ${selected ? styles.cardNameSelected : ''} ${disabled ? styles.cardNameDisabled : ''}`}>
+      <div
+        className={`${styles.cardName} ${selected ? styles.cardNameSelected : ''} ${disabled ? styles.cardNameDisabled : ''}`}
+      >
         {name}
       </div>
-      {displayMeta && <div className={`${styles.cardMeta} ${disabled ? styles.cardNameDisabled : ''}`}>{displayMeta}</div>}
+      {displayMeta && (
+        <div className={`${styles.cardMeta} ${disabled ? styles.cardNameDisabled : ''}`}>{displayMeta}</div>
+      )}
     </div>
   );
 }

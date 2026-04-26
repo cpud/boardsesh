@@ -4,7 +4,7 @@ import React, { useRef, useEffect, useCallback } from 'react';
 import Skeleton from '@mui/material/Skeleton';
 import styles from './board-scroll.module.css';
 
-interface BoardScrollSectionProps {
+type BoardScrollSectionProps = {
   title?: string;
   loading?: boolean;
   size?: 'default' | 'small';
@@ -12,7 +12,7 @@ interface BoardScrollSectionProps {
   hasMore?: boolean;
   isLoadingMore?: boolean;
   children?: React.ReactNode;
-}
+};
 
 function SkeletonCards({ count, isSmall }: { count: number; isSmall: boolean }) {
   return (
@@ -67,13 +67,8 @@ export default function BoardScrollSection({
   return (
     <div className={`${styles.scrollSection} ${isSmall ? styles.scrollSectionSmall : ''}`}>
       {title && <div className={styles.sectionTitle}>{title}</div>}
-      <div
-        ref={scrollRef}
-        className={`${styles.scrollContainer} ${isSmall ? styles.scrollContainerSmall : ''}`}
-      >
-        {loading
-          ? <SkeletonCards count={4} isSmall={isSmall} />
-          : children}
+      <div ref={scrollRef} className={`${styles.scrollContainer} ${isSmall ? styles.scrollContainerSmall : ''}`}>
+        {loading ? <SkeletonCards count={4} isSmall={isSmall} /> : children}
         {hasMore && (
           <>
             <div ref={sentinelRef} className={styles.loadMoreSentinel} />

@@ -1,5 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
+import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
+import { useFollowToggle } from '../use-follow-toggle';
 
 vi.mock('@/app/hooks/use-ws-auth-token', () => ({
   useWsAuthToken: vi.fn(),
@@ -14,9 +16,6 @@ const mockRequest = vi.fn();
 vi.mock('@/app/lib/graphql/client', () => ({
   createGraphQLHttpClient: () => ({ request: mockRequest }),
 }));
-
-import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
-import { useFollowToggle } from '../use-follow-toggle';
 
 type FollowToggleConfig = Parameters<typeof useFollowToggle>[0];
 
@@ -63,9 +62,7 @@ describe('useFollowToggle', () => {
       error: null,
     });
 
-    const { result } = renderHook(() =>
-      useFollowToggle(createDefaultConfig() as FollowToggleConfig),
-    );
+    const { result } = renderHook(() => useFollowToggle(createDefaultConfig() as FollowToggleConfig));
 
     await act(async () => {
       await result.current.handleToggle();
@@ -84,7 +81,7 @@ describe('useFollowToggle', () => {
     expect(result.current.isFollowing).toBe(false);
 
     act(() => {
-      result.current.handleToggle();
+      void result.current.handleToggle();
     });
 
     expect(result.current.isFollowing).toBe(true);
@@ -140,9 +137,7 @@ describe('useFollowToggle', () => {
     mockRequest.mockRejectedValue(new Error('Oops'));
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    const { result } = renderHook(() =>
-      useFollowToggle(createDefaultConfig() as FollowToggleConfig),
-    );
+    const { result } = renderHook(() => useFollowToggle(createDefaultConfig() as FollowToggleConfig));
 
     await act(async () => {
       await result.current.handleToggle();
@@ -170,16 +165,18 @@ describe('useFollowToggle', () => {
 
   it('sets isLoading during mutation', async () => {
     let resolveRequest: (value: unknown) => void;
-    mockRequest.mockReturnValue(new Promise((resolve) => { resolveRequest = resolve; }));
-
-    const { result } = renderHook(() =>
-      useFollowToggle(createDefaultConfig() as FollowToggleConfig),
+    mockRequest.mockReturnValue(
+      new Promise((resolve) => {
+        resolveRequest = resolve;
+      }),
     );
+
+    const { result } = renderHook(() => useFollowToggle(createDefaultConfig() as FollowToggleConfig));
 
     expect(result.current.isLoading).toBe(false);
 
     act(() => {
-      result.current.handleToggle();
+      void result.current.handleToggle();
     });
 
     expect(result.current.isLoading).toBe(true);
@@ -192,9 +189,7 @@ describe('useFollowToggle', () => {
   });
 
   it('provides setIsHovered for hover state', () => {
-    const { result } = renderHook(() =>
-      useFollowToggle(createDefaultConfig() as FollowToggleConfig),
-    );
+    const { result } = renderHook(() => useFollowToggle(createDefaultConfig() as FollowToggleConfig));
 
     expect(result.current.isHovered).toBe(false);
 

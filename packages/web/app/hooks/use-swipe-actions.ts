@@ -10,10 +10,16 @@ const DEFAULT_SWIPE_THRESHOLD = 100;
 const DEFAULT_MAX_SWIPE = 120;
 // Duration the confirmation checkmark is shown before snapping back
 const CONFIRMATION_DISPLAY_MS = 600;
+/**
+ * Default peek distance in pixels shown while the post-swipe confirmation
+ * is displayed. Shared so coach-mark animations can preview the same offset
+ * users see during a real gesture.
+ */
+export const DEFAULT_CONFIRMATION_PEEK_OFFSET = 76;
 
 export type SwipeZone = 'none' | 'left-short' | 'left-long' | 'right-short' | 'right-long';
 
-export interface UseSwipeActionsOptions {
+export type UseSwipeActionsOptions = {
   /** Called when the user swipes left past the threshold */
   onSwipeLeft: () => void;
   /** Called when the user swipes left past the long-swipe threshold */
@@ -43,9 +49,9 @@ export interface UseSwipeActionsOptions {
   /** Pixels the content peeks left during confirmation to reveal the action icon.
    *  Should match the right action layer width so both states show the same area. */
   confirmationPeekOffset?: number;
-}
+};
 
-export interface UseSwipeActionsReturn {
+export type UseSwipeActionsReturn = {
   /** Spread onto the swipeable container element */
   swipeHandlers: ReturnType<typeof useSwipeable>;
   /** Whether a left-swipe action was just confirmed (checkmark peek is visible) */
@@ -56,7 +62,7 @@ export interface UseSwipeActionsReturn {
   leftActionRef: React.RefCallback<HTMLElement>;
   /** Ref for the right action background (visible on swipe left) */
   rightActionRef: React.RefCallback<HTMLElement>;
-}
+};
 
 /**
  * Hook for swipe-to-action gestures on list items.
@@ -80,7 +86,7 @@ export function useSwipeActions({
   maxSwipeLeft,
   maxSwipeRight,
   disabled = false,
-  confirmationPeekOffset = 76,
+  confirmationPeekOffset = DEFAULT_CONFIRMATION_PEEK_OFFSET,
 }: UseSwipeActionsOptions): UseSwipeActionsReturn {
   const [swipeLeftConfirmed, setSwipeLeftConfirmed] = useState(false);
   const confirmationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -106,11 +112,14 @@ export function useSwipeActions({
   const swipeZoneRef = useRef<SwipeZone>('none');
   const { detect: detectDirection, reset: resetDirection, isHorizontalRef } = useSwipeDirection();
 
-  const updateSwipeZone = useCallback((zone: SwipeZone) => {
-    if (swipeZoneRef.current === zone) return;
-    swipeZoneRef.current = zone;
-    onSwipeZoneChange?.(zone);
-  }, [onSwipeZoneChange]);
+  const updateSwipeZone = useCallback(
+    (zone: SwipeZone) => {
+      if (swipeZoneRef.current === zone) return;
+      swipeZoneRef.current = zone;
+      onSwipeZoneChange?.(zone);
+    },
+    [onSwipeZoneChange],
+  );
 
   const contentRef = useCallback((node: HTMLElement | null) => {
     contentEl.current = node;
@@ -125,31 +134,34 @@ export function useSwipeActions({
   }, []);
 
   /** Apply the current offset to the DOM elements directly */
-  const applyOffset = useCallback((offset: number) => {
-    offsetRef.current = offset;
-    onSwipeOffsetChange?.(offset);
+  const applyOffset = useCallback(
+    (offset: number) => {
+      offsetRef.current = offset;
+      onSwipeOffsetChange?.(offset);
 
-    if (contentEl.current) {
-      contentEl.current.style.transform = `translateX(${offset}px)`;
-      // Only apply transition when snapping back to zero
-      contentEl.current.style.transition = offset === 0 ? 'transform 150ms ease-out, opacity 150ms ease-out' : 'none';
-    }
+      if (contentEl.current) {
+        contentEl.current.style.transform = `translateX(${offset}px)`;
+        // Only apply transition when snapping back to zero
+        contentEl.current.style.transition = offset === 0 ? 'transform 150ms ease-out, opacity 150ms ease-out' : 'none';
+      }
 
-    const absOffset = Math.abs(offset);
-    const opacity = Math.min(1, absOffset / swipeThreshold);
+      const absOffset = Math.abs(offset);
+      const opacity = Math.min(1, absOffset / swipeThreshold);
 
-    // Left action (revealed on swipe right, offset > 0)
-    if (leftActionEl.current) {
-      leftActionEl.current.style.opacity = String(offset > 0 ? opacity : 0);
-      leftActionEl.current.style.visibility = offset > 0 ? 'visible' : 'hidden';
-    }
+      // Left action (revealed on swipe right, offset > 0)
+      if (leftActionEl.current) {
+        leftActionEl.current.style.opacity = String(offset > 0 ? opacity : 0);
+        leftActionEl.current.style.visibility = offset > 0 ? 'visible' : 'hidden';
+      }
 
-    // Right action (revealed on swipe left, offset < 0)
-    if (rightActionEl.current) {
-      rightActionEl.current.style.opacity = String(offset < 0 ? opacity : 0);
-      rightActionEl.current.style.visibility = offset < 0 ? 'visible' : 'hidden';
-    }
-  }, [swipeThreshold, onSwipeOffsetChange]);
+      // Right action (revealed on swipe left, offset < 0)
+      if (rightActionEl.current) {
+        rightActionEl.current.style.opacity = String(offset < 0 ? opacity : 0);
+        rightActionEl.current.style.visibility = offset < 0 ? 'visible' : 'hidden';
+      }
+    },
+    [swipeThreshold, onSwipeOffsetChange],
+  );
 
   /** Snap offset back to zero (no action taken) */
   const resetOffset = useCallback(() => {
@@ -170,6 +182,9 @@ export function useSwipeActions({
       contentEl.current.style.transition = 'transform 120ms ease-out';
       contentEl.current.style.transform = `translateX(${-confirmationPeekOffset}px)`;
     }
+    // Keep offsetRef in sync with the visual peek state so gesture handlers
+    // (e.g. onTouchEndOrOnMouseUp) read the true position if a new gesture lands.
+    offsetRef.current = -confirmationPeekOffset;
 
     // Keep the right action layer fully visible during confirmation
     if (rightActionEl.current) {
@@ -180,15 +195,18 @@ export function useSwipeActions({
     // After the confirmation display, snap back
     confirmationTimerRef.current = setTimeout(() => {
       confirmationTimerRef.current = null;
+      // If the element has unmounted (e.g. list virtualization), skip DOM work.
+      if (!contentEl.current) {
+        setSwipeLeftConfirmed(false);
+        return;
+      }
       // Set transition on right action before applyOffset changes values so it fades out smoothly
       if (rightActionEl.current) {
         rightActionEl.current.style.transition = 'opacity 200ms ease-out, visibility 0s 200ms';
       }
       applyOffset(0);
       // Override content transition with a gentler one for the confirmation snap-back
-      if (contentEl.current) {
-        contentEl.current.style.transition = 'transform 200ms ease-out';
-      }
+      contentEl.current.style.transition = 'transform 200ms ease-out';
       updateSwipeZone('none');
       setSwipeLeftConfirmed(false);
     }, CONFIRMATION_DISPLAY_MS);

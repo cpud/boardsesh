@@ -18,18 +18,18 @@ import type { ActivityFeedItem } from '@boardsesh/shared-schema';
 import { getGradeColor } from '@/app/lib/grade-colors';
 import { useGradeFormat } from '@/app/hooks/use-grade-format';
 
-interface SessionSummaryMetadata {
+type SessionSummaryMetadata = {
   totalSends?: number;
   totalAttempts?: number;
   durationMinutes?: number;
   goal?: string;
   gradeDistribution?: Array<{ grade: string; count: number }>;
   participants?: Array<{ userId: string; displayName?: string; avatarUrl?: string }>;
-}
+};
 
-interface SessionSummaryFeedItemProps {
+type SessionSummaryFeedItemProps = {
   item: ActivityFeedItem;
-}
+};
 
 export default function SessionSummaryFeedItem({ item }: SessionSummaryFeedItemProps) {
   const { formatGrade, loaded: gradeFormatLoaded } = useGradeFormat();
@@ -44,7 +44,14 @@ export default function SessionSummaryFeedItem({ item }: SessionSummaryFeedItemP
   } catch {
     // Ignore parse errors
   }
-  const { totalSends = 0, totalAttempts = 0, durationMinutes, goal, gradeDistribution = [], participants = [] } = metadata;
+  const {
+    totalSends = 0,
+    totalAttempts = 0,
+    durationMinutes,
+    goal,
+    gradeDistribution = [],
+    participants = [],
+  } = metadata;
 
   const maxGradeCount = Math.max(...gradeDistribution.map((g) => g.count), 1);
 
@@ -86,12 +93,7 @@ export default function SessionSummaryFeedItem({ item }: SessionSummaryFeedItemP
           <Chip label={`${totalSends} sends`} size="small" color="primary" />
           <Chip label={`${totalAttempts} attempts`} size="small" variant="outlined" />
           {durationMinutes != null && (
-            <Chip
-              icon={<TimerOutlined />}
-              label={formatDuration(durationMinutes)}
-              size="small"
-              variant="outlined"
-            />
+            <Chip icon={<TimerOutlined />} label={formatDuration(durationMinutes)} size="small" variant="outlined" />
           )}
         </Box>
 
@@ -130,11 +132,7 @@ export default function SessionSummaryFeedItem({ item }: SessionSummaryFeedItemP
         {participants.length > 0 && (
           <AvatarGroup max={5} sx={{ justifyContent: 'flex-start' }}>
             {participants.map((p) => (
-              <Avatar
-                key={p.userId}
-                src={p.avatarUrl ?? undefined}
-                sx={{ width: 24, height: 24 }}
-              >
+              <Avatar key={p.userId} src={p.avatarUrl ?? undefined} sx={{ width: 24, height: 24 }}>
                 {!p.avatarUrl && <PersonOutlined sx={{ fontSize: 12 }} />}
               </Avatar>
             ))}

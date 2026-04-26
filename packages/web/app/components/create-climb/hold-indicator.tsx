@@ -6,24 +6,18 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import MuiTooltip from '@mui/material/Tooltip';
 
-interface HoldIndicatorProps {
+type HoldIndicatorProps = {
   count: number;
   max?: number;
   color: string;
   label: string;
-}
+};
 
 export default function HoldIndicator({ count, max, color, label }: HoldIndicatorProps) {
   const active = count > 0;
   return (
     <MuiTooltip title={label}>
-      <Stack
-        direction="row"
-        alignItems="center"
-        spacing={0.5}
-        aria-label={label}
-        sx={{ cursor: 'default' }}
-      >
+      <Stack direction="row" alignItems="center" spacing={0.5} aria-label={label} sx={{ cursor: 'default' }}>
         <Box
           sx={(theme) => ({
             width: 10,

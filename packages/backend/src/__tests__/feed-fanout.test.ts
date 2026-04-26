@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { buildFeedItemMetadata } from '../events/feed-metadata';
 import type { SocialEvent } from '@boardsesh/shared-schema';
 

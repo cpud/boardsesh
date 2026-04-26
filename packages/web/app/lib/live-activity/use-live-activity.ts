@@ -13,13 +13,13 @@ import { getBackendWsUrl } from '../backend-url';
 import type { ClimbQueueItem } from '@/app/components/queue-control/types';
 import type { BoardDetails } from '../types';
 
-interface UseLiveActivityOptions {
+type UseLiveActivityOptions = {
   queue: ClimbQueueItem[];
   currentClimbQueueItem: ClimbQueueItem | null;
   boardDetails: BoardDetails | null;
   sessionId: string | null;
   isSessionActive: boolean;
-}
+};
 
 export function useLiveActivity({
   queue,
@@ -62,16 +62,19 @@ export function useLiveActivity({
   const boardKey = boardDetails
     ? `${boardDetails.board_name}:${boardDetails.layout_id}:${boardDetails.size_id}:${Array.isArray(boardDetails.set_ids) ? boardDetails.set_ids.join(',') : boardDetails.set_ids}`
     : null;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally keyed by boardKey for value-based stability
   const stableBoardDetails = useMemo(() => boardDetails, [boardKey]);
 
   // Check availability once
   useEffect(() => {
     if (!isNativeApp() || getPlatform() !== 'ios') return;
     let cancelled = false;
-    isLiveActivityAvailable().then((result) => {
+    void isLiveActivityAvailable().then((result) => {
       if (!cancelled) setAvailable(result);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Start/end session — reacts to session activation, content presence, and board config.
@@ -89,14 +92,16 @@ export function useLiveActivity({
       isActiveRef.current = true;
       const startGeneration = ++generationRef.current;
 
-      startLiveActivitySession({
+      void startLiveActivitySession({
         sessionId: sessionIdRef.current ?? `local-${Date.now()}`,
         serverUrl,
         wsUrl: getBackendWsUrl() ?? undefined,
         boardName: stableBoardDetails.board_name,
         layoutId: stableBoardDetails.layout_id,
         sizeId: stableBoardDetails.size_id,
-        setIds: Array.isArray(stableBoardDetails.set_ids) ? stableBoardDetails.set_ids.join(',') : String(stableBoardDetails.set_ids),
+        setIds: Array.isArray(stableBoardDetails.set_ids)
+          ? stableBoardDetails.set_ids.join(',')
+          : String(stableBoardDetails.set_ids),
       }).then(() => {
         if (!isActiveRef.current || generationRef.current !== startGeneration) return;
         // Send an initial update so the widget doesn't stay on "Loading...".
@@ -105,7 +110,7 @@ export function useLiveActivity({
         if (!displayItem) return;
         const idx = q.findIndex((item) => item.uuid === displayItem.uuid);
         if (idx === -1) return;
-        updateLiveActivity({
+        void updateLiveActivity({
           climbName: displayItem.climb.name,
           climbDifficulty: displayItem.climb.difficulty,
           angle: displayItem.climb.angle,
@@ -118,13 +123,13 @@ export function useLiveActivity({
         });
       });
     } else if (!shouldBeActive && isActiveRef.current) {
-      endLiveActivitySession();
+      void endLiveActivitySession();
       isActiveRef.current = false;
     }
 
     return () => {
       if (isActiveRef.current) {
-        endLiveActivitySession();
+        void endLiveActivitySession();
         isActiveRef.current = false;
       }
     };
@@ -153,9 +158,11 @@ export function useLiveActivity({
     // IMPORTANT: Effect 1 (queue-sync) MUST remain declared before Effect 2
     // (climb-nav) in source order. React runs effects top-to-bottom within a
     // render, so reversing the order would cause Effect 2 to always read false.
-    queueMicrotask(() => { queueSyncedRef.current = false; });
+    queueMicrotask(() => {
+      queueSyncedRef.current = false;
+    });
 
-    updateLiveActivity({
+    void updateLiveActivity({
       climbName: displayItem.climb.name,
       climbDifficulty: displayItem.climb.difficulty,
       angle: displayItem.climb.angle,
@@ -181,7 +188,7 @@ export function useLiveActivity({
     const currentIndex = queue.findIndex((q) => q.uuid === displayItem.uuid);
     if (currentIndex === -1) return;
 
-    updateLiveActivityClimb({
+    void updateLiveActivityClimb({
       climbName: displayItem.climb.name,
       climbDifficulty: displayItem.climb.difficulty,
       angle: displayItem.climb.angle,

@@ -1,14 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styles from './collapsible-section.module.css';
 
-export interface CollapsibleSectionConfig {
+export type CollapsibleSectionConfig = {
   key: string;
   label: string;
   title: string;
   defaultSummary: string;
-  getSummary: () => string[];
+  /** Optional dynamic summary parts. When omitted or it returns [], falls back to defaultSummary. */
+  getSummary?: () => string[];
   content: React.ReactNode;
   /** When true, content is only mounted while this section is the active one. */
   lazy?: boolean;
@@ -16,30 +17,42 @@ export interface CollapsibleSectionConfig {
   defaultActive?: boolean;
   /** When true, removes the inner padding around the expanded content. */
   flush?: boolean;
-}
+};
 
-interface CollapsibleSectionProps {
+type CollapsibleSectionProps = {
   sections: CollapsibleSectionConfig[];
   defaultActiveKey?: string;
-}
+  /** When provided, forces this section to be active (e.g. for a guided tour). */
+  forcedActiveKey?: string | null;
+};
 
-const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
-  sections,
-  defaultActiveKey,
-}) => {
+const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({ sections, defaultActiveKey, forcedActiveKey }) => {
   const sectionDefaultActive = sections.find((s) => s.defaultActive);
-  const [activeKey, setActiveKey] = useState<string | null>(
-    sectionDefaultActive?.key ?? defaultActiveKey ?? null,
-  );
+  const initialActiveKey = sectionDefaultActive?.key ?? defaultActiveKey ?? null;
+  const [activeKey, setActiveKey] = useState<string | null>(initialActiveKey);
+  // Preserve the initial default so we can restore it if we transition back
+  // from controlled (forcedActiveKey set) to uncontrolled mode.
+  const initialActiveKeyRef = useRef(initialActiveKey);
+
+  useEffect(() => {
+    if (forcedActiveKey !== undefined) {
+      setActiveKey(forcedActiveKey);
+    } else {
+      // Transitioned back to uncontrolled — snap back to the original default
+      // so the last forced value doesn't leak into user-driven mode.
+      setActiveKey(initialActiveKeyRef.current);
+    }
+  }, [forcedActiveKey]);
+
+  const effectiveActiveKey = forcedActiveKey !== undefined ? forcedActiveKey : activeKey;
+  const interactionDisabled = forcedActiveKey !== undefined;
 
   return (
     <div className={styles.steppedContainer}>
       {sections.map((section) => {
-        const isActive = activeKey === section.key;
-        const summaryParts = section.getSummary();
-        const summaryText = summaryParts.length > 0
-          ? summaryParts.join(' \u00B7 ')
-          : section.defaultSummary;
+        const isActive = effectiveActiveKey === section.key;
+        const summaryParts = section.getSummary?.() ?? [];
+        const summaryText = summaryParts.length > 0 ? summaryParts.join(' \u00B7 ') : section.defaultSummary;
 
         const shouldRenderContent = section.lazy ? isActive : true;
 
@@ -47,11 +60,11 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
           <div
             key={section.key}
             className={`${styles.sectionCard} ${isActive ? styles.sectionCardActive : ''}`}
-            {...(!isActive ? { onClick: () => setActiveKey(section.key) } : {})}
+            {...(!isActive && !interactionDisabled ? { onClick: () => setActiveKey(section.key) } : {})}
           >
             <div
               className={`${styles.collapsedRow} ${isActive ? styles.collapsedRowActive : ''}`}
-              {...(isActive ? { onClick: () => setActiveKey(null) } : {})}
+              {...(isActive && !interactionDisabled ? { onClick: () => setActiveKey(null) } : {})}
             >
               <span className={styles.collapsedLabel}>{isActive ? section.title : section.label}</span>
               <span className={`${styles.collapsedSummary} ${isActive ? styles.collapsedSummaryHidden : ''}`}>

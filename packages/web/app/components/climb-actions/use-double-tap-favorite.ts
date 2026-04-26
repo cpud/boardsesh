@@ -4,17 +4,17 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useFavorite } from './use-favorite';
 import { useAuthModal } from '@/app/components/providers/auth-modal-provider';
 
-interface UseDoubleTapFavoriteOptions {
+type UseDoubleTapFavoriteOptions = {
   climbUuid: string;
-}
+};
 
-interface UseDoubleTapFavoriteReturn {
+type UseDoubleTapFavoriteReturn = {
   handleDoubleTap: () => void;
   showHeart: boolean;
   dismissHeart: () => void;
   isFavorited: boolean;
   toggleFavorite: () => Promise<boolean>;
-}
+};
 
 /**
  * Manages favorite toggle + heart animation state for double-tap-to-like.
@@ -40,8 +40,8 @@ export function useDoubleTapFavorite({ climbUuid }: UseDoubleTapFavoriteOptions)
   const handleDoubleTap = useCallback(() => {
     if (!isAuthenticated) {
       openAuthModal({
-        title: "Sign in to like climbs",
-        description: "Save your favorite climbs so you can find them later.",
+        title: 'Sign in to like climbs',
+        description: 'Save your favorite climbs so you can find them later.',
       });
       return;
     }
@@ -51,7 +51,7 @@ export function useDoubleTapFavorite({ climbUuid }: UseDoubleTapFavoriteOptions)
 
     // Only toggle if not already favorited (Instagram behavior)
     if (!isFavoritedRef.current) {
-      toggleFavorite();
+      void toggleFavorite();
     }
   }, [isAuthenticated, toggleFavorite, openAuthModal]);
 

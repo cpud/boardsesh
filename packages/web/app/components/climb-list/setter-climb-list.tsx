@@ -13,11 +13,11 @@ import type { UserBoard } from '@boardsesh/shared-schema';
 import type { Climb } from '@/app/lib/types';
 import MultiboardClimbList, { type SortBy } from './multiboard-climb-list';
 
-interface SetterClimbListProps {
+type SetterClimbListProps = {
   username: string;
   boardTypes?: string[];
   authToken?: string | null;
-}
+};
 
 export default function SetterClimbList({ username, boardTypes, authToken }: SetterClimbListProps) {
   const [selectedBoard, setSelectedBoard] = useState<UserBoard | null>(null);
@@ -32,7 +32,7 @@ export default function SetterClimbList({ username, boardTypes, authToken }: Set
           username,
           sortBy,
           limit: 20,
-          offset: pageParam as number,
+          offset: pageParam,
         },
       };
 
@@ -53,20 +53,17 @@ export default function SetterClimbList({ username, boardTypes, authToken }: Set
     initialPageParam: 0,
     getNextPageParam: (lastPage, _allPages, lastPageParam) => {
       if (!lastPage.hasMore) return undefined;
-      return (lastPageParam as number) + lastPage.climbs.length;
+      return lastPageParam + lastPage.climbs.length;
     },
     staleTime: 60 * 1000,
   });
 
-  const climbs: Climb[] = useMemo(
-    () => data?.pages.flatMap((p) => p.climbs) ?? [],
-    [data],
-  );
+  const climbs: Climb[] = useMemo(() => data?.pages.flatMap((p) => p.climbs) ?? [], [data]);
   const totalCount = data?.pages[0]?.totalCount ?? 0;
 
   const handleLoadMore = useCallback(() => {
     if (hasNextPage) {
-      fetchNextPage();
+      void fetchNextPage();
     }
   }, [hasNextPage, fetchNextPage]);
 

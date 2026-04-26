@@ -1,12 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+import SessionOverviewPanel, { buildSessionSummaryParts } from '../session-overview-panel';
 
 // Mock dependencies
 vi.mock('@/app/components/charts/css-bar-chart', () => ({
-  CssBarChart: (props: { ariaLabel?: string }) => (
-    <div data-testid="css-bar-chart" aria-label={props.ariaLabel} />
-  ),
+  CssBarChart: (props: { ariaLabel?: string }) => <div data-testid="css-bar-chart" aria-label={props.ariaLabel} />,
 }));
 
 vi.mock('@/app/components/charts/session-grade-bars', () => ({
@@ -27,8 +26,6 @@ vi.mock('@/app/hooks/use-grade-format', () => ({
     setGradeFormat: vi.fn(),
   }),
 }));
-
-import SessionOverviewPanel, { buildSessionSummaryParts } from '../session-overview-panel';
 
 type SessionOverviewPanelProps = React.ComponentProps<typeof SessionOverviewPanel>;
 
@@ -165,19 +162,34 @@ describe('buildSessionSummaryParts', () => {
   const base = { totalFlashes: 0, totalSends: 0, totalAttempts: 0, tickCount: 0 };
 
   it('subtracts flashes from sends', () => {
-    const parts = buildSessionSummaryParts({ ...base, totalSends: 5, totalFlashes: 2, tickCount: 5 });
+    const parts = buildSessionSummaryParts({
+      ...base,
+      totalSends: 5,
+      totalFlashes: 2,
+      tickCount: 5,
+    });
     expect(parts).toContain('2 flashes');
     expect(parts).toContain('3 sends');
   });
 
   it('omits sends when all sends are flashes', () => {
-    const parts = buildSessionSummaryParts({ ...base, totalSends: 3, totalFlashes: 3, tickCount: 3 });
+    const parts = buildSessionSummaryParts({
+      ...base,
+      totalSends: 3,
+      totalFlashes: 3,
+      tickCount: 3,
+    });
     expect(parts).toContain('3 flashes');
     expect(parts.find((p) => p.includes('send'))).toBeUndefined();
   });
 
   it('handles totalFlashes > totalSends gracefully', () => {
-    const parts = buildSessionSummaryParts({ ...base, totalSends: 1, totalFlashes: 3, tickCount: 3 });
+    const parts = buildSessionSummaryParts({
+      ...base,
+      totalSends: 1,
+      totalFlashes: 3,
+      tickCount: 3,
+    });
     expect(parts).toContain('3 flashes');
     expect(parts.find((p) => p.includes('send'))).toBeUndefined();
   });
@@ -189,7 +201,10 @@ describe('buildSessionSummaryParts', () => {
 
   it('applies formatGrade to hardest grade', () => {
     const parts = buildSessionSummaryParts({
-      ...base, tickCount: 1, hardestGrade: 'V5', formatGrade: () => '5c',
+      ...base,
+      tickCount: 1,
+      hardestGrade: 'V5',
+      formatGrade: () => '5c',
     });
     expect(parts).toContain('Hardest: 5c');
   });

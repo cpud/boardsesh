@@ -1,4 +1,4 @@
-import { Client, Event as WsEvent, EventListener as WsEventListener } from 'graphql-ws';
+import type { Client, Event as WsEvent, EventListener as WsEventListener } from 'graphql-ws';
 
 export type ConnectionState = 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'stale' | 'error';
 
@@ -24,7 +24,7 @@ const STALE_GRACE_MS = 10_000;
 const HEALTH_CHECK_INTERVAL_MS = 1000;
 
 class WebSocketConnectionManager {
-  private clients: Map<symbol, RegisteredClient> = new Map();
+  private clients = new Map<symbol, RegisteredClient>();
   private primaryName: string | null = null;
   private listeners = new Set<(snapshot: ConnectionSnapshot) => void>();
   private intervalId: ReturnType<typeof setInterval> | null = null;
@@ -237,17 +237,23 @@ class WebSocketConnectionManager {
   }
 }
 
-export const connectionManager = typeof window !== 'undefined'
-  ? new WebSocketConnectionManager()
-  : // Provide a no-op shim for SSR
-    {
-      registerClient: () => () => {},
-      subscribe: () => () => {},
-      getSnapshot: (): ConnectionSnapshot => ({ name: null, state: 'idle', lastActivity: null, error: null }),
-      forceReconnect: () => {},
-      setPrimaryName: () => {},
-      dispose: () => {},
-      __resetForTests: () => {},
-    } as unknown as WebSocketConnectionManager;
+export const connectionManager =
+  typeof window !== 'undefined'
+    ? new WebSocketConnectionManager()
+    : // Provide a no-op shim for SSR
+      ({
+        registerClient: () => () => {},
+        subscribe: () => () => {},
+        getSnapshot: (): ConnectionSnapshot => ({
+          name: null,
+          state: 'idle',
+          lastActivity: null,
+          error: null,
+        }),
+        forceReconnect: () => {},
+        setPrimaryName: () => {},
+        dispose: () => {},
+        __resetForTests: () => {},
+      } as unknown as WebSocketConnectionManager);
 
 export { KEEP_ALIVE_MS, STALE_GRACE_MS, HEALTH_CHECK_INTERVAL_MS };

@@ -1,8 +1,8 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
-import { BoardRouteParameters } from '@/app/lib/types';
+import type { BoardRouteParameters } from '@/app/lib/types';
 import { parseBoardRouteParamsWithSlugs } from '@/app/lib/url-utils.server';
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { getServerAuthToken } from '@/app/lib/auth/server-auth';
 import { serverMyBoards } from '@/app/lib/graphql/server-cached-client';
 import PlaylistDetailContent from '@/app/playlists/[playlist_uuid]/playlist-detail-content';
@@ -17,9 +17,7 @@ type PlaylistDetailRouteParams = BoardRouteParameters & {
   playlist_uuid: string;
 };
 
-export default async function PlaylistDetailPage(props: {
-  params: Promise<PlaylistDetailRouteParams>;
-}) {
+export default async function PlaylistDetailPage(props: { params: Promise<PlaylistDetailRouteParams> }) {
   const params = await props.params;
 
   try {

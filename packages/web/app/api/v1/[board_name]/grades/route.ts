@@ -1,7 +1,7 @@
 import { getDb } from '@/app/lib/db/db';
 import { boardDifficultyGrades } from '@/app/lib/db/schema';
 import { eq, and, asc } from 'drizzle-orm';
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ board_name: string }> }) {
   try {
@@ -14,12 +14,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
         difficulty_name: boardDifficultyGrades.boulderName,
       })
       .from(boardDifficultyGrades)
-      .where(
-        and(
-          eq(boardDifficultyGrades.boardType, board_name),
-          eq(boardDifficultyGrades.isListed, true),
-        ),
-      )
+      .where(and(eq(boardDifficultyGrades.boardType, board_name), eq(boardDifficultyGrades.isListed, true)))
       .orderBy(asc(boardDifficultyGrades.difficulty));
 
     return NextResponse.json(grades, {

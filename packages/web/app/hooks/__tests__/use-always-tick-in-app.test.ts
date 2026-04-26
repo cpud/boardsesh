@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, act, waitFor } from '@testing-library/react';
+import { useAlwaysTickInApp } from '../use-always-tick-in-app';
 
 const mockGetAlwaysTickInApp = vi.fn();
 const mockSetAlwaysTickInApp = vi.fn();
@@ -8,8 +9,6 @@ vi.mock('@/app/lib/user-preferences-db', () => ({
   getAlwaysTickInApp: (...args: unknown[]) => mockGetAlwaysTickInApp(...args),
   setAlwaysTickInApp: (...args: unknown[]) => mockSetAlwaysTickInApp(...args),
 }));
-
-import { useAlwaysTickInApp } from '../use-always-tick-in-app';
 
 describe('useAlwaysTickInApp', () => {
   beforeEach(() => {
@@ -88,7 +87,7 @@ describe('useAlwaysTickInApp', () => {
 
     // Start the enable call but don't resolve yet
     act(() => {
-      result.current.enableAlwaysUseApp();
+      void result.current.enableAlwaysUseApp();
     });
 
     // The set hasn't resolved yet, so alwaysUseApp should still be false

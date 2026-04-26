@@ -9,7 +9,6 @@ import ChatBubbleOutlineOutlined from '@mui/icons-material/ChatBubbleOutlineOutl
 import { useBoardProvider } from '../board-provider/board-provider-context';
 import { themeTokens } from '@/app/theme/theme-config';
 import dayjs from 'dayjs';
-import type { LogbookEntry } from '@/app/hooks/use-logbook';
 import { AscentStatusIcon } from '@/app/components/ascent-status/ascent-status-icon';
 import { normalizeAscentStatus, type AscentStatusValue } from '@/app/components/ascent-status/ascent-status-utils';
 
@@ -19,17 +18,18 @@ function getAscentChipLabel(status: AscentStatusValue): string {
   return 'Attempt';
 }
 
-interface PlayViewCommentsProps {
+type PlayViewCommentsProps = {
   climbUuid: string | undefined;
-}
+};
 
 const PlayViewComments: React.FC<PlayViewCommentsProps> = ({ climbUuid }) => {
   const { logbook } = useBoardProvider();
 
   const ascents = useMemo(
-    () => logbook
-      .filter((entry) => entry.climb_uuid === climbUuid)
-      .sort((a, b) => dayjs(b.climbed_at).valueOf() - dayjs(a.climbed_at).valueOf()),
+    () =>
+      logbook
+        .filter((entry) => entry.climb_uuid === climbUuid)
+        .sort((a, b) => dayjs(b.climbed_at).valueOf() - dayjs(a.climbed_at).valueOf()),
     [logbook, climbUuid],
   );
 
@@ -86,7 +86,11 @@ const PlayViewComments: React.FC<PlayViewCommentsProps> = ({ climbUuid }) => {
 
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: themeTokens.typography.fontSize.xs }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ fontSize: themeTokens.typography.fontSize.xs }}
+                  >
                     {dayjs(ascent.climbed_at).format('MMM D, YYYY')}
                   </Typography>
                   <Chip
@@ -100,13 +104,23 @@ const PlayViewComments: React.FC<PlayViewCommentsProps> = ({ climbUuid }) => {
                     }}
                   />
                   {ascent.tries > 1 && (
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: themeTokens.typography.fontSize.xs }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ fontSize: themeTokens.typography.fontSize.xs }}
+                    >
                       {ascent.tries} tries
                     </Typography>
                   )}
                 </Box>
                 {hasSuccess && ascent.quality != null && ascent.quality > 0 && (
-                  <Rating readOnly value={ascent.quality} max={5} size="small" sx={{ mt: 0.25, fontSize: themeTokens.typography.fontSize.xs }} />
+                  <Rating
+                    readOnly
+                    value={ascent.quality}
+                    max={5}
+                    size="small"
+                    sx={{ mt: 0.25, fontSize: themeTokens.typography.fontSize.xs }}
+                  />
                 )}
                 {ascent.comment && (
                   <Typography

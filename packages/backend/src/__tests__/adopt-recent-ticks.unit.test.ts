@@ -5,7 +5,13 @@
  * (within 2 hours, no session_id) are adopted into the new session,
  * and affected inferred sessions are cleaned up properly.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import { adoptRecentTicksForSession, extractBoardType } from '../jobs/inferred-session-builder';
+// Import from the direct source, not the re-export. inferred-session-builder resolves
+// `recalculateSessionStats` to `./session-stats`, so that's the module we must mock.
+import { recalculateSessionStats } from '../graphql/resolvers/social/session-stats';
+import { db } from '../db/client';
 
 // Track mutation calls on the transaction mock
 let txUpdateSetCalls: unknown[] = [];
@@ -78,13 +84,9 @@ vi.mock('@boardsesh/db/schema', () => ({
   },
 }));
 
-vi.mock('../graphql/resolvers/social/session-mutations', () => ({
+vi.mock('../graphql/resolvers/social/session-stats', () => ({
   recalculateSessionStats: vi.fn().mockResolvedValue(undefined),
 }));
-
-import { adoptRecentTicksForSession, extractBoardType } from '../jobs/inferred-session-builder';
-import { recalculateSessionStats } from '../graphql/resolvers/social/session-mutations';
-import { db } from '../db/client';
 
 describe('extractBoardType', () => {
   it('extracts board type from standard path', () => {
@@ -128,7 +130,7 @@ describe('adoptRecentTicksForSession', () => {
 
     await adoptRecentTicksForSession('user-1', 'party-session-1');
 
-    expect(db.transaction).toHaveBeenCalledOnce();
+    expect(db.transaction).toHaveBeenCalledOnce(); // eslint-disable-line @typescript-eslint/unbound-method -- vi.fn() mock, no `this` concern
   });
 
   it('adopts orphaned ticks (no inferred session)', async () => {
@@ -184,10 +186,7 @@ describe('adoptRecentTicksForSession', () => {
     expect(result).toBe(2);
     expect(mockTxDelete).not.toHaveBeenCalled();
     expect(recalculateSessionStats).toHaveBeenCalledOnce();
-    expect(recalculateSessionStats).toHaveBeenCalledWith(
-      'inferred-1',
-      expect.anything(),
-    );
+    expect(recalculateSessionStats).toHaveBeenCalledWith('inferred-1', expect.anything());
   });
 
   it('handles ticks from multiple inferred sessions', async () => {
@@ -208,10 +207,7 @@ describe('adoptRecentTicksForSession', () => {
     expect(result).toBe(3);
     expect(txDeleteWhereCalls).toHaveLength(1);
     expect(recalculateSessionStats).toHaveBeenCalledOnce();
-    expect(recalculateSessionStats).toHaveBeenCalledWith(
-      'inferred-2',
-      expect.anything(),
-    );
+    expect(recalculateSessionStats).toHaveBeenCalledWith('inferred-2', expect.anything());
   });
 
   it('handles mix of orphaned and inferred-session ticks', async () => {
@@ -249,9 +245,7 @@ describe('adoptRecentTicksForSession', () => {
     // When boardType is passed, the WHERE clause includes a board_type filter.
     // We verify the select was called (the actual filtering is done by drizzle's
     // eq() which is tested by drizzle-orm itself).
-    txSelectResults = [
-      [{ uuid: 'tick-1', inferredSessionId: null }],
-    ];
+    txSelectResults = [[{ uuid: 'tick-1', inferredSessionId: null }]];
 
     const result = await adoptRecentTicksForSession('user-1', 'party-session-1', 'kilter');
 
@@ -260,9 +254,7 @@ describe('adoptRecentTicksForSession', () => {
   });
 
   it('works without boardType parameter', async () => {
-    txSelectResults = [
-      [{ uuid: 'tick-1', inferredSessionId: null }],
-    ];
+    txSelectResults = [[{ uuid: 'tick-1', inferredSessionId: null }]];
 
     const result = await adoptRecentTicksForSession('user-1', 'party-session-1');
 

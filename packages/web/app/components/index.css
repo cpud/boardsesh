@@ -3,38 +3,38 @@
 /* Design tokens as CSS custom properties - derived from theme-config.ts */
 :root {
   /* Primary colors */
-  --color-primary: #8C4A52;
-  --color-primary-hover: #7A3F47;
+  --color-primary: #8c4a52;
+  --color-primary-hover: #7a3f47;
 
   /* Neutral palette */
-  --neutral-50: #F9FAFB;
-  --neutral-100: #F3F4F6;
-  --neutral-200: #E5E7EB;
-  --neutral-300: #D1D5DB;
-  --neutral-400: #9CA3AF;
-  --neutral-500: #6B7280;
-  --neutral-600: #4B5563;
+  --neutral-50: #f9fafb;
+  --neutral-100: #f3f4f6;
+  --neutral-200: #e5e7eb;
+  --neutral-300: #d1d5db;
+  --neutral-400: #9ca3af;
+  --neutral-500: #6b7280;
+  --neutral-600: #4b5563;
   --neutral-700: #374151;
-  --neutral-800: #1F2937;
+  --neutral-800: #1f2937;
   --neutral-900: #111827;
 
   /* Semantic colors */
-  --semantic-background: #F9FAFB;
-  --semantic-surface: #FFFFFF;
+  --semantic-background: #f9fafb;
+  --semantic-surface: #ffffff;
   --semantic-surface-overlay: rgba(255, 255, 255, 0.95);
-  --semantic-selected: #F7F2F3;
-  --semantic-selected-hover: #EFE6E8;
+  --semantic-selected: #f7f2f3;
+  --semantic-selected-hover: #efe6e8;
   --semantic-selected-light: rgba(140, 74, 82, 0.06);
-  --semantic-selected-border: #8C4A52;
+  --semantic-selected-border: #8c4a52;
 
   /* Status colors */
-  --color-success: #6B9080;
-  --color-success-hover: #5A7A6C;
-  --color-success-bg: #EFF5F2;
-  --color-error: #B8524C;
-  --color-error-bg: #F9EFEE;
-  --color-warning: #C4943C;
-  --color-warning-bg: #FAF5EC;
+  --color-success: #6b9080;
+  --color-success-hover: #5a7a6c;
+  --color-success-bg: #eff5f2;
+  --color-error: #b8524c;
+  --color-error-bg: #f9efee;
+  --color-warning: #c4943c;
+  --color-warning-bg: #faf5ec;
 
   /* Shadows */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -49,6 +49,16 @@
   --overlay-dark: rgba(0, 0, 0, 0.6);
   --overlay-text: rgba(255, 255, 255, 0.9);
 
+  /* Typography scale (matches themeTokens.typography.fontSize in theme-config.ts) */
+  --font-size-2xs: 8px;
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 30px;
+
   /* Spacing scale (matches themeTokens.spacing in theme-config.ts) */
   --spacing-1: 4px;
   --spacing-2: 8px;
@@ -61,38 +71,80 @@
   --spacing-12: 48px;
   --spacing-16: 64px;
 
+  /* Border radius scale (matches themeTokens.borderRadius in theme-config.ts) */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+  --border-radius-full: 9999px;
+
   /* Input field backgrounds */
-  --input-bg: #F9FAFB;
-  --input-bg-hover: #F3F4F6;
-  --input-bg-focused: #FFFFFF;
+  --input-bg: #f9fafb;
+  --input-bg-hover: #f3f4f6;
+  --input-bg-focused: #ffffff;
+
+  /* Safe-area insets, exposed as CSS vars so consumers resolve through
+     a single indirection (and so future per-platform or per-view overrides
+     don't have to touch every call site).
+
+     Source of inset values, by platform:
+     - iOS WKWebView: WebKit populates env(safe-area-inset-*) natively once
+       viewport-fit=cover is set. No plugin help needed.
+     - Android Chromium >= 140 with viewport-fit=cover: the
+       @capacitor-community/safe-area plugin zeroes the decorView padding
+       and passes real system WindowInsets through, so env() reports the
+       real gesture/nav/status bar insets.
+     - Android Chromium < 140: the same plugin pads the decorView with the
+       real WindowInsets natively and then explicitly rewrites the insets
+       delivered to the WebView to Insets.of(0,0,0,0) — so the WebView
+       coordinate origin is already inside the safe zone, and env() here
+       correctly reports 0 (no inset remaining to account for). Single
+       source of truth in both Android branches.
+     - Desktop and mobile web browsers: env() reports 0 unless the browser
+       itself has a UI chrome inset (Mobile Safari bottom chrome).
+
+     Consumers use `var(--safe-area-inset-*)` directly, no `env()` fallback
+     — these vars are always defined here, so the fallback is dead code.
+     The one exception is the iOS Safari `@supports (-webkit-touch-callout:
+     none)` block in bottom-bar-wrapper.module.css, which uses raw `env()`
+     directly inside its nested calc/max expression. iOS Safari has a
+     long-standing bug where var-of-env collapses to 0 inside such
+     expressions, so raw env() is the only reliable option there. */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
 
   /* Layout */
-  --global-header-height: calc(max(8dvh, 48px) + env(safe-area-inset-top, 0px));
+  --global-header-height: calc(max(8dvh, 48px) + var(--safe-area-inset-top));
+
+  /* Tap highlight (Android/mobile browsers) */
+  --tap-highlight: transparent;
 }
 
 /* Dark mode overrides */
-html[data-theme="dark"] {
+html[data-theme='dark'] {
   color-scheme: dark;
 
   /* Neutral palette (inverted) */
-  --neutral-50: #000000;
-  --neutral-100: #121212;
-  --neutral-200: #1E1E1E;
-  --neutral-300: #2C2C2C;
-  --neutral-400: #6B7280;
-  --neutral-500: #9CA3AF;
-  --neutral-600: #D1D5DB;
-  --neutral-700: #E5E7EB;
-  --neutral-800: #F3F4F6;
-  --neutral-900: #F9FAFB;
+  --neutral-50: #121212;
+  --neutral-100: #222222;
+  --neutral-200: #333333;
+  --neutral-300: #3a3a3a;
+  --neutral-400: #6b7280;
+  --neutral-500: #b3b3b3;
+  --neutral-600: #d1d5db;
+  --neutral-700: #e5e7eb;
+  --neutral-800: #f3f4f6;
+  --neutral-900: #f9fafb;
 
   /* Semantic colors */
-  --semantic-background: #000000;
-  --semantic-surface: #0A0A0A;
-  --semantic-surface-overlay: rgba(10, 10, 10, 0.95);
-  --semantic-selected: rgba(175, 45, 60, 0.14);
-  --semantic-selected-hover: rgba(175, 45, 60, 0.20);
-  --semantic-selected-light: rgba(175, 45, 60, 0.08);
+  --semantic-background: #0e0e0e;
+  --semantic-surface: #1a1a1a;
+  --semantic-surface-overlay: rgba(26, 26, 26, 0.95);
+  --semantic-selected: rgba(175, 45, 60, 0.22);
+  --semantic-selected-hover: rgba(175, 45, 60, 0.3);
+  --semantic-selected-light: rgba(175, 45, 60, 0.12);
 
   /* Status background tints (semi-transparent for dark) */
   --color-success-bg: rgba(107, 144, 128, 0.12);
@@ -100,11 +152,11 @@ html[data-theme="dark"] {
   --color-warning-bg: rgba(196, 148, 60, 0.12);
 
   /* Input field backgrounds (white in dark mode) */
-  --input-bg: #FFFFFF;
-  --input-bg-hover: #F3F4F6;
-  --input-bg-focused: #FFFFFF;
+  --input-bg: #ffffff;
+  --input-bg-hover: #f3f4f6;
+  --input-bg-focused: #ffffff;
   /* Input text stays dark in dark mode because inputs have white backgrounds */
-  --input-text: #1F2937;
+  --input-text: #1f2937;
 
   /* Shadows (stronger for dark backgrounds) */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
@@ -112,7 +164,7 @@ html[data-theme="dark"] {
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
 
   /* Borders */
-  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-subtle: rgba(255, 255, 255, 0.1);
 
   /* Overlays */
   --overlay-light: rgba(0, 0, 0, 0.4);
@@ -122,19 +174,20 @@ html[data-theme="dark"] {
 
 /* Base styles */
 html {
-  background-color: var(--semantic-surface) !important;
+  background-color: var(--semantic-background) !important;
   scrollbar-width: thin;
   scrollbar-color: var(--neutral-300) var(--neutral-100);
   min-height: 100dvh !important;
   min-height: -webkit-fill-available !important;
   overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: var(--tap-highlight);
 }
 
 body {
   margin: 0;
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background-color: var(--semantic-surface) !important;
+  background-color: var(--semantic-background) !important;
   color: var(--neutral-800);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -243,38 +296,38 @@ button,
    input styling, but color-scheme:dark can override native input
    backgrounds. These CSS rules ensure inputs stay white in dark mode
    using the tokenized custom properties. */
-html[data-theme="dark"] .MuiOutlinedInput-root,
-html[data-theme="dark"] .MuiFilledInput-root {
+html[data-theme='dark'] .MuiOutlinedInput-root,
+html[data-theme='dark'] .MuiFilledInput-root {
   background-color: var(--input-bg);
   color: var(--input-text);
 }
 
-html[data-theme="dark"] .MuiOutlinedInput-root:hover {
+html[data-theme='dark'] .MuiOutlinedInput-root:hover {
   background-color: var(--input-bg-hover);
 }
 
-html[data-theme="dark"] .MuiOutlinedInput-root.Mui-focused {
+html[data-theme='dark'] .MuiOutlinedInput-root.Mui-focused {
   background-color: var(--input-bg-focused);
 }
 
-html[data-theme="dark"] .MuiSelect-icon,
-html[data-theme="dark"] .MuiInputLabel-root {
+html[data-theme='dark'] .MuiSelect-icon,
+html[data-theme='dark'] .MuiInputLabel-root {
   color: var(--neutral-500);
 }
 
-html[data-theme="dark"] .MuiInputLabel-root.Mui-focused {
+html[data-theme='dark'] .MuiInputLabel-root.Mui-focused {
   color: var(--color-primary);
 }
 
-html[data-theme="dark"] .MuiOutlinedInput-input::placeholder {
+html[data-theme='dark'] .MuiOutlinedInput-input::placeholder {
   color: var(--neutral-500);
   opacity: 1;
 }
 
-html[data-theme="dark"] .MuiOutlinedInput-root .MuiSvgIcon-root,
-html[data-theme="dark"] .MuiOutlinedInput-root .MuiInputAdornment-root,
-html[data-theme="dark"] .MuiFilledInput-root .MuiSvgIcon-root,
-html[data-theme="dark"] .MuiFilledInput-root .MuiInputAdornment-root {
+html[data-theme='dark'] .MuiOutlinedInput-root .MuiSvgIcon-root,
+html[data-theme='dark'] .MuiOutlinedInput-root .MuiInputAdornment-root,
+html[data-theme='dark'] .MuiFilledInput-root .MuiSvgIcon-root,
+html[data-theme='dark'] .MuiFilledInput-root .MuiInputAdornment-root {
   color: var(--neutral-500);
 }
 
@@ -300,6 +353,6 @@ html[data-theme="dark"] .MuiFilledInput-root .MuiInputAdornment-root {
 
 /* Alternative selector for drop indicator line */
 .pragmatic-drop-indicator,
-[class*="drop-indicator"] {
+[class*='drop-indicator'] {
   background-color: var(--color-primary) !important;
 }

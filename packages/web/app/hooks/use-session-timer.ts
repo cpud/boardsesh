@@ -15,10 +15,7 @@ export function formatElapsed(seconds: number, short?: boolean): string {
  * Pass `short: true` for hh:mm format, otherwise returns hh:mm:ss.
  * Returns null when startedAt is falsy (no interval is created).
  */
-export function useSessionTimer(
-  startedAt: string | null | undefined,
-  options?: { short?: boolean },
-): string | null {
+export function useSessionTimer(startedAt: string | null | undefined, options?: { short?: boolean }): string | null {
   const short = options?.short;
 
   const [elapsed, setElapsed] = useState<string | null>(() => {

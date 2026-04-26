@@ -32,14 +32,15 @@ import {
   buildVPointsTimeline,
 } from '../utils/chart-data-builders';
 
-interface InitialData {
+type InitialData = {
   initialProfile?: UserProfile;
   initialProfileStats?: GetUserProfileStatsQueryResponse['userProfileStats'];
+  initialPercentile?: GetUserClimbPercentileQueryResponse['userClimbPercentile'] | null;
   initialAllBoardsTicks?: Record<string, LogbookEntry[]>;
   initialLogbook?: LogbookEntry[];
   initialIsOwnProfile?: boolean;
   initialNotFound?: boolean;
-}
+};
 
 export function useProfileData(userId: string, initialData?: InitialData) {
   const { data: session } = useSession();
@@ -65,11 +66,9 @@ export function useProfileData(userId: string, initialData?: InitialData) {
     totalDistinctClimbs: number;
     percentile: number;
     totalActiveUsers: number;
-  } | null>(null);
+  } | null>(initialData?.initialPercentile ?? null);
 
   const isOwnProfile = session?.user?.id ? session.user.id === userId : (initialData?.initialIsOwnProfile ?? false);
-  const hasCredentials = (profile?.credentials?.length ?? 0) > 0;
-  const authToken = (session as { authToken?: string } | null)?.authToken ?? null;
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -147,10 +146,7 @@ export function useProfileData(userId: string, initialData?: InitialData) {
   const fetchPercentile = useCallback(async () => {
     try {
       const client = createGraphQLHttpClient(null);
-      const response = await client.request<GetUserClimbPercentileQueryResponse>(
-        GET_USER_CLIMB_PERCENTILE,
-        { userId },
-      );
+      const response = await client.request<GetUserClimbPercentileQueryResponse>(GET_USER_CLIMB_PERCENTILE, { userId });
       setPercentile(response.userClimbPercentile);
     } catch {
       // Percentile is not critical — silently fail
@@ -158,20 +154,20 @@ export function useProfileData(userId: string, initialData?: InitialData) {
   }, [userId]);
 
   useEffect(() => {
-    if (!initialData?.initialProfile && !initialData?.initialNotFound) fetchProfile();
+    if (!initialData?.initialProfile && !initialData?.initialNotFound) void fetchProfile();
   }, [fetchProfile, initialData?.initialProfile, initialData?.initialNotFound]);
 
   useEffect(() => {
-    if (!initialData?.initialAllBoardsTicks) fetchAllBoardsTicks();
+    if (!initialData?.initialAllBoardsTicks) void fetchAllBoardsTicks();
   }, [fetchAllBoardsTicks, initialData?.initialAllBoardsTicks]);
 
   useEffect(() => {
-    if (!initialData?.initialProfileStats) fetchProfileStats();
+    if (!initialData?.initialProfileStats) void fetchProfileStats();
   }, [fetchProfileStats, initialData?.initialProfileStats]);
 
   useEffect(() => {
-    fetchPercentile();
-  }, [fetchPercentile]);
+    if (!initialData?.initialPercentile) void fetchPercentile();
+  }, [fetchPercentile, initialData?.initialPercentile]);
 
   // Filter allBoardsTicks by selected board
   const filteredBoardsTicks = useMemo<Record<string, LogbookEntry[]>>(() => {
@@ -271,6 +267,7 @@ export function useProfileData(userId: string, initialData?: InitialData) {
 
     // Profile stats summary
     loadingProfileStats,
+    layoutStats: profileStats?.layoutStats ?? [],
     statisticsSummary,
     hardestSend,
     hardestFlash,

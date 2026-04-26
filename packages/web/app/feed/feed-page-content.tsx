@@ -11,21 +11,21 @@ import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import BoardFilterStrip from '@/app/components/board-scroll/board-filter-strip';
-import type { SessionFeedResult } from '@boardsesh/shared-schema';
-import type { UserBoard } from '@boardsesh/shared-schema';
+import type { SessionFeedResult, UserBoard } from '@boardsesh/shared-schema';
 import { useMyBoards } from '@/app/hooks/use-my-boards';
 import UnifiedSearchDrawer from '@/app/components/search-drawer/unified-search-drawer';
+import { themeTokens } from '@/app/theme/theme-config';
 
 type FeedTab = 'sessions' | 'proposals' | 'comments';
 const VALID_TABS: FeedTab[] = ['sessions', 'proposals', 'comments'];
 
-interface FeedPageContentProps {
+type FeedPageContentProps = {
   initialTab?: FeedTab;
   initialBoardUuid?: string;
   initialFeedResult?: SessionFeedResult | null;
   isAuthenticatedSSR?: boolean;
   initialMyBoards?: UserBoard[] | null;
-}
+};
 
 export default function FeedPageContent({
   initialTab = 'sessions',
@@ -39,39 +39,44 @@ export default function FeedPageContent({
   const searchParams = useSearchParams();
 
   // Trust the SSR hint during the loading phase to prevent flash of unauthenticated content
-  const isAuthenticated = status === 'authenticated' ? true : (status === 'loading' ? (isAuthenticatedSSR ?? false) : false);
+  const isAuthenticated =
+    status === 'authenticated' ? true : status === 'loading' ? (isAuthenticatedSSR ?? false) : false;
   const { boards: myBoards, isLoading: isLoadingBoards } = useMyBoards(isAuthenticated, 50, initialMyBoards);
 
   // Read state from URL params (with fallbacks to server-provided initial values)
   const tabParam = searchParams.get('tab');
-  const activeTab: FeedTab = VALID_TABS.includes(tabParam as FeedTab)
-    ? (tabParam as FeedTab)
-    : initialTab;
+  const activeTab: FeedTab = VALID_TABS.includes(tabParam as FeedTab) ? (tabParam as FeedTab) : initialTab;
   const selectedBoardUuid = searchParams.get('board') || initialBoardUuid || null;
   const [findClimbersOpen, setFindClimbersOpen] = useState(false);
 
   // Helper: update a URL param via shallow navigation
-  const updateParam = useCallback((key: string, value: string | null) => {
-    const params = new URLSearchParams(searchParams.toString());
-    // Default tab is 'sessions', don't put in URL
-    if (key === 'tab' && value === 'sessions') {
-      params.delete(key);
-    } else if (value) {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
-    const qs = params.toString();
-    router.push(qs ? `/feed?${qs}` : '/feed', { scroll: false });
-  }, [router, searchParams]);
+  const updateParam = useCallback(
+    (key: string, value: string | null) => {
+      const params = new URLSearchParams(searchParams.toString());
+      // Default tab is 'sessions', don't put in URL
+      if (key === 'tab' && value === 'sessions') {
+        params.delete(key);
+      } else if (value) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+      const qs = params.toString();
+      router.push(qs ? `/feed?${qs}` : '/feed', { scroll: false });
+    },
+    [router, searchParams],
+  );
 
   const handleTabChange = (_: React.SyntheticEvent, value: FeedTab) => {
     updateParam('tab', value);
   };
 
-  const handleBoardSelect = useCallback((board: UserBoard | null) => {
-    updateParam('board', board?.uuid ?? null);
-  }, [updateParam]);
+  const handleBoardSelect = useCallback(
+    (board: UserBoard | null) => {
+      updateParam('board', board?.uuid ?? null);
+    },
+    [updateParam],
+  );
 
   const selectedBoard = useMemo(
     () => myBoards.find((b) => b.uuid === selectedBoardUuid) ?? null,
@@ -79,7 +84,14 @@ export default function FeedPageContent({
   );
 
   return (
-    <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', pb: 'calc(120px + env(safe-area-inset-bottom, 0px))' }}>
+    <Box
+      sx={{
+        minHeight: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        pb: `calc(120px + ${themeTokens.layout.safeAreaBottom})`,
+      }}
+    >
       {/* Feed */}
       <Box component="main" sx={{ flex: 1, px: 2, py: 2, pt: 'calc(var(--global-header-height) + 16px)' }}>
         {isAuthenticated && (
@@ -90,13 +102,7 @@ export default function FeedPageContent({
             onBoardSelect={handleBoardSelect}
           />
         )}
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          variant="fullWidth"
-          sx={{ mb: 2 }}
-          aria-label="Feed tabs"
-        >
+        <Tabs value={activeTab} onChange={handleTabChange} variant="fullWidth" sx={{ mb: 2 }} aria-label="Feed tabs">
           <Tab label="Sessions" value="sessions" />
           <Tab label="Proposals" value="proposals" />
           <Tab label="Comments" value="comments" />
@@ -111,26 +117,12 @@ export default function FeedPageContent({
           />
         )}
 
-        {activeTab === 'proposals' && (
-          <ProposalFeed
-            isAuthenticated={isAuthenticated}
-            boardUuid={selectedBoardUuid}
-          />
-        )}
+        {activeTab === 'proposals' && <ProposalFeed isAuthenticated={isAuthenticated} boardUuid={selectedBoardUuid} />}
 
-        {activeTab === 'comments' && (
-          <CommentFeed
-            isAuthenticated={isAuthenticated}
-            boardUuid={selectedBoardUuid}
-          />
-        )}
+        {activeTab === 'comments' && <CommentFeed isAuthenticated={isAuthenticated} boardUuid={selectedBoardUuid} />}
       </Box>
 
-      <UnifiedSearchDrawer
-        open={findClimbersOpen}
-        onClose={() => setFindClimbersOpen(false)}
-        defaultCategory="users"
-      />
+      <UnifiedSearchDrawer open={findClimbersOpen} onClose={() => setFindClimbersOpen(false)} defaultCategory="users" />
     </Box>
   );
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { HOLD_STATE_MAP, STATE_TO_PRIMARY_CODE, convertLitUpHoldsStringToMap } from '../hold-states';
 import type { BoardName } from '@boardsesh/shared-schema';
 
@@ -15,7 +15,7 @@ describe('HOLD_STATE_MAP', () => {
   it('every entry has a valid name and color', () => {
     const validStates = new Set(['OFF', 'STARTING', 'FINISH', 'HAND', 'FOOT', 'ANY', 'NOT', 'AUX']);
     for (const board of boards) {
-      for (const [code, info] of Object.entries(HOLD_STATE_MAP[board])) {
+      for (const [_code, info] of Object.entries(HOLD_STATE_MAP[board])) {
         expect(validStates).toContain(info.name);
         expect(info.color).toMatch(/^#[0-9A-Fa-f]{6}$/);
         if (info.displayColor) {
@@ -68,7 +68,11 @@ describe('convertLitUpHoldsStringToMap', () => {
   it('parses a single-frame string', () => {
     const result = convertLitUpHoldsStringToMap('p100r42p200r43p300r44', 'kilter');
     expect(result[0]).toBeDefined();
-    expect(result[0][100]).toEqual({ state: 'STARTING', color: '#00FF00', displayColor: '#00FF00' });
+    expect(result[0][100]).toEqual({
+      state: 'STARTING',
+      color: '#00FF00',
+      displayColor: '#00FF00',
+    });
     expect(result[0][200]).toEqual({ state: 'HAND', color: '#00FFFF', displayColor: '#00FFFF' });
     expect(result[0][300]).toEqual({ state: 'FINISH', color: '#FF00FF', displayColor: '#FF00FF' });
   });

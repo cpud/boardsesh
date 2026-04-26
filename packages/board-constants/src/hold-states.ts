@@ -4,12 +4,12 @@ export type HoldCode = number;
 export type HoldColor = string;
 export type HoldRenderStyle = 'circle' | 'above-marker';
 
-export interface HoldStateInfo {
+export type HoldStateInfo = {
   name: HoldState;
   color: HoldColor;
   displayColor?: HoldColor;
   renderStyle?: HoldRenderStyle;
-}
+};
 
 // Canonical mapping of board-specific hold role codes to their state and LED colors.
 // Each board product has its own set of role codes.
@@ -142,7 +142,14 @@ export function convertLitUpHoldsStringToMap(litUpHolds: string, board: BoardNam
                     `HOLD_STATE_MAP is missing values for ${board} status code: ${stateCode} (this warning is only shown once per status code)`,
                   );
                 }
-                return [holdId || 0, { state: `${holdId}=${stateCode}` as HoldState, color: '#FFF', displayColor: '#FFF' }];
+                return [
+                  holdId || 0,
+                  {
+                    state: `${holdId}=${stateCode}` as HoldState,
+                    color: '#FFF',
+                    displayColor: '#FFF',
+                  },
+                ];
               }
               const { name, color, displayColor } = stateInfo;
               return [holdId, { state: name, color, displayColor: displayColor || color }];

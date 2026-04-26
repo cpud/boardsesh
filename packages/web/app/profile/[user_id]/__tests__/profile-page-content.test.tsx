@@ -1,6 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+import ProfilePageContent from '../profile-page-content';
+import { useProfileData } from '../hooks/use-profile-data';
 
 // --- Mocks (before component imports) ---
 
@@ -17,15 +19,18 @@ vi.mock('../hooks/use-profile-data', () => ({
   useProfileData: vi.fn(),
 }));
 
-const mockBuildWeeklyBars = vi.fn((): Array<{ label: string; segments: Array<{ value: number; color: string; label: string }> }> => []);
+const mockBuildWeeklyBars = vi.fn(
+  (): Array<{
+    label: string;
+    segments: Array<{ value: number; color: string; label: string }>;
+  }> => [],
+);
 vi.mock('../utils/chart-data-builders', () => ({
   buildWeeklyBars: () => mockBuildWeeklyBars(),
 }));
 
 vi.mock('../components/user-card', () => ({
-  default: (props: { userId: string }) => (
-    <div data-testid="user-card" data-user-id={props.userId} />
-  ),
+  default: (props: { userId: string }) => <div data-testid="user-card" data-user-id={props.userId} />,
 }));
 
 vi.mock('../components/profile-nav-card', () => ({
@@ -49,9 +54,7 @@ vi.mock('@/app/components/providers/snackbar-provider', () => ({
 }));
 
 vi.mock('@/app/components/ui/empty-state', () => ({
-  EmptyState: (props: { description: string }) => (
-    <div data-testid="empty-state">{props.description}</div>
-  ),
+  EmptyState: (props: { description: string }) => <div data-testid="empty-state">{props.description}</div>,
 }));
 
 vi.mock('@/app/components/back-button', () => ({
@@ -77,9 +80,6 @@ vi.mock('@/app/lib/share-utils', () => ({
 }));
 
 // --- Imports after mocks ---
-
-import ProfilePageContent from '../profile-page-content';
-import { useProfileData } from '../hooks/use-profile-data';
 
 const mockUseProfileData = vi.mocked(useProfileData);
 
@@ -107,6 +107,7 @@ function mockProfileDataReturn(overrides?: Partial<ReturnType<typeof useProfileD
     loadingAggregated: false,
     aggregatedStackedBars: null,
     loadingProfileStats: false,
+    layoutStats: [],
     statisticsSummary: { totalAscents: 0, layoutPercentages: [] },
     hardestSend: null,
     hardestFlash: null,
@@ -206,7 +207,14 @@ describe('ProfilePageContent', () => {
 
     const allBoardsTicks = {
       kilter: [
-        { climbed_at: new Date().toISOString(), difficulty: 15, tries: 1, angle: 40, status: 'send' as const, climbUuid: 'c1' },
+        {
+          climbed_at: new Date().toISOString(),
+          difficulty: 15,
+          tries: 1,
+          angle: 40,
+          status: 'send' as const,
+          climbUuid: 'c1',
+        },
       ],
     };
 

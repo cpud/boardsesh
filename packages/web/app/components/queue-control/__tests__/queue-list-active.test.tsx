@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import type { Climb, BoardDetails } from '@/app/lib/types';
 import type { ClimbQueueItem } from '../types';
+import QueueList from '../queue-list';
 
 const mockSetCurrentClimb = vi.fn();
 
@@ -86,7 +88,14 @@ vi.mock('../../graphql-queue', () => ({
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/kilter/original/12x12/default/40/play/some-climb',
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn(), forward: vi.fn(), refresh: vi.fn(), prefetch: vi.fn() }),
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+    prefetch: vi.fn(),
+  }),
   useParams: () => ({}),
 }));
 
@@ -131,11 +140,7 @@ vi.mock('../../climb-card/climb-list-item', () => ({
   default: (props: MockClimbListItemProps) => {
     mockClimbListItem(props);
     return (
-      <div
-        data-testid="climb-list-item"
-        data-uuid={props.climb.uuid}
-        onClick={() => props.onThumbnailClick?.()}
-      >
+      <div data-testid="climb-list-item" data-uuid={props.climb.uuid} onClick={() => props.onThumbnailClick?.()}>
         {props.climb.name}
       </div>
     );
@@ -147,9 +152,7 @@ vi.mock('../../climb-card/drawer-climb-header', () => ({
 }));
 
 vi.mock('../../swipeable-drawer/swipeable-drawer', () => ({
-  default: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="swipeable-drawer">{children}</div>
-  ),
+  default: ({ children }: { children: React.ReactNode }) => <div data-testid="swipeable-drawer">{children}</div>,
 }));
 
 vi.mock('../../climb-actions', () => ({
@@ -229,9 +232,6 @@ Object.defineProperty(globalThis, 'IntersectionObserver', {
   writable: true,
 });
 
-import { fireEvent } from '@testing-library/react';
-import QueueList from '../queue-list';
-
 // --- Helpers ---
 
 function makeBoardDetails(): BoardDetails {
@@ -265,7 +265,7 @@ describe('QueueList active prop', () => {
   });
 
   it('renders the "Suggestions" section header when active is explicitly true', () => {
-    render(<QueueList boardDetails={makeBoardDetails()} active={true} />);
+    render(<QueueList boardDetails={makeBoardDetails()} active />);
     expect(screen.getByText('Suggestions')).toBeTruthy();
   });
 
@@ -280,7 +280,7 @@ describe('QueueList active prop', () => {
   });
 
   it('renders suggested ClimbListItems when active is true', () => {
-    render(<QueueList boardDetails={makeBoardDetails()} active={true} />);
+    render(<QueueList boardDetails={makeBoardDetails()} active />);
     const items = screen.getAllByTestId('climb-list-item');
     expect(items).toHaveLength(2);
     expect(screen.getByText('Suggested Boulder A')).toBeTruthy();
@@ -288,7 +288,7 @@ describe('QueueList active prop', () => {
   });
 
   it('passes add-to-queue swipe behavior to suggested ClimbListItems', () => {
-    render(<QueueList boardDetails={makeBoardDetails()} active={true} />);
+    render(<QueueList boardDetails={makeBoardDetails()} active />);
 
     const propsList = mockClimbListItem.mock.calls.map(([props]) => props);
     expect(propsList).toHaveLength(2);
@@ -303,7 +303,7 @@ describe('QueueList active prop', () => {
 
   it('activates the suggested climb and opens the play drawer on thumbnail click', () => {
     const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
-    render(<QueueList boardDetails={makeBoardDetails()} active={true} />);
+    render(<QueueList boardDetails={makeBoardDetails()} active />);
 
     const items = screen.getAllByTestId('climb-list-item');
     fireEvent.click(items[0]);
@@ -317,7 +317,7 @@ describe('QueueList active prop', () => {
   });
 
   it('renders queue items (QueueClimbListItem) when active is true', () => {
-    render(<QueueList boardDetails={makeBoardDetails()} active={true} />);
+    render(<QueueList boardDetails={makeBoardDetails()} active />);
     const queueItems = screen.getAllByTestId('queue-climb-list-item');
     expect(queueItems).toHaveLength(1);
     expect(screen.getByText('Queue Climb 1')).toBeTruthy();

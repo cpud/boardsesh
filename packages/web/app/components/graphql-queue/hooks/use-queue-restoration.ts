@@ -1,7 +1,7 @@
-import { useState, useEffect, Dispatch } from 'react';
+import { type Dispatch, useState, useEffect } from 'react';
 import type { QueueAction, ClimbQueue, ClimbQueueItem } from '../../queue-control/types';
 
-interface UseQueueRestorationParams {
+type UseQueueRestorationParams = {
   isPersistentSessionActive: boolean;
   sessionId: string | null;
   baseBoardPath: string;
@@ -17,7 +17,7 @@ interface UseQueueRestorationParams {
     clearLocalQueue: () => void;
     localBoardDetails: unknown;
   };
-}
+};
 
 /**
  * Handles initial queue restoration from persistent session (party mode)
@@ -36,7 +36,7 @@ export function useQueueRestoration({
   // Guard to prevent syncing empty initial state before restoration completes.
   // Uses useState (not useRef) so the sync effect only sees hasRestored=true
   // in the render where state.queue already contains the restored data.
-  const [hasRestored, setHasRestored] = useState(false);
+  const [_hasRestored, setHasRestored] = useState(false);
 
   // Initialize queue state from persistent session when remounting
   useEffect(() => {
@@ -45,15 +45,27 @@ export function useQueueRestoration({
         dispatch({
           type: 'INITIAL_QUEUE_DATA',
           payload: {
-            queue: persistentSession.queue as Parameters<typeof dispatch>[0] extends { payload: infer P } ? P extends { queue: infer Q } ? Q : never : never,
-            currentClimbQueueItem: persistentSession.currentClimbQueueItem as Parameters<typeof dispatch>[0] extends { payload: infer P } ? P extends { currentClimbQueueItem?: infer C } ? C : never : never,
+            queue: persistentSession.queue as Parameters<typeof dispatch>[0] extends {
+              payload: infer P;
+            }
+              ? P extends { queue: infer Q }
+                ? Q
+                : never
+              : never,
+            currentClimbQueueItem: persistentSession.currentClimbQueueItem as Parameters<typeof dispatch>[0] extends {
+              payload: infer P;
+            }
+              ? P extends { currentClimbQueueItem?: infer C }
+                ? C
+                : never
+              : never,
           },
         });
       }
       setHasRestored(true);
     }
-  // Only run on mount and when session becomes active
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Only run on mount and when session becomes active
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPersistentSessionActive, persistentSession.hasConnected]);
 
   // Initialize queue state from in-memory local queue (SPA navigation, non-party mode)
@@ -78,8 +90,8 @@ export function useQueueRestoration({
 
     // Local queue is loaded but empty or for a different board
     setHasRestored(true);
-  // Only run on mount and when isLocalQueueLoaded changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Only run on mount and when isLocalQueueLoaded changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persistentSession.isLocalQueueLoaded]);
 
   // Clear local queue if navigating to a different board configuration
@@ -88,5 +100,4 @@ export function useQueueRestoration({
       persistentSession.clearLocalQueue();
     }
   }, [baseBoardPath, persistentSession]);
-
 }

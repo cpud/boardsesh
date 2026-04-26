@@ -8,13 +8,13 @@ import LockIcon from '@mui/icons-material/Lock';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { themeTokens } from '@/app/theme/theme-config';
 
-interface CommunityStatusBadgeProps {
+type CommunityStatusBadgeProps = {
   communityGrade?: string | null;
   isClassic?: boolean;
   isBenchmark?: boolean;
   isFrozen?: boolean;
   compact?: boolean;
-}
+};
 
 export default function CommunityStatusBadge({
   communityGrade,
@@ -104,9 +104,5 @@ export default function CommunityStatusBadge({
 
   if (badges.length === 0) return null;
 
-  return (
-    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center' }}>
-      {badges}
-    </Box>
-  );
+  return <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center' }}>{badges}</Box>;
 }

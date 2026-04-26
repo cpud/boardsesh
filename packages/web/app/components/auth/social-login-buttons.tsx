@@ -56,10 +56,7 @@ type SocialLoginButtonsProps = {
   disabled?: boolean;
 };
 
-export default function SocialLoginButtons({
-  callbackUrl = '/',
-  disabled = false,
-}: SocialLoginButtonsProps) {
+export default function SocialLoginButtons({ callbackUrl = '/', disabled = false }: SocialLoginButtonsProps) {
   const [providers, setProviders] = useState<ProvidersConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCapacitorApp, setIsCapacitorApp] = useState(false);
@@ -93,11 +90,11 @@ export default function SocialLoginButtons({
         callbackPath: callbackUrl,
       });
 
-      browser.open({ url });
+      void browser.open({ url });
       return;
     }
 
-    signIn(provider, { callbackUrl });
+    void signIn(provider, { callbackUrl });
   };
 
   // Don't render anything if no providers are configured

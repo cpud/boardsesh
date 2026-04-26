@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import type { Tick, SaveTickInput, GetTicksInput } from '@boardsesh/shared-schema';
+import type { Tick, SaveTickInput, GetTicksInput, AttachBetaLinkInput } from '@boardsesh/shared-schema';
 
 export const GET_TICKS = gql`
   query GetTicks($input: GetTicksInput!) {
@@ -15,6 +15,9 @@ export const GET_TICKS = gql`
       isBenchmark
       comment
       climbedAt
+      upvotes
+      downvotes
+      commentCount
     }
   }
 `;
@@ -51,34 +54,79 @@ export const SAVE_TICK = gql`
 `;
 
 // Partial types matching the fields each query actually requests
-type TickFromGetTicks = Pick<Tick, 'uuid' | 'climbUuid' | 'angle' | 'isMirror' | 'status' | 'attemptCount' | 'quality' | 'difficulty' | 'isBenchmark' | 'comment' | 'climbedAt'>;
-type TickFromGetUserTicks = Pick<Tick, 'climbUuid' | 'angle' | 'status' | 'attemptCount' | 'difficulty' | 'climbedAt' | 'layoutId'>;
-type TickFromSaveTick = Pick<Tick, 'uuid' | 'climbUuid' | 'angle' | 'isMirror' | 'status' | 'attemptCount' | 'quality' | 'difficulty' | 'comment' | 'climbedAt'>;
+type TickFromGetTicks = Pick<
+  Tick,
+  | 'uuid'
+  | 'climbUuid'
+  | 'angle'
+  | 'isMirror'
+  | 'status'
+  | 'attemptCount'
+  | 'quality'
+  | 'difficulty'
+  | 'isBenchmark'
+  | 'comment'
+  | 'climbedAt'
+  | 'upvotes'
+  | 'downvotes'
+  | 'commentCount'
+>;
+type TickFromGetUserTicks = Pick<
+  Tick,
+  'climbUuid' | 'angle' | 'status' | 'attemptCount' | 'difficulty' | 'climbedAt' | 'layoutId'
+>;
+type TickFromSaveTick = Pick<
+  Tick,
+  | 'uuid'
+  | 'climbUuid'
+  | 'angle'
+  | 'isMirror'
+  | 'status'
+  | 'attemptCount'
+  | 'quality'
+  | 'difficulty'
+  | 'comment'
+  | 'climbedAt'
+>;
 
-export interface GetTicksQueryVariables {
+export type GetTicksQueryVariables = {
   input: GetTicksInput;
-}
+};
 
-export interface GetTicksQueryResponse {
+export type GetTicksQueryResponse = {
   ticks: TickFromGetTicks[];
-}
+};
 
-export interface GetUserTicksQueryVariables {
+export type GetUserTicksQueryVariables = {
   userId: string;
   boardType: string;
-}
+};
 
-export interface GetUserTicksQueryResponse {
+export type GetUserTicksQueryResponse = {
   userTicks: TickFromGetUserTicks[];
-}
+};
 
-export interface SaveTickMutationVariables {
+export type SaveTickMutationVariables = {
   input: SaveTickInput;
-}
+};
 
-export interface SaveTickMutationResponse {
+export type SaveTickMutationResponse = {
   saveTick: TickFromSaveTick;
-}
+};
+
+export const ATTACH_BETA_LINK = gql`
+  mutation AttachBetaLink($input: AttachBetaLinkInput!) {
+    attachBetaLink(input: $input)
+  }
+`;
+
+export type AttachBetaLinkMutationVariables = {
+  input: AttachBetaLinkInput;
+};
+
+export type AttachBetaLinkMutationResponse = {
+  attachBetaLink: boolean;
+};
 
 export const DELETE_TICK = gql`
   mutation DeleteTick($uuid: ID!) {
@@ -86,13 +134,13 @@ export const DELETE_TICK = gql`
   }
 `;
 
-export interface DeleteTickMutationVariables {
+export type DeleteTickMutationVariables = {
   uuid: string;
-}
+};
 
-export interface DeleteTickMutationResponse {
+export type DeleteTickMutationResponse = {
   deleteTick: boolean;
-}
+};
 
 // ============================================
 // Activity Feed Operations
@@ -117,7 +165,9 @@ export const GET_USER_ASCENTS_FEED = gql`
         difficultyName
         consensusDifficulty
         consensusDifficultyName
+        qualityAverage
         isBenchmark
+        isNoMatch
         comment
         climbedAt
         frames
@@ -129,7 +179,7 @@ export const GET_USER_ASCENTS_FEED = gql`
 `;
 
 // Type for individual ascent feed item
-export interface AscentFeedItem {
+export type AscentFeedItem = {
   uuid: string;
   climbUuid: string;
   climbName: string;
@@ -145,25 +195,37 @@ export interface AscentFeedItem {
   difficultyName: string | null;
   consensusDifficulty: number | null;
   consensusDifficultyName: string | null;
+  qualityAverage: number | null;
   isBenchmark: boolean;
+  isNoMatch: boolean;
   comment: string;
   climbedAt: string;
   frames: string | null;
-}
+};
 
 // Type for the feed query variables
-export interface GetUserAscentsFeedQueryVariables {
+export type GetUserAscentsFeedQueryVariables = {
   userId: string;
   input?: {
     limit?: number;
     offset?: number;
     boardType?: string;
+    boardTypes?: string[];
     layoutIds?: number[];
     status?: 'flash' | 'send' | 'attempt';
     statusMode?: 'both' | 'send' | 'attempt';
     flashOnly?: boolean;
     climbName?: string;
-    sortBy?: 'recent' | 'hardest' | 'easiest' | 'mostAttempts' | 'climbName' | 'loggedGrade' | 'consensusGrade' | 'date' | 'attemptCount';
+    sortBy?:
+      | 'recent'
+      | 'hardest'
+      | 'easiest'
+      | 'mostAttempts'
+      | 'climbName'
+      | 'loggedGrade'
+      | 'consensusGrade'
+      | 'date'
+      | 'attemptCount';
     sortOrder?: 'asc' | 'desc';
     secondarySortBy?: 'climbName' | 'loggedGrade' | 'consensusGrade' | 'date' | 'attemptCount';
     secondarySortOrder?: 'asc' | 'desc';
@@ -175,16 +237,16 @@ export interface GetUserAscentsFeedQueryVariables {
     fromDate?: string;
     toDate?: string;
   };
-}
+};
 
 // Type for the feed query response
-export interface GetUserAscentsFeedQueryResponse {
+export type GetUserAscentsFeedQueryResponse = {
   userAscentsFeed: {
     items: AscentFeedItem[];
     totalCount: number;
     hasMore: boolean;
   };
-}
+};
 
 // ============================================
 // Grouped Activity Feed Operations
@@ -205,6 +267,7 @@ export const GET_USER_GROUPED_ASCENTS_FEED = gql`
         frames
         difficultyName
         isBenchmark
+        isNoMatch
         date
         flashCount
         sendCount
@@ -226,6 +289,7 @@ export const GET_USER_GROUPED_ASCENTS_FEED = gql`
           difficulty
           difficultyName
           isBenchmark
+          isNoMatch
           comment
           climbedAt
           frames
@@ -238,7 +302,7 @@ export const GET_USER_GROUPED_ASCENTS_FEED = gql`
 `;
 
 // Type for grouped ascent feed item
-export interface GroupedAscentFeedItem {
+export type GroupedAscentFeedItem = {
   key: string;
   climbUuid: string;
   climbName: string;
@@ -250,6 +314,7 @@ export interface GroupedAscentFeedItem {
   frames: string | null;
   difficultyName: string | null;
   isBenchmark: boolean;
+  isNoMatch: boolean;
   date: string;
   flashCount: number;
   sendCount: number;
@@ -257,25 +322,25 @@ export interface GroupedAscentFeedItem {
   bestQuality: number | null;
   latestComment: string | null;
   items: AscentFeedItem[];
-}
+};
 
 // Type for the grouped feed query variables
-export interface GetUserGroupedAscentsFeedQueryVariables {
+export type GetUserGroupedAscentsFeedQueryVariables = {
   userId: string;
   input?: {
     limit?: number;
     offset?: number;
   };
-}
+};
 
 // Type for the grouped feed query response
-export interface GetUserGroupedAscentsFeedQueryResponse {
+export type GetUserGroupedAscentsFeedQueryResponse = {
   userGroupedAscentsFeed: {
     groups: GroupedAscentFeedItem[];
     totalCount: number;
     hasMore: boolean;
   };
-}
+};
 
 // ============================================
 // Profile Statistics Operations
@@ -300,32 +365,32 @@ export const GET_USER_PROFILE_STATS = gql`
 `;
 
 // Type for grade count
-export interface GradeCount {
+export type GradeCount = {
   grade: string;
   count: number;
-}
+};
 
 // Type for layout stats
-export interface LayoutStats {
+export type LayoutStats = {
   layoutKey: string;
   boardType: string;
   layoutId: number | null;
   distinctClimbCount: number;
   gradeCounts: GradeCount[];
-}
+};
 
 // Type for the profile stats query variables
-export interface GetUserProfileStatsQueryVariables {
+export type GetUserProfileStatsQueryVariables = {
   userId: string;
-}
+};
 
 // Type for the profile stats query response
-export interface GetUserProfileStatsQueryResponse {
+export type GetUserProfileStatsQueryResponse = {
   userProfileStats: {
     totalDistinctClimbs: number;
     layoutStats: LayoutStats[];
   };
-}
+};
 
 // ============================================
 // Climb Percentile Operations
@@ -341,17 +406,17 @@ export const GET_USER_CLIMB_PERCENTILE = gql`
   }
 `;
 
-export interface GetUserClimbPercentileQueryVariables {
+export type GetUserClimbPercentileQueryVariables = {
   userId: string;
-}
+};
 
-export interface GetUserClimbPercentileQueryResponse {
+export type GetUserClimbPercentileQueryResponse = {
   userClimbPercentile: {
     totalDistinctClimbs: number;
     percentile: number;
     totalActiveUsers: number;
   };
-}
+};
 
 // ============================================
 // Tick Mutation Operations
@@ -372,25 +437,25 @@ export const UPDATE_TICK = gql`
   }
 `;
 
-export interface DeleteTickVariables {
+export type DeleteTickVariables = {
   uuid: string;
-}
+};
 
-export interface UpdateTickInput {
+export type UpdateTickInput = {
   status?: 'flash' | 'send' | 'attempt';
   attemptCount?: number;
   quality?: number | null;
   difficulty?: number | null;
   isBenchmark?: boolean;
   comment?: string;
-}
+};
 
-export interface UpdateTickVariables {
+export type UpdateTickVariables = {
   uuid: string;
   input: UpdateTickInput;
-}
+};
 
-export interface UpdateTickResponse {
+export type UpdateTickResponse = {
   updateTick: {
     uuid: string;
     status: string;
@@ -401,4 +466,4 @@ export interface UpdateTickResponse {
     comment: string;
     updatedAt: string;
   };
-}
+};

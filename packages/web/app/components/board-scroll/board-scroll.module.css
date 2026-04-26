@@ -112,6 +112,11 @@
   pointer-events: none;
 }
 
+.bluetoothBadge {
+  left: 4px;
+  right: auto;
+}
+
 /* Disabled state */
 .cardSquareDisabled {
   opacity: 0.4;
@@ -132,7 +137,9 @@
   justify-content: center;
   gap: 4px;
   color: var(--neutral-400);
-  transition: border-color 150ms ease, color 150ms ease;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease;
 }
 
 .cardScroll:hover .createSquare {
@@ -179,16 +186,41 @@
   opacity: 0.35;
 }
 
-/* Stacked cards - Find Nearby + Custom stacked vertically */
-.stackedCards {
+/* Stacked-card layouts share a height that mirrors a normal card:
+   square image + 8px margin + ~18px name + ~16px meta. Both the single-
+   column (.stackedCards) and the 2x2 cluster (.stackedCardsDouble) reuse it. */
+.stackedCards,
+.stackedCardsDouble {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
   flex-shrink: 0;
   scroll-snap-align: start;
-  width: 100px;
-  /* Match the height of a normal card: square image + 8px margin + ~18px name + ~16px meta */
   height: calc(182px + 8px + 18px + 16px);
+}
+
+/* Stacked cards - Find Nearby + Custom stacked vertically */
+.stackedCards {
+  flex-direction: column;
+  gap: 6px;
+  width: 100px;
+}
+
+/* Two-column variant: 4 cards in a 2x2 cluster */
+.stackedCardsDouble {
+  flex-direction: row;
+  gap: 6px;
+}
+
+.stackedCardsDouble .stackedCards {
+  height: 100%;
+}
+
+/* Disabled card (Bluetooth coming soon) */
+.cardScrollDisabled {
+  cursor: default;
+}
+
+.cardScrollDisabled:active .cardSquare::after {
+  display: none;
 }
 
 .stackedCards .cardScroll {
@@ -225,9 +257,13 @@
 
 /* Desktop stacked */
 @media (min-width: 768px) {
+  .stackedCards,
+  .stackedCardsDouble {
+    height: calc(208px + 8px + 18px + 16px);
+  }
+
   .stackedCards {
     width: 120px;
-    height: calc(208px + 8px + 18px + 16px);
   }
 }
 
@@ -263,7 +299,9 @@
   width: 0;
   flex-shrink: 0;
   overflow: hidden;
-  transition: opacity 400ms ease, width 400ms ease;
+  transition:
+    opacity 400ms ease,
+    width 400ms ease;
 }
 
 .myBoardCardFadeInVisible {

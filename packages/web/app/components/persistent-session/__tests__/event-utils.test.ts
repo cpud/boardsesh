@@ -1,10 +1,6 @@
 import type { SessionUser } from '@boardsesh/shared-schema';
-import { describe, expect, it } from 'vitest';
-import {
-  evaluateQueueEventSequence,
-  insertQueueItemIdempotent,
-  upsertSessionUser,
-} from '../event-utils';
+import { describe, expect, it } from 'vite-plus/test';
+import { evaluateQueueEventSequence, insertQueueItemIdempotent, upsertSessionUser } from '../event-utils';
 
 describe('persistent session event utils', () => {
   describe('upsertSessionUser', () => {

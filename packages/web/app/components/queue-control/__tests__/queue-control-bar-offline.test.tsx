@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import React from 'react';
+import QueueControlBar from '../queue-control-bar';
 
 // -- All mocks before imports --
 
@@ -14,18 +15,25 @@ vi.mock('@/app/components/graphql-queue', () => ({
   useQueueContext: () => mockQueueContext,
   useQueueData: () => mockQueueContext,
   useQueueActions: () => mockQueueContext,
-  useCurrentClimb: () => ({ currentClimb: (mockQueueContext as Record<string, unknown>).currentClimb }),
-  useQueueList: () => ({ queue: (mockQueueContext as Record<string, unknown>).queue, suggestedClimbs: [] }),
+  useCurrentClimb: () => ({
+    currentClimb: mockQueueContext.currentClimb,
+  }),
+  useQueueList: () => ({
+    queue: mockQueueContext.queue,
+    suggestedClimbs: [],
+  }),
   useSessionData: () => ({
-    viewOnlyMode: (mockQueueContext as Record<string, unknown>).viewOnlyMode ?? false,
-    isSessionActive: !!(mockQueueContext as Record<string, unknown>).sessionId,
-    sessionId: (mockQueueContext as Record<string, unknown>).sessionId ?? null,
+    viewOnlyMode: mockQueueContext.viewOnlyMode ?? false,
+    isSessionActive: !!mockQueueContext.sessionId,
+    sessionId: mockQueueContext.sessionId ?? null,
     sessionSummary: null,
+    sessionSummaryBoardType: null,
+    sessionSummaryHealthKitWorkoutId: null,
     sessionGoal: null,
-    connectionState: (mockQueueContext as Record<string, unknown>).connectionState ?? 'idle',
-    canMutate: (mockQueueContext as Record<string, unknown>).canMutate ?? true,
-    isDisconnected: (mockQueueContext as Record<string, unknown>).isDisconnected ?? false,
-    users: (mockQueueContext as Record<string, unknown>).users ?? [],
+    connectionState: mockQueueContext.connectionState ?? 'idle',
+    canMutate: mockQueueContext.canMutate ?? true,
+    isDisconnected: mockQueueContext.isDisconnected ?? false,
+    users: mockQueueContext.users ?? [],
     clientId: null,
     isLeader: true,
     isBackendMode: false,
@@ -36,7 +44,13 @@ vi.mock('@/app/components/graphql-queue', () => ({
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/kilter/1/1/1/40',
-  useParams: () => ({ board_name: 'kilter', layout_id: '1', size_id: '1', set_ids: '1', angle: '40' }),
+  useParams: () => ({
+    board_name: 'kilter',
+    layout_id: '1',
+    size_id: '1',
+    set_ids: '1',
+    angle: '40',
+  }),
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
 }));
@@ -70,7 +84,7 @@ vi.mock('@/app/hooks/use-color-mode', () => ({
 }));
 
 vi.mock('@/app/lib/grade-colors', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/app/lib/grade-colors')>();
+  const actual = await importOriginal<Record<string, unknown>>();
   return {
     ...actual,
     getGradeTintColor: () => null,
@@ -109,8 +123,12 @@ vi.mock('@/app/components/play-view/play-view-drawer', () => ({
   default: () => null,
 }));
 
-vi.mock('@/app/components/onboarding/onboarding-tour', () => ({
-  TOUR_DRAWER_EVENT: 'tour-drawer',
+vi.mock('@/app/components/session-creation/start-sesh-drawer', () => ({
+  default: () => null,
+}));
+
+vi.mock('@/app/components/onboarding/onboarding-tour-events', () => ({
+  TOUR_CLOSE_PLAY_VIEW_EVENT: 'onboarding:close-play-view',
 }));
 
 vi.mock('@/app/components/ui/confirm-popover', () => ({
@@ -129,10 +147,41 @@ vi.mock('@/app/components/persistent-session', () => ({
   }),
   usePersistentSessionState: () => ({
     activeSession: null,
+    session: null,
+    users: [],
     localBoardDetails: null,
     localCurrentClimbQueueItem: null,
   }),
   usePersistentSessionActions: () => ({}),
+}));
+
+vi.mock('@/app/components/persistent-session/persistent-session-context', () => ({
+  usePersistentSession: () => ({
+    activeSession: null,
+    localBoardDetails: null,
+    localCurrentClimbQueueItem: null,
+  }),
+  usePersistentSessionState: () => ({
+    activeSession: null,
+    session: null,
+    users: [],
+    localBoardDetails: null,
+    localCurrentClimbQueueItem: null,
+  }),
+  usePersistentSessionActions: () => ({}),
+}));
+
+vi.mock('@/app/components/board-provider/board-provider-context', () => ({
+  useBoardProvider: () => ({
+    logbook: [],
+    saveTick: vi.fn(),
+    isAuthenticated: false,
+    isLoading: false,
+    error: null,
+    isInitialized: true,
+    getLogbook: vi.fn(),
+    saveClimb: vi.fn(),
+  }),
 }));
 
 vi.mock('@/app/components/board-bluetooth-control/bluetooth-context', () => ({
@@ -146,7 +195,6 @@ vi.mock('@/app/components/board-bluetooth-control/bluetooth-context', () => ({
 }));
 
 // Import after mocks
-import QueueControlBar from '../queue-control-bar';
 
 const mockClimb = {
   uuid: 'climb-1',
@@ -181,7 +229,10 @@ const baseQueueContext = {
   sessionId: 'session-1',
   canMutate: true,
   isDisconnected: false,
-  users: [{ id: 'me', username: 'me', isLeader: true }, { id: 'other', username: 'other', isLeader: false }],
+  users: [
+    { id: 'me', username: 'me', isLeader: true },
+    { id: 'other', username: 'other', isLeader: false },
+  ],
   endSession: vi.fn(),
   disconnect: vi.fn(),
   addToQueue: vi.fn(),
@@ -221,6 +272,20 @@ const defaultProps = {
 describe('QueueControlBar offline UI', () => {
   beforeEach(() => {
     mockQueueContext = { ...baseQueueContext };
+    // Mock matchMedia for JSDOM
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: vi.fn().mockImplementation((query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
   });
 
   it('renders normal controls when online with active session', () => {
@@ -247,7 +312,10 @@ describe('QueueControlBar offline UI', () => {
       ...baseQueueContext,
       connectionState: 'reconnecting',
       isDisconnected: true,
-      users: [{ id: 'me', username: 'me', isLeader: true }, { id: 'other', username: 'other', isLeader: false }],
+      users: [
+        { id: 'me', username: 'me', isLeader: true },
+        { id: 'other', username: 'other', isLeader: false },
+      ],
     };
 
     render(<QueueControlBar {...defaultProps} />);
@@ -331,7 +399,11 @@ describe('QueueControlBar offline UI', () => {
     });
 
     // Simulate disconnection again
-    mockQueueContext = { ...baseQueueContext, isDisconnected: true, connectionState: 'reconnecting' };
+    mockQueueContext = {
+      ...baseQueueContext,
+      isDisconnected: true,
+      connectionState: 'reconnecting',
+    };
     act(() => {
       rerender(<QueueControlBar {...defaultProps} boardDetails={{ ...bd } as never} />);
     });

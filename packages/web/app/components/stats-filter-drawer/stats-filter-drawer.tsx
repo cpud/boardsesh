@@ -15,7 +15,7 @@ import {
   boardOptions,
 } from '@/app/profile/[user_id]/utils/profile-constants';
 
-interface StatsFilterDrawerProps {
+type StatsFilterDrawerProps = {
   open: boolean;
   onClose: () => void;
   selectedBoard: string;
@@ -27,7 +27,7 @@ interface StatsFilterDrawerProps {
   toDate: string;
   onToDateChange: (date: string) => void;
   onTransitionEnd?: (open: boolean) => void;
-}
+};
 
 export default function StatsFilterDrawer({
   open,
@@ -43,13 +43,7 @@ export default function StatsFilterDrawer({
   onTransitionEnd,
 }: StatsFilterDrawerProps) {
   return (
-    <SwipeableDrawer
-      open={open}
-      onClose={onClose}
-      placement="top"
-      title="Filters"
-      onTransitionEnd={onTransitionEnd}
-    >
+    <SwipeableDrawer open={open} onClose={onClose} placement="top" title="Filters" onTransitionEnd={onTransitionEnd}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pb: 2 }}>
         <Box>
           <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>
@@ -59,11 +53,15 @@ export default function StatsFilterDrawer({
             exclusive
             size="small"
             value={selectedBoard}
-            onChange={(_, val) => { if (val) onBoardChange(val as string); }}
+            onChange={(_, val) => {
+              if (val) onBoardChange(val as string);
+            }}
             fullWidth
           >
             {boardOptions.map((opt) => (
-              <ToggleButton key={opt.value} value={opt.value}>{opt.label}</ToggleButton>
+              <ToggleButton key={opt.value} value={opt.value}>
+                {opt.label}
+              </ToggleButton>
             ))}
           </ToggleButtonGroup>
         </Box>
@@ -76,12 +74,16 @@ export default function StatsFilterDrawer({
             exclusive
             size="small"
             value={timeframe}
-            onChange={(_, val) => { if (val) onTimeframeChange(val as UnifiedTimeframeType); }}
+            onChange={(_, val) => {
+              if (val) onTimeframeChange(val as UnifiedTimeframeType);
+            }}
             fullWidth
             sx={{ flexWrap: 'wrap' }}
           >
             {unifiedTimeframeOptions.map((opt) => (
-              <ToggleButton key={opt.value} value={opt.value}>{opt.label}</ToggleButton>
+              <ToggleButton key={opt.value} value={opt.value}>
+                {opt.label}
+              </ToggleButton>
             ))}
           </ToggleButtonGroup>
         </Box>

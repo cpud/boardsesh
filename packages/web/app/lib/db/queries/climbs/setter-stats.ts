@@ -1,12 +1,12 @@
 import { eq, sql, and, ilike } from 'drizzle-orm';
 import { dbz as db } from '@/app/lib/db/db';
-import { ParsedBoardRouteParameters } from '@/app/lib/types';
+import type { ParsedBoardRouteParameters } from '@/app/lib/types';
 import { UNIFIED_TABLES } from '@/lib/db/queries/util/table-select';
 
-export interface SetterStat {
+export type SetterStat = {
   setter_username: string;
   climb_count: number;
-}
+};
 
 export const getSetterStats = async (
   params: ParsedBoardRouteParameters,
@@ -36,10 +36,7 @@ export const getSetterStats = async (
         climb_count: sql<number>`count(*)::int`,
       })
       .from(climbs)
-      .innerJoin(climbStats, and(
-        eq(climbStats.climbUuid, climbs.uuid),
-        eq(climbStats.boardType, params.board_name),
-      ))
+      .innerJoin(climbStats, and(eq(climbStats.climbUuid, climbs.uuid), eq(climbStats.boardType, params.board_name)))
       .where(and(...whereConditions))
       .groupBy(climbs.setterUsername)
       .orderBy(sql`count(*) DESC`)

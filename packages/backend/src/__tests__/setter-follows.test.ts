@@ -1,4 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { setterFollowMutations, setterFollowQueries } from '../graphql/resolvers/social/setter-follows';
 
 // All mock variables must be inside vi.hoisted() to avoid "Cannot access before initialization" errors
 const { mockDb } = vi.hoisted(() => {
@@ -31,9 +33,34 @@ vi.mock('../utils/redis-rate-limiter', () => ({
 
 vi.mock('../db/queries/util/table-select', () => ({
   UNIFIED_TABLES: {
-    climbs: { uuid: 'uuid', layoutId: 'layoutId', boardType: 'boardType', setterUsername: 'setterUsername', name: 'name', description: 'description', frames: 'frames', createdAt: 'createdAt' },
-    climbStats: { climbUuid: 'climbUuid', boardType: 'boardType', angle: 'angle', ascensionistCount: 'ascensionistCount', qualityAverage: 'qualityAverage', difficultyAverage: 'difficultyAverage', displayDifficulty: 'displayDifficulty', benchmarkDifficulty: 'benchmarkDifficulty' },
-    difficultyGrades: { boardType: 'boardType', difficulty: 'difficulty', boulderName: 'boulderName' },
+    climbs: {
+      uuid: 'uuid',
+      layoutId: 'layoutId',
+      boardType: 'boardType',
+      setterUsername: 'setterUsername',
+      name: 'name',
+      description: 'description',
+      frames: 'frames',
+      createdAt: 'createdAt',
+      userId: 'userId',
+      isDraft: 'isDraft',
+      compatibleSizeIds: 'compatibleSizeIds',
+    },
+    climbStats: {
+      climbUuid: 'climbUuid',
+      boardType: 'boardType',
+      angle: 'angle',
+      ascensionistCount: 'ascensionistCount',
+      qualityAverage: 'qualityAverage',
+      difficultyAverage: 'difficultyAverage',
+      displayDifficulty: 'displayDifficulty',
+      benchmarkDifficulty: 'benchmarkDifficulty',
+    },
+    difficultyGrades: {
+      boardType: 'boardType',
+      difficulty: 'difficulty',
+      boulderName: 'boulderName',
+    },
   },
   isValidBoardName: vi.fn().mockReturnValue(true),
 }));
@@ -41,9 +68,6 @@ vi.mock('../db/queries/util/table-select', () => ({
 vi.mock('../db/queries/util/hold-state', () => ({
   convertLitUpHoldsStringToMap: vi.fn().mockReturnValue([{}]),
 }));
-
-import type { ConnectionContext } from '@boardsesh/shared-schema';
-import { setterFollowMutations, setterFollowQueries } from '../graphql/resolvers/social/setter-follows';
 
 function makeCtx(overrides: Partial<ConnectionContext> = {}): ConnectionContext {
   return {
@@ -66,10 +90,22 @@ function makeCtx(overrides: Partial<ConnectionContext> = {}): ConnectionContext 
 function createMockChain(resolveValue: unknown = []): Record<string, unknown> {
   const chain: Record<string, unknown> = {};
   const methods = [
-    'select', 'from', 'where', 'leftJoin', 'innerJoin',
-    'groupBy', 'orderBy', 'limit', 'offset',
-    'insert', 'values', 'onConflictDoNothing', 'returning',
-    'delete', 'update', 'set',
+    'select',
+    'from',
+    'where',
+    'leftJoin',
+    'innerJoin',
+    'groupBy',
+    'orderBy',
+    'limit',
+    'offset',
+    'insert',
+    'values',
+    'onConflictDoNothing',
+    'returning',
+    'delete',
+    'update',
+    'set',
   ];
 
   // Make the chain a thenable (for destructuring awaits like `const [x] = await db.select()...`)
@@ -121,11 +157,7 @@ describe('followSetter mutation', () => {
     const linkedChain = createMockChain([]);
     mockDb.select.mockReturnValueOnce(linkedChain);
 
-    const result = await setterFollowMutations.followSetter(
-      null,
-      { input: { setterUsername: 'setter1' } },
-      ctx,
-    );
+    const result = await setterFollowMutations.followSetter(null, { input: { setterUsername: 'setter1' } }, ctx);
 
     expect(result).toBe(true);
     expect(mockDb.insert).toHaveBeenCalled();
@@ -142,11 +174,7 @@ describe('followSetter mutation', () => {
     const insertChain = createMockChain([]);
     mockDb.insert.mockReturnValueOnce(insertChain);
 
-    const result = await setterFollowMutations.followSetter(
-      null,
-      { input: { setterUsername: 'setter1' } },
-      ctx,
-    );
+    const result = await setterFollowMutations.followSetter(null, { input: { setterUsername: 'setter1' } }, ctx);
 
     expect(result).toBe(true);
     // No additional insert for user_follows since result was empty
@@ -172,11 +200,7 @@ describe('followSetter mutation', () => {
     const userFollowInsertChain = createMockChain(undefined);
     mockDb.insert.mockReturnValueOnce(userFollowInsertChain);
 
-    const result = await setterFollowMutations.followSetter(
-      null,
-      { input: { setterUsername: 'setter1' } },
-      ctx,
-    );
+    const result = await setterFollowMutations.followSetter(null, { input: { setterUsername: 'setter1' } }, ctx);
 
     expect(result).toBe(true);
     // Insert called twice: once for setter_follows, once for user_follows
@@ -207,11 +231,7 @@ describe('unfollowSetter mutation', () => {
     const linkedChain = createMockChain([]);
     mockDb.select.mockReturnValueOnce(linkedChain);
 
-    const result = await setterFollowMutations.unfollowSetter(
-      null,
-      { input: { setterUsername: 'setter1' } },
-      ctx,
-    );
+    const result = await setterFollowMutations.unfollowSetter(null, { input: { setterUsername: 'setter1' } }, ctx);
 
     expect(result).toBe(true);
     expect(mockDb.delete).toHaveBeenCalledTimes(1);
@@ -232,11 +252,7 @@ describe('unfollowSetter mutation', () => {
     const deleteUserFollowChain = createMockChain(undefined);
     mockDb.delete.mockReturnValueOnce(deleteUserFollowChain);
 
-    const result = await setterFollowMutations.unfollowSetter(
-      null,
-      { input: { setterUsername: 'setter1' } },
-      ctx,
-    );
+    const result = await setterFollowMutations.unfollowSetter(null, { input: { setterUsername: 'setter1' } }, ctx);
 
     expect(result).toBe(true);
     // Delete called twice: setter_follows and user_follows
@@ -251,9 +267,7 @@ describe('userClimbs query', () => {
 
   it('should reject empty userId', async () => {
     const ctx = makeCtx();
-    await expect(
-      setterFollowQueries.userClimbs(null, { input: { userId: '' } }, ctx),
-    ).rejects.toThrow();
+    await expect(setterFollowQueries.userClimbs(null, { input: { userId: '' } }, ctx)).rejects.toThrow();
   });
 
   it('should return climbs for user with no linked usernames', async () => {
@@ -267,29 +281,28 @@ describe('userClimbs query', () => {
     const countChain = createMockChain([{ count: 1 }]);
     mockDb.select.mockReturnValueOnce(countChain);
 
-    // 3. Climbs query → one result
-    const climbsChain = createMockChain([{
-      uuid: 'climb-1',
-      layoutId: 1,
-      boardType: 'kilter',
-      setter_username: 'setter1',
-      name: 'Test Climb',
-      description: '',
-      frames: 'abc',
-      statsAngle: 40,
-      ascensionist_count: 10,
-      difficulty_id: 20,
-      quality_average: 3.5,
-      difficulty_error: 0.1,
-      benchmark_difficulty: null,
-    }]);
-    mockDb.select.mockReturnValueOnce(climbsChain);
+    // 3. Climbs query via db.execute() → one result (returns {rows: [...]})
+    mockDb.execute.mockResolvedValueOnce({
+      rows: [
+        {
+          uuid: 'climb-1',
+          layout_id: 1,
+          board_type: 'kilter',
+          setter_username: 'setter1',
+          name: 'Test Climb',
+          description: '',
+          frames: 'abc',
+          stats_angle: 40,
+          ascensionist_count: 10,
+          difficulty_id: 20,
+          quality_average: 3.5,
+          difficulty_error: 0.1,
+          benchmark_difficulty: null,
+        },
+      ],
+    });
 
-    const result = await setterFollowQueries.userClimbs(
-      null,
-      { input: { userId: 'user-123' } },
-      ctx,
-    );
+    const result = await setterFollowQueries.userClimbs(null, { input: { userId: 'user-123' } }, ctx);
 
     expect(result.totalCount).toBe(1);
     expect(result.hasMore).toBe(false);
@@ -302,57 +315,54 @@ describe('userClimbs query', () => {
     const ctx = makeCtx();
 
     // 1. userBoardMappings → linked username
-    const mappingsChain = createMockChain([{ boardUsername: 'aurora-setter' }]);
+    const mappingsChain = createMockChain([{ boardType: 'kilter', boardUsername: 'aurora-setter' }]);
     mockDb.select.mockReturnValueOnce(mappingsChain);
 
     // 2. Count query → 2 climbs
     const countChain = createMockChain([{ count: 2 }]);
     mockDb.select.mockReturnValueOnce(countChain);
 
-    // 3. Climbs query → two results
-    const climbsChain = createMockChain([
-      {
-        uuid: 'climb-direct',
-        layoutId: 1,
-        boardType: 'kilter',
-        setter_username: 'user-123',
-        name: 'Direct Climb',
-        description: '',
-        frames: '',
-        statsAngle: 40,
-        ascensionist_count: 5,
-        difficulty_id: 18,
-        quality_average: 4,
-        difficulty_error: 0,
-        benchmark_difficulty: null,
-      },
-      {
-        uuid: 'climb-aurora',
-        layoutId: 1,
-        boardType: 'kilter',
-        setter_username: 'aurora-setter',
-        name: 'Aurora Climb',
-        description: '',
-        frames: '',
-        statsAngle: 40,
-        ascensionist_count: 20,
-        difficulty_id: 22,
-        quality_average: 3,
-        difficulty_error: 0.2,
-        benchmark_difficulty: null,
-      },
-    ]);
-    mockDb.select.mockReturnValueOnce(climbsChain);
+    // 3. Climbs query via db.execute() → two results (returns {rows: [...]})
+    mockDb.execute.mockResolvedValueOnce({
+      rows: [
+        {
+          uuid: 'climb-direct',
+          layout_id: 1,
+          board_type: 'kilter',
+          setter_username: 'user-123',
+          name: 'Direct Climb',
+          description: '',
+          frames: '',
+          stats_angle: 40,
+          ascensionist_count: 5,
+          difficulty_id: 18,
+          quality_average: 4,
+          difficulty_error: 0,
+          benchmark_difficulty: null,
+        },
+        {
+          uuid: 'climb-aurora',
+          layout_id: 1,
+          board_type: 'kilter',
+          setter_username: 'aurora-setter',
+          name: 'Aurora Climb',
+          description: '',
+          frames: '',
+          stats_angle: 40,
+          ascensionist_count: 20,
+          difficulty_id: 22,
+          quality_average: 3,
+          difficulty_error: 0.2,
+          benchmark_difficulty: null,
+        },
+      ],
+    });
 
-    const result = await setterFollowQueries.userClimbs(
-      null,
-      { input: { userId: 'user-123' } },
-      ctx,
-    );
+    const result = await setterFollowQueries.userClimbs(null, { input: { userId: 'user-123' } }, ctx);
 
     expect(result.totalCount).toBe(2);
     expect(result.climbs).toHaveLength(2);
-    expect(result.climbs.map(c => c.uuid)).toEqual(['climb-direct', 'climb-aurora']);
+    expect(result.climbs.map((c) => c.uuid)).toEqual(['climb-direct', 'climb-aurora']);
   });
 
   it('should handle pagination with hasMore', async () => {
@@ -366,19 +376,58 @@ describe('userClimbs query', () => {
     const countChain = createMockChain([{ count: 3 }]);
     mockDb.select.mockReturnValueOnce(countChain);
 
-    // 3. Climbs → limit+1 results (3 results for limit=2, indicating hasMore)
-    const climbsChain = createMockChain([
-      { uuid: 'c1', layoutId: 1, boardType: 'kilter', setter_username: '', name: 'A', description: '', frames: '', statsAngle: 40, ascensionist_count: 0, difficulty_id: null, quality_average: 0, difficulty_error: 0, benchmark_difficulty: null },
-      { uuid: 'c2', layoutId: 1, boardType: 'kilter', setter_username: '', name: 'B', description: '', frames: '', statsAngle: 40, ascensionist_count: 0, difficulty_id: null, quality_average: 0, difficulty_error: 0, benchmark_difficulty: null },
-      { uuid: 'c3', layoutId: 1, boardType: 'kilter', setter_username: '', name: 'C', description: '', frames: '', statsAngle: 40, ascensionist_count: 0, difficulty_id: null, quality_average: 0, difficulty_error: 0, benchmark_difficulty: null },
-    ]);
-    mockDb.select.mockReturnValueOnce(climbsChain);
+    // 3. Climbs via db.execute() → limit+1 results (3 results for limit=2, indicating hasMore)
+    mockDb.execute.mockResolvedValueOnce({
+      rows: [
+        {
+          uuid: 'c1',
+          layout_id: 1,
+          board_type: 'kilter',
+          setter_username: '',
+          name: 'A',
+          description: '',
+          frames: '',
+          stats_angle: 40,
+          ascensionist_count: 0,
+          difficulty_id: null,
+          quality_average: 0,
+          difficulty_error: 0,
+          benchmark_difficulty: null,
+        },
+        {
+          uuid: 'c2',
+          layout_id: 1,
+          board_type: 'kilter',
+          setter_username: '',
+          name: 'B',
+          description: '',
+          frames: '',
+          stats_angle: 40,
+          ascensionist_count: 0,
+          difficulty_id: null,
+          quality_average: 0,
+          difficulty_error: 0,
+          benchmark_difficulty: null,
+        },
+        {
+          uuid: 'c3',
+          layout_id: 1,
+          board_type: 'kilter',
+          setter_username: '',
+          name: 'C',
+          description: '',
+          frames: '',
+          stats_angle: 40,
+          ascensionist_count: 0,
+          difficulty_id: null,
+          quality_average: 0,
+          difficulty_error: 0,
+          benchmark_difficulty: null,
+        },
+      ],
+    });
 
-    const result = await setterFollowQueries.userClimbs(
-      null,
-      { input: { userId: 'user-123', limit: 2 } },
-      ctx,
-    );
+    const result = await setterFollowQueries.userClimbs(null, { input: { userId: 'user-123', limit: 2 } }, ctx);
 
     expect(result.hasMore).toBe(true);
     expect(result.climbs).toHaveLength(2);
@@ -396,15 +445,10 @@ describe('userClimbs query', () => {
     const countChain = createMockChain([{ count: 0 }]);
     mockDb.select.mockReturnValueOnce(countChain);
 
-    // 3. Climbs → empty
-    const climbsChain = createMockChain([]);
-    mockDb.select.mockReturnValueOnce(climbsChain);
+    // 3. Climbs via db.execute() → empty
+    mockDb.execute.mockResolvedValueOnce({ rows: [] });
 
-    const result = await setterFollowQueries.userClimbs(
-      null,
-      { input: { userId: 'user-123' } },
-      ctx,
-    );
+    const result = await setterFollowQueries.userClimbs(null, { input: { userId: 'user-123' } }, ctx);
 
     expect(result.totalCount).toBe(0);
     expect(result.hasMore).toBe(false);

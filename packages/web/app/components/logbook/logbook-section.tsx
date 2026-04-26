@@ -4,20 +4,20 @@ import React, { useMemo } from 'react';
 import Typography from '@mui/material/Typography';
 import BookOutlined from '@mui/icons-material/BookOutlined';
 import { LogbookView } from './logbook-view';
-import { Climb } from '@/app/lib/types';
+import type { Climb } from '@/app/lib/types';
 import { useBoardProvider } from '../board-provider/board-provider-context';
 import dayjs from 'dayjs';
 
-interface LogbookSectionProps {
+type LogbookSectionProps = {
   climb: Climb;
-}
+};
 
-export interface LogbookSummary {
+export type LogbookSummary = {
   totalAttempts: number;
   sessionCount: number;
   successfulAscents: number;
   failedAttempts: number;
-}
+};
 
 /** Hook to compute logbook summary for a given climb. */
 export function useLogbookSummary(climbUuid: string): LogbookSummary | null {
@@ -32,9 +32,7 @@ export function useLogbookSummary(climbUuid: string): LogbookSummary | null {
 
     const totalAttempts = climbAscents.reduce((sum, ascent) => sum + (ascent.tries || 1), 0);
 
-    const sessionDates = new Set(
-      climbAscents.map((ascent) => dayjs(ascent.climbed_at).format('YYYY-MM-DD'))
-    );
+    const sessionDates = new Set(climbAscents.map((ascent) => dayjs(ascent.climbed_at).format('YYYY-MM-DD')));
     const sessionCount = sessionDates.size;
 
     const successfulAscents = climbAscents.filter((a) => a.is_ascent).length;
@@ -54,7 +52,12 @@ export const LogbookSection: React.FC<LogbookSectionProps> = ({ climb }) => {
 
   if (!summary) {
     return (
-      <Typography variant="body2" component="span" color="text.secondary" sx={{ display: 'block', textAlign: 'center', py: 2 }}>
+      <Typography
+        variant="body2"
+        component="span"
+        color="text.secondary"
+        sx={{ display: 'block', textAlign: 'center', py: 2 }}
+      >
         <BookOutlined sx={{ mr: 1, verticalAlign: 'middle' }} />
         No ascents logged for this climb
       </Typography>

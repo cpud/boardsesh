@@ -4,6 +4,7 @@ import { userBoards } from '@boardsesh/db/schema/app';
 import { eq, and, gt, gte, lte, ne, isNull } from 'drizzle-orm';
 import type { RedisSessionStore } from '../redis-session-store';
 import type { DistributedStateManager } from '../distributed-state';
+import type { WriteScheduler } from './write-scheduler';
 import { haversineDistance, getBoundingBox, DEFAULT_SEARCH_RADIUS_METERS } from '../../utils/geo';
 import type { DiscoverableSession } from './types';
 
@@ -27,7 +28,7 @@ export async function createDiscoverableSession(
   name?: string,
   goal?: string,
   isPermanent?: boolean,
-  color?: string
+  color?: string,
 ): Promise<Session> {
   const now = new Date();
 
@@ -94,7 +95,7 @@ export async function findNearbySessions(
   radiusMeters: number = DEFAULT_SEARCH_RADIUS_METERS,
   sessionsMap: Map<string, Set<string>>,
   redisStore: RedisSessionStore | null,
-  distributedState: DistributedStateManager | null
+  distributedState: DistributedStateManager | null,
 ): Promise<DiscoverableSession[]> {
   const box = getBoundingBox(latitude, longitude, radiusMeters);
 
@@ -108,14 +109,13 @@ export async function findNearbySessions(
         gte(sessions.latitude, box.minLat),
         lte(sessions.latitude, box.maxLat),
         gte(sessions.longitude, box.minLon),
-        lte(sessions.longitude, box.maxLon)
-      )
+        lte(sessions.longitude, box.maxLon),
+      ),
     );
 
   type SessionWithCoords = Session & { latitude: number; longitude: number };
   const sessionsWithDistance = candidates
-    .filter((s): s is SessionWithCoords =>
-      s.latitude !== null && s.longitude !== null)
+    .filter((s): s is SessionWithCoords => s.latitude !== null && s.longitude !== null)
     .map((s: SessionWithCoords) => ({
       session: s,
       distance: haversineDistance(latitude, longitude, s.latitude, s.longitude),
@@ -126,7 +126,7 @@ export async function findNearbySessions(
   const sessionIds = sessionsWithDistance.map(({ session }) => session.id);
 
   // Batch check Redis existence to avoid N+1 queries
-  let redisExistsMap: Map<string, boolean> = new Map();
+  let redisExistsMap = new Map<string, boolean>();
   if (redisStore && sessionIds.length > 0) {
     redisExistsMap = await redisStore.batchExists(sessionIds);
   }
@@ -153,8 +153,8 @@ export async function findNearbySessions(
       id: session.id,
       name: session.name,
       boardPath: session.boardPath,
-      latitude: session.latitude!,
-      longitude: session.longitude!,
+      latitude: session.latitude,
+      longitude: session.longitude,
       createdAt: session.createdAt,
       createdByUserId: session.createdByUserId,
       participantCount,
@@ -179,12 +179,7 @@ export async function getUserSessions(userId: string): Promise<Session[]> {
   const result = await db
     .select()
     .from(sessions)
-    .where(
-      and(
-        eq(sessions.createdByUserId, userId),
-        gt(sessions.createdAt, sevenDaysAgo)
-      )
-    )
+    .where(and(eq(sessions.createdByUserId, userId), gt(sessions.createdAt, sevenDaysAgo)))
     .orderBy(sessions.lastActivity);
 
   return result;
@@ -197,9 +192,9 @@ export async function endSession(
   sessionId: string,
   sessionsMap: Map<string, Set<string>>,
   redisStore: RedisSessionStore | null,
-  writeScheduler: import('./write-scheduler').WriteScheduler,
+  writeScheduler: WriteScheduler,
   sessionGraceTimers: Map<string, NodeJS.Timeout>,
-  pendingJoinPersists: Map<string, Promise<void>>
+  pendingJoinPersists: Map<string, Promise<void>>,
 ): Promise<void> {
   // Cancel any pending writes to prevent FK violations after session ends
   writeScheduler.cancelPendingWrites(sessionId);
@@ -224,13 +219,10 @@ export async function endSession(
 
   // Mark as ended in Postgres
   const now = new Date();
-  await db
-    .update(sessions)
-    .set({ status: 'ended', lastActivity: now, endedAt: now })
-    .where(eq(sessions.id, sessionId));
+  await db.update(sessions).set({ status: 'ended', lastActivity: now, endedAt: now }).where(eq(sessions.id, sessionId));
 
   // Remove from memory
   sessionsMap.delete(sessionId);
 
-  console.log(`[RoomManager] Session ${sessionId} explicitly ended`);
+  console.info(`[RoomManager] Session ${sessionId} explicitly ended`);
 }

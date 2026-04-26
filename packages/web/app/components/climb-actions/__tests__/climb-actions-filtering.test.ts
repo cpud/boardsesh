@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { DEFAULT_ACTION_ORDER, ClimbActionType } from '../types';
+import { describe, it, expect } from 'vite-plus/test';
+import { type ClimbActionType, DEFAULT_ACTION_ORDER } from '../types';
 
 /**
  * Test the filtering logic used in ClimbActions component.
@@ -10,10 +10,7 @@ import { DEFAULT_ACTION_ORDER, ClimbActionType } from '../types';
  *   let actions = include || DEFAULT_ACTION_ORDER;
  *   actions = actions.filter((action) => !exclude.includes(action));
  */
-function getActionsToShow(
-  include?: ClimbActionType[],
-  exclude: ClimbActionType[] = [],
-): ClimbActionType[] {
+function getActionsToShow(include?: ClimbActionType[], exclude: ClimbActionType[] = []): ClimbActionType[] {
   let actions = include || DEFAULT_ACTION_ORDER;
   actions = actions.filter((action) => !exclude.includes(action));
   return actions;

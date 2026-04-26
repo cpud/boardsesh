@@ -1,13 +1,13 @@
 import { getHoldHeatmapData } from '@/app/lib/db/queries/climbs/holds-heatmap';
 import { cachedGetHoldHeatmapData } from '@/app/lib/db/queries/climbs/holds-heatmap-cache';
-import { BoardRouteParameters, ErrorResponse, SearchRequestPagination } from '@/app/lib/types';
+import type { BoardRouteParameters, ErrorResponse, SearchRequestPagination } from '@/app/lib/types';
 import { urlParamsToSearchParams } from '@/app/lib/url-utils';
 import { parseBoardRouteParamsWithSlugs } from '@/app/lib/url-utils.server';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/lib/auth/auth-options';
 
-export interface HoldHeatmapResponse {
+export type HoldHeatmapResponse = {
   holdStats: Array<{
     holdId: number;
     totalUses: number;
@@ -20,7 +20,7 @@ export interface HoldHeatmapResponse {
     userAscents?: number; // Added for user-specific ascent data
     userAttempts?: number; // Added for user-specific attempt data
   }>;
-}
+};
 
 export async function GET(
   req: Request,

@@ -23,10 +23,7 @@ import { themeTokens } from '@/app/theme/theme-config';
 import { useWsAuthToken } from '@/app/hooks/use-ws-auth-token';
 import { useSessionTimer } from '@/app/hooks/use-session-timer';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  GET_SESSION_DETAIL,
-  type GetSessionDetailQueryResponse,
-} from '@/app/lib/graphql/operations/activity-feed';
+import { GET_SESSION_DETAIL, type GetSessionDetailQueryResponse } from '@/app/lib/graphql/operations/activity-feed';
 import { clearClimbSessionCookie } from '@/app/lib/climb-session-cookie';
 import { shareWithFallback } from '@/app/lib/share-utils';
 import { useSnackbar } from '@/app/components/providers/snackbar-provider';
@@ -43,13 +40,35 @@ const getShareUrl = (sessionId: string | null) => {
   }
 };
 
-interface SeshSettingsDrawerProps {
+/**
+ * Non-URL payload used for the mock QR shown during the onboarding tour. If
+ * a curious user scans it their reader just displays this text — nothing
+ * navigates or gets indexed.
+ */
+const TOUR_SHARE_QR_PAYLOAD = 'boardsesh:onboarding-tour-preview';
+
+type SeshSettingsDrawerProps = {
   open: boolean;
   onClose: () => void;
   onTransitionEnd?: (open: boolean) => void;
-}
+  /**
+   * When set, the drawer renders from this mock SessionDetail instead of the
+   * user's live session. Used by the onboarding tour to preview a populated
+   * party session. Skips GraphQL, hides the stop/share controls, and bypasses
+   * the "no active session" guard.
+   */
+  tourMockSession?: SessionDetail;
+  /** Forces the embedded CollapsibleSection to show a specific section during the tour. */
+  tourActiveSection?: 'invite' | 'activity' | 'analytics' | null;
+};
 
-export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: SeshSettingsDrawerProps) {
+export default function SeshSettingsDrawer({
+  open,
+  onClose,
+  onTransitionEnd,
+  tourMockSession,
+  tourActiveSection,
+}: SeshSettingsDrawerProps) {
   const { activeSession, session, users, deactivateSession, liveSessionStats } = usePersistentSession();
   const { boardDetails, angle } = useQueueBridgeBoardInfo();
   const { token: authToken } = useWsAuthToken();
@@ -81,19 +100,22 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
     });
   }, [shareUrl, sessionId, showMessage]);
 
-  const handleAngleChange = useCallback((newAngle: number) => {
-    if (!boardDetails || angle === undefined) return;
+  const handleAngleChange = useCallback(
+    (newAngle: number) => {
+      if (!boardDetails || angle === undefined) return;
 
-    // Replace the current angle in the URL with the new one
-    // Same pattern as angle-selector.tsx — find by value, not position
-    const pathSegments = pathname.split('/');
-    const angleIndex = pathSegments.findIndex((segment) => segment === angle.toString());
+      // Replace the current angle in the URL with the new one
+      // Same pattern as angle-selector.tsx — find by value, not position
+      const pathSegments = pathname.split('/');
+      const angleIndex = pathSegments.findIndex((segment) => segment === angle.toString());
 
-    if (angleIndex !== -1) {
-      pathSegments[angleIndex] = newAngle.toString();
-      router.push(pathSegments.join('/'));
-    }
-  }, [boardDetails, angle, pathname, router]);
+      if (angleIndex !== -1) {
+        pathSegments[angleIndex] = newAngle.toString();
+        router.push(pathSegments.join('/'));
+      }
+    },
+    [boardDetails, angle, pathname, router],
+  );
 
   const handleStopSession = useCallback(() => {
     deactivateSession();
@@ -112,7 +134,7 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
       const client = createGraphQLHttpClient(authToken);
       return client.request<GetSessionDetailQueryResponse>(GET_SESSION_DETAIL, { sessionId });
     },
-    enabled: open && !!sessionId && !!authToken,
+    enabled: open && !!sessionId && !!authToken && !tourMockSession,
     staleTime: 5000,
     refetchOnWindowFocus: false,
   });
@@ -175,7 +197,16 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
       voteScore: 0,
       commentCount: 0,
     };
-  }, [activeSession, sessionId, sessionDetail, session?.startedAt, session?.name, session?.goal, users, boardDetails?.board_name]);
+  }, [
+    activeSession,
+    sessionId,
+    sessionDetail,
+    session?.startedAt,
+    session?.name,
+    session?.goal,
+    users,
+    boardDetails?.board_name,
+  ]);
 
   const sessionForView = useMemo<SessionDetail | null>(() => {
     const base = sessionDetail ?? fallbackSession;
@@ -184,12 +215,8 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
     if (!mergedStats) return base;
 
     const mergedTicks = mergedStats.ticks;
-    const firstTickAt = mergedTicks.length > 0
-      ? mergedTicks[mergedTicks.length - 1].climbedAt
-      : base.firstTickAt;
-    const lastTickAt = mergedTicks.length > 0
-      ? mergedTicks[0].climbedAt
-      : base.lastTickAt;
+    const firstTickAt = mergedTicks.length > 0 ? mergedTicks[mergedTicks.length - 1].climbedAt : base.firstTickAt;
+    const lastTickAt = mergedTicks.length > 0 ? mergedTicks[0].climbedAt : base.lastTickAt;
 
     return {
       ...base,
@@ -212,15 +239,34 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
   if (sessionForView) {
     lastSessionRef.current = sessionForView;
   }
-  const displaySession = sessionForView ?? lastSessionRef.current;
+  const displaySession = tourMockSession ?? sessionForView ?? lastSessionRef.current;
 
-  const timerText = useSessionTimer(session?.startedAt ?? displaySession?.firstTickAt);
+  const timerText = useSessionTimer(
+    tourMockSession ? tourMockSession.firstTickAt : (session?.startedAt ?? displaySession?.firstTickAt),
+  );
 
   const drawerTitle = displaySession
-    ? (displaySession.sessionName || generateSessionName(displaySession.firstTickAt, displaySession.boardTypes))
+    ? displaySession.sessionName || generateSessionName(displaySession.firstTickAt, displaySession.boardTypes)
     : 'Session';
 
-  const inviteContent = !isStopped && shareUrl ? (
+  const inviteContent = tourMockSession ? (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+          Share this link or QR code with your crew and they&apos;ll show up live.
+        </Typography>
+        <IconButton disabled aria-label="Share session link (preview)">
+          <IosShare />
+        </IconButton>
+        <IconButton disabled aria-label="Show QR code (preview)">
+          <QrCode2Outlined />
+        </IconButton>
+      </Box>
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
+        <QRCodeSVG value={TOUR_SHARE_QR_PAYLOAD} size={140} aria-hidden />
+      </Box>
+    </Box>
+  ) : !isStopped && shareUrl ? (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
@@ -241,7 +287,7 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
     </Box>
   ) : undefined;
 
-  if (!activeSession && !isStopped) return null;
+  if (!activeSession && !tourMockSession && !isStopped) return null;
 
   return (
     <SwipeableDrawer
@@ -249,16 +295,30 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
         <div data-swipe-blocked="" {...dragHandlers} className={drawerCss.dragHeaderWrapper}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             {sessionBoardDetails && (
-              <Box sx={{ width: 36, flexShrink: 0, borderRadius: '6px', overflow: 'hidden', background: 'var(--neutral-100)', aspectRatio: '1' }}>
-                <BoardRenderer
-                  boardDetails={sessionBoardDetails}
-                  mirrored={false}
-                  thumbnail
-                  fillHeight
-                />
+              <Box
+                sx={{
+                  width: 36,
+                  flexShrink: 0,
+                  borderRadius: '6px',
+                  overflow: 'hidden',
+                  background: 'var(--neutral-100)',
+                  aspectRatio: '1',
+                }}
+              >
+                <BoardRenderer boardDetails={sessionBoardDetails} mirrored={false} thumbnail fillHeight />
               </Box>
             )}
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <Typography
+              variant="subtitle1"
+              sx={{
+                fontWeight: 600,
+                flex: 1,
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
               {drawerTitle}
             </Typography>
             {timerText && (
@@ -275,7 +335,7 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
                 {timerText}
               </Typography>
             )}
-            {!isStopped ? (
+            {!isStopped && !tourMockSession ? (
               <IconButton
                 size="small"
                 onClick={handleStopSession}
@@ -288,12 +348,7 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
                 <StopCircleOutlined />
               </IconButton>
             ) : (
-              <IconButton
-                size="small"
-                onClick={handleClose}
-                aria-label="Dismiss"
-                sx={{ flexShrink: 0 }}
-              >
+              <IconButton size="small" onClick={handleClose} aria-label="Dismiss" sx={{ flexShrink: 0 }}>
                 <CloseOutlined />
               </IconButton>
             )}
@@ -308,8 +363,15 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
       onTransitionEnd={onTransitionEnd}
       swipeEnabled={false}
       styles={{
-        wrapper: { width: '100%', touchAction: 'pan-y' as const, transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)' },
-        header: { paddingLeft: `${themeTokens.spacing[3]}px`, paddingRight: `${themeTokens.spacing[3]}px` },
+        wrapper: {
+          width: '100%',
+          touchAction: 'pan-y' as const,
+          transition: 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        },
+        header: {
+          paddingLeft: `${themeTokens.spacing[3]}px`,
+          paddingRight: `${themeTokens.spacing[3]}px`,
+        },
         body: { padding: `${themeTokens.spacing[2]}px 0` },
       }}
     >
@@ -334,8 +396,9 @@ export default function SeshSettingsDrawer({ open, onClose, onTransitionEnd }: S
             fallbackBoardDetails={sessionBoardDetails}
             inviteContent={inviteContent}
             currentAngle={angle}
-            onAngleChange={!isStopped ? handleAngleChange : undefined}
+            onAngleChange={!isStopped && !tourMockSession ? handleAngleChange : undefined}
             namedBoardName={activeSession?.namedBoardName}
+            tourActiveSection={tourActiveSection}
           />
         )}
       </Box>

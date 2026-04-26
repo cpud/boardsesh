@@ -1,13 +1,13 @@
 import React from 'react';
-import { BoardName, BoardDetails } from '@/app/lib/types';
-import { LayoutRow, SizeRow, SetRow } from '@/app/lib/data/queries';
+import type { BoardName, BoardDetails } from '@/app/lib/types';
+import type { LayoutRow, SizeRow, SetRow } from '@/app/lib/data/queries';
 import { getBoardDetails, getBoardSelectorOptions } from '@/app/lib/board-constants';
 import {
+  type MoonBoardLayoutKey,
   MOONBOARD_ENABLED,
   MOONBOARD_LAYOUTS,
   MOONBOARD_SETS,
   MOONBOARD_SIZE,
-  MoonBoardLayoutKey,
 } from '@/app/lib/moonboard-config';
 
 export type BoardConfigData = {
@@ -50,9 +50,9 @@ export const getAllBoardConfigs = React.cache(async (): Promise<BoardConfigData>
       ];
 
       // Add sets for each layout-size combination
-      const layoutKey = Object.entries(MOONBOARD_LAYOUTS).find(
-        ([, l]) => l.id === layout.id,
-      )?.[0] as MoonBoardLayoutKey | undefined;
+      const layoutKey = Object.entries(MOONBOARD_LAYOUTS).find(([, l]) => l.id === layout.id)?.[0] as
+        | MoonBoardLayoutKey
+        | undefined;
 
       if (layoutKey) {
         const sets = MOONBOARD_SETS[layoutKey] || [];
@@ -74,10 +74,10 @@ export const getAllBoardConfigs = React.cache(async (): Promise<BoardConfigData>
     { board: 'tension' as BoardName, layoutId: 11, sizeId: 6, setIds: [12, 13] },
   ];
 
-  const detailPromises = commonConfigs.map(async ({ board, layoutId, sizeId, setIds }) => {
+  for (const { board, layoutId, sizeId, setIds } of commonConfigs) {
     const key = `${board}-${layoutId}-${sizeId}-${setIds.join(',')}`;
     try {
-      const details = await getBoardDetails({
+      const details = getBoardDetails({
         board_name: board,
         layout_id: layoutId,
         size_id: sizeId,
@@ -88,9 +88,7 @@ export const getAllBoardConfigs = React.cache(async (): Promise<BoardConfigData>
       console.error(`Failed to fetch details for ${key}:`, error);
       configData.details[key] = null;
     }
-  });
-
-  await Promise.all(detailPromises);
+  }
 
   return configData;
 });

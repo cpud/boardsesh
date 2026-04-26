@@ -18,8 +18,11 @@
  * - User not found error for addUserToSession
  * - Tick restoration flow verification for removeUserFromSession
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { sessionEditMutations } from '../graphql/resolvers/social/session-mutations';
+import { db } from '../db/client';
 
 // Mock the database client before importing the module under test
 vi.mock('../db/client', () => {
@@ -48,9 +51,6 @@ vi.mock('../graphql/resolvers/social/session-feed', () => ({
 vi.mock('../jobs/inferred-session-builder', () => ({
   assignInferredSession: vi.fn().mockResolvedValue('new-session-id'),
 }));
-
-import { sessionEditMutations } from '../graphql/resolvers/social/session-mutations';
-import { db } from '../db/client';
 
 // Helper to create an authenticated context
 function makeCtx(userId = 'user-1'): ConnectionContext {
@@ -108,21 +108,14 @@ describe('Session Mutation Resolvers', () => {
 
     it('rejects empty sessionId via validation', async () => {
       await expect(
-        sessionEditMutations.updateInferredSession(
-          null,
-          { input: { sessionId: '', name: 'Test' } },
-          makeCtx(),
-        ),
+        sessionEditMutations.updateInferredSession(null, { input: { sessionId: '', name: 'Test' } }, makeCtx()),
       ).rejects.toThrow();
     });
 
     it('rejects non-participant user', async () => {
       // Call 1: session lookup — owned by 'other-user'
       // Call 2: override lookup — empty (not added)
-      setupSelectChain([
-        [{ userId: 'other-user' }],
-        [],
-      ]);
+      setupSelectChain([[{ userId: 'other-user' }], []]);
 
       await expect(
         sessionEditMutations.updateInferredSession(
@@ -147,11 +140,7 @@ describe('Session Mutation Resolvers', () => {
 
     it('rejects empty userId via validation', async () => {
       await expect(
-        sessionEditMutations.addUserToSession(
-          null,
-          { input: { sessionId: 'session-1', userId: '' } },
-          makeCtx(),
-        ),
+        sessionEditMutations.addUserToSession(null, { input: { sessionId: 'session-1', userId: '' } }, makeCtx()),
       ).rejects.toThrow();
     });
 
@@ -170,10 +159,7 @@ describe('Session Mutation Resolvers', () => {
     it('rejects non-participant user', async () => {
       // Call 1: session owned by 'other-owner'
       // Call 2: no override found
-      setupSelectChain([
-        [{ userId: 'other-owner' }],
-        [],
-      ]);
+      setupSelectChain([[{ userId: 'other-owner' }], []]);
 
       await expect(
         sessionEditMutations.addUserToSession(
@@ -187,10 +173,7 @@ describe('Session Mutation Resolvers', () => {
     it('rejects when target user does not exist', async () => {
       // Call 1: session owned by caller (passes requireSessionParticipant)
       // Call 2: target user lookup — empty
-      setupSelectChain([
-        [{ userId: 'user-1' }],
-        [],
-      ]);
+      setupSelectChain([[{ userId: 'user-1' }], []]);
 
       await expect(
         sessionEditMutations.addUserToSession(
@@ -211,10 +194,13 @@ describe('Session Mutation Resolvers', () => {
         selectCallCount++;
         if (selectCallCount === 1) return Promise.resolve([{ userId: 'user-1' }]);
         if (selectCallCount === 2) return Promise.resolve([{ id: 'user-2' }]);
-        if (selectCallCount === 3) return Promise.resolve([{
-          firstTickAt: '2024-01-15T10:00:00.000Z',
-          lastTickAt: '2024-01-15T12:00:00.000Z',
-        }]);
+        if (selectCallCount === 3)
+          return Promise.resolve([
+            {
+              firstTickAt: '2024-01-15T10:00:00.000Z',
+              lastTickAt: '2024-01-15T12:00:00.000Z',
+            },
+          ]);
         return Promise.resolve([]);
       });
       const mockWhere = vi.fn().mockImplementation(() => {
@@ -245,10 +231,13 @@ describe('Session Mutation Resolvers', () => {
         if (selectCallCount === 1) return Promise.resolve([{ userId: 'owner-user' }]);
         if (selectCallCount === 2) return Promise.resolve([{ id: 1 }]); // override found
         if (selectCallCount === 3) return Promise.resolve([{ id: 'user-3' }]);
-        if (selectCallCount === 4) return Promise.resolve([{
-          firstTickAt: '2024-01-15T10:00:00.000Z',
-          lastTickAt: '2024-01-15T12:00:00.000Z',
-        }]);
+        if (selectCallCount === 4)
+          return Promise.resolve([
+            {
+              firstTickAt: '2024-01-15T10:00:00.000Z',
+              lastTickAt: '2024-01-15T12:00:00.000Z',
+            },
+          ]);
         return Promise.resolve([]);
       });
       const mockWhere = vi.fn().mockImplementation(() => {
@@ -295,10 +284,7 @@ describe('Session Mutation Resolvers', () => {
     it('rejects removing the session owner', async () => {
       // Call 1: requireSessionParticipant — session found, user is owner
       // Call 2: owner check — same session
-      setupSelectChain([
-        [{ userId: 'owner-user' }],
-        [{ userId: 'owner-user' }],
-      ]);
+      setupSelectChain([[{ userId: 'owner-user' }], [{ userId: 'owner-user' }]]);
 
       await expect(
         sessionEditMutations.removeUserFromSession(
@@ -312,10 +298,7 @@ describe('Session Mutation Resolvers', () => {
     it('rejects non-participant trying to remove a user', async () => {
       // Call 1: session owned by 'owner-user'
       // Call 2: no override for the caller
-      setupSelectChain([
-        [{ userId: 'owner-user' }],
-        [],
-      ]);
+      setupSelectChain([[{ userId: 'owner-user' }], []]);
 
       await expect(
         sessionEditMutations.removeUserFromSession(

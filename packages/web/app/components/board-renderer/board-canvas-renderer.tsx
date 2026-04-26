@@ -3,11 +3,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { BoardDetails } from '@/app/lib/types';
 import { isWorkerRenderingSupported, renderBoard, computeCropTop } from '@/app/lib/board-render-worker/worker-manager';
-import { trackRenderComplete, trackRenderError, type RenderContext } from '@/app/lib/rendering-metrics';
+import { trackRenderError, type RenderContext } from '@/app/lib/rendering-metrics';
 import { THUMBNAIL_WIDTH } from './types';
 import BoardImageLayers from './board-image-layers';
 
-export interface BoardCanvasRendererProps {
+export type BoardCanvasRendererProps = {
   boardDetails: BoardDetails;
   frames: string;
   mirrored: boolean;
@@ -16,7 +16,7 @@ export interface BoardCanvasRendererProps {
   contain?: boolean;
   /** Additional styles for the canvas element */
   style?: React.CSSProperties;
-}
+};
 
 /**
  * Renders a board as a single <canvas> element using a Web Worker + WASM.
@@ -34,7 +34,6 @@ const BoardCanvasRenderer = React.memo(function BoardCanvasRenderer({
   style,
 }: BoardCanvasRendererProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const hasFired = useRef(false);
   const [failed, setFailed] = useState(false);
   const workerSupported = isWorkerRenderingSupported();
 
@@ -57,9 +56,7 @@ const BoardCanvasRenderer = React.memo(function BoardCanvasRenderer({
     if (!canvas) return;
 
     let cancelled = false;
-    // Capture context and time at effect start so metrics are never stale
     const context: RenderContext = thumbnail ? 'thumbnail' : contain ? 'full-board' : 'card';
-    const startTime = performance.now();
 
     renderBoard({ boardDetails, frames, mirrored, thumbnail, cropTop })
       .then((bitmap) => {
@@ -69,10 +66,6 @@ const BoardCanvasRenderer = React.memo(function BoardCanvasRenderer({
         const ctx = canvas.getContext('2d');
         if (ctx) {
           ctx.drawImage(bitmap, 0, 0);
-        }
-        if (!hasFired.current) {
-          hasFired.current = true;
-          trackRenderComplete(performance.now() - startTime, context, 'wasm');
         }
       })
       .catch((err) => {
@@ -91,7 +84,7 @@ const BoardCanvasRenderer = React.memo(function BoardCanvasRenderer({
         canvas.height = 0;
       }
     };
-  }, [boardDetails, frames, mirrored, thumbnail, contain, workerSupported]);
+  }, [boardDetails, frames, mirrored, thumbnail, contain, workerSupported, cropTop]);
 
   // Fall back to server-rendered image layers if the worker render fails
   if (failed || !workerSupported) {

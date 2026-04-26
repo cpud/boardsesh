@@ -35,7 +35,13 @@ export function useOfflineQueueBuffer() {
   // Memoize to provide a stable reference — prevents unnecessary recomputations
   // in downstream useMemo/useEffect dependency arrays
   return useMemo(
-    () => ({ bufferAddition, getBufferedAdditions, clearBuffer, hasPendingAdditions, isBufferFull }),
+    () => ({
+      bufferAddition,
+      getBufferedAdditions,
+      clearBuffer,
+      hasPendingAdditions,
+      isBufferFull,
+    }),
     [bufferAddition, getBufferedAdditions, clearBuffer, hasPendingAdditions, isBufferFull],
   );
 }

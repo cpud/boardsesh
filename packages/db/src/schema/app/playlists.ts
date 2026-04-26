@@ -1,14 +1,4 @@
-import {
-  pgTable,
-  bigserial,
-  bigint,
-  text,
-  integer,
-  boolean,
-  timestamp,
-  index,
-  uniqueIndex,
-} from 'drizzle-orm/pg-core';
+import { pgTable, bigserial, bigint, text, integer, boolean, timestamp, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import { users } from '../auth/users';
 
 /**
@@ -43,10 +33,7 @@ export const playlists = pgTable(
   },
   (table) => ({
     // Index for efficient lookup by board + layout
-    boardLayoutIdx: index('playlists_board_layout_idx').on(
-      table.boardType,
-      table.layoutId
-    ),
+    boardLayoutIdx: index('playlists_board_layout_idx').on(table.boardType, table.layoutId),
     // Index for UUID lookups
     uuidIdx: index('playlists_uuid_idx').on(table.uuid),
     // Index for ordering by updatedAt (used in userPlaylists query)
@@ -55,7 +42,7 @@ export const playlists = pgTable(
     lastAccessedAtIdx: index('playlists_last_accessed_at_idx').on(table.lastAccessedAt),
     // Index for Aurora sync conflict resolution
     auroraIdIdx: uniqueIndex('playlists_aurora_id_idx').on(table.auroraId),
-  })
+  }),
 );
 
 /**
@@ -79,18 +66,12 @@ export const playlistClimbs = pgTable(
   },
   (table) => ({
     // Ensure unique climb per playlist
-    uniquePlaylistClimb: uniqueIndex('unique_playlist_climb').on(
-      table.playlistId,
-      table.climbUuid
-    ),
+    uniquePlaylistClimb: uniqueIndex('unique_playlist_climb').on(table.playlistId, table.climbUuid),
     // Index for efficient lookup of playlists containing a climb
     climbIdx: index('playlist_climbs_climb_idx').on(table.climbUuid),
     // Index for ordered retrieval
-    playlistPositionIdx: index('playlist_climbs_position_idx').on(
-      table.playlistId,
-      table.position
-    ),
-  })
+    playlistPositionIdx: index('playlist_climbs_position_idx').on(table.playlistId, table.position),
+  }),
 );
 
 /**
@@ -115,13 +96,10 @@ export const playlistOwnership = pgTable(
   },
   (table) => ({
     // Ensure unique user-playlist ownership
-    uniqueOwnership: uniqueIndex('unique_playlist_ownership').on(
-      table.playlistId,
-      table.userId
-    ),
+    uniqueOwnership: uniqueIndex('unique_playlist_ownership').on(table.playlistId, table.userId),
     // Index for efficient user playlist queries
     userIdx: index('playlist_ownership_user_idx').on(table.userId),
-  })
+  }),
 );
 
 // Type exports for use in application code

@@ -1,9 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vite-plus/test';
+import { createBluetoothAdapter, _resetFactoryCache } from '../adapter-factory';
+import { isCapacitor, isCapacitorWebView, waitForCapacitor } from '../capacitor-utils';
 
 // Mock capacitor-utils to allow per-test control over platform detection.
 // vi.mock is hoisted before imports, so adapter-factory sees the mocked version.
 vi.mock('../capacitor-utils', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../capacitor-utils')>();
+  const actual = await importOriginal<Record<string, unknown>>();
   return {
     ...actual,
     isCapacitor: vi.fn().mockReturnValue(false),
@@ -11,9 +13,6 @@ vi.mock('../capacitor-utils', async (importOriginal) => {
     waitForCapacitor: vi.fn().mockResolvedValue(false),
   };
 });
-
-import { createBluetoothAdapter, _resetFactoryCache } from '../adapter-factory';
-import { isCapacitor, isCapacitorWebView, waitForCapacitor } from '../capacitor-utils';
 
 describe('adapter-factory', () => {
   beforeEach(() => {
@@ -95,7 +94,7 @@ describe('adapter-factory', () => {
       vi.mocked(waitForCapacitor).mockResolvedValue(true);
       vi.mocked(isCapacitor)
         .mockReturnValueOnce(false) // first check: !isCapacitor() → enters the wait branch
-        .mockReturnValue(true);     // second check: isCapacitor() → selects CapacitorBleAdapter
+        .mockReturnValue(true); // second check: isCapacitor() → selects CapacitorBleAdapter
 
       const adapter = await createBluetoothAdapter('kilter');
 

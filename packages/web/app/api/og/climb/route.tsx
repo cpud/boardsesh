@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { getClimb } from '@/app/lib/data/queries';
 import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import { parseBoardRouteParamsWithSlugs } from '@/app/lib/url-utils.server';
@@ -34,10 +34,8 @@ export async function GET(request: NextRequest) {
     });
 
     const dbT0 = performance.now();
-    const [boardDetails, currentClimb] = await Promise.all([
-      getBoardDetailsForBoard(parsedParams),
-      getClimb(parsedParams),
-    ]);
+    const boardDetails = getBoardDetailsForBoard(parsedParams);
+    const currentClimb = await getClimb(parsedParams);
     const dbMs = performance.now() - dbT0;
 
     if (!currentClimb?.frames) {

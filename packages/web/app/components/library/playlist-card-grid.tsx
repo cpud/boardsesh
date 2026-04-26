@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Skeleton from '@mui/material/Skeleton';
-import { Playlist } from '@/app/lib/graphql/operations/playlists';
+import type { Playlist } from '@/app/lib/graphql/operations/playlists';
 import PlaylistCard from './playlist-card';
 import styles from './library.module.css';
 
@@ -12,11 +12,7 @@ type PlaylistCardGridProps = {
   loading?: boolean;
 };
 
-export default function PlaylistCardGrid({
-  playlists,
-  getPlaylistUrl,
-  loading,
-}: PlaylistCardGridProps) {
+export default function PlaylistCardGrid({ playlists, getPlaylistUrl, loading }: PlaylistCardGridProps) {
   if (loading) {
     return (
       <div className={styles.cardGrid}>

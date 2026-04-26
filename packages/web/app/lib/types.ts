@@ -1,6 +1,6 @@
-import { HoldRenderData, LitUpHoldsMap } from '../components/board-renderer/types';
+import type { HoldRenderData, LitUpHoldsMap } from '../components/board-renderer/types';
 import type { BoardName as SharedBoardName } from '@boardsesh/shared-schema';
-import { SetIdList } from './board-data';
+import type { SetIdList } from './board-data';
 
 export type Climb = {
   uuid: string;
@@ -107,6 +107,7 @@ export type SearchRequest = {
   showOnlyAttempted: boolean;
   showOnlyCompleted: boolean;
   onlyDrafts: boolean;
+  projectsOnly: boolean;
   [key: `hold_${number}`]: HoldFilterValue; // Allow dynamic hold keys directly in the search params
 };
 
@@ -166,9 +167,7 @@ export type SearchClimbsResult = {
 };
 
 // Led Colors Type
-export type LedColor = {
-  [role_id: number]: string;
-};
+export type LedColor = Record<number, string>;
 
 // Grade Type
 export type Grade = {
@@ -248,6 +247,6 @@ export type BoardOnlyRouteParameters = {
 
 export type FetchCurrentProblemResponse = Climb;
 
-export interface ErrorResponse {
+export type ErrorResponse = {
   error: string;
-}
+};

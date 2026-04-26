@@ -20,10 +20,10 @@ import {
 import { useDebouncedValue } from '@/app/hooks/use-debounced-value';
 import { useInfiniteScroll } from '@/app/hooks/use-infinite-scroll';
 
-interface PlaylistSearchResultsProps {
+type PlaylistSearchResultsProps = {
   query: string;
   authToken: string | null;
-}
+};
 
 type PlaylistPage = {
   playlists: DiscoverablePlaylist[];
@@ -36,16 +36,15 @@ export default function PlaylistSearchResults({ query, authToken }: PlaylistSear
   const pathname = usePathname();
   const debouncedQuery = useDebouncedValue(query, 300);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery<
-    PlaylistPage,
-    Error
-  >({
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery<PlaylistPage, Error>({
     queryKey: ['searchPlaylists', debouncedQuery, authToken],
     queryFn: async ({ pageParam }) => {
       const client = createGraphQLHttpClient(authToken);
       const response = await client.request<SearchPlaylistsQueryResponse, SearchPlaylistsQueryVariables>(
         SEARCH_PLAYLISTS,
-        { input: { query: debouncedQuery, limit: 20, offset: pageParam as number } }
+        {
+          input: { query: debouncedQuery, limit: 20, offset: pageParam as number },
+        },
       );
       return response.searchPlaylists;
     },
@@ -58,10 +57,7 @@ export default function PlaylistSearchResults({ query, authToken }: PlaylistSear
     staleTime: 30 * 1000,
   });
 
-  const results: DiscoverablePlaylist[] = useMemo(
-    () => data?.pages.flatMap((p) => p.playlists) ?? [],
-    [data],
-  );
+  const results: DiscoverablePlaylist[] = useMemo(() => data?.pages.flatMap((p) => p.playlists) ?? [], [data]);
 
   const { sentinelRef } = useInfiniteScroll({
     onLoadMore: fetchNextPage,
@@ -134,15 +130,11 @@ export default function PlaylistSearchResults({ query, authToken }: PlaylistSear
                 {playlist.name}
               </Typography>
               <Typography variant="body2" color="text.secondary" noWrap>
-                {playlist.creatorName} · {playlist.climbCount} climb{playlist.climbCount !== 1 ? 's' : ''}
+                {playlist.creatorName} · {playlist.climbCount} climb
+                {playlist.climbCount !== 1 ? 's' : ''}
               </Typography>
             </Box>
-            <Chip
-              label={playlist.boardType}
-              size="small"
-              variant="outlined"
-              sx={{ flexShrink: 0 }}
-            />
+            <Chip label={playlist.boardType} size="small" variant="outlined" sx={{ flexShrink: 0 }} />
           </Box>
         ))}
       </Stack>

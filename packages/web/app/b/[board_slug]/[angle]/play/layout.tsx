@@ -1,15 +1,14 @@
-import React from 'react';
-import { PropsWithChildren } from 'react';
+import React, { type PropsWithChildren } from 'react';
 import { notFound } from 'next/navigation';
-import { BoardDetails } from '@/app/lib/types';
+import type { BoardDetails } from '@/app/lib/types';
 import { resolveBoardBySlug, boardToRouteParams } from '@/app/lib/board-slug-utils';
 import { getBoardDetails } from '@/app/lib/board-constants';
 import { getMoonBoardDetails } from '@/app/lib/moonboard-config';
 import PlayLayoutClient from '@/app/[board_name]/[layout_id]/[size_id]/[set_ids]/[angle]/play/layout-client';
 
-interface LayoutProps {
+type LayoutProps = {
   params: Promise<{ board_slug: string; angle: string }>;
-}
+};
 
 export default async function BoardSlugPlayLayout(props: PropsWithChildren<LayoutProps>) {
   const params = await props.params;

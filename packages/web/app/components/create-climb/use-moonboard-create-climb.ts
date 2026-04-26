@@ -1,17 +1,15 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
-import { LitUpHoldsMap, HoldState } from '../board-renderer/types';
+import type { LitUpHoldsMap, HoldState } from '../board-renderer/types';
 import { MOONBOARD_HOLD_STATES } from '@/app/lib/moonboard-config';
 
-interface UseMoonBoardCreateClimbOptions {
+type UseMoonBoardCreateClimbOptions = {
   initialHoldsMap?: LitUpHoldsMap;
-}
+};
 
 export function useMoonBoardCreateClimb(options?: UseMoonBoardCreateClimbOptions) {
-  const [litUpHoldsMap, setLitUpHoldsMap] = useState<LitUpHoldsMap>(
-    options?.initialHoldsMap ?? {},
-  );
+  const [litUpHoldsMap, setLitUpHoldsMap] = useState<LitUpHoldsMap>(options?.initialHoldsMap ?? {});
 
   // Derived state: count holds by state
   const startingCount = useMemo(

@@ -1,4 +1,4 @@
-import { GraphQLClient, RequestDocument, Variables } from 'graphql-request';
+import { type RequestDocument, type Variables, GraphQLClient } from 'graphql-request';
 import { getGraphQLHttpUrl as _getGraphQLHttpUrl } from '@/app/lib/backend-url';
 
 const DEBUG = process.env.NODE_ENV === 'development';
@@ -27,7 +27,7 @@ export function createGraphQLHttpClient(authToken?: string | null): GraphQLClien
   }
 
   if (DEBUG) {
-    console.log(`[GraphQL HTTP] Creating client for ${url} (authenticated: ${!!authToken})`);
+    console.info(`[GraphQL HTTP] Creating client for ${url} (authenticated: ${!!authToken})`);
   }
 
   return new GraphQLClient(url, { headers });
@@ -45,9 +45,8 @@ export async function executeGraphQL<T = unknown, V extends Variables = Variable
   const client = createGraphQLHttpClient(authToken);
 
   if (DEBUG) {
-    console.log('[GraphQL HTTP] Executing request');
+    console.info('[GraphQL HTTP] Executing request');
   }
 
   return client.request<T>(document, variables);
 }
-

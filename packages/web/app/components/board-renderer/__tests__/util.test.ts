@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 import { getImageUrl, buildOverlayUrl, buildOgBoardRenderUrl } from '../util';
 import type { BoardDetails } from '@/app/lib/types';
 
@@ -49,9 +49,9 @@ describe('getImageUrl', () => {
     });
 
     it('inserts /thumbs/ correctly for nested MoonBoard layout paths', () => {
-      expect(
-        getImageUrl('/images/moonboard/moonboard2024/holdsete.png', 'moonboard' as never, true),
-      ).toBe('/images/moonboard/moonboard2024/thumbs/holdsete.webp');
+      expect(getImageUrl('/images/moonboard/moonboard2024/holdsete.png', 'moonboard' as never, true)).toBe(
+        '/images/moonboard/moonboard2024/thumbs/holdsete.webp',
+      );
     });
 
     it('inserts /thumbs/ for already-.webp absolute URL with thumbnail=true', () => {

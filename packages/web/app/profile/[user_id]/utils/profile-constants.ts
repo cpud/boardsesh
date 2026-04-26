@@ -1,7 +1,10 @@
 import { V_GRADE_COLORS, FONT_GRADE_COLORS, type GradeDisplayFormat } from '@/app/lib/grade-colors';
 import { SUPPORTED_BOARDS, BOULDER_GRADES } from '@/app/lib/board-data';
+import { getLayout, ORPHANED_KILTER_LAYOUT_DEFAULTS } from '@boardsesh/board-constants/product-sizes';
+import { MOONBOARD_LAYOUTS } from '@/app/lib/moonboard-config';
+import type { BoardName } from '@/app/lib/types';
 
-export interface UserProfile {
+export type UserProfile = {
   id: string;
   email: string | undefined;
   name: string | null;
@@ -18,9 +21,9 @@ export interface UserProfile {
   followerCount: number;
   followingCount: number;
   isFollowedByMe: boolean;
-}
+};
 
-export interface LogbookEntry {
+export type LogbookEntry = {
   climbed_at: string;
   difficulty: number | null;
   tries: number;
@@ -29,7 +32,7 @@ export interface LogbookEntry {
   layoutId?: number | null;
   boardType?: string;
   climbUuid?: string;
-}
+};
 
 export type UnifiedTimeframeType = 'all' | 'lastYear' | 'lastMonth' | 'lastWeek' | 'today' | 'custom';
 
@@ -78,10 +81,9 @@ export const sortGrades = (grades: string[], format: GradeDisplayFormat): string
   });
 };
 
-// Layout name mapping: boardType-layoutId -> display name
-const layoutNames: Record<string, string> = {
-  'kilter-1': 'Kilter Original',
-  'kilter-8': 'Kilter Homewall',
+// Display name overrides for layouts whose constant name doesn't match the
+// desired display style (e.g. "Original Layout" → "Tension Classic").
+const LAYOUT_DISPLAY_OVERRIDES: Record<string, string> = {
   'tension-9': 'Tension Classic',
   'tension-10': 'Tension 2 Mirror',
   'tension-11': 'Tension 2 Spray',
@@ -90,20 +92,26 @@ const layoutNames: Record<string, string> = {
   'moonboard-3': 'MoonBoard 2024',
   'moonboard-4': 'MoonBoard Masters 2017',
   'moonboard-5': 'MoonBoard Masters 2019',
+  'decoy-2': 'Decoy Dungeon Trainer',
+  'touchstone-1': 'Touchstone Winter 2020',
+  'grasshopper-1': 'Grasshopper 2020',
 };
 
 // Colors for each layout — soft, muted palette that feels cohesive
 const layoutColors: Record<string, string> = {
-  'kilter-1': 'hsla(190, 55%, 52%, 0.7)',   // Muted teal
-  'kilter-8': 'hsla(160, 40%, 50%, 0.7)',    // Soft sage green
-  'tension-9': 'hsla(350, 50%, 58%, 0.7)',   // Dusty rose
-  'tension-10': 'hsla(20, 55%, 58%, 0.7)',   // Warm terracotta
-  'tension-11': 'hsla(42, 50%, 55%, 0.7)',   // Muted gold
+  'kilter-1': 'hsla(190, 55%, 52%, 0.7)', // Muted teal
+  'kilter-8': 'hsla(160, 40%, 50%, 0.7)', // Soft sage green
+  'tension-9': 'hsla(350, 50%, 58%, 0.7)', // Dusty rose
+  'tension-10': 'hsla(20, 55%, 58%, 0.7)', // Warm terracotta
+  'tension-11': 'hsla(42, 50%, 55%, 0.7)', // Muted gold
   'moonboard-1': 'hsla(270, 40%, 58%, 0.7)', // Soft lavender
   'moonboard-2': 'hsla(250, 40%, 55%, 0.7)', // Muted indigo
   'moonboard-3': 'hsla(290, 35%, 55%, 0.7)', // Soft plum
   'moonboard-4': 'hsla(230, 40%, 58%, 0.7)', // Dusty blue
   'moonboard-5': 'hsla(210, 45%, 55%, 0.7)', // Slate blue
+  'decoy-2': 'hsla(100, 40%, 52%, 0.7)', // Soft green
+  'touchstone-1': 'hsla(30, 50%, 55%, 0.7)', // Warm amber
+  'grasshopper-1': 'hsla(75, 45%, 50%, 0.7)', // Yellow-green
 };
 
 export const getLayoutKey = (boardType: string, layoutId: number | null | undefined): string => {
@@ -114,8 +122,35 @@ export const getLayoutKey = (boardType: string, layoutId: number | null | undefi
 };
 
 export const getLayoutDisplayName = (boardType: string, layoutId: number | null | undefined): string => {
+  if (layoutId === null || layoutId === undefined) {
+    return `${boardType.charAt(0).toUpperCase() + boardType.slice(1)} (Unknown Layout)`;
+  }
+
   const key = getLayoutKey(boardType, layoutId);
-  return layoutNames[key] || `${boardType.charAt(0).toUpperCase() + boardType.slice(1)} (Layout ${layoutId ?? 'Unknown'})`;
+
+  // Check display overrides first
+  if (LAYOUT_DISPLAY_OVERRIDES[key]) return LAYOUT_DISPLAY_OVERRIDES[key];
+
+  // MoonBoard layouts are defined separately from Aurora layouts
+  if (boardType === 'moonboard') {
+    const entry = Object.values(MOONBOARD_LAYOUTS).find((l) => l.id === layoutId);
+    if (entry) return entry.name;
+  } else {
+    // Aurora layouts from board-constants
+    const layout = getLayout(boardType as BoardName, layoutId);
+    if (layout) {
+      // Strip " Board " from names like "Kilter Board Original" → "Kilter Original"
+      return layout.name.replace(' Board ', ' ');
+    }
+
+    // Orphaned Kilter layouts not in the main LAYOUTS config
+    if (boardType === 'kilter') {
+      const orphaned = ORPHANED_KILTER_LAYOUT_DEFAULTS[layoutId];
+      if (orphaned) return orphaned.name;
+    }
+  }
+
+  return `${boardType.charAt(0).toUpperCase() + boardType.slice(1)} (Layout ${layoutId})`;
 };
 
 export const getLayoutColor = (boardType: string, layoutId: number | null | undefined): string => {

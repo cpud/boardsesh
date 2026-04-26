@@ -5,12 +5,13 @@ name: Publish Test Reports
 # GITHUB_TOKEN has checks:write permission even for forked PRs.
 on:
   workflow_run:
-    workflows: ["Web Tests", "Backend Integration Tests"]
+    workflows: ['Web Tests', 'Backend Integration Tests']
     types:
       - completed
 
 permissions:
   checks: write
+  pull-requests: write
   contents: read
 
 jobs:
@@ -19,23 +20,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Publish Web Unit Tests report
-        uses: dorny/test-reporter@v1
+        uses: turing85/publish-report@v2
         with:
-          artifact: web-test-results
-          name: Web Unit Tests
-          path: '*.xml'
-          reporter: java-junit
-          fail-on-error: false
+          checkout: 'true'
+          download-artifact-name: web-test-results
+          download-artifact-run-id: ${{ github.event.workflow_run.id }}
+          comment-header: web-test-report
+          comment-enabled: 'true'
+          report-name: Web Unit Tests
+          report-path: '**/*.xml'
+          report-reporter: java-junit
+          report-fail-on-error: false
 
   publish-backend-tests:
     if: github.event.workflow.name == 'Backend Integration Tests'
     runs-on: ubuntu-latest
     steps:
-      - name: Publish Backend Integration Tests report
-        uses: dorny/test-reporter@v1
+      - uses: actions/checkout@v6
+
+      - name: Download all shard results
+        uses: actions/download-artifact@v4
         with:
-          artifact: backend-test-results
-          name: Backend Integration Tests
-          path: '*.xml'
-          reporter: java-junit
-          fail-on-error: false
+          pattern: backend-test-results-*
+          path: test-results
+          merge-multiple: true
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Backend Integration Tests report
+        uses: turing85/publish-report@v2
+        with:
+          comment-header: backend-test-report
+          comment-enabled: 'true'
+          report-name: Backend Integration Tests
+          report-path: 'test-results/**/*.xml'
+          report-reporter: java-junit
+          report-fail-on-error: false

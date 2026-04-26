@@ -1,18 +1,14 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+import OutcomeDoughnut from '../outcome-doughnut';
 
 // Mock MUI X Charts PieChart
 vi.mock('@mui/x-charts/PieChart', () => ({
   PieChart: (props: { series: Array<{ data: unknown[] }> }) => (
-    <div
-      data-testid="mui-pie-chart"
-      data-series={JSON.stringify(props.series)}
-    />
+    <div data-testid="mui-pie-chart" data-series={JSON.stringify(props.series)} />
   ),
 }));
-
-import OutcomeDoughnut from '../outcome-doughnut';
 
 describe('OutcomeDoughnut', () => {
   it('renders with data', () => {

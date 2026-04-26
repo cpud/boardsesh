@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vite-plus/test';
 import Redis from 'ioredis';
 import { DistributedStateManager, forceResetDistributedState } from '../services/distributed-state';
 
@@ -432,10 +432,7 @@ describe.skipIf(!redisAvailable)('DistributedStateManager - Multi-Instance', () 
 
   it('should handle concurrent joins correctly', async () => {
     // Register connections
-    await Promise.all([
-      manager1.registerConnection('conn-i', 'UserI'),
-      manager2.registerConnection('conn-j', 'UserJ'),
-    ]);
+    await Promise.all([manager1.registerConnection('conn-i', 'UserI'), manager2.registerConnection('conn-j', 'UserJ')]);
 
     // Join concurrently
     const [result1, result2] = await Promise.all([
@@ -963,9 +960,7 @@ describe.skipIf(!redisAvailable)('DistributedStateManager - Redis error handling
     await manager.registerConnection('valid-conn', 'TestUser');
 
     // Invalid characters in sessionId
-    await expect(manager.joinSession('valid-conn', 'session:with:colons')).rejects.toThrow(
-      'Invalid sessionId format'
-    );
+    await expect(manager.joinSession('valid-conn', 'session:with:colons')).rejects.toThrow('Invalid sessionId format');
     await expect(manager.getSessionMembers('../path/traversal')).rejects.toThrow('Invalid sessionId format');
     await expect(manager.getSessionLeader('')).rejects.toThrow('Invalid sessionId format');
 

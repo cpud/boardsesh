@@ -1,8 +1,10 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import React from 'react';
 import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import type { Angle, BoardDetails, BoardName, Climb } from '@/app/lib/types';
 import type { LogbookEntry } from '@/app/hooks/use-logbook';
+import { type QuickTickBarHandle, QuickTickBar } from '../quick-tick-bar';
+import { hasPriorHistoryForClimb } from '@/app/hooks/use-tick-save';
 
 // --- Mocks (must be hoisted before imports of the component under test) ---
 
@@ -28,8 +30,6 @@ vi.mock('@vercel/analytics', () => ({
 }));
 
 // Import after mocks.
-import { QuickTickBar, QuickTickBarHandle } from '../quick-tick-bar';
-import { hasPriorHistoryForClimb } from '@/app/hooks/use-tick-save';
 
 // --- Fixtures ---
 
@@ -85,6 +85,9 @@ function makeLogbookEntry(overrides: Partial<LogbookEntry> = {}): LogbookEntry {
     climbed_at: '2025-01-01T00:00:00Z',
     is_ascent: false,
     status: 'attempt',
+    upvotes: 0,
+    downvotes: 0,
+    commentCount: 0,
     ...overrides,
   };
 }
@@ -103,7 +106,7 @@ const defaultProps = {
  * react-swipeable uses touch events internally, so we dispatch native touch
  * events with TouchEvent-shaped fields that the library reads.
  */
-function simulateSwipe(el: HTMLElement, deltaX: number) {
+function _simulateSwipe(el: HTMLElement, deltaX: number) {
   const startX = 200;
   const startY = 100;
   const endX = startX + deltaX;
@@ -153,12 +156,8 @@ describe('QuickTickBar', () => {
       const climb = makeClimb({ uuid: 'c1' });
       // Climb is created via makeClimb without userAscents / userAttempts.
       expect(hasPriorHistoryForClimb(climb, [])).toBe(false);
-      expect(
-        hasPriorHistoryForClimb(climb, [makeLogbookEntry({ climb_uuid: 'c1' })]),
-      ).toBe(true);
-      expect(
-        hasPriorHistoryForClimb(climb, [makeLogbookEntry({ climb_uuid: 'other' })]),
-      ).toBe(false);
+      expect(hasPriorHistoryForClimb(climb, [makeLogbookEntry({ climb_uuid: 'c1' })])).toBe(true);
+      expect(hasPriorHistoryForClimb(climb, [makeLogbookEntry({ climb_uuid: 'other' })])).toBe(false);
     });
   });
 
@@ -195,11 +194,11 @@ describe('QuickTickBar', () => {
       render(<QuickTickBar {...defaultProps} />);
       expect(screen.queryByTestId('quick-tick-hint')).toBeNull();
     });
-
   });
 
   describe('save behaviour — history-aware default', () => {
     it('saves as flash with attemptCount 1 when the logbook is empty', async () => {
+      vi.useFakeTimers();
       mockLogbookRef.current = [];
       const ref = React.createRef<QuickTickBarHandle>();
       render(<QuickTickBar ref={ref} {...defaultProps} />);
@@ -213,13 +212,15 @@ describe('QuickTickBar', () => {
       expect(call.status).toBe('flash');
       expect(call.attemptCount).toBe(1);
       expect(call.climbUuid).toBe('climb-1');
+      // Flash saves have a 300ms delay before calling onSave (for button pulse animation).
+      await act(async () => {
+        vi.advanceTimersByTime(300);
+      });
       expect(defaultProps.onSave).toHaveBeenCalledTimes(1);
     });
 
     it('saves as send with attemptCount 1 when there is one prior log', async () => {
-      mockLogbookRef.current = [
-        makeLogbookEntry({ uuid: 'p1', climb_uuid: 'climb-1', angle: 40 }),
-      ];
+      mockLogbookRef.current = [makeLogbookEntry({ uuid: 'p1', climb_uuid: 'climb-1', angle: 40 })];
       const ref = React.createRef<QuickTickBarHandle>();
       render(<QuickTickBar ref={ref} {...defaultProps} />);
 
@@ -251,9 +252,7 @@ describe('QuickTickBar', () => {
     });
 
     it('ignores logbook rows for other climbs when deciding flash vs send', async () => {
-      mockLogbookRef.current = [
-        makeLogbookEntry({ uuid: 'other-climb', climb_uuid: 'climb-other', angle: 40 }),
-      ];
+      mockLogbookRef.current = [makeLogbookEntry({ uuid: 'other-climb', climb_uuid: 'climb-other', angle: 40 })];
       const ref = React.createRef<QuickTickBarHandle>();
       render(<QuickTickBar ref={ref} {...defaultProps} />);
 
@@ -434,9 +433,7 @@ describe('QuickTickBar', () => {
       ];
 
       const ref = React.createRef<QuickTickBarHandle>();
-      const { rerender } = render(
-        <QuickTickBar ref={ref} {...defaultProps} currentClimb={originalClimb} />,
-      );
+      const { rerender } = render(<QuickTickBar ref={ref} {...defaultProps} currentClimb={originalClimb} />);
 
       // Simulate another party member advancing the queue mid-tick.
       rerender(<QuickTickBar ref={ref} {...defaultProps} currentClimb={newClimb} />);
@@ -501,7 +498,7 @@ describe('QuickTickBar', () => {
   });
 
   describe('grade picker selection', () => {
-    it('marks the matched grade as selected when the picker opens', async () => {
+    it('shows consensus grade as focused but not selected when the picker opens', async () => {
       const climb = makeClimb({ difficulty: '6c/V5' });
       render(<QuickTickBar {...defaultProps} currentClimb={climb} />);
 
@@ -512,9 +509,14 @@ describe('QuickTickBar', () => {
 
       await waitFor(() => {
         const items = screen.getAllByRole('option');
+        // Only the "—" (clear) option is selected since no grade is chosen by default
         const selectedItems = items.filter((el) => el.getAttribute('aria-selected') === 'true');
         expect(selectedItems).toHaveLength(1);
-        expect(selectedItems[0].textContent).toBe('V5');
+        expect(selectedItems[0].textContent).toBe('—');
+        // The consensus grade should be labeled as such but not selected
+        const consensusItem = items.find((el) => el.getAttribute('aria-label') === 'V5 (consensus)');
+        expect(consensusItem).toBeTruthy();
+        expect(consensusItem?.getAttribute('aria-selected')).toBe('false');
       });
     });
 
@@ -726,9 +728,12 @@ describe('QuickTickBar', () => {
     it('second save is blocked after the first save triggers a re-render with isSaving=true', async () => {
       // Make saveTick hang until we resolve it manually.
       let resolveSave: (() => void) | undefined;
-      mockSaveTick.mockImplementation(() => new Promise<void>((resolve) => {
-        resolveSave = resolve;
-      }));
+      mockSaveTick.mockImplementation(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveSave = resolve;
+          }),
+      );
 
       const ref = React.createRef<QuickTickBarHandle>();
       render(<QuickTickBar ref={ref} {...defaultProps} />);
@@ -751,6 +756,159 @@ describe('QuickTickBar', () => {
       await act(async () => {
         resolveSave!();
       });
+    });
+  });
+
+  describe('onIsFlashChange callback', () => {
+    it('fires with true on mount when logbook is empty and attemptCount defaults to 1', () => {
+      mockLogbookRef.current = [];
+      const onIsFlashChange = vi.fn();
+      render(<QuickTickBar {...defaultProps} onIsFlashChange={onIsFlashChange} />);
+
+      expect(onIsFlashChange).toHaveBeenCalledWith(true);
+    });
+
+    it('fires with false on mount when the logbook has prior history for the climb', () => {
+      mockLogbookRef.current = [makeLogbookEntry({ uuid: 'p1', climb_uuid: 'climb-1', angle: 40 })];
+      const onIsFlashChange = vi.fn();
+      render(<QuickTickBar {...defaultProps} onIsFlashChange={onIsFlashChange} />);
+
+      expect(onIsFlashChange).toHaveBeenCalledWith(false);
+    });
+
+    it('fires with false on mount when the climb has userAscents > 0', () => {
+      mockLogbookRef.current = [];
+      const climbWithHistory = makeClimb({ userAscents: 1, userAttempts: 0 });
+      const onIsFlashChange = vi.fn();
+      render(<QuickTickBar {...defaultProps} currentClimb={climbWithHistory} onIsFlashChange={onIsFlashChange} />);
+
+      expect(onIsFlashChange).toHaveBeenCalledWith(false);
+    });
+
+    it('fires with false on mount when the climb has userAttempts > 0', () => {
+      mockLogbookRef.current = [];
+      const climbWithAttempts = makeClimb({ userAscents: 0, userAttempts: 3 });
+      const onIsFlashChange = vi.fn();
+      render(<QuickTickBar {...defaultProps} currentClimb={climbWithAttempts} onIsFlashChange={onIsFlashChange} />);
+
+      expect(onIsFlashChange).toHaveBeenCalledWith(false);
+    });
+
+    it('transitions from true to false when attemptCount changes from 1 to 2', async () => {
+      mockLogbookRef.current = [];
+      const onIsFlashChange = vi.fn();
+      render(<QuickTickBar {...defaultProps} onIsFlashChange={onIsFlashChange} />);
+
+      // Initially flash
+      expect(onIsFlashChange).toHaveBeenLastCalledWith(true);
+
+      // Open tries picker and select 2
+      await act(async () => {
+        screen.getByTestId('quick-tick-attempt').click();
+      });
+      await act(async () => {
+        screen.getByRole('option', { name: '2 tries' }).click();
+      });
+
+      expect(onIsFlashChange).toHaveBeenLastCalledWith(false);
+    });
+
+    it('transitions back to true when attemptCount changes back to 1', async () => {
+      mockLogbookRef.current = [];
+      const onIsFlashChange = vi.fn();
+      render(<QuickTickBar {...defaultProps} onIsFlashChange={onIsFlashChange} />);
+
+      // Change to 2 tries
+      await act(async () => {
+        screen.getByTestId('quick-tick-attempt').click();
+      });
+      await act(async () => {
+        screen.getByRole('option', { name: '2 tries' }).click();
+      });
+      expect(onIsFlashChange).toHaveBeenLastCalledWith(false);
+
+      // Change back to 1 try
+      await act(async () => {
+        screen.getByTestId('quick-tick-attempt').click();
+      });
+      await act(async () => {
+        screen.getByRole('option', { name: '1 try' }).click();
+      });
+      expect(onIsFlashChange).toHaveBeenLastCalledWith(true);
+    });
+
+    it('does not fire when currentClimb is null (no tickTarget)', () => {
+      const onIsFlashChange = vi.fn();
+      render(<QuickTickBar {...defaultProps} currentClimb={null} onIsFlashChange={onIsFlashChange} />);
+
+      // isFlash is false when tickTarget is null, so it fires with false
+      expect(onIsFlashChange).toHaveBeenCalledWith(false);
+    });
+
+    it('does not crash when onIsFlashChange is not provided', () => {
+      mockLogbookRef.current = [];
+      // Should not throw
+      expect(() => render(<QuickTickBar {...defaultProps} />)).not.toThrow();
+    });
+  });
+
+  describe('onAscentTypeChange callback', () => {
+    it('calls onAscentTypeChange when ascent type changes', async () => {
+      mockLogbookRef.current = [];
+      const onAscentTypeChange = vi.fn();
+      render(<QuickTickBar {...defaultProps} onAscentTypeChange={onAscentTypeChange} />);
+
+      // On mount with no prior history and 1 try, inferred type is flash.
+      expect(onAscentTypeChange).toHaveBeenCalledWith('flash');
+
+      // Open tries picker and select 2 — should change ascent type to send.
+      await act(async () => {
+        screen.getByTestId('quick-tick-attempt').click();
+      });
+      await act(async () => {
+        screen.getByRole('option', { name: '2 tries' }).click();
+      });
+
+      expect(onAscentTypeChange).toHaveBeenCalledWith('send');
+    });
+
+    it('reports send when the climb already has userAscents on mount', () => {
+      mockLogbookRef.current = [];
+      const onAscentTypeChange = vi.fn();
+      const climbWithHistory = makeClimb({ userAscents: 1, userAttempts: 0 });
+      render(
+        <QuickTickBar {...defaultProps} currentClimb={climbWithHistory} onAscentTypeChange={onAscentTypeChange} />,
+      );
+      expect(onAscentTypeChange).toHaveBeenLastCalledWith('send');
+    });
+
+    it('reports send when the climb already has userAttempts on mount', () => {
+      mockLogbookRef.current = [];
+      const onAscentTypeChange = vi.fn();
+      const climbWithAttempts = makeClimb({ userAscents: 0, userAttempts: 2 });
+      render(
+        <QuickTickBar {...defaultProps} currentClimb={climbWithAttempts} onAscentTypeChange={onAscentTypeChange} />,
+      );
+      expect(onAscentTypeChange).toHaveBeenLastCalledWith('send');
+    });
+
+    it('reports send when the logbook contains a prior entry for this climb', () => {
+      mockLogbookRef.current = [makeLogbookEntry({ uuid: 'p1', climb_uuid: 'climb-1', angle: 40 })];
+      const onAscentTypeChange = vi.fn();
+      render(<QuickTickBar {...defaultProps} onAscentTypeChange={onAscentTypeChange} />);
+      expect(onAscentTypeChange).toHaveBeenLastCalledWith('send');
+    });
+  });
+
+  describe('expanded mode', () => {
+    it('does not render save button in expanded mode', () => {
+      const onExpandedChange = vi.fn();
+      render(<QuickTickBar {...defaultProps} expanded onExpandedChange={onExpandedChange} />);
+
+      // There should be no "Save tick" button in expanded mode.
+      expect(screen.queryByRole('button', { name: /save tick/i })).toBeNull();
+      // Also verify by text content.
+      expect(screen.queryByText(/save tick/i)).toBeNull();
     });
   });
 

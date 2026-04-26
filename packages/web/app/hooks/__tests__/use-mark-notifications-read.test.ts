@@ -1,8 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 import { createTestQueryClient } from '@/app/test-utils/test-providers';
 import { QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
+import { useWsAuthToken } from '../use-ws-auth-token';
+import { useMarkGroupAsRead, useMarkAllAsRead } from '../use-mark-notifications-read';
+import type { GroupedNotification, GroupedNotificationConnection } from '@boardsesh/shared-schema';
 
 vi.mock('../use-ws-auth-token', () => ({
   useWsAuthToken: vi.fn(),
@@ -25,10 +28,6 @@ vi.mock('../use-unread-notification-count', () => ({
 vi.mock('../use-grouped-notifications', () => ({
   GROUPED_NOTIFICATIONS_QUERY_KEY: ['notifications', 'grouped'],
 }));
-
-import { useWsAuthToken } from '../use-ws-auth-token';
-import { useMarkGroupAsRead, useMarkAllAsRead } from '../use-mark-notifications-read';
-import type { GroupedNotification, GroupedNotificationConnection } from '@boardsesh/shared-schema';
 
 const mockUseWsAuthToken = vi.mocked(useWsAuthToken);
 
@@ -86,14 +85,11 @@ describe('useMarkGroupAsRead', () => {
       await result.current.mutateAsync(notification as unknown as GroupedNotification);
     });
 
-    expect(mockRequest).toHaveBeenCalledWith(
-      'MARK_GROUP_NOTIFICATIONS_READ_MUTATION',
-      {
-        type: 'FOLLOW',
-        entityType: 'USER',
-        entityId: 'user-123',
-      },
-    );
+    expect(mockRequest).toHaveBeenCalledWith('MARK_GROUP_NOTIFICATIONS_READ_MUTATION', {
+      type: 'FOLLOW',
+      entityType: 'USER',
+      entityId: 'user-123',
+    });
   });
 
   it('updates grouped notifications cache on success (marks group as read)', async () => {
@@ -125,7 +121,10 @@ describe('useMarkGroupAsRead', () => {
       await result.current.mutateAsync(notification as unknown as GroupedNotification);
     });
 
-    const cache = queryClient.getQueryData(['notifications', 'grouped']) as { pages: GroupedNotificationConnection[]; pageParams: unknown[] };
+    const cache = queryClient.getQueryData(['notifications', 'grouped']) as {
+      pages: GroupedNotificationConnection[];
+      pageParams: unknown[];
+    };
     expect(cache.pages[0].groups[0].isRead).toBe(true);
     expect(cache.pages[0].groups[1].isRead).toBe(false);
   });
@@ -223,7 +222,10 @@ describe('useMarkAllAsRead', () => {
       await result.current.mutateAsync();
     });
 
-    const cache = queryClient.getQueryData(['notifications', 'grouped']) as { pages: GroupedNotificationConnection[]; pageParams: unknown[] };
+    const cache = queryClient.getQueryData(['notifications', 'grouped']) as {
+      pages: GroupedNotificationConnection[];
+      pageParams: unknown[];
+    };
     expect(cache.pages[0].groups.every((n: GroupedNotification) => n.isRead === true)).toBe(true);
   });
 

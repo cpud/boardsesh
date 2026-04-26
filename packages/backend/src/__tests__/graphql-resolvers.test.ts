@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { createClient, Client } from 'graphql-ws';
+import { describe, it, expect, beforeAll, afterAll } from 'vite-plus/test';
+import { type Client, createClient } from 'graphql-ws';
+// eslint-disable-next-line import/no-named-as-default -- `ws` exports both default and named `WebSocket`; default is the correct one for graphql-ws.
 import WebSocket from 'ws';
 import { SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
 import { startServer } from '../server';
@@ -67,7 +68,7 @@ describe('GraphQL Resolver Input Validation', () => {
   });
 
   afterAll(async () => {
-    client.dispose();
+    void client.dispose();
     // Close the server
     await new Promise<void>((resolve) => {
       server.httpServer.close(() => {
@@ -286,7 +287,9 @@ describe('GraphQL Resolver Input Validation', () => {
       `;
 
       // This should succeed (not throw)
-      const result = await execute<{ searchClimbs: { climbs: Array<{ uuid: string }>; hasMore: boolean } }>(client, {
+      const result = await execute<{
+        searchClimbs: { climbs: Array<{ uuid: string }>; hasMore: boolean };
+      }>(client, {
         query,
         variables: {
           input: {

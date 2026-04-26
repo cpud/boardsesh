@@ -1,8 +1,7 @@
 'use client';
 
 import React from 'react';
-import MuiTooltip from '@mui/material/Tooltip';
-import type { TooltipProps as MuiTooltipProps } from '@mui/material/Tooltip';
+import MuiTooltip, { type TooltipProps as MuiTooltipProps } from '@mui/material/Tooltip';
 
 type ActionTooltipProps = Pick<MuiTooltipProps, 'title' | 'placement' | 'children'>;
 
@@ -31,7 +30,7 @@ export function ActionTooltip({ children, ...props }: ActionTooltipProps) {
   // On touch devices, render children without tooltip wrapper
   // This ensures taps immediately trigger the action
   if (isTouchDevice) {
-    return <>{children}</>;
+    return children;
   }
 
   return <MuiTooltip {...props}>{children}</MuiTooltip>;

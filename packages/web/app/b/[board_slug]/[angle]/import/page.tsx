@@ -3,12 +3,8 @@ import { notFound, redirect } from 'next/navigation';
 import { resolveBoardBySlug, boardToRouteParams } from '@/app/lib/board-slug-utils';
 import { constructBoardSlugListUrl } from '@/app/lib/url-utils';
 import MoonBoardBulkImport from '@/app/components/moonboard-import/moonboard-bulk-import';
-import {
-  MOONBOARD_LAYOUTS,
-  MOONBOARD_SETS,
-  MoonBoardLayoutKey,
-} from '@/app/lib/moonboard-config';
-import { Metadata } from 'next';
+import { type MoonBoardLayoutKey, MOONBOARD_LAYOUTS, MOONBOARD_SETS } from '@/app/lib/moonboard-config';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Import Climbs | Boardsesh',
@@ -27,9 +23,9 @@ function getMoonBoardHoldSetImages(layoutKey: MoonBoardLayoutKey, setIds: number
   return sets.filter((s) => setIds.includes(s.id)).map((s) => s.imageFile);
 }
 
-interface ImportPageProps {
+type ImportPageProps = {
   params: Promise<{ board_slug: string; angle: string }>;
-}
+};
 
 export default async function BoardSlugImportPage(props: ImportPageProps) {
   const params = await props.params;

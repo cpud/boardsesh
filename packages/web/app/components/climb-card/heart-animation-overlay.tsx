@@ -4,12 +4,12 @@ import React from 'react';
 import Favorite from '@mui/icons-material/Favorite';
 import styles from './heart-animation-overlay.module.css';
 
-interface HeartAnimationOverlayProps {
+type HeartAnimationOverlayProps = {
   visible: boolean;
   onAnimationEnd: () => void;
   /** Icon size in px. Defaults to 80. */
   size?: number;
-}
+};
 
 const HeartAnimationOverlay = React.memo(function HeartAnimationOverlay({
   visible,
@@ -20,11 +20,7 @@ const HeartAnimationOverlay = React.memo(function HeartAnimationOverlay({
 
   return (
     <div className={styles.overlay} data-testid="heart-animation-overlay">
-      <Favorite
-        className={styles.heart}
-        onAnimationEnd={onAnimationEnd}
-        sx={{ fontSize: size, color: 'white' }}
-      />
+      <Favorite className={styles.heart} onAnimationEnd={onAnimationEnd} sx={{ fontSize: size, color: 'white' }} />
     </div>
   );
 });

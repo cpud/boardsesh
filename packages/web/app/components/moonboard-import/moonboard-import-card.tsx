@@ -17,8 +17,7 @@ import type { MoonBoardClimbDuplicateMatch } from '@boardsesh/shared-schema';
 import type { LitUpHoldsMap } from '../board-renderer/types';
 import styles from './moonboard-import-card.module.css';
 
-
-interface MoonBoardImportCardProps {
+type MoonBoardImportCardProps = {
   climb: MoonBoardClimb;
   duplicateMatch: MoonBoardClimbDuplicateMatch | null;
   layoutFolder: string;
@@ -26,7 +25,7 @@ interface MoonBoardImportCardProps {
   litUpHoldsMap: LitUpHoldsMap;
   onEdit: () => void;
   onRemove: () => void;
-}
+};
 
 export default function MoonBoardImportCard({
   climb,
@@ -45,11 +44,7 @@ export default function MoonBoardImportCard({
   return (
     <MuiCard className={styles.card}>
       <div className={styles.boardPreview}>
-        <MoonBoardRenderer
-          layoutFolder={layoutFolder}
-          holdSetImages={holdSetImages}
-          litUpHoldsMap={litUpHoldsMap}
-        />
+        <MoonBoardRenderer layoutFolder={layoutFolder} holdSetImages={holdSetImages} litUpHoldsMap={litUpHoldsMap} />
       </div>
       <CardContent>
         <div className={styles.titleRow}>
@@ -61,11 +56,20 @@ export default function MoonBoardImportCard({
               label="Skipping"
               size="small"
               className={styles.duplicateTag}
-              sx={{ bgcolor: themeTokens.colors.amber, color: 'var(--neutral-900)', fontWeight: 700 }}
+              sx={{
+                bgcolor: themeTokens.colors.amber,
+                color: 'var(--neutral-900)',
+                fontWeight: 700,
+              }}
             />
           )}
           {climb.isBenchmark && (
-            <Chip label="B" size="small" sx={{ bgcolor: themeTokens.colors.amber, color: 'var(--neutral-900)' }} className={styles.benchmarkTag} />
+            <Chip
+              label="B"
+              size="small"
+              sx={{ bgcolor: themeTokens.colors.amber, color: 'var(--neutral-900)' }}
+              className={styles.benchmarkTag}
+            />
           )}
         </div>
         <div className={styles.metadata}>

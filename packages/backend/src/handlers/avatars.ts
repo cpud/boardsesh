@@ -113,7 +113,11 @@ export async function handleAvatarUpload(req: IncomingMessage, res: ServerRespon
   if (isProduction && !useS3) {
     console.error('Avatar upload attempted in production without S3 configured');
     res.writeHead(501, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Avatar uploads are not configured. Please contact the administrator.' }));
+    res.end(
+      JSON.stringify({
+        error: 'Avatar uploads are not configured. Please contact the administrator.',
+      }),
+    );
     return;
   }
 
@@ -137,7 +141,7 @@ export async function handleAvatarUpload(req: IncomingMessage, res: ServerRespon
         headers: req.headers as { 'content-type': string },
         limits: { fileSize: MAX_FILE_SIZE, files: 1 },
       });
-    } catch (err) {
+    } catch {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Invalid request format' }));
       resolve();

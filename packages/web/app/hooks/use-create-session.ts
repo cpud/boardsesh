@@ -55,9 +55,7 @@ export function useCreateSession() {
       setIsCreating(true);
       try {
         // Get geolocation when discoverable
-        const coords = formData.discoverable
-          ? await getGeolocation()
-          : { latitude: 0, longitude: 0 };
+        const coords = formData.discoverable ? await getGeolocation() : { latitude: 0, longitude: 0 };
 
         const input: CreateSessionInput = {
           boardPath,

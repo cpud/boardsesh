@@ -7,7 +7,15 @@ export const mutationsTypeDefs = /* GraphQL */ `
     Join an existing session or create it if it doesn't exist.
     Returns the session with current state.
     """
-    joinSession(sessionId: ID!, boardPath: String!, username: String, avatarUrl: String, initialQueue: [ClimbQueueItemInput!], initialCurrentClimb: ClimbQueueItemInput, sessionName: String): Session!
+    joinSession(
+      sessionId: ID!
+      boardPath: String!
+      username: String
+      avatarUrl: String
+      initialQueue: [ClimbQueueItemInput!]
+      initialCurrentClimb: ClimbQueueItemInput
+      sessionName: String
+    ): Session!
 
     """
     Create a new session with GPS coordinates for discovery.
@@ -129,6 +137,11 @@ export const mutationsTypeDefs = /* GraphQL */ `
     """
     updateTick(uuid: ID!, input: UpdateTickInput!): Tick!
 
+    """
+    Attach an Instagram post or reel as beta for a climb. Idempotent on
+    (boardType, climbUuid, link).
+    """
+    attachBetaLink(input: AttachBetaLinkInput!): Boolean!
 
     # ============================================
     # Climb Mutations (require auth)
@@ -437,11 +450,7 @@ export const mutationsTypeDefs = /* GraphQL */ `
     # frames: Pre-built frames string from ESP32 (preferred)
     # positions: Legacy LED positions array (for backwards compatibility)
     # Requires controller API key in connectionParams
-    setClimbFromLedPositions(
-      sessionId: ID!
-      frames: String
-      positions: [LedCommandInput!]
-    ): ClimbMatchResult!
+    setClimbFromLedPositions(sessionId: ID!, frames: String, positions: [LedCommandInput!]): ClimbMatchResult!
     # Navigate to previous or next climb in the queue
     # queueItemUuid: Directly navigate to this queue item (preferred)
     # direction: "next" or "previous" (fallback if queueItemUuid not provided)
@@ -454,5 +463,16 @@ export const mutationsTypeDefs = /* GraphQL */ `
     authorizeControllerForSession(controllerId: ID!, sessionId: ID!): Boolean!
     # Send device logs to backend for forwarding to Axiom (requires controller auth)
     sendDeviceLogs(input: SendDeviceLogsInput!): SendDeviceLogsResponse!
+
+    # ============================================
+    # App Feedback Mutations (public)
+    # ============================================
+
+    """
+    Submit in-app rating + optional comment. Public — unauthenticated testers
+    can still rate. If the request has a valid auth token, the feedback row is
+    associated with the user.
+    """
+    submitAppFeedback(input: SubmitAppFeedbackInput!): Boolean!
   }
 `;

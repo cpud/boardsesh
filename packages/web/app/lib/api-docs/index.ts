@@ -14,5 +14,4 @@
  */
 
 export { generateOpenApiDocument } from './generate-openapi';
-export { registry } from './openapi-registry';
 export * from './openapi-registry';

@@ -2,12 +2,12 @@
   "name": "@boardsesh/aurora-sync",
   "version": "1.0.0",
   "description": "Aurora board sync utility for Boardsesh",
-  "type": "module",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
   "bin": {
     "aurora-sync": "./dist/cli/index.js"
   },
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "exports": {
     ".": {
       "types": "./src/index.ts",
@@ -34,14 +34,18 @@
     "dev": "tsx watch src/cli/index.ts",
     "build": "tsc",
     "start": "node dist/cli/index.js",
-    "lint": "oxlint .",
-    "lint-fix": "oxlint --fix .",
+    "test": "vp test",
+    "typecheck": "tsc --noEmit",
+    "lint": "vp lint",
+    "lint-fix": "vp lint --fix",
     "sync:all": "tsx src/cli/index.ts all",
+    "sync:daemon": "tsx src/cli/index.ts daemon",
     "sync:user": "tsx src/cli/index.ts user"
   },
   "dependencies": {
     "@boardsesh/crypto": "*",
     "@boardsesh/db": "*",
+    "@boardsesh/shared-schema": "*",
     "@neondatabase/serverless": "1.0.2",
     "commander": "^14.0.3",
     "dotenv": "^17.3.1",
@@ -51,7 +55,6 @@
   "devDependencies": {
     "@types/node": "^25.3.3",
     "@types/ws": "^8.18.1",
-    "oxlint": "^1.50.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }

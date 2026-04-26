@@ -183,11 +183,7 @@ export const SetsSlugResponseSchema = z
 export const RegisterRequestSchema = z
   .object({
     email: z.string().email().describe('User email address'),
-    password: z
-      .string()
-      .min(8)
-      .max(128)
-      .describe('Password (8-128 characters)'),
+    password: z.string().min(8).max(128).describe('Password (8-128 characters)'),
     name: z.string().min(1).max(100).optional().describe('Display name'),
   })
   .openapi('RegisterRequest');

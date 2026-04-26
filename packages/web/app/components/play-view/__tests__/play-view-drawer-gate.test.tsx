@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { render, act, fireEvent, cleanup } from '@testing-library/react';
 
@@ -73,10 +73,10 @@ const GatedComponent = ({
  * controller to avoid the rerender/remount ambiguity that can occur with
  * RTL's rerender() when the wrapper tree changes.
  */
-interface ControllerHandle {
+type ControllerHandle = {
   setIsOpen: (v: boolean) => void;
   setContextValue: (v: number) => void;
-}
+};
 
 const controllerRef: { current: ControllerHandle | null } = { current: null };
 
@@ -120,9 +120,7 @@ describe('PlayViewDrawer gate pattern', () => {
   // 1. Inner component is NOT mounted when the drawer starts closed
   // -----------------------------------------------------------------------
   it('does not mount the inner component when the drawer is closed', () => {
-    const { queryByTestId } = render(
-      <TestHarness initialIsOpen={false} initialContextValue={0} />,
-    );
+    const { queryByTestId } = render(<TestHarness initialIsOpen={false} initialContextValue={0} />);
 
     expect(queryByTestId('inner')).toBeNull();
     expect(innerMounted.current).toBe(false);
@@ -133,9 +131,7 @@ describe('PlayViewDrawer gate pattern', () => {
   // 2. Inner component mounts when the drawer opens
   // -----------------------------------------------------------------------
   it('mounts the inner component when the drawer opens', () => {
-    const { queryByTestId } = render(
-      <TestHarness initialIsOpen={false} initialContextValue={0} />,
-    );
+    const { queryByTestId } = render(<TestHarness initialIsOpen={false} initialContextValue={0} />);
 
     // Initially not rendered
     expect(queryByTestId('inner')).toBeNull();
@@ -157,7 +153,7 @@ describe('PlayViewDrawer gate pattern', () => {
     const onTransitionEnd = vi.fn();
 
     const { queryByTestId, getByTestId } = render(
-      <TestHarness initialIsOpen={true} initialContextValue={0} onTransitionEnd={onTransitionEnd} />,
+      <TestHarness initialIsOpen initialContextValue={0} onTransitionEnd={onTransitionEnd} />,
     );
 
     // Inner is mounted while open
@@ -188,9 +184,7 @@ describe('PlayViewDrawer gate pattern', () => {
   // 4. Context changes do NOT re-render the inner component after unmount
   // -----------------------------------------------------------------------
   it('does not re-render the inner component when closed and context changes', () => {
-    const { queryByTestId, getByTestId } = render(
-      <TestHarness initialIsOpen={true} initialContextValue={0} />,
-    );
+    const { queryByTestId, getByTestId } = render(<TestHarness initialIsOpen initialContextValue={0} />);
 
     // Open and mounted
     expect(queryByTestId('inner')).not.toBeNull();
@@ -229,9 +223,7 @@ describe('PlayViewDrawer gate pattern', () => {
   // 5. Re-opening after close works correctly
   // -----------------------------------------------------------------------
   it('re-mounts the inner component when the drawer re-opens after a full close', () => {
-    const { queryByTestId, getByTestId } = render(
-      <TestHarness initialIsOpen={true} initialContextValue={0} />,
-    );
+    const { queryByTestId, getByTestId } = render(<TestHarness initialIsOpen initialContextValue={0} />);
 
     expect(innerMounted.current).toBe(true);
 

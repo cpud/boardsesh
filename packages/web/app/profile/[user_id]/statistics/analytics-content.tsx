@@ -2,7 +2,10 @@
 
 import React, { useState, useCallback } from 'react';
 import Box from '@mui/material/Box';
-import type { GetUserProfileStatsQueryResponse } from '@/app/lib/graphql/operations/ticks';
+import type {
+  GetUserClimbPercentileQueryResponse,
+  GetUserProfileStatsQueryResponse,
+} from '@/app/lib/graphql/operations/ticks';
 import StatsSummary from '../components/stats-summary';
 import BoardStatsSection from '../components/board-stats-section';
 import { useProfileData } from '../hooks/use-profile-data';
@@ -11,17 +14,19 @@ import { StatsFilterBridgeInjector } from '@/app/components/stats-filter-bridge/
 import StatsFilterDrawer from '@/app/components/stats-filter-drawer/stats-filter-drawer';
 import styles from '../profile-page.module.css';
 
-interface AnalyticsContentProps {
+type AnalyticsContentProps = {
   userId: string;
   initialProfileStats?: GetUserProfileStatsQueryResponse['userProfileStats'] | null;
+  initialPercentile?: GetUserClimbPercentileQueryResponse['userClimbPercentile'] | null;
   initialAllBoardsTicks?: Record<string, LogbookEntry[]>;
   initialLogbook?: LogbookEntry[];
   initialIsOwnProfile?: boolean;
-}
+};
 
 export default function AnalyticsContent({
   userId,
   initialProfileStats,
+  initialPercentile,
   initialAllBoardsTicks,
   initialLogbook,
   initialIsOwnProfile,
@@ -49,6 +54,7 @@ export default function AnalyticsContent({
     percentile,
   } = useProfileData(userId, {
     initialProfileStats: initialProfileStats ?? undefined,
+    initialPercentile,
     initialAllBoardsTicks,
     initialLogbook,
     initialIsOwnProfile,
@@ -79,7 +85,7 @@ export default function AnalyticsContent({
         pageTitle="Statistics"
         backUrl={`/profile/${userId}`}
         hasActiveFilters={hasActiveFilters}
-        isActive={true}
+        isActive
       />
       <Box component="main" className={styles.content}>
         <StatsSummary

@@ -8,7 +8,7 @@ import EditOutlined from '@mui/icons-material/EditOutlined';
 import Link from 'next/link';
 import { track } from '@vercel/analytics';
 import { useSession } from 'next-auth/react';
-import { ClimbActionProps, ClimbActionResult } from '../types';
+import type { ClimbActionProps, ClimbActionResult } from '../types';
 import { constructCreateClimbUrl } from '@/app/lib/url-utils';
 import { themeTokens } from '@/app/theme/theme-config';
 import { buildActionResult, computeActionDisplay } from '../action-view-renderer';
@@ -44,7 +44,12 @@ export function ForkAction({
         boardDetails.set_names!,
         angle,
         isEdit
-          ? { frames: climb.frames, name: climb.name, description: climb.description, editClimbUuid: climb.uuid }
+          ? {
+              frames: climb.frames,
+              name: climb.name,
+              description: climb.description,
+              editClimbUuid: climb.uuid,
+            }
           : { frames: climb.frames, name: climb.name },
       )
     : null;
@@ -59,9 +64,11 @@ export function ForkAction({
 
   const label = isEdit ? 'Edit' : 'Remix this climb';
   const tooltip = isEdit ? 'Edit this draft' : 'Remix this climb';
-  const icon = isEdit
-    ? <EditOutlined sx={{ fontSize: iconSize }} />
-    : <CallSplitOutlined sx={{ fontSize: iconSize }} />;
+  const icon = isEdit ? (
+    <EditOutlined sx={{ fontSize: iconSize }} />
+  ) : (
+    <CallSplitOutlined sx={{ fontSize: iconSize }} />
+  );
 
   // Link-based actions need custom elements since they wrap with Next.js Link
   return buildActionResult({

@@ -73,10 +73,14 @@ describe('generate-board-data', () => {
     });
 
     it('board_data.cpp should include both headers', () => {
-      assert.ok(dataCppContent.includes('#include "board_image_data.h"'),
-        'board_data.cpp should include board_image_data.h');
-      assert.ok(dataCppContent.includes('#include "board_hold_data.h"'),
-        'board_data.cpp should include board_hold_data.h');
+      assert.ok(
+        dataCppContent.includes('#include "board_image_data.h"'),
+        'board_data.cpp should include board_image_data.h',
+      );
+      assert.ok(
+        dataCppContent.includes('#include "board_hold_data.h"'),
+        'board_data.cpp should include board_hold_data.h',
+      );
     });
   });
 
@@ -94,17 +98,19 @@ describe('generate-board-data', () => {
     });
 
     it('should declare extern BOARD_CONFIGS and BOARD_CONFIG_COUNT', () => {
-      assert.ok(holdContent.includes('extern const BoardConfig BOARD_CONFIGS[]'),
-        'should declare extern BOARD_CONFIGS');
-      assert.ok(holdContent.includes('extern const int BOARD_CONFIG_COUNT'),
-        'should declare extern BOARD_CONFIG_COUNT');
+      assert.ok(
+        holdContent.includes('extern const BoardConfig BOARD_CONFIGS[]'),
+        'should declare extern BOARD_CONFIGS',
+      );
+      assert.ok(
+        holdContent.includes('extern const int BOARD_CONFIG_COUNT'),
+        'should declare extern BOARD_CONFIG_COUNT',
+      );
     });
 
     it('should NOT contain data arrays (those belong in board_data.cpp)', () => {
-      assert.ok(!holdContent.includes('PROGMEM'),
-        'hold header should not contain PROGMEM data');
-      assert.ok(!holdContent.includes('holds_kilter_'),
-        'hold header should not contain hold arrays');
+      assert.ok(!holdContent.includes('PROGMEM'), 'hold header should not contain PROGMEM data');
+      assert.ok(!holdContent.includes('holds_kilter_'), 'hold header should not contain hold arrays');
     });
   });
 
@@ -116,8 +122,11 @@ describe('generate-board-data', () => {
 
       // Each should start with 0xff, 0xd8 (JPEG SOI marker)
       const jpegStarts = imageContent.match(/\{\s*\n\s*0xff,\s*0xd8/g) || [];
-      assert.equal(jpegStarts.length, imageArrays.length,
-        `all ${imageArrays.length} images should start with JPEG magic bytes, found ${jpegStarts.length}`);
+      assert.equal(
+        jpegStarts.length,
+        imageArrays.length,
+        `all ${imageArrays.length} images should start with JPEG magic bytes, found ${jpegStarts.length}`,
+      );
     });
 
     it('should contain at least 30 board configurations', () => {
@@ -141,8 +150,11 @@ describe('generate-board-data', () => {
       // Count entries in BOARD_CONFIGS array
       const tableSection = dataCppContent.split('BOARD_CONFIGS[]')[1]?.split('BOARD_CONFIG_COUNT')[0] || '';
       const entries = tableSection.match(/\{"(?:kilter|tension)\/\d+\/\d+\/[\d,]+"/g) || [];
-      assert.equal(entries.length, count,
-        `BOARD_CONFIG_COUNT (${count}) should match number of entries (${entries.length})`);
+      assert.equal(
+        entries.length,
+        count,
+        `BOARD_CONFIG_COUNT (${count}) should match number of entries (${entries.length})`,
+      );
     });
 
     it('should have valid config key format in lookup table', () => {
@@ -151,8 +163,7 @@ describe('generate-board-data', () => {
         const cleaned = key.replace(/"/g, '');
         const parts = cleaned.split('/');
         assert.ok(parts.length === 4, `config key "${cleaned}" should have 4 parts`);
-        assert.ok(['kilter', 'tension'].includes(parts[0]),
-          `board name "${parts[0]}" should be kilter or tension`);
+        assert.ok(['kilter', 'tension'].includes(parts[0]), `board name "${parts[0]}" should be kilter or tension`);
         assert.ok(/^\d+$/.test(parts[1]), `layout_id "${parts[1]}" should be numeric`);
         assert.ok(/^\d+$/.test(parts[2]), `size_id "${parts[2]}" should be numeric`);
         assert.ok(/^[\d,]+$/.test(parts[3]), `set_ids "${parts[3]}" should be comma-separated numbers`);
@@ -177,32 +188,35 @@ describe('generate-board-data', () => {
           }
         }
       }
-      assert.ok(outOfBounds < holdEntries.length * 0.05,
-        `too many out-of-bounds coordinates: ${outOfBounds}/${Math.min(holdEntries.length, 1000)}`);
+      assert.ok(
+        outOfBounds < holdEntries.length * 0.05,
+        `too many out-of-bounds coordinates: ${outOfBounds}/${Math.min(holdEntries.length, 1000)}`,
+      );
     });
 
     it('should implement findBoardConfig function', () => {
-      assert.ok(dataCppContent.includes('const BoardConfig* findBoardConfig(const char* configKey)'),
-        'should implement findBoardConfig');
-      assert.ok(dataCppContent.includes('strcmp(BOARD_CONFIGS[i].configKey, configKey)'),
-        'findBoardConfig should use strcmp for lookup');
+      assert.ok(
+        dataCppContent.includes('const BoardConfig* findBoardConfig(const char* configKey)'),
+        'should implement findBoardConfig',
+      );
+      assert.ok(
+        dataCppContent.includes('strcmp(BOARD_CONFIGS[i].configKey, configKey)'),
+        'findBoardConfig should use strcmp for lookup',
+      );
     });
   });
 
   describe('specific configurations', () => {
     it('should include kilter/1/7/1,20 (most common Kilter board)', () => {
-      assert.ok(dataCppContent.includes('"kilter/1/7/1,20"'),
-        'should include standard Kilter 12x14 config');
+      assert.ok(dataCppContent.includes('"kilter/1/7/1,20"'), 'should include standard Kilter 12x14 config');
     });
 
     it('should include tension/9/1/8,9,10,11 (standard Tension board)', () => {
-      assert.ok(dataCppContent.includes('"tension/9/1/8,9,10,11"'),
-        'should include standard Tension full wall config');
+      assert.ok(dataCppContent.includes('"tension/9/1/8,9,10,11"'), 'should include standard Tension full wall config');
     });
 
     it('should include kilter/8/17/26,27 (Kilter homewall)', () => {
-      assert.ok(dataCppContent.includes('"kilter/8/17/26,27"'),
-        'should include Kilter homewall config');
+      assert.ok(dataCppContent.includes('"kilter/8/17/26,27"'), 'should include Kilter homewall config');
     });
 
     it('should have non-empty hold maps for common boards', () => {
@@ -221,8 +235,7 @@ describe('generate-board-data', () => {
         const cleaned = key.replace(/"/g, '');
         const setIds = cleaned.split('/')[3].split(',').map(Number);
         for (let i = 1; i < setIds.length; i++) {
-          assert.ok(setIds[i] >= setIds[i - 1],
-            `set_ids in "${cleaned}" should be sorted: ${setIds.join(',')}`);
+          assert.ok(setIds[i] >= setIds[i - 1], `set_ids in "${cleaned}" should be sorted: ${setIds.join(',')}`);
         }
       }
     });

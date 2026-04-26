@@ -58,13 +58,8 @@ const ClimbCardSkeleton = ({ aspectRatio }: { aspectRatio?: number }) => (
       backgroundColor: 'var(--semantic-surface)',
     }}
   >
-    <CardHeader
-      title={<ClimbCardTitleSkeleton />}
-      sx={{ paddingTop: '8px', paddingBottom: '6px' }}
-    />
-    <CardContent
-      sx={{ p: '6px', display: 'flex', justifyContent: 'center' }}
-    >
+    <CardHeader title={<ClimbCardTitleSkeleton />} sx={{ paddingTop: '8px', paddingBottom: '6px' }} />
+    <CardContent sx={{ p: '6px', display: 'flex', justifyContent: 'center' }}>
       <BoardRendererSkeleton aspectRatio={aspectRatio} />
     </CardContent>
     <CardActions sx={{ justifyContent: 'space-around' }}>
@@ -87,7 +82,7 @@ const ClimbListItemSkeleton = () => (
       padding: `${themeTokens.spacing[2]}px ${themeTokens.spacing[3]}px`,
       gap: themeTokens.spacing[3],
       backgroundColor: 'var(--semantic-surface)',
-      borderBottom: `1px solid var(--neutral-200)`,
+      borderBottom: `1px solid var(--border-subtle)`,
     }}
   >
     {/* Thumbnail placeholder - matches ClimbListItem width of themeTokens.spacing[16] (64px) */}

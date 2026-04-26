@@ -1,21 +1,16 @@
 import SwipeableDrawer from '../swipeable-drawer/swipeable-drawer';
 import React from 'react';
 import { LogAscentForm } from './logascent-form';
-import { BoardDetails, Climb } from '@/app/lib/types';
+import type { BoardDetails, Climb } from '@/app/lib/types';
 
-interface LogAscentDrawerProps {
+type LogAscentDrawerProps = {
   open: boolean;
   onClose: () => void;
   currentClimb: Climb | null;
   boardDetails: BoardDetails;
-}
+};
 
-export const LogAscentDrawer: React.FC<LogAscentDrawerProps> = ({
-  open,
-  onClose,
-  currentClimb,
-  boardDetails,
-}) => {
+export const LogAscentDrawer: React.FC<LogAscentDrawerProps> = ({ open, onClose, currentClimb, boardDetails }) => {
   return (
     <SwipeableDrawer
       title="Log Ascent"
@@ -25,13 +20,7 @@ export const LogAscentDrawer: React.FC<LogAscentDrawerProps> = ({
       fullHeight
       styles={{ wrapper: { height: '100%' } }}
     >
-      {currentClimb && (
-        <LogAscentForm
-          currentClimb={currentClimb}
-          boardDetails={boardDetails}
-          onClose={onClose}
-        />
-      )}
+      {currentClimb && <LogAscentForm currentClimb={currentClimb} boardDetails={boardDetails} onClose={onClose} />}
     </SwipeableDrawer>
   );
 };

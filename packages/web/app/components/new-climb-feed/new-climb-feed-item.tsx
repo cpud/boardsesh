@@ -12,6 +12,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import type { NewClimbFeedItem } from '@boardsesh/shared-schema';
 import AscentThumbnail from '@/app/components/activity-feed/ascent-thumbnail';
+import ClimbIcons from '@/app/components/climb-card/climb-icons';
 import { getDefaultBoardConfig, getDefaultClimbViewPath } from '@/app/lib/default-board-configs';
 import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import { constructClimbViewUrlWithSlugs } from '@/app/lib/url-utils';
@@ -20,9 +21,9 @@ import Link from 'next/link';
 
 dayjs.extend(relativeTime);
 
-interface NewClimbFeedItemProps {
+type NewClimbFeedItemProps = {
   item: NewClimbFeedItem;
-}
+};
 
 export default function NewClimbFeedItem({ item }: NewClimbFeedItemProps) {
   const timeAgo = dayjs(item.createdAt).fromNow();
@@ -97,6 +98,7 @@ export default function NewClimbFeedItem({ item }: NewClimbFeedItemProps) {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, flex: 1, minWidth: 0 }}>
               <Typography variant="subtitle1" fontWeight={700} noWrap>
                 {item.name || 'Untitled climb'}
+                <ClimbIcons isNoMatch={!!item.isNoMatch} />
               </Typography>
               <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center' }}>
                 {item.difficultyName && <Chip label={item.difficultyName} size="small" color="primary" />}

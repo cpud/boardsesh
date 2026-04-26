@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { SearchCacheService, DEFAULT_SEARCH_CACHE_TTL } from '../search-cache';
 import { redisClientManager } from '../../redis/client';
 import type { ClimbSearchParams, ParsedBoardRouteParameters } from '../../db/queries/climbs/index';
@@ -175,7 +175,7 @@ describe('SearchCacheService', () => {
 
       service.setCachedResult('key', { data: true });
 
-      expect(mockedRedis.getClients).not.toHaveBeenCalled();
+      expect(mockedRedis.getClients).not.toHaveBeenCalled(); // eslint-disable-line @typescript-eslint/unbound-method -- vi.fn() mock, no `this` concern
     });
 
     it('calls publisher.set with correct arguments', () => {
@@ -215,11 +215,7 @@ describe('SearchCacheService', () => {
 
       // The .catch handler is async, so flush microtasks
       await vi.waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith(
-          '[SearchCache] Error writing cache key',
-          'fail-key',
-          setError,
-        );
+        expect(consoleSpy).toHaveBeenCalledWith('[SearchCache] Error writing cache key', 'fail-key', setError);
       });
 
       consoleSpy.mockRestore();

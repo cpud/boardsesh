@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook } from '@testing-library/react';
 import React from 'react';
 import type { BoardDetails } from '@/app/lib/types';
 import type { ActiveSessionInfo } from '../../persistent-session/types';
+import { useActiveBoardLock } from '../use-active-board-lock';
 
 type SessionState = { activeSession: ActiveSessionInfo | null };
 
@@ -19,15 +21,13 @@ vi.mock('../../board-bluetooth-control/bluetooth-status-store', () => ({
   useBluetoothConnectedStatus: () => mockBluetoothConnected,
 }));
 
-vi.mock('../../queue-control/queue-bridge-context', () => ({
+vi.mock('../../queue-control/queue-bridge-board-info-context', () => ({
   useQueueBridgeBoardInfo: () => ({
     boardDetails: mockBridgeBoardDetails,
     angle: 0,
     hasActiveQueue: !!mockBridgeBoardDetails,
   }),
 }));
-
-import { useActiveBoardLock } from '../use-active-board-lock';
 
 function makeBoard(partial: Partial<BoardDetails> = {}): BoardDetails {
   return {

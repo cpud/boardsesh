@@ -1,22 +1,21 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
+import { useMutationGuard } from '../use-mutation-guard';
+import type { ConnectionState } from '../../../connection-manager/websocket-connection-manager';
 
 const mockShowMessage = vi.fn();
 vi.mock('@/app/components/providers/snackbar-provider', () => ({
   useSnackbar: () => ({ showMessage: mockShowMessage }),
 }));
 
-import { useMutationGuard } from '../use-mutation-guard';
-import type { ConnectionState } from '../../../connection-manager/websocket-connection-manager';
-
-interface TestParams {
+type TestParams = {
   sessionId: string | null;
   backendUrl: string | null;
   hasConnected: boolean;
   connectionState: ConnectionState;
   isSessionActive: boolean;
   isSessionReady: boolean;
-}
+};
 
 const defaultParams: TestParams = {
   sessionId: null,
@@ -34,9 +33,7 @@ describe('useMutationGuard', () => {
 
   describe('solo mode (no session)', () => {
     it('viewOnlyMode is false, guardMutation allows, isDisconnected is false', () => {
-      const { result } = renderHook(() =>
-        useMutationGuard({ ...defaultParams, sessionId: null }),
-      );
+      const { result } = renderHook(() => useMutationGuard({ ...defaultParams, sessionId: null }));
 
       expect(result.current.viewOnlyMode).toBe(false);
       expect(result.current.isDisconnected).toBe(false);
@@ -159,10 +156,7 @@ describe('useMutationGuard', () => {
         result.current.guardMutation();
       });
 
-      expect(mockShowMessage).toHaveBeenCalledWith(
-        expect.stringContaining('Reconnecting'),
-        'warning',
-      );
+      expect(mockShowMessage).toHaveBeenCalledWith(expect.stringContaining('Reconnecting'), 'warning');
     });
 
     it('debounces toast within 3 seconds', () => {

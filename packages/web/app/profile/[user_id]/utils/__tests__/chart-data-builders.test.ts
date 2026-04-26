@@ -1,23 +1,33 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
+import {
+  filterLogbookByTimeframe,
+  buildAggregatedStackedBars,
+  buildAggregatedFlashRedpointBars,
+  buildWeeklyBars,
+  buildFlashRedpointBars,
+  buildStatisticsSummary,
+  buildVPointsTimeline,
+} from '../chart-data-builders';
+import type { LogbookEntry } from '../profile-constants';
 
 dayjs.extend(isoWeek);
 
 vi.mock('@/app/lib/grade-colors', () => ({
   V_GRADE_COLORS: {
-    'V0': '#FFEB3B',
-    'V1': '#FFC107',
-    'V2': '#FF9800',
-    'V3': '#FF7043',
-    'V4': '#FF5722',
-    'V5': '#F44336',
-    'V6': '#E53935',
-    'V7': '#D32F2F',
-    'V8': '#C62828',
-    'V9': '#B71C1C',
-    'V10': '#A11B4A',
-    'V11': '#9C27B0',
+    V0: '#FFEB3B',
+    V1: '#FFC107',
+    V2: '#FF9800',
+    V3: '#FF7043',
+    V4: '#FF5722',
+    V5: '#F44336',
+    V6: '#E53935',
+    V7: '#D32F2F',
+    V8: '#C62828',
+    V9: '#B71C1C',
+    V10: '#A11B4A',
+    V11: '#9C27B0',
   },
   getGradeColorWithOpacity: (hex: string, opacity: number) => `rgba(0,0,0,${opacity})`,
 }));
@@ -55,17 +65,6 @@ vi.mock('@/app/lib/board-data', () => ({
 vi.mock('@/app/theme/theme-config', () => ({
   themeTokens: { colors: { success: '#6B9080', error: '#B8524C' } },
 }));
-
-import {
-  filterLogbookByTimeframe,
-  buildAggregatedStackedBars,
-  buildAggregatedFlashRedpointBars,
-  buildWeeklyBars,
-  buildFlashRedpointBars,
-  buildStatisticsSummary,
-  buildVPointsTimeline,
-} from '../chart-data-builders';
-import type { LogbookEntry } from '../profile-constants';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -167,7 +166,13 @@ describe('buildAggregatedStackedBars', () => {
   it('returns null when all entries are attempts (no sends)', () => {
     const ticks: Record<string, LogbookEntry[]> = {
       kilter: [
-        makeEntry({ difficulty: 22, status: 'attempt', climbUuid: 'c1', layoutId: 1, boardType: 'kilter' }),
+        makeEntry({
+          difficulty: 22,
+          status: 'attempt',
+          climbUuid: 'c1',
+          layoutId: 1,
+          boardType: 'kilter',
+        }),
       ],
     };
     expect(buildAggregatedStackedBars(ticks, 'all')).toBeNull();
@@ -176,7 +181,13 @@ describe('buildAggregatedStackedBars', () => {
   it('returns null when entries lack climbUuid', () => {
     const ticks: Record<string, LogbookEntry[]> = {
       kilter: [
-        makeEntry({ difficulty: 22, status: 'send', climbUuid: undefined, layoutId: 1, boardType: 'kilter' }),
+        makeEntry({
+          difficulty: 22,
+          status: 'send',
+          climbUuid: undefined,
+          layoutId: 1,
+          boardType: 'kilter',
+        }),
       ],
     };
     expect(buildAggregatedStackedBars(ticks, 'all')).toBeNull();
@@ -185,9 +196,27 @@ describe('buildAggregatedStackedBars', () => {
   it('groups climbs by grade and layout', () => {
     const ticks: Record<string, LogbookEntry[]> = {
       kilter: [
-        makeEntry({ difficulty: 22, status: 'send', climbUuid: 'c1', layoutId: 1, boardType: 'kilter' }),
-        makeEntry({ difficulty: 22, status: 'send', climbUuid: 'c2', layoutId: 1, boardType: 'kilter' }),
-        makeEntry({ difficulty: 16, status: 'send', climbUuid: 'c3', layoutId: 1, boardType: 'kilter' }),
+        makeEntry({
+          difficulty: 22,
+          status: 'send',
+          climbUuid: 'c1',
+          layoutId: 1,
+          boardType: 'kilter',
+        }),
+        makeEntry({
+          difficulty: 22,
+          status: 'send',
+          climbUuid: 'c2',
+          layoutId: 1,
+          boardType: 'kilter',
+        }),
+        makeEntry({
+          difficulty: 16,
+          status: 'send',
+          climbUuid: 'c3',
+          layoutId: 1,
+          boardType: 'kilter',
+        }),
       ],
     };
     const result = buildAggregatedStackedBars(ticks, 'all');
@@ -206,8 +235,20 @@ describe('buildAggregatedStackedBars', () => {
   it('deduplicates climbs by climbUuid within the same grade+layout', () => {
     const ticks: Record<string, LogbookEntry[]> = {
       kilter: [
-        makeEntry({ difficulty: 22, status: 'send', climbUuid: 'c1', layoutId: 1, boardType: 'kilter' }),
-        makeEntry({ difficulty: 22, status: 'send', climbUuid: 'c1', layoutId: 1, boardType: 'kilter' }), // duplicate
+        makeEntry({
+          difficulty: 22,
+          status: 'send',
+          climbUuid: 'c1',
+          layoutId: 1,
+          boardType: 'kilter',
+        }),
+        makeEntry({
+          difficulty: 22,
+          status: 'send',
+          climbUuid: 'c1',
+          layoutId: 1,
+          boardType: 'kilter',
+        }), // duplicate
       ],
     };
     const result = buildAggregatedStackedBars(ticks, 'all');
@@ -219,10 +260,22 @@ describe('buildAggregatedStackedBars', () => {
   it('creates separate segments for different layouts', () => {
     const ticks: Record<string, LogbookEntry[]> = {
       kilter: [
-        makeEntry({ difficulty: 22, status: 'send', climbUuid: 'c1', layoutId: 1, boardType: 'kilter' }),
+        makeEntry({
+          difficulty: 22,
+          status: 'send',
+          climbUuid: 'c1',
+          layoutId: 1,
+          boardType: 'kilter',
+        }),
       ],
       tension: [
-        makeEntry({ difficulty: 22, status: 'send', climbUuid: 'c2', layoutId: 9, boardType: 'tension' }),
+        makeEntry({
+          difficulty: 22,
+          status: 'send',
+          climbUuid: 'c2',
+          layoutId: 9,
+          boardType: 'tension',
+        }),
       ],
     };
     const result = buildAggregatedStackedBars(ticks, 'all');
@@ -234,10 +287,22 @@ describe('buildAggregatedStackedBars', () => {
   it('returns legend entries sorted by layout order', () => {
     const ticks: Record<string, LogbookEntry[]> = {
       tension: [
-        makeEntry({ difficulty: 22, status: 'send', climbUuid: 'c1', layoutId: 9, boardType: 'tension' }),
+        makeEntry({
+          difficulty: 22,
+          status: 'send',
+          climbUuid: 'c1',
+          layoutId: 9,
+          boardType: 'tension',
+        }),
       ],
       kilter: [
-        makeEntry({ difficulty: 22, status: 'send', climbUuid: 'c2', layoutId: 1, boardType: 'kilter' }),
+        makeEntry({
+          difficulty: 22,
+          status: 'send',
+          climbUuid: 'c2',
+          layoutId: 1,
+          boardType: 'kilter',
+        }),
       ],
     };
     const result = buildAggregatedStackedBars(ticks, 'all');
@@ -250,9 +315,27 @@ describe('buildAggregatedStackedBars', () => {
   it('returns bars sorted by grade order', () => {
     const ticks: Record<string, LogbookEntry[]> = {
       kilter: [
-        makeEntry({ difficulty: 22, status: 'send', climbUuid: 'c1', layoutId: 1, boardType: 'kilter' }), // V6
-        makeEntry({ difficulty: 16, status: 'send', climbUuid: 'c2', layoutId: 1, boardType: 'kilter' }), // V3
-        makeEntry({ difficulty: 28, status: 'send', climbUuid: 'c3', layoutId: 1, boardType: 'kilter' }), // V11
+        makeEntry({
+          difficulty: 22,
+          status: 'send',
+          climbUuid: 'c1',
+          layoutId: 1,
+          boardType: 'kilter',
+        }), // V6
+        makeEntry({
+          difficulty: 16,
+          status: 'send',
+          climbUuid: 'c2',
+          layoutId: 1,
+          boardType: 'kilter',
+        }), // V3
+        makeEntry({
+          difficulty: 28,
+          status: 'send',
+          climbUuid: 'c3',
+          layoutId: 1,
+          boardType: 'kilter',
+        }), // V11
       ],
     };
     const result = buildAggregatedStackedBars(ticks, 'all');
@@ -266,8 +349,22 @@ describe('buildAggregatedStackedBars', () => {
     const oldDate = dayjs().subtract(2, 'month').toISOString();
     const ticks: Record<string, LogbookEntry[]> = {
       kilter: [
-        makeEntry({ climbed_at: recentDate, difficulty: 22, status: 'send', climbUuid: 'c1', layoutId: 1, boardType: 'kilter' }),
-        makeEntry({ climbed_at: oldDate, difficulty: 16, status: 'send', climbUuid: 'c2', layoutId: 1, boardType: 'kilter' }),
+        makeEntry({
+          climbed_at: recentDate,
+          difficulty: 22,
+          status: 'send',
+          climbUuid: 'c1',
+          layoutId: 1,
+          boardType: 'kilter',
+        }),
+        makeEntry({
+          climbed_at: oldDate,
+          difficulty: 16,
+          status: 'send',
+          climbUuid: 'c2',
+          layoutId: 1,
+          boardType: 'kilter',
+        }),
       ],
     };
     const resultWeek = buildAggregatedStackedBars(ticks, 'lastWeek');
@@ -279,8 +376,20 @@ describe('buildAggregatedStackedBars', () => {
   it('ignores entries with null difficulty', () => {
     const ticks: Record<string, LogbookEntry[]> = {
       kilter: [
-        makeEntry({ difficulty: null, status: 'send', climbUuid: 'c1', layoutId: 1, boardType: 'kilter' }),
-        makeEntry({ difficulty: 22, status: 'send', climbUuid: 'c2', layoutId: 1, boardType: 'kilter' }),
+        makeEntry({
+          difficulty: null,
+          status: 'send',
+          climbUuid: 'c1',
+          layoutId: 1,
+          boardType: 'kilter',
+        }),
+        makeEntry({
+          difficulty: 22,
+          status: 'send',
+          climbUuid: 'c2',
+          layoutId: 1,
+          boardType: 'kilter',
+        }),
       ],
     };
     const result = buildAggregatedStackedBars(ticks, 'all');
@@ -469,10 +578,7 @@ describe('buildFlashRedpointBars', () => {
   });
 
   it('ignores entries with null difficulty', () => {
-    const logbook = [
-      makeEntry({ difficulty: 22, tries: 1 }),
-      makeEntry({ difficulty: null, tries: 1 }),
-    ];
+    const logbook = [makeEntry({ difficulty: 22, tries: 1 }), makeEntry({ difficulty: null, tries: 1 })];
     const result = buildFlashRedpointBars(logbook);
     expect(result).not.toBeNull();
     expect(result!.length).toBe(1);
@@ -579,7 +685,7 @@ describe('buildAggregatedFlashRedpointBars', () => {
 
   it('returns grades in correct order across boards', () => {
     const ticks: Record<string, LogbookEntry[]> = {
-      kilter: [makeEntry({ difficulty: 28, tries: 1 })],  // V11
+      kilter: [makeEntry({ difficulty: 28, tries: 1 })], // V11
       tension: [makeEntry({ difficulty: 16, tries: 1 })], // V3
     };
     const result = buildAggregatedFlashRedpointBars(ticks, 'all');
@@ -610,8 +716,20 @@ describe('buildStatisticsSummary', () => {
     const profileStats = {
       totalDistinctClimbs: 10,
       layoutStats: [
-        { layoutKey: 'kilter-1', boardType: 'kilter', layoutId: 1, distinctClimbCount: 10, gradeCounts: [] },
-        { layoutKey: 'tension-9', boardType: 'tension', layoutId: 9, distinctClimbCount: 0, gradeCounts: [] },
+        {
+          layoutKey: 'kilter-1',
+          boardType: 'kilter',
+          layoutId: 1,
+          distinctClimbCount: 10,
+          gradeCounts: [],
+        },
+        {
+          layoutKey: 'tension-9',
+          boardType: 'tension',
+          layoutId: 9,
+          distinctClimbCount: 0,
+          gradeCounts: [],
+        },
       ],
     };
     const { layoutPercentages } = buildStatisticsSummary(profileStats);
@@ -623,7 +741,13 @@ describe('buildStatisticsSummary', () => {
     const profileStats = {
       totalDistinctClimbs: 50,
       layoutStats: [
-        { layoutKey: 'kilter-1', boardType: 'kilter', layoutId: 1, distinctClimbCount: 50, gradeCounts: [] },
+        {
+          layoutKey: 'kilter-1',
+          boardType: 'kilter',
+          layoutId: 1,
+          distinctClimbCount: 50,
+          gradeCounts: [],
+        },
       ],
     };
     const { layoutPercentages } = buildStatisticsSummary(profileStats);
@@ -634,8 +758,20 @@ describe('buildStatisticsSummary', () => {
     const profileStats = {
       totalDistinctClimbs: 100,
       layoutStats: [
-        { layoutKey: 'kilter-1', boardType: 'kilter', layoutId: 1, distinctClimbCount: 50, gradeCounts: [] },
-        { layoutKey: 'tension-9', boardType: 'tension', layoutId: 9, distinctClimbCount: 50, gradeCounts: [] },
+        {
+          layoutKey: 'kilter-1',
+          boardType: 'kilter',
+          layoutId: 1,
+          distinctClimbCount: 50,
+          gradeCounts: [],
+        },
+        {
+          layoutKey: 'tension-9',
+          boardType: 'tension',
+          layoutId: 9,
+          distinctClimbCount: 50,
+          gradeCounts: [],
+        },
       ],
     };
     const { layoutPercentages } = buildStatisticsSummary(profileStats);
@@ -648,9 +784,27 @@ describe('buildStatisticsSummary', () => {
     const profileStats = {
       totalDistinctClimbs: 3,
       layoutStats: [
-        { layoutKey: 'kilter-1', boardType: 'kilter', layoutId: 1, distinctClimbCount: 1, gradeCounts: [] },
-        { layoutKey: 'kilter-8', boardType: 'kilter', layoutId: 8, distinctClimbCount: 1, gradeCounts: [] },
-        { layoutKey: 'tension-9', boardType: 'tension', layoutId: 9, distinctClimbCount: 1, gradeCounts: [] },
+        {
+          layoutKey: 'kilter-1',
+          boardType: 'kilter',
+          layoutId: 1,
+          distinctClimbCount: 1,
+          gradeCounts: [],
+        },
+        {
+          layoutKey: 'kilter-8',
+          boardType: 'kilter',
+          layoutId: 8,
+          distinctClimbCount: 1,
+          gradeCounts: [],
+        },
+        {
+          layoutKey: 'tension-9',
+          boardType: 'tension',
+          layoutId: 9,
+          distinctClimbCount: 1,
+          gradeCounts: [],
+        },
       ],
     };
     const { layoutPercentages } = buildStatisticsSummary(profileStats);
@@ -675,7 +829,7 @@ describe('buildStatisticsSummary', () => {
       ],
     };
     const { layoutPercentages } = buildStatisticsSummary(profileStats);
-    expect(layoutPercentages[0].grades).toEqual({ 'V6': 5, 'V8': 3 });
+    expect(layoutPercentages[0].grades).toEqual({ V6: 5, V8: 3 });
   });
 
   it('ignores grade keys that are not valid numbers or not in the difficulty mapping', () => {
@@ -702,8 +856,20 @@ describe('buildStatisticsSummary', () => {
     const profileStats = {
       totalDistinctClimbs: 100,
       layoutStats: [
-        { layoutKey: 'kilter-1', boardType: 'kilter', layoutId: 1, distinctClimbCount: 20, gradeCounts: [] },
-        { layoutKey: 'tension-9', boardType: 'tension', layoutId: 9, distinctClimbCount: 80, gradeCounts: [] },
+        {
+          layoutKey: 'kilter-1',
+          boardType: 'kilter',
+          layoutId: 1,
+          distinctClimbCount: 20,
+          gradeCounts: [],
+        },
+        {
+          layoutKey: 'tension-9',
+          boardType: 'tension',
+          layoutId: 9,
+          distinctClimbCount: 80,
+          gradeCounts: [],
+        },
       ],
     };
     const { layoutPercentages } = buildStatisticsSummary(profileStats);
@@ -719,7 +885,13 @@ describe('buildStatisticsSummary', () => {
     const profileStats = {
       totalDistinctClimbs: 0,
       layoutStats: [
-        { layoutKey: 'kilter-1', boardType: 'kilter', layoutId: 1, distinctClimbCount: 5, gradeCounts: [] },
+        {
+          layoutKey: 'kilter-1',
+          boardType: 'kilter',
+          layoutId: 1,
+          distinctClimbCount: 5,
+          gradeCounts: [],
+        },
       ],
     };
     const { layoutPercentages } = buildStatisticsSummary(profileStats);
@@ -732,7 +904,13 @@ describe('buildStatisticsSummary', () => {
     const profileStats = {
       totalDistinctClimbs: 10,
       layoutStats: [
-        { layoutKey: 'kilter-1', boardType: 'kilter', layoutId: 1, distinctClimbCount: 10, gradeCounts: [] },
+        {
+          layoutKey: 'kilter-1',
+          boardType: 'kilter',
+          layoutId: 1,
+          distinctClimbCount: 10,
+          gradeCounts: [],
+        },
       ],
     };
     const { layoutPercentages } = buildStatisticsSummary(profileStats);
@@ -778,7 +956,13 @@ describe('buildVPointsTimeline', () => {
   it('returns null when all entries are attempts', () => {
     const ticks = {
       kilter: [
-        makeEntry({ status: 'attempt', difficulty: 22, climbed_at: '2024-06-01T12:00:00Z', layoutId: 1, boardType: 'kilter' }),
+        makeEntry({
+          status: 'attempt',
+          difficulty: 22,
+          climbed_at: '2024-06-01T12:00:00Z',
+          layoutId: 1,
+          boardType: 'kilter',
+        }),
       ],
     };
     expect(buildVPointsTimeline(ticks, 'all')).toBeNull();
@@ -788,8 +972,20 @@ describe('buildVPointsTimeline', () => {
     const monday = dayjs('2024-06-03').startOf('isoWeek'); // a Monday
     const ticks = {
       kilter: [
-        makeEntry({ status: 'send', difficulty: 16, climbed_at: monday.toISOString(), layoutId: 1, boardType: 'kilter' }), // V3
-        makeEntry({ status: 'flash', difficulty: 20, climbed_at: monday.add(1, 'day').toISOString(), layoutId: 1, boardType: 'kilter' }), // V5
+        makeEntry({
+          status: 'send',
+          difficulty: 16,
+          climbed_at: monday.toISOString(),
+          layoutId: 1,
+          boardType: 'kilter',
+        }), // V3
+        makeEntry({
+          status: 'flash',
+          difficulty: 20,
+          climbed_at: monday.add(1, 'day').toISOString(),
+          layoutId: 1,
+          boardType: 'kilter',
+        }), // V5
       ],
     };
     const result = buildVPointsTimeline(ticks, 'all');
@@ -805,8 +1001,20 @@ describe('buildVPointsTimeline', () => {
     const monday = dayjs('2024-06-03').startOf('isoWeek');
     const ticks = {
       kilter: [
-        makeEntry({ status: 'send', difficulty: 10, climbed_at: monday.toISOString(), layoutId: 1, boardType: 'kilter' }), // V0 → 1
-        makeEntry({ status: 'send', difficulty: 10, climbed_at: monday.add(1, 'day').toISOString(), layoutId: 1, boardType: 'kilter' }), // V0 → 1
+        makeEntry({
+          status: 'send',
+          difficulty: 10,
+          climbed_at: monday.toISOString(),
+          layoutId: 1,
+          boardType: 'kilter',
+        }), // V0 → 1
+        makeEntry({
+          status: 'send',
+          difficulty: 10,
+          climbed_at: monday.add(1, 'day').toISOString(),
+          layoutId: 1,
+          boardType: 'kilter',
+        }), // V0 → 1
       ],
     };
     const result = buildVPointsTimeline(ticks, 'all');
@@ -819,10 +1027,22 @@ describe('buildVPointsTimeline', () => {
     const monday = dayjs('2024-06-03').startOf('isoWeek');
     const ticks = {
       kilter: [
-        makeEntry({ status: 'send', difficulty: 16, climbed_at: monday.toISOString(), layoutId: 1, boardType: 'kilter' }), // V3
+        makeEntry({
+          status: 'send',
+          difficulty: 16,
+          climbed_at: monday.toISOString(),
+          layoutId: 1,
+          boardType: 'kilter',
+        }), // V3
       ],
       tension: [
-        makeEntry({ status: 'send', difficulty: 20, climbed_at: monday.toISOString(), layoutId: 9, boardType: 'tension' }), // V5
+        makeEntry({
+          status: 'send',
+          difficulty: 20,
+          climbed_at: monday.toISOString(),
+          layoutId: 9,
+          boardType: 'tension',
+        }), // V5
       ],
     };
     const result = buildVPointsTimeline(ticks, 'all');
@@ -843,8 +1063,20 @@ describe('buildVPointsTimeline', () => {
     const week3 = week1.add(2, 'week'); // skip week 2
     const ticks = {
       kilter: [
-        makeEntry({ status: 'send', difficulty: 16, climbed_at: week1.toISOString(), layoutId: 1, boardType: 'kilter' }), // V3
-        makeEntry({ status: 'send', difficulty: 20, climbed_at: week3.toISOString(), layoutId: 1, boardType: 'kilter' }), // V5
+        makeEntry({
+          status: 'send',
+          difficulty: 16,
+          climbed_at: week1.toISOString(),
+          layoutId: 1,
+          boardType: 'kilter',
+        }), // V3
+        makeEntry({
+          status: 'send',
+          difficulty: 20,
+          climbed_at: week3.toISOString(),
+          layoutId: 1,
+          boardType: 'kilter',
+        }), // V5
       ],
     };
     const result = buildVPointsTimeline(ticks, 'all');
@@ -858,8 +1090,20 @@ describe('buildVPointsTimeline', () => {
     const monday = dayjs('2024-06-03').startOf('isoWeek');
     const ticks = {
       kilter: [
-        makeEntry({ status: 'send', difficulty: 16, climbed_at: monday.toISOString(), layoutId: 1, boardType: 'kilter' }), // V3 counts
-        makeEntry({ status: 'attempt', difficulty: 22, climbed_at: monday.toISOString(), layoutId: 1, boardType: 'kilter' }), // V6 excluded
+        makeEntry({
+          status: 'send',
+          difficulty: 16,
+          climbed_at: monday.toISOString(),
+          layoutId: 1,
+          boardType: 'kilter',
+        }), // V3 counts
+        makeEntry({
+          status: 'attempt',
+          difficulty: 22,
+          climbed_at: monday.toISOString(),
+          layoutId: 1,
+          boardType: 'kilter',
+        }), // V6 excluded
       ],
     };
     const result = buildVPointsTimeline(ticks, 'all');

@@ -3,8 +3,7 @@ import isoWeek from 'dayjs/plugin/isoWeek';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import type { GetUserProfileStatsQueryResponse } from '@/app/lib/graphql/operations';
-import type { CssBarChartBar } from '@/app/components/charts/css-bar-chart';
-import type { GroupedBar } from '@/app/components/charts/css-bar-chart';
+import type { CssBarChartBar, GroupedBar } from '@/app/components/charts/css-bar-chart';
 import { themeTokens } from '@/app/theme/theme-config';
 import { type GradeDisplayFormat } from '@/app/lib/grade-colors';
 import {
@@ -27,9 +26,6 @@ const REDPOINT_COLOR = `${themeTokens.colors.error}99`;
 dayjs.extend(isoWeek);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
-
-// Deduplicate because multiple Font grades map to the same V-grade
-const GRADE_ORDER = [...new Set(Object.values(difficultyMapping))];
 
 // ── Timeframe filtering ─────────────────────────────────────────────
 
@@ -96,10 +92,10 @@ function filterByUnifiedTimeframe(
 
 // ── Aggregated stacked bars (grade x layout, for stats summary) ─────
 
-export interface LayoutLegendEntry {
+export type LayoutLegendEntry = {
   label: string;
   color: string;
-}
+};
 
 export function buildAggregatedStackedBars(
   allBoardsTicks: Record<string, LogbookEntry[]>,
@@ -136,8 +132,16 @@ export function buildAggregatedStackedBars(
   const sortedGrades = sortGrades(Array.from(allGrades), gradeFormat);
 
   const layoutOrder = [
-    'kilter-1', 'kilter-8', 'tension-9', 'tension-10', 'tension-11',
-    'moonboard-1', 'moonboard-2', 'moonboard-3', 'moonboard-4', 'moonboard-5',
+    'kilter-1',
+    'kilter-8',
+    'tension-9',
+    'tension-10',
+    'tension-11',
+    'moonboard-1',
+    'moonboard-2',
+    'moonboard-3',
+    'moonboard-4',
+    'moonboard-5',
   ];
   const sortedLayouts = Array.from(allLayouts).sort((a, b) => {
     const indexA = layoutOrder.indexOf(a);
@@ -186,14 +190,15 @@ export function buildWeeklyBars(
 
   const mapping = getDifficultyMapping(gradeFormat);
 
-  const entries = (fromDate || toDate)
-    ? filteredLogbook.filter((entry) => {
-        const d = dayjs(entry.climbed_at);
-        if (fromDate && d.isBefore(dayjs(fromDate), 'day')) return false;
-        if (toDate && d.isAfter(dayjs(toDate), 'day')) return false;
-        return true;
-      })
-    : filteredLogbook;
+  const entries =
+    fromDate || toDate
+      ? filteredLogbook.filter((entry) => {
+          const d = dayjs(entry.climbed_at);
+          if (fromDate && d.isBefore(dayjs(fromDate), 'day')) return false;
+          if (toDate && d.isAfter(dayjs(toDate), 'day')) return false;
+          return true;
+        })
+      : filteredLogbook;
 
   if (entries.length === 0) return null;
 
@@ -224,16 +229,13 @@ export function buildWeeklyBars(
     Object.keys(weekGrades).forEach((grade) => usedGrades.add(grade));
   });
   const activeGrades = sortGrades(
-    Array.from(usedGrades).filter((grade) =>
-      weekKeys.some((wk) => (weeklyData[wk]?.[grade] || 0) > 0),
-    ),
+    Array.from(usedGrades).filter((grade) => weekKeys.some((wk) => (weeklyData[wk]?.[grade] || 0) > 0)),
     gradeFormat,
   );
 
   if (activeGrades.length === 0) return null;
 
-  const spansYears = weekKeys.length > 1 &&
-    weekKeys[0].split('-')[0] !== weekKeys[weekKeys.length - 1].split('-')[0];
+  const spansYears = weekKeys.length > 1 && weekKeys[0].split('-')[0] !== weekKeys[weekKeys.length - 1].split('-')[0];
 
   return weekKeys.map((wk) => {
     const [year, weekPart] = wk.split('-');
@@ -310,19 +312,19 @@ export function buildAggregatedFlashRedpointBars(
 
 // ── V-Points stacked area timeline ──────────────────────────────────
 
-export interface VPointsLayoutSeries {
+export type VPointsLayoutSeries = {
   layoutKey: string;
   displayName: string;
   color: string;
   /** Cumulative v-points per week for this layout */
   data: number[];
-}
+};
 
-export interface VPointsTimelineData {
+export type VPointsTimelineData = {
   weekLabels: string[];
   series: VPointsLayoutSeries[];
   totalPoints: number;
-}
+};
 
 /**
  * Extract the numeric V-grade value from a V-grade string.
@@ -336,8 +338,16 @@ function vGradeToPoints(vGrade: string): number {
 }
 
 const LAYOUT_ORDER = [
-  'kilter-1', 'kilter-8', 'tension-9', 'tension-10', 'tension-11',
-  'moonboard-1', 'moonboard-2', 'moonboard-3', 'moonboard-4', 'moonboard-5',
+  'kilter-1',
+  'kilter-8',
+  'tension-9',
+  'tension-10',
+  'tension-11',
+  'moonboard-1',
+  'moonboard-2',
+  'moonboard-3',
+  'moonboard-4',
+  'moonboard-5',
 ];
 
 export function buildVPointsTimeline(
@@ -351,8 +361,9 @@ export function buildVPointsTimeline(
 
   BOARD_TYPES.forEach((boardType) => {
     const ticks = allBoardsTicks[boardType] || [];
-    const filtered = filterByUnifiedTimeframe(ticks, timeframe, fromDate, toDate)
-      .filter((e) => e.difficulty !== null && e.status !== 'attempt');
+    const filtered = filterByUnifiedTimeframe(ticks, timeframe, fromDate, toDate).filter(
+      (e) => e.difficulty !== null && e.status !== 'attempt',
+    );
 
     for (const entry of filtered) {
       const layoutKey = getLayoutKey(boardType, entry.layoutId);
@@ -366,9 +377,7 @@ export function buildVPointsTimeline(
 
   // Collect all entries to find the overall time range
   const allEntries = activeLayouts.flatMap((lk) => entriesByLayout[lk]);
-  const sorted = [...allEntries].sort(
-    (a, b) => new Date(a.climbed_at).getTime() - new Date(b.climbed_at).getTime(),
-  );
+  const sorted = [...allEntries].sort((a, b) => new Date(a.climbed_at).getTime() - new Date(b.climbed_at).getTime());
 
   // Build full week key range
   const allWeekKeys: string[] = [];
@@ -414,8 +423,7 @@ export function buildVPointsTimeline(
 
   // Week label formatting
   const spansYears =
-    cappedKeys.length > 1 &&
-    cappedKeys[0].split('-')[0] !== cappedKeys[cappedKeys.length - 1].split('-')[0];
+    cappedKeys.length > 1 && cappedKeys[0].split('-')[0] !== cappedKeys[cappedKeys.length - 1].split('-')[0];
 
   const weekLabels = cappedKeys.map((wk) => {
     const [year, weekPart] = wk.split('-');
@@ -459,7 +467,7 @@ export function buildVPointsTimeline(
 
 // ── Statistics summary (layout percentages) ─────────────────────────
 
-export interface LayoutPercentage {
+export type LayoutPercentage = {
   layoutKey: string;
   boardType: string;
   layoutId: number | null;
@@ -468,7 +476,7 @@ export interface LayoutPercentage {
   count: number;
   grades: Record<string, number>;
   percentage: number;
-}
+};
 
 export function buildStatisticsSummary(
   profileStats: GetUserProfileStatsQueryResponse['userProfileStats'] | null,
@@ -519,7 +527,7 @@ export function buildStatisticsSummary(
   }
 
   const layoutPercentages = layoutsWithExactPercentages.map(
-    ({ exactPercentage, remainder, ...rest }) => rest,
+    ({ exactPercentage: _exactPercentage, remainder: _remainder, ...rest }) => rest,
   );
 
   return { totalAscents, layoutPercentages };

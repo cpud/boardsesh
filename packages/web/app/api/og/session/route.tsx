@@ -1,6 +1,6 @@
 import React from 'react';
 import { ImageResponse } from '@vercel/og';
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { darkTokens, themeTokens } from '@/app/theme/theme-config';
 import { FONT_GRADE_COLORS, getGradeColorWithOpacity } from '@/app/lib/grade-colors';
 import { BOULDER_GRADES } from '@/app/lib/board-data';
@@ -66,9 +66,10 @@ export async function GET(request: NextRequest) {
     const boardInfoLine = summary.boardLabel
       ? `${summary.boardLabel}${summary.boardAngle != null ? ` • ${summary.boardAngle}°` : ''}`
       : 'Boardsesh session';
-    const statsLine = summary.participantCount > 0
-      ? `${summary.participantCount} climber${summary.participantCount !== 1 ? 's' : ''} • ${summary.totalSends} send${summary.totalSends !== 1 ? 's' : ''} so far`
-      : 'No one is here yet';
+    const statsLine =
+      summary.participantCount > 0
+        ? `${summary.participantCount} climber${summary.participantCount !== 1 ? 's' : ''} • ${summary.totalSends} send${summary.totalSends !== 1 ? 's' : ''} so far`
+        : 'No one is here yet';
     const previewUrl = summary.boardPreviewPath
       ? new URL(summary.boardPreviewPath, request.nextUrl.origin).toString()
       : null;
@@ -163,9 +164,7 @@ export async function GET(request: NextRequest) {
                 textAlign: 'center',
               }}
             >
-              <div style={{ fontSize: '22px', fontWeight: 700 }}>
-                {summary.boardLabel || 'Board ready'}
-              </div>
+              <div style={{ fontSize: '22px', fontWeight: 700 }}>{summary.boardLabel || 'Board ready'}</div>
               <div style={{ fontSize: '18px' }}>
                 {summary.boardAngle != null ? `${summary.boardAngle}°` : 'Session invite'}
               </div>
@@ -266,65 +265,63 @@ export async function GET(request: NextRequest) {
             </div>
 
             {gradeBars.length > 0 ? (
-              <>
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: '6px',
-                    width: '100%',
-                    height: '190px',
-                  }}
-                >
-                  {gradeBars.map((bar) => (
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '6px',
+                  width: '100%',
+                  height: '190px',
+                }}
+              >
+                {gradeBars.map((bar) => (
+                  <div
+                    key={bar.grade}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      flex: 1,
+                      height: '100%',
+                      justifyContent: 'flex-end',
+                      alignItems: 'stretch',
+                    }}
+                  >
                     <div
-                      key={bar.grade}
                       style={{
                         display: 'flex',
-                        flexDirection: 'column',
-                        flex: 1,
-                        height: '100%',
-                        justifyContent: 'flex-end',
-                        alignItems: 'stretch',
+                        alignItems: 'flex-end',
+                        width: '100%',
+                        height: '156px',
+                        borderBottom: `1px solid ${darkTokens.neutral[300]}`,
+                        paddingBottom: '10px',
                       }}
                     >
                       <div
                         style={{
-                          display: 'flex',
-                          alignItems: 'flex-end',
                           width: '100%',
-                          height: '156px',
-                          borderBottom: `1px solid ${darkTokens.neutral[300]}`,
-                          paddingBottom: '10px',
+                          height: `${Math.max((bar.count / maxCount) * 100, 7)}%`,
+                          backgroundColor: bar.color,
+                          borderRadius: '10px 10px 0 0',
                         }}
-                      >
-                        <div
-                          style={{
-                            width: '100%',
-                            height: `${Math.max((bar.count / maxCount) * 100, 7)}%`,
-                            backgroundColor: bar.color,
-                            borderRadius: '10px 10px 0 0',
-                          }}
-                        />
-                      </div>
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          width: '100%',
-                          paddingTop: '10px',
-                          fontSize: '17px',
-                          fontWeight: 700,
-                          textAlign: 'center',
-                          color: darkTokens.neutral[700],
-                        }}
-                      >
-                        {bar.grade}
-                      </div>
+                      />
                     </div>
-                  ))}
-                </div>
-              </>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: '100%',
+                        paddingTop: '10px',
+                        fontSize: '17px',
+                        fontWeight: 700,
+                        textAlign: 'center',
+                        color: darkTokens.neutral[700],
+                      }}
+                    >
+                      {bar.grade}
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
               <div
                 style={{
@@ -475,18 +472,15 @@ export async function GET(request: NextRequest) {
       </div>
     );
 
-    return new ImageResponse(
-      image,
-      {
-        width: OG_IMAGE_WIDTH,
-        height: OG_IMAGE_HEIGHT,
-        headers: createOgImageHeaders({
-          contentType: 'image/png',
-          version,
-          serverTiming: `db;dur=${dbMs.toFixed(1)}, render;dur=${renderMs.toFixed(1)}, route;dur=${(performance.now() - routeT0).toFixed(1)}`,
-        }),
-      },
-    );
+    return new ImageResponse(image, {
+      width: OG_IMAGE_WIDTH,
+      height: OG_IMAGE_HEIGHT,
+      headers: createOgImageHeaders({
+        contentType: 'image/png',
+        version,
+        serverTiming: `db;dur=${dbMs.toFixed(1)}, render;dur=${renderMs.toFixed(1)}, route;dur=${(performance.now() - routeT0).toFixed(1)}`,
+      }),
+    });
   } catch (error) {
     console.error('Error generating session OG image:', error);
     const message = error instanceof Error ? error.message : String(error);

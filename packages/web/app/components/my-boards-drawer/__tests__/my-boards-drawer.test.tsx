@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
+import MyBoardsDrawer from '../my-boards-drawer';
 
 // Mock data
 let mockBoards: Array<Record<string, unknown>> = [];
@@ -31,15 +32,16 @@ vi.mock('../../swipeable-drawer/swipeable-drawer', () => ({
     title: React.ReactNode;
     extra?: React.ReactNode;
     onClose: () => void;
-  }) => (open ? (
-    <div data-testid="drawer">
-      <div data-testid="drawer-header">
-        <span data-testid="drawer-title">{title}</span>
-        {extra && <span data-testid="drawer-extra">{extra}</span>}
+  }) =>
+    open ? (
+      <div data-testid="drawer">
+        <div data-testid="drawer-header">
+          <span data-testid="drawer-title">{title}</span>
+          {extra && <span data-testid="drawer-extra">{extra}</span>}
+        </div>
+        {children}
       </div>
-      {children}
-    </div>
-  ) : null),
+    ) : null,
 }));
 
 vi.mock('../../board-entity/board-detail', () => ({
@@ -54,7 +56,11 @@ vi.mock('../../board-entity/board-detail', () => ({
   }) => (
     <div data-testid="board-detail-content">
       <span>Board: {boardUuid}</span>
-      {onDeleted && <button type="button" onClick={onDeleted} data-testid="delete-board">Delete</button>}
+      {onDeleted && (
+        <button type="button" onClick={onDeleted} data-testid="delete-board">
+          Delete
+        </button>
+      )}
     </div>
   ),
 }));
@@ -92,8 +98,6 @@ vi.mock('../my-boards-drawer.module.css', () => ({
     },
   ),
 }));
-
-import MyBoardsDrawer from '../my-boards-drawer';
 
 function makeBoard(overrides?: Record<string, unknown>) {
   return {
@@ -137,14 +141,14 @@ describe('MyBoardsDrawer', () => {
 
   it('renders loading state', () => {
     mockIsLoading = true;
-    render(<MyBoardsDrawer open={true} onClose={mockOnClose} />);
+    render(<MyBoardsDrawer open onClose={mockOnClose} />);
     expect(screen.getByTestId('my-boards-loading')).toBeDefined();
   });
 
   it('renders empty state when no boards', () => {
     mockBoards = [];
     mockIsLoading = false;
-    render(<MyBoardsDrawer open={true} onClose={mockOnClose} />);
+    render(<MyBoardsDrawer open onClose={mockOnClose} />);
     expect(screen.getByTestId('my-boards-empty')).toBeDefined();
     expect(screen.getByText(/No boards yet/)).toBeDefined();
   });
@@ -154,7 +158,7 @@ describe('MyBoardsDrawer', () => {
       makeBoard(),
       makeBoard({ uuid: 'board-2', name: 'My Tension', boardType: 'tension', locationName: null }),
     ];
-    render(<MyBoardsDrawer open={true} onClose={mockOnClose} />);
+    render(<MyBoardsDrawer open onClose={mockOnClose} />);
     expect(screen.getByTestId('my-boards-list')).toBeDefined();
     expect(screen.getByText('My Kilter Board')).toBeDefined();
     expect(screen.getByText('My Tension')).toBeDefined();
@@ -162,13 +166,13 @@ describe('MyBoardsDrawer', () => {
 
   it('shows board metadata with type, location, and angle', () => {
     mockBoards = [makeBoard()];
-    render(<MyBoardsDrawer open={true} onClose={mockOnClose} />);
+    render(<MyBoardsDrawer open onClose={mockOnClose} />);
     expect(screen.getByText('Kilter \u00B7 Home Gym \u00B7 40\u00B0')).toBeDefined();
   });
 
   it('navigates to board detail when clicking a board', () => {
     mockBoards = [makeBoard()];
-    render(<MyBoardsDrawer open={true} onClose={mockOnClose} />);
+    render(<MyBoardsDrawer open onClose={mockOnClose} />);
 
     fireEvent.click(screen.getByTestId('board-item-board-1'));
 
@@ -180,14 +184,14 @@ describe('MyBoardsDrawer', () => {
 
   it('renders error state when fetch fails', () => {
     mockError = 'Failed to load your boards';
-    render(<MyBoardsDrawer open={true} onClose={mockOnClose} />);
+    render(<MyBoardsDrawer open onClose={mockOnClose} />);
     expect(screen.getByTestId('my-boards-error')).toBeDefined();
     expect(screen.getByText('Failed to load your boards')).toBeDefined();
   });
 
   it('navigates to search view when search icon is clicked', () => {
     mockBoards = [makeBoard()];
-    render(<MyBoardsDrawer open={true} onClose={mockOnClose} />);
+    render(<MyBoardsDrawer open onClose={mockOnClose} />);
 
     fireEvent.click(screen.getByLabelText('Find a board'));
 
@@ -197,7 +201,7 @@ describe('MyBoardsDrawer', () => {
 
   it('navigates back from board detail to list', () => {
     mockBoards = [makeBoard()];
-    render(<MyBoardsDrawer open={true} onClose={mockOnClose} />);
+    render(<MyBoardsDrawer open onClose={mockOnClose} />);
 
     // Navigate to board detail
     fireEvent.click(screen.getByTestId('board-item-board-1'));
@@ -211,7 +215,7 @@ describe('MyBoardsDrawer', () => {
 
   it('navigates from search to board detail and back to search', () => {
     mockBoards = [makeBoard()];
-    render(<MyBoardsDrawer open={true} onClose={mockOnClose} />);
+    render(<MyBoardsDrawer open onClose={mockOnClose} />);
 
     // Navigate to search
     fireEvent.click(screen.getByLabelText('Find a board'));
@@ -230,7 +234,7 @@ describe('MyBoardsDrawer', () => {
 
   it('returns to list view when board is deleted', () => {
     mockBoards = [makeBoard()];
-    render(<MyBoardsDrawer open={true} onClose={mockOnClose} />);
+    render(<MyBoardsDrawer open onClose={mockOnClose} />);
 
     // Navigate to board detail
     fireEvent.click(screen.getByTestId('board-item-board-1'));

@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+
+import { describe, expect, it, vi, beforeEach } from 'vite-plus/test';
 import { act, renderHook, waitFor } from '@testing-library/react';
+import { useSession } from 'next-auth/react';
+import { useSnackbar } from '@/app/components/providers/snackbar-provider';
+import { useGradeFormat } from '@/app/hooks/use-grade-format';
+import { GET_USER_CLIMB_PERCENTILE, GET_USER_PROFILE_STATS, GET_USER_TICKS } from '@/app/lib/graphql/operations';
+import { useProfileData } from '../use-profile-data';
 
 vi.mock('next-auth/react', () => ({
   useSession: vi.fn(),
@@ -18,16 +24,6 @@ const mockRequest = vi.fn();
 vi.mock('@/app/lib/graphql/client', () => ({
   createGraphQLHttpClient: () => ({ request: mockRequest }),
 }));
-
-import { useSession } from 'next-auth/react';
-import { useSnackbar } from '@/app/components/providers/snackbar-provider';
-import { useGradeFormat } from '@/app/hooks/use-grade-format';
-import {
-  GET_USER_CLIMB_PERCENTILE,
-  GET_USER_PROFILE_STATS,
-  GET_USER_TICKS,
-} from '@/app/lib/graphql/operations';
-import { useProfileData } from '../use-profile-data';
 
 const mockUseSession = vi.mocked(useSession);
 const mockUseSnackbar = vi.mocked(useSnackbar);
@@ -54,63 +50,71 @@ describe('useProfileData', () => {
   });
 
   it('adds explicit send and flash status metadata to hardest grade highlights', () => {
-    const { result } = renderHook(() => useProfileData('user-1', {
-      initialProfile: {
-        id: 'user-1',
-        email: undefined,
-        name: 'Test User',
-        image: null,
-        profile: null,
-        credentials: [],
-        followerCount: 0,
-        followingCount: 0,
-        isFollowedByMe: false,
-      },
-      initialProfileStats: {
-        totalDistinctClimbs: 3,
-        layoutStats: [],
-      },
-      initialAllBoardsTicks: {
-        kilter: [
-          {
-            climbed_at: '2025-01-01T12:00:00Z',
-            difficulty: 22,
-            tries: 3,
-            angle: 40,
-            status: 'send',
-            layoutId: 1,
-            boardType: 'kilter',
-            climbUuid: 'send-climb',
-          },
-          {
-            climbed_at: '2025-01-02T12:00:00Z',
-            difficulty: 20,
-            tries: 1,
-            angle: 40,
-            status: 'flash',
-            layoutId: 1,
-            boardType: 'kilter',
-            climbUuid: 'flash-climb',
-          },
-          {
-            climbed_at: '2025-01-03T12:00:00Z',
-            difficulty: 24,
-            tries: 2,
-            angle: 40,
-            status: 'attempt',
-            layoutId: 1,
-            boardType: 'kilter',
-            climbUuid: 'attempt-climb',
-          },
-        ],
-      },
-      initialLogbook: [],
-      initialIsOwnProfile: true,
-    }));
+    const { result } = renderHook(() =>
+      useProfileData('user-1', {
+        initialProfile: {
+          id: 'user-1',
+          email: undefined,
+          name: 'Test User',
+          image: null,
+          profile: null,
+          credentials: [],
+          followerCount: 0,
+          followingCount: 0,
+          isFollowedByMe: false,
+        },
+        initialProfileStats: {
+          totalDistinctClimbs: 3,
+          layoutStats: [],
+        },
+        initialPercentile: {
+          totalDistinctClimbs: 3,
+          percentile: 75,
+          totalActiveUsers: 20,
+        },
+        initialAllBoardsTicks: {
+          kilter: [
+            {
+              climbed_at: '2025-01-01T12:00:00Z',
+              difficulty: 22,
+              tries: 3,
+              angle: 40,
+              status: 'send',
+              layoutId: 1,
+              boardType: 'kilter',
+              climbUuid: 'send-climb',
+            },
+            {
+              climbed_at: '2025-01-02T12:00:00Z',
+              difficulty: 20,
+              tries: 1,
+              angle: 40,
+              status: 'flash',
+              layoutId: 1,
+              boardType: 'kilter',
+              climbUuid: 'flash-climb',
+            },
+            {
+              climbed_at: '2025-01-03T12:00:00Z',
+              difficulty: 24,
+              tries: 2,
+              angle: 40,
+              status: 'attempt',
+              layoutId: 1,
+              boardType: 'kilter',
+              climbUuid: 'attempt-climb',
+            },
+          ],
+        },
+        initialLogbook: [],
+        initialIsOwnProfile: true,
+      }),
+    );
 
     expect(result.current.loading).toBe(false);
     expect(result.current.hardestSend).toMatchObject({ label: 'V6', status: 'send' });
     expect(result.current.hardestFlash).toMatchObject({ label: 'V5', status: 'flash' });
+    expect(mockRequest).not.toHaveBeenCalledWith(GET_USER_CLIMB_PERCENTILE, { userId: 'user-1' });
   });
 
   it('fetches missing profile, ticks, stats, and percentile data on mount', async () => {
@@ -185,55 +189,58 @@ describe('useProfileData', () => {
   });
 
   it('recomputes hardest grades when filtering to a single board', async () => {
-    const { result } = renderHook(() => useProfileData('user-1', {
-      initialProfile: {
-        id: 'user-1',
-        email: undefined,
-        name: 'Test User',
-        image: null,
-        profile: null,
-        credentials: [],
-        followerCount: 0,
-        followingCount: 0,
-        isFollowedByMe: false,
-      },
-      initialProfileStats: {
-        totalDistinctClimbs: 4,
-        layoutStats: [],
-      },
-      initialAllBoardsTicks: {
-        kilter: [
-          {
-            climbed_at: '2025-01-01T12:00:00Z',
-            difficulty: 22,
-            tries: 3,
-            angle: 40,
-            status: 'send',
-            layoutId: 1,
-            boardType: 'kilter',
-            climbUuid: 'kilter-send',
-          },
-        ],
-        tension: [
-          {
-            climbed_at: '2025-01-02T12:00:00Z',
-            difficulty: 24,
-            tries: 1,
-            angle: 40,
-            status: 'flash',
-            layoutId: 9,
-            boardType: 'tension',
-            climbUuid: 'tension-flash',
-          },
-        ],
-      },
-      initialLogbook: [],
-      initialIsOwnProfile: true,
-    }));
-
-    await waitFor(() => {
-      expect(mockRequest).toHaveBeenCalled();
-    });
+    const { result } = renderHook(() =>
+      useProfileData('user-1', {
+        initialProfile: {
+          id: 'user-1',
+          email: undefined,
+          name: 'Test User',
+          image: null,
+          profile: null,
+          credentials: [],
+          followerCount: 0,
+          followingCount: 0,
+          isFollowedByMe: false,
+        },
+        initialProfileStats: {
+          totalDistinctClimbs: 4,
+          layoutStats: [],
+        },
+        initialPercentile: {
+          totalDistinctClimbs: 4,
+          percentile: 80,
+          totalActiveUsers: 20,
+        },
+        initialAllBoardsTicks: {
+          kilter: [
+            {
+              climbed_at: '2025-01-01T12:00:00Z',
+              difficulty: 22,
+              tries: 3,
+              angle: 40,
+              status: 'send',
+              layoutId: 1,
+              boardType: 'kilter',
+              climbUuid: 'kilter-send',
+            },
+          ],
+          tension: [
+            {
+              climbed_at: '2025-01-02T12:00:00Z',
+              difficulty: 24,
+              tries: 1,
+              angle: 40,
+              status: 'flash',
+              layoutId: 9,
+              boardType: 'tension',
+              climbUuid: 'tension-flash',
+            },
+          ],
+        },
+        initialLogbook: [],
+        initialIsOwnProfile: true,
+      }),
+    );
 
     expect(result.current.hardestSend).toMatchObject({ label: 'V8', status: 'send' });
     expect(result.current.hardestFlash).toMatchObject({ label: 'V8', status: 'flash' });
@@ -244,5 +251,42 @@ describe('useProfileData', () => {
 
     expect(result.current.hardestSend).toMatchObject({ label: 'V6', status: 'send' });
     expect(result.current.hardestFlash).toBeNull();
+  });
+
+  it('uses initial percentile data without making a percentile query', () => {
+    const initialPercentile = {
+      totalDistinctClimbs: 12,
+      percentile: 90,
+      totalActiveUsers: 40,
+    };
+
+    const { result } = renderHook(() =>
+      useProfileData('user-1', {
+        initialProfile: {
+          id: 'user-1',
+          email: undefined,
+          name: 'Test User',
+          image: null,
+          profile: null,
+          credentials: [],
+          followerCount: 0,
+          followingCount: 0,
+          isFollowedByMe: false,
+        },
+        initialProfileStats: {
+          totalDistinctClimbs: 12,
+          layoutStats: [],
+        },
+        initialPercentile,
+        initialAllBoardsTicks: {
+          kilter: [],
+        },
+        initialLogbook: [],
+        initialIsOwnProfile: true,
+      }),
+    );
+
+    expect(result.current.percentile).toEqual(initialPercentile);
+    expect(mockRequest).not.toHaveBeenCalledWith(GET_USER_CLIMB_PERCENTILE, { userId: 'user-1' });
   });
 });

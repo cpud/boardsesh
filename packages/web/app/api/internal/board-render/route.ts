@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
@@ -107,12 +107,12 @@ function toWebpPath(dir: string, filename: string, isThumbnail: boolean): string
   return `${dir}/${webpName}`;
 }
 
-interface BoardDetailsForBg {
+type BoardDetailsForBg = {
   board_name: string;
   images_to_holds: Record<string, unknown>;
   layoutFolder?: string;
   holdSetImages?: string[];
-}
+};
 
 /**
  * Build the ordered list of public/-relative paths for background images.
@@ -160,8 +160,8 @@ function createOgBackgroundBuffer(boardWidth: number, boardHeight: number): Buff
           </filter>
         </defs>
         <rect width="${OG_IMAGE_WIDTH}" height="${OG_IMAGE_HEIGHT}" fill="url(#bg)" />
-        <circle cx="212" cy="144" r="156" fill="#5DBE94" opacity="0.18" filter="url(#blur)" />
-        <circle cx="984" cy="468" r="188" fill="#C75B64" opacity="0.16" filter="url(#blur)" />
+        <circle cx="212" cy="144" r="156" fill="#5fb27a" opacity="0.18" filter="url(#blur)" />
+        <circle cx="984" cy="468" r="188" fill="#d65a4f" opacity="0.16" filter="url(#blur)" />
         <rect x="24" y="24" width="${OG_IMAGE_WIDTH - 48}" height="${OG_IMAGE_HEIGHT - 48}" rx="28" fill="none" stroke="rgba(255,255,255,0.08)" />
         <rect x="${frameX}" y="${frameY}" width="${frameWidth}" height="${frameHeight}" rx="22" fill="rgba(6, 10, 14, 0.55)" stroke="rgba(255,255,255,0.10)" />
       </svg>
@@ -196,7 +196,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid format' }, { status: 400 });
     }
 
-    const parsedSetIds = setIds.split(',').map(Number).filter((n) => !isNaN(n));
+    const parsedSetIds = setIds
+      .split(',')
+      .map(Number)
+      .filter((n) => !isNaN(n));
 
     // Get board details (pure computation, no DB)
     const boardDetails = getBoardDetailsForBoard({
@@ -275,17 +278,13 @@ export async function GET(request: NextRequest) {
     if (includeBackground) {
       const bgT0 = performance.now();
       const bgRelPaths = getBackgroundRelPaths(boardDetails, thumbnail);
-      const bgFsPaths = bgRelPaths
-        .map((rp) => findPublicImagePath(rp))
-        .filter((p): p is string => p !== null);
+      const bgFsPaths = bgRelPaths.map((rp) => findPublicImagePath(rp)).filter((p): p is string => p !== null);
       bgMs = performance.now() - bgT0;
 
       if (bgFsPaths.length > 0) {
         // Load and resize background images, skipping any that fail
         const results = await Promise.allSettled(
-          bgFsPaths.map((fsPath) =>
-            sharp(fsPath).resize(width, height, { fit: 'fill' }).toBuffer(),
-          ),
+          bgFsPaths.map((fsPath) => sharp(fsPath).resize(width, height, { fit: 'fill' }).toBuffer()),
         );
         const resizedBuffers = results
           .filter((r): r is PromiseFulfilledResult<Buffer> => r.status === 'fulfilled')
@@ -319,9 +318,7 @@ export async function GET(request: NextRequest) {
           const composeT0 = performance.now();
           const overlayImage = sharp(overlayBuffer, { raw: { width, height, channels: 4 } });
           if (!isOgVariant && format === 'webp') {
-            outputBuffer = await overlayImage
-              .webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true })
-              .toBuffer();
+            outputBuffer = await overlayImage.webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true }).toBuffer();
             outputContentType = 'image/webp';
           } else {
             imageBuffer = await overlayImage.png(DEFAULT_PNG_OPTIONS).toBuffer();
@@ -333,9 +330,7 @@ export async function GET(request: NextRequest) {
         const composeT0 = performance.now();
         const overlayImage = sharp(overlayBuffer, { raw: { width, height, channels: 4 } });
         if (!isOgVariant && format === 'webp') {
-          outputBuffer = await overlayImage
-            .webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true })
-            .toBuffer();
+          outputBuffer = await overlayImage.webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true }).toBuffer();
           outputContentType = 'image/webp';
         } else {
           imageBuffer = await overlayImage.png(DEFAULT_PNG_OPTIONS).toBuffer();
@@ -347,9 +342,7 @@ export async function GET(request: NextRequest) {
       const composeT0 = performance.now();
       const overlayImage = sharp(overlayBuffer, { raw: { width, height, channels: 4 } });
       if (!isOgVariant && format === 'webp') {
-        outputBuffer = await overlayImage
-          .webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true })
-          .toBuffer();
+        outputBuffer = await overlayImage.webp(thumbnail ? THUMBNAIL_WEBP_OPTIONS : { lossless: true }).toBuffer();
         outputContentType = 'image/webp';
       } else {
         imageBuffer = await overlayImage.png(DEFAULT_PNG_OPTIONS).toBuffer();

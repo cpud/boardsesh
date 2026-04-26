@@ -1,11 +1,11 @@
 import { and, sql } from 'drizzle-orm';
 import { dbz as db } from '@/app/lib/db/db';
-import { ParsedBoardRouteParameters, SearchRequestPagination } from '@/app/lib/types';
+import type { ParsedBoardRouteParameters, SearchRequestPagination } from '@/app/lib/types';
 import { UNIFIED_TABLES } from '@/lib/db/queries/util/table-select';
 import { createClimbFilters } from '@boardsesh/db/queries';
 import { boardseshTicks } from '@/app/lib/db/schema';
 
-export interface HoldHeatmapData {
+export type HoldHeatmapData = {
   holdId: number;
   totalUses: number;
   startingUses: number;
@@ -16,7 +16,7 @@ export interface HoldHeatmapData {
   averageDifficulty: number | null;
   userAscents?: number;
   userAttempts?: number;
-}
+};
 
 export const getHoldHeatmapData = async (
   params: ParsedBoardRouteParameters,
@@ -57,7 +57,11 @@ export const getHoldHeatmapData = async (
         .innerJoin(climbs, and(...filters.getClimbHoldsJoinConditions()))
         .leftJoin(climbStats, and(...filters.getHoldHeatmapClimbStatsConditions()))
         .where(
-          and(...filters.getClimbWhereConditions(), ...filters.getSizeConditions(), ...filters.getClimbStatsConditions()),
+          and(
+            ...filters.getClimbWhereConditions(),
+            ...filters.getSizeConditions(),
+            ...filters.getClimbStatsConditions(),
+          ),
         )
         .groupBy(climbHolds.holdId);
 
@@ -79,7 +83,11 @@ export const getHoldHeatmapData = async (
         .innerJoin(climbs, and(...filters.getClimbHoldsJoinConditions()))
         .leftJoin(climbStats, and(...filters.getHoldHeatmapClimbStatsConditions()))
         .where(
-          and(...filters.getClimbWhereConditions(), ...filters.getSizeConditions(), ...filters.getClimbStatsConditions()),
+          and(
+            ...filters.getClimbWhereConditions(),
+            ...filters.getSizeConditions(),
+            ...filters.getClimbStatsConditions(),
+          ),
         )
         .groupBy(climbHolds.holdId);
 

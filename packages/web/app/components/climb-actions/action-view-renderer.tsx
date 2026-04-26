@@ -4,7 +4,13 @@ import React from 'react';
 import MuiButton from '@mui/material/Button';
 import { ActionTooltip } from './action-tooltip';
 import { themeTokens } from '@/app/theme/theme-config';
-import type { ClimbActionsViewMode, ClimbActionSize, ClimbActionResult, ClimbActionMenuItem, ClimbActionType } from './types';
+import type {
+  ClimbActionsViewMode,
+  ClimbActionSize,
+  ClimbActionResult,
+  ClimbActionMenuItem,
+  ClimbActionType,
+} from './types';
 
 /**
  * Computed display properties shared across all action components.
@@ -237,13 +243,7 @@ export function buildActionResult({
   );
 
   const listElement = listElementOverride ?? (
-    <ActionListElement
-      icon={icon}
-      label={label}
-      onClick={onClick}
-      disabled={disabled}
-      extraContent={extraContent}
-    />
+    <ActionListElement icon={icon} label={label} onClick={onClick} disabled={disabled} extraContent={extraContent} />
   );
 
   const menuItem: ClimbActionMenuItem = menuItemOverride ?? {

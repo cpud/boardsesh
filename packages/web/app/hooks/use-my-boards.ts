@@ -54,7 +54,7 @@ export function useMyBoards(enabled: boolean, limit = 50, initialBoards?: UserBo
     return () => {
       cancelled = true;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, isAuthenticated, token, limit]);
 
   return { boards, isLoading, error };

@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { render, screen, fireEvent } from '@testing-library/react';
+import AuroraMigrationContent from '../aurora-migration-content';
 
 let mockSessionStatus = 'unauthenticated';
 let mockSessionData: { user?: { email?: string } } | null = null;
@@ -23,8 +24,6 @@ vi.mock('@/app/components/settings/board-import-prompt', () => ({
     <div data-testid={`board-import-prompt-${boardType}`}>Import {boardType}</div>
   ),
 }));
-
-import AuroraMigrationContent from '../aurora-migration-content';
 
 describe('AuroraMigrationContent', () => {
   beforeEach(() => {
@@ -75,7 +74,9 @@ describe('AuroraMigrationContent', () => {
 
       fireEvent.click(screen.getByText('Sign in or Create Account'));
       expect(mockOpenAuthModal).toHaveBeenCalledTimes(1);
-      expect(mockOpenAuthModal).toHaveBeenCalledWith(expect.objectContaining({ title: 'Sign in to migrate your data' }));
+      expect(mockOpenAuthModal).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Sign in to migrate your data' }),
+      );
     });
 
     it('calls openAuthModal each time sign in button is clicked', () => {

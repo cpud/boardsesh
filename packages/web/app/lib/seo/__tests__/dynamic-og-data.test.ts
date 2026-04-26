@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 
 const executeMock = vi.fn();
 const buildBoardRenderUrlMock = vi.fn();
@@ -31,7 +31,9 @@ vi.mock('@/app/lib/db/db', () => ({
 }));
 
 vi.mock('@/app/lib/string-utils', () => ({
-  formatBoardDisplayName: vi.fn((value: string) => value === 'moonboard' ? 'MoonBoard' : value.charAt(0).toUpperCase() + value.slice(1)),
+  formatBoardDisplayName: vi.fn((value: string) =>
+    value === 'moonboard' ? 'MoonBoard' : value.charAt(0).toUpperCase() + value.slice(1),
+  ),
 }));
 
 vi.mock('@/app/lib/url-utils.server', () => ({
@@ -77,18 +79,20 @@ describe('getSessionOgSummary', () => {
   it('reads party sessions from board_sessions and resolves slug board previews', async () => {
     executeMock
       .mockResolvedValueOnce({
-        rows: [{
-          name: 'Evening Session',
-          leader_name: 'Alex',
-          version_at: '2024-01-03T00:00:00.000Z',
-          board_path: '/b/my-home-wall',
-          board_slug: null,
-          board_angle: null,
-          board_type: null,
-          layout_id: null,
-          size_id: null,
-          set_ids: null,
-        }],
+        rows: [
+          {
+            name: 'Evening Session',
+            leader_name: 'Alex',
+            version_at: '2024-01-03T00:00:00.000Z',
+            board_path: '/b/my-home-wall',
+            board_slug: null,
+            board_angle: null,
+            board_type: null,
+            layout_id: null,
+            size_id: null,
+            set_ids: null,
+          },
+        ],
       })
       .mockResolvedValueOnce({
         rows: [{ participant_count: 2 }],
@@ -155,18 +159,20 @@ describe('getSessionOgSummary', () => {
     executeMock
       .mockResolvedValueOnce({ rows: [] })
       .mockResolvedValueOnce({
-        rows: [{
-          name: 'Solo Volume Day',
-          leader_name: 'Alex',
-          version_at: '2024-01-05T00:00:00.000Z',
-          board_path: null,
-          board_slug: null,
-          board_angle: null,
-          board_type: null,
-          layout_id: null,
-          size_id: null,
-          set_ids: null,
-        }],
+        rows: [
+          {
+            name: 'Solo Volume Day',
+            leader_name: 'Alex',
+            version_at: '2024-01-05T00:00:00.000Z',
+            board_path: null,
+            board_slug: null,
+            board_angle: null,
+            board_type: null,
+            layout_id: null,
+            size_id: null,
+            set_ids: null,
+          },
+        ],
       })
       .mockResolvedValueOnce({
         rows: [{ participant_count: 1 }],
@@ -207,18 +213,20 @@ describe('getSessionOgSummary', () => {
   it('uses board config from legacy board paths when present', async () => {
     executeMock
       .mockResolvedValueOnce({
-        rows: [{
-          name: 'Board Night',
-          leader_name: 'Sam',
-          version_at: '2024-01-06T00:00:00.000Z',
-          board_path: '/tension/original/8x10/main_aux/35',
-          board_slug: null,
-          board_angle: null,
-          board_type: null,
-          layout_id: null,
-          size_id: null,
-          set_ids: null,
-        }],
+        rows: [
+          {
+            name: 'Board Night',
+            leader_name: 'Sam',
+            version_at: '2024-01-06T00:00:00.000Z',
+            board_path: '/tension/original/8x10/main_aux/35',
+            board_slug: null,
+            board_angle: null,
+            board_type: null,
+            layout_id: null,
+            size_id: null,
+            set_ids: null,
+          },
+        ],
       })
       .mockResolvedValueOnce({
         rows: [{ participant_count: 3 }],
@@ -266,18 +274,20 @@ describe('getSessionOgSummary', () => {
   it('counts sends even when tick difficulty is null and grades come from climb stats', async () => {
     executeMock
       .mockResolvedValueOnce({
-        rows: [{
-          name: 'Null Grade Night',
-          leader_name: 'Alex',
-          version_at: '2024-01-07T00:00:00.000Z',
-          board_path: '/b/my-home-wall',
-          board_slug: null,
-          board_angle: null,
-          board_type: null,
-          layout_id: null,
-          size_id: null,
-          set_ids: null,
-        }],
+        rows: [
+          {
+            name: 'Null Grade Night',
+            leader_name: 'Alex',
+            version_at: '2024-01-07T00:00:00.000Z',
+            board_path: '/b/my-home-wall',
+            board_slug: null,
+            board_angle: null,
+            board_type: null,
+            layout_id: null,
+            size_id: null,
+            set_ids: null,
+          },
+        ],
       })
       .mockResolvedValueOnce({
         rows: [{ participant_count: 1 }],

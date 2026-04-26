@@ -1,27 +1,27 @@
-import type { BoardName, HoldState } from '@boardsesh/shared-schema';
+import type { BoardName } from '@boardsesh/shared-schema';
 
 /**
  * Route parameters identifying a specific board configuration.
  */
-export interface BoardRouteParams {
+export type BoardRouteParams = {
   board_name: BoardName;
   layout_id: number;
   size_id: number;
   set_ids: number[];
   angle: number;
-}
+};
 
 /**
  * Search parameters for the climb search query.
  * Shared between web and backend packages.
  */
-export interface ClimbSearchParams {
+export type ClimbSearchParams = {
   // Pagination
   page?: number;
   pageSize?: number;
   // Sorting
-  sortBy?: 'ascents' | 'difficulty' | 'name' | 'quality' | 'popular' | 'creation' | string;
-  sortOrder?: 'asc' | 'desc' | string;
+  sortBy?: 'ascents' | 'difficulty' | 'name' | 'quality' | 'popular' | 'creation' | (string & {});
+  sortOrder?: 'asc' | 'desc' | (string & {});
   // Filters
   gradeAccuracy?: number;
   minGrade?: number;
@@ -34,30 +34,31 @@ export interface ClimbSearchParams {
   onlyClassics?: boolean;
   onlyTallClimbs?: boolean;
   // Hold filters - 'ANY', 'NOT', or specific states like 'STARTING', 'HAND', etc.
-  // Record<string, any> allows for both simple strings and the object-based LitUpHoldsMap
-  holdsFilter?: Record<string, any>;
+  // Record<string, unknown> allows for both simple strings and the object-based LitUpHoldsMap
+  holdsFilter?: Record<string, unknown>;
   // Personal progress filters
   hideAttempted?: boolean;
   hideCompleted?: boolean;
   showOnlyAttempted?: boolean;
   showOnlyCompleted?: boolean;
   onlyDrafts?: boolean;
+  projectsOnly?: boolean;
   // Allow dynamic hold keys (e.g., hold_123)
-  [key: `hold_${number}`]: any;
-}
+  [key: `hold_${number}`]: unknown;
+};
 
 /**
  * Result of a climb search query.
  */
-export interface ClimbSearchResult {
+export type ClimbSearchResult = {
   climbs: ClimbRow[];
   hasMore: boolean;
-}
+};
 
 /**
  * A single row from the climb search query.
  */
-export interface ClimbRow {
+export type ClimbRow = {
   uuid: string;
   setter_username: string;
   name: string;
@@ -73,4 +74,4 @@ export interface ClimbRow {
   is_draft: boolean;
   created_at: string | null;
   published_at: string | null;
-}
+};

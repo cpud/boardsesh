@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
-import { createGraphQLClient, execute, subscribe, Client } from '../../graphql-queue/graphql-client';
+import { useState, useCallback, useEffect, type Dispatch, type SetStateAction } from 'react';
+import { type Client, createGraphQLClient, execute, subscribe } from '../../graphql-queue/graphql-client';
 import {
   INITIAL_RETRY_DELAY_MS,
   MAX_RETRY_DELAY_MS,
@@ -16,20 +16,25 @@ import {
   type SessionEvent,
   type QueueEvent,
   type EventsReplayResponse,
+  type SessionSummary,
 } from '@boardsesh/shared-schema';
 import type { ClimbQueueItem as LocalClimbQueueItem } from '../../queue-control/types';
 import { computeQueueStateHash } from '@/app/utils/hash';
 import { setPreference, removePreference } from '@/app/lib/user-preferences-db';
 import { createGraphQLHttpClient } from '@/app/lib/graphql/client';
-import {
-  END_SESSION as END_SESSION_GQL,
-  type EndSessionResponse,
-} from '@/app/lib/graphql/operations/sessions';
-import type { SessionSummary } from '@boardsesh/shared-schema';
+import { END_SESSION as END_SESSION_GQL, type EndSessionResponse } from '@/app/lib/graphql/operations/sessions';
 import { upsertSessionUser } from '../event-utils';
 import { TransientJoinError } from '../errors';
-import type { Session, ActiveSessionInfo, PendingInitialQueue, SharedRefs } from '../types';
-import { toClimbQueueItemInput, ACTIVE_SESSION_KEY, DEFAULT_BACKEND_URL, DEBUG } from '../types';
+import {
+  type Session,
+  type ActiveSessionInfo,
+  type PendingInitialQueue,
+  type SharedRefs,
+  toClimbQueueItemInput,
+  ACTIVE_SESSION_KEY,
+  DEFAULT_BACKEND_URL,
+  DEBUG,
+} from '../types';
 
 /**
  * Transform QueueEvent (from eventsReplay) to SubscriptionQueueEvent format.
@@ -56,21 +61,32 @@ function transformToSubscriptionEvent(event: QueueEvent): SubscriptionQueueEvent
   }
 }
 
-interface UseSessionLifecycleArgs {
+type UseSessionLifecycleArgs = {
   isAuthLoading: boolean;
   handleQueueEvent: (event: SubscriptionQueueEvent) => void;
   handleSessionEvent: (event: SessionEvent) => void;
   setSession: Dispatch<SetStateAction<Session | null>>;
-  refs: Pick<SharedRefs,
-    'wsAuthTokenRef' | 'usernameRef' | 'avatarUrlRef' | 'sessionRef' |
-    'activeSessionRef' | 'queueRef' | 'currentClimbQueueItemRef' |
-    'mountedRef' | 'isConnectingRef' | 'isReconnectingRef' |
-    'connectionGenerationRef' | 'triggerResyncRef' | 'lastReceivedSequenceRef' |
-    'queueUnsubscribeRef' | 'sessionUnsubscribeRef'
+  refs: Pick<
+    SharedRefs,
+    | 'wsAuthTokenRef'
+    | 'usernameRef'
+    | 'avatarUrlRef'
+    | 'sessionRef'
+    | 'activeSessionRef'
+    | 'queueRef'
+    | 'currentClimbQueueItemRef'
+    | 'mountedRef'
+    | 'isConnectingRef'
+    | 'isReconnectingRef'
+    | 'connectionGenerationRef'
+    | 'triggerResyncRef'
+    | 'lastReceivedSequenceRef'
+    | 'queueUnsubscribeRef'
+    | 'sessionUnsubscribeRef'
   >;
-}
+};
 
-export interface SessionLifecycleState {
+export type SessionLifecycleState = {
   activeSession: ActiveSessionInfo | null;
   client: Client | null;
   session: Session | null;
@@ -78,9 +94,11 @@ export interface SessionLifecycleState {
   hasConnected: boolean;
   error: Error | null;
   sessionSummary: SessionSummary | null;
-}
+  sessionSummaryBoardType: string | null;
+  sessionSummaryHealthKitWorkoutId: string | null;
+};
 
-export interface SessionLifecycleActions {
+export type SessionLifecycleActions = {
   activateSession: (info: ActiveSessionInfo) => void;
   deactivateSession: () => void;
   setInitialQueueForSession: (
@@ -92,7 +110,7 @@ export interface SessionLifecycleActions {
   endSessionWithSummary: () => void;
   dismissSessionSummary: () => void;
   setSession: Dispatch<SetStateAction<Session | null>>;
-}
+};
 
 export function useSessionLifecycle({
   isAuthLoading,
@@ -102,12 +120,21 @@ export function useSessionLifecycle({
   refs,
 }: UseSessionLifecycleArgs): SessionLifecycleState & SessionLifecycleActions {
   const {
-    wsAuthTokenRef, usernameRef, avatarUrlRef,
-    sessionRef, activeSessionRef,
-    queueRef, currentClimbQueueItemRef,
-    mountedRef, isConnectingRef, isReconnectingRef,
-    connectionGenerationRef, triggerResyncRef, lastReceivedSequenceRef,
-    queueUnsubscribeRef, sessionUnsubscribeRef,
+    wsAuthTokenRef,
+    usernameRef,
+    avatarUrlRef,
+    sessionRef,
+    activeSessionRef,
+    queueRef,
+    currentClimbQueueItemRef,
+    mountedRef,
+    isConnectingRef,
+    isReconnectingRef,
+    connectionGenerationRef,
+    triggerResyncRef,
+    lastReceivedSequenceRef,
+    queueUnsubscribeRef,
+    sessionUnsubscribeRef,
   } = refs;
 
   const [activeSession, setActiveSession] = useState<ActiveSessionInfo | null>(null);
@@ -117,19 +144,30 @@ export function useSessionLifecycle({
   const [hasConnected, setHasConnected] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [sessionSummary, setSessionSummary] = useState<SessionSummary | null>(null);
+  const [sessionSummaryBoardType, setSessionSummaryBoardType] = useState<string | null>(null);
+  const [sessionSummaryHealthKitWorkoutId, setSessionSummaryHealthKitWorkoutId] = useState<string | null>(null);
 
   // Pending initial queue for new sessions
   const [pendingInitialQueue, setPendingInitialQueue] = useState<PendingInitialQueue | null>(null);
 
   // Combined setter that updates both local and external state
-  const setSession = useCallback((value: SetStateAction<Session | null>) => {
-    setSessionLocal(value);
-    setSessionExternal(value);
-  }, [setSessionExternal]);
+  const setSession = useCallback(
+    (value: SetStateAction<Session | null>) => {
+      setSessionLocal(value);
+      setSessionExternal(value);
+    },
+    [setSessionExternal],
+  );
 
   // Keep refs in sync
-  useEffect(() => { sessionRef.current = session; }, [session]);
-  useEffect(() => { activeSessionRef.current = activeSession; }, [activeSession]);
+  useEffect(() => {
+    sessionRef.current = session;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sessionRef is a stable ref
+  }, [session]);
+  useEffect(() => {
+    activeSessionRef.current = activeSession;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- activeSessionRef is a stable ref
+  }, [activeSession]);
 
   // Session lifecycle functions
   const activateSession = useCallback((info: ActiveSessionInfo) => {
@@ -137,7 +175,7 @@ export function useSessionLifecycle({
       if (prev?.sessionId === info.sessionId && prev?.boardPath === info.boardPath) {
         return prev;
       }
-      if (DEBUG) console.log('[PersistentSession] Activating session:', info.sessionId);
+      if (DEBUG) console.info('[PersistentSession] Activating session:', info.sessionId);
       setPreference(ACTIVE_SESSION_KEY, info).catch((err) =>
         console.error('[PersistentSession] Failed to persist session:', err),
       );
@@ -146,7 +184,7 @@ export function useSessionLifecycle({
   }, []);
 
   const deactivateSession = useCallback(() => {
-    if (DEBUG) console.log('[PersistentSession] Deactivating session');
+    if (DEBUG) console.info('[PersistentSession] Deactivating session');
     setActiveSession(null);
     removePreference(ACTIVE_SESSION_KEY).catch((err) =>
       console.error('[PersistentSession] Failed to clear persisted session:', err),
@@ -154,46 +192,64 @@ export function useSessionLifecycle({
   }, []);
 
   const setInitialQueueForSession = useCallback(
-    (sessionId: string, queue: LocalClimbQueueItem[], currentClimb: LocalClimbQueueItem | null, sessionName?: string) => {
-      if (DEBUG) console.log(`[PersistentSession] Setting initial queue for session ${sessionId}:`, queue.length, 'items', sessionName ? `name: ${sessionName}` : '');
+    (
+      sessionId: string,
+      queue: LocalClimbQueueItem[],
+      currentClimb: LocalClimbQueueItem | null,
+      sessionName?: string,
+    ) => {
+      if (DEBUG)
+        console.info(
+          `[PersistentSession] Setting initial queue for session ${sessionId}:`,
+          queue.length,
+          'items',
+          sessionName ? `name: ${sessionName}` : '',
+        );
       setPendingInitialQueue({ sessionId, queue, currentClimb, sessionName });
     },
-    []
+    [],
   );
 
   const dismissSessionSummary = useCallback(() => {
     setSessionSummary(null);
+    setSessionSummaryBoardType(null);
+    setSessionSummaryHealthKitWorkoutId(null);
   }, []);
 
   const endSessionWithSummary = useCallback(() => {
     const endingSessionId = activeSessionRef.current?.sessionId;
+    const boardType = activeSessionRef.current?.parsedParams.board_name ?? null;
     const token = wsAuthTokenRef.current;
 
     deactivateSession();
 
     if (endingSessionId && token) {
       const httpClient = createGraphQLHttpClient(token);
-      httpClient.request<EndSessionResponse>(END_SESSION_GQL, { sessionId: endingSessionId })
+      httpClient
+        .request<EndSessionResponse>(END_SESSION_GQL, { sessionId: endingSessionId })
         .then((response) => {
           if (response.endSession) {
             setSessionSummary(response.endSession);
+            setSessionSummaryBoardType(boardType);
+            setSessionSummaryHealthKitWorkoutId(null);
           }
         })
         .catch((err) => {
           console.error('[PersistentSession] Failed to get session summary:', err);
         });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refs are stable, only .current changes
   }, [deactivateSession]);
 
   // Connect to session when activeSession changes
   useEffect(() => {
     if (!activeSession) {
-      if (DEBUG) console.log('[PersistentSession] No active session, skipping connection');
+      if (DEBUG) console.info('[PersistentSession] No active session, skipping connection');
       return;
     }
 
     if (isAuthLoading) {
-      if (DEBUG) console.log('[PersistentSession] Waiting for auth to load...');
+      if (DEBUG) console.info('[PersistentSession] Waiting for auth to load...');
       return;
     }
 
@@ -201,7 +257,7 @@ export function useSessionLifecycle({
     const backendUrl = DEFAULT_BACKEND_URL;
 
     if (!backendUrl) {
-      if (DEBUG) console.log('[PersistentSession] No backend URL configured');
+      if (DEBUG) console.info('[PersistentSession] No backend URL configured');
       return;
     }
 
@@ -212,15 +268,12 @@ export function useSessionLifecycle({
     let transientRetryCount = 0;
 
     async function joinSession(clientToUse: Client): Promise<Session | null> {
-      if (DEBUG) console.log('[PersistentSession] Calling joinSession mutation...');
+      if (DEBUG) console.info('[PersistentSession] Calling joinSession mutation...');
       try {
-        const initialQueueData =
-          pendingInitialQueue?.sessionId === sessionId
-            ? pendingInitialQueue
-            : null;
+        const initialQueueData = pendingInitialQueue?.sessionId === sessionId ? pendingInitialQueue : null;
 
         if (DEBUG && initialQueueData) {
-          console.log('[PersistentSession] Sending initial queue with', initialQueueData.queue.length, 'items');
+          console.info('[PersistentSession] Sending initial queue with', initialQueueData.queue.length, 'items');
         }
 
         const sessionName = activeSession?.sessionName || initialQueueData?.sessionName;
@@ -231,7 +284,9 @@ export function useSessionLifecycle({
           avatarUrl: avatarUrlRef.current,
           ...(initialQueueData && {
             initialQueue: initialQueueData.queue.map(toClimbQueueItemInput),
-            initialCurrentClimb: initialQueueData.currentClimb ? toClimbQueueItemInput(initialQueueData.currentClimb) : null,
+            initialCurrentClimb: initialQueueData.currentClimb
+              ? toClimbQueueItemInput(initialQueueData.currentClimb)
+              : null,
           }),
           ...(sessionName && { sessionName }),
         };
@@ -262,13 +317,13 @@ export function useSessionLifecycle({
       if (!mountedRef.current || !graphqlClient) return;
       if (connectionGenerationRef.current !== connectionGeneration) return;
       if (isReconnectingRef.current) {
-        if (DEBUG) console.log('[PersistentSession] Reconnection already in progress');
+        if (DEBUG) console.info('[PersistentSession] Reconnection already in progress');
         return;
       }
 
       isReconnectingRef.current = true;
       try {
-        if (DEBUG) console.log('[PersistentSession] Reconnecting...');
+        if (DEBUG) console.info('[PersistentSession] Reconnecting...');
 
         const lastSeq = lastReceivedSequenceRef.current;
         const sessionData = await joinSession(graphqlClient);
@@ -277,11 +332,14 @@ export function useSessionLifecycle({
         const currentSeq = sessionData.queueState.sequence;
         const gap = lastSeq !== null ? currentSeq - lastSeq : 0;
 
-        if (DEBUG) console.log(`[PersistentSession] Reconnected. Last seq: ${lastSeq}, Current seq: ${currentSeq}, Gap: ${gap}`);
+        if (DEBUG)
+          console.info(
+            `[PersistentSession] Reconnected. Last seq: ${lastSeq}, Current seq: ${currentSeq}, Gap: ${gap}`,
+          );
 
         if (gap > 0 && gap <= 100 && lastSeq !== null && sessionId) {
           try {
-            if (DEBUG) console.log(`[PersistentSession] Attempting delta sync for ${gap} missed events...`);
+            if (DEBUG) console.info(`[PersistentSession] Attempting delta sync for ${gap} missed events...`);
 
             const response = await execute<{ eventsReplay: EventsReplayResponse }>(graphqlClient, {
               query: EVENTS_REPLAY,
@@ -294,36 +352,36 @@ export function useSessionLifecycle({
             }
 
             if (replay.events.length > 0) {
-              if (DEBUG) console.log(`[PersistentSession] Replaying ${replay.events.length} events`);
-              replay.events.forEach(event => {
+              if (DEBUG) console.info(`[PersistentSession] Replaying ${replay.events.length} events`);
+              replay.events.forEach((event) => {
                 handleQueueEvent(transformToSubscriptionEvent(event));
               });
-              if (DEBUG) console.log('[PersistentSession] Delta sync completed successfully');
+              if (DEBUG) console.info('[PersistentSession] Delta sync completed successfully');
             } else {
-              if (DEBUG) console.log('[PersistentSession] No events to replay');
+              if (DEBUG) console.info('[PersistentSession] No events to replay');
             }
           } catch (err) {
             console.warn('[PersistentSession] Delta sync failed, falling back to full sync:', err);
             applyFullSync(sessionData);
           }
         } else if (gap > 100) {
-          if (DEBUG) console.log(`[PersistentSession] Gap too large (${gap}), using full sync`);
+          if (DEBUG) console.info(`[PersistentSession] Gap too large (${gap}), using full sync`);
           applyFullSync(sessionData);
         } else if (lastSeq === null) {
-          if (DEBUG) console.log('[PersistentSession] First connection, applying initial state');
+          if (DEBUG) console.info('[PersistentSession] First connection, applying initial state');
           applyFullSync(sessionData);
         } else if (gap === 0) {
           const localHash = computeQueueStateHash(queueRef.current, currentClimbQueueItemRef.current?.uuid || null);
           if (localHash !== sessionData.queueState.stateHash) {
-            if (DEBUG) console.log('[PersistentSession] Hash mismatch on reconnect despite gap=0, applying full sync');
+            if (DEBUG) console.info('[PersistentSession] Hash mismatch on reconnect despite gap=0, applying full sync');
             applyFullSync(sessionData);
           } else {
-            if (DEBUG) console.log('[PersistentSession] No missed events, already in sync');
+            if (DEBUG) console.info('[PersistentSession] No missed events, already in sync');
           }
         }
 
         setSession(sessionData);
-        if (DEBUG) console.log('[PersistentSession] Reconnection complete, clientId:', sessionData.clientId);
+        if (DEBUG) console.info('[PersistentSession] Reconnection complete, clientId:', sessionData.clientId);
       } finally {
         isReconnectingRef.current = false;
       }
@@ -344,12 +402,12 @@ export function useSessionLifecycle({
     async function connect() {
       if (connectionGenerationRef.current !== connectionGeneration) return;
       if (isConnectingRef.current) {
-        if (DEBUG) console.log('[PersistentSession] Connection already in progress, skipping');
+        if (DEBUG) console.info('[PersistentSession] Connection already in progress, skipping');
         return;
       }
       isConnectingRef.current = true;
 
-      if (DEBUG) console.log('[PersistentSession] Connecting to session:', sessionId);
+      if (DEBUG) console.info('[PersistentSession] Connecting to session:', sessionId);
       setIsConnecting(true);
       setError(null);
 
@@ -357,12 +415,12 @@ export function useSessionLifecycle({
         graphqlClient = createGraphQLClient({
           url: backendUrl!,
           authToken: wsAuthTokenRef.current,
-          onReconnect: handleReconnect,
+          onReconnect: () => void handleReconnect(),
           connectionName: 'session',
         });
 
         if (!mountedRef.current) {
-          graphqlClient.dispose();
+          void graphqlClient.dispose();
           isConnectingRef.current = false;
           return;
         }
@@ -376,7 +434,7 @@ export function useSessionLifecycle({
         }
 
         if (!mountedRef.current) {
-          graphqlClient.dispose();
+          void graphqlClient.dispose();
           return;
         }
 
@@ -384,7 +442,7 @@ export function useSessionLifecycle({
           throw new TransientJoinError('JoinSession returned no payload');
         }
 
-        if (DEBUG) console.log('[PersistentSession] Joined session, clientId:', sessionData.clientId);
+        if (DEBUG) console.info('[PersistentSession] Joined session, clientId:', sessionData.clientId);
 
         transientRetryCount = 0;
         setSession(sessionData);
@@ -417,7 +475,7 @@ export function useSessionLifecycle({
               }
             },
             complete: () => {
-              if (DEBUG) console.log('[PersistentSession] Queue subscription completed');
+              if (DEBUG) console.info('[PersistentSession] Queue subscription completed');
               queueUnsubscribeRef.current = null;
             },
           },
@@ -444,10 +502,13 @@ export function useSessionLifecycle({
                         return {
                           ...prev,
                           isLeader: event.leaderId === prev.clientId,
-                          users: prev.users.map((u) => ({ ...u, isLeader: u.id === event.leaderId })),
+                          users: prev.users.map((u) => ({
+                            ...u,
+                            isLeader: u.id === event.leaderId,
+                          })),
                         };
                       case 'SessionEnded':
-                        if (DEBUG) console.log('[PersistentSession] Session ended:', event.reason);
+                        if (DEBUG) console.info('[PersistentSession] Session ended:', event.reason);
                         removePreference(ACTIVE_SESSION_KEY).catch(() => {});
                         return prev;
                       default:
@@ -463,7 +524,7 @@ export function useSessionLifecycle({
               sessionUnsubscribeRef.current = null;
             },
             complete: () => {
-              if (DEBUG) console.log('[PersistentSession] Session subscription completed');
+              if (DEBUG) console.info('[PersistentSession] Session subscription completed');
               sessionUnsubscribeRef.current = null;
             },
           },
@@ -492,7 +553,10 @@ export function useSessionLifecycle({
                 INITIAL_RETRY_DELAY_MS * Math.pow(BACKOFF_MULTIPLIER, transientRetryCount - 1),
                 MAX_RETRY_DELAY_MS,
               );
-              if (DEBUG) console.log(`[PersistentSession] Transient retry ${transientRetryCount}/${MAX_TRANSIENT_RETRIES} in ${delay}ms`);
+              if (DEBUG)
+                console.info(
+                  `[PersistentSession] Transient retry ${transientRetryCount}/${MAX_TRANSIENT_RETRIES} in ${delay}ms`,
+                );
               retryConnectTimeout = setTimeout(() => {
                 if (
                   connectionGenerationRef.current === connectionGeneration &&
@@ -500,7 +564,7 @@ export function useSessionLifecycle({
                   activeSessionRef.current?.sessionId === sessionId &&
                   !isConnectingRef.current
                 ) {
-                  connect();
+                  void connect();
                 }
               }, delay);
             }
@@ -510,15 +574,15 @@ export function useSessionLifecycle({
           }
         }
         if (graphqlClient) {
-          graphqlClient.dispose();
+          void graphqlClient.dispose();
         }
       }
     }
 
-    connect();
+    void connect();
 
     return () => {
-      if (DEBUG) console.log('[PersistentSession] Cleaning up connection');
+      if (DEBUG) console.info('[PersistentSession] Cleaning up connection');
       mountedRef.current = false;
       isConnectingRef.current = false;
 
@@ -531,15 +595,17 @@ export function useSessionLifecycle({
       sessionUnsubscribeRef.current = null;
 
       if (clientToCleanup) {
-        Promise.resolve().then(async () => {
-          if (sessionRef.current) {
-            await execute(clientToCleanup, { query: LEAVE_SESSION }).catch(() => {});
-          }
-          clientToCleanup.dispose();
-        }).catch((err) => {
-          // Swallow errors during cleanup — the WebSocket is being torn down
-          if (DEBUG) console.log('[PersistentSession] Cleanup error suppressed:', err);
-        });
+        void Promise.resolve()
+          .then(async () => {
+            if (sessionRef.current) {
+              await execute(clientToCleanup, { query: LEAVE_SESSION }).catch(() => {});
+            }
+            void clientToCleanup.dispose();
+          })
+          .catch((err) => {
+            // Swallow errors during cleanup — the WebSocket is being torn down
+            if (DEBUG) console.info('[PersistentSession] Cleanup error suppressed:', err);
+          });
       }
 
       setClient(null);
@@ -550,6 +616,7 @@ export function useSessionLifecycle({
         clearTimeout(retryConnectTimeout);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refs are stable, only .current changes; intentional dep list
   }, [activeSession, isAuthLoading, handleQueueEvent, handleSessionEvent, setSession, pendingInitialQueue]);
 
   return {
@@ -560,6 +627,8 @@ export function useSessionLifecycle({
     hasConnected,
     error,
     sessionSummary,
+    sessionSummaryBoardType,
+    sessionSummaryHealthKitWorkoutId,
     activateSession,
     deactivateSession,
     setInitialQueueForSession,

@@ -1,6 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { render } from '@testing-library/react';
 import React from 'react';
+import FindNearbyCard from '../find-nearby-card';
 
 // Mock BoardRenderer
 vi.mock('../../board-renderer/board-renderer', () => ({
@@ -35,8 +36,6 @@ vi.mock('../board-scroll.module.css', () => ({
     },
   ),
 }));
-
-import FindNearbyCard from '../find-nearby-card';
 
 describe('FindNearbyCard', () => {
   it('renders idle state with "Find nearby" text and location icon', () => {
@@ -118,7 +117,7 @@ describe('FindNearbyCard', () => {
 
     for (const status of ['geo-denied', 'error', 'no-results'] as const) {
       const { getByText, unmount } = render(<FindNearbyCard onClick={onClick} status={status} />);
-      getByText(getByText(/.+/).textContent!).parentElement!.click();
+      getByText(getByText(/.+/).textContent).parentElement!.click();
       unmount();
     }
 

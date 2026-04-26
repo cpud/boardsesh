@@ -41,9 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
 
     const sessionName = summary.sessionName;
-    const grades = summary.gradeRows
-      .map((r) => DIFFICULTY_TO_GRADE[r.difficulty])
-      .filter(Boolean);
+    const grades = summary.gradeRows.map((r) => DIFFICULTY_TO_GRADE[r.difficulty]).filter(Boolean);
     const gradeSummary = buildGradeSummary(grades);
     const joinHeadline = buildJoinHeadline(summary.leaderName);
     const boardInfo = summary.boardLabel
@@ -99,5 +97,14 @@ export default async function JoinSessionPage({ params }: Props) {
   const { sessionId: rawSessionId } = await params;
   const sessionId = decodeURIComponent(rawSessionId);
 
-  return <JoinRedirect sessionId={sessionId} />;
+  const joinUrl = `/api/internal/join/${encodeURIComponent(sessionId)}`;
+
+  return (
+    <>
+      <noscript>
+        <meta httpEquiv="refresh" content={`0;url=${joinUrl}`} />
+      </noscript>
+      <JoinRedirect sessionId={sessionId} />
+    </>
+  );
 }

@@ -1,12 +1,7 @@
 import type { UserBoard } from '@boardsesh/shared-schema';
-import { BoardName, BoardDetails, Climb } from './types';
-import {
-  getSizesForLayoutId,
-  getSetsForLayoutAndSize,
-  getBoardDetails,
-  LAYOUTS,
-} from './board-constants';
-import { getMoonBoardDetails, MOONBOARD_LAYOUTS, MOONBOARD_SETS, MoonBoardLayoutKey } from './moonboard-config';
+import type { BoardName, BoardDetails, Climb } from './types';
+import { getSizesForLayoutId, getSetsForLayoutAndSize, getBoardDetails, LAYOUTS } from './board-constants';
+import { type MoonBoardLayoutKey, getMoonBoardDetails, MOONBOARD_LAYOUTS, MOONBOARD_SETS } from './moonboard-config';
 import { canAddClimbToBoard } from './board-compatibility';
 
 /**
@@ -56,9 +51,7 @@ export function getBoardDetailsForPlaylist(
 function getMoonBoardDetailsForPlaylist(layoutId: number | null | undefined): BoardDetails | null {
   const effectiveLayoutId = layoutId ?? MOONBOARD_LAYOUTS['moonboard-2024'].id;
 
-  const layoutEntry = Object.entries(MOONBOARD_LAYOUTS).find(
-    ([, layout]) => layout.id === effectiveLayoutId,
-  );
+  const layoutEntry = Object.entries(MOONBOARD_LAYOUTS).find(([, layout]) => layout.id === effectiveLayoutId);
   if (!layoutEntry) return null;
 
   const [layoutKey] = layoutEntry;
@@ -217,8 +210,7 @@ export function resolveBoardDetailsForClimb(
   // through as "upsized" candidates.
   if (sessionBoard.boardType !== 'moonboard' && exactDetails) {
     const sessionArea =
-      (exactDetails.edge_right - exactDetails.edge_left) *
-      (exactDetails.edge_top - exactDetails.edge_bottom);
+      (exactDetails.edge_right - exactDetails.edge_left) * (exactDetails.edge_top - exactDetails.edge_bottom);
 
     const candidates = getSizesForLayoutId(sessionBoard.boardType, sessionBoard.layoutId)
       .filter((size) => size.id !== sessionBoard.sizeId)
@@ -239,12 +231,7 @@ export function resolveBoardDetailsForClimb(
       // size publishes so the climb's holds stand a chance of rendering.
       const setIdsToTry = preferredSetIds.length > 0 ? preferredSetIds : availableSets.map((s) => s.id);
 
-      const candidateDetails = buildDetailsSafely(
-        sessionBoard.boardType,
-        sessionBoard.layoutId,
-        size.id,
-        setIdsToTry,
-      );
+      const candidateDetails = buildDetailsSafely(sessionBoard.boardType, sessionBoard.layoutId, size.id, setIdsToTry);
       if (!candidateDetails) continue;
 
       const fit = canAddClimbToBoard(climb, candidateDetails);

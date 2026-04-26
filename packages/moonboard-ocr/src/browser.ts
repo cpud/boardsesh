@@ -49,7 +49,7 @@ export async function parseScreenshot(image: File | Blob): Promise<ParseResult> 
  */
 export async function parseMultipleScreenshots(
   images: Array<File | Blob>,
-  onProgress?: (current: number, total: number, name: string) => void
+  onProgress?: (current: number, total: number, name: string) => void,
 ): Promise<{ climbs: MoonBoardClimb[]; errors: Array<{ name: string; error: string }> }> {
   const climbs: MoonBoardClimb[] = [];
   const errors: Array<{ name: string; error: string }> = [];

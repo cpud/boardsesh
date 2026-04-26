@@ -46,23 +46,20 @@ export async function uploadOcrTestData(
       const errorData = await response.json().catch(() => ({}));
       console.warn(
         `[OCR Upload] Upload failed for climb "${parsedResult.name || 'Unknown'}":`,
-        errorData.error || response.statusText
+        errorData.error || response.statusText,
       );
       return;
     }
 
     const result = await response.json();
     if (result.skipped) {
-      console.log('[OCR Upload] Upload skipped:', result.reason);
+      console.info('[OCR Upload] Upload skipped:', result.reason);
     } else {
-      console.log('[OCR Upload] Successfully uploaded test data');
+      console.info('[OCR Upload] Successfully uploaded test data');
     }
   } catch (error) {
     // Fire-and-forget: log but don't throw
-    console.warn(
-      `[OCR Upload] Failed to upload test data for climb "${parsedResult.name || 'Unknown'}":`,
-      error
-    );
+    console.warn(`[OCR Upload] Failed to upload test data for climb "${parsedResult.name || 'Unknown'}":`, error);
   }
 }
 

@@ -1,5 +1,4 @@
-import { AURORA_BOARDS, SUPPORTED_BOARDS } from '@boardsesh/shared-schema';
-import type { AuroraBoardName } from '@boardsesh/shared-schema';
+import { AURORA_BOARDS, SUPPORTED_BOARDS, type AuroraBoardName } from '@boardsesh/shared-schema';
 import type { HoldRenderData } from '@/app/components/board-renderer/types';
 import type { BoardDetails, ImageFileName } from '@/app/lib/types';
 import type { SetIdList } from '@/app/lib/board-data';
@@ -15,9 +14,18 @@ import { BOARD_IMAGE_DIMENSIONS } from './board-data';
 import type { BoardName, HoldTuple } from './types';
 
 export * from '@boardsesh/board-constants/product-sizes';
-export type { HoldTuple, LayoutData, ProductSizeData, SetData, SizeEdges } from '@boardsesh/board-constants/product-sizes';
 
 export const AURORA_BOARD_NAMES = [...AURORA_BOARDS];
+
+/** Default board configs for preview thumbnails when the exact board config is unknown. */
+export const FALLBACK_BOARD_PREVIEW_CONFIGS: Record<string, { layout_id: number; size_id: number; set_ids: number[] }> =
+  {
+    kilter: { layout_id: 1, size_id: 10, set_ids: [1, 20] },
+    tension: { layout_id: 1, size_id: 10, set_ids: [1] },
+    decoy: { layout_id: 2, size_id: 1, set_ids: [1, 2] },
+    touchstone: { layout_id: 1, size_id: 1, set_ids: [1] },
+    grasshopper: { layout_id: 1, size_id: 4, set_ids: [1, 2] },
+  };
 export const KILTER_HOMEWALL_LAYOUT_ID = 8;
 export const KILTER_HOMEWALL_PRODUCT_ID = 7;
 export const BOARD_NAME_PREFIX_REGEX = new RegExp(`^(?:${SUPPORTED_BOARDS.join('|')})\\s*(?:board)?\\s*`, 'i');
@@ -57,12 +65,7 @@ export const getBoardDetails = ({
     imagesToHolds[imageFilename] = getHolePlacements(board_name, layout_id, setId);
   }
 
-  const {
-    edgeLeft: edge_left,
-    edgeRight: edge_right,
-    edgeBottom: edge_bottom,
-    edgeTop: edge_top,
-  } = sizeData;
+  const { edgeLeft: edge_left, edgeRight: edge_right, edgeBottom: edge_bottom, edgeTop: edge_top } = sizeData;
 
   const firstImage = Object.keys(imagesToHolds)[0];
   const dimensions = BOARD_IMAGE_DIMENSIONS[board_name][firstImage];

@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import type { ConnectionContext } from '@boardsesh/shared-schema';
+import { climbMutations } from '../graphql/resolvers/climbs/mutations';
 
 const { mockDb, mockPublishSocialEvent, insertCalls } = vi.hoisted(() => {
   const insertCalls: Array<{ table: unknown; values: unknown }> = [];
@@ -30,8 +31,6 @@ vi.mock('../utils/rate-limiter', () => ({
 vi.mock('../utils/redis-rate-limiter', () => ({
   checkRateLimitRedis: vi.fn().mockResolvedValue(undefined),
 }));
-
-import { climbMutations } from '../graphql/resolvers/climbs/mutations';
 
 function makeCtx(overrides: Partial<ConnectionContext> = {}): ConnectionContext {
   return {
@@ -71,9 +70,9 @@ describe('climb mutations', () => {
   });
 
   it('stores non-draft Aurora climbs as listed', async () => {
-    mockDb.select.mockReturnValueOnce(createMockChain([
-      { name: 'Alice', displayName: 'Alice Setter', image: null, avatarUrl: null },
-    ]));
+    mockDb.select.mockReturnValueOnce(
+      createMockChain([{ name: 'Alice', displayName: 'Alice Setter', image: null, avatarUrl: null }]),
+    );
     mockDb.insert.mockImplementation((table: unknown) =>
       createMockChain(undefined, (values) => insertCalls.push({ table, values })),
     );
@@ -102,13 +101,11 @@ describe('climb mutations', () => {
   });
 
   it('stores non-draft MoonBoard climbs as listed', async () => {
-    mockDb.execute
-      .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([]);
+    mockDb.execute.mockResolvedValueOnce([]).mockResolvedValueOnce([]);
     mockDb.select
-      .mockReturnValueOnce(createMockChain([
-        { name: 'Alice', displayName: 'Alice Setter', image: null, avatarUrl: null },
-      ]))
+      .mockReturnValueOnce(
+        createMockChain([{ name: 'Alice', displayName: 'Alice Setter', image: null, avatarUrl: null }]),
+      )
       .mockReturnValueOnce(createMockChain([{ difficulty: 12 }]));
     mockDb.insert.mockImplementation((table: unknown) =>
       createMockChain(undefined, (values) => insertCalls.push({ table, values })),
@@ -141,9 +138,24 @@ describe('climb mutations', () => {
       isListed: true,
     });
     expect(insertCalls[1].values).toEqual([
-      expect.objectContaining({ boardType: 'moonboard', climbUuid: expect.any(String), holdId: 1, holdState: 'STARTING' }),
-      expect.objectContaining({ boardType: 'moonboard', climbUuid: expect.any(String), holdId: 13, holdState: 'HAND' }),
-      expect.objectContaining({ boardType: 'moonboard', climbUuid: expect.any(String), holdId: 25, holdState: 'FINISH' }),
+      expect.objectContaining({
+        boardType: 'moonboard',
+        climbUuid: expect.any(String),
+        holdId: 1,
+        holdState: 'STARTING',
+      }),
+      expect.objectContaining({
+        boardType: 'moonboard',
+        climbUuid: expect.any(String),
+        holdId: 13,
+        holdState: 'HAND',
+      }),
+      expect.objectContaining({
+        boardType: 'moonboard',
+        climbUuid: expect.any(String),
+        holdId: 25,
+        holdState: 'FINISH',
+      }),
     ]);
   });
 
@@ -158,9 +170,9 @@ describe('climb mutations', () => {
         },
       ])
       .mockResolvedValueOnce([]);
-    mockDb.select.mockReturnValueOnce(createMockChain([
-      { name: 'Alice', displayName: 'Alice Setter', image: null, avatarUrl: null },
-    ]));
+    mockDb.select.mockReturnValueOnce(
+      createMockChain([{ name: 'Alice', displayName: 'Alice Setter', image: null, avatarUrl: null }]),
+    );
     mockDb.insert.mockImplementation((table: unknown) =>
       createMockChain(undefined, (values) => insertCalls.push({ table, values })),
     );

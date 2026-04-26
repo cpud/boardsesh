@@ -1,11 +1,4 @@
-import {
-  pgTable,
-  text,
-  bigserial,
-  timestamp,
-  unique,
-  index,
-} from 'drizzle-orm/pg-core';
+import { pgTable, text, bigserial, timestamp, unique, index } from 'drizzle-orm/pg-core';
 import { users } from '../auth/users';
 import { inferredSessions } from './inferred-sessions';
 
@@ -33,10 +26,7 @@ export const sessionMemberOverrides = pgTable(
     addedAt: timestamp('added_at', { mode: 'string' }).defaultNow().notNull(),
   },
   (table) => ({
-    sessionUserUnique: unique('session_member_overrides_session_user_unique').on(
-      table.sessionId,
-      table.userId,
-    ),
+    sessionUserUnique: unique('session_member_overrides_session_user_unique').on(table.sessionId, table.userId),
     sessionIdx: index('session_member_overrides_session_idx').on(table.sessionId),
     userIdx: index('session_member_overrides_user_idx').on(table.userId),
   }),

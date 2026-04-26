@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
 import { useDoubleTap } from '../use-double-tap';
 
@@ -218,25 +218,31 @@ describe('useDoubleTap', () => {
       // Two-finger touchstart (pinch begins)
       act(() => {
         vi.setSystemTime(1000);
-        element.dispatchEvent(createTouchEvent('touchstart', {
-          touches: [{}, {}], // Two fingers
-        }));
+        element.dispatchEvent(
+          createTouchEvent('touchstart', {
+            touches: [{}, {}], // Two fingers
+          }),
+        );
       });
 
       // First finger lifts — one finger still down
       act(() => {
         vi.setSystemTime(1050);
-        element.dispatchEvent(createTouchEvent('touchend', {
-          touches: [{}], // One finger remaining
-        }));
+        element.dispatchEvent(
+          createTouchEvent('touchend', {
+            touches: [{}], // One finger remaining
+          }),
+        );
       });
 
       // Second finger lifts — no fingers remain
       act(() => {
         vi.setSystemTime(1100);
-        element.dispatchEvent(createTouchEvent('touchend', {
-          touches: [], // No fingers remaining
-        }));
+        element.dispatchEvent(
+          createTouchEvent('touchend', {
+            touches: [], // No fingers remaining
+          }),
+        );
       });
 
       // Should NOT have fired the double-tap callback
@@ -304,15 +310,19 @@ describe('useDoubleTap', () => {
       });
       act(() => {
         vi.setSystemTime(1050);
-        element.dispatchEvent(createTouchEvent('touchend', {
-          touches: [{}], // Another finger appeared
-        }));
+        element.dispatchEvent(
+          createTouchEvent('touchend', {
+            touches: [{}], // Another finger appeared
+          }),
+        );
       });
       act(() => {
         vi.setSystemTime(1100);
-        element.dispatchEvent(createTouchEvent('touchend', {
-          touches: [],
-        }));
+        element.dispatchEvent(
+          createTouchEvent('touchend', {
+            touches: [],
+          }),
+        );
       });
 
       expect(callback).not.toHaveBeenCalled();

@@ -1,20 +1,17 @@
-import { getServerSession } from "next-auth/next";
-import { NextResponse } from "next/server";
-import { getDb } from "@/app/lib/db/db";
-import { auroraCredentials, boardseshTicks, boardClimbs } from "@/app/lib/db/schema";
-import { eq, and, isNull, count } from "drizzle-orm";
-import { authOptions } from "@/app/lib/auth/auth-options";
+import { getServerSession } from 'next-auth/next';
+import { NextResponse } from 'next/server';
+import { getDb } from '@/app/lib/db/db';
+import { auroraCredentials, boardseshTicks, boardClimbs } from '@/app/lib/db/schema';
+import { eq, and, isNull, count } from 'drizzle-orm';
+import { authOptions } from '@/app/lib/auth/auth-options';
 
-export interface UnsyncedCounts {
-  kilter: {
+export type UnsyncedCounts = Record<
+  string,
+  {
     ascents: number;
     climbs: number;
-  };
-  tension: {
-    ascents: number;
-    climbs: number;
-  };
-}
+  }
+>;
 
 /**
  * GET - Get count of unsynced items for the logged-in user's Aurora accounts
@@ -24,7 +21,7 @@ export async function GET() {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const db = getDb();
@@ -38,18 +35,14 @@ export async function GET() {
       .from(auroraCredentials)
       .where(eq(auroraCredentials.userId, session.user.id));
 
-    const counts: UnsyncedCounts = {
-      kilter: { ascents: 0, climbs: 0 },
-      tension: { ascents: 0, climbs: 0 },
-    };
+    const counts: UnsyncedCounts = {};
 
     for (const cred of credentials) {
       if (!cred.auroraUserId) continue;
 
-      const boardType = cred.boardType as 'kilter' | 'tension';
+      const boardType = cred.boardType;
 
       // Count unsynced ticks (ascents/bids) for this user from boardsesh_ticks
-      // Note: boardsesh_ticks uses NextAuth userId, not Aurora user_id
       // Unsynced ticks are those without an auroraId
       const [ascentResult] = await db
         .select({ count: count() })
@@ -74,18 +67,15 @@ export async function GET() {
           ),
         );
 
-      if (boardType === 'kilter') {
-        counts.kilter.ascents = ascentResult?.count ?? 0;
-        counts.kilter.climbs = climbResult?.count ?? 0;
-      } else if (boardType === 'tension') {
-        counts.tension.ascents = ascentResult?.count ?? 0;
-        counts.tension.climbs = climbResult?.count ?? 0;
-      }
+      counts[boardType] = {
+        ascents: ascentResult?.count ?? 0,
+        climbs: climbResult?.count ?? 0,
+      };
     }
 
     return NextResponse.json({ counts });
   } catch (error) {
-    console.error("Failed to get unsynced counts:", error);
-    return NextResponse.json({ error: "Failed to get unsynced counts" }, { status: 500 });
+    console.error('Failed to get unsynced counts:', error);
+    return NextResponse.json({ error: 'Failed to get unsynced counts' }, { status: 500 });
   }
 }

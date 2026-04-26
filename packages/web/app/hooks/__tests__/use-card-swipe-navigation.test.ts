@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test';
 import { renderHook, act } from '@testing-library/react';
+import { useCardSwipeNavigation, EXIT_DURATION, SNAP_BACK_DURATION } from '../use-card-swipe-navigation';
 
 // Capture the config passed to useSwipeable
 let capturedSwipeableConfig: Record<string, (...args: unknown[]) => unknown> = {};
@@ -9,12 +10,6 @@ vi.mock('react-swipeable', () => ({
     return { ref: vi.fn() };
   },
 }));
-
-import {
-  useCardSwipeNavigation,
-  EXIT_DURATION,
-  SNAP_BACK_DURATION,
-} from '../use-card-swipe-navigation';
 
 function createDefaultOptions() {
   return {
@@ -298,10 +293,9 @@ describe('useCardSwipeNavigation', () => {
   describe('prop changes during animation', () => {
     it('ignores canSwipeNext changing to false during exit animation', () => {
       const options = createDefaultOptions();
-      const { result, rerender } = renderHook(
-        (props) => useCardSwipeNavigation(props),
-        { initialProps: options },
-      );
+      const { result, rerender } = renderHook((props) => useCardSwipeNavigation(props), {
+        initialProps: options,
+      });
 
       // Commit horizontal direction
       act(() => {
@@ -332,10 +326,9 @@ describe('useCardSwipeNavigation', () => {
 
     it('respects canSwipeNext changing to false before swipe completes', () => {
       const options = createDefaultOptions();
-      const { result, rerender } = renderHook(
-        (props) => useCardSwipeNavigation(props),
-        { initialProps: options },
-      );
+      const { result, rerender } = renderHook((props) => useCardSwipeNavigation(props), {
+        initialProps: options,
+      });
 
       // Commit horizontal direction
       act(() => {

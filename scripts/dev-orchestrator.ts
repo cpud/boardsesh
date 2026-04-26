@@ -1,5 +1,8 @@
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
+import { mkdirSync, existsSync, statSync } from 'node:fs';
 import { createConnection } from 'node:net';
+import { homedir } from 'node:os';
+import { createInterface } from 'node:readline/promises';
 import { setTimeout as delay } from 'node:timers/promises';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,10 +16,25 @@ const HEALTH_CHECK_TIMEOUT_MS = 5000;
 const HEALTH_CHECK_INTERVAL_MS = 500;
 const HEALTH_CHECK_MAX_ATTEMPTS = HEALTH_CHECK_TIMEOUT_MS / HEALTH_CHECK_INTERVAL_MS;
 
-interface ProcessRef {
+const TAILSCALE_STATUS_TIMEOUT_MS = 1500;
+const TAILSCALE_CERT_TIMEOUT_MS = 60_000;
+/**
+ * Certs older than this are regenerated on startup. Tailscale serves valid
+ * Let's Encrypt certs (90-day lifetime) and caches them in its own state, so
+ * a day-old file is a cheap roundtrip to refresh.
+ */
+const CERT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+
+type TlsBundle = {
+  hostname: string;
+  certFile: string;
+  keyFile: string;
+};
+
+type ProcessRef = {
   process: ReturnType<typeof spawn> | null;
   isManaged: boolean; // Did we start it?
-}
+};
 
 const processes: { backend: ProcessRef; web: ProcessRef } = {
   backend: { process: null, isManaged: false },
@@ -26,23 +44,214 @@ const processes: { backend: ProcessRef; web: ProcessRef } = {
 let backendHealthy = false;
 
 /**
+ * Find the first existing ref from a preference list (e.g. origin/main → main).
+ */
+function resolveBaseRef(): string | null {
+  for (const ref of ['origin/main', 'main']) {
+    const result = spawnSync('git', ['rev-parse', '--verify', '--quiet', ref], {
+      cwd: ROOT_DIR,
+    });
+    if (result.status === 0) return ref;
+  }
+  return null;
+}
+
+/**
+ * Returns true if packages/backend differs from the merge base with origin/main (or main).
+ * Covers committed, staged, and unstaged changes.
+ */
+function hasBackendChanges(): { changed: boolean; baseRef: string | null } {
+  try {
+    const baseRef = resolveBaseRef();
+    if (!baseRef) return { changed: false, baseRef: null };
+
+    const mergeBase = execFileSync('git', ['merge-base', 'HEAD', baseRef], {
+      cwd: ROOT_DIR,
+      encoding: 'utf8',
+    }).trim();
+
+    // `git diff <mergeBase> -- <path>` compares working tree to merge base; --quiet exits 1 on diff.
+    const result = spawnSync('git', ['diff', '--quiet', mergeBase, '--', 'packages/backend'], {
+      cwd: ROOT_DIR,
+    });
+    return { changed: result.status === 1, baseRef };
+  } catch {
+    return { changed: false, baseRef: null };
+  }
+}
+
+/**
+ * Resolve the Tailscale hostname from `tailscale status --json`. Returns null
+ * if Tailscale isn't installed, not logged in, or not reporting a DNS name.
+ */
+function resolveTailscaleHostname(): string | null {
+  try {
+    const statusJson = execFileSync('tailscale', ['status', '--json'], {
+      encoding: 'utf8',
+      timeout: TAILSCALE_STATUS_TIMEOUT_MS,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    const parsed = JSON.parse(statusJson) as { Self?: { DNSName?: string } };
+    const dns = parsed.Self?.DNSName?.trim().replace(/\.$/, '');
+    return dns && /^[a-zA-Z0-9.-]+$/.test(dns) ? dns.toLowerCase() : null;
+  } catch {
+    return null;
+  }
+}
+
+type ProvisionResult = {
+  ok: boolean;
+  stderr: string;
+};
+
+function provisionTailscaleCert(hostname: string, certFile: string, keyFile: string): ProvisionResult {
+  const result = spawnSync('tailscale', ['cert', `--cert-file=${certFile}`, `--key-file=${keyFile}`, hostname], {
+    cwd: ROOT_DIR,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    timeout: TAILSCALE_CERT_TIMEOUT_MS,
+    encoding: 'utf8',
+  });
+  return {
+    ok: result.status === 0 && existsSync(certFile) && existsSync(keyFile),
+    stderr: (result.stderr || '').toString().trim(),
+  };
+}
+
+/**
+ * Interactive y/n prompt. Returns `null` when stdin/stdout aren't a TTY
+ * (e.g. running under CI, a detached shell, or piped output) so callers can
+ * skip the prompt entirely in non-interactive contexts.
+ */
+async function promptYesNo(question: string, defaultYes: boolean): Promise<boolean | null> {
+  if (!process.stdin.isTTY || !process.stdout.isTTY) return null;
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    const answer = (await rl.question(question)).trim().toLowerCase();
+    if (!answer) return defaultYes;
+    return answer.startsWith('y');
+  } finally {
+    rl.close();
+  }
+}
+
+/**
+ * Try to provision a TLS cert for the Tailscale hostname via `tailscale cert`.
+ * On success, returns cert+key paths usable by both Next.js and the backend.
+ *
+ * Requires the tailnet's "HTTPS Certificates" feature enabled + the local
+ * user to be the Tailscale operator. If we detect the well-known operator
+ * permission failure and we're running interactively, we offer to run the
+ * one-shot fix (`sudo tailscale set --operator=$USER`) ourselves and then
+ * retry. Any failure falls back to plain HTTP with a targeted hint.
+ */
+async function resolveTlsBundle(): Promise<TlsBundle | null> {
+  const hostname = resolveTailscaleHostname();
+  if (!hostname) return null;
+
+  // Cache under $XDG_CACHE_HOME (fallback ~/.cache), not node_modules —
+  // otherwise a clean install or `rm -rf node_modules` wipes the cert and
+  // we spend another roundtrip with Tailscale on the next `vp run dev`.
+  const cacheRoot = process.env.XDG_CACHE_HOME || join(homedir(), '.cache');
+  const certDir = join(cacheRoot, 'boardsesh-dev-certs');
+  const certFile = join(certDir, `${hostname}.crt`);
+  const keyFile = join(certDir, `${hostname}.key`);
+
+  try {
+    mkdirSync(certDir, { recursive: true });
+  } catch (error) {
+    console.warn('[dev] HTTPS: could not create cert cache dir — falling back to HTTP', error);
+    return null;
+  }
+
+  const cached =
+    existsSync(certFile) && existsSync(keyFile) && Date.now() - statSync(certFile).mtimeMs < CERT_MAX_AGE_MS;
+
+  if (cached) {
+    console.info(`[dev] HTTPS: reusing cached Tailscale cert for ${hostname}`);
+    return { hostname, certFile, keyFile };
+  }
+
+  console.info(`[dev] HTTPS: requesting Tailscale cert for ${hostname} (may take a few seconds the first time)...`);
+  const initial = provisionTailscaleCert(hostname, certFile, keyFile);
+  if (initial.ok) {
+    console.info(`[dev] HTTPS: provisioned cert for ${hostname}`);
+    return { hostname, certFile, keyFile };
+  }
+  let stderr = initial.stderr;
+
+  // Self-heal path: the most common first-run failure is that the Tailscale
+  // daemon runs as root and the current user doesn't have operator rights on
+  // it. Tailscale prints the exact fix in its own stderr — we detect that,
+  // ask consent, and run it.
+  const isOperatorDenied = stderr.includes('--operator=') && /operator|denied|root/i.test(stderr);
+  const user = process.env.USER || process.env.LOGNAME;
+  if (isOperatorDenied && user) {
+    const accept = await promptYesNo(
+      `[dev] HTTPS: Tailscale requires operator permission for your user. ` +
+        `Run 'sudo tailscale set --operator=${user}' now? [Y/n] `,
+      true,
+    );
+    if (accept === true) {
+      console.info(`[dev] HTTPS: running 'sudo tailscale set --operator=${user}' (sudo may prompt for your password)`);
+      const setResult = spawnSync('sudo', ['tailscale', 'set', `--operator=${user}`], { stdio: 'inherit' });
+      if (setResult.status === 0) {
+        console.info('[dev] HTTPS: operator set — retrying cert provisioning...');
+        const retry = provisionTailscaleCert(hostname, certFile, keyFile);
+        if (retry.ok) {
+          console.info(`[dev] HTTPS: provisioned cert for ${hostname}`);
+          return { hostname, certFile, keyFile };
+        }
+        stderr = retry.stderr || stderr;
+      } else {
+        console.warn('[dev] HTTPS: sudo command failed — continuing with HTTP fallback.');
+      }
+    } else if (accept === null) {
+      console.warn('[dev] HTTPS: non-interactive shell; skipping auto-fix prompt.');
+    }
+    // accept === false → user declined; fall through to the hint + HTTP fallback.
+  }
+
+  console.warn(`[dev] HTTPS: 'tailscale cert' failed — falling back to HTTP. ${stderr || '(no error output)'}`);
+
+  // Targeted hints based on what Tailscale actually said.
+  if (isOperatorDenied) {
+    console.warn(
+      `[dev] HTTPS: fix with ONE command: 'sudo tailscale set --operator=${user ?? '$USER'}'. ` +
+        `Grants your user permission to talk to the Tailscale daemon (one-time).`,
+    );
+  } else if (/HTTPS.*not enabled|not configured|dnsname/i.test(stderr)) {
+    console.warn(
+      `[dev] HTTPS: enable "HTTPS Certificates" for your tailnet at ` +
+        `https://login.tailscale.com/admin/dns (one-time setup).`,
+    );
+  } else {
+    console.warn(
+      `[dev] HTTPS: check that MagicDNS + HTTPS Certificates are enabled at ` +
+        `https://login.tailscale.com/admin/dns and that 'tailscale cert <host>' works from this shell.`,
+    );
+  }
+  return null;
+}
+
+/**
  * Check if backend is already running and healthy
  */
-async function checkBackendHealth(port: number): Promise<boolean> {
+async function checkBackendHealth(port: number, tls: TlsBundle | null): Promise<boolean> {
+  // When TLS is active, fetch via the Tailscale hostname — certs are issued
+  // for that name, so a localhost fetch would fail verification.
+  const origin = tls ? `https://${tls.hostname}:${port}` : `http://localhost:${port}`;
+
   for (let attempt = 0; attempt < HEALTH_CHECK_MAX_ATTEMPTS; attempt++) {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 1000);
 
-      const response = await fetch(`http://localhost:${port}/health`, {
-        method: 'GET',
-        signal: controller.signal,
-      });
+      const response = await fetch(`${origin}/health`, { method: 'GET', signal: controller.signal });
 
       clearTimeout(timeoutId);
 
       if (response.ok) {
-        console.log(`[dev] ✓ Backend is already running on port ${port}`);
+        console.info(`[dev] ✓ Backend is already running on port ${port}`);
         return true;
       }
     } catch {
@@ -86,7 +295,7 @@ async function findAvailablePort(basePort: number, maxAttempts = 10): Promise<nu
     const inUse = await isPortInUse(port);
     if (!inUse) {
       if (i > 0) {
-        console.log(`[dev] Port ${basePort} in use, using ${port} instead`);
+        console.info(`[dev] Port ${basePort} in use, using ${port} instead`);
       }
       return port;
     }
@@ -99,15 +308,16 @@ async function findAvailablePort(basePort: number, maxAttempts = 10): Promise<nu
 /**
  * Start the backend in the background
  */
-function startBackend(port: number): ReturnType<typeof spawn> {
-  console.log(`[dev] Starting backend on port ${port}...`);
+function startBackend(port: number, tls: TlsBundle | null): ReturnType<typeof spawn> {
+  console.info(`[dev] Starting backend on port ${port}...`);
 
-  const backendProcess = spawn('bun', ['run', 'backend:dev'], {
+  const backendProcess = spawn('bun', ['run', '--filter=boardsesh-backend', 'dev'], {
     cwd: ROOT_DIR,
     stdio: ['inherit', 'inherit', 'inherit'],
     env: {
       ...process.env,
       PORT: String(port),
+      ...(tls ? { DEV_HTTPS_CERT_FILE: tls.certFile, DEV_HTTPS_KEY_FILE: tls.keyFile } : {}),
     },
   });
 
@@ -118,7 +328,7 @@ function startBackend(port: number): ReturnType<typeof spawn> {
 
   backendProcess.on('exit', (code, signal) => {
     if (signal) {
-      console.log(`[dev] Backend terminated by signal ${signal}`);
+      console.info(`[dev] Backend terminated by signal ${signal}`);
     } else if (code !== 0) {
       console.error(`[dev] Backend exited with code ${code}`);
     }
@@ -130,8 +340,8 @@ function startBackend(port: number): ReturnType<typeof spawn> {
 /**
  * Start the Next.js development server
  */
-function startWeb(port: number, backendPort: number): ReturnType<typeof spawn> {
-  console.log(`[dev] Starting web on port ${port}...`);
+function startWeb(port: number, backendPort: number, tls: TlsBundle | null): ReturnType<typeof spawn> {
+  console.info(`[dev] Starting web on port ${port}...`);
 
   const webProcess = spawn('bun', ['run', 'dev'], {
     cwd: join(ROOT_DIR, 'packages/web'),
@@ -140,6 +350,13 @@ function startWeb(port: number, backendPort: number): ReturnType<typeof spawn> {
       ...process.env,
       PORT: String(port),
       BACKEND_PORT: String(backendPort),
+      ...(tls
+        ? {
+            DEV_HTTPS_CERT_FILE: tls.certFile,
+            DEV_HTTPS_KEY_FILE: tls.keyFile,
+            TAILSCALE_HOSTNAME: tls.hostname,
+          }
+        : {}),
     },
   });
 
@@ -150,7 +367,7 @@ function startWeb(port: number, backendPort: number): ReturnType<typeof spawn> {
 
   webProcess.on('exit', (code, signal) => {
     if (signal) {
-      console.log(`[dev] Web terminated by signal ${signal}`);
+      console.info(`[dev] Web terminated by signal ${signal}`);
     } else if (code !== 0) {
       console.error(`[dev] Web exited with code ${code}`);
     }
@@ -163,18 +380,18 @@ function startWeb(port: number, backendPort: number): ReturnType<typeof spawn> {
  * Cleanup handler for graceful shutdown
  */
 async function shutdown() {
-  console.log('\n[dev] Shutting down...');
+  console.info('\n[dev] Shutting down...');
 
   // Only kill processes we started
   if (processes.backend.isManaged && processes.backend.process) {
-    console.log('[dev] Stopping backend...');
+    console.info('[dev] Stopping backend...');
     processes.backend.process.kill('SIGTERM');
   } else if (processes.backend.process) {
-    console.log('[dev] Backend was already running, leaving it as-is');
+    console.info('[dev] Backend was already running, leaving it as-is');
   }
 
   if (processes.web.process) {
-    console.log('[dev] Stopping web...');
+    console.info('[dev] Stopping web...');
     processes.web.process.kill('SIGTERM');
   }
 
@@ -199,7 +416,18 @@ async function shutdown() {
 async function main(): Promise<void> {
   // Parse command line args
   const args = process.argv.slice(2);
-  const startNewBackend = args.includes('--be');
+  const explicitNewBackend = args.includes('--be');
+  const { changed: backendChanged, baseRef } = hasBackendChanges();
+  const forceNewBackend = explicitNewBackend || backendChanged;
+
+  if (backendChanged && !explicitNewBackend) {
+    console.info(`[dev] Detected changes in packages/backend vs ${baseRef} — starting a fresh backend`);
+  }
+
+  // Try to provision a Tailscale HTTPS cert so real phones (which require a
+  // secure context for DeviceMotion, Web Bluetooth, clipboard, etc.) can
+  // actually use those APIs against the dev server. Null → HTTP fallback.
+  const tls = await resolveTlsBundle();
 
   const requestedBackendPort = parseInt(process.env.BACKEND_PORT || String(DEFAULT_BACKEND_PORT), 10);
   const requestedWebPort = parseInt(process.env.PORT || String(DEFAULT_WEB_PORT), 10);
@@ -209,15 +437,15 @@ async function main(): Promise<void> {
   let shouldStartBackend = false;
 
   // Check if the default backend port has a healthy instance
-  if (!startNewBackend && !process.env.BACKEND_PORT) {
-    backendHealthy = await checkBackendHealth(DEFAULT_BACKEND_PORT);
+  if (!forceNewBackend && !process.env.BACKEND_PORT) {
+    backendHealthy = await checkBackendHealth(DEFAULT_BACKEND_PORT, tls);
     if (backendHealthy) {
       backendPort = DEFAULT_BACKEND_PORT;
-      console.log(`[dev] Reusing existing backend on port ${backendPort}`);
+      console.info(`[dev] Reusing existing backend on port ${backendPort}`);
     } else {
       shouldStartBackend = true;
     }
-  } else if (startNewBackend) {
+  } else if (forceNewBackend) {
     // Find available port for new backend
     backendPort = await findAvailablePort(requestedBackendPort);
     shouldStartBackend = true;
@@ -227,14 +455,15 @@ async function main(): Promise<void> {
   }
 
   // Find available port for web (always auto-increment)
-  const webPort = process.env.PORT
-    ? requestedWebPort
-    : await findAvailablePort(requestedWebPort);
+  const webPort = process.env.PORT ? requestedWebPort : await findAvailablePort(requestedWebPort);
 
-  console.log(`[dev] Boardsesh Development Orchestrator`);
-  console.log(`[dev] Backend port: ${backendPort}${startNewBackend ? ' (new instance)' : ''}`);
-  console.log(`[dev] Web port: ${webPort}`);
-  console.log();
+  console.info(`[dev] Boardsesh Development Orchestrator`);
+  console.info(`[dev] Backend port: ${backendPort}${forceNewBackend ? ' (new instance)' : ''}`);
+  console.info(`[dev] Web port: ${webPort}`);
+  if (tls) {
+    console.info(`[dev] HTTPS enabled — https://${tls.hostname}:${webPort}`);
+  }
+  console.info();
 
   // Start backend if needed
   if (shouldStartBackend && !backendHealthy) {
@@ -249,24 +478,24 @@ async function main(): Promise<void> {
     }
 
     // Start backend
-    console.log(`[dev] Starting backend on port ${backendPort}...`);
-    processes.backend.process = startBackend(backendPort);
+    console.info(`[dev] Starting backend on port ${backendPort}...`);
+    processes.backend.process = startBackend(backendPort, tls);
     processes.backend.isManaged = true;
 
     // Wait for backend to be healthy
-    console.log(`[dev] Waiting for backend to be healthy...`);
-    backendHealthy = await checkBackendHealth(backendPort);
+    console.info(`[dev] Waiting for backend to be healthy...`);
+    backendHealthy = await checkBackendHealth(backendPort, tls);
 
     if (!backendHealthy) {
       console.error(`[dev] ✗ Backend failed to start or become healthy`);
       process.exit(1);
     }
 
-    console.log(`[dev] ✓ Backend is healthy`);
+    console.info(`[dev] ✓ Backend is healthy`);
   }
 
   // Start web
-  processes.web.process = startWeb(webPort, backendPort);
+  processes.web.process = startWeb(webPort, backendPort, tls);
 
   // Graceful shutdown
   process.on('SIGINT', shutdown);

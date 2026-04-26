@@ -1,15 +1,11 @@
 import React from 'react';
-import { BoardRouteParameters, Climb } from '@/app/lib/types';
+import type { BoardRouteParameters, Climb } from '@/app/lib/types';
 import { getBoardDetails } from '@/app/lib/board-constants';
 import { getClimb } from '@/app/lib/data/queries';
 import { parseRouteParams } from '@/app/lib/url-utils.server';
 import CreateClimbForm from '@/app/components/create-climb/create-climb-form';
-import {
-  MOONBOARD_LAYOUTS,
-  MOONBOARD_SETS,
-  MoonBoardLayoutKey,
-} from '@/app/lib/moonboard-config';
-import { Metadata } from 'next';
+import { type MoonBoardLayoutKey, MOONBOARD_LAYOUTS, MOONBOARD_SETS } from '@/app/lib/moonboard-config';
+import type { Metadata } from 'next';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/lib/auth/auth-options';
 
@@ -18,10 +14,15 @@ export const metadata: Metadata = {
   description: 'Create a new climb on your climbing board',
 };
 
-interface CreateClimbPageProps {
+type CreateClimbPageProps = {
   params: Promise<BoardRouteParameters>;
-  searchParams: Promise<{ forkFrames?: string; forkName?: string; forkDescription?: string; editClimbUuid?: string }>;
-}
+  searchParams: Promise<{
+    forkFrames?: string;
+    forkName?: string;
+    forkDescription?: string;
+    editClimbUuid?: string;
+  }>;
+};
 
 // Helper to get MoonBoard layout info from layout ID
 function getMoonBoardLayoutInfo(layoutId: number) {
@@ -63,7 +64,7 @@ export default async function CreateClimbPage(props: CreateClimbPageProps) {
   }
 
   // Aurora boards (kilter, tension) - use database
-  const boardDetails = await getBoardDetails(parsedParams);
+  const boardDetails = getBoardDetails(parsedParams);
 
   let editClimb: Climb | undefined;
   let editClimbError: string | undefined;
@@ -78,7 +79,7 @@ export default async function CreateClimbPage(props: CreateClimbPageProps) {
       } else {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id || loaded.userId !== session.user.id) {
-          editClimbError = "You can only edit your own climbs.";
+          editClimbError = 'You can only edit your own climbs.';
         } else {
           editClimb = loaded;
         }

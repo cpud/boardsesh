@@ -83,11 +83,16 @@ export function getGraphQLClient(sessionId: string, userId: string) {
 }
 
 // Execute helper for mutations
-export function execute<T>(client: Client, operation: { query: string; variables?: Record<string, unknown> }): Promise<T> {
+export function execute<T>(
+  client: Client,
+  operation: { query: string; variables?: Record<string, unknown> },
+): Promise<T> {
   return new Promise((resolve, reject) => {
     let result: T;
     client.subscribe<T>(operation, {
-      next: (data) => { result = data.data as T; },
+      next: (data) => {
+        result = data.data as T;
+      },
       error: reject,
       complete: () => resolve(result),
     });
@@ -119,6 +124,7 @@ export function createSubscription(sessionId: string, emit: (event: QueueEvent) 
 ## Environment Setup
 
 After pulling this branch, run:
+
 ```bash
 bun install  # From root - installs all workspace packages
 bun run build:shared  # Build shared-schema first

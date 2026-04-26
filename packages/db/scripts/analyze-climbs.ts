@@ -18,7 +18,7 @@ import { createScriptDb } from './db-connection.js';
 // Helper to extract rows from drizzle execute result (shape varies by driver)
 function rows<T>(result: unknown): T[] {
   const r = result as { rows?: T[] };
-  return Array.isArray(r) ? r : r.rows ?? [];
+  return Array.isArray(r) ? r : (r.rows ?? []);
 }
 
 // Simplified local copy of HOLD_STATE_MAP (role code → role name only, no colors).
@@ -26,29 +26,69 @@ function rows<T>(result: unknown): T[] {
 // package intentionally does not depend on board-constants. Keep in sync manually.
 const HOLD_STATE_MAP: Record<string, Record<number, string>> = {
   kilter: {
-    12: 'STARTING', 13: 'HAND', 14: 'FINISH', 15: 'FOOT',
-    20: 'STARTING', 21: 'HAND', 22: 'FINISH', 23: 'FOOT',
-    24: 'STARTING', 25: 'HAND', 26: 'FINISH', 27: 'FOOT',
-    28: 'STARTING', 29: 'HAND', 30: 'FINISH', 31: 'FOOT',
-    32: 'STARTING', 33: 'HAND', 34: 'FINISH', 35: 'FOOT',
-    36: 'HAND', 37: 'HAND', 38: 'HAND', 39: 'HAND', 40: 'HAND', 41: 'HAND',
-    42: 'STARTING', 43: 'HAND', 44: 'FINISH', 45: 'FOOT',
+    12: 'STARTING',
+    13: 'HAND',
+    14: 'FINISH',
+    15: 'FOOT',
+    20: 'STARTING',
+    21: 'HAND',
+    22: 'FINISH',
+    23: 'FOOT',
+    24: 'STARTING',
+    25: 'HAND',
+    26: 'FINISH',
+    27: 'FOOT',
+    28: 'STARTING',
+    29: 'HAND',
+    30: 'FINISH',
+    31: 'FOOT',
+    32: 'STARTING',
+    33: 'HAND',
+    34: 'FINISH',
+    35: 'FOOT',
+    36: 'HAND',
+    37: 'HAND',
+    38: 'HAND',
+    39: 'HAND',
+    40: 'HAND',
+    41: 'HAND',
+    42: 'STARTING',
+    43: 'HAND',
+    44: 'FINISH',
+    45: 'FOOT',
   },
   tension: {
-    1: 'STARTING', 2: 'HAND', 3: 'FINISH', 4: 'FOOT',
-    5: 'STARTING', 6: 'HAND', 7: 'FINISH', 8: 'FOOT',
+    1: 'STARTING',
+    2: 'HAND',
+    3: 'FINISH',
+    4: 'FOOT',
+    5: 'STARTING',
+    6: 'HAND',
+    7: 'FINISH',
+    8: 'FOOT',
   },
   moonboard: {
-    42: 'STARTING', 43: 'HAND', 44: 'FINISH',
+    42: 'STARTING',
+    43: 'HAND',
+    44: 'FINISH',
   },
   decoy: {
-    1: 'STARTING', 2: 'HAND', 3: 'FINISH', 4: 'FOOT',
+    1: 'STARTING',
+    2: 'HAND',
+    3: 'FINISH',
+    4: 'FOOT',
   },
   touchstone: {
-    1: 'STARTING', 2: 'HAND', 3: 'FINISH', 4: 'FOOT',
+    1: 'STARTING',
+    2: 'HAND',
+    3: 'FINISH',
+    4: 'FOOT',
   },
   grasshopper: {
-    1: 'STARTING', 2: 'HAND', 3: 'FINISH', 4: 'FOOT',
+    1: 'STARTING',
+    2: 'HAND',
+    3: 'FINISH',
+    4: 'FOOT',
   },
 };
 
@@ -57,26 +97,30 @@ const STARTING_ROLES: Record<string, Set<number>> = {};
 const FINISH_ROLES: Record<string, Set<number>> = {};
 for (const [board, roles] of Object.entries(HOLD_STATE_MAP)) {
   STARTING_ROLES[board] = new Set(
-    Object.entries(roles).filter(([, name]) => name === 'STARTING').map(([code]) => Number(code)),
+    Object.entries(roles)
+      .filter(([, name]) => name === 'STARTING')
+      .map(([code]) => Number(code)),
   );
   FINISH_ROLES[board] = new Set(
-    Object.entries(roles).filter(([, name]) => name === 'FINISH').map(([code]) => Number(code)),
+    Object.entries(roles)
+      .filter(([, name]) => name === 'FINISH')
+      .map(([code]) => Number(code)),
   );
 }
 
-interface ClimbRow {
+type ClimbRow = {
   uuid: string;
   board_type: string;
   name: string | null;
   setter_username: string | null;
   frames: string | null;
   is_listed: boolean | null;
-}
+};
 
-interface StatsRow {
+type StatsRow = {
   climb_uuid: string;
   total_ascents: string;
-}
+};
 
 function parseFrames(frames: string): Array<{ holdId: number; roleCode: number }> {
   const holds: Array<{ holdId: number; roleCode: number }> = [];
@@ -92,10 +136,10 @@ function parseFrames(frames: string): Array<{ holdId: number; roleCode: number }
   return holds;
 }
 
-interface Problem {
+type Problem = {
   type: 'unknown_role' | 'no_starting' | 'no_finish' | 'empty_frames' | 'malformed_frames' | 'negative_role';
   detail: string;
-}
+};
 
 function analyzeClimb(climb: ClimbRow): Problem[] {
   const problems: Problem[] = [];
@@ -109,7 +153,10 @@ function analyzeClimb(climb: ClimbRow): Problem[] {
 
   // Check basic format
   if (!/^p\d+r-?\d+/.test(frames)) {
-    problems.push({ type: 'malformed_frames', detail: `frames doesn't start with expected pattern: "${frames.slice(0, 40)}..."` });
+    problems.push({
+      type: 'malformed_frames',
+      detail: `frames doesn't start with expected pattern: "${frames.slice(0, 40)}..."`,
+    });
     return problems;
   }
 
@@ -168,7 +215,7 @@ async function main() {
 
   try {
     // First, check for any role codes in the DB that aren't in our map
-    console.log('=== Checking for unmapped role codes in board_placement_roles ===\n');
+    console.info('=== Checking for unmapped role codes in board_placement_roles ===\n');
 
     const dbRoles = await db.execute(sql`
       SELECT board_type, id, name, full_name, product_id
@@ -177,24 +224,30 @@ async function main() {
     `);
 
     let unmappedCount = 0;
-    for (const role of rows<{ board_type: string; id: number; name: string; full_name: string; product_id: number }>(dbRoles)) {
+    for (const role of rows<{
+      board_type: string;
+      id: number;
+      name: string;
+      full_name: string;
+      product_id: number;
+    }>(dbRoles)) {
       const boardMap = HOLD_STATE_MAP[role.board_type];
       if (boardMap && !(role.id in boardMap)) {
-        console.log(`  UNMAPPED: ${role.board_type} role ${role.id} "${role.full_name}" (product ${role.product_id})`);
+        console.info(`  UNMAPPED: ${role.board_type} role ${role.id} "${role.full_name}" (product ${role.product_id})`);
         unmappedCount++;
       }
     }
     if (unmappedCount === 0) {
-      console.log('  All placement roles are mapped in HOLD_STATE_MAP ✓');
+      console.info('  All placement roles are mapped in HOLD_STATE_MAP ✓');
     } else {
-      console.log(`\n  ${unmappedCount} unmapped role(s) found — these will cause rendering issues`);
+      console.info(`\n  ${unmappedCount} unmapped role(s) found — these will cause rendering issues`);
     }
 
     // Now scan climbs
     const boards = boardFilter ? [boardFilter] : Object.keys(HOLD_STATE_MAP);
 
     for (const board of boards) {
-      console.log(`\n=== Analyzing ${board} climbs ===\n`);
+      console.info(`\n=== Analyzing ${board} climbs ===\n`);
 
       const climbsResult = await db.execute(sql`
         SELECT uuid, board_type, name, setter_username, frames, is_listed
@@ -238,13 +291,15 @@ async function main() {
       }
 
       const totalProblematic = problemClimbs.length;
-      console.log(`  Total climbs: ${climbs.length.toLocaleString()}`);
-      console.log(`  Problematic:  ${totalProblematic.toLocaleString()} (${climbs.length > 0 ? ((totalProblematic / climbs.length) * 100).toFixed(2) : '0.00'}%)`);
-      console.log('');
-      console.log('  Breakdown:');
+      console.info(`  Total climbs: ${climbs.length.toLocaleString()}`);
+      console.info(
+        `  Problematic:  ${totalProblematic.toLocaleString()} (${climbs.length > 0 ? ((totalProblematic / climbs.length) * 100).toFixed(2) : '0.00'}%)`,
+      );
+      console.info('');
+      console.info('  Breakdown:');
       for (const [type, count] of Object.entries(problemCounts)) {
         if (count > 0) {
-          console.log(`    ${type}: ${count.toLocaleString()}`);
+          console.info(`    ${type}: ${count.toLocaleString()}`);
         }
       }
 
@@ -253,21 +308,25 @@ async function main() {
         problemClimbs.sort((a, b) => b.ascents - a.ascents);
         const topN = problemClimbs.slice(0, limit);
 
-        console.log(`\n  Top ${Math.min(limit, totalProblematic)} affected climbs (by total ascents across all angles):\n`);
+        console.info(
+          `\n  Top ${Math.min(limit, totalProblematic)} affected climbs (by total ascents across all angles):\n`,
+        );
         for (const { climb, problems, ascents } of topN) {
-          console.log(`    "${climb.name || '(unnamed)'}" by ${climb.setter_username || '?'} — ${ascents.toLocaleString()} ascents ${climb.is_listed === false ? '[unlisted]' : ''}`);
+          console.info(
+            `    "${climb.name || '(unnamed)'}" by ${climb.setter_username || '?'} — ${ascents.toLocaleString()} ascents ${climb.is_listed === false ? '[unlisted]' : ''}`,
+          );
           for (const p of problems) {
-            console.log(`      → ${p.type}: ${p.detail}`);
+            console.info(`      → ${p.type}: ${p.detail}`);
           }
           if (verbose) {
-            console.log(`      frames: ${climb.frames?.slice(0, 80)}${(climb.frames?.length ?? 0) > 80 ? '...' : ''}`);
+            console.info(`      frames: ${climb.frames?.slice(0, 80)}${(climb.frames?.length ?? 0) > 80 ? '...' : ''}`);
           }
         }
       }
     }
 
     // Summary of all unknown role codes across all climbs
-    console.log('\n=== Unknown role codes summary ===\n');
+    console.info('\n=== Unknown role codes summary ===\n');
     const allUnknown = await db.execute(sql`
       SELECT board_type,
         (regexp_matches(frames, 'r(-?\d+)', 'g'))[1]::int as role_code,
@@ -282,12 +341,12 @@ async function main() {
     for (const row of rows<{ board_type: string; role_code: number; climb_count: string }>(allUnknown)) {
       const boardMap = HOLD_STATE_MAP[row.board_type];
       if (boardMap && !(row.role_code in boardMap)) {
-        console.log(`  ${row.board_type} role ${row.role_code}: ${Number(row.climb_count).toLocaleString()} climbs`);
+        console.info(`  ${row.board_type} role ${row.role_code}: ${Number(row.climb_count).toLocaleString()} climbs`);
         anyUnknown = true;
       }
     }
     if (!anyUnknown) {
-      console.log('  No unknown role codes found ✓');
+      console.info('  No unknown role codes found ✓');
     }
   } finally {
     await close();

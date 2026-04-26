@@ -1,5 +1,9 @@
 import { db } from '../../client';
-import { searchClimbs as sharedSearchClimbs, type BoardRouteParams, type ClimbSearchParams } from '@boardsesh/db/queries';
+import {
+  searchClimbs as sharedSearchClimbs,
+  type BoardRouteParams,
+  type ClimbSearchParams,
+} from '@boardsesh/db/queries';
 import type { Climb, ClimbSearchResult } from '@boardsesh/shared-schema';
 
 // Re-export shared types for backward compatibility

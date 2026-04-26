@@ -25,15 +25,15 @@ for (const envPath of ENV_PATHS) {
   }
 }
 
-interface PostgresConfig {
+type PostgresConfig = {
   host: string;
   port: string;
   user: string;
   password: string;
   database: string;
-}
+};
 
-interface ProductSize {
+type ProductSize = {
   id: number;
   name: string;
   description: string;
@@ -42,43 +42,43 @@ interface ProductSize {
   edgeBottom: number;
   edgeTop: number;
   productId: number;
-}
+};
 
-interface Layout {
+type Layout = {
   id: number;
   name: string;
   productId: number;
-}
+};
 
-interface SetMapping {
+type SetMapping = {
   setId: number;
   setName: string;
   layoutId: number;
   sizeId: number;
-}
+};
 
-interface ImageFilenameMapping {
+type ImageFilenameMapping = {
   layoutId: number;
   sizeId: number;
   setId: number;
   imageFilename: string;
-}
+};
 
-interface LedPlacement {
+type LedPlacement = {
   placementId: number;
   position: number;
   layoutId: number;
   sizeId: number;
-}
+};
 
-interface HolePlacement {
+type HolePlacement = {
   placementId: number;
   mirroredPlacementId: number | null;
   x: number;
   y: number;
   setId: number;
   layoutId: number;
-}
+};
 
 type GeneratedBoardData = {
   sizes: ProductSize[];
@@ -124,15 +124,22 @@ function runPsqlQuery(query: string): string {
   return execFileSync(
     'psql',
     [
-      '-h', postgresConfig.host,
-      '-p', postgresConfig.port,
-      '-U', postgresConfig.user,
-      '-d', postgresConfig.database,
+      '-h',
+      postgresConfig.host,
+      '-p',
+      postgresConfig.port,
+      '-U',
+      postgresConfig.user,
+      '-d',
+      postgresConfig.database,
       '-t',
       '-A',
-      '-F', '|',
-      '-R', '~~~',
-      '-c', query,
+      '-F',
+      '|',
+      '-R',
+      '~~~',
+      '-c',
+      query,
     ],
     {
       encoding: 'utf-8',
@@ -259,17 +266,23 @@ function assertBoardDataIsComplete(boardName: GeneratedBoardName, data: Generate
 }
 
 function generateSizesTypeScript(boardName: GeneratedBoardName, sizes: ProductSize[]): string {
-  const entries = sizes.map((size) =>
-    `    ${size.id}: { id: ${size.id}, name: '${escapeString(size.name)}', description: '${escapeString(size.description)}', edgeLeft: ${size.edgeLeft}, edgeRight: ${size.edgeRight}, edgeBottom: ${size.edgeBottom}, edgeTop: ${size.edgeTop}, productId: ${size.productId} },`,
-  ).join('\n');
+  const entries = sizes
+    .map(
+      (size) =>
+        `    ${size.id}: { id: ${size.id}, name: '${escapeString(size.name)}', description: '${escapeString(size.description)}', edgeLeft: ${size.edgeLeft}, edgeRight: ${size.edgeRight}, edgeBottom: ${size.edgeBottom}, edgeTop: ${size.edgeTop}, productId: ${size.productId} },`,
+    )
+    .join('\n');
 
   return `  ${boardName}: {\n${entries}\n  }`;
 }
 
 function generateLayoutsTypeScript(boardName: GeneratedBoardName, layouts: Layout[]): string {
-  const entries = layouts.map((layout) =>
-    `    ${layout.id}: { id: ${layout.id}, name: '${escapeString(layout.name)}', productId: ${layout.productId} },`,
-  ).join('\n');
+  const entries = layouts
+    .map(
+      (layout) =>
+        `    ${layout.id}: { id: ${layout.id}, name: '${escapeString(layout.name)}', productId: ${layout.productId} },`,
+    )
+    .join('\n');
 
   return `  ${boardName}: {\n${entries}\n  }`;
 }
@@ -295,7 +308,10 @@ function generateSetsTypeScript(boardName: GeneratedBoardName, sets: SetMapping[
 
 function generateImageFilenamesTypeScript(boardName: GeneratedBoardName, mappings: ImageFilenameMapping[]): string {
   const entries = mappings
-    .map((mapping) => `    '${mapping.layoutId}-${mapping.sizeId}-${mapping.setId}': '${escapeString(mapping.imageFilename)}',`)
+    .map(
+      (mapping) =>
+        `    '${mapping.layoutId}-${mapping.sizeId}-${mapping.setId}': '${escapeString(mapping.imageFilename)}',`,
+    )
     .join('\n');
 
   return `  ${boardName}: {\n${entries}\n  }`;
@@ -307,12 +323,7 @@ function generateHolePlacementsTypeScript(boardName: GeneratedBoardName, placeme
   for (const placement of placements) {
     const key = `${placement.layoutId}-${placement.setId}`;
     grouped[key] ??= [];
-    grouped[key].push([
-      placement.placementId,
-      placement.mirroredPlacementId,
-      placement.x,
-      placement.y,
-    ]);
+    grouped[key].push([placement.placementId, placement.mirroredPlacementId, placement.x, placement.y]);
   }
 
   const entries = Object.entries(grouped)
@@ -447,7 +458,7 @@ function main(): void {
   const boardData = {} as Record<GeneratedBoardName, GeneratedBoardData>;
 
   for (const boardName of BOARD_NAMES) {
-    console.log(`Querying ${boardName} board constants...`);
+    console.info(`Querying ${boardName} board constants...`);
     boardData[boardName] = {
       sizes: querySizes(boardName),
       layouts: queryLayouts(boardName),
@@ -459,13 +470,13 @@ function main(): void {
     assertBoardDataIsComplete(boardName, boardData[boardName]);
   }
 
-  console.log(`Writing ${PRODUCT_OUTPUT_PATH}...`);
+  console.info(`Writing ${PRODUCT_OUTPUT_PATH}...`);
   writeFileSync(PRODUCT_OUTPUT_PATH, generateProductDataFile(boardData), 'utf-8');
 
-  console.log(`Writing ${LED_OUTPUT_PATH}...`);
+  console.info(`Writing ${LED_OUTPUT_PATH}...`);
   writeFileSync(LED_OUTPUT_PATH, generateLedDataFile(boardData), 'utf-8');
 
-  console.log('Board constants generated.');
+  console.info('Board constants generated.');
 }
 
 main();

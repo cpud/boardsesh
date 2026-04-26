@@ -3,25 +3,21 @@
 import React, { useEffect, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { usePersistentSessionState, usePersistentSessionActions } from './persistent-session-context';
-import { BoardDetails, ParsedBoardRouteParameters } from '@/app/lib/types';
+import type { BoardDetails, ParsedBoardRouteParameters } from '@/app/lib/types';
 import { getBaseBoardPath } from '@/app/lib/url-utils';
 import { getClimbSessionCookie } from '@/app/lib/climb-session-cookie';
 
-interface BoardSessionBridgeProps {
+type BoardSessionBridgeProps = {
   boardDetails: BoardDetails;
   parsedParams: ParsedBoardRouteParameters;
   children: React.ReactNode;
-}
+};
 
 /**
  * Bridge component that connects the board layout to the persistent session.
  * This component activates the session when mounted on a board page with a session param.
  */
-const BoardSessionBridge: React.FC<BoardSessionBridgeProps> = ({
-  boardDetails,
-  parsedParams,
-  children,
-}) => {
+const BoardSessionBridge: React.FC<BoardSessionBridgeProps> = ({ boardDetails, parsedParams, children }) => {
   const pathname = usePathname();
   const sessionIdFromCookie = getClimbSessionCookie();
 
@@ -76,7 +72,7 @@ const BoardSessionBridge: React.FC<BoardSessionBridgeProps> = ({
     activateSession,
   ]);
 
-  return <>{children}</>;
+  return children;
 };
 
 export default BoardSessionBridge;

@@ -1,8 +1,17 @@
 import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { createQueryWrapper, createTestQueryClient } from '@/app/test-utils/test-providers';
+import { useWsAuthToken } from '../use-ws-auth-token';
+import { useSession } from 'next-auth/react';
+import {
+  useLogbook,
+  useInvalidateLogbook,
+  logbookQueryKey,
+  accumulatedLogbookQueryKey,
+  type LogbookEntry,
+} from '../use-logbook';
 
 vi.mock('../use-ws-auth-token', () => ({
   useWsAuthToken: vi.fn(),
@@ -20,10 +29,6 @@ vi.mock('@/app/lib/graphql/client', () => ({
 vi.mock('@/app/lib/graphql/operations', () => ({
   GET_TICKS: 'GET_TICKS_QUERY',
 }));
-
-import { useWsAuthToken } from '../use-ws-auth-token';
-import { useSession } from 'next-auth/react';
-import { useLogbook, useInvalidateLogbook, logbookQueryKey, accumulatedLogbookQueryKey, type LogbookEntry } from '../use-logbook';
 
 const mockUseWsAuthToken = vi.mocked(useWsAuthToken);
 const mockUseSession = vi.mocked(useSession);
@@ -52,10 +57,9 @@ describe('useLogbook', () => {
       update: vi.fn(),
     });
 
-    const { result } = renderHook(
-      () => useLogbook('kilter', ['uuid-1']),
-      { wrapper: createQueryWrapper() },
-    );
+    const { result } = renderHook(() => useLogbook('kilter', ['uuid-1']), {
+      wrapper: createQueryWrapper(),
+    });
 
     // Query should not execute
     expect(result.current.logbook).toEqual([]);
@@ -70,20 +74,18 @@ describe('useLogbook', () => {
       error: null,
     });
 
-    const { result } = renderHook(
-      () => useLogbook('kilter', ['uuid-1']),
-      { wrapper: createQueryWrapper() },
-    );
+    const { result } = renderHook(() => useLogbook('kilter', ['uuid-1']), {
+      wrapper: createQueryWrapper(),
+    });
 
     expect(result.current.logbook).toEqual([]);
     expect(mockRequest).not.toHaveBeenCalled();
   });
 
   it('returns empty logbook when empty climbUuids', async () => {
-    const { result } = renderHook(
-      () => useLogbook('kilter', []),
-      { wrapper: createQueryWrapper() },
-    );
+    const { result } = renderHook(() => useLogbook('kilter', []), {
+      wrapper: createQueryWrapper(),
+    });
 
     expect(result.current.logbook).toEqual([]);
     expect(mockRequest).not.toHaveBeenCalled();
@@ -96,10 +98,7 @@ describe('useLogbook', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) =>
       React.createElement(QueryClientProvider, { client: queryClient }, children);
 
-    const { result } = renderHook(
-      () => useLogbook('kilter', ['climb-1']),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useLogbook('kilter', ['climb-1']), { wrapper });
 
     await waitFor(() => {
       expect(mockRequest).toHaveBeenCalledTimes(1);
@@ -128,10 +127,9 @@ describe('useLogbook', () => {
       ],
     });
 
-    const { result } = renderHook(
-      () => useLogbook('kilter', ['climb-1']),
-      { wrapper: createQueryWrapper() },
-    );
+    const { result } = renderHook(() => useLogbook('kilter', ['climb-1']), {
+      wrapper: createQueryWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.logbook.length).toBe(1);
@@ -149,6 +147,9 @@ describe('useLogbook', () => {
       climbed_at: '2024-01-01',
       is_ascent: true,
       status: 'send',
+      upvotes: 0,
+      downvotes: 0,
+      commentCount: 0,
     });
   });
 
@@ -171,10 +172,9 @@ describe('useLogbook', () => {
       ],
     });
 
-    const { result } = renderHook(
-      () => useLogbook('tension', ['climb-2']),
-      { wrapper: createQueryWrapper() },
-    );
+    const { result } = renderHook(() => useLogbook('tension', ['climb-2']), {
+      wrapper: createQueryWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.logbook.length).toBe(1);
@@ -199,10 +199,9 @@ describe('useLogbook', () => {
   it('handles loading state', () => {
     mockRequest.mockReturnValue(new Promise(() => {})); // never resolves
 
-    const { result } = renderHook(
-      () => useLogbook('kilter', ['climb-1']),
-      { wrapper: createQueryWrapper() },
-    );
+    const { result } = renderHook(() => useLogbook('kilter', ['climb-1']), {
+      wrapper: createQueryWrapper(),
+    });
 
     expect(result.current.isLoading).toBe(true);
   });
@@ -259,10 +258,9 @@ describe('useLogbook', () => {
       ],
     });
 
-    const { result } = renderHook(
-      () => useLogbook('kilter', ['climb-1']),
-      { wrapper: createQueryWrapper() },
-    );
+    const { result } = renderHook(() => useLogbook('kilter', ['climb-1']), {
+      wrapper: createQueryWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.logbook.length).toBe(3);
@@ -293,10 +291,10 @@ describe('useLogbook', () => {
       ],
     });
 
-    const { result, rerender } = renderHook(
-      ({ uuids }: { uuids: string[] }) => useLogbook('kilter', uuids),
-      { wrapper: createQueryWrapper(), initialProps: { uuids: ['climb-1'] } },
-    );
+    const { result, rerender } = renderHook(({ uuids }: { uuids: string[] }) => useLogbook('kilter', uuids), {
+      wrapper: createQueryWrapper(),
+      initialProps: { uuids: ['climb-1'] },
+    });
 
     await waitFor(() => {
       expect(result.current.logbook.length).toBe(1);
@@ -358,10 +356,10 @@ describe('useLogbook', () => {
       ],
     });
 
-    const { result, rerender } = renderHook(
-      ({ uuids }: { uuids: string[] }) => useLogbook('kilter', uuids),
-      { wrapper: createQueryWrapper(), initialProps: { uuids: ['climb-1'] } },
-    );
+    const { result, rerender } = renderHook(({ uuids }: { uuids: string[] }) => useLogbook('kilter', uuids), {
+      wrapper: createQueryWrapper(),
+      initialProps: { uuids: ['climb-1'] },
+    });
 
     await waitFor(() => {
       expect(result.current.logbook.length).toBe(1);
@@ -401,10 +399,7 @@ describe('useLogbook', () => {
       ],
     });
 
-    const { result } = renderHook(
-      () => useLogbook('kilter', ['climb-1']),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useLogbook('kilter', ['climb-1']), { wrapper });
 
     await waitFor(() => {
       expect(result.current.logbook.length).toBe(1);
@@ -423,13 +418,16 @@ describe('useLogbook', () => {
       climbed_at: '2024-02-01',
       is_ascent: true,
       status: 'flash',
+      upvotes: 0,
+      downvotes: 0,
+      commentCount: 0,
     };
 
     act(() => {
-      queryClient.setQueryData<LogbookEntry[]>(
-        accumulatedLogbookQueryKey('kilter'),
-        (old = []) => [optimisticEntry, ...old],
-      );
+      queryClient.setQueryData<LogbookEntry[]>(accumulatedLogbookQueryKey('kilter'), (old = []) => [
+        optimisticEntry,
+        ...old,
+      ]);
     });
 
     await waitFor(() => {
@@ -458,10 +456,9 @@ describe('useLogbook', () => {
       ],
     });
 
-    const { result, rerender } = renderHook(
-      () => useLogbook('kilter', ['climb-1']),
-      { wrapper: createQueryWrapper() },
-    );
+    const { result, rerender } = renderHook(() => useLogbook('kilter', ['climb-1']), {
+      wrapper: createQueryWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.logbook.length).toBe(1);
@@ -500,10 +497,9 @@ describe('useLogbook', () => {
       ],
     });
 
-    const { result, rerender } = renderHook(
-      () => useLogbook('kilter', ['climb-1']),
-      { wrapper: createQueryWrapper() },
-    );
+    const { result, rerender } = renderHook(() => useLogbook('kilter', ['climb-1']), {
+      wrapper: createQueryWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.logbook.length).toBe(1);
@@ -558,10 +554,9 @@ describe('useInvalidateLogbook', () => {
   });
 
   it('returns a function', () => {
-    const { result } = renderHook(
-      () => useInvalidateLogbook('kilter'),
-      { wrapper: createQueryWrapper() },
-    );
+    const { result } = renderHook(() => useInvalidateLogbook('kilter'), {
+      wrapper: createQueryWrapper(),
+    });
 
     expect(typeof result.current).toBe('function');
   });

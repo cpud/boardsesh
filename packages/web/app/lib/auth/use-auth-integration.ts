@@ -1,6 +1,6 @@
 import { useSession } from 'next-auth/react';
 import { useCallback } from 'react';
-import { BoardName } from '@/app/lib/types';
+import type { BoardName } from '@/app/lib/types';
 import { createUserBoardMapping } from './user-board-mappings';
 
 /**
@@ -14,29 +14,22 @@ export function useAuthIntegration() {
    * Call this when a user successfully logs into an Aurora board
    * to create the mapping between NextAuth user and board user
    */
-  const linkBoardAccount = useCallback(async (
-    boardType: BoardName,
-    boardUserId: number,
-    boardUsername: string
-  ) => {
-    if (!session?.user?.id) {
-      console.warn('Cannot link board account: user not authenticated with NextAuth');
-      return;
-    }
+  const linkBoardAccount = useCallback(
+    async (boardType: BoardName, boardUserId: number, boardUsername: string) => {
+      if (!session?.user?.id) {
+        console.warn('Cannot link board account: user not authenticated with NextAuth');
+        return;
+      }
 
-    try {
-      await createUserBoardMapping(
-        session.user.id,
-        boardType,
-        boardUserId,
-        boardUsername
-      );
-      console.log(`Successfully linked ${boardType} account for user ${session.user.id}`);
-    } catch (error) {
-      console.error('Failed to link board account:', error);
-      // Don't throw - this is a background operation
-    }
-  }, [session?.user?.id]);
+      try {
+        await createUserBoardMapping(session.user.id, boardType, boardUserId, boardUsername);
+      } catch (error) {
+        console.error('Failed to link board account:', error);
+        // Don't throw - this is a background operation
+      }
+    },
+    [session?.user?.id],
+  );
 
   return {
     linkBoardAccount,

@@ -20,11 +20,7 @@ import { checkAutoApproval } from './grade-analysis';
 import { setterOverrideCommunityStatus, freezeClimb } from './setter-overrides';
 
 export const socialProposalMutations = {
-  createProposal: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  createProposal: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 5);
 
@@ -147,14 +143,12 @@ export const socialProposalMutations = {
 
     // Auto-vote with proposer's weight
     const weight = await getUserVoteWeight(proposerId, boardType);
-    await db
-      .insert(dbSchema.proposalVotes)
-      .values({
-        proposalId: proposal.id,
-        userId: proposerId,
-        value: 1,
-        weight,
-      });
+    await db.insert(dbSchema.proposalVotes).values({
+      proposalId: proposal.id,
+      userId: proposerId,
+      value: 1,
+      weight,
+    });
 
     // Check auto-approval (atomic: only transition if still 'open')
     const shouldApprove = await checkAutoApproval(proposal.id, boardType, climbUuid, angle ?? null);
@@ -162,10 +156,7 @@ export const socialProposalMutations = {
       const [approved] = await db
         .update(dbSchema.climbProposals)
         .set({ status: 'approved', resolvedAt: new Date() })
-        .where(and(
-          eq(dbSchema.climbProposals.id, proposal.id),
-          eq(dbSchema.climbProposals.status, 'open'),
-        ))
+        .where(and(eq(dbSchema.climbProposals.id, proposal.id), eq(dbSchema.climbProposals.status, 'open')))
         .returning();
 
       if (approved) {
@@ -198,11 +189,7 @@ export const socialProposalMutations = {
     return enrichProposal(proposal, proposerId);
   },
 
-  voteOnProposal: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  voteOnProposal: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     requireAuthenticated(ctx);
     await applyRateLimit(ctx, 20);
 
@@ -231,12 +218,7 @@ export const socialProposalMutations = {
     const [existingVote] = await db
       .select()
       .from(dbSchema.proposalVotes)
-      .where(
-        and(
-          eq(dbSchema.proposalVotes.proposalId, proposal.id),
-          eq(dbSchema.proposalVotes.userId, userId),
-        ),
-      )
+      .where(and(eq(dbSchema.proposalVotes.proposalId, proposal.id), eq(dbSchema.proposalVotes.userId, userId)))
       .limit(1);
 
     if (existingVote) {
@@ -251,9 +233,7 @@ export const socialProposalMutations = {
           .where(eq(dbSchema.proposalVotes.id, existingVote.id));
       }
     } else {
-      await db
-        .insert(dbSchema.proposalVotes)
-        .values({ proposalId: proposal.id, userId, value, weight });
+      await db.insert(dbSchema.proposalVotes).values({ proposalId: proposal.id, userId, value, weight });
     }
 
     // Check auto-approval (atomic: only transition if still 'open')
@@ -262,10 +242,7 @@ export const socialProposalMutations = {
       const [approved] = await db
         .update(dbSchema.climbProposals)
         .set({ status: 'approved', resolvedAt: new Date() })
-        .where(and(
-          eq(dbSchema.climbProposals.id, proposal.id),
-          eq(dbSchema.climbProposals.status, 'open'),
-        ))
+        .where(and(eq(dbSchema.climbProposals.id, proposal.id), eq(dbSchema.climbProposals.status, 'open')))
         .returning();
 
       if (approved) {
@@ -280,7 +257,11 @@ export const socialProposalMutations = {
           entityType: 'proposal',
           entityId: proposalUuid,
           timestamp: Date.now(),
-          metadata: { climbUuid: proposal.climbUuid, boardType: proposal.boardType, proposalType: proposal.type },
+          metadata: {
+            climbUuid: proposal.climbUuid,
+            boardType: proposal.boardType,
+            proposalType: proposal.type,
+          },
         }).catch((err) => console.error('[Proposals] Failed to publish proposal.approved:', err));
       }
     }
@@ -292,17 +273,17 @@ export const socialProposalMutations = {
       entityType: 'proposal',
       entityId: proposalUuid,
       timestamp: Date.now(),
-      metadata: { value: String(value), climbUuid: proposal.climbUuid, boardType: proposal.boardType },
+      metadata: {
+        value: String(value),
+        climbUuid: proposal.climbUuid,
+        boardType: proposal.boardType,
+      },
     }).catch((err) => console.error('[Proposals] Failed to publish proposal.voted:', err));
 
     return enrichProposal(proposal, userId);
   },
 
-  resolveProposal: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  resolveProposal: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     const validated = validateInput(ResolveProposalInputSchema, input, 'input');
     const { proposalUuid, status, reason } = validated;
 
@@ -345,17 +326,17 @@ export const socialProposalMutations = {
       entityType: 'proposal',
       entityId: proposalUuid,
       timestamp: Date.now(),
-      metadata: { climbUuid: proposal.climbUuid, boardType: proposal.boardType, proposalType: proposal.type },
+      metadata: {
+        climbUuid: proposal.climbUuid,
+        boardType: proposal.boardType,
+        proposalType: proposal.type,
+      },
     }).catch((err) => console.error(`[Proposals] Failed to publish ${eventType}:`, err));
 
     return enrichProposal(proposal, userId);
   },
 
-  deleteProposal: async (
-    _: unknown,
-    { input }: { input: unknown },
-    ctx: ConnectionContext,
-  ) => {
+  deleteProposal: async (_: unknown, { input }: { input: unknown }, ctx: ConnectionContext) => {
     const validated = validateInput(DeleteProposalInputSchema, input, 'input');
     const { proposalUuid } = validated;
 
@@ -376,9 +357,7 @@ export const socialProposalMutations = {
     await revertProposalEffect(proposal);
 
     // Hard-delete the proposal (votes cascade-delete via FK, lastProposalId set to null via FK)
-    await db
-      .delete(dbSchema.climbProposals)
-      .where(eq(dbSchema.climbProposals.id, proposal.id));
+    await db.delete(dbSchema.climbProposals).where(eq(dbSchema.climbProposals.id, proposal.id));
 
     // Publish deleted event
     publishSocialEvent({
@@ -387,7 +366,11 @@ export const socialProposalMutations = {
       entityType: 'proposal',
       entityId: proposalUuid,
       timestamp: Date.now(),
-      metadata: { climbUuid: proposal.climbUuid, boardType: proposal.boardType, proposalType: proposal.type },
+      metadata: {
+        climbUuid: proposal.climbUuid,
+        boardType: proposal.boardType,
+        proposalType: proposal.type,
+      },
     }).catch((err) => console.error('[Proposals] Failed to publish proposal.deleted:', err));
 
     return true;

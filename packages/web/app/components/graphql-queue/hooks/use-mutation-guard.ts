@@ -2,14 +2,14 @@ import { useMemo, useCallback, useRef } from 'react';
 import { useSnackbar } from '../../providers/snackbar-provider';
 import type { ConnectionState } from '../../connection-manager/websocket-connection-manager';
 
-interface UseMutationGuardParams {
+type UseMutationGuardParams = {
   sessionId: string | null;
   backendUrl: string | null;
   hasConnected: boolean;
   connectionState: ConnectionState;
   isSessionActive: boolean;
   isSessionReady: boolean;
-}
+};
 
 /**
  * Determines view-only mode and provides a guard function that blocks
@@ -22,7 +22,7 @@ export function useMutationGuard({
   backendUrl,
   hasConnected,
   connectionState,
-  isSessionActive,
+  isSessionActive: _isSessionActive,
   isSessionReady,
 }: UseMutationGuardParams) {
   const { showMessage } = useSnackbar();
@@ -42,7 +42,7 @@ export function useMutationGuard({
   }, [sessionId, hasConnected, connectionState]);
 
   // Allow mutations when: not view-only AND (session ready OR disconnected with prior connection OR solo mode)
-  const canMutate = !viewOnlyMode && (sessionId ? (isSessionReady || isDisconnected) : true);
+  const canMutate = !viewOnlyMode && (sessionId ? isSessionReady || isDisconnected : true);
 
   // Ref to debounce the "blocked" toast so rapid taps don't spam
   const lastBlockedToastRef = useRef(0);

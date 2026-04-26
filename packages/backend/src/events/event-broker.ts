@@ -29,17 +29,17 @@ export class EventBroker {
     // Create consumer group (idempotent) - uses publisher (non-blocking)
     try {
       await this.publisher.xgroup('CREATE', STREAM_KEY, CONSUMER_GROUP, '$', 'MKSTREAM');
-      console.log(`[EventBroker] Created consumer group "${CONSUMER_GROUP}" on "${STREAM_KEY}"`);
+      console.info(`[EventBroker] Created consumer group "${CONSUMER_GROUP}" on "${STREAM_KEY}"`);
     } catch (error: unknown) {
       // BUSYGROUP means group already exists, which is fine
       if (error instanceof Error && error.message.includes('BUSYGROUP')) {
-        console.log(`[EventBroker] Consumer group "${CONSUMER_GROUP}" already exists`);
+        console.info(`[EventBroker] Consumer group "${CONSUMER_GROUP}" already exists`);
       } else {
         throw error;
       }
     }
 
-    console.log(`[EventBroker] Initialized (consumer: ${this.consumerName})`);
+    console.info(`[EventBroker] Initialized (consumer: ${this.consumerName})`);
   }
 
   isInitialized(): boolean {
@@ -55,14 +55,22 @@ export class EventBroker {
     try {
       await this.publisher.xadd(
         STREAM_KEY,
-        'MAXLEN', '~', String(MAX_STREAM_LEN),
+        'MAXLEN',
+        '~',
+        String(MAX_STREAM_LEN),
         '*',
-        'type', event.type,
-        'actorId', event.actorId,
-        'entityType', event.entityType,
-        'entityId', event.entityId,
-        'timestamp', String(event.timestamp),
-        'metadata', JSON.stringify(event.metadata),
+        'type',
+        event.type,
+        'actorId',
+        event.actorId,
+        'entityType',
+        event.entityType,
+        'entityId',
+        event.entityId,
+        'timestamp',
+        String(event.timestamp),
+        'metadata',
+        JSON.stringify(event.metadata),
       );
     } catch (error) {
       console.error('[EventBroker] Failed to publish event:', error);
@@ -76,7 +84,7 @@ export class EventBroker {
     }
 
     this.running = true;
-    console.log(`[EventBroker] Starting consumer "${this.consumerName}"`);
+    console.info(`[EventBroker] Starting consumer "${this.consumerName}"`);
 
     const runLoop = async () => {
       let consecutiveErrors = 0;
@@ -100,13 +108,16 @@ export class EventBroker {
         } catch (error) {
           consecutiveErrors++;
           const delay = Math.min(1000 * Math.pow(2, consecutiveErrors - 1), 30000);
-          console.error(`[EventBroker] Consumer loop error (attempt ${consecutiveErrors}, retry in ${delay}ms):`, error);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          console.error(
+            `[EventBroker] Consumer loop error (attempt ${consecutiveErrors}, retry in ${delay}ms):`,
+            error,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     };
 
-    runLoop();
+    void runLoop();
   }
 
   private async reclaimPendingEvents(handler: (event: SocialEvent) => Promise<void>): Promise<void> {
@@ -119,13 +130,14 @@ export class EventBroker {
         this.consumerName,
         CLAIM_IDLE_MS,
         '0-0',
-        'COUNT', 10,
+        'COUNT',
+        10,
       );
 
       // xautoclaim returns [nextStartId, claimedEntries, ...]
       const entries = result[1] as Array<[string, string[]]>;
       if (entries && entries.length > 0) {
-        console.log(`[EventBroker] Reclaimed ${entries.length} pending events`);
+        console.info(`[EventBroker] Reclaimed ${entries.length} pending events`);
         for (const [messageId, fields] of entries) {
           const event = this.parseEvent(fields);
           if (event) {
@@ -159,10 +171,16 @@ export class EventBroker {
     if (!this.consumer || !this.publisher) return;
 
     const result = await this.consumer.xreadgroup(
-      'GROUP', CONSUMER_GROUP, this.consumerName,
-      'COUNT', BATCH_SIZE,
-      'BLOCK', BLOCK_MS,
-      'STREAMS', STREAM_KEY, '>',
+      'GROUP',
+      CONSUMER_GROUP,
+      this.consumerName,
+      'COUNT',
+      BATCH_SIZE,
+      'BLOCK',
+      BLOCK_MS,
+      'STREAMS',
+      STREAM_KEY,
+      '>',
     );
 
     if (!result) return; // Timed out with no new events
@@ -214,6 +232,6 @@ export class EventBroker {
       clearTimeout(this.consumerTimeout);
       this.consumerTimeout = null;
     }
-    console.log(`[EventBroker] Consumer "${this.consumerName}" shut down`);
+    console.info(`[EventBroker] Consumer "${this.consumerName}" shut down`);
   }
 }

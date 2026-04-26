@@ -35,7 +35,7 @@ export const ticksTypeDefs = /* GraphQL */ `
     status: TickStatus!
     "Number of attempts before success (or total attempts if not sent)"
     attemptCount: Int!
-    "User's quality rating (0-3)"
+    "User's quality rating (1-5)"
     quality: Int
     "User's difficulty rating"
     difficulty: Int
@@ -61,6 +61,16 @@ export const ticksTypeDefs = /* GraphQL */ `
     layoutId: Int
     "Board entity ID if tick was associated with a board"
     boardId: Int
+    # Social aggregates are only populated by read queries (e.g. \`ticks\`).
+    # Mutation resolvers (\`saveTick\`, \`updateTick\`) don't compute them so they
+    # are nullable here; when a client needs guaranteed counts, prefer
+    # \`FollowingAscentFeedItem\` or a direct \`voteSummary\` / \`comments\` query.
+    "Number of upvotes (likes) on this tick. Null unless populated by a read query."
+    upvotes: Int
+    "Number of downvotes on this tick. Null unless populated by a read query."
+    downvotes: Int
+    "Number of (non-deleted) comments on this tick. Null unless populated by a read query."
+    commentCount: Int
   }
 
   """
@@ -79,7 +89,7 @@ export const ticksTypeDefs = /* GraphQL */ `
     status: TickStatus!
     "Number of attempts"
     attemptCount: Int!
-    "Quality rating (0-3)"
+    "Quality rating (1-5)"
     quality: Int
     "Difficulty rating"
     difficulty: Int
@@ -97,6 +107,8 @@ export const ticksTypeDefs = /* GraphQL */ `
     sizeId: Int
     "Set IDs for board resolution"
     setIds: String
+    "Optional Instagram post or reel URL to attach as beta for the climb"
+    videoUrl: String
   }
 
   """
@@ -126,5 +138,19 @@ export const ticksTypeDefs = /* GraphQL */ `
     boardType: String!
     "Optional list of climb UUIDs to filter by"
     climbUuids: [String!]
+  }
+
+  """
+  Input for attaching an Instagram video as beta for a climb.
+  """
+  input AttachBetaLinkInput {
+    "Board type"
+    boardType: String!
+    "Climb UUID"
+    climbUuid: String!
+    "Instagram post or reel URL"
+    link: String!
+    "Optional angle the video was climbed at"
+    angle: Int
   }
 `;

@@ -1,4 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
+import { buildSessionGradeBars, SESSION_GRADE_LEGEND } from '../session-grade-bars';
+import type { SessionGradeDistributionItem } from '@boardsesh/shared-schema';
 
 vi.mock('@/app/lib/grade-colors', () => ({
   formatVGrade: (grade: string | null | undefined) => {
@@ -19,9 +21,6 @@ vi.mock('@/app/theme/theme-config', () => ({
     neutral: { 300: '#e0e0e0' },
   },
 }));
-
-import { buildSessionGradeBars, SESSION_GRADE_LEGEND } from '../session-grade-bars';
-import type { SessionGradeDistributionItem } from '@boardsesh/shared-schema';
 
 describe('buildSessionGradeBars', () => {
   it('returns empty array for empty input', () => {
@@ -51,18 +50,14 @@ describe('buildSessionGradeBars', () => {
   });
 
   it('falls back to raw grade when formatVGrade returns null', () => {
-    const input: SessionGradeDistributionItem[] = [
-      { grade: 'unknown-grade', flash: 1, send: 0, attempt: 0 },
-    ];
+    const input: SessionGradeDistributionItem[] = [{ grade: 'unknown-grade', flash: 1, send: 0, attempt: 0 }];
 
     const bars = buildSessionGradeBars(input);
     expect(bars[0].label).toBe('unknown-grade');
   });
 
   it('produces exactly 3 segments per bar in flash/send/attempt order', () => {
-    const input: SessionGradeDistributionItem[] = [
-      { grade: '6a/V3', flash: 3, send: 2, attempt: 5 },
-    ];
+    const input: SessionGradeDistributionItem[] = [{ grade: '6a/V3', flash: 3, send: 2, attempt: 5 }];
 
     const bars = buildSessionGradeBars(input);
     expect(bars).toHaveLength(1);
@@ -75,18 +70,14 @@ describe('buildSessionGradeBars', () => {
   });
 
   it('preserves zero values in segments', () => {
-    const input: SessionGradeDistributionItem[] = [
-      { grade: '6a/V3', flash: 0, send: 0, attempt: 0 },
-    ];
+    const input: SessionGradeDistributionItem[] = [{ grade: '6a/V3', flash: 0, send: 0, attempt: 0 }];
 
     const bars = buildSessionGradeBars(input);
     expect(bars[0].segments.map((s) => s.value)).toEqual([0, 0, 0]);
   });
 
   it('uses key from original grade string', () => {
-    const input: SessionGradeDistributionItem[] = [
-      { grade: '6a/V3', flash: 1, send: 0, attempt: 0 },
-    ];
+    const input: SessionGradeDistributionItem[] = [{ grade: '6a/V3', flash: 1, send: 0, attempt: 0 }];
 
     const bars = buildSessionGradeBars(input);
     expect(bars[0].key).toBe('6a/V3');
@@ -120,17 +111,13 @@ describe('buildSessionGradeBars with custom formatGradeFn', () => {
   });
 
   it('falls back to raw grade when custom formatGradeFn returns null', () => {
-    const input: SessionGradeDistributionItem[] = [
-      { grade: 'unknown', flash: 1, send: 0, attempt: 0 },
-    ];
+    const input: SessionGradeDistributionItem[] = [{ grade: 'unknown', flash: 1, send: 0, attempt: 0 }];
     const bars = buildSessionGradeBars(input, () => null);
     expect(bars[0].label).toBe('unknown');
   });
 
   it('uses formatVGrade as default when no formatGradeFn provided', () => {
-    const input: SessionGradeDistributionItem[] = [
-      { grade: '6a/V3', flash: 1, send: 0, attempt: 0 },
-    ];
+    const input: SessionGradeDistributionItem[] = [{ grade: '6a/V3', flash: 1, send: 0, attempt: 0 }];
     const bars = buildSessionGradeBars(input);
     expect(bars[0].label).toBe('V3');
   });

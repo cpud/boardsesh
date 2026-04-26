@@ -29,10 +29,7 @@ export const SessionIdSchema = z
   .string()
   .min(1, 'Session ID cannot be empty')
   .max(SESSION_ID_MAX_LENGTH, `Session ID must be ${SESSION_ID_MAX_LENGTH} characters or less`)
-  .regex(
-    /^[a-zA-Z0-9-]+$/,
-    'Session ID can only contain letters, numbers, and hyphens'
-  );
+  .regex(/^[a-zA-Z0-9-]+$/, 'Session ID can only contain letters, numbers, and hyphens');
 
 /**
  * Session name validation schema (for user-defined session names)

@@ -6,6 +6,9 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Process;
 import android.text.TextUtils;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -13,19 +16,25 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 
+import com.boardsesh.app.plugins.DevUrlPlugin;
 import com.getcapacitor.Bridge;
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.BridgeWebViewClient;
+import com.getcapacitor.CapConfig;
 
 public class MainActivity extends BridgeActivity {
-    private static final String DEFAULT_RETRY_URL = "https://www.boardsesh.com";
+    private static final String DEV_RESET_SCHEME = "boardsesh-dev";
     private final OfflineFallbackStateMachine fallbackState = new OfflineFallbackStateMachine();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(DevUrlPlugin.class);
+
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
 
         if (bridge == null || bridge.getWebView() == null) {
             return;
@@ -35,6 +44,33 @@ public class MainActivity extends BridgeActivity {
         WebSettings settings = webView.getSettings();
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
         webView.setWebViewClient(new OfflineAwareBridgeWebViewClient(bridge));
+    }
+
+    @Override
+    protected void load() {
+        // Runs after super.onCreate() has loaded CapConfig from assets but before
+        // Bridge.Builder consumes it. Setting this.config here is respected by
+        // the builder path; setting it before super.onCreate() is not.
+        if (BuildConfig.DEBUG) {
+            String devUrl = DevUrlPrefs.getOverrideUrl(this);
+            if (devUrl != null) {
+                this.config = new CapConfig.Builder(this)
+                    .setServerUrl(devUrl)
+                    .setAllowNavigation(new String[]{"*"})
+                    .create();
+            }
+        }
+        super.load();
+    }
+
+    private String currentRetryUrl() {
+        if (BuildConfig.DEBUG) {
+            String devUrl = DevUrlPrefs.getOverrideUrl(this);
+            if (devUrl != null) {
+                return devUrl;
+            }
+        }
+        return DevUrlPlugin.DEFAULT_URL;
     }
 
     private boolean isOffline() {
@@ -69,6 +105,8 @@ public class MainActivity extends BridgeActivity {
             return;
         }
 
+        String devResetLink = buildDevResetLink();
+
         String errorHtml = "<!DOCTYPE html><html><head><meta charset='utf-8' />"
             + "<meta name='viewport' content='width=device-width, initial-scale=1' />"
             + "<title>You're offline</title>"
@@ -82,25 +120,38 @@ public class MainActivity extends BridgeActivity {
             + "<p><a href='" + safeHref + "'"
             + " style='display:inline-block;margin-top:8px;padding:10px 14px;border-radius:10px;"
             + "background:#fff;color:#0A0A0A;text-decoration:none;font-weight:600;'>Try again</a></p>"
+            + devResetLink
             + "</main></body></html>";
 
         view.loadDataWithBaseURL(null, errorHtml, "text/html", "UTF-8", null);
     }
 
+    private String buildDevResetLink() {
+        if (!BuildConfig.DEBUG || DevUrlPrefs.getOverrideUrl(this) == null) {
+            return "";
+        }
+        return "<p style='margin-top:16px;color:#888;font-size:13px'>Dev override active</p>"
+            + "<p><a href='" + DEV_RESET_SCHEME + "://reset'"
+            + " style='display:inline-block;padding:8px 12px;border-radius:8px;"
+            + "border:1px solid #444;color:#ccc;text-decoration:none;font-size:13px;'>"
+            + "Reset dev URL to production</a></p>";
+    }
+
     private String sanitizeRetryUrl(String candidateUrl) {
+        String fallback = currentRetryUrl();
         if (candidateUrl == null || candidateUrl.isEmpty()) {
-            return DEFAULT_RETRY_URL;
+            return fallback;
         }
 
         Uri parsed = Uri.parse(candidateUrl);
         String scheme = parsed.getScheme();
         if (scheme == null) {
-            return DEFAULT_RETRY_URL;
+            return fallback;
         }
 
         String normalizedScheme = scheme.toLowerCase();
         if (!"http".equals(normalizedScheme) && !"https".equals(normalizedScheme)) {
-            return DEFAULT_RETRY_URL;
+            return fallback;
         }
 
         return candidateUrl;
@@ -109,6 +160,23 @@ public class MainActivity extends BridgeActivity {
     private final class OfflineAwareBridgeWebViewClient extends BridgeWebViewClient {
         OfflineAwareBridgeWebViewClient(Bridge bridge) {
             super(bridge);
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            Uri url = request.getUrl();
+            if (url != null && DEV_RESET_SCHEME.equalsIgnoreCase(url.getScheme())) {
+                if (BuildConfig.DEBUG) {
+                    DevUrlPrefs.setOverrideUrl(MainActivity.this, null);
+                    // No JS promise to flush here — post to the main looper so the
+                    // WebView finishes handling the click before the process dies.
+                    new Handler(Looper.getMainLooper()).post(
+                        () -> Process.killProcess(Process.myPid())
+                    );
+                }
+                return true;
+            }
+            return super.shouldOverrideUrlLoading(view, request);
         }
 
         @Override
@@ -143,11 +211,22 @@ public class MainActivity extends BridgeActivity {
                 fallbackState.onMainFrameError(request.getUrl() != null ? request.getUrl().toString() : null);
             }
 
-            if (!shouldTriggerOfflineFallback(request, error.getErrorCode())) {
+            if (shouldTriggerOfflineFallback(request, error.getErrorCode())) {
+                tryCacheThenFallback(view);
                 return;
             }
 
-            tryCacheThenFallback(view);
+            // Dev-override rescue: even when the device is online, if a bad dev
+            // URL wedges the main frame we must surface the reset link — the
+            // web UI never loads so the in-app dialog is unreachable.
+            if (DevOverrideRescuePolicy.shouldShowForNetworkError(
+                request.isForMainFrame(),
+                BuildConfig.DEBUG,
+                hasDevOverride(),
+                error.getErrorCode()
+            )) {
+                renderDevOverrideRescue(view);
+            }
         }
 
         @Override
@@ -161,11 +240,48 @@ public class MainActivity extends BridgeActivity {
                 fallbackState.onMainFrameError(request.getUrl() != null ? request.getUrl().toString() : null);
             }
 
-            if (!request.isForMainFrame() || !isOffline()) {
+            if (request.isForMainFrame() && isOffline()) {
+                // Offline path takes precedence: tryCacheThenFallback renders the
+                // offline HTML which also contains the boardsesh-dev://reset link
+                // when an override is active (see buildDevResetLink), so the
+                // escape hatch is still reachable here.
+                tryCacheThenFallback(view);
                 return;
             }
 
-            tryCacheThenFallback(view);
+            if (DevOverrideRescuePolicy.shouldShowForHttpError(
+                request.isForMainFrame(),
+                BuildConfig.DEBUG,
+                hasDevOverride(),
+                errorResponse.getStatusCode()
+            )) {
+                renderDevOverrideRescue(view);
+            }
         }
+
+        private boolean hasDevOverride() {
+            return DevUrlPrefs.getOverrideUrl(MainActivity.this) != null;
+        }
+    }
+
+    private void renderDevOverrideRescue(WebView view) {
+        String override = DevUrlPrefs.getOverrideUrl(this);
+        String safeOverride = TextUtils.htmlEncode(override != null ? override : "");
+        String errorHtml = "<!DOCTYPE html><html><head><meta charset='utf-8' />"
+            + "<meta name='viewport' content='width=device-width, initial-scale=1' />"
+            + "<title>Dev URL unreachable</title>"
+            + "<style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;"
+            + "background:#0A0A0A;color:#fff;margin:0;padding:24px;display:flex;align-items:center;"
+            + "justify-content:center;min-height:100vh;text-align:center;}main{max-width:360px;}"
+            + "h1{font-size:22px;margin:0 0 12px;}p{color:#c4c4c4;line-height:1.5;}"
+            + "code{background:#1f1f1f;padding:2px 6px;border-radius:4px;font-size:12px;word-break:break-all;}</style>"
+            + "</head><body><main><h1>Dev URL didn't load</h1>"
+            + "<p>The configured dev URL <code>" + safeOverride + "</code> is unreachable."
+            + " Check the tunnel or preview is still running.</p>"
+            + "<p><a href='" + DEV_RESET_SCHEME + "://reset'"
+            + " style='display:inline-block;margin-top:12px;padding:10px 14px;border-radius:10px;"
+            + "background:#fff;color:#0A0A0A;text-decoration:none;font-weight:600;'>"
+            + "Reset to production</a></p></main></body></html>";
+        view.loadDataWithBaseURL(null, errorHtml, "text/html", "UTF-8", null);
     }
 }

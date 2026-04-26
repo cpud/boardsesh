@@ -1,4 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'http';
+import { createServer as createHttpsServer } from 'https';
+import { readFileSync } from 'node:fs';
 import type { WebSocketServer } from 'ws';
 import { pubsub } from './pubsub/index';
 import { roomManager } from './services/room-manager';
@@ -22,12 +24,12 @@ import { warmPopularConfigsCache } from './graphql/resolvers/social/boards';
  * for WebSocket subscriptions. Non-GraphQL routes are handled by custom
  * request handlers.
  */
-export interface ServerResources {
+export type ServerResources = {
   wss: WebSocketServer;
   httpServer: ReturnType<typeof createServer>;
   cleanupIntervals: () => void;
   shutdownServices: () => Promise<void>;
-}
+};
 
 export async function startServer(): Promise<ServerResources> {
   // Initialize PubSub (connects to Redis if configured)
@@ -44,13 +46,13 @@ export async function startServer(): Promise<ServerResources> {
       await eventBroker.initialize(publisher, streamConsumer);
       const notificationWorker = new NotificationWorker(eventBroker);
       notificationWorker.start();
-      console.log('[Server] EventBroker and NotificationWorker started');
+      console.info('[Server] EventBroker and NotificationWorker started');
     } catch (error) {
       console.error('[Server] Failed to initialize EventBroker:', error);
     }
   } else {
     await roomManager.initialize(); // Postgres-only mode
-    console.log('[Server] No Redis - EventBroker disabled, inline notification fallback active');
+    console.info('[Server] No Redis - EventBroker disabled, inline notification fallback active');
   }
 
   const PORT = parseInt(process.env.PORT || '8080', 10);
@@ -132,8 +134,18 @@ export async function startServer(): Promise<ServerResources> {
     }
   }
 
-  // Create HTTP server with custom request handler
-  const httpServer = createServer(handleRequest);
+  // Create HTTP or HTTPS server with custom request handler.
+  // DEV_HTTPS_CERT_FILE / DEV_HTTPS_KEY_FILE are injected by the dev
+  // orchestrator when it provisions a Tailscale cert so phones can reach the
+  // dev backend over a secure context (required for DeviceMotion, Bluetooth,
+  // etc. in mobile browsers). In any other environment both are unset and
+  // we fall through to plain HTTP.
+  const certFile = process.env.DEV_HTTPS_CERT_FILE;
+  const keyFile = process.env.DEV_HTTPS_KEY_FILE;
+  const tlsEnabled = !!(certFile && keyFile);
+  const httpServer = tlsEnabled
+    ? createHttpsServer({ cert: readFileSync(certFile!), key: readFileSync(keyFile!) }, handleRequest)
+    : createServer(handleRequest);
 
   // Setup WebSocket server for GraphQL subscriptions (includes ping/pong heartbeat)
   const { wss, pingInterval } = setupWebSocketServer(httpServer);
@@ -141,19 +153,21 @@ export async function startServer(): Promise<ServerResources> {
   // Track intervals for cleanup
   const intervals: NodeJS.Timeout[] = [pingInterval];
 
-  console.log(`Boardsesh Backend starting on port ${PORT}...`);
+  console.info(`Boardsesh Backend starting on port ${PORT}...`);
 
   // Start HTTP server (WebSocket server is attached to it)
+  const httpScheme = tlsEnabled ? 'https' : 'http';
+  const wsScheme = tlsEnabled ? 'wss' : 'ws';
   httpServer.listen(PORT, () => {
-    console.log(`Boardsesh Backend is running on port ${PORT}`);
-    console.log(`  GraphQL HTTP: http://0.0.0.0:${PORT}/graphql`);
-    console.log(`  GraphQL WS: ws://0.0.0.0:${PORT}/graphql`);
-    console.log(`  Health check: http://0.0.0.0:${PORT}/health`);
-    console.log(`  Join session: http://0.0.0.0:${PORT}/join/:sessionId`);
-    console.log(`  Avatar upload: http://0.0.0.0:${PORT}/api/avatars`);
-    console.log(`  Avatar files: http://0.0.0.0:${PORT}/static/avatars/`);
-    console.log(`  OCR test data: http://0.0.0.0:${PORT}/api/ocr-test-data`);
-    console.log(`  Sync cron: http://0.0.0.0:${PORT}/sync-cron`);
+    console.info(`Boardsesh Backend is running on port ${PORT}${tlsEnabled ? ' (TLS)' : ''}`);
+    console.info(`  GraphQL HTTP: ${httpScheme}://0.0.0.0:${PORT}/graphql`);
+    console.info(`  GraphQL WS: ${wsScheme}://0.0.0.0:${PORT}/graphql`);
+    console.info(`  Health check: ${httpScheme}://0.0.0.0:${PORT}/health`);
+    console.info(`  Join session: ${httpScheme}://0.0.0.0:${PORT}/join/:sessionId`);
+    console.info(`  Avatar upload: ${httpScheme}://0.0.0.0:${PORT}/api/avatars`);
+    console.info(`  Avatar files: ${httpScheme}://0.0.0.0:${PORT}/static/avatars/`);
+    console.info(`  OCR test data: ${httpScheme}://0.0.0.0:${PORT}/api/ocr-test-data`);
+    console.info(`  Sync cron: ${httpScheme}://0.0.0.0:${PORT}/sync-cron`);
 
     // Warm up popular board configs cache in the background.
     // Uses a Redis lock so only one node across the cluster runs the query.
@@ -170,8 +184,8 @@ export async function startServer(): Promise<ServerResources> {
    * Clean up intervals and timers on shutdown
    */
   function cleanupIntervals(): void {
-    console.log(`[Server] Cleaning up ${intervals.length} intervals`);
-    intervals.forEach(interval => clearInterval(interval));
+    console.info(`[Server] Cleaning up ${intervals.length} intervals`);
+    intervals.forEach((interval) => clearInterval(interval));
     intervals.length = 0;
   }
 
@@ -184,7 +198,7 @@ export async function startServer(): Promise<ServerResources> {
 
     try {
       await roomManager.shutdown();
-      console.log('[Server] RoomManager shutdown complete');
+      console.info('[Server] RoomManager shutdown complete');
     } catch (error) {
       console.error('[Server] Error during RoomManager shutdown:', error);
     }
@@ -207,18 +221,18 @@ export async function startServer(): Promise<ServerResources> {
         const activeSessions = roomManager.getAllActiveSessions();
 
         if (activeSessions.length > 0) {
-          console.log(`[Server] Refreshing TTL for ${activeSessions.length} active sessions`);
+          console.info(`[Server] Refreshing TTL for ${activeSessions.length} active sessions`);
 
           // Batch refresh to avoid overwhelming Redis
           const batchSize = 50;
           for (let i = 0; i < activeSessions.length; i += batchSize) {
             const batch = activeSessions.slice(i, i + batchSize);
             await Promise.all(
-              batch.map(sessionId =>
-                roomManager['redisStore']?.refreshTTL(sessionId).catch(err =>
-                  console.error(`[Server] TTL refresh failed for ${sessionId}:`, err)
-                )
-              )
+              batch.map((sessionId) =>
+                roomManager['redisStore']!.refreshTTL(sessionId).catch((err) =>
+                  console.error(`[Server] TTL refresh failed for ${sessionId}:`, err),
+                ),
+              ),
             );
           }
         }

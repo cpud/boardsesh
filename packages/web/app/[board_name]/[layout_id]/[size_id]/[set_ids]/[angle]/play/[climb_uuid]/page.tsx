@@ -1,23 +1,23 @@
 import React from 'react';
-import { BoardRouteParametersWithUuid } from '@/app/lib/types';
+import type { BoardRouteParametersWithUuid } from '@/app/lib/types';
 import { constructPlayUrlWithSlugs } from '@/app/lib/url-utils';
 import { parseRouteParams } from '@/app/lib/url-utils.server';
 import { getBoardDetailsForBoard } from '@/app/lib/board-utils';
 import { getClimb } from '@/app/lib/data/queries';
 
 import PlayViewClient from './play-view-client';
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { scheduleOverlayWarming } from '@/app/lib/warm-overlay-cache';
 import { buildOgBoardRenderUrl } from '@/app/components/board-renderer/util';
 import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from '@/app/lib/seo/og';
-
 
 export async function generateMetadata(props: { params: Promise<BoardRouteParametersWithUuid> }): Promise<Metadata> {
   const params = await props.params;
 
   try {
     const { parsedParams } = await parseRouteParams(params);
-    const [boardDetails, currentClimb] = await Promise.all([getBoardDetailsForBoard(parsedParams), getClimb(parsedParams)]);
+    const boardDetails = getBoardDetailsForBoard(parsedParams);
+    const currentClimb = await getClimb(parsedParams);
 
     const climbName = currentClimb.name || `${boardDetails.board_name} Climb`;
     const climbGrade = currentClimb.difficulty || 'Unknown Grade';
@@ -97,11 +97,5 @@ export default async function PlayPage(props: {
     scheduleOverlayWarming({ boardDetails, climbs: [initialClimb], variant: 'full' });
   }
 
-  return (
-    <PlayViewClient
-      boardDetails={boardDetails}
-      initialClimb={initialClimb}
-      angle={parsedParams.angle}
-    />
-  );
+  return <PlayViewClient boardDetails={boardDetails} initialClimb={initialClimb} angle={parsedParams.angle} />;
 }

@@ -24,6 +24,7 @@ Before working on a specific part of the codebase, check the `docs/` directory f
 - `docs/ai-design-guidelines.md` - Comprehensive UI design guidelines, patterns, and tokens for redesigning components
 
 **Important:**
+
 - Read the relevant documentation first to understand the architecture and design decisions before making changes
 - When making significant changes to documented systems, update the corresponding documentation to keep it in sync
 
@@ -41,14 +42,11 @@ Before working on a specific part of the codebase, check the `docs/` directory f
 
 ### Development Setup
 
-The development database uses a **pre-built Docker image** (`ghcr.io/boardsesh/boardsesh-dev-db`) that already contains all Kilter, Tension, and MoonBoard board data, a test user, and social seed data with migrations applied. This means `bun run db:up` is fast — it just pulls the image, starts containers, and runs any newer migrations.
+The development database uses a **pre-built Docker image** (`ghcr.io/boardsesh/boardsesh-dev-db`) that already contains all Kilter, Tension, and MoonBoard board data, a test user, and social seed data with migrations applied. This means `vp run db:up` is fast — it just pulls the image, starts containers, and runs any newer migrations.
 
 ```bash
-# Start development databases (PostgreSQL, Neon proxy, Redis)
-# First run pulls the pre-built image (~1GB) with all board data included.
-# Subsequent runs start in seconds.
-# Test user: test@boardsesh.com / test
-bun run db:up
+# Install Vite+ CLI (one-time, manages Node.js, linting, formatting, testing)
+curl -fsSL https://vite.plus | bash
 
 # Environment files are in packages/web/:
 # .env.local contains generic config (tracked in git)
@@ -62,13 +60,16 @@ TENSION_SYNC_TOKEN=your_tension_token_here
 # For local development, the app defaults to http://localhost:3000
 
 # Install all dependencies (from root)
-bun install
+vp install
 
-# Start web development server
-bun run dev
+# Install Git hooks (runs vp staged on commit)
+vp config
 
-# Start backend development server
-bun run backend:dev
+# Start everything (databases, backend, web)
+# First run pulls the pre-built image (~1GB) with all board data included.
+# Subsequent runs start in seconds.
+# Test user: test@boardsesh.com / test
+vp run dev
 ```
 
 #### Pre-built database image
@@ -76,40 +77,48 @@ bun run backend:dev
 The `boardsesh-dev-db` image is published to GHCR and contains PostgreSQL 17 + PostGIS with all Kilter/Tension/MoonBoard board data pre-loaded, a test user (`test@boardsesh.com` / `test`), social seed data (fake users, follows, ticks, comments, notifications), and all drizzle migrations applied. It is rebuilt automatically when files in `packages/db/docker/`, `packages/db/scripts/`, `packages/db/src/schema/`, `packages/db/drizzle/`, or `packages/db/package.json` change on main.
 
 - **Pull directly**: `docker pull ghcr.io/boardsesh/boardsesh-dev-db:latest`
-- **Reset your local database**: `docker compose down -v && bun run db:up`
+- **Reset your local database**: `docker compose down -v && vp run db:up`
 - **Build locally** (e.g. to test Dockerfile changes): `docker compose up -d --build postgres`
 
 ### Common Commands (from root)
 
-- `bun run dev` - Start web development server with Turbopack
-- `bun run build` - Build all packages
-- `bun run build:web` - Build web package only
-- `bun run build:backend` - Build backend package only
-- `bun run lint` - Run oxlint on web package
-- `bun run typecheck` - Type check all packages (use this instead of build for validation)
-- `bun run typecheck:web` - Type check web package only
-- `bun run typecheck:backend` - Type check backend package only
-- `bun run typecheck:db` - Type check db package only
-- `bun run typecheck:shared` - Type check shared-schema package only
-- `bun run backend:dev` - Start backend in development mode
+This project uses [Vite+](https://viteplus.dev) (`vp`) as its unified toolchain for testing, linting, formatting, type checking, and task running. Most commands use `vp` directly or `vp run` for tasks defined in the root `vite.config.ts`.
+
+- `vp check` - Run format, lint, and type checks (this is the canonical validation command and what runs in pre-commit)
+- `vp test` - Run all tests
+- `vp test run` - Run tests once without watch mode
+- `vp lint` - Lint all packages
+- `vp fmt` - Format all files with Oxfmt
+- `vp run dev` - Start development databases, backend, and web server
+- `vp run dev:backend` - Start database and backend only
+- `vp run dev:web` - Start database and web server only
+- `vp run db:up` - Start development databases and run migrations only
+- `vp run build` - Build all packages (dependency graph handles ordering and parallelism)
+- `vp run build:web` - Build web package and its dependencies
+- `vp run build:backend` - Build backend package and its dependencies
+- `vp run typecheck` - Type check all packages (builds dependencies first)
+- `vp run typecheck:web` - Type check web package only
+- `vp run typecheck:backend` - Type check backend package only
+- `vp run typecheck:db` - Type check db package only
+- `vp run typecheck:shared` - Type check shared-schema package only
 - `bun run backend:start` - Start backend in production mode
-- `bun run db:up` - Start development databases, run migrations, and import MoonBoard data (uses pre-built image with Kilter/Tension data)
 
 ### Running E2E Tests
 
-- `bun run test:e2e` - Full Playwright run: brings up the pre-built dev DB, exports the seeded test user, and runs every spec in `packages/web/e2e/`. Playwright's `webServer` config auto-starts `bun run dev` (backend + web) for you.
-- `bun run test:e2e:setup` - Only bring up the dev DB. Useful when iterating on a single spec: after setup, run `bun run --filter=@boardsesh/web test:e2e -- e2e/<spec>.spec.ts` (or use `test:e2e:ui` for the Playwright UI).
+- `vp run test:e2e` - Full Playwright run: brings up the pre-built dev DB, exports the seeded test user, and runs every spec in `packages/web/e2e/`. Playwright's `webServer` config auto-starts `vp run dev` (backend + web) for you.
+- `vp run test:e2e:setup` - Only bring up the dev DB. Useful when iterating on a single spec: after setup, run `bun run --filter=@boardsesh/web test:e2e -- e2e/<spec>.spec.ts` (or use `test:e2e:ui` for the Playwright UI).
 - The seeded test user is `test@boardsesh.com` / `test`, exported as `TEST_USER_EMAIL`/`TEST_USER_PASSWORD` by the script so screenshot specs (`app-store-screenshots`, `help-screenshots`) run end-to-end without 1Password.
 
 ### Database Commands (run from root or packages/db/)
 
-- `bun run db:migrate` - Apply migrations (also runs on Vercel build)
-- `bun run db:studio` - Open Drizzle Studio for database exploration
+- `vp run db:migrate` - Start dev DB and apply migrations
+- `vp run db:studio` - Start dev DB and open Drizzle Studio for database exploration
 - From packages/db: `bunx drizzle-kit generate` - Generate new migrations
 
 ### Creating Database Migrations
 
 **IMPORTANT**: Always use `bunx drizzle-kit generate` from `packages/db/` to create new migrations. This command:
+
 1. Detects schema changes in `packages/db/src/schema/`
 2. Generates the SQL migration file in `packages/db/drizzle/`
 3. Automatically adds the migration to `packages/db/drizzle/meta/_journal.json`
@@ -121,7 +130,7 @@ The `boardsesh-dev-db` image is published to GHCR and contains PostgreSQL 17 + P
 bunx drizzle-kit generate
 
 # Then apply locally to test:
-bun run db:migrate
+vp run db:migrate
 ```
 
 ## Architecture Overview
@@ -188,14 +197,19 @@ We are using next.js app router, it's important we try to use server side compon
 
 ### Testing
 
-- Vitest configured but tests not yet implemented
-- Run tests with `bun test` when available
+- Tests use Vitest via Vite+ (`vp test`)
+- Run `vp test run --reporter=agent` for CI-friendly output
+- Run `vp test --project web` to run only web tests
+- Run `vp test --project backend` to run only backend tests
+- Backend tests auto-start a postgres+redis docker stack via `packages/backend/docker-compose.test.yml` (idempotent, left running between runs). Set `SKIP_TEST_INFRA=1` to skip orchestration; set `CI=1` to rely on caller-provided services.
+- `packages/db` uses Node.js native test runner (`tsx --test`), not Vitest
 
 ## Development Guidelines
 
 ### Important rules
 
-- **Use `bun run typecheck` instead of `bun run build` for TypeScript validation** - Running build interferes with the local dev server and `bunx` commands can mess with lock files. Use the typecheck scripts for validating TypeScript.
+- **Validation must go through `vp` — never `bun run`, `bunx`, or `npx`.** This repo's toolchain is Vite+ (`vp`). For lint, format, typecheck, test, build, and dev, use `vp` and `vp run` exclusively. Do not invoke `bun run check`, `bun run lint`, `bun run test`, `bun run --filter=... typecheck`, `bunx tsc`, `npx eslint`, etc. — they bypass the unified config, can mutate `bun.lock`, and skip the typecheck/lint settings wired into `vite.config.ts`. The only sanctioned non-`vp` invocations are: (a) `bunx drizzle-kit generate` for migrations (no `vp` wrapper exists), and (b) `bun run backend:start` for production backend startup. If you find yourself reaching for `bun run` or `bunx` for anything else, stop and use the `vp` equivalent.
+- **Use `vp check` or `vp run typecheck` instead of `vp run build` for validation** - Running build interferes with the local dev server and `bunx` commands can mess with lock files. Use `vp check` to run lint + format + typecheck together (typecheck is wired in via `lint.options.typeCheck` in `vite.config.ts`, so `vp check` and the staged pre-commit hook both run it), or `vp run typecheck` for type checking only.
 - Always try to use server side rendering wherever possibe. But do note that for some parts such as the QueueList and related components, thats impossible, so dont try to force SSR there.
 - Always use MUI (Material UI) components and their properties.
 - Try to avoid use of the style property
